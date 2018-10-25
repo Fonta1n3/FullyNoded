@@ -1,0 +1,9 @@
+{
+  "commitish" : "2.3.1",
+  "iOS" : [
+    {
+      "name" : "NMSSH",
+      "hash" : "780171bd16e68d0e3591230a1c8f4a992a507e361c2ac3928c65a7f236623df8"
+    }
+  ]
+}
