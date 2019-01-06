@@ -9,6 +9,7 @@
 import UIKit
 import CoreData
 import SwiftKeychainWrapper
+import Parse
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -18,6 +19,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        let configuration = ParseClientConfiguration {
+            $0.applicationId = "aec20ded7796bdc51d83ee190de6ebe103096266"
+            $0.clientKey = "b83df6c71c2ddd667be90ba7f3d2b2998b52c925"
+            $0.server = "http://ec2-34-219-244-255.us-west-2.compute.amazonaws.com/parse"
+        }
+        Parse.initialize(with: configuration)
         return true
     }
 

@@ -1,0 +1,13 @@
+# OS X
+.DS_Store
+
+# build
+build/
+
+# Xcode
+xcuserdata/
+*.xccheckout
+*.xcscmblueprint
+
+# Appcode
+.idea

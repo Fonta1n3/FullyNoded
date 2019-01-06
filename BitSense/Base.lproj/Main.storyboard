@@ -38,6 +38,8 @@
                     <connections>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="login" id="U2F-nA-Vhn"/>
                         <segue destination="XmP-lK-cua" kind="show" identifier="goToMainMenu" id="1tE-42-lpB"/>
+                        <segue destination="JTG-hL-vlA" kind="show" identifier="buyNode" id="6fb-0L-nRn"/>
+                        <segue destination="Cim-if-Dy5" kind="show" identifier="purchase" id="QqG-sk-wOD"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="xta-OU-Oyi" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -235,11 +237,67 @@
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="reenterCredentials" id="ckQ-WD-ole"/>
                         <segue destination="JTG-hL-vlA" kind="show" identifier="purchaseNode" id="3uj-yn-ymQ"/>
+                        <segue destination="Cim-if-Dy5" kind="show" identifier="goToPurchases" id="EJ3-ZS-N3J"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="k6b-ep-z2U" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="1786.4000000000001" y="1788.7556221889056"/>
+        </scene>
+        <!--Purchase View Controller-->
+        <scene sceneID="Mca-na-4X0">
+            <objects>
+                <viewController id="Cim-if-Dy5" customClass="PurchaseViewController" customModule="BitSense" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="mOh-bI-Nel">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="GNV-Rd-jbu">
+                                <rect key="frame" x="0.0" y="59" width="375" height="128"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <prototypes>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="Cell" textLabel="FIX-aa-EcF" detailTextLabel="D5e-7n-ulu" style="IBUITableViewCellStyleSubtitle" id="cuQ-5L-oU2" customClass="ProductCell" customModule="BitSense" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="28" width="375" height="44"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="cuQ-5L-oU2" id="Lj1-gs-Gi9">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="FIX-aa-EcF">
+                                                    <rect key="frame" x="15" y="5" width="33.5" height="20.5"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Subtitle" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="D5e-7n-ulu">
+                                                    <rect key="frame" x="15" y="25.5" width="44" height="14.5"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                </prototypes>
+                                <connections>
+                                    <outlet property="dataSource" destination="Cim-if-Dy5" id="7cn-vs-cIw"/>
+                                    <outlet property="delegate" destination="Cim-if-Dy5" id="ysq-Cf-GJf"/>
+                                </connections>
+                            </tableView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <viewLayoutGuide key="safeArea" id="sPI-3t-Q0K"/>
+                    </view>
+                    <connections>
+                        <outlet property="purchaseTable" destination="GNV-Rd-jbu" id="65p-WO-8R2"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="0ff-Ye-jYr" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3930.4000000000001" y="735.38230884557731"/>
         </scene>
         <!--Root View Controller-->
         <scene sceneID="Iwz-lh-5B3">
@@ -250,7 +308,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="blue" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="Cell" textLabel="ltD-bm-iEL" detailTextLabel="6Qc-Ld-LKx" style="IBUITableViewCellStyleSubtitle" id="0QK-5U-3OS" customClass="ProductCell" customModule="BitSense" customModuleProvider="target">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="blue" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="Cell" textLabel="ltD-bm-iEL" detailTextLabel="6Qc-Ld-LKx" rowHeight="44" style="IBUITableViewCellStyleSubtitle" id="0QK-5U-3OS" customClass="ProductCell" customModule="BitSense" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="28" width="375" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="0QK-5U-3OS" id="23j-2o-2Od">
@@ -293,7 +351,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="WSl-9g-K08" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3978" y="1745"/>
+            <point key="canvasLocation" x="3976.8000000000002" y="1744.6776611694154"/>
         </scene>
         <!--Detail View Controller-->
         <scene sceneID="0Sz-0r-EYt">
@@ -347,6 +405,8 @@
                     </view>
                     <connections>
                         <segue destination="XmP-lK-cua" kind="show" identifier="logInNow" id="UCu-Iz-rId"/>
+                        <segue destination="JTG-hL-vlA" kind="show" identifier="buyNodeNow" id="5Hv-py-fRP"/>
+                        <segue destination="Cim-if-Dy5" kind="show" identifier="purchaseNode" id="72h-ji-eNK"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="KMl-va-ciu" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -355,7 +415,9 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="qed-hl-jG5"/>
+        <segue reference="U2F-nA-Vhn"/>
+        <segue reference="6fb-0L-nRn"/>
+        <segue reference="QqG-sk-wOD"/>
         <segue reference="1tE-42-lpB"/>
     </inferredMetricsTieBreakers>
 </document>
