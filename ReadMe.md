@@ -30,7 +30,7 @@ MacOS and XCode.
 
 ## Built With
 
-* [CoreBitcoin](https://github.com/oleganza/CoreBitcoin) - The Bitcoin library used
+* [NMSSH](https://github.com/NMSSH/NMSSH) - To allow users to SSH into their node
 * [Swifty Beaver](https://github.com/SwiftyBeaver/AES256CBC) - For encrypting log in credentials
 * [Swift Keychain Wrapper](https://github.com/jrendel/SwiftKeychainWrapper) - For securely storing encrypted keys locally
 
