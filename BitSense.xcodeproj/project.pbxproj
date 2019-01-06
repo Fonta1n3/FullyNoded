@@ -22,6 +22,7 @@
 		D0196DDB21B5AC5F0081E0AB /* KeyPad.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0196DDA21B5AC5F0081E0AB /* KeyPad.swift */; };
 		D0196DDD21BAF50B0081E0AB /* PurchaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0196DDC21BAF50B0081E0AB /* PurchaseViewController.swift */; };
 		D0196DDF21BEF3FF0081E0AB /* NMSSH.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0196DDE21BEF3FF0081E0AB /* NMSSH.framework */; };
+		D0286D6521E2714200954991 /* ReadMe.md in Resources */ = {isa = PBXBuildFile; fileRef = D0286D6421E2714200954991 /* ReadMe.md */; };
 		D0358D9521B1B44B007D56ED /* whiteCheck.png in Resources */ = {isa = PBXBuildFile; fileRef = D0358D9421B1B44A007D56ED /* whiteCheck.png */; };
 		D05315FF214639CD005707D6 /* blackClose.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D05315FE214639CD005707D6 /* blackClose.jpg */; };
 		D05692DF21432697006DF0F4 /* SegwitAddrCoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05692DE21432697006DF0F4 /* SegwitAddrCoder.swift */; };
@@ -72,6 +73,7 @@
 		D0196DDA21B5AC5F0081E0AB /* KeyPad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyPad.swift; sourceTree = "<group>"; };
 		D0196DDC21BAF50B0081E0AB /* PurchaseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseViewController.swift; sourceTree = "<group>"; };
 		D0196DDE21BEF3FF0081E0AB /* NMSSH.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NMSSH.framework; path = Carthage/Build/iOS/NMSSH.framework; sourceTree = "<group>"; };
+		D0286D6421E2714200954991 /* ReadMe.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ReadMe.md; sourceTree = "<group>"; };
 		D0358D9421B1B44A007D56ED /* whiteCheck.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteCheck.png; sourceTree = "<group>"; };
 		D05315FE214639CD005707D6 /* blackClose.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = blackClose.jpg; sourceTree = "<group>"; };
 		D05692DE21432697006DF0F4 /* SegwitAddrCoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SegwitAddrCoder.swift; sourceTree = "<group>"; };
@@ -137,6 +139,7 @@
 		D00B9A1B2111427200E8B95A = {
 			isa = PBXGroup;
 			children = (
+				D0286D6421E2714200954991 /* ReadMe.md */,
 				D00B9A262111427200E8B95A /* BitSense */,
 				D00B9A252111427200E8B95A /* Products */,
 				D08C1FBB211147F600B7CA79 /* Frameworks */,
@@ -339,6 +342,7 @@
 				D0196DD721B5AB300081E0AB /* KeyPadButtonView.xib in Resources */,
 				D071A2A0214880F700C4BCB3 /* Search - tripkey.png in Resources */,
 				D0196DD921B5ABBB0081E0AB /* broom.png in Resources */,
+				D0286D6521E2714200954991 /* ReadMe.md in Resources */,
 				D071A2A22148991500C4BCB3 /* settings2.png in Resources */,
 				D0FA417E213C7CED0028E4F8 /* whiteFingerPrint.png in Resources */,
 				D00B9A2D2111427200E8B95A /* Main.storyboard in Resources */,
