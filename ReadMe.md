@@ -1,4 +1,4 @@
-# BitSense
+# Fully Noded
 
 An app that allows you to connect to and control your own Bitcoin Core Node written in Swift.
 
