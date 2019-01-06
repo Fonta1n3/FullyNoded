@@ -37,7 +37,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     var recipientAddress = ""
     let syncStatusLabel = UILabel()
     var latestBlockHeight = Int()
-   
+   var masterKey = "u0pzk5re5x7fc2m0fypgzgw6l5vmqf9c"
     let segwit = SegwitAddrCoder()
     let descriptionLabel = UILabel()
     let qrView = UIImageView()
