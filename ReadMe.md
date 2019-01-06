@@ -19,10 +19,10 @@ If connecting via RPC:
 
     1. When prompted for username input your RPC username (e.g. "bitcoin")
     2. When prompted for password input your RPC password
-    3. Port is 8332 for mainnet and 18332 for testnet
+    3. When prompted for port use 8332 for mainnet and 18332 for testnet
     4. When prompted for IP Address input your servers IP address
 
-If the user doesn not have a full node the app allows the user to purchase an instance of a Bitcoin Core 0.17.0 node running on a VPS to power the app as a backend.
+If the user does not have a full node the app allows the user to purchase an instance of a Bitcoin Core 0.17.0 node running on a VPS to power the app as a backend.
 
 ### Prerequisites
 
