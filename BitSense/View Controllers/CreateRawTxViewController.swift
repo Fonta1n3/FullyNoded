@@ -915,10 +915,10 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
             return decrypted
         }
         
-        let nodeUsername = decrypt(item: KeychainWrapper.standard.string(forKey: "NodeUsername")!)
-        let nodePassword = decrypt(item: KeychainWrapper.standard.string(forKey: "NodePassword")!)
-        let ip = decrypt(item: KeychainWrapper.standard.string(forKey: "NodeIPAddress")!)
-        let port = decrypt(item: KeychainWrapper.standard.string(forKey: "NodePort")!)
+        let nodeUsername = decrypt(item: UserDefaults.standard.string(forKey: "NodeUsername")!)
+        let nodePassword = decrypt(item: UserDefaults.standard.string(forKey: "NodePassword")!)
+        let ip = decrypt(item: UserDefaults.standard.string(forKey: "NodeIPAddress")!)
+        let port = decrypt(item: UserDefaults.standard.string(forKey: "NodePort")!)
         let url = URL(string: "http://\(nodeUsername):\(nodePassword)@\(ip):\(port)")
         var request = URLRequest(url: url!)
         request.setValue("text/plain", forHTTPHeaderField: "Content-Type")

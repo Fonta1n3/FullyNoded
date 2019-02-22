@@ -9,7 +9,6 @@
 import UIKit
 import SwiftKeychainWrapper
 import AES256CBC
-import Parse
 
 //executeNodeCommand(method: BTC_CLI_COMMAND.getblockchaininfo.rawValue, param: "")
  //executeNodeCommand(method: BTC_CLI_COMMAND.gettransaction.rawValue, param: "\"\(self.txID)\"")
@@ -24,7 +23,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     var total = Double()
     var tx = String()
     var currentBlock = Int()
-    let ssh = SSHService.sharedInstance
     var newFee = Double()
     var amount = String()
     var address = String()
@@ -37,7 +35,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     var recipientAddress = ""
     let syncStatusLabel = UILabel()
     var latestBlockHeight = Int()
-    var masterKey = "someKey"
     let segwit = SegwitAddrCoder()
     let descriptionLabel = UILabel()
     let qrView = UIImageView()
@@ -115,7 +112,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
             if let vc = segue.destination as? CreateRawTxViewController {
                 
-                vc.ssh = self.ssh
+                vc.ssh = SSHService.sharedInstance as! SSHService
                 vc.isUsingSSH = self.isUsingSSH
                 vc.spendable = self.balance
                 
@@ -165,7 +162,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                     if !self.isUsingSSH {
                                         
                                         self.latestBlockHeight = heightCheck
-                                        //self.executeNodeCommand(method: BTC_CLI_COMMAND.getblockchaininfo.rawValue, param: "")
                                         let percentage = (self.currentBlock * 100) / heightCheck
                                         let percentageString = "\(percentage)% Synced"
                                         DispatchQueue.main.async {
@@ -255,6 +251,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
+        let ssh = SSHService.sharedInstance
+        
         let cell = tableView.cellForRow(at: indexPath)!
         
         DispatchQueue.main.async {
@@ -289,7 +287,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     if !self.isUsingSSH {
                         self.executeNodeCommand(method: BTC_CLI_COMMAND.bumpfee.rawValue, param: "\"\(txID)\"")
                     } else {
-                        self.bumpFee()
+                        self.bumpFee(ssh: ssh)
                     }
                     
                 }))
@@ -319,7 +317,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             if !isUsingSSH {
                 self.executeNodeCommand(method: BTC_CLI_COMMAND.getrawtransaction.rawValue, param: "\"\(txID)\"")
             } else {
-                self.getrawtransaction(txID: txID)
+                self.getrawtransaction(txID: txID, ssh: ssh)
             }
             
 
@@ -360,46 +358,65 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
    @objc func refresh() {
     
-    if KeychainWrapper.standard.string(forKey: "sshPassword") != "" {
-        isUsingSSH = true
-    } else {
-        isUsingSSH = false
-    }
+        if UserDefaults.standard.string(forKey: "sshPassword") != nil {
+        
+            isUsingSSH = true
+        
+        } else {
+        
+            isUsingSSH = false
+        
+        }
     
-    print("isUsingSSH = \(isUsingSSH)")
+        let ssh = SSHService.sharedInstance
+    
+        print("isUsingSSH = \(isUsingSSH)")
     
         UIView.animate(withDuration: 0.2) {
-            //self.mainMenu.alpha = 0
+        
             self.syncStatusLabel.alpha = 0
+        
         }
+    
         mainMenu.isUserInteractionEnabled = false
         self.transactionArray.removeAll()
         addBalanceLabel()
-    
     
         if isUsingSSH {
         
             let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
             queue.async {
-                self.ssh.connect { [weakSelf = self] (success, error) in
+            
+                ssh.connect { (success, error) in
+                
                     if success {
+                    
                         print("connected succesfully")
-                        self.getBlockchainInfo()
+                        self.getBlockchainInfo(ssh: ssh)
+                    
                     } else {
+                    
                         print("ssh fail")
                         print("error = \(String(describing: error))")
+                    
                     }
+                
                 }
+            
             }
+        
         } else {
-            executeNodeCommand(method: BTC_CLI_COMMAND.getblockchaininfo.rawValue, param: "")
+        
+            self.executeNodeCommand(method: BTC_CLI_COMMAND.getblockchaininfo.rawValue, param: "")
+        
         }
+    
     }
     
-    func getBlockchainInfo() {
+    func getBlockchainInfo(ssh: SSHService) {
         
         DispatchQueue.main.async {
-            self.ssh.execute(command: BTC_COMMAND.getblockchaininfo, params: "", response: { (result, error) in
+            ssh.execute(command: BTC_COMMAND.getblockchaininfo, params: "", response: { (result, error) in
                 if error != nil {
                     print("error getblockchaininfo")
                 } else {
@@ -412,10 +429,10 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     if let chain = (result as? NSDictionary)?["chain"] as? String {
                         if chain == "test" {
                             self.getLatestBlock(isMainnet: false)
-                            self.listTransactions()
+                            self.listTransactions(ssh: ssh)
                         } else {
                             self.getLatestBlock(isMainnet: true)
-                            self.listTransactions()
+                            self.listTransactions(ssh: ssh)
                         }
                     }
                 }
@@ -423,10 +440,10 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         }
     }
     
-    func bumpFee() {
+    func bumpFee(ssh: SSHService) {
         
         DispatchQueue.main.async {
-            self.ssh.execute(command: BTC_COMMAND.bumpfee, params: "\"\(self.tx)\"", response: { (result, error) in
+            ssh.execute(command: BTC_COMMAND.bumpfee, params: "\"\(self.tx)\"", response: { (result, error) in
                 if error != nil {
                     print("error bumpfee")
                 } else {
@@ -448,16 +465,16 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
-    func listTransactions() {
+    func listTransactions(ssh: SSHService) {
         
         DispatchQueue.main.async {
-            self.ssh.execute(command: BTC_COMMAND.listtransactions, params: "", response: { (result, error) in
+            ssh.execute(command: BTC_COMMAND.listtransactions, params: "", response: { (result, error) in
                 if error != nil {
                     print("error listtransactions = \(String(describing: error))")
                 } else {
                     //print("result = \(String(describing: result))")
                     if let transactionsCheck = result as? NSArray {
-                        self.getBalance()
+                        self.getBalance(ssh: ssh)
                         
                         for item in transactionsCheck {
                             
@@ -510,17 +527,17 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         }
     }
     
-    func getrawtransaction(txID: String) {
+    func getrawtransaction(txID: String, ssh: SSHService) {
         
         DispatchQueue.main.async {
-            self.ssh.executeStringResponse(command: BTC_COMMAND.getrawtransaction, params: "\(txID)", response: { (result, error) in
+            ssh.executeStringResponse(command: BTC_COMMAND.getrawtransaction, params: "\(txID)", response: { (result, error) in
                 if error != nil {
                     print("error getrawtransaction = \(String(describing: error))")
                 } else {
                     print("result = \(String(describing: result))")
                     if let rw = result as? String {
                         print("raw transaction result = \(rw)")
-                        self.decodeRawTransaction(raw: rw)
+                        self.decodeRawTransaction(raw: rw, ssh: ssh)
                     }
                 }
             })
@@ -528,10 +545,10 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
-    func decodeRawTransaction(raw: String) {
+    func decodeRawTransaction(raw: String, ssh: SSHService) {
         
         DispatchQueue.main.async {
-            self.ssh.execute(command: BTC_COMMAND.decoderawtransaction, params: "\"\(raw)\"", response: { (result, error) in
+            ssh.execute(command: BTC_COMMAND.decoderawtransaction, params: "\"\(raw)\"", response: { (result, error) in
                 if error != nil {
                     print("error decoderawtransaction = \(String(describing: error))")
                 } else {
@@ -541,7 +558,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                         DispatchQueue.main.async {
                             //print("decodedTx = \(decodedTx)")
                             
-                            self.parseDecodedTxCPFP(decodedTx: decodedTx)
+                            //self.parseDecodedTxCPFP(decodedTx: decodedTx)
                         }
                     }
                 }
@@ -551,10 +568,10 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
-    func getBalance() {
+    func getBalance(ssh: SSHService) {
         
         DispatchQueue.main.async {
-            self.ssh.executeStringResponse(command: BTC_COMMAND.getbalance, params: "", response: { (result, error) in
+            ssh.executeStringResponse(command: BTC_COMMAND.getbalance, params: "", response: { (result, error) in
                 if error != nil {
                     print("error getbalance = \(String(describing: error))")
                 } else {
@@ -563,7 +580,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                         self.balance = Double(balanceCheck)!
                         DispatchQueue.main.async {
                             self.balancelabel.text = "\(self.balance.avoidNotation) BTC"
-                            self.getUnconfirmedBalance()
+                            self.getUnconfirmedBalance(ssh: ssh)
                         }
                     }
                 }
@@ -571,10 +588,10 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         }
     }
     
-    func getUnconfirmedBalance() {
+    func getUnconfirmedBalance(ssh: SSHService) {
         
         DispatchQueue.main.async {
-            self.ssh.executeStringResponse(command: BTC_COMMAND.getunconfirmedbalance, params: "", response: { (result, error) in
+            ssh.executeStringResponse(command: BTC_COMMAND.getunconfirmedbalance, params: "", response: { (result, error) in
                 if error != nil {
                     print("error getunconfirmedbalance = \(String(describing: error))")
                 } else {
@@ -678,6 +695,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func executeNodeCommand(method: String, param: Any) {
+        print("executeNodeCommand")
         
         var nodeUsername = ""
         var nodePassword = ""
@@ -696,10 +714,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             return decrypted
         }
         
-        if KeychainWrapper.standard.string(forKey: "NodeUsername") != nil {
+        if UserDefaults.standard.string(forKey: "NodeUsername") != nil {
            
-            nodeUsername = decrypt(item: KeychainWrapper.standard.string(forKey: "NodeUsername")!)
-            print("nodeusername = \(nodeUsername)")
+            nodeUsername = decrypt(item: UserDefaults.standard.string(forKey: "NodeUsername")!)
             credentialsComplete = true
             
         } else {
@@ -707,10 +724,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             credentialsComplete = false
         }
         
-        if KeychainWrapper.standard.string(forKey: "NodePassword") != nil {
+        if UserDefaults.standard.string(forKey: "NodePassword") != nil {
             
-            nodePassword = decrypt(item: KeychainWrapper.standard.string(forKey: "NodePassword")!)
-            print("nodePassword = \(nodePassword)")
+            nodePassword = decrypt(item: UserDefaults.standard.string(forKey: "NodePassword")!)
             credentialsComplete = true
             
         } else {
@@ -718,10 +734,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             credentialsComplete = false
         }
         
-        if KeychainWrapper.standard.string(forKey: "NodeIPAddress") != nil {
+        if UserDefaults.standard.string(forKey: "NodeIPAddress") != nil {
             
-            ip = decrypt(item: KeychainWrapper.standard.string(forKey: "NodeIPAddress")!)
-            print("ip = \(ip)")
+            ip = decrypt(item: UserDefaults.standard.string(forKey: "NodeIPAddress")!)
             credentialsComplete = true
             
         } else {
@@ -729,10 +744,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             credentialsComplete = false
         }
         
-        if KeychainWrapper.standard.string(forKey: "NodePort") != nil {
+        if UserDefaults.standard.string(forKey: "NodePort") != nil {
             
-            port = decrypt(item: KeychainWrapper.standard.string(forKey: "NodePort")!)
-            print("port = \(port)")
+            port = decrypt(item: UserDefaults.standard.string(forKey: "NodePort")!)
             credentialsComplete = true
             
         } else {
@@ -743,6 +757,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         if credentialsComplete {
             
             let url = URL(string: "http://\(nodeUsername):\(nodePassword)@\(ip):\(port)")
+            print("url = \(url)")
             var request = URLRequest(url: url!)
             request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
             request.httpMethod = "POST"
@@ -753,10 +768,13 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 do {
                     
                     if error != nil {
+                        
                         DispatchQueue.main.async {
+                            
                             self.mainMenu.isUserInteractionEnabled = true
                             self.removeSpinner()
-                            displayAlert(viewController: self, title: "Error", message: "Unable to connect to that node, please ensure you input the credenitals accurately. You can purchase or replace the incorrect credentials by tapping the settings button.")
+                            self.showConnectionError()
+                            
                         }
                         
                     } else {
@@ -999,7 +1017,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                     self.removeSpinner()
                                     self.mainMenu.isUserInteractionEnabled = true
                                     self.refresher.endRefreshing()
-                                    displayAlert(viewController: self, title: "Error", message: "Unable to connect to that node, please ensure you input the credentials accurately. You can replace the incorrect credentials by tapping the settings button.")
+                                    self.showConnectionError()
                                 }
                                 
                             }
@@ -1016,16 +1034,16 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 self.removeSpinner()
                 self.mainMenu.isUserInteractionEnabled = true
                 self.refresher.endRefreshing()
-                displayAlert(viewController: self, title: "Error", message: "Credentials not complete, please go to settings to purchase a node or renew credentials.")
+                self.showConnectionError()
             }
         }
     }
     
-    @objc func getBech32Address() {
+    func getBech32Address(ssh: SSHService) {
         
         if isUsingSSH {
             DispatchQueue.main.async {
-                self.ssh.executeStringResponse(command: BTC_COMMAND.getnewaddress, params: "\"\", \"bech32\"", response: { (result, error) in
+                ssh.executeStringResponse(command: BTC_COMMAND.getnewaddress, params: "\"\", \"bech32\"", response: { (result, error) in
                     if error != nil {
                         print("error getbalance = \(String(describing: error))")
                     } else {
@@ -1045,12 +1063,12 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         }
     }
     
-    @objc func getSegwitAddress() {
+    func getSegwitAddress(ssh: SSHService) {
         
         if isUsingSSH {
             
             DispatchQueue.main.async {
-                self.ssh.executeStringResponse(command: BTC_COMMAND.getnewaddress, params: "", response: { (result, error) in
+                ssh.executeStringResponse(command: BTC_COMMAND.getnewaddress, params: "", response: { (result, error) in
                     if error != nil {
                         print("error getbalance = \(String(describing: error))")
                     } else {
@@ -1071,11 +1089,11 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         }
     }
     
-    @objc func getLegacyAddress() {
+    func getLegacyAddress(ssh:SSHService) {
         
         if isUsingSSH {
             DispatchQueue.main.async {
-                self.ssh.executeStringResponse(command: BTC_COMMAND.getnewaddress, params: "\"\", \"legacy\"", response: { (result, error) in
+                ssh.executeStringResponse(command: BTC_COMMAND.getnewaddress, params: "\"\", \"legacy\"", response: { (result, error) in
                     if error != nil {
                         print("error getbalance = \(String(describing: error))")
                     } else {
@@ -1212,6 +1230,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     @objc func receive() {
         
+        let ssh = SSHService.sharedInstance
+        
         DispatchQueue.main.async {
             
             self.receiveBlurView.frame = self.view.frame
@@ -1231,17 +1251,17 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
             alert.addAction(UIAlertAction(title: NSLocalizedString("Legacy", comment: ""), style: .default, handler: { (action) in
                 self.blurActivityIndicator.startAnimating()
-                self.getLegacyAddress()
+                self.getLegacyAddress(ssh: ssh)
             }))
             
             alert.addAction(UIAlertAction(title: NSLocalizedString("Segwit P2SH", comment: ""), style: .default, handler: { (action) in
                 self.blurActivityIndicator.startAnimating()
-                self.getSegwitAddress()
+                self.getSegwitAddress(ssh: ssh)
             }))
             
             alert.addAction(UIAlertAction(title: NSLocalizedString("Segwit Bech32", comment: ""), style: .default, handler: { (action) in
                 self.blurActivityIndicator.startAnimating()
-                self.getBech32Address()
+                self.getBech32Address(ssh: ssh)
             }))
             
             alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { (action) in
@@ -1267,6 +1287,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         }
         
     }
+    
+    
     
     @objc func showSearchBar() {
         
@@ -1378,9 +1400,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             return decrypted
         }
         
-        if KeychainWrapper.standard.string(forKey: "NodeUsername") != nil {
+        if UserDefaults.standard.string(forKey: "NodeUsername") != nil {
             
-            nodeUsername = decrypt(item: KeychainWrapper.standard.string(forKey: "NodeUsername")!)
+            nodeUsername = decrypt(item: UserDefaults.standard.string(forKey: "NodeUsername")!)
             credentialsComplete = true
             
         } else {
@@ -1388,9 +1410,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             credentialsComplete = false
         }
         
-        if KeychainWrapper.standard.string(forKey: "NodePassword") != nil {
+        if UserDefaults.standard.string(forKey: "NodePassword") != nil {
             
-            nodePassword = decrypt(item: KeychainWrapper.standard.string(forKey: "NodePassword")!)
+            nodePassword = decrypt(item: UserDefaults.standard.string(forKey: "NodePassword")!)
             credentialsComplete = true
             
         } else {
@@ -1398,9 +1420,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             credentialsComplete = false
         }
         
-        if KeychainWrapper.standard.string(forKey: "NodeIPAddress") != nil {
+        if UserDefaults.standard.string(forKey: "NodeIPAddress") != nil {
             
-            ip = decrypt(item: KeychainWrapper.standard.string(forKey: "NodeIPAddress")!)
+            ip = decrypt(item: UserDefaults.standard.string(forKey: "NodeIPAddress")!)
             credentialsComplete = true
             
         } else {
@@ -1408,9 +1430,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             credentialsComplete = false
         }
         
-        if KeychainWrapper.standard.string(forKey: "NodePort") != nil {
+        if UserDefaults.standard.string(forKey: "NodePort") != nil {
             
-            port = decrypt(item: KeychainWrapper.standard.string(forKey: "NodePort")!)
+            port = decrypt(item: UserDefaults.standard.string(forKey: "NodePort")!)
             credentialsComplete = true
             
         } else {
@@ -1434,7 +1456,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                         DispatchQueue.main.async {
                             self.mainMenu.isUserInteractionEnabled = true
                             self.removeSpinner()
-                            displayAlert(viewController: self, title: "Error", message: "Unable to connect to that node, please ensure you input the credenitals accurately. You can purchase or replace the incorrect credentials by tapping the settings button.")
+                            self.showConnectionError()
                         }
                         
                     } else {
@@ -1477,7 +1499,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                 
                                 DispatchQueue.main.async {
                                     
-                                    displayAlert(viewController: self, title: "Error", message: "Unable to connect to that node, please ensure you input the credentials accurately. You can replace the incorrect credentials by tapping the settings button.")
+                                    self.showConnectionError()
                                 }
                                 
                             }
@@ -1492,14 +1514,14 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
             DispatchQueue.main.async {
                 
-                displayAlert(viewController: self, title: "Error", message: "Credentials not complete, please go to settings to purchase a node or renew credentials.")
+                self.showConnectionError()
             }
         }
         
         
     }
     
-    func getPrevInputValueForCPFP(txID: String, prevvout: Int) {
+    /*func getPrevInputValueForCPFP(txID: String, prevvout: Int) {
         print("getPrevInputValueForCPFP")
         
         DispatchQueue.main.async {
@@ -1622,9 +1644,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 }
             })
         }
-    }
+    }*/
     
-    func getChangeAddressForCPFP() {
+    /*func getChangeAddressForCPFP() {
         
         DispatchQueue.main.async {
             self.ssh.executeStringResponse(command: BTC_COMMAND.getrawchangeaddress, params: "", response: { (result, error) in
@@ -1669,9 +1691,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 }
             })
         }
-    }
+    }*/
     
-    func createRawTransactionCPFP() {
+    /*func createRawTransactionCPFP() {
         
         DispatchQueue.main.async {
             self.ssh.executeStringResponse(command: BTC_COMMAND.createrawtransaction, params: "\'\(self.inputs)\' \'{\"\(self.address)\":\(self.amount), \"\(self.changeAddress)\": \(self.changeAmount)}\'", response: { (result, error) in
@@ -1689,9 +1711,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 }
             })
         }
-    }
+    }*/
     
-    func signRawTransactionCPFP() {
+    /*func signRawTransactionCPFP() {
         
         DispatchQueue.main.async {
             self.ssh.execute(command: BTC_COMMAND.signrawtransaction, params: "\'\(self.rawTxUnsigned)\'", response: { (result, error) in
@@ -1708,12 +1730,12 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 }
             })
         }
-    }
+    }*/
     
-    func pushRawTx() {
+    func pushRawTx(ssh: SSHService) {
         
         DispatchQueue.main.async {
-            self.ssh.executeStringResponse(command: BTC_COMMAND.sendrawtransaction, params: "\"\(self.rawTxSigned)\"", response: { (result, error) in
+            ssh.executeStringResponse(command: BTC_COMMAND.sendrawtransaction, params: "\"\(self.rawTxSigned)\"", response: { (result, error) in
                 if error != nil {
                     print("error sendrawtransaction = \(String(describing: error))")
                 } else {
@@ -1831,7 +1853,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         }
     }
     
-    func parseDecodedTxCPFP(decodedTx: NSDictionary) {
+    /*func parseDecodedTxCPFP(decodedTx: NSDictionary) {
         
         print("parseDecodedTxCPFP")
         
@@ -1932,6 +1954,48 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 }
             }
         }
+    }*/
+    
+    func showConnectionError() {
+     
+        DispatchQueue.main.async {
+            
+            let alert = UIAlertController(title: "Error", message: "We had an issue connecting to that node via your RPC credentials. If you are using a SSH password to connect to your node please tap \"Try SSH\" below.\n\nIf you are using RPC credentials make sure you enter port 8332 for mainnet or 18332 for testnet when filling out your credentials. You can renew your credentials by tapping the settings button.", preferredStyle: .actionSheet)
+            
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Try SSH", comment: ""), style: .default, handler: { (action) in
+                
+                if let password = UserDefaults.standard.string(forKey: "NodePassword") {
+                    
+                    DispatchQueue.main.async {
+                        
+                        UserDefaults.standard.set(password, forKey: "sshPassword")
+                        self.refresh()
+                        
+                    }
+                    
+                } else {
+                    
+                    displayAlert(viewController: self, title: "Error", message: "No password was saved, please go to settings to reenter a password")
+                    
+                }
+                
+            }))
+            
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Renew RPC Credentials", comment: ""), style: .default, handler: { (action) in
+                
+                self.renewCredentials()
+                
+            }))
+            
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { (action) in
+                
+                
+            }))
+            
+            self.present(alert, animated: true, completion: nil)
+            
+        }
+        
     }
     
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask { return UIInterfaceOrientationMask.portrait }

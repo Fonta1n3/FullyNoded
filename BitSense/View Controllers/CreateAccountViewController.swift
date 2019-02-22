@@ -9,7 +9,6 @@
 import UIKit
 import SwiftKeychainWrapper
 import AES256CBC
-import Parse
 
 class CreateAccountViewController: UIViewController, UITextFieldDelegate {
     
@@ -28,26 +27,17 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
     var firstPassword = String()
     var secondPassword = String()
     var firstTime = Bool()
-
+    
+    var helpTitle = ""
+    var helpMessage = ""
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         view.backgroundColor = UIColor.black
         //KeychainWrapper.standard.removeAllKeys()
         
-        if KeychainWrapper.standard.object(forKey: "sshPassword") == nil {
-            
-            KeychainWrapper.standard.set("", forKey: "sshPassword")
-        }
-        
         firstTimeHere()
-        
-        if UserDefaults.standard.string(forKey: "userID") == nil {
-            
-            let newId = self.createUserKey()
-            self.addUserToParse(userID: newId)
-            
-        }
         
         usernameInput.delegate = self
         nodePasswordInput.delegate = self
@@ -135,14 +125,30 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
         
         view.addSubview(alertView)
         
-        if KeychainWrapper.standard.string(forKey: "UnlockPassword") != nil {
+        if UserDefaults.standard.string(forKey: "UnlockPassword") != nil {
             DispatchQueue.main.async {
                 self.performSegue(withIdentifier: "login", sender: self)
             }
         } else {
            addPassword()
         }
+        
+        infoButton.frame = CGRect(x: view.frame.maxX - 110, y: 20, width: 100, height: 35)
+        infoButton.setTitle("Help?", for: .normal)
+        infoButton.setTitleColor(UIColor.white, for: .normal)
+        infoButton.titleLabel?.font = UIFont.init(name: "HelveticaNeue", size: 20)
+        infoButton.titleLabel?.textAlignment = .right
+        infoButton.addTarget(self, action: #selector(showHelp), for: .touchUpInside)
+        
+        
+        displayAlert(viewController: self, title: "Attention", message: "Fully Noded is compatible with Bitcoin Core 0.17.0\n\nWe recommend setting up SSH with a log in password to your node as that is more secure then using RPC, Fully Noded allows you to use either SSH or RPC credentials to log in to your node.\n\nIf using RPC you will need to set up the following values in your bitcoin.conf file:\n\nrpcuser=yourusername\nrpcpassword=yourpassword\nrpcallowip=0.0.0.0/0\nserver=1\nrest=1\ndaemon=1")
    }
+    
+    @objc func showHelp() {
+        
+        displayAlert(viewController: self, title: self.helpTitle, message: self.helpMessage)
+        
+    }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         print("textFieldShouldReturn")
@@ -171,30 +177,8 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
             self.nextButton.titleLabel?.font = UIFont.init(name: "HelveticaNeue-Bold", size: 20)
             self.nextButton.addTarget(self, action: #selector(self.nextButtonAction), for: .touchUpInside)
             self.alertView.addSubview(self.nextButton)
-            self.addBuyNodeButton(buttonView: self.nextButton)
         }
         
-    }
-    
-    func addBuyNodeButton(buttonView: UIButton) {
-        print("addBuyNodeButton")
-        DispatchQueue.main.async {
-            self.buyNodeButton.removeFromSuperview()
-            self.buyNodeButton.frame = CGRect(x: self.view.center.x - (self.view.frame.width / 2), y: buttonView.frame.maxY + 10, width: self.view.frame.width, height: 55)
-            self.buyNodeButton.showsTouchWhenHighlighted = true
-            self.buyNodeButton.setTitle("I don't have a node", for: .normal)
-            self.buyNodeButton.setTitleColor(UIColor.white, for: .normal)
-            self.buyNodeButton.titleLabel?.font = UIFont.init(name: "HelveticaNeue-Light", size: 18)
-            self.buyNodeButton.addTarget(self, action: #selector(self.buyNode), for: .touchUpInside)
-            self.alertView.addSubview(self.buyNodeButton)
-        }
-    }
-    
-    @objc func buyNode() {
-        DispatchQueue.main.async {
-            //self.performSegue(withIdentifier: "buyNode", sender: self)
-            self.performSegue(withIdentifier: "purchase", sender: self)
-        }
     }
     
     func addPassword() {
@@ -242,61 +226,53 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
             
             if self.firstPassword == self.secondPassword {
                 
-                let saveSuccessful:Bool = KeychainWrapper.standard.set(self.secondPassword, forKey: "UnlockPassword")
-                
-                if saveSuccessful {
+                UserDefaults.standard.set(self.secondPassword, forKey: "UnlockPassword")
+                self.nextButton.removeTarget(self, action: #selector(self.confirmLockPassword), for: .touchUpInside)
+                self.textInput.text = ""
+                self.textInput.resignFirstResponder()
+                self.infoButton.removeFromSuperview()
                     
-                    self.nextButton.removeTarget(self, action: #selector(self.confirmLockPassword), for: .touchUpInside)
-                    self.textInput.text = ""
-                    self.textInput.resignFirstResponder()
-                    self.infoButton.removeFromSuperview()
-                    
-                    DispatchQueue.main.async {
+                DispatchQueue.main.async {
                         
-                        UIView.animate(withDuration: 0.2, animations: {
+                    UIView.animate(withDuration: 0.2, animations: {
                             
-                            self.labelTitle.alpha = 0
-                            self.nextButton.alpha = 0
-                            self.textInput.alpha = 0
+                        self.labelTitle.alpha = 0
+                        self.nextButton.alpha = 0
+                        self.textInput.alpha = 0
                             
-                        }) { _ in
+                    }) { _ in
                             
-                            //self.labelTitle.removeFromSuperview()
-                            self.nextButton.removeFromSuperview()
-                            self.textInput.removeFromSuperview()
+                        //self.labelTitle.removeFromSuperview()
+                        self.nextButton.removeFromSuperview()
+                        self.textInput.removeFromSuperview()
                             
                             
-                            if self.firstTime {
+                        if self.firstTime {
                                 
-                                DispatchQueue.main.async {
-                                    //self.performSegue(withIdentifier: "login", sender: self)
-                                    self.getNodeUsername()
-                                }
-                                
-                            } else {
-                                
-                                DispatchQueue.main.async {
-                                    self.performSegue(withIdentifier: "goToMainMenu", sender: self)
-                                }
-                                
+                            DispatchQueue.main.async {
+                                //self.performSegue(withIdentifier: "login", sender: self)
+                                self.getNodeUsername()
                             }
-                            
+                                
+                        } else {
+                                
+                            DispatchQueue.main.async {
+                                self.performSegue(withIdentifier: "goToMainMenu", sender: self)
+                            }
+                                
                         }
-                        
+                            
                     }
-                    
-                } else {
-                    
-                    //displayAlert(viewController: self, title: "Error", message: "Unable to save the password! Please try again.")
-                    
+                        
                 }
-            } else {
-                //displayAlert(viewController: self, title: "Error", message: "Passwords did not match, try again.")
-            }
+                
         } else {
-            shakeAlert(viewToShake: self.textInput)
+            //displayAlert(viewController: self, title: "Error", message: "Passwords did not match, try again.")
         }
+    } else {
+        shakeAlert(viewToShake: self.textInput)
     }
+}
     
     func encryptKey(keyToEncrypt: String) -> String {
         
@@ -306,8 +282,9 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
     }
     
     func firstTimeHere() {
+        print("firstTimeHere")
         
-        if KeychainWrapper.standard.object(forKey: "firstTime") == nil {
+        if UserDefaults.standard.object(forKey: "firstTime") == nil {
             
             self.firstTime = true
             
@@ -331,9 +308,6 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
                     
                 }
                 
-                let newId = self.createUserKey()
-                self.addUserToParse(userID: newId)
-                
                 let saveSuccessful:Bool = KeychainWrapper.standard.set(password, forKey: "AESPassword")
                 
                 if saveSuccessful {
@@ -353,24 +327,8 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
                 
             }
             
-            KeychainWrapper.standard.set(true, forKey: "firstTime")
+            UserDefaults.standard.set(true, forKey: "firstTime")
             
-        }
-    }
-    
-    func addUserToParse(userID: String) {
-        
-        let addUser = PFObject(className:"Users")
-        addUser["userID"] = userID
-        addUser["didPurchaseNode"] = false
-        addUser.saveInBackground { (success: Bool, error: Error?) in
-            if (success) {
-                print("saved userid to parse success")
-                UserDefaults.standard.set(userID, forKey: "userID")
-            } else {
-                // There was a problem, check error.description
-                print(error.debugDescription)
-            }
         }
     }
     
@@ -462,111 +420,79 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
     func savePassword(password: String) {
         
         let stringToSave = self.encryptKey(keyToEncrypt: password)
-        let saveSuccessful:Bool = KeychainWrapper.standard.set(stringToSave, forKey: "NodePassword")
-        
-        if saveSuccessful {
+        UserDefaults.standard.set(stringToSave, forKey: "NodePassword")
+        UIView.animate(withDuration: 0.2, animations: {
             
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                self.nodePasswordInput.alpha = 0
-                self.labelTitle.alpha = 0
-                
-            }, completion: { _ in
-                
-                self.nodePasswordInput.text = ""
-                self.labelTitle.text = ""
-                self.nodePasswordInput.removeFromSuperview()
-                self.getIPAddress()
-                
-            })
+            self.nodePasswordInput.alpha = 0
+            self.labelTitle.alpha = 0
             
-        } else {
+        }, completion: { _ in
             
-            print("error saving string")
-        }
+            self.nodePasswordInput.text = ""
+            self.labelTitle.text = ""
+            self.nodePasswordInput.removeFromSuperview()
+            self.getIPAddress()
+            
+        })
         
     }
     
     func saveIPAdress(ipAddress: String) {
         
         let stringToSave = self.encryptKey(keyToEncrypt: ipAddress)
-        let saveSuccessful:Bool = KeychainWrapper.standard.set(stringToSave, forKey: "NodeIPAddress")
-        
-        if saveSuccessful {
+        UserDefaults.standard.set(stringToSave, forKey: "NodeIPAddress")
+        UIView.animate(withDuration: 0.2, animations: {
             
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                self.ipAddressInput.alpha = 0
-                self.labelTitle.alpha = 0
-                
-            }, completion: { _ in
-                
-                self.ipAddressInput.text = ""
-                self.labelTitle.text = ""
-                self.ipAddressInput.removeFromSuperview()
-                self.getPort()
-                
-            })
+            self.ipAddressInput.alpha = 0
+            self.labelTitle.alpha = 0
             
-        } else {
+        }, completion: { _ in
             
-            print("error saving string")
-        }
+            self.ipAddressInput.text = ""
+            self.labelTitle.text = ""
+            self.ipAddressInput.removeFromSuperview()
+            self.getPort()
+            
+        })
         
     }
     
     func savePort(port: String) {
         
         let stringToSave = self.encryptKey(keyToEncrypt: port)
-        let saveSuccessful:Bool = KeychainWrapper.standard.set(stringToSave, forKey: "NodePort")
-        
-        if saveSuccessful {
+        UserDefaults.standard.set(stringToSave, forKey: "NodePort")
+        UIView.animate(withDuration: 0.2, animations: {
             
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                self.portInput.alpha = 0
-                self.labelTitle.alpha = 0
-                
-            }, completion: { _ in
-                
-                self.portInput.text = ""
-                self.labelTitle.text = ""
-                self.portInput.removeFromSuperview()
-                self.performSegue(withIdentifier: "goToMainMenu", sender: self)
-                
-            })
+            self.portInput.alpha = 0
+            self.labelTitle.alpha = 0
             
-        } else {
+        }, completion: { _ in
             
-            print("error saving string")
-        }
+            self.portInput.text = ""
+            self.labelTitle.text = ""
+            self.portInput.removeFromSuperview()
+            self.performSegue(withIdentifier: "goToMainMenu", sender: self)
+            
+        })
     }
     
     func saveUsername(username: String) {
         
         let stringToSave = self.encryptKey(keyToEncrypt: username)
-        let saveSuccessful:Bool = KeychainWrapper.standard.set(stringToSave, forKey: "NodeUsername")
-        
-        if saveSuccessful {
+        UserDefaults.standard.set(stringToSave, forKey: "NodeUsername")
+        UIView.animate(withDuration: 0.2, animations: {
             
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                self.usernameInput.alpha = 0
-                self.labelTitle.alpha = 0
-                
-            }, completion: { _ in
-                
-                self.usernameInput.text = ""
-                self.labelTitle.text = ""
-                self.usernameInput.removeFromSuperview()
-                self.getNodePassword()
-                
-            })
+            self.usernameInput.alpha = 0
+            self.labelTitle.alpha = 0
             
-        } else {
+        }, completion: { _ in
             
-            print("error saving string")
-        }
+            self.usernameInput.text = ""
+            self.labelTitle.text = ""
+            self.usernameInput.removeFromSuperview()
+            self.getNodePassword()
+            
+        })
         
     }
     
@@ -577,6 +503,8 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
         self.portInput.becomeFirstResponder()
         self.labelTitle.text = "Enter Your Nodes Port"
         self.labelTitle.adjustsFontSizeToFitWidth = true
+        self.helpTitle = "Enter Your Nodes Port"
+        self.helpMessage = "TL;DR: Mainnet = 8332, Testnet = 18332.\n\nThis is only required if you are filling out your RPC credentials to connect to your node. By default Bitcoin Core assigns 8332 for mainnet and 18332 for testnet for listening for RPC calls. If you are using SSH to log in to your node then you can put any number you like here as it will not be used."
         
         UIView.animate(withDuration: 0.2, animations: {
             
@@ -598,6 +526,8 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
         self.ipAddressInput.becomeFirstResponder()
         self.labelTitle.text = "Enter Your Nodes IP Address"
         self.labelTitle.adjustsFontSizeToFitWidth = true
+        self.helpTitle = "Enter Your Nodes IP Address"
+        self.helpMessage = "This is either your public or private IP address that your node is connected to. You must put rpcallowip=0.0.0.0/0 to allow any IP to connect to your node, if you only want to specify a certain IP then enter that IP Address.\n\nIf your are using SSH then input whatever IP address Bitcoin core is connected to."
         
         UIView.animate(withDuration: 0.2, animations: {
             
@@ -616,12 +546,15 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
         print("getNodeUsername")
         
         view.addSubview(self.usernameInput)
+        alertView.addSubview(infoButton)
         self.usernameInput.becomeFirstResponder()
         self.labelTitle.frame = CGRect(x: self.view.center.x - ((view.frame.width - 10) / 2), y: self.usernameInput.frame.minY - 50, width: view.frame.width - 10, height: 50)
         self.labelTitle.font = UIFont.init(name: "HelveticaNeue-Light", size: 18)
         self.labelTitle.textAlignment = .center
         self.labelTitle.text = "Enter Your Node Username"
         self.labelTitle.adjustsFontSizeToFitWidth = true
+        self.helpTitle = "Enter Your Node Username"
+        self.helpMessage = "If using RPC credentials you must input the rpcuser value that can be found in your bitcoin.conf file, if there isn't one you can add one, you will need to shut down Bitcoin Core and restart it.\n\nIf you are SSHing into the node then you can simply put the computers username e.g. \"root\", this is whatever username shows up when you open a terminal window."
         self.addNextButton(inputView: self.usernameInput)
         
         UIView.animate(withDuration: 0.2, animations: {
@@ -639,6 +572,8 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
         self.nodePasswordInput.becomeFirstResponder()
         self.labelTitle.text = "Enter Node Password"
         self.labelTitle.adjustsFontSizeToFitWidth = true
+        self.helpTitle = "Enter Your Node Password"
+        self.helpMessage = "If using RPC credentials you must input the rpcpassword value that can be found in your bitcoin.conf file, if there isn't one you can add one make sure it is a strong password, you will need to shut down Bitcoin Core and restart it.\n\nIf you are SSHing into the node then you can simply input the SSH password, by default Fully Noded will try to RPC into your node and you may have to wait while the connection times out before an error message prompts you to try and SSH into the node. Select SSH when prompted, if it does not connect right away quit the app and reopen and it should connect quickly."
         
         UIView.animate(withDuration: 0.2, animations: {
             

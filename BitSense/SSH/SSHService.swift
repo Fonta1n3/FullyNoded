@@ -44,25 +44,28 @@ class SSHService {
     
     private init() {
         
-        KeychainWrapper.standard.set("12ri7dx6KB3Yw9cC9ZVKwggwjatiopRzF5QnYm1KU0Lo8RpNsTfAmBR3YW3yCgPO1N6AuyvLgRRjnHHiniaegU8qSDHHcHuL4Go4xiwtBW/EFsth48N3LAhbs6gHBYfKCw4q03QtsdH0+fub", forKey: "sshPassword")
+        print("SSHService")
         
-        func decryptSSHKey(keyToDecrypt: String) -> String {
-            let pw = masterKey
+       func decryptSSHKey(keyToDecrypt: String) -> String {
+            print("decryptSSHKey")
+            let pw = KeychainWrapper.standard.string(forKey: "AESPassword")!
             let decryptedkey = AES256CBC.decryptString(keyToDecrypt, password: pw)!
+            print("decryptedkey = \(decryptedkey)")
             return decryptedkey
         }
         
         func decryptKey(keyToDecrypt:String) -> String {
+            print("decryptKey")
             let pw = KeychainWrapper.standard.string(forKey: "AESPassword")!
             let decryptedKey = AES256CBC.decryptString(keyToDecrypt, password: pw)!
             return decryptedKey
         }
         
-        if KeychainWrapper.standard.string(forKey: "sshPassword") != "" {
+        if UserDefaults.standard.string(forKey: "sshPassword") != nil {
             
-            user = "root"//decryptKey(keyToDecrypt: KeychainWrapper.standard.string(forKey: "NodeUsername")!)
-            host = "68.183.214.65"//decryptKey(keyToDecrypt: KeychainWrapper.standard.string(forKey: "NodeIPAddress")!)
-            password = decryptSSHKey(keyToDecrypt: KeychainWrapper.standard.string(forKey: "sshPassword")!)
+            user = decryptKey(keyToDecrypt: UserDefaults.standard.string(forKey: "NodeUsername")!)
+            host = decryptKey(keyToDecrypt: UserDefaults.standard.string(forKey: "NodeIPAddress")!)
+            password = decryptSSHKey(keyToDecrypt: UserDefaults.standard.string(forKey: "sshPassword")!)
             
         } else {
             
@@ -71,6 +74,8 @@ class SSHService {
             password = ""
             
         }
+        
+ 
         
         
    }

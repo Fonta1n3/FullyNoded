@@ -24,7 +24,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     var firstPassword = String()
     var secondPassword = String()
     @IBOutlet var settingsTable: UITableView!
-    var sections = ["Don't have a node?", "Node credentials", "Mining fee", "Password", "Help"]
+    var sections = ["Node credentials", "Mining fee", "Password"]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -117,19 +117,15 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
         switch indexPath.section {
         case 0:
-            cell.textLabel?.text = "Purchase a full node subscription"
-        case 1:
             cell.textLabel?.text = "Log in to your own node"
-        case 2:
+        case 1:
             if let fee = UserDefaults.standard.object(forKey: "miningFee") as? String {
                 cell.textLabel?.text = "\(fee) Satoshis"
             } else {
                 cell.textLabel?.text = "500 Satoshis"
             }
-        case 3:
+        case 2:
             cell.textLabel?.text = "Reset Password"
-        case 4:
-            cell.textLabel?.text = "Customer Support"
         default:
             break
         }
@@ -173,18 +169,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         if section == 0 {
             
             footerView = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: 20))
-            let explanationLabel1 = UILabel(frame: CGRect(x: 20, y: 0, width: view.frame.size.width - 40, height: 50))
-            explanationLabel1.textColor = UIColor.white
-            explanationLabel1.numberOfLines = 0
-            explanationLabel1.backgroundColor = UIColor.clear
-            explanationLabel1.font = UIFont.init(name: "HelveticaNeue-Light", size: 10)
-            explanationLabel1.text = "Sets up a personal remote full node for a monthly fee of $9.42. This is an automatically renewing fee. We will keep your node running unless you cancel making the monthly payments. The node is an instance of a pruned Bitcoin Core version 0.17.0 node running on mainnet."
-            footerView.addSubview(explanationLabel1)
-            
-            
-        } else if section == 1 {
-            
-            footerView = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: 20))
             explanationLabel = UILabel(frame: CGRect(x: 20, y: 0, width: view.frame.size.width - 40, height: 20))
             explanationLabel.textColor = UIColor.white
             explanationLabel.numberOfLines = 0
@@ -194,7 +178,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             explanationLabel.text = "Reset your node credentials. This will replace existing credentials."
             footerView.addSubview(explanationLabel)
             
-        } else if section == 2 {
+        } else if section == 1 {
             
             footerView = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: 20))
             explanationLabel = UILabel(frame: CGRect(x: 20, y: 0, width: view.frame.size.width - 40, height: 40))
@@ -206,7 +190,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             explanationLabel.text = "Input a custom mining fee in Satoshis. All transactions utilize RBF so we recommend a low fee that you can later increase by tapping the unconfirmed transaction in the home screen if needed."
             footerView.addSubview(explanationLabel)
             
-        } else if section == 3 {
+        } else if section == 2 {
             
             footerView = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: 40))
             explanationLabel = UILabel(frame: CGRect(x: 20, y: 0, width: view.frame.size.width - 40, height: 40))
@@ -218,17 +202,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             explanationLabel.text = "Reset your password for unlocking the app. You will first need to enter your existing password."
             footerView.addSubview(explanationLabel)
             
-        } else if section == 4 {
-            
-            footerView = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: 40))
-            explanationLabel = UILabel(frame: CGRect(x: 20, y: 0, width: view.frame.size.width - 40, height: 40))
-            explanationLabel.textColor = UIColor.white
-            explanationLabel.numberOfLines = 0
-            explanationLabel.font = UIFont.init(name: "HelveticaNeue-Light", size: 10)
-            explanationLabel.backgroundColor = UIColor.clear
-            footerView.backgroundColor = UIColor.clear
-            explanationLabel.text = "We are here to help."
-            footerView.addSubview(explanationLabel)
         }
         
         return footerView
@@ -273,77 +246,28 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         if indexPath.section == 0 {
             
             DispatchQueue.main.async {
-                //self.performSegue(withIdentifier: "purchaseNode", sender: self)
-                self.performSegue(withIdentifier: "goToPurchases", sender: self)
+                
+                let alert = UIAlertController(title: "Settings", message: "Add new credentials?\nThis will delete the old credentials!", preferredStyle: UIAlertControllerStyle.alert)
+                
+                alert.addAction(UIAlertAction(title: NSLocalizedString("Renew credentials", comment: ""), style: .destructive, handler: { (action) in
+                    
+                    UserDefaults.standard.removeObject(forKey: "NodePassword")
+                    UserDefaults.standard.removeObject(forKey: "NodeIPAddress")
+                    UserDefaults.standard.removeObject(forKey: "NodePort")
+                    UserDefaults.standard.removeObject(forKey: "NodeUsername")
+                    UserDefaults.standard.removeObject(forKey: "sshPassword")
+                    self.performSegue(withIdentifier: "reenterCredentials", sender: self)
+                    
+                }))
+                
+                alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { (action) in }))
+                
+                self.present(alert, animated: true)
             }
+            
+            
             
         } else if indexPath.section == 1 {
-            
-            //check if they purchased
-            
-            func addWarning() {
-                DispatchQueue.main.async {
-                    
-                    let alert = UIAlertController(title: "Settings", message: "Add new credentials?\nThis will delete the old credentials!", preferredStyle: UIAlertControllerStyle.alert)
-                    
-                    alert.addAction(UIAlertAction(title: NSLocalizedString("Renew credentials", comment: ""), style: .destructive, handler: { (action) in
-                        
-                        KeychainWrapper.standard.removeObject(forKey: "NodePassword")
-                        KeychainWrapper.standard.removeObject(forKey: "NodeIPAddress")
-                        KeychainWrapper.standard.removeObject(forKey: "NodePort")
-                        KeychainWrapper.standard.removeObject(forKey: "NodeUsername")
-                        self.performSegue(withIdentifier: "reenterCredentials", sender: self)
-                        
-                    }))
-                    
-                    alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { (action) in }))
-                    
-                    self.present(alert, animated: true)
-                }
-            }
-                if let userID = UserDefaults.standard.string(forKey: "userID") {
-                    
-                    let queryDuplicatePurchase = PFQuery(className: "Nodes")
-                    queryDuplicatePurchase.whereKey("UserID", equalTo: userID)
-                    queryDuplicatePurchase.findObjectsInBackground(block: { (objects, error) in
-                        
-                        if error != nil {
-                            
-                            print("error = \(error.debugDescription)")
-                            
-                            
-                        } else {
-                            
-                            if objects!.count > 0 {
-                                
-                                DispatchQueue.main.async {
-                                    
-                                    let alert = UIAlertController(title: "Warning", message: "You will lose your purchased node if you renew the credentials!", preferredStyle: UIAlertControllerStyle.alert)
-                                    
-                                    alert.addAction(UIAlertAction(title: NSLocalizedString("Renew credentials", comment: ""), style: .destructive, handler: { (action) in
-                                        
-                                        addWarning()
-                                        
-                                    }))
-                                    
-                                    alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { (action) in }))
-                                    
-                                    self.present(alert, animated: true)
-                                    
-                                }
-                                
-                            } else {
-                                
-                                addWarning()
-                                
-                            }
-                        }
-                    })
-                }
-            
-            
-            
-        } else if indexPath.section == 2 {
             
             DispatchQueue.main.async {
                 let alert = UIAlertController(title: "Set a mining fee in Satoshis", message: "Please enter your custom mining fee in Satoshis.", preferredStyle: .alert)
@@ -384,20 +308,12 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 self.present(alert, animated: true, completion: nil)
             }
             
-        } else if indexPath.section == 3 {
+        } else if indexPath.section == 2 {
             
             DispatchQueue.main.async {
                 self.showUnlockScreen()
             }
             
-            
-        } else if indexPath.section == 4 {
-            
-            if let userid = UserDefaults.standard.string(forKey: "userID") {
-                UIPasteboard.general.string = userid
-                displayAlert(viewController: self, title: "Contact us", message: "Your User ID: \(userid) has been copied to your clipboard.\n\nEmail us at bitsenseapp@gmail.com with your User ID and we will assist you.")
-                
-            }
             
         }
         
@@ -430,10 +346,8 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
             if self.firstPassword == self.secondPassword {
                 
-                let saveSuccessful:Bool = KeychainWrapper.standard.set(self.secondPassword, forKey: "UnlockPassword")
+                UserDefaults.standard.set(self.secondPassword, forKey: "UnlockPassword")
                 
-                if saveSuccessful {
-                    
                     self.nextButton.removeTarget(self, action: #selector(self.confirmLockPassword), for: .touchUpInside)
                     self.textInput.text = ""
                     self.textInput.resignFirstResponder()
@@ -465,11 +379,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                         
                     }
                     
-                } else {
-                    
-                    displayAlert(viewController: self, title: "Error", message: "Unable to save the password! Please try again.")
-                    
-                }
+                
                 
             } else {
                 
@@ -595,7 +505,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     func checkPassword(password: String) {
         
-        let retrievedPassword: String? = KeychainWrapper.standard.string(forKey: "UnlockPassword")
+        let retrievedPassword = UserDefaults.standard.string(forKey: "UnlockPassword")
         
         if self.passwordInput.text! == retrievedPassword {
             
