@@ -184,12 +184,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                         }
                                     }
                                     
-                                    
-                                    
-                                    
-                                    
-                                    
-                                }
+                               }
                                 
                             } catch {
                                 
@@ -1992,7 +1987,10 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
             }))
             
-            self.present(alert, animated: true, completion: nil)
+            alert.popoverPresentationController?.sourceView = self.view
+            
+            self.present(alert, animated: true) {
+            }
             
         }
         

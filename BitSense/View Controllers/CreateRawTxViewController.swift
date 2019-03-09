@@ -92,11 +92,11 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
         textView.isEditable = false
         textView.backgroundColor = self.view.backgroundColor
         
-        pushButton.setTitle("Broadcast", for: .normal)
+        /*pushButton.setTitle("Broadcast", for: .normal)
         pushButton.setTitleColor(UIColor.white, for: .normal)
         pushButton.titleLabel?.font = UIFont.init(name: "HelveticaNeue-Bold", size: 20)
         pushButton.titleLabel?.textAlignment = .left
-        pushButton.addTarget(self, action: #selector(push), for: .touchUpInside)
+        pushButton.addTarget(self, action: #selector(push), for: .touchUpInside)*/
         
         decodeButton.setTitle("Decode", for: .normal)
         decodeButton.setTitleColor(UIColor.white, for: .normal)
@@ -219,7 +219,7 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
         
     }
     
-    func pushRawTx() {
+    /*func pushRawTx() {
         
         DispatchQueue.main.async {
             self.ssh.executeStringResponse(command: BTC_COMMAND.sendrawtransaction, params: "\"\(self.rawTxSigned)\"", response: { (result, error) in
@@ -255,16 +255,16 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
             })
         }
         
-    }
+    }*/
     
-    @objc func push() {
+    /*@objc func push() {
         
         if !self.isUsingSSH {
             self.executeNodeCommand(method: BTC_CLI_COMMAND.sendrawtransaction.rawValue, param: "\"\(self.rawTxSigned)\"")
         } else {
             pushRawTx()
         }
-    }
+    }*/
     
     func decodeRawTransaction() {
         
@@ -304,7 +304,7 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
     
     func sentAnimation() {
         self.decodeButton.removeFromSuperview()
-        self.pushButton.removeFromSuperview()
+        //self.pushButton.removeFromSuperview()
         self.textView.removeFromSuperview()
         self.titleLabel.removeFromSuperview()
         let imageView = UIImageView()
@@ -327,7 +327,7 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
         
         titleLabel.frame = CGRect(x: view.center.x - ((view.frame.width - 50) / 2), y: 60, width: view.frame.width - 50, height: 55)
         textView.frame = CGRect(x: 10, y: self.titleLabel.frame.maxY + 60, width: self.view.frame.width - 20, height: self.view.frame.maxY - (self.titleLabel.frame.maxY + 120))
-        pushButton.frame = CGRect(x: 10, y: view.frame.maxY - 55, width: 100, height: 50)
+        //pushButton.frame = CGRect(x: 10, y: view.frame.maxY - 55, width: 100, height: 50)
         decodeButton.frame = CGRect(x: self.view.frame.maxX - 105, y: view.frame.maxY - 55, width: 100, height: 50)
         
     }
@@ -595,12 +595,12 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                         
                         self.rawTxSigned = signedTransaction["hex"] as! String
                         DispatchQueue.main.async {
-                            self.titleLabel.text = "Send \(self.amount) BTC to \(self.address)"
+                            //self.titleLabel.text = "Send \(self.amount) BTC to \(self.address)"
                             self.nextButton.removeFromSuperview()
                             self.amountInput.removeFromSuperview()
                             self.textView.text = self.rawTxSigned
                             self.view.addSubview(self.textView)
-                            self.view.addSubview(self.pushButton)
+                            //self.view.addSubview(self.pushButton)
                             self.view.addSubview(self.decodeButton)
                         }
                     }
@@ -1192,12 +1192,12 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                                             
                                             
                                             DispatchQueue.main.async {
-                                                self.titleLabel.text = "Send \(self.amount) BTC to \(self.address)"
+                                                //self.titleLabel.text = "Send \(self.amount) BTC to \(self.address)"
                                                 self.nextButton.removeFromSuperview()
                                                 self.amountInput.removeFromSuperview()
                                                 self.textView.text = self.rawTxSigned
                                                 self.view.addSubview(self.textView)
-                                                self.view.addSubview(self.pushButton)
+                                                //self.view.addSubview(self.pushButton)
                                                 self.view.addSubview(self.decodeButton)
                                             }
                                         }

@@ -238,45 +238,25 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         
         firstTimeHere()
         
-        if UserDefaults.standard.object(forKey: "bioMetricsEnabled") != nil && UserDefaults.standard.object(forKey: "bioMetricsEnabled") as! Bool {
+        self.passwordInput.removeFromSuperview()
+        lockView.addSubview(passwordInput)
+        passwordInput.becomeFirstResponder()
+        self.labelTitle.removeFromSuperview()
+        lockView.addSubview(labelTitle)
+        self.addNextButton(inputView: self.passwordInput)
             
-            self.lockView.addSubview(self.touchIDButton)
+        DispatchQueue.main.async {
             
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                self.touchIDButton.alpha = 1
-                
-            }, completion: { _ in
-                
-                self.authenticationWithTouchID()
-                
-                DispatchQueue.main.async {
-                    UIImpactFeedbackGenerator().impactOccurred()
-                }
-                
-            })
-            
-        } else {
-            
-            self.passwordInput.removeFromSuperview()
-            lockView.addSubview(passwordInput)
-            passwordInput.becomeFirstResponder()
-            self.labelTitle.removeFromSuperview()
-            lockView.addSubview(labelTitle)
-            self.addNextButton(inputView: self.passwordInput)
-            
-            DispatchQueue.main.async {
-                UIImpactFeedbackGenerator().impactOccurred()
-            }
-            
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                self.passwordInput.alpha = 1
-                self.labelTitle.alpha = 1
-                
-            })
+            UIImpactFeedbackGenerator().impactOccurred()
             
         }
+            
+        UIView.animate(withDuration: 0.2, animations: {
+                
+            self.passwordInput.alpha = 1
+            self.labelTitle.alpha = 1
+                
+        })
         
     }
     

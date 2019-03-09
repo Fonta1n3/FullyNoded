@@ -35,7 +35,6 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
         super.viewDidLoad()
         
         view.backgroundColor = UIColor.black
-        //KeychainWrapper.standard.removeAllKeys()
         
         firstTimeHere()
         
