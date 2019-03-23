@@ -10,14 +10,17 @@ import UIKit
 import AVFoundation
 import SwiftKeychainWrapper
 import AES256CBC
+import EFQRCode
 
 class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObjectsDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate {
     
+    var tapQRGesture = UITapGestureRecognizer()
+    var tapTextViewGesture = UITapGestureRecognizer()
+    var qrCode = UIImage()
     var ssh:SSHService!
     var isUsingSSH = Bool()
     let pushButton = UIButton()
     let decodeButton = UIButton()
-    let textView = UITextView()
     var spendable = Double()
     var inputArray = [Any]()
     var changeAmount = Double()
@@ -43,7 +46,18 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
     var inputs = ""
     let sweepButtonView = Bundle.main.loadNibNamed("KeyPadButtonView", owner: self, options: nil)?.first as! UIView?
     var sweep = Bool()
-
+    @IBOutlet var displayQrView: UIImageView!
+    @IBOutlet var textView: UITextView!
+    
+    @IBAction func backAction(_ sender: Any) {
+        
+        DispatchQueue.main.async {
+            
+            self.dismiss(animated: true, completion: nil)
+            
+        }
+        
+    }
     enum BTC_CLI_COMMAND: String {
         case decoderawtransaction = "decoderawtransaction"
         case getnewaddress = "getnewaddress"
@@ -70,33 +84,13 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
         
         print("CreateRawTxViewController")
         
-        //executeNodeCommand(method: BTC_CLI_COMMAND.getbalance.rawValue, param: "")
+        displayQrView.alpha = 0
+        textView.alpha = 0
         
-        let backButton = UIButton()
-        let modelName = UIDevice.modelName
-        if modelName == "iPhone X" {
-            backButton.frame = CGRect(x: 15, y: 30, width: 25, height: 25)
-        } else {
-            backButton.frame = CGRect(x: 15, y: 20, width: 25, height: 25)
-        }
-        backButton.showsTouchWhenHighlighted = true
-        backButton.setImage(#imageLiteral(resourceName: "back.png"), for: .normal)
-        backButton.addTarget(self, action: #selector(self.goBack), for: .touchUpInside)
-        self.view.addSubview(backButton)
-        
-        textView.textColor = UIColor.black
+        textView.textColor = UIColor.white
         textView.textAlignment = .natural
         textView.font = UIFont.init(name: "HelveticaNeue-Light", size: 14)
         textView.adjustsFontForContentSizeCategory = true
-        textView.isSelectable = true
-        textView.isEditable = false
-        textView.backgroundColor = self.view.backgroundColor
-        
-        /*pushButton.setTitle("Broadcast", for: .normal)
-        pushButton.setTitleColor(UIColor.white, for: .normal)
-        pushButton.titleLabel?.font = UIFont.init(name: "HelveticaNeue-Bold", size: 20)
-        pushButton.titleLabel?.textAlignment = .left
-        pushButton.addTarget(self, action: #selector(push), for: .touchUpInside)*/
         
         decodeButton.setTitle("Decode", for: .normal)
         decodeButton.setTitleColor(UIColor.white, for: .normal)
@@ -278,6 +272,9 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                     if let decodedTx = result as? NSDictionary {
                         DispatchQueue.main.async {
                             self.textView.text = "\(decodedTx)"
+                            self.decodeButton.setTitle("Encode", for: .normal)
+                            self.decodeButton.removeTarget(self, action: #selector(self.decode), for: .touchUpInside)
+                            self.decodeButton.addTarget(self, action: #selector(self.encodeText), for: .touchUpInside)
                         }
                     }
                 }
@@ -298,7 +295,19 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
             self.decodeRawTransaction()
         }
         
+    }
+    
+    @objc func encodeText() {
+        print("encodeText")
         
+        DispatchQueue.main.async {
+            
+            self.textView.text = self.rawTxSigned
+            self.decodeButton.setTitle("Decode", for: .normal)
+            self.decodeButton.removeTarget(self, action: #selector(self.encodeText), for: .touchUpInside)
+            self.decodeButton.addTarget(self, action: #selector(self.decode), for: .touchUpInside)
+            
+        }
         
     }
     
@@ -326,7 +335,7 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
     override func viewDidLayoutSubviews() {
         
         titleLabel.frame = CGRect(x: view.center.x - ((view.frame.width - 50) / 2), y: 60, width: view.frame.width - 50, height: 55)
-        textView.frame = CGRect(x: 10, y: self.titleLabel.frame.maxY + 60, width: self.view.frame.width - 20, height: self.view.frame.maxY - (self.titleLabel.frame.maxY + 120))
+        //textView.frame = CGRect(x: 10, y: self.titleLabel.frame.maxY + 60, width: self.view.frame.width - 20, height: self.view.frame.maxY - (self.titleLabel.frame.maxY + 120))
         //pushButton.frame = CGRect(x: 10, y: view.frame.maxY - 55, width: 100, height: 50)
         decodeButton.frame = CGRect(x: self.view.frame.maxX - 105, y: view.frame.maxY - 55, width: 100, height: 50)
         
@@ -549,7 +558,6 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                             self.inputs = self.inputs.replacingOccurrences(of: "\"{", with: "{")
                             self.inputs = self.inputs.replacingOccurrences(of: "}\"", with: "}")
                             self.inputs = self.inputs.replacingOccurrences(of: "\\", with: "")
-                            //self.executeNodeCommand(method: BTC_CLI_COMMAND.createrawtransaction.rawValue, param: "\(self.inputs), {\"\(self.address)\":\(self.amount),  \"\(self.changeAddress)\": \(self.changeAmount)}")
                             self.createRawTransaction()
                         }
                         
@@ -561,8 +569,6 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
     }
     
     func createRawTransaction() {
-        
-        //'[{"txid":"6f567ec1eeceea0e7d3aae2c84b880541e76e3d96c5a3c0a9193f35728396131","vout":1,"sequence":1}]' '{"mm8xEm6YS8B7ErLYYqcdF6URWkS1BWnqtY":0.00002, "2N2yfZkFDskR9ryFR4io2ph32xrMsPqzxHG": 0.18219045}'
         
         DispatchQueue.main.async {
             self.ssh.executeStringResponse(command: BTC_COMMAND.createrawtransaction, params: "\'\(self.inputs)\' \'{\"\(self.address)\":\(self.amount), \"\(self.changeAddress)\": \(self.changeAmount)}\'", response: { (result, error) in
@@ -595,12 +601,10 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                         
                         self.rawTxSigned = signedTransaction["hex"] as! String
                         DispatchQueue.main.async {
-                            //self.titleLabel.text = "Send \(self.amount) BTC to \(self.address)"
                             self.nextButton.removeFromSuperview()
                             self.amountInput.removeFromSuperview()
                             self.textView.text = self.rawTxSigned
                             self.view.addSubview(self.textView)
-                            //self.view.addSubview(self.pushButton)
                             self.view.addSubview(self.decodeButton)
                         }
                     }
@@ -896,9 +900,7 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
     
     func processKeys(key: String) {
         
-        
         self.processBIP21(url: key)
-          
         
    }
     
@@ -959,6 +961,9 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                                             DispatchQueue.main.async {
                                                 self.textView.text = "\(decodedTx)"
                                                 //self.view.addSubview(self.pushButton)
+                                                self.decodeButton.setTitle("Encode", for: .normal)
+                                                self.decodeButton.removeTarget(self, action: #selector(self.decode), for: .touchUpInside)
+                                                self.decodeButton.addTarget(self, action: #selector(self.encodeText), for: .touchUpInside)
                                             }
                                         }
                                         
@@ -1132,14 +1137,6 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                                                                 
                                                             }
                                                             
-                                                            /*
-                                                             let x = 1.23556789
-                                                             let y = Double(round(1000*x)/1000)
-                                                             print(y)  // 1.236
-                                                             
-                                                             */
-                                                            
-                                                            
                                                             let array = String(sumOfUtxo).split(separator: ".")
                                                             if array[1].count > 8 {
                                                                 
@@ -1156,12 +1153,6 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                                                             self.inputs = self.inputs.replacingOccurrences(of: "}\"", with: "}")
                                                             self.inputs = self.inputs.replacingOccurrences(of: "\\", with: "")
                                                             self.executeNodeCommand(method: BTC_CLI_COMMAND.getrawchangeaddress.rawValue, param: "")
-                                                            
-                                                            //self.executeNodeCommand(method: BTC_CLI_COMMAND.createrawtransaction.rawValue, param: "\(self.inputs), {\"\(self.address)\":\(self.amount)}")
-                                                            
-                                                            //self.executeNodeCommand(method: BTC_CLI_COMMAND.createrawtransaction.rawValue, param: "\(self.inputs), {\"\(self.address)\":\(self.amount),  \"\(self.changeAddress)\": \(self.changeAmount)}")
-                                                            
-                                                            //self.sweep = false
                                                             
                                                        }
                                                         
@@ -1192,13 +1183,37 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                                             
                                             
                                             DispatchQueue.main.async {
-                                                //self.titleLabel.text = "Send \(self.amount) BTC to \(self.address)"
+                                                
                                                 self.nextButton.removeFromSuperview()
                                                 self.amountInput.removeFromSuperview()
                                                 self.textView.text = self.rawTxSigned
-                                                self.view.addSubview(self.textView)
-                                                //self.view.addSubview(self.pushButton)
+                                                self.qrCode = self.generateQrCode(key: self.rawTxSigned)
+                                                self.displayQrView.image = self.qrCode
+                                                UIPasteboard.general.string = self.rawTxSigned
                                                 self.view.addSubview(self.decodeButton)
+                                                
+                                                UIView.animate(withDuration: 0.3, animations: {
+                                                    self.displayQrView.alpha = 1
+                                                    self.textView.alpha = 1
+                                                })
+                                                
+                                                self.tapTextViewGesture = UITapGestureRecognizer(target: self, action: #selector(self.shareRawText(_:)))
+                                                self.textView.addGestureRecognizer(self.tapTextViewGesture)
+                                                self.tapQRGesture = UITapGestureRecognizer(target: self, action: #selector(self.shareQRCode(_:)))
+                                                self.displayQrView.addGestureRecognizer(self.tapQRGesture)
+                                                
+                                                let alert = UIAlertController(title: NSLocalizedString("Copied to clipboard", comment: ""), message: nil, preferredStyle: UIAlertControllerStyle.actionSheet)
+                                                
+                                                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel, handler: { (action) in
+                                                    //self.dismiss(animated: true, completion: nil)
+                                                }))
+                                                
+                                                alert.popoverPresentationController?.sourceView = self.view
+                                                
+                                                self.present(alert, animated: true) {
+                                                }
+                                                
+                                                
                                             }
                                         }
                                         
@@ -1250,6 +1265,104 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
         
     }
     
+    func generateQrCode(key: String) -> UIImage {
+        
+        //let filter = CIFilter(name: "CISepiaTone")!
+        //filter.setValue(1.0, forKey: kCIInputIntensityKey)
+        let cgImage = EFQRCode.generate(content: key,
+                                        size: EFIntSize.init(width: 256, height: 256),
+                                        backgroundColor: UIColor.clear.cgColor,
+                                        foregroundColor: UIColor.white.cgColor,
+                                        watermark: nil,
+                                        watermarkMode: EFWatermarkMode.scaleAspectFit,
+                                        inputCorrectionLevel: EFInputCorrectionLevel.h,
+                                        icon: nil,
+                                        iconSize: nil,
+                                        allowTransparent: true,
+                                        pointShape: EFPointShape.circle,
+                                        mode: EFQRCodeMode.none,
+                                        binarizationThreshold: 0,
+                                        magnification: EFIntSize.init(width: 50, height: 50),
+                                        foregroundPointOffset: 0)
+        let qrImage = UIImage(cgImage: cgImage!)
+        
+        return qrImage
+        
+    }
+    
+    @objc func shareRawText(_ sender: UITapGestureRecognizer) {
+        
+        DispatchQueue.main.async {
+            
+            UIView.animate(withDuration: 0.2, animations: {
+                self.textView.alpha = 0
+            }) { _ in
+                UIView.animate(withDuration: 0.2, animations: {
+                    self.textView.alpha = 1
+                })
+            }
+            
+            let textToShare = [self.rawTxSigned]
+            let activityViewController = UIActivityViewController(activityItems: textToShare, applicationActivities: nil)
+            self.present(activityViewController, animated: true, completion: nil)
+        }
+    }
+    
+    @objc func shareQRCode(_ sender: UITapGestureRecognizer) {
+        print("shareQRCode")
+        
+        DispatchQueue.main.async {
+            
+            UIView.animate(withDuration: 0.2, animations: {
+                
+                self.displayQrView.alpha = 0
+                
+            }) { _ in
+                
+                UIView.animate(withDuration: 0.2, animations: {
+                    
+                    self.displayQrView.alpha = 1
+                    
+                })
+                
+            }
+            
+            let cgImage = EFQRCode.generate(content: self.rawTxSigned,
+                                            size: EFIntSize.init(width: 256, height: 256),
+                                            backgroundColor: UIColor.white.cgColor,
+                                            foregroundColor: UIColor.black.cgColor,
+                                            watermark: nil,
+                                            watermarkMode: EFWatermarkMode.scaleAspectFit,
+                                            inputCorrectionLevel: EFInputCorrectionLevel.h,
+                                            icon: nil,
+                                            iconSize: nil,
+                                            allowTransparent: true,
+                                            pointShape: EFPointShape.circle,
+                                            mode: EFQRCodeMode.none,
+                                            binarizationThreshold: 0,
+                                            magnification: EFIntSize.init(width: 50, height: 50),
+                                            foregroundPointOffset: 0)
+            let qrImage = UIImage(cgImage: cgImage!)
+            
+            if let data = UIImagePNGRepresentation(qrImage) {
+                
+                let fileName = getDocumentsDirectory().appendingPathComponent("btc")
+                try? data.write(to: fileName)
+                let objectsToShare = [fileName]
+                
+                DispatchQueue.main.async {
+                    
+                    let activityController = UIActivityViewController(activityItems: objectsToShare, applicationActivities: nil)
+                    activityController.popoverPresentationController?.sourceView = self.view
+                    self.present(activityController, animated: true) {}
+                    
+                }
+                
+            }
+            
+        }
+        
+    }
     
 }
 

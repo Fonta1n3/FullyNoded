@@ -1,0 +1,868 @@
+BCSymbolMap Version: 2.0
+-[PFTextButton initWithFrame:]
+-[PFTextButton sizeThatFits:]
+Apple LLVM version 10.0.0 (clang-1000.11.45.5)
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/Internal/Views/Buttons/PFTextButton.m
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI
+-[PFActivityIndicatorCollectionReusableView initWithFrame:]
+-[PFActivityIndicatorCollectionReusableView dealloc]
+-[PFActivityIndicatorCollectionReusableView setBackgroundColor:]
+-[PFActivityIndicatorCollectionReusableView layoutSubviews]
+-[PFActivityIndicatorCollectionReusableView setAnimating:]
+-[PFActivityIndicatorCollectionReusableView isAnimating]
+-[PFActivityIndicatorCollectionReusableView addTarget:action:forControlEvents:]
+-[PFActivityIndicatorCollectionReusableView removeTarget:action:forControlEvents:]
+-[PFActivityIndicatorCollectionReusableView textLabel]
+-[PFActivityIndicatorCollectionReusableView .cxx_destruct]
+_OBJC_IVAR_$_PFActivityIndicatorCollectionReusableView._actionButton
+_OBJC_IVAR_$_PFActivityIndicatorCollectionReusableView._textLabel
+_OBJC_IVAR_$_PFActivityIndicatorCollectionReusableView._activityIndicator
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/Internal/Cells/PFActivityIndicatorCollectionReusableView.m
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/Internal/Cells/PFActivityIndicatorCollectionReusableView.h
+-[PFActivityIndicatorTableViewCell initWithStyle:reuseIdentifier:]
+-[PFActivityIndicatorTableViewCell setAnimating:]
+-[PFActivityIndicatorTableViewCell isAnimating]
+-[PFActivityIndicatorTableViewCell activityIndicator]
+-[PFActivityIndicatorTableViewCell setActivityIndicator:]
+-[PFActivityIndicatorTableViewCell .cxx_destruct]
+_OBJC_IVAR_$_PFActivityIndicatorTableViewCell._activityIndicator
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/Internal/Cells/PFActivityIndicatorTableViewCell.m
++[PFColor commonBackgroundColor]
++[PFColor textFieldBackgroundColor]
++[PFColor textFieldTextColor]
++[PFColor textFieldPlaceholderColor]
++[PFColor textFieldSeparatorColor]
++[PFColor loginButtonBackgroundColor]
++[PFColor signupButtonBackgroundColor]
++[PFColor facebookButtonBackgroundColor]
++[PFColor twitterButtonBackgroundColor]
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/Internal/Extensions/PFColor.m
++[PFLocalization localizedStringForKey:]
++[PFLocalization resourcesBundle]
+___33+[PFLocalization resourcesBundle]_block_invoke
+___copy_helper_block_
+___destroy_helper_block_
+_resourcesBundle.bundle
+_resourcesBundle.onceToken
+___block_descriptor_tmp
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/Internal/PFLocalization.m
+__destroy_helper_block_
+__copy_helper_block_
+__33+[PFLocalization resourcesBundle]_block_invoke
+/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.1.sdk/usr/include/dispatch/once.h
+-[PFLoadingView initWithFrame:]
+-[PFLoadingView layoutSubviews]
+-[PFLoadingView loadingLabel]
+-[PFLoadingView setLoadingLabel:]
+-[PFLoadingView activityIndicator]
+-[PFLoadingView setActivityIndicator:]
+-[PFLoadingView .cxx_destruct]
+_OBJC_IVAR_$_PFLoadingView._activityIndicator
+_OBJC_IVAR_$_PFLoadingView._loadingLabel
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/Internal/Views/PFLoadingView.m
++[PFLogInView _defaultSignUpButtonConfiguration]
++[PFLogInView _defaultFacebookButtonConfiguration]
++[PFLogInView _defaultTwitterButtonConfiguration]
+-[PFLogInView initWithFields:]
+-[PFLogInView _updateAllFields]
+-[PFLogInView layoutSubviews]
+-[PFLogInView _loginContentSizeThatFits:withContentSizeScale:]
+-[PFLogInView _maxContentSize]
+-[PFLogInView _contentSizeScaleForContentSize:]
+-[PFLogInView setFields:]
+-[PFLogInView setLogo:]
+-[PFLogInView setEmailAsUsername:]
++[PFLogInView _validateFields:]
+-[PFLogInView _updateUsernameFieldStyle]
+-[PFLogInView presentingViewController]
+-[PFLogInView setPresentingViewController:]
+-[PFLogInView logo]
+-[PFLogInView emailAsUsername]
+-[PFLogInView fields]
+-[PFLogInView usernameField]
+-[PFLogInView passwordField]
+-[PFLogInView passwordForgottenButton]
+-[PFLogInView logInButton]
+-[PFLogInView facebookButton]
+-[PFLogInView twitterButton]
+-[PFLogInView signUpButton]
+-[PFLogInView dismissButton]
+-[PFLogInView externalLogInLabel]
+-[PFLogInView signUpLabel]
+-[PFLogInView .cxx_destruct]
+_OBJC_IVAR_$_PFLogInView._fields
+_OBJC_IVAR_$_PFLogInView._logo
+_OBJC_IVAR_$_PFLogInView._dismissButton
+_OBJC_IVAR_$_PFLogInView._usernameField
+_OBJC_IVAR_$_PFLogInView._passwordField
+_OBJC_IVAR_$_PFLogInView._signUpButton
+_OBJC_IVAR_$_PFLogInView._passwordForgottenButton
+_OBJC_IVAR_$_PFLogInView._logInButton
+_OBJC_IVAR_$_PFLogInView._facebookButton
+_OBJC_IVAR_$_PFLogInView._twitterButton
+_OBJC_IVAR_$_PFLogInView._emailAsUsername
+_OBJC_IVAR_$_PFLogInView._presentingViewController
+_OBJC_IVAR_$_PFLogInView._externalLogInLabel
+_OBJC_IVAR_$_PFLogInView._signUpLabel
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/LogInViewController/PFLogInView.m
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/LogInViewController/PFLogInView.h
+UI_USER_INTERFACE_IDIOM
+/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.1.sdk/System/Library/Frameworks/UIKit.framework/Headers/UIDevice.h
+UIEdgeInsetsInsetRect
+/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.1.sdk/System/Library/Frameworks/UIKit.framework/Headers/UIGeometry.h
+-[PFDismissButton initWithFrame:]
+-[PFDismissButton _defaultImage]
+-[PFDismissButton sizeThatFits:]
+-[PFDismissButton pointInside:withEvent:]
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/Internal/Views/Buttons/PFDismissButton.m
+-[PFPrimaryButton initWithFrame:]
+-[PFPrimaryButton initWithCoder:]
+-[PFPrimaryButton initWithBackgroundImageColor:]
+-[PFPrimaryButton layoutSubviews]
+-[PFPrimaryButton sizeThatFits:]
+-[PFPrimaryButton setLoading:]
+-[PFPrimaryButton isLoading]
+-[PFPrimaryButton .cxx_destruct]
+_OBJC_IVAR_$_PFPrimaryButton._activityIndicatorView
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/Internal/Views/Buttons/PFPrimaryButton.m
+-[PFPurchaseTableViewCell initWithStyle:reuseIdentifier:]
+-[PFPurchaseTableViewCell layoutSubviews]
+-[PFPurchaseTableViewCell setState:]
+-[PFPurchaseTableViewCell state]
+-[PFPurchaseTableViewCell priceLabel]
+-[PFPurchaseTableViewCell setPriceLabel:]
+-[PFPurchaseTableViewCell progressView]
+-[PFPurchaseTableViewCell setProgressView:]
+-[PFPurchaseTableViewCell .cxx_destruct]
+_OBJC_IVAR_$_PFPurchaseTableViewCell._state
+_OBJC_IVAR_$_PFPurchaseTableViewCell._priceLabel
+_OBJC_IVAR_$_PFPurchaseTableViewCell._progressView
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/Cells/PFPurchaseTableViewCell.m
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/Cells/PFPurchaseTableViewCell.h
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/Internal/Extensions/PFRect.m
+PFSizeMin
+PFRectMakeWithSizeCenteredInRect
+PFRectMakeWithSize
+PFRectMakeWithOrigin
+PFRectMakeWithOriginSize
+-[PFImageView setFile:]
+-[PFImageView loadInBackground]
+___31-[PFImageView loadInBackground]_block_invoke
+-[PFImageView loadInBackground:]
+-[PFImageView loadInBackground:progressBlock:]
+___46-[PFImageView loadInBackground:progressBlock:]_block_invoke
+___46-[PFImageView loadInBackground:progressBlock:]_block_invoke_2
+___copy_helper_block_.28
+___destroy_helper_block_.29
+___46-[PFImageView loadInBackground:progressBlock:]_block_invoke.32
+___46-[PFImageView loadInBackground:progressBlock:]_block_invoke_2.36
+___copy_helper_block_.37
+___destroy_helper_block_.38
+___46-[PFImageView loadInBackground:progressBlock:]_block_invoke.40
+___copy_helper_block_.41
+___destroy_helper_block_.42
+___copy_helper_block_.46
+___destroy_helper_block_.47
+___copy_helper_block_.49
+___destroy_helper_block_.50
+-[PFImageView file]
+-[PFImageView .cxx_destruct]
+_OBJC_IVAR_$_PFImageView._file
+___block_descriptor_tmp.31
+___block_descriptor_tmp.39
+___block_descriptor_tmp.43
+___block_descriptor_tmp.48
+___block_descriptor_tmp.52
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/Views/PFImageView.m
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/Views/PFImageView.h
+__46-[PFImageView loadInBackground:progressBlock:]_block_invoke.40
+__46-[PFImageView loadInBackground:progressBlock:]_block_invoke_2.36
+__46-[PFImageView loadInBackground:progressBlock:]_block_invoke.32
+__46-[PFImageView loadInBackground:progressBlock:]_block_invoke_2
+__46-[PFImageView loadInBackground:progressBlock:]_block_invoke
+__31-[PFImageView loadInBackground]_block_invoke
++[PFResources twitter_icon3x_png]
++[PFResources facebook_icon2x_png]
++[PFResources parse_logo_png]
++[PFResources facebook_icon3x_png]
++[PFResources twitter_icon2x_png]
++[PFResources parse_logo2x_png]
++[PFResources parse_logo3x_png]
++[PFResources facebook_icon_png]
++[PFResources twitter_icon_png]
+_twitter_icon3x_png
+_facebook_icon2x_png
+_parse_logo_png
+_facebook_icon3x_png
+_twitter_icon2x_png
+_parse_logo2x_png
+_parse_logo3x_png
+_facebook_icon_png
+_twitter_icon_png
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Generated/PFResources.m
+-[PFProductTableViewController initWithStyle:]
+-[PFProductTableViewController initWithStyle:className:]
+-[PFProductTableViewController viewDidLoad]
+-[PFProductTableViewController objectsDidLoad:]
+___47-[PFProductTableViewController objectsDidLoad:]_block_invoke
+___47-[PFProductTableViewController objectsDidLoad:]_block_invoke_2
+___47-[PFProductTableViewController objectsDidLoad:]_block_invoke_3
+___47-[PFProductTableViewController objectsDidLoad:]_block_invoke.45
+___copy_helper_block_.55
+___destroy_helper_block_.56
+___copy_helper_block_.61
+___destroy_helper_block_.62
+___copy_helper_block_.67
+___destroy_helper_block_.68
+-[PFProductTableViewController tableView:cellForRowAtIndexPath:object:]
+-[PFProductTableViewController tableView:didSelectRowAtIndexPath:]
+___66-[PFProductTableViewController tableView:didSelectRowAtIndexPath:]_block_invoke
+___copy_helper_block_.134
+___destroy_helper_block_.135
+-[PFProductTableViewController _priceForProduct:]
+-[PFProductTableViewController _downloadProgressForProduct:]
+-[PFProductTableViewController queryForTable]
+-[PFProductTableViewController _queryStoreForProductsWithIdentifiers:]
+-[PFProductTableViewController productsRequest:didReceiveResponse:]
+___67-[PFProductTableViewController productsRequest:didReceiveResponse:]_block_invoke
+___copy_helper_block_.166
+___destroy_helper_block_.167
+-[PFProductTableViewController requestDidFinish:]
+-[PFProductTableViewController request:didFailWithError:]
+-[PFProductTableViewController .cxx_destruct]
+_OBJC_IVAR_$_PFProductTableViewController._productMetadataDictionary
+_OBJC_IVAR_$_PFProductTableViewController._productProgressDictionary
+___block_descriptor_tmp.58
+___block_descriptor_tmp.64
+___block_descriptor_tmp.70
+___block_descriptor_tmp.137
+_OBJC_IVAR_$_PFProductTableViewController._storeProductsRequest
+___block_descriptor_tmp.169
+l_OBJC_PROTOCOL_$_NSObject
+l_OBJC_LABEL_PROTOCOL_$_NSObject
+l_OBJC_PROTOCOL_$_SKRequestDelegate
+l_OBJC_LABEL_PROTOCOL_$_SKRequestDelegate
+l_OBJC_PROTOCOL_$_SKProductsRequestDelegate
+l_OBJC_LABEL_PROTOCOL_$_SKProductsRequestDelegate
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/ProductTableViewController/PFProductTableViewController.m
+__67-[PFProductTableViewController productsRequest:didReceiveResponse:]_block_invoke
+__66-[PFProductTableViewController tableView:didSelectRowAtIndexPath:]_block_invoke
+__47-[PFProductTableViewController objectsDidLoad:]_block_invoke.45
+__47-[PFProductTableViewController objectsDidLoad:]_block_invoke_3
+__47-[PFProductTableViewController objectsDidLoad:]_block_invoke_2
+__47-[PFProductTableViewController objectsDidLoad:]_block_invoke
+-[PFCollectionViewCell layoutSubviews]
+-[PFCollectionViewCell updateFromObject:]
+-[PFCollectionViewCell imageView]
+-[PFCollectionViewCell textLabel]
+-[PFCollectionViewCell .cxx_destruct]
+_OBJC_IVAR_$_PFCollectionViewCell._imageView
+_OBJC_IVAR_$_PFCollectionViewCell._textLabel
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/Cells/PFCollectionViewCell.m
+-[PFActionButton initWithFrame:]
+-[PFActionButton initWithCoder:]
+-[PFActionButton initWithConfiguration:buttonStyle:]
+-[PFActionButton layoutSubviews]
+-[PFActionButton sizeThatFits:]
+-[PFActionButton imageRectForContentRect:]
+-[PFActionButton titleRectForContentRect:]
++[PFActionButton backgroundImageColor]
++[PFActionButton titleForButtonStyle:]
+-[PFActionButton setLoading:]
+-[PFActionButton isLoading]
+-[PFActionButton setButtonStyle:]
+-[PFActionButton buttonStyle]
+-[PFActionButton configuration]
+-[PFActionButton setConfiguration:]
+-[PFActionButton .cxx_destruct]
+-[PFActionButtonConfiguration init]
+-[PFActionButtonConfiguration initWithBackgroundImageColor:image:]
+-[PFActionButtonConfiguration setTitle:forButtonStyle:]
+-[PFActionButtonConfiguration titleForButtonStyle:]
+-[PFActionButtonConfiguration backgroundImageColor]
+-[PFActionButtonConfiguration setBackgroundImageColor:]
+-[PFActionButtonConfiguration image]
+-[PFActionButtonConfiguration setImage:]
+-[PFActionButtonConfiguration .cxx_destruct]
+_OBJC_IVAR_$_PFActionButton._buttonStyle
+_OBJC_IVAR_$_PFActionButton._configuration
+_OBJC_IVAR_$_PFActionButton._activityIndicatorView
+_OBJC_IVAR_$_PFActionButtonConfiguration._backgroundImageColor
+_OBJC_IVAR_$_PFActionButtonConfiguration._image
+_OBJC_IVAR_$_PFActionButtonConfiguration._titlesDictionary
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/Internal/Views/Buttons/PFActionButton.m
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/Internal/Views/Buttons/PFActionButton.h
++[PFImage imageWithColor:size:]
++[PFImage imageWithColor:cornerRadius:]
++[PFImage imageWithColor:]
++[PFImage imageNamed:]
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/Internal/Extensions/PFImage.m
+NSMakeRange
+/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.1.sdk/System/Library/Frameworks/Foundation.framework/Headers/NSRange.h
++[PFImageCache sharedCache]
+___27+[PFImageCache sharedCache]_block_invoke
+-[PFImageCache setImage:forURL:]
+-[PFImageCache imageForURL:]
+_sharedCache.onceToken
+_sharedCache.sharedCache
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/Internal/PFImageCache.m
+PFImageCacheKeyFromURL
+__27+[PFImageCache sharedCache]_block_invoke
+-[PFQueryCollectionViewController initWithCoder:]
+-[PFQueryCollectionViewController initWithNibName:bundle:]
+-[PFQueryCollectionViewController initWithCollectionViewLayout:]
+-[PFQueryCollectionViewController initWithCollectionViewLayout:className:]
+-[PFQueryCollectionViewController initWithClassName:]
+-[PFQueryCollectionViewController _setupWithClassName:]
+-[PFQueryCollectionViewController loadView]
+-[PFQueryCollectionViewController viewDidLoad]
+-[PFQueryCollectionViewController viewDidLayoutSubviews]
+-[PFQueryCollectionViewController objectsWillLoad]
+-[PFQueryCollectionViewController objectsDidLoad:]
+-[PFQueryCollectionViewController objects]
+-[PFQueryCollectionViewController objectAtIndexPath:]
+-[PFQueryCollectionViewController removeObjectAtIndexPath:]
+-[PFQueryCollectionViewController removeObjectsAtIndexPaths:]
+___61-[PFQueryCollectionViewController removeObjectsAtIndexPaths:]_block_invoke
+-[PFQueryCollectionViewController loadObjects]
+-[PFQueryCollectionViewController loadObjects:clear:]
+___53-[PFQueryCollectionViewController loadObjects:clear:]_block_invoke
+___53-[PFQueryCollectionViewController loadObjects:clear:]_block_invoke_2
+___copy_helper_block_.153
+___destroy_helper_block_.154
+___copy_helper_block_.157
+___destroy_helper_block_.158
+-[PFQueryCollectionViewController loadNextPage]
+-[PFQueryCollectionViewController clear]
+-[PFQueryCollectionViewController queryForCollection]
+-[PFQueryCollectionViewController _alterQuery:forLoadingPage:]
+-[PFQueryCollectionViewController collectionView:cellForItemAtIndexPath:object:]
+-[PFQueryCollectionViewController collectionViewReusableViewForNextPageAction:]
+-[PFQueryCollectionViewController numberOfSectionsInCollectionView:]
+-[PFQueryCollectionViewController collectionView:numberOfItemsInSection:]
+-[PFQueryCollectionViewController collectionView:cellForItemAtIndexPath:]
+-[PFQueryCollectionViewController collectionView:viewForSupplementaryElementOfKind:atIndexPath:]
+-[PFQueryCollectionViewController collectionView:layout:referenceSizeForFooterInSection:]
+-[PFQueryCollectionViewController _shouldShowPaginationView]
+-[PFQueryCollectionViewController _indexPathForPaginationReusableView]
+-[PFQueryCollectionViewController _handleDeletionError:]
+-[PFQueryCollectionViewController _refreshControlValueChanged:]
+-[PFQueryCollectionViewController _refreshLoadingView]
+-[PFQueryCollectionViewController loadingView]
+-[PFQueryCollectionViewController parseClassName]
+-[PFQueryCollectionViewController setParseClassName:]
+-[PFQueryCollectionViewController loadingViewEnabled]
+-[PFQueryCollectionViewController setLoadingViewEnabled:]
+-[PFQueryCollectionViewController pullToRefreshEnabled]
+-[PFQueryCollectionViewController setPullToRefreshEnabled:]
+-[PFQueryCollectionViewController paginationEnabled]
+-[PFQueryCollectionViewController setPaginationEnabled:]
+-[PFQueryCollectionViewController objectsPerPage]
+-[PFQueryCollectionViewController setObjectsPerPage:]
+-[PFQueryCollectionViewController isLoading]
+-[PFQueryCollectionViewController setLoading:]
+-[PFQueryCollectionViewController setLoadingView:]
+-[PFQueryCollectionViewController currentNextPageView]
+-[PFQueryCollectionViewController setCurrentNextPageView:]
+-[PFQueryCollectionViewController .cxx_destruct]
+___clang_at_available_requires_core_foundation_framework
+_OBJC_IVAR_$_PFQueryCollectionViewController._mutableObjects
+_OBJC_IVAR_$_PFQueryCollectionViewController._firstLoad
+_OBJC_IVAR_$_PFQueryCollectionViewController._objectsPerPage
+_OBJC_IVAR_$_PFQueryCollectionViewController._loadingViewEnabled
+_OBJC_IVAR_$_PFQueryCollectionViewController._paginationEnabled
+_OBJC_IVAR_$_PFQueryCollectionViewController._pullToRefreshEnabled
+_OBJC_IVAR_$_PFQueryCollectionViewController._lastLoadCount
+_OBJC_IVAR_$_PFQueryCollectionViewController._parseClassName
+_OBJC_IVAR_$_PFQueryCollectionViewController._currentNextPageView
+_OBJC_IVAR_$_PFQueryCollectionViewController._currentPage
+___block_descriptor_tmp.156
+___block_descriptor_tmp.160
+_OBJC_IVAR_$_PFQueryCollectionViewController._loadingView
+_OBJC_IVAR_$_PFQueryCollectionViewController._loading
+l_OBJC_PROTOCOL_$_UIScrollViewDelegate
+l_OBJC_LABEL_PROTOCOL_$_UIScrollViewDelegate
+l_OBJC_PROTOCOL_$_UICollectionViewDelegate
+l_OBJC_LABEL_PROTOCOL_$_UICollectionViewDelegate
+l_OBJC_PROTOCOL_$_UICollectionViewDelegateFlowLayout
+l_OBJC_LABEL_PROTOCOL_$_UICollectionViewDelegateFlowLayout
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/QueryCollectionViewController/PFQueryCollectionViewController.m
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/QueryCollectionViewController/PFQueryCollectionViewController.h
+__53-[PFQueryCollectionViewController loadObjects:clear:]_block_invoke_2
+__53-[PFQueryCollectionViewController loadObjects:clear:]_block_invoke
+__61-[PFQueryCollectionViewController removeObjectsAtIndexPaths:]_block_invoke
+-[PFSignUpViewController init]
+-[PFSignUpViewController initWithNibName:bundle:]
+-[PFSignUpViewController initWithCoder:]
+-[PFSignUpViewController _commonInit]
+-[PFSignUpViewController dealloc]
+-[PFSignUpViewController loadView]
+-[PFSignUpViewController viewDidLoad]
+-[PFSignUpViewController viewWillAppear:]
+-[PFSignUpViewController supportedInterfaceOrientations]
+-[PFSignUpViewController signUpView]
+-[PFSignUpViewController setDelegate:]
+-[PFSignUpViewController setEmailAsUsername:]
+-[PFSignUpViewController emailAsUsername]
+-[PFSignUpViewController textFieldDidBeginEditing:]
+-[PFSignUpViewController textFieldShouldReturn:]
+-[PFSignUpViewController _setupHandlers]
+-[PFSignUpViewController _dismissAction]
+-[PFSignUpViewController _signUpAction]
+___39-[PFSignUpViewController _signUpAction]_block_invoke
+-[PFSignUpViewController _signUpDidSuceedWithUser:]
+-[PFSignUpViewController _signUpDidFailWithError:]
+-[PFSignUpViewController _cancelSignUp]
+-[PFSignUpViewController _currentFirstResponder]
+-[PFSignUpViewController _dismissKeyboard]
+-[PFSignUpViewController _registerForKeyboardNotifications]
+-[PFSignUpViewController _keyboardWillShow:]
+-[PFSignUpViewController _keyboardWillHide:]
+-[PFSignUpViewController setVisibleKeyboardHeight:animationDuration:animationOptions:]
+___86-[PFSignUpViewController setVisibleKeyboardHeight:animationDuration:animationOptions:]_block_invoke
+___copy_helper_block_.226
+___destroy_helper_block_.227
+-[PFSignUpViewController setVisibleKeyboardHeight:]
+-[PFSignUpViewController _updateSignUpViewContentOffsetAnimated:]
+-[PFSignUpViewController setLoading:]
+-[PFSignUpViewController fields]
+-[PFSignUpViewController setFields:]
+-[PFSignUpViewController delegate]
+-[PFSignUpViewController minPasswordLength]
+-[PFSignUpViewController setMinPasswordLength:]
+-[PFSignUpViewController setSignUpView:]
+-[PFSignUpViewController loading]
+-[PFSignUpViewController visibleKeyboardHeight]
+-[PFSignUpViewController .cxx_destruct]
+_OBJC_IVAR_$_PFSignUpViewController._fields
+_OBJC_IVAR_$_PFSignUpViewController._signUpView
+_OBJC_IVAR_$_PFSignUpViewController._delegate
+_OBJC_IVAR_$_PFSignUpViewController._delegateExistingMethods
+_OBJC_IVAR_$_PFSignUpViewController._minPasswordLength
+___block_descriptor_tmp.229
+_OBJC_IVAR_$_PFSignUpViewController._visibleKeyboardHeight
+_OBJC_IVAR_$_PFSignUpViewController._loading
+l_OBJC_PROTOCOL_$_UITextFieldDelegate
+l_OBJC_LABEL_PROTOCOL_$_UITextFieldDelegate
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/SignUpViewController/PFSignUpViewController.m
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/SignUpViewController/PFSignUpViewController.h
+__86-[PFSignUpViewController setVisibleKeyboardHeight:animationDuration:animationOptions:]_block_invoke
+__39-[PFSignUpViewController _signUpAction]_block_invoke
+-[PFQueryTableViewController initWithCoder:]
+-[PFQueryTableViewController initWithNibName:bundle:]
+-[PFQueryTableViewController initWithStyle:]
+-[PFQueryTableViewController initWithClassName:]
+-[PFQueryTableViewController initWithStyle:className:]
+-[PFQueryTableViewController _setupWithClassName:]
+-[PFQueryTableViewController loadView]
+-[PFQueryTableViewController viewDidLoad]
+-[PFQueryTableViewController viewDidLayoutSubviews]
+-[PFQueryTableViewController setEditing:animated:]
+-[PFQueryTableViewController objectsWillLoad]
+-[PFQueryTableViewController objectsDidLoad:]
+-[PFQueryTableViewController queryForTable]
+-[PFQueryTableViewController _alterQuery:forLoadingPage:]
+-[PFQueryTableViewController clear]
+___35-[PFQueryTableViewController clear]_block_invoke
+-[PFQueryTableViewController loadObjects]
+-[PFQueryTableViewController loadObjects:clear:]
+___48-[PFQueryTableViewController loadObjects:clear:]_block_invoke
+___48-[PFQueryTableViewController loadObjects:clear:]_block_invoke_2
+___copy_helper_block_.128
+___destroy_helper_block_.129
+___copy_helper_block_.131
+___destroy_helper_block_.132
+-[PFQueryTableViewController loadNextPage]
+-[PFQueryTableViewController scrollViewDidEndDragging:willDecelerate:]
+-[PFQueryTableViewController scrollViewDidEndDecelerating:]
+-[PFQueryTableViewController tableView:numberOfRowsInSection:]
+-[PFQueryTableViewController tableView:cellForRowAtIndexPath:object:]
+-[PFQueryTableViewController tableView:configureCell:atIndexPath:object:]
+-[PFQueryTableViewController objectAtIndexPath:]
+-[PFQueryTableViewController removeObjectAtIndexPath:]
+-[PFQueryTableViewController removeObjectAtIndexPath:animated:]
+-[PFQueryTableViewController removeObjectsAtIndexPaths:]
+-[PFQueryTableViewController removeCellAtIndexPath:animated:]
+-[PFQueryTableViewController removeCellsAtIndexPaths:animated:]
+-[PFQueryTableViewController removeObjectsAtIndexPaths:animated:]
+___65-[PFQueryTableViewController removeObjectsAtIndexPaths:animated:]_block_invoke
+___copy_helper_block_.212
+___destroy_helper_block_.213
+-[PFQueryTableViewController tableView:cellForNextPageAtIndexPath:]
+-[PFQueryTableViewController tableView:cellForRowAtIndexPath:]
+___62-[PFQueryTableViewController tableView:cellForRowAtIndexPath:]_block_invoke
+___copy_helper_block_.262
+___destroy_helper_block_.263
+-[PFQueryTableViewController tableView:didSelectRowAtIndexPath:]
+-[PFQueryTableViewController tableView:editingStyleForRowAtIndexPath:]
+-[PFQueryTableViewController tableView:shouldIndentWhileEditingRowAtIndexPath:]
+-[PFQueryTableViewController _shouldShowPaginationCell]
+-[PFQueryTableViewController _indexPathForPaginationCell]
+-[PFQueryTableViewController _loadImagesForOnscreenRows]
+-[PFQueryTableViewController _loadImageForCellAtIndexPath:]
+-[PFQueryTableViewController _handleDeletionError:]
+-[PFQueryTableViewController _refreshControlValueChanged:]
+-[PFQueryTableViewController objects]
+-[PFQueryTableViewController _refreshLoadingView]
+-[PFQueryTableViewController loadingView]
+-[PFQueryTableViewController parseClassName]
+-[PFQueryTableViewController setParseClassName:]
+-[PFQueryTableViewController textKey]
+-[PFQueryTableViewController setTextKey:]
+-[PFQueryTableViewController imageKey]
+-[PFQueryTableViewController setImageKey:]
+-[PFQueryTableViewController placeholderImage]
+-[PFQueryTableViewController setPlaceholderImage:]
+-[PFQueryTableViewController loadingViewEnabled]
+-[PFQueryTableViewController setLoadingViewEnabled:]
+-[PFQueryTableViewController pullToRefreshEnabled]
+-[PFQueryTableViewController setPullToRefreshEnabled:]
+-[PFQueryTableViewController paginationEnabled]
+-[PFQueryTableViewController setPaginationEnabled:]
+-[PFQueryTableViewController objectsPerPage]
+-[PFQueryTableViewController setObjectsPerPage:]
+-[PFQueryTableViewController isLoading]
+-[PFQueryTableViewController setLoading:]
+-[PFQueryTableViewController setLoadingView:]
+-[PFQueryTableViewController .cxx_destruct]
+_OBJC_IVAR_$_PFQueryTableViewController._mutableObjects
+_OBJC_IVAR_$_PFQueryTableViewController._firstLoad
+_OBJC_IVAR_$_PFQueryTableViewController._objectsPerPage
+_OBJC_IVAR_$_PFQueryTableViewController._loadingViewEnabled
+_OBJC_IVAR_$_PFQueryTableViewController._paginationEnabled
+_OBJC_IVAR_$_PFQueryTableViewController._pullToRefreshEnabled
+_OBJC_IVAR_$_PFQueryTableViewController._lastLoadCount
+_OBJC_IVAR_$_PFQueryTableViewController._parseClassName
+_OBJC_IVAR_$_PFQueryTableViewController._savedSeparatorStyle
+_OBJC_IVAR_$_PFQueryTableViewController._currentPage
+___block_descriptor_tmp.130
+___block_descriptor_tmp.134
+___block_descriptor_tmp.215
+___block_descriptor_tmp.264
+_OBJC_IVAR_$_PFQueryTableViewController._loadingView
+_OBJC_IVAR_$_PFQueryTableViewController._textKey
+_OBJC_IVAR_$_PFQueryTableViewController._imageKey
+_OBJC_IVAR_$_PFQueryTableViewController._placeholderImage
+_OBJC_IVAR_$_PFQueryTableViewController._loading
+l_OBJC_PROTOCOL_$_UITableViewDataSource
+l_OBJC_LABEL_PROTOCOL_$_UITableViewDataSource
+l_OBJC_PROTOCOL_$_UITableViewDelegate
+l_OBJC_LABEL_PROTOCOL_$_UITableViewDelegate
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/QueryTableViewController/PFQueryTableViewController.m
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/QueryTableViewController/PFQueryTableViewController.h
+__62-[PFQueryTableViewController tableView:cellForRowAtIndexPath:]_block_invoke
+__65-[PFQueryTableViewController removeObjectsAtIndexPaths:animated:]_block_invoke
+__48-[PFQueryTableViewController loadObjects:clear:]_block_invoke_2
+__48-[PFQueryTableViewController loadObjects:clear:]_block_invoke
+__35-[PFQueryTableViewController clear]_block_invoke
++[PFUIAlertView presentAlertInViewController:withTitle:message:cancelButtonTitle:otherButtonTitles:completion:]
+___Block_byref_object_copy_
+___Block_byref_object_dispose_
+___111+[PFUIAlertView presentAlertInViewController:withTitle:message:cancelButtonTitle:otherButtonTitles:completion:]_block_invoke
++[PFUIAlertView presentAlertInViewController:withTitle:message:textFieldCustomizationHandler:cancelButtonTitle:otherButtonTitles:completion:]
+___141+[PFUIAlertView presentAlertInViewController:withTitle:message:textFieldCustomizationHandler:cancelButtonTitle:otherButtonTitles:completion:]_block_invoke
+___copy_helper_block_.26
+___destroy_helper_block_.27
++[PFUIAlertView presentAlertInViewController:withTitle:error:]
++[PFUIAlertView presentAlertInViewController:withTitle:message:]
+-[PFUIAlertView completion]
+-[PFUIAlertView setCompletion:]
+-[PFUIAlertView .cxx_destruct]
+___block_descriptor_tmp.28
+_OBJC_IVAR_$_PFUIAlertView._completion
+l_OBJC_PROTOCOL_$_UIAlertViewDelegate
+l_OBJC_LABEL_PROTOCOL_$_UIAlertViewDelegate
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/Internal/Extensions/PFUIAlertView.m
+__141+[PFUIAlertView presentAlertInViewController:withTitle:message:textFieldCustomizationHandler:cancelButtonTitle:otherButtonTitles:completion:]_block_invoke
+__111+[PFUIAlertView presentAlertInViewController:withTitle:message:cancelButtonTitle:otherButtonTitles:completion:]_block_invoke
+__Block_byref_object_dispose_
+__Block_byref_object_copy_
+-[PFTableViewCell initWithStyle:reuseIdentifier:]
+-[PFTableViewCell layoutSubviews]
+-[PFTableViewCell imageView]
+-[PFTableViewCell style]
+-[PFTableViewCell setStyle:]
+-[PFTableViewCell customImageView]
+-[PFTableViewCell setCustomImageView:]
+-[PFTableViewCell .cxx_destruct]
+_OBJC_IVAR_$_PFTableViewCell._style
+_OBJC_IVAR_$_PFTableViewCell._customImageView
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/Cells/PFTableViewCell.m
+-[PFLogInViewController init]
+-[PFLogInViewController initWithNibName:bundle:]
+-[PFLogInViewController initWithCoder:]
+-[PFLogInViewController _commonInit]
+-[PFLogInViewController dealloc]
+-[PFLogInViewController loadView]
+-[PFLogInViewController viewDidLoad]
+-[PFLogInViewController viewWillAppear:]
+-[PFLogInViewController supportedInterfaceOrientations]
+-[PFLogInViewController logInView]
+-[PFLogInViewController setEmailAsUsername:]
+-[PFLogInViewController emailAsUsername]
+-[PFLogInViewController setFields:]
+-[PFLogInViewController setDelegate:]
+-[PFLogInViewController signUpController]
+-[PFLogInViewController setLoading:]
+-[PFLogInViewController textFieldShouldReturn:]
+-[PFLogInViewController _setupLogInViewActions]
+-[PFLogInViewController _dismissAction]
+-[PFLogInViewController _forgotPasswordAction]
+___46-[PFLogInViewController _forgotPasswordAction]_block_invoke
+___46-[PFLogInViewController _forgotPasswordAction]_block_invoke_2
+-[PFLogInViewController _requestPasswordResetWithEmail:]
+___56-[PFLogInViewController _requestPasswordResetWithEmail:]_block_invoke
+___copy_helper_block_.172
+___destroy_helper_block_.173
+-[PFLogInViewController _loginWithFacebook]
+___43-[PFLogInViewController _loginWithFacebook]_block_invoke
+___copy_helper_block_.189
+___destroy_helper_block_.190
+-[PFLogInViewController _permissionsContainsFacebookPublishPermission:]
+-[PFLogInViewController _loginWithTwitter]
+___42-[PFLogInViewController _loginWithTwitter]_block_invoke
+___copy_helper_block_.228
+___destroy_helper_block_.229
+-[PFLogInViewController _loginAction]
+___37-[PFLogInViewController _loginAction]_block_invoke
+___copy_helper_block_.236
+___destroy_helper_block_.237
+-[PFLogInViewController _signupAction]
+-[PFLogInViewController _loginDidSucceedWithUser:]
+-[PFLogInViewController _loginDidFailWithError:]
+-[PFLogInViewController cancelLogIn]
+-[PFLogInViewController currentFirstResponder]
+-[PFLogInViewController _dismissKeyboard]
+-[PFLogInViewController _registerForKeyboardNotifications]
+-[PFLogInViewController _keyboardWillShow:]
+-[PFLogInViewController _keyboardWillHide:]
+-[PFLogInViewController setVisibleKeyboardHeight:animationDuration:animationOptions:]
+___85-[PFLogInViewController setVisibleKeyboardHeight:animationDuration:animationOptions:]_block_invoke
+___copy_helper_block_.285
+___destroy_helper_block_.286
+-[PFLogInViewController setVisibleKeyboardHeight:]
+-[PFLogInViewController _updateViewContentOffsetAnimated:]
+-[PFLogInViewController fields]
+-[PFLogInViewController delegate]
+-[PFLogInViewController facebookPermissions]
+-[PFLogInViewController setFacebookPermissions:]
+-[PFLogInViewController setSignUpController:]
+-[PFLogInViewController setLogInView:]
+-[PFLogInViewController loading]
+-[PFLogInViewController visibleKeyboardHeight]
+-[PFLogInViewController .cxx_destruct]
+_OBJC_IVAR_$_PFLogInViewController._fields
+_OBJC_IVAR_$_PFLogInViewController._facebookPermissions
+_OBJC_IVAR_$_PFLogInViewController._logInView
+_OBJC_IVAR_$_PFLogInViewController._delegate
+_OBJC_IVAR_$_PFLogInViewController._delegateExistingMethods
+_OBJC_IVAR_$_PFLogInViewController._signUpController
+_OBJC_IVAR_$_PFLogInViewController._loading
+___block_literal_global
+___block_descriptor_tmp.155
+___block_descriptor_tmp.175
+___block_descriptor_tmp.192
+___block_descriptor_tmp.230
+___block_descriptor_tmp.238
+___block_descriptor_tmp.288
+_OBJC_IVAR_$_PFLogInViewController._visibleKeyboardHeight
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/LogInViewController/PFLogInViewController.m
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/LogInViewController/PFLogInViewController.h
+__85-[PFLogInViewController setVisibleKeyboardHeight:animationDuration:animationOptions:]_block_invoke
+__37-[PFLogInViewController _loginAction]_block_invoke
+__42-[PFLogInViewController _loginWithTwitter]_block_invoke
+__43-[PFLogInViewController _loginWithFacebook]_block_invoke
+__56-[PFLogInViewController _requestPasswordResetWithEmail:]_block_invoke
+__46-[PFLogInViewController _forgotPasswordAction]_block_invoke_2
+__46-[PFLogInViewController _forgotPasswordAction]_block_invoke
+-[PFSignUpView initWithFields:]
+-[PFSignUpView layoutSubviews]
+-[PFSignUpView _contentSizeThatFits:]
+-[PFSignUpView _maxContentSize]
+-[PFSignUpView _contentSizeScaleForContentSize:]
+-[PFSignUpView setLogo:]
+-[PFSignUpView setEmailAsUsername:]
+-[PFSignUpView _updateUsernameFieldStyle]
+-[PFSignUpView presentingViewController]
+-[PFSignUpView setPresentingViewController:]
+-[PFSignUpView logo]
+-[PFSignUpView emailAsUsername]
+-[PFSignUpView fields]
+-[PFSignUpView usernameField]
+-[PFSignUpView passwordField]
+-[PFSignUpView emailField]
+-[PFSignUpView additionalField]
+-[PFSignUpView signUpButton]
+-[PFSignUpView dismissButton]
+-[PFSignUpView .cxx_destruct]
+_OBJC_IVAR_$_PFSignUpView._fields
+_OBJC_IVAR_$_PFSignUpView._logo
+_OBJC_IVAR_$_PFSignUpView._dismissButton
+_OBJC_IVAR_$_PFSignUpView._usernameField
+_OBJC_IVAR_$_PFSignUpView._passwordField
+_OBJC_IVAR_$_PFSignUpView._emailField
+_OBJC_IVAR_$_PFSignUpView._additionalField
+_OBJC_IVAR_$_PFSignUpView._signUpButton
+_OBJC_IVAR_$_PFSignUpView._emailAsUsername
+_OBJC_IVAR_$_PFSignUpView._presentingViewController
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/SignUpViewController/PFSignUpView.m
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/SignUpViewController/PFSignUpView.h
+-[PFTextField initWithFrame:]
+-[PFTextField initWithFrame:separatorStyle:]
+-[PFTextField setPlaceholder:]
+-[PFTextField setSeparatorStyle:]
+-[PFTextField drawRect:]
+-[PFTextField textRectForBounds:]
+-[PFTextField placeholderRectForBounds:]
+-[PFTextField editingRectForBounds:]
+-[PFTextField sizeThatFits:]
+-[PFTextField separatorStyle]
+-[PFTextField separatorColor]
+-[PFTextField setSeparatorColor:]
+-[PFTextField .cxx_destruct]
+_OBJC_IVAR_$_PFTextField._separatorColor
+_OBJC_IVAR_$_PFTextField._separatorStyle
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/Views/PFTextField.m
+/Users/peter/Desktop/MyStuff/BitSense/BitSense/Carthage/Checkouts/Parse-SDK-iOS-OSX/ParseUI/Classes/Views/PFTextField.h
+/Users/peter/Library/Caches/org.carthage.CarthageKit/DerivedData/10.1_10B61/Parse-SDK-iOS-OSX/1.17.2/Build/Intermediates.noindex/ArchiveIntermediates/ParseUI-Dynamic/IntermediateBuildFilesPath/ParseUI.build/Release-iphoneos/ParseUI-Dynamic.build/DerivedSources/ParseUI_vers.c
+__ZL15__ARCLite__loadv
+__ZL58__arclite_NSMutableDictionary__setObject_forKeyedSubscriptP19NSMutableDictionaryP13objc_selectorP11objc_objectS4_
+__ZL22add_image_hook_swiftV1PK11mach_headerl
+__ZL42__arclite_NSUndoManagerProxy_isKindOfClassP11objc_objectP13objc_selectorP10objc_class
+__ZL30__arclite_NSManagedObject_initP11objc_objectP13objc_selector
+__ZL41__arclite_NSManagedObject_allocWithEntityP11objc_objectP13objc_selectorS0_
+__ZL36__arclite_NSManagedObject_allocBatchP11objc_objectP13objc_selectorPS0_S0_j
+__ZL37__arclite_NSKKMS_fastIndexForKnownKeyP11objc_objectP13objc_selectorS0_
+__ZL28__arclite_NSKKMS_indexForKeyP11objc_objectP13objc_selectorS0_
+__ZL29__arclite_NSKKsD_objectForKeyP11objc_objectP13objc_selectorS0_
+__ZL35__arclite_NSKKsD_removeObjectForKeyP11objc_objectP13objc_selectorS0_
+__ZL33__arclite_NSKKsD_setObject_forKeyP11objc_objectP13objc_selectorS0_S0_
+__ZL41__arclite_NSKKsD_addEntriesFromDictionaryP11objc_objectP13objc_selectorP12NSDictionary
+__ZL28__arclite_objc_readClassPairP10objc_classPK15objc_image_info
+__ZL32__arclite_objc_allocateClassPairP10objc_classPKcm
+__ZL32__arclite_object_getIndexedIvarsP11objc_object
+__ZL23__arclite_objc_getClassPKc
+__ZL27__arclite_objc_getMetaClassPKc
+__ZL31__arclite_objc_getRequiredClassPKc
+__ZL26__arclite_objc_lookUpClassPKc
+__ZL26__arclite_objc_getProtocolPKc
+__ZL23__arclite_class_getNameP10objc_class
+__ZL26__arclite_protocol_getNameP8Protocol
+__ZL37__arclite_objc_copyClassNamesForImagePKcPj
+__ZL17transcribeMethodsP10objc_classP15glue_class_ro_t
+__ZL19transcribeProtocolsP10objc_classP15glue_class_ro_t
+__ZL20transcribePropertiesP10objc_classP15glue_class_ro_t
+__ZL14initialize_impP11objc_objectP13objc_selector
+__ZL18allocateMaybeSwiftP18glue_swift_class_tm
+__ZL22copySwiftV1MangledNamePKcb
+__ZL13demangledNamePKcb
+__ZL16scanMangledFieldRPKcS0_S1_Ri
+__ZL30arclite_uninitialized_functionv
+__ZL12cxxConstructP11objc_object
+__ZL20fixStringForCoreDataP11objc_object
+_OBJC_METACLASS_$___ARCLite__
+__ZL24OBJC_CLASS_$___ARCLite__
+__ZL31OBJC_METACLASS_RO_$___ARCLite__
+__non_lazy_classes
+__ZL27OBJC_CLASS_RO_$___ARCLite__
+__ZL11_class_name
+__ZL32OBJC_$_CLASS_METHODS___ARCLite__
+__ZL17_load_method_name
+__ZL17_load_method_type
+l_OBJC_PROTOCOL_$___ARCLiteKeyedSubscripting__
+l_OBJC_LABEL_PROTOCOL_$___ARCLiteKeyedSubscripting__
+l_OBJC_PROTOCOL_REFERENCE_$___ARCLiteKeyedSubscripting__
+__ZL30NSUndoManagerProxy_targetClass
+__ZL29original_NSManagedObject_init
+__ZL40original_NSManagedObject_allocWithEntity
+__ZL35original_NSManagedObject_allocBatch
+__ZL25NSMutableDictionary_class
+__ZL22NSConstantString_class
+__ZL14NSString_class
+__ZL36original_NSKKMS_fastIndexForKnownKey
+__ZL27original_NSKKMS_indexForKey
+__ZL28original_NSKKsD_objectForKey
+__ZL34original_NSKKsD_removeObjectForKey
+__ZL32original_NSKKsD_setObject_forKey
+__ZL40original_NSKKsD_addEntriesFromDictionary
+__ZZL22add_image_hook_swiftV1PK11mach_headerlE7patches
+__ZGVZL22add_image_hook_swiftV1PK11mach_headerlE7patches
+__ZL31original_objc_allocateClassPair
+__ZL31original_object_getIndexedIvars
+__ZL22original_objc_getClass
+__ZL26original_objc_getMetaClass
+__ZL30original_objc_getRequiredClass
+__ZL25original_objc_lookUpClass
+__ZL25original_objc_getProtocol
+__ZL22original_class_getName
+__ZL25original_protocol_getName
+__ZL36original_objc_copyClassNamesForImage
+__ZL12demangleLock
+__ZL9Demangled
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x objective-c++ -arch arm64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -std=c++11 -Wno-trigraphs -fno-exceptions -fno-rtti -fno-sanitize=vptr -mpascal-strings -Os -Wno-missing-field-initializers -Wmissing-prototypes -Wno-implicit-atomic-properties -Wno-objc-interface-ivars -Wno-arc-repeated-use-of-weak -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wshorten-64-to-32 -Wno-newline-eof -Wno-selector -Wno-strict-selector-match -Wno-undeclared-selector -Wno-deprecated-implementations -Wno-c++11-extensions -D NDEBUG=1 -D OBJC_OLD_DISPATCH_PROTOTYPES=1 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.0.Internal.sdk -fstrict-aliasing -Wprotocol -Wdeprecated-declarations -Winvalid-offsetof -miphoneos-version-min=4.3 -g -fno-threadsafe-statics -Wno-sign-conversion -Wno-infinite-recursion -Wno-move -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -Wno-range-loop-analysis -Wno-semicolon-before-method-body -fembed-bitcode=all -iquote /Library/Caches/com.apple.xbs/Binaries/arclite_iOS/install/TempContent/Objects/arclite.build/arclite_iOS.build/arclite_iphoneos-generated-files.hmap -I /Library/Caches/com.apple.xbs/Binaries/arclite_iOS/install/TempContent/Objects/arclite.build/arclite_iOS.build/arclite_iphoneos-own-target-headers.hmap -I /Library/Caches/com.apple.xbs/Binaries/arclite_iOS/install/TempContent/Objects/arclite.build/arclite_iOS.build/arclite_iphoneos-all-target-headers.hmap -iquote /Library/Caches/com.apple.xbs/Binaries/arclite_iOS/install/TempContent/Objects/arclite.build/arclite_iOS.build/arclite_iphoneos-project-headers.hmap -I /Library/Caches/com.apple.xbs/Binaries/arclite_iOS/install/Symbols/BuiltProducts/include -I /Library/Caches/com.apple.xbs/Binaries/arclite_iOS/install/TempContent/Objects/arclite.build/arclite_iOS.build/DerivedSources/arm64 -I /Library/Caches/com.apple.xbs/Binaries/arclite_iOS/install/TempContent/Objects/arclite.build/arclite_iOS.build/DerivedSources -F/Library/Caches/com.apple.xbs/Binaries/arclite_iOS/install/Symbols/BuiltProducts -iframework /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.0.Internal.sdk/System/Library/PrivateFrameworks -Wall -Wextra -Wno-gcc-compat -Wno-error=incomplete-umbrella -Wno-error=invalid-ios-deployment-target -Wno-error=incomplete-umbrella -Wno-error=invalid-ios-deployment-target -MMD -MT dependencies -MF /Library/Caches/com.apple.xbs/Binaries/arclite_iOS/install/TempContent/Objects/arclite.build/arclite_iOS.build/Objects-normal/arm64/arclite.d --serialize-diagnostics /Library/Caches/com.apple.xbs/Binaries/arclite_iOS/install/TempContent/Objects/arclite.build/arclite_iOS.build/Objects-normal/arm64/arclite.dia -c /Library/Caches/com.apple.xbs/Sources/arclite_iOS/arclite-70/source/arclite.mm -o /Library/Caches/com.apple.xbs/Binaries/arclite_iOS/install/TempContent/Objects/arclite.build/arclite_iOS.build/Objects-normal/arm64/arclite.o -mlinker-version=409.12
+/Library/Caches/com.apple.xbs/Sources/arclite_iOS/arclite-70/source/arclite.mm
+/Library/Caches/com.apple.xbs/Sources/arclite_iOS/arclite-70
+fixStringForCoreData
+cxxConstruct
+arclite_uninitialized_function
+scanMangledField
+/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.0.Internal.sdk/usr/include/_ctype.h
+__isctype
+demangledName
+copySwiftV1DemangledName
+copySwiftV1MangledName
+allocateMaybeSwift
+word_align
+isSwift
+initialize_imp
+transcribeProperties
+property_list_nth
+transcribeProtocols
+transcribeMethods
+data
+method_list_nth
+__arclite_objc_copyClassNamesForImage
+__arclite_protocol_getName
+__arclite_class_getName
+__arclite_objc_getProtocol
+__arclite_objc_lookUpClass
+__arclite_objc_getRequiredClass
+__arclite_objc_getMetaClass
+__arclite_objc_getClass
+__arclite_object_getIndexedIvars
+__arclite_objc_allocateClassPair
+metaclass
+__arclite_objc_readClassPair
+transcribeIvars
+ivar_list_nth
+max
+alignment
+ro
+fastFlags
+__arclite_NSKKsD_addEntriesFromDictionary
+__arclite_NSKKsD_setObject_forKey
+__arclite_NSKKsD_removeObjectForKey
+__arclite_NSKKsD_objectForKey
+__arclite_NSKKMS_indexForKey
+__arclite_NSKKMS_fastIndexForKnownKey
+__arclite_NSManagedObject_allocBatch
+__arclite_NSManagedObject_allocWithEntity
+__arclite_NSManagedObject_init
+__arclite_NSUndoManagerProxy_isKindOfClass
+add_image_hook_swiftV1
+patch_lazy_pointers
+patch_t<const char **(const char *, unsigned int *)>
+patch_t<const char *(Protocol *)>
+patch_t<const char *(Class)>
+patch_t<Protocol *(const char *)>
+patch_t<Class (const char *)>
+patch_t<void *(id)>
+patch_t<Class (Class, const char *, unsigned long)>
+patch_t<Class (Class, const objc_image_info *)>
+__arclite_NSMutableDictionary__setObject_forKeyedSubscript
+__ARCLite__load
+install_swiftV1
+replaceMethod
+install_dict_nil_value
+addOrReplaceMethod
+keyedGetter

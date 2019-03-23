@@ -1,0 +1,2977 @@
+BCSymbolMap Version: 2.0
+-[FBSDKURLSessionTask initWithRequest:fromSession:completionHandler:]
+___69-[FBSDKURLSessionTask initWithRequest:fromSession:completionHandler:]_block_invoke
+___copy_helper_block_
+___destroy_helper_block_
+-[FBSDKURLSessionTask logAndInvokeHandler:error:]
+-[FBSDKURLSessionTask logAndInvokeHandler:response:responseData:]
+-[FBSDKURLSessionTask invokeHandler:error:response:responseData:]
+___65-[FBSDKURLSessionTask invokeHandler:error:response:responseData:]_block_invoke
+___copy_helper_block_.49
+___destroy_helper_block_.50
+-[FBSDKURLSessionTask logMessage:]
+-[FBSDKURLSessionTask taskDidCompleteWithResponse:data:]
+-[FBSDKURLSessionTask taskDidCompleteWithError:]
+-[FBSDKURLSessionTask start]
+-[FBSDKURLSessionTask cancel]
+-[FBSDKURLSessionTask task]
+-[FBSDKURLSessionTask setTask:]
+-[FBSDKURLSessionTask handler]
+-[FBSDKURLSessionTask setHandler:]
+-[FBSDKURLSessionTask requestStartTime]
+-[FBSDKURLSessionTask setRequestStartTime:]
+-[FBSDKURLSessionTask loggerSerialNumber]
+-[FBSDKURLSessionTask .cxx_destruct]
+_OBJC_IVAR_$_FBSDKURLSessionTask._requestStartTime
+_OBJC_IVAR_$_FBSDKURLSessionTask._loggerSerialNumber
+_OBJC_IVAR_$_FBSDKURLSessionTask._handler
+___block_descriptor_tmp
+_OBJC_IVAR_$_FBSDKURLSessionTask._task
+___block_descriptor_tmp.52
+Apple LLVM version 10.0.0 (clang-1000.11.45.5)
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/Network/FBSDKURLSessionTask.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit
+__destroy_helper_block_
+__copy_helper_block_
+__65-[FBSDKURLSessionTask invokeHandler:error:response:responseData:]_block_invoke
+__69-[FBSDKURLSessionTask initWithRequest:fromSession:completionHandler:]_block_invoke
++[FBSDKSystemAccountStoreAdapter initialize]
+-[FBSDKSystemAccountStoreAdapter init]
+-[FBSDKSystemAccountStoreAdapter accountStore]
+-[FBSDKSystemAccountStoreAdapter accountType]
+-[FBSDKSystemAccountStoreAdapter setForceBlockingRenew:]
++[FBSDKSystemAccountStoreAdapter sharedInstance]
++[FBSDKSystemAccountStoreAdapter setSharedInstance:]
+-[FBSDKSystemAccountStoreAdapter accessTokenString]
+-[FBSDKSystemAccountStoreAdapter requestAccessToFacebookAccountStore:defaultAudience:isReauthorize:appID:handler:]
+___114-[FBSDKSystemAccountStoreAdapter requestAccessToFacebookAccountStore:defaultAudience:isReauthorize:appID:handler:]_block_invoke
+___114-[FBSDKSystemAccountStoreAdapter requestAccessToFacebookAccountStore:defaultAudience:isReauthorize:appID:handler:]_block_invoke_2
+___copy_helper_block_.65
+___destroy_helper_block_.66
+-[FBSDKSystemAccountStoreAdapter requestAccessToFacebookAccountStore:retrying:handler:]
+___87-[FBSDKSystemAccountStoreAdapter requestAccessToFacebookAccountStore:retrying:handler:]_block_invoke
+___87-[FBSDKSystemAccountStoreAdapter requestAccessToFacebookAccountStore:retrying:handler:]_block_invoke_2
+___87-[FBSDKSystemAccountStoreAdapter requestAccessToFacebookAccountStore:retrying:handler:]_block_invoke_3
+___copy_helper_block_.91
+___destroy_helper_block_.92
+___copy_helper_block_.94
+___destroy_helper_block_.95
+___copy_helper_block_.97
+___destroy_helper_block_.98
+-[FBSDKSystemAccountStoreAdapter renewSystemAuthorization:]
+___59-[FBSDKSystemAccountStoreAdapter renewSystemAuthorization:]_block_invoke
+___copy_helper_block_.138
+___destroy_helper_block_.139
+-[FBSDKSystemAccountStoreAdapter forceBlockingRenew]
+-[FBSDKSystemAccountStoreAdapter .cxx_destruct]
+__singletonInstance
+_OBJC_IVAR_$_FBSDKSystemAccountStoreAdapter._forceBlockingRenew
+_OBJC_IVAR_$_FBSDKSystemAccountStoreAdapter._accountStore
+_OBJC_IVAR_$_FBSDKSystemAccountStoreAdapter._accountType
+___block_descriptor_tmp.68
+___block_descriptor_tmp.93
+___block_descriptor_tmp.96
+___block_descriptor_tmp.100
+___block_descriptor_tmp.140
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/FBSDKSystemAccountStoreAdapter.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/FBSDKSystemAccountStoreAdapter.h
+__59-[FBSDKSystemAccountStoreAdapter renewSystemAuthorization:]_block_invoke
+__87-[FBSDKSystemAccountStoreAdapter requestAccessToFacebookAccountStore:retrying:handler:]_block_invoke_3
+__87-[FBSDKSystemAccountStoreAdapter requestAccessToFacebookAccountStore:retrying:handler:]_block_invoke_2
+__87-[FBSDKSystemAccountStoreAdapter requestAccessToFacebookAccountStore:retrying:handler:]_block_invoke
+__114-[FBSDKSystemAccountStoreAdapter requestAccessToFacebookAccountStore:defaultAudience:isReauthorize:appID:handler:]_block_invoke_2
+__114-[FBSDKSystemAccountStoreAdapter requestAccessToFacebookAccountStore:defaultAudience:isReauthorize:appID:handler:]_block_invoke
++[FBSDKGraphRequestPiggybackManager addPiggybackRequests:]
++[FBSDKGraphRequestPiggybackManager addRefreshPiggyback:permissionHandler:]
+___Block_byref_object_copy_
+___Block_byref_object_dispose_
+___75+[FBSDKGraphRequestPiggybackManager addRefreshPiggyback:permissionHandler:]_block_invoke
+___75+[FBSDKGraphRequestPiggybackManager addRefreshPiggyback:permissionHandler:]_block_invoke.70
+___copy_helper_block_.79
+___destroy_helper_block_.80
+___75+[FBSDKGraphRequestPiggybackManager addRefreshPiggyback:permissionHandler:]_block_invoke.87
++[FBSDKGraphRequestPiggybackManager addRefreshPiggybackIfStale:]
+___64+[FBSDKGraphRequestPiggybackManager addRefreshPiggybackIfStale:]_block_invoke
++[FBSDKGraphRequestPiggybackManager addServerConfigurationPiggyback:]
+___69+[FBSDKGraphRequestPiggybackManager addServerConfigurationPiggyback:]_block_invoke
+___copy_helper_block_.117
+___destroy_helper_block_.118
+___block_descriptor_tmp.82
+_addRefreshPiggybackIfStale:.lastRefreshTry
+_addRefreshPiggybackIfStale:.onceToken
+___block_descriptor_tmp.97
+___block_literal_global
+___block_descriptor_tmp.119
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/Network/FBSDKGraphRequestPiggybackManager.m
+__69+[FBSDKGraphRequestPiggybackManager addServerConfigurationPiggyback:]_block_invoke
+__64+[FBSDKGraphRequestPiggybackManager addRefreshPiggybackIfStale:]_block_invoke
+/Applications/Xcode-10.1.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.1.sdk/usr/include/dispatch/once.h
+__75+[FBSDKGraphRequestPiggybackManager addRefreshPiggyback:permissionHandler:]_block_invoke.87
+__75+[FBSDKGraphRequestPiggybackManager addRefreshPiggyback:permissionHandler:]_block_invoke.70
+__75+[FBSDKGraphRequestPiggybackManager addRefreshPiggyback:permissionHandler:]_block_invoke
+__Block_byref_object_dispose_
+__Block_byref_object_copy_
++[FBSDKAppEventsStateManager clearPersistedAppEventsStates]
++[FBSDKAppEventsStateManager persistAppEventsData:]
++[FBSDKAppEventsStateManager retrievePersistedAppEventsStates]
++[FBSDKAppEventsStateManager filePath]
+_g_canSkipDiskCheck
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppEvents/Internal/FBSDKAppEventsStateManager.m
++[FBSDKServerConfigurationManager initialize]
++[FBSDKServerConfigurationManager clearCache]
++[FBSDKServerConfigurationManager cachedServerConfiguration]
++[FBSDKServerConfigurationManager loadServerConfigurationWithCompletionBlock:]
+___78+[FBSDKServerConfigurationManager loadServerConfigurationWithCompletionBlock:]_block_invoke
++[FBSDKServerConfigurationManager processLoadRequestResponse:error:appID:]
++[FBSDKServerConfigurationManager requestToLoadServerConfiguration:]
++[FBSDKServerConfigurationManager _defaultServerConfigurationForAppID:]
++[FBSDKServerConfigurationManager _didProcessConfigurationFromNetwork:appID:error:]
++[FBSDKServerConfigurationManager _parseDialogConfigurations:]
++[FBSDKServerConfigurationManager _serverConfigurationTimestampIsValid:]
++[FBSDKServerConfigurationManager _wrapperBlockForLoadBlock:]
+___61+[FBSDKServerConfigurationManager _wrapperBlockForLoadBlock:]_block_invoke
+___copy_helper_block_.191
+___destroy_helper_block_.192
+-[FBSDKServerConfigurationManager init]
+__completionBlocks
+__serverConfiguration
+__serverConfigurationError
+__serverConfigurationErrorTimestamp
+__requeryFinishedForAppStart
+__loadingServerConfiguration
+__defaultServerConfigurationForAppID:._defaultServerConfiguration
+__printedUpdateMessage
+___block_descriptor_tmp.194
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/ServerConfiguration/FBSDKServerConfigurationManager.m
+__61+[FBSDKServerConfigurationManager _wrapperBlockForLoadBlock:]_block_invoke
+__78+[FBSDKServerConfigurationManager loadServerConfigurationWithCompletionBlock:]_block_invoke
+-[FBSDKGraphRequest initWithGraphPath:parameters:]
+-[FBSDKGraphRequest initWithGraphPath:parameters:HTTPMethod:]
+-[FBSDKGraphRequest initWithGraphPath:parameters:flags:]
+-[FBSDKGraphRequest initWithGraphPath:parameters:tokenString:HTTPMethod:flags:]
+-[FBSDKGraphRequest initWithGraphPath:parameters:tokenString:version:HTTPMethod:]
+-[FBSDKGraphRequest isGraphErrorRecoveryDisabled]
+-[FBSDKGraphRequest setGraphErrorRecoveryDisabled:]
+-[FBSDKGraphRequest hasAttachments]
+___35-[FBSDKGraphRequest hasAttachments]_block_invoke
++[FBSDKGraphRequest isAttachment:]
++[FBSDKGraphRequest serializeURL:params:]
++[FBSDKGraphRequest serializeURL:params:httpMethod:]
++[FBSDKGraphRequest serializeURL:params:httpMethod:forBatch:]
+___61+[FBSDKGraphRequest serializeURL:params:httpMethod:forBatch:]_block_invoke
+___copy_helper_block_.69
+___destroy_helper_block_.70
++[FBSDKGraphRequest preprocessParams:]
+-[FBSDKGraphRequest startWithCompletionHandler:]
+-[FBSDKGraphRequest description]
+-[FBSDKGraphRequest parameters]
+-[FBSDKGraphRequest tokenString]
+-[FBSDKGraphRequest graphPath]
+-[FBSDKGraphRequest HTTPMethod]
+-[FBSDKGraphRequest version]
+-[FBSDKGraphRequest flags]
+-[FBSDKGraphRequest setFlags:]
+-[FBSDKGraphRequest .cxx_destruct]
+_OBJC_IVAR_$_FBSDKGraphRequest._tokenString
+_OBJC_IVAR_$_FBSDKGraphRequest._version
+_OBJC_IVAR_$_FBSDKGraphRequest._graphPath
+_OBJC_IVAR_$_FBSDKGraphRequest._HTTPMethod
+_OBJC_IVAR_$_FBSDKGraphRequest._parameters
+_OBJC_IVAR_$_FBSDKGraphRequest._flags
+___block_descriptor_tmp.72
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/FBSDKGraphRequest.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/FBSDKGraphRequest.h
+__61+[FBSDKGraphRequest serializeURL:params:httpMethod:forBatch:]_block_invoke
+__35-[FBSDKGraphRequest hasAttachments]_block_invoke
+-[FBSDKContainerViewController viewDidDisappear:]
+-[FBSDKContainerViewController displayChildController:]
+-[FBSDKContainerViewController delegate]
+-[FBSDKContainerViewController setDelegate:]
+-[FBSDKContainerViewController .cxx_destruct]
+_OBJC_IVAR_$_FBSDKContainerViewController._delegate
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/FBSDKContainerViewController.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/FBSDKContainerViewController.h
+-[FBSDKAccessTokenCache accessToken]
+___36-[FBSDKAccessTokenCache accessToken]_block_invoke
+-[FBSDKAccessTokenCache setAccessToken:]
+___40-[FBSDKAccessTokenCache setAccessToken:]_block_invoke
+-[FBSDKAccessTokenCache clearCache]
++[FBSDKAccessTokenCache resetV3CacheChecks]
++[FBSDKAccessTokenCache deprecatedCacheClasses]
+_g_tryDeprecatedCaches
+___block_descriptor_tmp.15
+l_OBJC_PROTOCOL_$_NSObject
+l_OBJC_LABEL_PROTOCOL_$_NSObject
+l_OBJC_PROTOCOL_$_FBSDKAccessTokenCaching
+l_OBJC_LABEL_PROTOCOL_$_FBSDKAccessTokenCaching
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/TokenCaching/FBSDKAccessTokenCache.m
+__40-[FBSDKAccessTokenCache setAccessToken:]_block_invoke
+__36-[FBSDKAccessTokenCache accessToken]_block_invoke
++[FBSDKCrypto makeMasterKey]
++[FBSDKCrypto randomBytes:]
++[FBSDKCrypto randomString:]
+-[FBSDKCrypto initWithMasterKey:]
+-[FBSDKCrypto initWithEncryptionKey:macKey:]
+-[FBSDKCrypto dealloc]
+-[FBSDKCrypto encrypt:additionalDataToSign:]
+-[FBSDKCrypto decrypt:additionalSignedData:]
+-[FBSDKCrypto _macForIV:cipherData:additionalDataToSign:]
+-[FBSDKCrypto .cxx_destruct]
+_OBJC_IVAR_$_FBSDKCrypto._encryptionKeyData
+_OBJC_IVAR_$_FBSDKCrypto._macKeyData
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/Cryptography/FBSDKCrypto.m
+FBSDKCryptoWriteIntBigEndian
+FBSDKCryptoBlankData
+FBSDKCryptoMakeSubKey
+-[FBSDKAppEventsState initWithToken:appID:]
+-[FBSDKAppEventsState copyWithZone:]
++[FBSDKAppEventsState supportsSecureCoding]
+-[FBSDKAppEventsState initWithCoder:]
+-[FBSDKAppEventsState encodeWithCoder:]
+-[FBSDKAppEventsState events]
+-[FBSDKAppEventsState addEventsFromAppEventState:]
+-[FBSDKAppEventsState addEvent:isImplicit:]
+-[FBSDKAppEventsState extractReceiptData]
+-[FBSDKAppEventsState areAllEventsImplicit]
+-[FBSDKAppEventsState isCompatibleWithAppEventsState:]
+-[FBSDKAppEventsState isCompatibleWithTokenString:appID:]
+-[FBSDKAppEventsState JSONStringForEvents:]
+-[FBSDKAppEventsState numSkipped]
+-[FBSDKAppEventsState tokenString]
+-[FBSDKAppEventsState appID]
+-[FBSDKAppEventsState .cxx_destruct]
+_OBJC_IVAR_$_FBSDKAppEventsState._tokenString
+_OBJC_IVAR_$_FBSDKAppEventsState._appID
+_OBJC_IVAR_$_FBSDKAppEventsState._mutableEvents
+_OBJC_IVAR_$_FBSDKAppEventsState._numSkipped
+l_OBJC_PROTOCOL_$_NSCopying
+l_OBJC_LABEL_PROTOCOL_$_NSCopying
+l_OBJC_PROTOCOL_$_NSCoding
+l_OBJC_LABEL_PROTOCOL_$_NSCoding
+l_OBJC_PROTOCOL_$_NSSecureCoding
+l_OBJC_LABEL_PROTOCOL_$_NSSecureCoding
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppEvents/Internal/FBSDKAppEventsState.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppEvents/Internal/FBSDKAppEventsState.h
+-[FBSDKWebViewAppLinkResolverWebViewDelegate webViewDidFinishLoad:]
+-[FBSDKWebViewAppLinkResolverWebViewDelegate webViewDidStartLoad:]
+-[FBSDKWebViewAppLinkResolverWebViewDelegate webView:didFailLoadWithError:]
+-[FBSDKWebViewAppLinkResolverWebViewDelegate webView:shouldStartLoadWithRequest:navigationType:]
+-[FBSDKWebViewAppLinkResolverWebViewDelegate didFinishLoad]
+-[FBSDKWebViewAppLinkResolverWebViewDelegate setDidFinishLoad:]
+-[FBSDKWebViewAppLinkResolverWebViewDelegate didFailLoadWithError]
+-[FBSDKWebViewAppLinkResolverWebViewDelegate setDidFailLoadWithError:]
+-[FBSDKWebViewAppLinkResolverWebViewDelegate hasLoaded]
+-[FBSDKWebViewAppLinkResolverWebViewDelegate setHasLoaded:]
+-[FBSDKWebViewAppLinkResolverWebViewDelegate .cxx_destruct]
++[FBSDKWebViewAppLinkResolver sharedInstance]
+___45+[FBSDKWebViewAppLinkResolver sharedInstance]_block_invoke
+-[FBSDKWebViewAppLinkResolver followRedirects:handler:]
+___55-[FBSDKWebViewAppLinkResolver followRedirects:handler:]_block_invoke
+___copy_helper_block_.127
+___destroy_helper_block_.128
+___55-[FBSDKWebViewAppLinkResolver followRedirects:handler:]_block_invoke.139
+___copy_helper_block_.140
+___destroy_helper_block_.141
+-[FBSDKWebViewAppLinkResolver appLinkFromURL:handler:]
+___54-[FBSDKWebViewAppLinkResolver appLinkFromURL:handler:]_block_invoke
+___54-[FBSDKWebViewAppLinkResolver appLinkFromURL:handler:]_block_invoke_2
+___54-[FBSDKWebViewAppLinkResolver appLinkFromURL:handler:]_block_invoke.150
+___copy_helper_block_.159
+___destroy_helper_block_.160
+___54-[FBSDKWebViewAppLinkResolver appLinkFromURL:handler:]_block_invoke.164
+___copy_helper_block_.165
+___destroy_helper_block_.166
+___copy_helper_block_.189
+___destroy_helper_block_.190
+___copy_helper_block_.193
+___destroy_helper_block_.194
+-[FBSDKWebViewAppLinkResolver parseALData:]
+-[FBSDKWebViewAppLinkResolver getALDataFromLoadedPage:]
+-[FBSDKWebViewAppLinkResolver appLinkFromALData:destination:]
+_OBJC_IVAR_$_FBSDKWebViewAppLinkResolverWebViewDelegate._didFinishLoad
+_OBJC_IVAR_$_FBSDKWebViewAppLinkResolverWebViewDelegate._didFailLoadWithError
+_OBJC_IVAR_$_FBSDKWebViewAppLinkResolverWebViewDelegate._hasLoaded
+l_OBJC_PROTOCOL_$_UIWebViewDelegate
+l_OBJC_LABEL_PROTOCOL_$_UIWebViewDelegate
+_sharedInstance.instance
+_sharedInstance.onceToken
+___block_descriptor_tmp.130
+___block_descriptor_tmp.143
+___block_descriptor_tmp.162
+___block_descriptor_tmp.168
+___block_descriptor_tmp.192
+___block_descriptor_tmp.195
+l_OBJC_PROTOCOL_$_FBSDKAppLinkResolving
+l_OBJC_LABEL_PROTOCOL_$_FBSDKAppLinkResolving
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppLink/FBSDKWebViewAppLinkResolver.m
+UI_USER_INTERFACE_IDIOM
+/Applications/Xcode-10.1.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.1.sdk/System/Library/Frameworks/UIKit.framework/Headers/UIDevice.h
+__54-[FBSDKWebViewAppLinkResolver appLinkFromURL:handler:]_block_invoke.164
+__54-[FBSDKWebViewAppLinkResolver appLinkFromURL:handler:]_block_invoke.150
+__54-[FBSDKWebViewAppLinkResolver appLinkFromURL:handler:]_block_invoke_2
+__54-[FBSDKWebViewAppLinkResolver appLinkFromURL:handler:]_block_invoke
+__55-[FBSDKWebViewAppLinkResolver followRedirects:handler:]_block_invoke.139
+__55-[FBSDKWebViewAppLinkResolver followRedirects:handler:]_block_invoke
+__45+[FBSDKWebViewAppLinkResolver sharedInstance]_block_invoke
+-[FBSDKCloseIcon imageWithSize:]
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/UI/FBSDKCloseIcon.m
+CGPointMake
+/Applications/Xcode-10.1.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.1.sdk/System/Library/Frameworks/CoreGraphics.framework/Headers/CGGeometry.h
+CGRectMake
++[FBSDKBase64 initialize]
++[FBSDKBase64 decodeAsData:]
++[FBSDKBase64 decodeAsString:]
++[FBSDKBase64 encodeData:]
++[FBSDKBase64 encodeString:]
+-[FBSDKBase64 decodeAsData:]
+-[FBSDKBase64 decodeAsString:]
+-[FBSDKBase64 encodeData:]
+-[FBSDKBase64 encodeString:]
+__decoder
+__encoder
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/Base64/FBSDKBase64.m
+-[FBSDKBridgeAPIProtocolWebV2 init]
+-[FBSDKBridgeAPIProtocolWebV2 _redirectURLWithActionID:methodName:error:]
+-[FBSDKBridgeAPIProtocolWebV2 _requestURLForDialogConfiguration:error:]
+-[FBSDKBridgeAPIProtocolWebV2 requestURLWithActionID:scheme:methodName:methodVersion:parameters:error:]
+-[FBSDKBridgeAPIProtocolWebV2 responseParametersForActionID:queryParameters:cancelled:error:]
+-[FBSDKBridgeAPIProtocolWebV2 .cxx_destruct]
+_OBJC_IVAR_$_FBSDKBridgeAPIProtocolWebV2._nativeProtocol
+l_OBJC_PROTOCOL_$_FBSDKBridgeAPIProtocol
+l_OBJC_LABEL_PROTOCOL_$_FBSDKBridgeAPIProtocol
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/BridgeAPI/ProtocolVersions/FBSDKBridgeAPIProtocolWebV2.m
+-[FBSDKGraphRequestBody init]
+-[FBSDKGraphRequestBody mimeContentType]
+-[FBSDKGraphRequestBody appendUTF8:]
+-[FBSDKGraphRequestBody appendWithKey:formValue:logger:]
+___56-[FBSDKGraphRequestBody appendWithKey:formValue:logger:]_block_invoke
+-[FBSDKGraphRequestBody appendWithKey:imageValue:logger:]
+___57-[FBSDKGraphRequestBody appendWithKey:imageValue:logger:]_block_invoke
+___copy_helper_block_.40
+___destroy_helper_block_.41
+-[FBSDKGraphRequestBody appendWithKey:dataValue:logger:]
+___56-[FBSDKGraphRequestBody appendWithKey:dataValue:logger:]_block_invoke
+___copy_helper_block_.47
+___destroy_helper_block_.48
+-[FBSDKGraphRequestBody appendWithKey:dataAttachmentValue:logger:]
+___66-[FBSDKGraphRequestBody appendWithKey:dataAttachmentValue:logger:]_block_invoke
+___copy_helper_block_.58
+___destroy_helper_block_.59
+-[FBSDKGraphRequestBody data]
+-[FBSDKGraphRequestBody _appendWithKey:filename:contentType:contentBlock:]
+-[FBSDKGraphRequestBody .cxx_destruct]
+_OBJC_IVAR_$_FBSDKGraphRequestBody._stringBoundary
+_OBJC_IVAR_$_FBSDKGraphRequestBody._data
+_OBJC_IVAR_$_FBSDKGraphRequestBody._json
+___block_descriptor_tmp.42
+___block_descriptor_tmp.49
+___block_descriptor_tmp.60
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/Network/FBSDKGraphRequestBody.m
+__66-[FBSDKGraphRequestBody appendWithKey:dataAttachmentValue:logger:]_block_invoke
+__56-[FBSDKGraphRequestBody appendWithKey:dataValue:logger:]_block_invoke
+__57-[FBSDKGraphRequestBody appendWithKey:imageValue:logger:]_block_invoke
+__56-[FBSDKGraphRequestBody appendWithKey:formValue:logger:]_block_invoke
++[FBSDKUtility dictionaryWithQueryString:]
++[FBSDKUtility queryStringWithDictionary:error:]
++[FBSDKUtility URLDecode:]
++[FBSDKUtility URLEncode:]
++[FBSDKUtility startGCDTimerWithInterval:block:]
++[FBSDKUtility stopGCDTimer:]
++[FBSDKUtility SHA256Hash:]
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/FBSDKUtility.m
+-[FBSDKTestUsersManager initWithAppID:appSecret:]
++[FBSDKTestUsersManager sharedInstanceForAppID:appSecret:]
+___58+[FBSDKTestUsersManager sharedInstanceForAppID:appSecret:]_block_invoke
+-[FBSDKTestUsersManager requestTestAccountTokensWithArraysOfPermissions:createIfNotFound:completionHandler:]
+___108-[FBSDKTestUsersManager requestTestAccountTokensWithArraysOfPermissions:createIfNotFound:completionHandler:]_block_invoke
+___108-[FBSDKTestUsersManager requestTestAccountTokensWithArraysOfPermissions:createIfNotFound:completionHandler:]_block_invoke_2
+___108-[FBSDKTestUsersManager requestTestAccountTokensWithArraysOfPermissions:createIfNotFound:completionHandler:]_block_invoke_3
+___copy_helper_block_.55
+___destroy_helper_block_.56
+___copy_helper_block_.61
+___destroy_helper_block_.62
+-[FBSDKTestUsersManager addTestAccountWithPermissions:completionHandler:]
+___73-[FBSDKTestUsersManager addTestAccountWithPermissions:completionHandler:]_block_invoke
+___copy_helper_block_.93
+___destroy_helper_block_.94
+-[FBSDKTestUsersManager makeFriendsWithFirst:second:callback:]
+___62-[FBSDKTestUsersManager makeFriendsWithFirst:second:callback:]_block_invoke
+___copy_helper_block_.103
+___destroy_helper_block_.104
+___62-[FBSDKTestUsersManager makeFriendsWithFirst:second:callback:]_block_invoke.115
+___copy_helper_block_.116
+___destroy_helper_block_.117
+___62-[FBSDKTestUsersManager makeFriendsWithFirst:second:callback:]_block_invoke.123
+___copy_helper_block_.124
+___destroy_helper_block_.125
+-[FBSDKTestUsersManager removeTestAccount:completionHandler:]
+___61-[FBSDKTestUsersManager removeTestAccount:completionHandler:]_block_invoke
+___copy_helper_block_.133
+___destroy_helper_block_.134
+-[FBSDKTestUsersManager tokenDataForTokenString:permissions:userId:]
+-[FBSDKTestUsersManager userIdAndTokenOfExistingAccountWithPermissions:skip:]
+___77-[FBSDKTestUsersManager userIdAndTokenOfExistingAccountWithPermissions:skip:]_block_invoke
+___copy_helper_block_.145
+___destroy_helper_block_.146
+-[FBSDKTestUsersManager appAccessToken]
+-[FBSDKTestUsersManager fetchExistingTestAccountsWithAfterCursor:handler:]
+___74-[FBSDKTestUsersManager fetchExistingTestAccountsWithAfterCursor:handler:]_block_invoke
+___74-[FBSDKTestUsersManager fetchExistingTestAccountsWithAfterCursor:handler:]_block_invoke_2
+___74-[FBSDKTestUsersManager fetchExistingTestAccountsWithAfterCursor:handler:]_block_invoke_3
+___copy_helper_block_.177
+___destroy_helper_block_.178
+___copy_helper_block_.181
+___destroy_helper_block_.182
+___copy_helper_block_.190
+___destroy_helper_block_.191
+-[FBSDKTestUsersManager .cxx_destruct]
+_OBJC_IVAR_$_FBSDKTestUsersManager._appID
+_OBJC_IVAR_$_FBSDKTestUsersManager._appSecret
+_OBJC_IVAR_$_FBSDKTestUsersManager._accounts
+_sharedInstanceForAppID:appSecret:.onceToken
+_gInstancesDictionary
+___block_descriptor_tmp.43
+___block_descriptor_tmp.58
+___block_descriptor_tmp.64
+___block_descriptor_tmp.105
+___block_descriptor_tmp.118
+___block_descriptor_tmp.126
+___block_descriptor_tmp.135
+___block_descriptor_tmp.148
+___block_descriptor_tmp.180
+___block_descriptor_tmp.183
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/FBSDKTestUsersManager.m
+__74-[FBSDKTestUsersManager fetchExistingTestAccountsWithAfterCursor:handler:]_block_invoke_3
+__74-[FBSDKTestUsersManager fetchExistingTestAccountsWithAfterCursor:handler:]_block_invoke_2
+__74-[FBSDKTestUsersManager fetchExistingTestAccountsWithAfterCursor:handler:]_block_invoke
+__77-[FBSDKTestUsersManager userIdAndTokenOfExistingAccountWithPermissions:skip:]_block_invoke
+__61-[FBSDKTestUsersManager removeTestAccount:completionHandler:]_block_invoke
+__62-[FBSDKTestUsersManager makeFriendsWithFirst:second:callback:]_block_invoke.123
+__62-[FBSDKTestUsersManager makeFriendsWithFirst:second:callback:]_block_invoke.115
+__62-[FBSDKTestUsersManager makeFriendsWithFirst:second:callback:]_block_invoke
+__73-[FBSDKTestUsersManager addTestAccountWithPermissions:completionHandler:]_block_invoke
+__108-[FBSDKTestUsersManager requestTestAccountTokensWithArraysOfPermissions:createIfNotFound:completionHandler:]_block_invoke_3
+__108-[FBSDKTestUsersManager requestTestAccountTokensWithArraysOfPermissions:createIfNotFound:completionHandler:]_block_invoke_2
+__108-[FBSDKTestUsersManager requestTestAccountTokensWithArraysOfPermissions:createIfNotFound:completionHandler:]_block_invoke
+__58+[FBSDKTestUsersManager sharedInstanceForAppID:appSecret:]_block_invoke
+-[FBSDKProfilePictureViewState initWithProfileID:size:scale:pictureMode:imageShouldFit:]
+-[FBSDKProfilePictureViewState hash]
+-[FBSDKProfilePictureViewState isEqual:]
+-[FBSDKProfilePictureViewState isEqualToState:]
+-[FBSDKProfilePictureViewState isValidForState:]
+-[FBSDKProfilePictureViewState imageShouldFit]
+-[FBSDKProfilePictureViewState pictureMode]
+-[FBSDKProfilePictureViewState profileID]
+-[FBSDKProfilePictureViewState scale]
+-[FBSDKProfilePictureViewState size]
+-[FBSDKProfilePictureViewState .cxx_destruct]
+-[FBSDKProfilePictureView initWithFrame:]
+-[FBSDKProfilePictureView initWithCoder:]
+-[FBSDKProfilePictureView dealloc]
+-[FBSDKProfilePictureView setBounds:]
+___37-[FBSDKProfilePictureView setBounds:]_block_invoke
+-[FBSDKProfilePictureView contentMode]
+-[FBSDKProfilePictureView setContentMode:]
+-[FBSDKProfilePictureView setMode:]
+-[FBSDKProfilePictureView setProfileID:]
+-[FBSDKProfilePictureView setNeedsImageUpdate]
+___46-[FBSDKProfilePictureView setNeedsImageUpdate]_block_invoke
+___copy_helper_block_.82
+___destroy_helper_block_.83
++[FBSDKProfilePictureView _downloadImageWithState:completionBlock:]
+___67+[FBSDKProfilePictureView _downloadImageWithState:completionBlock:]_block_invoke
++[FBSDKProfilePictureView _imageURLWithState:]
+-[FBSDKProfilePictureView _accessTokenDidChangeNotification:]
+-[FBSDKProfilePictureView _configureProfilePictureView]
+-[FBSDKProfilePictureView _imageShouldFit]
+-[FBSDKProfilePictureView _imageSize:scale:]
+-[FBSDKProfilePictureView _needsImageUpdate]
+___44-[FBSDKProfilePictureView _needsImageUpdate]_block_invoke
+___copy_helper_block_.175
+___destroy_helper_block_.176
+-[FBSDKProfilePictureView _setPlaceholderImage]
+___47-[FBSDKProfilePictureView _setPlaceholderImage]_block_invoke
+-[FBSDKProfilePictureView _updateImageWithData:state:]
+___54-[FBSDKProfilePictureView _updateImageWithData:state:]_block_invoke
+___copy_helper_block_.196
+___destroy_helper_block_.197
+-[FBSDKProfilePictureView pictureMode]
+-[FBSDKProfilePictureView setPictureMode:]
+-[FBSDKProfilePictureView profileID]
+-[FBSDKProfilePictureView .cxx_destruct]
+_OBJC_IVAR_$_FBSDKProfilePictureViewState._profileID
+_OBJC_IVAR_$_FBSDKProfilePictureViewState._size
+_OBJC_IVAR_$_FBSDKProfilePictureViewState._scale
+_OBJC_IVAR_$_FBSDKProfilePictureViewState._pictureMode
+_OBJC_IVAR_$_FBSDKProfilePictureViewState._imageShouldFit
+_OBJC_IVAR_$_FBSDKProfilePictureView._placeholderImageIsValid
+_OBJC_IVAR_$_FBSDKProfilePictureView._imageView
+_OBJC_IVAR_$_FBSDKProfilePictureView._pictureMode
+_OBJC_IVAR_$_FBSDKProfilePictureView._profileID
+_OBJC_IVAR_$_FBSDKProfilePictureView._hasProfileImage
+_OBJC_IVAR_$_FBSDKProfilePictureView._needsImageUpdate
+___block_descriptor_tmp.84
+_OBJC_IVAR_$_FBSDKProfilePictureView._lastState
+___block_descriptor_tmp.178
+___block_descriptor_tmp.198
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/FBSDKProfilePictureView.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/FBSDKProfilePictureView.h
+__54-[FBSDKProfilePictureView _updateImageWithData:state:]_block_invoke
+__47-[FBSDKProfilePictureView _setPlaceholderImage]_block_invoke
+__44-[FBSDKProfilePictureView _needsImageUpdate]_block_invoke
+__67+[FBSDKProfilePictureView _downloadImageWithState:completionBlock:]_block_invoke
+__46-[FBSDKProfilePictureView setNeedsImageUpdate]_block_invoke
+__37-[FBSDKProfilePictureView setBounds:]_block_invoke
+__CGSizeEqualToSize
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/FBSDKTriStateBOOL.m
+BOOLFromFBSDKTriStateBOOL
+FBSDKTriStateBOOLFromNSNumber
+FBSDKTriStateBOOLFromBOOL
+-[FBSDKLogger initWithLoggingBehavior:]
+-[FBSDKLogger contents]
+-[FBSDKLogger setContents:]
+-[FBSDKLogger appendString:]
+-[FBSDKLogger appendFormat:]
+-[FBSDKLogger appendKey:value:]
+-[FBSDKLogger emitToNSLog]
++[FBSDKLogger generateSerialNumber]
++[FBSDKLogger singleShotLogEntry:logEntry:]
++[FBSDKLogger singleShotLogEntry:formatString:]
++[FBSDKLogger singleShotLogEntry:timestampTag:formatString:]
++[FBSDKLogger registerCurrentTime:withTag:]
++[FBSDKLogger registerStringToReplace:replaceWith:]
+-[FBSDKLogger loggerSerialNumber]
+-[FBSDKLogger loggingBehavior]
+-[FBSDKLogger isActive]
+-[FBSDKLogger internalContents]
+-[FBSDKLogger .cxx_destruct]
+_g_stringsToReplace
+_g_startTimesWithTags
+_OBJC_IVAR_$_FBSDKLogger._isActive
+_OBJC_IVAR_$_FBSDKLogger._loggingBehavior
+_OBJC_IVAR_$_FBSDKLogger._internalContents
+_OBJC_IVAR_$_FBSDKLogger._loggerSerialNumber
+_g_serialNumberCounter
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/FBSDKLogger.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/FBSDKLogger.h
++[FBSDKApplicationDelegate load]
++[FBSDKApplicationDelegate initializeWithLaunchData:]
++[FBSDKApplicationDelegate sharedInstance]
+___42+[FBSDKApplicationDelegate sharedInstance]_block_invoke
+-[FBSDKApplicationDelegate _init]
+-[FBSDKApplicationDelegate init]
+-[FBSDKApplicationDelegate dealloc]
+-[FBSDKApplicationDelegate application:openURL:options:]
+-[FBSDKApplicationDelegate application:openURL:sourceApplication:annotation:]
+-[FBSDKApplicationDelegate application:didFinishLaunchingWithOptions:]
+-[FBSDKApplicationDelegate applicationDidEnterBackground:]
+-[FBSDKApplicationDelegate applicationDidBecomeActive:]
+-[FBSDKApplicationDelegate addObserver:]
+-[FBSDKApplicationDelegate removeObserver:]
+-[FBSDKApplicationDelegate _logIfAppLinkEvent:]
+-[FBSDKApplicationDelegate _logSDKInitialize]
+-[FBSDKApplicationDelegate isAppLaunched]
+-[FBSDKApplicationDelegate .cxx_destruct]
+___clang_at_available_requires_core_foundation_framework
+_sharedInstance._sharedInstance
+_OBJC_IVAR_$_FBSDKApplicationDelegate._applicationObservers
+_OBJC_IVAR_$_FBSDKApplicationDelegate._isAppLaunched
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/FBSDKApplicationDelegate.m
+__42+[FBSDKApplicationDelegate sharedInstance]_block_invoke
++[FBSDKBridgeAPI load]
++[FBSDKBridgeAPI sharedInstance]
+___32+[FBSDKBridgeAPI sharedInstance]_block_invoke
+-[FBSDKBridgeAPI applicationDidBecomeActive:]
+-[FBSDKBridgeAPI applicationDidEnterBackground:]
+-[FBSDKBridgeAPI application:openURL:sourceApplication:annotation:]
+___67-[FBSDKBridgeAPI application:openURL:sourceApplication:annotation:]_block_invoke
+___copy_helper_block_.19
+___destroy_helper_block_.20
+-[FBSDKBridgeAPI application:didFinishLaunchingWithOptions:]
+-[FBSDKBridgeAPI openURL:sender:handler:]
+___41-[FBSDKBridgeAPI openURL:sender:handler:]_block_invoke
+___41-[FBSDKBridgeAPI openURL:sender:handler:]_block_invoke_2
+___copy_helper_block_.44
+___destroy_helper_block_.45
+-[FBSDKBridgeAPI openBridgeAPIRequest:useSafariViewController:fromViewController:completionBlock:]
+___98-[FBSDKBridgeAPI openBridgeAPIRequest:useSafariViewController:fromViewController:completionBlock:]_block_invoke
+___copy_helper_block_.75
+___destroy_helper_block_.76
+-[FBSDKBridgeAPI openURLWithSafariViewController:sender:fromViewController:handler:]
+___84-[FBSDKBridgeAPI openURLWithSafariViewController:sender:fromViewController:handler:]_block_invoke
+___copy_helper_block_.129
+___destroy_helper_block_.130
+-[FBSDKBridgeAPI _openURLWithAuthenticationSession:]
+-[FBSDKBridgeAPI _setSessionCompletionHandlerFromHandler:]
+___58-[FBSDKBridgeAPI _setSessionCompletionHandlerFromHandler:]_block_invoke
+___copy_helper_block_.146
+___destroy_helper_block_.147
+-[FBSDKBridgeAPI safariViewControllerDidFinish:]
+-[FBSDKBridgeAPI viewControllerDidDisappear:animated:]
+-[FBSDKBridgeAPI _handleBridgeAPIResponseURL:sourceApplication:]
+-[FBSDKBridgeAPI _cancelBridgeRequest]
+-[FBSDKBridgeAPI isActive]
+-[FBSDKBridgeAPI .cxx_destruct]
+_OBJC_IVAR_$_FBSDKBridgeAPI._expectingBackground
+_OBJC_IVAR_$_FBSDKBridgeAPI._safariViewController
+_OBJC_IVAR_$_FBSDKBridgeAPI._isDismissingSafariViewController
+_OBJC_IVAR_$_FBSDKBridgeAPI._isRequestingSFAuthenticationSession
+_OBJC_IVAR_$_FBSDKBridgeAPI._active
+_OBJC_IVAR_$_FBSDKBridgeAPI._pendingURLOpen
+___block_descriptor_tmp.21
+_OBJC_IVAR_$_FBSDKBridgeAPI._authenticationSession
+___block_descriptor_tmp.47
+_OBJC_IVAR_$_FBSDKBridgeAPI._pendingRequest
+_OBJC_IVAR_$_FBSDKBridgeAPI._pendingRequestCompletionBlock
+___block_descriptor_tmp.78
+___block_descriptor_tmp.133
+_OBJC_IVAR_$_FBSDKBridgeAPI._authenticationSessionCompletionHandler
+___block_descriptor_tmp.149
+l_OBJC_PROTOCOL_$_FBSDKApplicationObserving
+l_OBJC_LABEL_PROTOCOL_$_FBSDKApplicationObserving
+l_OBJC_PROTOCOL_$_FBSDKContainerViewControllerDelegate
+l_OBJC_LABEL_PROTOCOL_$_FBSDKContainerViewControllerDelegate
+_OBJC_IVAR_$_FBSDKBridgeAPI._isAppLaunched
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/BridgeAPI/FBSDKBridgeAPI.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/BridgeAPI/FBSDKBridgeAPI.h
+__58-[FBSDKBridgeAPI _setSessionCompletionHandlerFromHandler:]_block_invoke
+__84-[FBSDKBridgeAPI openURLWithSafariViewController:sender:fromViewController:handler:]_block_invoke
+__98-[FBSDKBridgeAPI openBridgeAPIRequest:useSafariViewController:fromViewController:completionBlock:]_block_invoke
+__41-[FBSDKBridgeAPI openURL:sender:handler:]_block_invoke_2
+__41-[FBSDKBridgeAPI openURL:sender:handler:]_block_invoke
+__67-[FBSDKBridgeAPI application:openURL:sourceApplication:annotation:]_block_invoke
+__32+[FBSDKBridgeAPI sharedInstance]_block_invoke
++[FBSDKAppLinkNavigation navigationWithAppLink:extras:appLinkData:]
++[FBSDKAppLinkNavigation callbackAppLinkDataForAppWithName:url:]
+-[FBSDKAppLinkNavigation stringByEscapingQueryString:]
+-[FBSDKAppLinkNavigation appLinkURLWithTargetURL:error:]
+-[FBSDKAppLinkNavigation navigate:]
+-[FBSDKAppLinkNavigation postAppLinkNavigateEventNotificationWithTargetURL:error:type:]
++[FBSDKAppLinkNavigation resolveAppLink:resolver:handler:]
++[FBSDKAppLinkNavigation resolveAppLink:handler:]
++[FBSDKAppLinkNavigation navigateToURL:handler:]
++[FBSDKAppLinkNavigation navigateToURL:resolver:handler:]
+___57+[FBSDKAppLinkNavigation navigateToURL:resolver:handler:]_block_invoke
+___57+[FBSDKAppLinkNavigation navigateToURL:resolver:handler:]_block_invoke_2
+___copy_helper_block_.122
+___destroy_helper_block_.123
++[FBSDKAppLinkNavigation navigateToAppLink:error:]
++[FBSDKAppLinkNavigation navigationTypeForLink:]
+-[FBSDKAppLinkNavigation navigationType]
++[FBSDKAppLinkNavigation defaultResolver]
++[FBSDKAppLinkNavigation setDefaultResolver:]
+-[FBSDKAppLinkNavigation extras]
+-[FBSDKAppLinkNavigation setExtras:]
+-[FBSDKAppLinkNavigation appLinkData]
+-[FBSDKAppLinkNavigation setAppLinkData:]
+-[FBSDKAppLinkNavigation appLink]
+-[FBSDKAppLinkNavigation setAppLink:]
+-[FBSDKAppLinkNavigation .cxx_destruct]
+___block_descriptor_tmp.125
+_defaultResolver
+_OBJC_IVAR_$_FBSDKAppLinkNavigation._extras
+_OBJC_IVAR_$_FBSDKAppLinkNavigation._appLinkData
+_OBJC_IVAR_$_FBSDKAppLinkNavigation._appLink
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppLink/FBSDKAppLinkNavigation.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppLink/FBSDKAppLinkNavigation.h
+__57+[FBSDKAppLinkNavigation navigateToURL:resolver:handler:]_block_invoke_2
+__57+[FBSDKAppLinkNavigation navigateToURL:resolver:handler:]_block_invoke
++[FBSDKDynamicFrameworkLoader loadkSecRandomDefault]
+_fbsdkdfl_handle_get_Security
+_fbsdkdfl_load_symbol_once
++[FBSDKDynamicFrameworkLoader loadkSecAttrAccessible]
++[FBSDKDynamicFrameworkLoader loadkSecAttrAccessibleAfterFirstUnlockThisDeviceOnly]
++[FBSDKDynamicFrameworkLoader loadkSecAttrAccount]
++[FBSDKDynamicFrameworkLoader loadkSecAttrService]
++[FBSDKDynamicFrameworkLoader loadkSecAttrGeneric]
++[FBSDKDynamicFrameworkLoader loadkSecValueData]
++[FBSDKDynamicFrameworkLoader loadkSecClassGenericPassword]
++[FBSDKDynamicFrameworkLoader loadkSecAttrAccessGroup]
++[FBSDKDynamicFrameworkLoader loadkSecMatchLimitOne]
++[FBSDKDynamicFrameworkLoader loadkSecMatchLimit]
++[FBSDKDynamicFrameworkLoader loadkSecReturnData]
++[FBSDKDynamicFrameworkLoader loadkSecClass]
+_fbsdkdfl_handle_get_Social
+_fbsdkdfl_handle_get_MessageUI
+_fbsdkdfl_handle_get_QuartzCore
+_fbsdkdfl_handle_get_AudioToolbox
+_fbsdkdfl_handle_get_AdSupport
+_fbsdkdfl_handle_get_SafariServices
+_fbsdkdfl_handle_get_AuthenticationServices
+_fbsdkdfl_handle_get_Accounts
+_fbsdkdfl_handle_get_StoreKit
+_fbsdkdfl_handle_get_AssetsLibrary
+_fbsdkdfl_handle_get_CoreTelephony
+_fbsdkdfl_handle_get_CoreImage
+_fbsdkdfl_handle_get_Photos
+_fbsdkdfl_handle_get_MobileCoreServices
+_fbsdkdfl_handle_get_WebKit
+_fbsdkdfl_load_Security_once
+_fbsdkdfl_load_framework_once
+_fbsdkdfl_load_Social_once
+_fbsdkdfl_load_MessageUI_once
+_fbsdkdfl_load_QuartzCore_once
+_fbsdkdfl_load_AudioToolbox_once
+_fbsdkdfl_load_AdSupport_once
+_fbsdkdfl_load_SafariServices_once
+_fbsdkdfl_load_AuthenticationServices_once
+_fbsdkdfl_load_Accounts_once
+_fbsdkdfl_load_StoreKit_once
+_fbsdkdfl_load_AssetsLibrary_once
+_fbsdkdfl_load_CoreTelephony_once
+_fbsdkdfl_load_CoreImage_once
+_fbsdkdfl_load_Photos_once
+_fbsdkdfl_load_MobileCoreServices_once
+_fbsdkdfl_load_WebKit_once
+_loadkSecRandomDefault.k
+_loadkSecRandomDefault.kSecRandomDefault_once
+_loadkSecRandomDefault.ctx
+_loadkSecAttrAccessible.k
+_loadkSecAttrAccessible.kSecAttrAccessible_once
+_loadkSecAttrAccessible.ctx
+_loadkSecAttrAccessibleAfterFirstUnlockThisDeviceOnly.k
+_loadkSecAttrAccessibleAfterFirstUnlockThisDeviceOnly.kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly_once
+_loadkSecAttrAccessibleAfterFirstUnlockThisDeviceOnly.ctx
+_loadkSecAttrAccount.k
+_loadkSecAttrAccount.kSecAttrAccount_once
+_loadkSecAttrAccount.ctx
+_loadkSecAttrService.k
+_loadkSecAttrService.kSecAttrService_once
+_loadkSecAttrService.ctx
+_loadkSecAttrGeneric.k
+_loadkSecAttrGeneric.kSecAttrGeneric_once
+_loadkSecAttrGeneric.ctx
+_loadkSecValueData.k
+_loadkSecValueData.kSecValueData_once
+_loadkSecValueData.ctx
+_loadkSecClassGenericPassword.k
+_loadkSecClassGenericPassword.kSecClassGenericPassword_once
+_loadkSecClassGenericPassword.ctx
+_loadkSecAttrAccessGroup.k
+_loadkSecAttrAccessGroup.kSecAttrAccessGroup_once
+_loadkSecAttrAccessGroup.ctx
+_loadkSecMatchLimitOne.k
+_loadkSecMatchLimitOne.kSecMatchLimitOne_once
+_loadkSecMatchLimitOne.ctx
+_loadkSecMatchLimit.k
+_loadkSecMatchLimit.kSecMatchLimit_once
+_loadkSecMatchLimit.ctx
+_loadkSecReturnData.k
+_loadkSecReturnData.kSecReturnData_once
+_loadkSecReturnData.ctx
+_loadkSecClass.k
+_loadkSecClass.kSecClass_once
+_loadkSecClass.ctx
+_fbsdkdfl_SecRandomCopyBytes.f
+_fbsdkdfl_SecRandomCopyBytes.SecRandomCopyBytes_once
+_fbsdkdfl_SecRandomCopyBytes.ctx
+_fbsdkdfl_SecItemUpdate.f
+_fbsdkdfl_SecItemUpdate.SecItemUpdate_once
+_fbsdkdfl_SecItemUpdate.ctx
+_fbsdkdfl_SecItemAdd.f
+_fbsdkdfl_SecItemAdd.SecItemAdd_once
+_fbsdkdfl_SecItemAdd.ctx
+_fbsdkdfl_SecItemCopyMatching.f
+_fbsdkdfl_SecItemCopyMatching.SecItemCopyMatching_once
+_fbsdkdfl_SecItemCopyMatching.ctx
+_fbsdkdfl_SecItemDelete.f
+_fbsdkdfl_SecItemDelete.SecItemDelete_once
+_fbsdkdfl_SecItemDelete.ctx
+_fbsdkdfl_SLServiceTypeFacebook.k
+_fbsdkdfl_SLServiceTypeFacebook.SLServiceTypeFacebook_once
+_fbsdkdfl_SLServiceTypeFacebook.ctx
+_fbsdkdfl_SLServiceTypeTwitter.k
+_fbsdkdfl_SLServiceTypeTwitter.SLServiceTypeTwitter_once
+_fbsdkdfl_SLServiceTypeTwitter.ctx
+_fbsdkdfl_SLComposeViewControllerClass.c
+_fbsdkdfl_SLComposeViewControllerClass.SLComposeViewController_once
+_fbsdkdfl_SLComposeViewControllerClass.ctx
+_fbsdkdfl_MFMailComposeViewControllerClass.c
+_fbsdkdfl_MFMailComposeViewControllerClass.MFMailComposeViewController_once
+_fbsdkdfl_MFMailComposeViewControllerClass.ctx
+_fbsdkdfl_MFMessageComposeViewControllerClass.c
+_fbsdkdfl_MFMessageComposeViewControllerClass.MFMessageComposeViewController_once
+_fbsdkdfl_MFMessageComposeViewControllerClass.ctx
+_fbsdkdfl_CATransactionClass.c
+_fbsdkdfl_CATransactionClass.CATransaction_once
+_fbsdkdfl_CATransactionClass.ctx
+_fbsdkdfl_CATransform3DMakeScale.f
+_fbsdkdfl_CATransform3DMakeScale.CATransform3DMakeScale_once
+_fbsdkdfl_CATransform3DMakeScale.ctx
+_fbsdkdfl_CATransform3DMakeTranslation.f
+_fbsdkdfl_CATransform3DMakeTranslation.CATransform3DMakeTranslation_once
+_fbsdkdfl_CATransform3DMakeTranslation.ctx
+_fbsdkdfl_CATransform3DConcat.f
+_fbsdkdfl_CATransform3DConcat.CATransform3DConcat_once
+_fbsdkdfl_CATransform3DConcat.ctx
+_fbsdkdfl_AudioServicesCreateSystemSoundID.f
+_fbsdkdfl_AudioServicesCreateSystemSoundID.AudioServicesCreateSystemSoundID_once
+_fbsdkdfl_AudioServicesCreateSystemSoundID.ctx
+_fbsdkdfl_AudioServicesDisposeSystemSoundID.f
+_fbsdkdfl_AudioServicesDisposeSystemSoundID.AudioServicesDisposeSystemSoundID_once
+_fbsdkdfl_AudioServicesDisposeSystemSoundID.ctx
+_fbsdkdfl_AudioServicesPlaySystemSound.f
+_fbsdkdfl_AudioServicesPlaySystemSound.AudioServicesPlaySystemSound_once
+_fbsdkdfl_AudioServicesPlaySystemSound.ctx
+_fbsdkdfl_ASIdentifierManagerClass.c
+_fbsdkdfl_ASIdentifierManagerClass.ASIdentifierManager_once
+_fbsdkdfl_ASIdentifierManagerClass.ctx
+_fbsdkdfl_SFSafariViewControllerClass.c
+_fbsdkdfl_SFSafariViewControllerClass.SFSafariViewController_once
+_fbsdkdfl_SFSafariViewControllerClass.ctx
+_fbsdkdfl_SFAuthenticationSessionClass.c
+_fbsdkdfl_SFAuthenticationSessionClass.SFAuthenticationSession_once
+_fbsdkdfl_SFAuthenticationSessionClass.ctx
+_fbsdkdfl_ASWebAuthenticationSessionClass.c
+_fbsdkdfl_ASWebAuthenticationSessionClass.ASWebAuthenticationSession_once
+_fbsdkdfl_ASWebAuthenticationSessionClass.ctx
+_fbsdkdfl_ACFacebookAppIdKey.k
+_fbsdkdfl_ACFacebookAppIdKey.ACFacebookAppIdKey_once
+_fbsdkdfl_ACFacebookAppIdKey.ctx
+_fbsdkdfl_ACFacebookAudienceEveryone.k
+_fbsdkdfl_ACFacebookAudienceEveryone.ACFacebookAudienceEveryone_once
+_fbsdkdfl_ACFacebookAudienceEveryone.ctx
+_fbsdkdfl_ACFacebookAudienceFriends.k
+_fbsdkdfl_ACFacebookAudienceFriends.ACFacebookAudienceFriends_once
+_fbsdkdfl_ACFacebookAudienceFriends.ctx
+_fbsdkdfl_ACFacebookAudienceKey.k
+_fbsdkdfl_ACFacebookAudienceKey.ACFacebookAudienceKey_once
+_fbsdkdfl_ACFacebookAudienceKey.ctx
+_fbsdkdfl_ACFacebookAudienceOnlyMe.k
+_fbsdkdfl_ACFacebookAudienceOnlyMe.ACFacebookAudienceOnlyMe_once
+_fbsdkdfl_ACFacebookAudienceOnlyMe.ctx
+_fbsdkdfl_ACFacebookPermissionsKey.k
+_fbsdkdfl_ACFacebookPermissionsKey.ACFacebookPermissionsKey_once
+_fbsdkdfl_ACFacebookPermissionsKey.ctx
+_fbsdkdfl_ACAccountStoreClass.c
+_fbsdkdfl_ACAccountStoreClass.ACAccountStore_once
+_fbsdkdfl_ACAccountStoreClass.ctx
+_fbsdkdfl_SKPaymentQueueClass.c
+_fbsdkdfl_SKPaymentQueueClass.SKPaymentQueue_once
+_fbsdkdfl_SKPaymentQueueClass.ctx
+_fbsdkdfl_SKProductsRequestClass.c
+_fbsdkdfl_SKProductsRequestClass.SKProductsRequest_once
+_fbsdkdfl_SKProductsRequestClass.ctx
+_fbsdkdfl_ALAssetsLibraryClass.c
+_fbsdkdfl_ALAssetsLibraryClass.ALAssetsLibrary_once
+_fbsdkdfl_ALAssetsLibraryClass.ctx
+_fbsdkdfl_CTTelephonyNetworkInfoClass.c
+_fbsdkdfl_CTTelephonyNetworkInfoClass.CTTelephonyNetworkInfo_once
+_fbsdkdfl_CTTelephonyNetworkInfoClass.ctx
+_fbsdkdfl_CIImageClass.c
+_fbsdkdfl_CIImageClass.CIImage_once
+_fbsdkdfl_CIImageClass.ctx
+_fbsdkdfl_CIFilterClass.c
+_fbsdkdfl_CIFilterClass.CIFilter_once
+_fbsdkdfl_CIFilterClass.ctx
+_fbsdkdfl_kCIInputImageKey.k
+_fbsdkdfl_kCIInputImageKey.kCIInputImageKey_once
+_fbsdkdfl_kCIInputImageKey.ctx
+_fbsdkdfl_kCIInputRadiusKey.k
+_fbsdkdfl_kCIInputRadiusKey.kCIInputRadiusKey_once
+_fbsdkdfl_kCIInputRadiusKey.ctx
+_fbsdkdfl_kCIOutputImageKey.k
+_fbsdkdfl_kCIOutputImageKey.kCIOutputImageKey_once
+_fbsdkdfl_kCIOutputImageKey.ctx
+_fbsdkdfl_PHPhotoLibrary.c
+_fbsdkdfl_PHPhotoLibrary.PHPhotoLibrary_once
+_fbsdkdfl_PHPhotoLibrary.ctx
+_fbsdkdfl_PHAssetChangeRequest.c
+_fbsdkdfl_PHAssetChangeRequest.PHAssetChangeRequest_once
+_fbsdkdfl_PHAssetChangeRequest.ctx
+_fbsdkdfl_UTTypeCopyPreferredTagWithClass.f
+_fbsdkdfl_UTTypeCopyPreferredTagWithClass.UTTypeCopyPreferredTagWithClass_once
+_fbsdkdfl_UTTypeCopyPreferredTagWithClass.ctx
+_fbsdkdfl_kUTTagClassMIMEType.k
+_fbsdkdfl_kUTTagClassMIMEType.kUTTagClassMIMEType_once
+_fbsdkdfl_kUTTagClassMIMEType.ctx
+_fbsdkdfl_kUTTypeJPEG.k
+_fbsdkdfl_kUTTypeJPEG.kUTTypeJPEG_once
+_fbsdkdfl_kUTTypeJPEG.ctx
+_fbsdkdfl_kUTTypePNG.k
+_fbsdkdfl_kUTTypePNG.kUTTypePNG_once
+_fbsdkdfl_kUTTypePNG.ctx
+_fbsdkdfl_WKWebViewClass.c
+_fbsdkdfl_WKWebViewClass.WKWebView_once
+_fbsdkdfl_WKWebViewClass.ctx
+_fbsdkdfl_WKUserScriptClass.c
+_fbsdkdfl_WKUserScriptClass.WKUserScript_once
+_fbsdkdfl_WKUserScriptClass.ctx
+_fbsdkdfl_handle_get_Security.Security_handle
+_fbsdkdfl_handle_get_Security.Security_once
+_fbsdkdfl_handle_get_Social.Social_handle
+_fbsdkdfl_handle_get_Social.Social_once
+_fbsdkdfl_handle_get_MessageUI.MessageUI_handle
+_fbsdkdfl_handle_get_MessageUI.MessageUI_once
+_fbsdkdfl_handle_get_QuartzCore.QuartzCore_handle
+_fbsdkdfl_handle_get_QuartzCore.QuartzCore_once
+_fbsdkdfl_handle_get_AudioToolbox.AudioToolbox_handle
+_fbsdkdfl_handle_get_AudioToolbox.AudioToolbox_once
+_fbsdkdfl_handle_get_AdSupport.AdSupport_handle
+_fbsdkdfl_handle_get_AdSupport.AdSupport_once
+_fbsdkdfl_handle_get_SafariServices.SafariServices_handle
+_fbsdkdfl_handle_get_SafariServices.SafariServices_once
+_fbsdkdfl_handle_get_AuthenticationServices.AuthenticationServices_handle
+_fbsdkdfl_handle_get_AuthenticationServices.AuthenticationServices_once
+_fbsdkdfl_handle_get_Accounts.Accounts_handle
+_fbsdkdfl_handle_get_Accounts.Accounts_once
+_fbsdkdfl_handle_get_StoreKit.StoreKit_handle
+_fbsdkdfl_handle_get_StoreKit.StoreKit_once
+_fbsdkdfl_handle_get_AssetsLibrary.AssetsLibrary_handle
+_fbsdkdfl_handle_get_AssetsLibrary.AssetsLibrary_once
+_fbsdkdfl_handle_get_CoreTelephony.CoreTelephony_handle
+_fbsdkdfl_handle_get_CoreTelephony.CoreTelephony_once
+_fbsdkdfl_handle_get_CoreImage.CoreImage_handle
+_fbsdkdfl_handle_get_CoreImage.CoreImage_once
+_fbsdkdfl_handle_get_Photos.Photos_handle
+_fbsdkdfl_handle_get_Photos.Photos_once
+_fbsdkdfl_handle_get_MobileCoreServices.MobileCoreServices_handle
+_fbsdkdfl_handle_get_MobileCoreServices.MobileCoreServices_once
+_fbsdkdfl_handle_get_WebKit.WebKit_handle
+_fbsdkdfl_handle_get_WebKit.WebKit_once
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal_NoARC/FBSDKDynamicFrameworkLoader.m
+fbsdkdfl_load_WebKit_once
+fbsdkdfl_load_MobileCoreServices_once
+fbsdkdfl_load_Photos_once
+fbsdkdfl_load_CoreImage_once
+fbsdkdfl_load_CoreTelephony_once
+fbsdkdfl_load_AssetsLibrary_once
+fbsdkdfl_load_StoreKit_once
+fbsdkdfl_load_Accounts_once
+fbsdkdfl_load_AuthenticationServices_once
+fbsdkdfl_load_SafariServices_once
+fbsdkdfl_load_AdSupport_once
+fbsdkdfl_load_AudioToolbox_once
+fbsdkdfl_load_QuartzCore_once
+fbsdkdfl_load_MessageUI_once
+fbsdkdfl_load_Social_once
+fbsdkdfl_load_framework_once
+fbsdkdfl_load_library_once
+fbsdkdfl_load_Security_once
+fbsdkdfl_WKUserScriptClass
+fbsdkdfl_handle_get_WebKit
+fbsdkdfl_WKWebViewClass
+fbsdkdfl_kUTTypePNG
+fbsdkdfl_kUTTypeJPEG
+fbsdkdfl_kUTTagClassMIMEType
+fbsdkdfl_handle_get_MobileCoreServices
+fbsdkdfl_UTTypeCopyPreferredTagWithClass
+fbsdkdfl_PHAssetChangeRequest
+fbsdkdfl_handle_get_Photos
+fbsdkdfl_PHPhotoLibrary
+fbsdkdfl_kCIOutputImageKey
+fbsdkdfl_kCIInputRadiusKey
+fbsdkdfl_kCIInputImageKey
+fbsdkdfl_CIFilterClass
+fbsdkdfl_handle_get_CoreImage
+fbsdkdfl_CIImageClass
+fbsdkdfl_handle_get_CoreTelephony
+fbsdkdfl_CTTelephonyNetworkInfoClass
+fbsdkdfl_handle_get_AssetsLibrary
+fbsdkdfl_ALAssetsLibraryClass
+fbsdkdfl_SKProductsRequestClass
+fbsdkdfl_handle_get_StoreKit
+fbsdkdfl_SKPaymentQueueClass
+fbsdkdfl_ACAccountStoreClass
+fbsdkdfl_ACFacebookPermissionsKey
+fbsdkdfl_ACFacebookAudienceOnlyMe
+fbsdkdfl_ACFacebookAudienceKey
+fbsdkdfl_ACFacebookAudienceFriends
+fbsdkdfl_ACFacebookAudienceEveryone
+fbsdkdfl_handle_get_Accounts
+fbsdkdfl_ACFacebookAppIdKey
+fbsdkdfl_handle_get_AuthenticationServices
+fbsdkdfl_ASWebAuthenticationSessionClass
+fbsdkdfl_SFAuthenticationSessionClass
+fbsdkdfl_handle_get_SafariServices
+fbsdkdfl_SFSafariViewControllerClass
+fbsdkdfl_handle_get_AdSupport
+fbsdkdfl_ASIdentifierManagerClass
+fbsdkdfl_AudioServicesPlaySystemSound
+fbsdkdfl_AudioServicesDisposeSystemSoundID
+fbsdkdfl_handle_get_AudioToolbox
+fbsdkdfl_AudioServicesCreateSystemSoundID
+fbsdkdfl_CATransform3DConcat
+fbsdkdfl_CATransform3DMakeTranslation
+fbsdkdfl_CATransform3DMakeScale
+fbsdkdfl_handle_get_QuartzCore
+fbsdkdfl_CATransactionClass
+fbsdkdfl_MFMessageComposeViewControllerClass
+fbsdkdfl_handle_get_MessageUI
+fbsdkdfl_MFMailComposeViewControllerClass
+fbsdkdfl_SLComposeViewControllerClass
+fbsdkdfl_SLServiceTypeTwitter
+fbsdkdfl_handle_get_Social
+fbsdkdfl_SLServiceTypeFacebook
+fbsdkdfl_SecItemDelete
+fbsdkdfl_SecItemCopyMatching
+fbsdkdfl_SecItemAdd
+fbsdkdfl_SecItemUpdate
+fbsdkdfl_SecRandomCopyBytes
+fbsdkdfl_load_symbol_once
+fbsdkdfl_handle_get_Security
+-[FBSDKGraphRequestDataAttachment initWithData:filename:contentType:]
+-[FBSDKGraphRequestDataAttachment contentType]
+-[FBSDKGraphRequestDataAttachment data]
+-[FBSDKGraphRequestDataAttachment filename]
+-[FBSDKGraphRequestDataAttachment .cxx_destruct]
+_OBJC_IVAR_$_FBSDKGraphRequestDataAttachment._data
+_OBJC_IVAR_$_FBSDKGraphRequestDataAttachment._filename
+_OBJC_IVAR_$_FBSDKGraphRequestDataAttachment._contentType
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/FBSDKGraphRequestDataAttachment.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/FBSDKGraphRequestDataAttachment.h
++[FBSDKSwizzler initialize]
++[FBSDKSwizzler resolveConflict]
++[FBSDKSwizzler printSwizzles]
++[FBSDKSwizzler swizzleForMethod:]
++[FBSDKSwizzler removeSwizzleForMethod:]
++[FBSDKSwizzler setSwizzle:forMethod:]
++[FBSDKSwizzler isLocallyDefinedMethod:onClass:]
++[FBSDKSwizzler swizzleSelector:onClass:withBlock:named:]
+_fb_swizzleMethod_4_io
++[FBSDKSwizzler unswizzleSelector:onClass:]
++[FBSDKSwizzler unswizzleSelector:onClass:named:]
+-[FBSDKSwizzle init]
+-[FBSDKSwizzle initWithBlock:named:forClass:selector:originalMethod:withNumArgs:]
+-[FBSDKSwizzle description]
+-[FBSDKSwizzle class]
+-[FBSDKSwizzle setClass:]
+-[FBSDKSwizzle selector]
+-[FBSDKSwizzle setSelector:]
+-[FBSDKSwizzle originalMethod]
+-[FBSDKSwizzle setOriginalMethod:]
+-[FBSDKSwizzle numArgs]
+-[FBSDKSwizzle setNumArgs:]
+-[FBSDKSwizzle blocks]
+-[FBSDKSwizzle setBlocks:]
+-[FBSDKSwizzle .cxx_destruct]
+_fb_swizzledMethod_2
+_fb_swizzledMethod_3
+_fb_swizzledMethod_4
+_fb_swizzledMethod_5
+_fb_findSwizzle
+_swizzles
+_fb_swizzledMethods
+_OBJC_IVAR_$_FBSDKSwizzle._blocks
+_OBJC_IVAR_$_FBSDKSwizzle._class
+_OBJC_IVAR_$_FBSDKSwizzle._selector
+_OBJC_IVAR_$_FBSDKSwizzle._originalMethod
+_OBJC_IVAR_$_FBSDKSwizzle._numArgs
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/FBSDKSwizzler.m
+fb_findSwizzle
+fb_swizzledMethod_5
+fb_swizzledMethod_4
+fb_swizzledMethod_3
+fb_swizzledMethod_2
+fb_swizzleMethod_4_io
+-[FBSDKDialogConfiguration initWithName:URL:appVersions:]
++[FBSDKDialogConfiguration supportsSecureCoding]
+-[FBSDKDialogConfiguration initWithCoder:]
+-[FBSDKDialogConfiguration encodeWithCoder:]
+-[FBSDKDialogConfiguration copyWithZone:]
+-[FBSDKDialogConfiguration appVersions]
+-[FBSDKDialogConfiguration name]
+-[FBSDKDialogConfiguration URL]
+-[FBSDKDialogConfiguration .cxx_destruct]
+_OBJC_IVAR_$_FBSDKDialogConfiguration._name
+_OBJC_IVAR_$_FBSDKDialogConfiguration._URL
+_OBJC_IVAR_$_FBSDKDialogConfiguration._appVersions
+l_OBJC_PROTOCOL_$_FBSDKCopying
+l_OBJC_LABEL_PROTOCOL_$_FBSDKCopying
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/ServerConfiguration/FBSDKDialogConfiguration.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/ServerConfiguration/FBSDKDialogConfiguration.h
+-[FBSDKURL initWithURL:forOpenInboundURL:sourceApplication:forRenderBackToReferrerBar:]
++[FBSDKURL URLWithURL:]
++[FBSDKURL URLWithInboundURL:sourceApplication:]
++[FBSDKURL URLForRenderBackToReferrerBarURL:]
++[FBSDKURL decodeURLString:]
++[FBSDKURL queryParametersForURL:]
+-[FBSDKURL targetURL]
+-[FBSDKURL targetQueryParameters]
+-[FBSDKURL appLinkData]
+-[FBSDKURL appLinkExtras]
+-[FBSDKURL appLinkReferer]
+-[FBSDKURL inputURL]
+-[FBSDKURL inputQueryParameters]
+-[FBSDKURL .cxx_destruct]
+_OBJC_IVAR_$_FBSDKURL._inputURL
+_OBJC_IVAR_$_FBSDKURL._targetURL
+_OBJC_IVAR_$_FBSDKURL._inputQueryParameters
+_OBJC_IVAR_$_FBSDKURL._targetQueryParameters
+_OBJC_IVAR_$_FBSDKURL._appLinkData
+_OBJC_IVAR_$_FBSDKURL._appLinkExtras
+_OBJC_IVAR_$_FBSDKURL._appLinkReferer
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/FBSDKURL.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/FBSDKURL.h
+-[FBSDKAccessToken initWithTokenString:permissions:declinedPermissions:appID:userID:expirationDate:refreshDate:]
+-[FBSDKAccessToken initWithTokenString:permissions:declinedPermissions:appID:userID:expirationDate:refreshDate:dataAccessExpirationDate:]
+-[FBSDKAccessToken hasGranted:]
+-[FBSDKAccessToken isDataAccessExpired]
+-[FBSDKAccessToken isExpired]
++[FBSDKAccessToken currentAccessToken]
++[FBSDKAccessToken setCurrentAccessToken:]
++[FBSDKAccessToken currentAccessTokenIsActive]
++[FBSDKAccessToken refreshCurrentAccessToken:]
+-[FBSDKAccessToken hash]
+-[FBSDKAccessToken isEqual:]
+-[FBSDKAccessToken isEqualToAccessToken:]
+-[FBSDKAccessToken copyWithZone:]
++[FBSDKAccessToken supportsSecureCoding]
+-[FBSDKAccessToken initWithCoder:]
+-[FBSDKAccessToken encodeWithCoder:]
+-[FBSDKAccessToken appID]
+-[FBSDKAccessToken dataAccessExpirationDate]
+-[FBSDKAccessToken declinedPermissions]
+-[FBSDKAccessToken expirationDate]
+-[FBSDKAccessToken permissions]
+-[FBSDKAccessToken refreshDate]
+-[FBSDKAccessToken tokenString]
+-[FBSDKAccessToken userID]
+-[FBSDKAccessToken .cxx_destruct]
+_OBJC_IVAR_$_FBSDKAccessToken._tokenString
+_OBJC_IVAR_$_FBSDKAccessToken._permissions
+_OBJC_IVAR_$_FBSDKAccessToken._declinedPermissions
+_OBJC_IVAR_$_FBSDKAccessToken._appID
+_OBJC_IVAR_$_FBSDKAccessToken._userID
+_OBJC_IVAR_$_FBSDKAccessToken._expirationDate
+_OBJC_IVAR_$_FBSDKAccessToken._refreshDate
+_OBJC_IVAR_$_FBSDKAccessToken._dataAccessExpirationDate
+_g_currentAccessToken
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/FBSDKAccessToken.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/FBSDKAccessToken.h
++[FBSDKInternalUtility appURLScheme]
++[FBSDKInternalUtility appURLWithHost:path:queryParameters:error:]
++[FBSDKInternalUtility dictionaryFromFBURL:]
++[FBSDKInternalUtility array:addObject:]
++[FBSDKInternalUtility bundleForStrings]
+___40+[FBSDKInternalUtility bundleForStrings]_block_invoke
++[FBSDKInternalUtility convertRequestValue:]
++[FBSDKInternalUtility currentTimeInMilliseconds]
++[FBSDKInternalUtility dictionary:setJSONStringForObject:forKey:error:]
++[FBSDKInternalUtility dictionary:setObject:forKey:]
++[FBSDKInternalUtility extractPermissionsFromResponse:grantedPermissions:declinedPermissions:]
++[FBSDKInternalUtility facebookURLWithHostPrefix:path:queryParameters:error:]
++[FBSDKInternalUtility facebookURLWithHostPrefix:path:queryParameters:defaultVersion:error:]
++[FBSDKInternalUtility isBrowserURL:]
++[FBSDKInternalUtility isFacebookBundleIdentifier:]
++[FBSDKInternalUtility isOSRunTimeVersionAtLeast:]
++[FBSDKInternalUtility isSafariBundleIdentifier:]
++[FBSDKInternalUtility isUIKitLinkTimeVersionAtLeast:]
+___54+[FBSDKInternalUtility isUIKitLinkTimeVersionAtLeast:]_block_invoke
++[FBSDKInternalUtility isUIKitRunTimeVersionAtLeast:]
+___53+[FBSDKInternalUtility isUIKitRunTimeVersionAtLeast:]_block_invoke
++[FBSDKInternalUtility getMajorVersionFromFullLibraryVersion:]
++[FBSDKInternalUtility JSONStringForObject:error:invalidObjectHandler:]
++[FBSDKInternalUtility object:isEqualToObject:]
++[FBSDKInternalUtility objectForJSONString:error:]
++[FBSDKInternalUtility operatingSystemVersion]
+___46+[FBSDKInternalUtility operatingSystemVersion]_block_invoke
++[FBSDKInternalUtility queryStringWithDictionary:error:invalidObjectHandler:]
+___77+[FBSDKInternalUtility queryStringWithDictionary:error:invalidObjectHandler:]_block_invoke
++[FBSDKInternalUtility shouldManuallyAdjustOrientation]
++[FBSDKInternalUtility URLWithScheme:host:path:queryParameters:error:]
++[FBSDKInternalUtility deleteFacebookCookies]
++[FBSDKInternalUtility registerTransientObject:]
++[FBSDKInternalUtility unregisterTransientObject:]
++[FBSDKInternalUtility viewControllerForView:]
++[FBSDKInternalUtility isFacebookAppInstalled]
+___46+[FBSDKInternalUtility isFacebookAppInstalled]_block_invoke
++[FBSDKInternalUtility isMessengerAppInstalled]
+___47+[FBSDKInternalUtility isMessengerAppInstalled]_block_invoke
++[FBSDKInternalUtility isMSQRDPlayerAppInstalled]
+___49+[FBSDKInternalUtility isMSQRDPlayerAppInstalled]_block_invoke
++[FBSDKInternalUtility _compareOperatingSystemVersion:toVersion:]
++[FBSDKInternalUtility _convertObjectToJSONObject:invalidObjectHandler:stop:]
+___77+[FBSDKInternalUtility _convertObjectToJSONObject:invalidObjectHandler:stop:]_block_invoke
+___copy_helper_block_.309
+___destroy_helper_block_.310
++[FBSDKInternalUtility _canOpenURLScheme:]
++[FBSDKInternalUtility validateAppID]
++[FBSDKInternalUtility validateRequiredClientAccessToken]
++[FBSDKInternalUtility validateURLSchemes]
++[FBSDKInternalUtility validateFacebookReservedURLSchemes]
++[FBSDKInternalUtility findWindow]
++[FBSDKInternalUtility topMostViewController]
++[FBSDKInternalUtility hexadecimalStringFromData:]
++[FBSDKInternalUtility isRegisteredURLScheme:]
+___46+[FBSDKInternalUtility isRegisteredURLScheme:]_block_invoke
++[FBSDKInternalUtility checkRegisteredCanOpenURLScheme:]
+___56+[FBSDKInternalUtility checkRegisteredCanOpenURLScheme:]_block_invoke
++[FBSDKInternalUtility isRegisteredCanOpenURLScheme:]
+___53+[FBSDKInternalUtility isRegisteredCanOpenURLScheme:]_block_invoke
++[FBSDKInternalUtility isPublishPermission:]
++[FBSDKInternalUtility areAllPermissionsReadPermissions:]
++[FBSDKInternalUtility areAllPermissionsPublishPermissions:]
++[FBSDKInternalUtility resolveBoltsClassWithName:]
++[FBSDKInternalUtility isUnity]
+_bundleForStrings.bundle
+_bundleForStrings.onceToken
+_isUIKitLinkTimeVersionAtLeast:.linkTimeMajorVersion
+_isUIKitLinkTimeVersionAtLeast:.getVersionOnce
+___block_descriptor_tmp.144
+_isUIKitRunTimeVersionAtLeast:.runTimeMajorVersion
+_isUIKitRunTimeVersionAtLeast:.getVersionOnce
+_operatingSystemVersion.operatingSystemVersion
+_operatingSystemVersion.getVersionOnce
+___block_descriptor_tmp.202
+___block_literal_global.203
+__transientObjects
+_isFacebookAppInstalled.onceToken
+___block_descriptor_tmp.288
+___block_literal_global.289
+_isMessengerAppInstalled.onceToken
+___block_descriptor_tmp.297
+___block_literal_global.298
+_isMSQRDPlayerAppInstalled.onceToken
+___block_descriptor_tmp.301
+___block_literal_global.302
+___block_descriptor_tmp.313
+_isRegisteredURLScheme:.fetchBundleOnce
+_isRegisteredURLScheme:.urlTypes
+___block_descriptor_tmp.387
+___block_literal_global.388
+_checkRegisteredCanOpenURLScheme:.initCheckedSchemesOnce
+_checkRegisteredCanOpenURLScheme:.checkedSchemes
+___block_descriptor_tmp.399
+___block_literal_global.400
+_isRegisteredCanOpenURLScheme:.fetchBundleOnce
+_isRegisteredCanOpenURLScheme:.schemes
+___block_descriptor_tmp.408
+___block_literal_global.409
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/FBSDKInternalUtility.m
+__53+[FBSDKInternalUtility isRegisteredCanOpenURLScheme:]_block_invoke
+__56+[FBSDKInternalUtility checkRegisteredCanOpenURLScheme:]_block_invoke
+__46+[FBSDKInternalUtility isRegisteredURLScheme:]_block_invoke
+__77+[FBSDKInternalUtility _convertObjectToJSONObject:invalidObjectHandler:stop:]_block_invoke
+__49+[FBSDKInternalUtility isMSQRDPlayerAppInstalled]_block_invoke
+__47+[FBSDKInternalUtility isMessengerAppInstalled]_block_invoke
+__46+[FBSDKInternalUtility isFacebookAppInstalled]_block_invoke
+__77+[FBSDKInternalUtility queryStringWithDictionary:error:invalidObjectHandler:]_block_invoke
+__46+[FBSDKInternalUtility operatingSystemVersion]_block_invoke
+__53+[FBSDKInternalUtility isUIKitRunTimeVersionAtLeast:]_block_invoke
+__54+[FBSDKInternalUtility isUIKitLinkTimeVersionAtLeast:]_block_invoke
+__40+[FBSDKInternalUtility bundleForStrings]_block_invoke
+__get_time_nanoseconds
+___FBSDKMonotonicTimeConvertSecondsToMachUnits_block_invoke
+___FBSDKMonotonicTimeConvertMachUnitsToSeconds_block_invoke
+____get_time_nanoseconds_block_invoke
+_FBSDKMonotonicTimeConvertSecondsToMachUnits.ratio
+_FBSDKMonotonicTimeConvertSecondsToMachUnits.onceToken
+_FBSDKMonotonicTimeConvertMachUnitsToSeconds.ratio
+_FBSDKMonotonicTimeConvertMachUnitsToSeconds.onceToken
+___block_descriptor_tmp.3
+___block_literal_global.4
+__get_time_nanoseconds.tb_info
+__get_time_nanoseconds.onceToken
+___block_descriptor_tmp.5
+___block_literal_global.6
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/FBSDKMonotonicTime.m
+___get_time_nanoseconds_block_invoke
+__FBSDKMonotonicTimeConvertMachUnitsToSeconds_block_invoke
+FBSDKMonotonicTimeConvertMachUnitsToSeconds
+__FBSDKMonotonicTimeConvertSecondsToMachUnits_block_invoke
+FBSDKMonotonicTimeConvertSecondsToMachUnits
+FBSDKMonotonicTimeGetCurrentNanoseconds
+FBSDKMonotonicTimeGetCurrentMilliseconds
+_get_time_nanoseconds
+FBSDKMonotonicTimeGetCurrentSeconds
+-[FBSDKAccessTokenCacheV4 init]
+-[FBSDKAccessTokenCacheV4 accessToken]
+-[FBSDKAccessTokenCacheV4 setAccessToken:]
+-[FBSDKAccessTokenCacheV4 clearCache]
+-[FBSDKAccessTokenCacheV4 .cxx_destruct]
+_OBJC_IVAR_$_FBSDKAccessTokenCacheV4._keychainStore
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/TokenCaching/FBSDKAccessTokenCacheV4.m
++[FBSDKAppLinkUtility fetchDeferredAppLink:]
+___44+[FBSDKAppLinkUtility fetchDeferredAppLink:]_block_invoke
+___44+[FBSDKAppLinkUtility fetchDeferredAppLink:]_block_invoke_2
++[FBSDKAppLinkUtility fetchDeferredAppInvite:]
++[FBSDKAppLinkUtility appInvitePromotionCodeFromURL:]
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppLink/FBSDKAppLinkUtility.m
+__44+[FBSDKAppLinkUtility fetchDeferredAppLink:]_block_invoke_2
+__44+[FBSDKAppLinkUtility fetchDeferredAppLink:]_block_invoke
++[FBSDKImageDownloader sharedInstance]
+___38+[FBSDKImageDownloader sharedInstance]_block_invoke
+-[FBSDKImageDownloader init]
+-[FBSDKImageDownloader removeAll]
+-[FBSDKImageDownloader downloadImageWithURL:ttl:completion:]
+___60-[FBSDKImageDownloader downloadImageWithURL:ttl:completion:]_block_invoke
+___60-[FBSDKImageDownloader downloadImageWithURL:ttl:completion:]_block_invoke.37
+___copy_helper_block_.53
+___destroy_helper_block_.54
+-[FBSDKImageDownloader .cxx_destruct]
+_OBJC_IVAR_$_FBSDKImageDownloader._urlCache
+___block_descriptor_tmp.33
+___block_descriptor_tmp.56
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/FBSDKImageDownloader.m
+__60-[FBSDKImageDownloader downloadImageWithURL:ttl:completion:]_block_invoke.37
+__60-[FBSDKImageDownloader downloadImageWithURL:ttl:completion:]_block_invoke
+__38+[FBSDKImageDownloader sharedInstance]_block_invoke
++[FBSDKViewImpressionTracker impressionTrackerWithEventName:]
+___61+[FBSDKViewImpressionTracker impressionTrackerWithEventName:]_block_invoke
+-[FBSDKViewImpressionTracker initWithEventName:]
+-[FBSDKViewImpressionTracker dealloc]
+-[FBSDKViewImpressionTracker logImpressionWithIdentifier:parameters:]
+-[FBSDKViewImpressionTracker _applicationDidEnterBackgroundNotification:]
+-[FBSDKViewImpressionTracker eventName]
+-[FBSDKViewImpressionTracker .cxx_destruct]
+_impressionTrackerWithEventName:._impressionTrackers
+_impressionTrackerWithEventName:.onceToken
+_OBJC_IVAR_$_FBSDKViewImpressionTracker._eventName
+_OBJC_IVAR_$_FBSDKViewImpressionTracker._trackedImpressions
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/UI/FBSDKViewImpressionTracker.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/UI/FBSDKViewImpressionTracker.h
+__61+[FBSDKViewImpressionTracker impressionTrackerWithEventName:]_block_invoke
++[FBSDKViewHierarchy getChildren:]
++[FBSDKViewHierarchy getParent:]
++[FBSDKViewHierarchy getPath:]
++[FBSDKViewHierarchy getPath:limit:]
++[FBSDKViewHierarchy getAttributesOf:parent:]
++[FBSDKViewHierarchy getDetailAttributesOf:]
++[FBSDKViewHierarchy getIndexPath:]
++[FBSDKViewHierarchy getText:]
++[FBSDKViewHierarchy getTextStyle:]
++[FBSDKViewHierarchy getHint:]
++[FBSDKViewHierarchy getClassBitmask:]
++[FBSDKViewHierarchy isUserInputView:]
++[FBSDKViewHierarchy isRCTButton:]
++[FBSDKViewHierarchy getViewReactTag:]
++[FBSDKViewHierarchy isView:superViewOfView:]
++[FBSDKViewHierarchy getParentViewController:]
++[FBSDKViewHierarchy getParentTableView:]
++[FBSDKViewHierarchy getParentCollectionView:]
++[FBSDKViewHierarchy getTag:]
++[FBSDKViewHierarchy getDimensionOf:]
+l_OBJC_PROTOCOL_$_UITextInputTraits
+l_OBJC_LABEL_PROTOCOL_$_UITextInputTraits
+l_OBJC_PROTOCOL_$_UIKeyInput
+l_OBJC_LABEL_PROTOCOL_$_UIKeyInput
+l_OBJC_PROTOCOL_$_UITextInput
+l_OBJC_LABEL_PROTOCOL_$_UITextInput
+l_OBJC_PROTOCOL_REFERENCE_$_UITextInput
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppEvents/Internal/Codeless/FBSDKViewHierarchy.m
+-[FBSDKCodelessParameterComponent initWithJSON:]
+-[FBSDKCodelessParameterComponent name]
+-[FBSDKCodelessParameterComponent value]
+-[FBSDKCodelessParameterComponent path]
+-[FBSDKCodelessParameterComponent pathType]
+-[FBSDKCodelessParameterComponent .cxx_destruct]
+_OBJC_IVAR_$_FBSDKCodelessParameterComponent._name
+_OBJC_IVAR_$_FBSDKCodelessParameterComponent._value
+_OBJC_IVAR_$_FBSDKCodelessParameterComponent._pathType
+_OBJC_IVAR_$_FBSDKCodelessParameterComponent._path
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppEvents/Internal/Codeless/FBSDKCodelessParameterComponent.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppEvents/Internal/Codeless/FBSDKCodelessParameterComponent.h
++[FBSDKBridgeAPIRequest bridgeAPIRequestWithProtocolType:scheme:methodName:methodVersion:parameters:userInfo:]
++[FBSDKBridgeAPIRequest protocolMap]
+___36+[FBSDKBridgeAPIRequest protocolMap]_block_invoke
+-[FBSDKBridgeAPIRequest initWithProtocol:protocolType:scheme:methodName:methodVersion:parameters:userInfo:]
+-[FBSDKBridgeAPIRequest requestURL:]
+-[FBSDKBridgeAPIRequest copyWithZone:]
++[FBSDKBridgeAPIRequest _protocolForType:scheme:]
+-[FBSDKBridgeAPIRequest actionID]
+-[FBSDKBridgeAPIRequest methodName]
+-[FBSDKBridgeAPIRequest methodVersion]
+-[FBSDKBridgeAPIRequest parameters]
+-[FBSDKBridgeAPIRequest protocolType]
+-[FBSDKBridgeAPIRequest scheme]
+-[FBSDKBridgeAPIRequest userInfo]
+-[FBSDKBridgeAPIRequest protocol]
+-[FBSDKBridgeAPIRequest .cxx_destruct]
+_protocolMap._protocolMap
+_protocolMap.onceToken
+_OBJC_IVAR_$_FBSDKBridgeAPIRequest._protocol
+_OBJC_IVAR_$_FBSDKBridgeAPIRequest._protocolType
+_OBJC_IVAR_$_FBSDKBridgeAPIRequest._scheme
+_OBJC_IVAR_$_FBSDKBridgeAPIRequest._methodName
+_OBJC_IVAR_$_FBSDKBridgeAPIRequest._methodVersion
+_OBJC_IVAR_$_FBSDKBridgeAPIRequest._parameters
+_OBJC_IVAR_$_FBSDKBridgeAPIRequest._userInfo
+_OBJC_IVAR_$_FBSDKBridgeAPIRequest._actionID
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/BridgeAPI/FBSDKBridgeAPIRequest.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/BridgeAPI/FBSDKBridgeAPIRequest+Private.h
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/BridgeAPI/FBSDKBridgeAPIRequest.h
+__36+[FBSDKBridgeAPIRequest protocolMap]_block_invoke
++[FBSDKAppEventsDeviceInfo extendDictionaryWithDeviceInfo:]
++[FBSDKAppEventsDeviceInfo initialize]
++[FBSDKAppEventsDeviceInfo sharedDeviceInfo]
+-[FBSDKAppEventsDeviceInfo init]
+-[FBSDKAppEventsDeviceInfo encodedDeviceInfo]
+-[FBSDKAppEventsDeviceInfo setEncodedDeviceInfo:]
+-[FBSDKAppEventsDeviceInfo _collectPersistentData]
+-[FBSDKAppEventsDeviceInfo _isGroup1Expired]
+-[FBSDKAppEventsDeviceInfo _collectGroup1Data]
+-[FBSDKAppEventsDeviceInfo _generateEncoding]
++[FBSDKAppEventsDeviceInfo _getTotalDiskSpace]
++[FBSDKAppEventsDeviceInfo _getRemainingDiskSpace]
++[FBSDKAppEventsDeviceInfo _coreCount]
++[FBSDKAppEventsDeviceInfo _readSysCtlUInt:type:]
++[FBSDKAppEventsDeviceInfo _getCarrier]
+-[FBSDKAppEventsDeviceInfo .cxx_destruct]
+_sharedDeviceInfo._sharedDeviceInfo
+_OBJC_IVAR_$_FBSDKAppEventsDeviceInfo._isEncodingDirty
+_OBJC_IVAR_$_FBSDKAppEventsDeviceInfo._encodedDeviceInfo
+_OBJC_IVAR_$_FBSDKAppEventsDeviceInfo._bundleIdentifier
+_OBJC_IVAR_$_FBSDKAppEventsDeviceInfo._longVersion
+_OBJC_IVAR_$_FBSDKAppEventsDeviceInfo._shortVersion
+_OBJC_IVAR_$_FBSDKAppEventsDeviceInfo._language
+_OBJC_IVAR_$_FBSDKAppEventsDeviceInfo._sysVersion
+_OBJC_IVAR_$_FBSDKAppEventsDeviceInfo._coreCount
+_OBJC_IVAR_$_FBSDKAppEventsDeviceInfo._width
+_OBJC_IVAR_$_FBSDKAppEventsDeviceInfo._height
+_OBJC_IVAR_$_FBSDKAppEventsDeviceInfo._density
+_OBJC_IVAR_$_FBSDKAppEventsDeviceInfo._machine
+_OBJC_IVAR_$_FBSDKAppEventsDeviceInfo._totalDiskSpaceGB
+_OBJC_IVAR_$_FBSDKAppEventsDeviceInfo._lastGroup1CheckTime
+_OBJC_IVAR_$_FBSDKAppEventsDeviceInfo._carrierName
+_OBJC_IVAR_$_FBSDKAppEventsDeviceInfo._timeZoneName
+_OBJC_IVAR_$_FBSDKAppEventsDeviceInfo._timeZoneAbbrev
+_OBJC_IVAR_$_FBSDKAppEventsDeviceInfo._remainingDiskSpaceGB
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppEvents/Internal/FBSDKAppEventsDeviceInfo.m
+-[NSError(FBSDKError) isNetworkError]
++[NSError(FBSDKError) fbErrorWithCode:message:]
++[NSError(FBSDKError) fbErrorWithDomain:code:message:]
++[NSError(FBSDKError) fbErrorWithCode:message:underlyingError:]
++[NSError(FBSDKError) fbErrorWithDomain:code:message:underlyingError:]
++[NSError(FBSDKError) fbErrorWithCode:userInfo:message:underlyingError:]
++[NSError(FBSDKError) fbErrorWithDomain:code:userInfo:message:underlyingError:]
++[NSError(FBSDKError) fbInvalidArgumentErrorWithName:value:message:]
++[NSError(FBSDKError) fbInvalidArgumentErrorWithDomain:name:value:message:]
++[NSError(FBSDKError) fbInvalidArgumentErrorWithName:value:message:underlyingError:]
++[NSError(FBSDKError) fbInvalidArgumentErrorWithDomain:name:value:message:underlyingError:]
++[NSError(FBSDKError) fbInvalidCollectionErrorWithName:collection:item:message:]
++[NSError(FBSDKError) fbInvalidCollectionErrorWithName:collection:item:message:underlyingError:]
++[NSError(FBSDKError) fbRequiredArgumentErrorWithName:message:]
++[NSError(FBSDKError) fbRequiredArgumentErrorWithDomain:name:message:]
++[NSError(FBSDKError) fbRequiredArgumentErrorWithName:message:underlyingError:]
++[NSError(FBSDKError) fbUnknownErrorWithMessage:]
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/FBSDKError.m
+-[FBSDKAccessTokenCacheV3_21 init]
+-[FBSDKAccessTokenCacheV3_21 accessToken]
+-[FBSDKAccessTokenCacheV3_21 clearCache]
+-[FBSDKAccessTokenCacheV3_21 setAccessToken:]
+-[FBSDKAccessTokenCacheV3_21 .cxx_destruct]
+_OBJC_IVAR_$_FBSDKAccessTokenCacheV3_21._keychainStore
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/TokenCaching/FBSDKAccessTokenCacheV3_21.m
++[FBSDKTypeUtility arrayValue:]
++[FBSDKTypeUtility boolValue:]
++[FBSDKTypeUtility dictionaryValue:]
++[FBSDKTypeUtility integerValue:]
++[FBSDKTypeUtility objectValue:]
++[FBSDKTypeUtility stringValue:]
++[FBSDKTypeUtility timeIntervalValue:]
++[FBSDKTypeUtility unsignedIntegerValue:]
++[FBSDKTypeUtility URLValue:]
++[FBSDKTypeUtility _objectValue:ofClass:]
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/FBSDKTypeUtility.m
++[FBSDKAudioResourceLoader sharedLoader]
+___40+[FBSDKAudioResourceLoader sharedLoader]_block_invoke
+-[FBSDKAudioResourceLoader init]
+-[FBSDKAudioResourceLoader dealloc]
+-[FBSDKAudioResourceLoader loadSound:]
+-[FBSDKAudioResourceLoader playSound]
+-[FBSDKAudioResourceLoader _fileURL:]
+-[FBSDKAudioResourceLoader .cxx_destruct]
++[FBSDKAudioResourceLoader(Subclass) name]
++[FBSDKAudioResourceLoader(Subclass) version]
++[FBSDKAudioResourceLoader(Subclass) data]
+_sharedLoader._loaderCache
+_sharedLoader.onceToken
+_OBJC_IVAR_$_FBSDKAudioResourceLoader._fileManager
+_OBJC_IVAR_$_FBSDKAudioResourceLoader._systemSoundID
+_OBJC_IVAR_$_FBSDKAudioResourceLoader._fileURL
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/FBSDKAudioResourceLoader.m
+__40+[FBSDKAudioResourceLoader sharedLoader]_block_invoke
+-[FBSDKLogo pathWithSize:]
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/UI/FBSDKLogo.m
++[FBSDKPaymentObserver startObservingTransactions]
++[FBSDKPaymentObserver stopObservingTransactions]
++[FBSDKPaymentObserver singleton]
+___33+[FBSDKPaymentObserver singleton]_block_invoke
+-[FBSDKPaymentObserver init]
+-[FBSDKPaymentObserver startObservingTransactions]
+-[FBSDKPaymentObserver stopObservingTransactions]
+-[FBSDKPaymentObserver paymentQueue:updatedTransactions:]
+-[FBSDKPaymentObserver handleTransaction:]
++[FBSDKPaymentProductRequestor initialize]
+-[FBSDKPaymentProductRequestor initWithTransaction:]
+-[FBSDKPaymentProductRequestor setProductRequest:]
+-[FBSDKPaymentProductRequestor resolveProducts]
+-[FBSDKPaymentProductRequestor getTruncatedString:]
+-[FBSDKPaymentProductRequestor logTransactionEvent:]
+-[FBSDKPaymentProductRequestor lengthOfSubscriptionPeriod:]
+-[FBSDKPaymentProductRequestor productsRequest:didReceiveResponse:]
+-[FBSDKPaymentProductRequestor requestDidFinish:]
+-[FBSDKPaymentProductRequestor request:didFailWithError:]
+-[FBSDKPaymentProductRequestor cleanUp]
+-[FBSDKPaymentProductRequestor logImplicitPurchaseEvent:valueToSum:parameters:]
+-[FBSDKPaymentProductRequestor fetchDeviceReceipt]
+-[FBSDKPaymentProductRequestor transaction]
+-[FBSDKPaymentProductRequestor setTransaction:]
+-[FBSDKPaymentProductRequestor productRequest]
+-[FBSDKPaymentProductRequestor .cxx_destruct]
+_singleton.pred
+_singleton.shared
+_OBJC_IVAR_$_FBSDKPaymentObserver._observingTransactions
+l_OBJC_PROTOCOL_$_SKPaymentTransactionObserver
+l_OBJC_LABEL_PROTOCOL_$_SKPaymentTransactionObserver
+_g_pendingRequestors
+_OBJC_IVAR_$_FBSDKPaymentProductRequestor._transaction
+_OBJC_IVAR_$_FBSDKPaymentProductRequestor._productRequest
+l_OBJC_PROTOCOL_$_SKRequestDelegate
+l_OBJC_LABEL_PROTOCOL_$_SKRequestDelegate
+l_OBJC_PROTOCOL_$_SKProductsRequestDelegate
+l_OBJC_LABEL_PROTOCOL_$_SKProductsRequestDelegate
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppEvents/Internal/FBSDKPaymentObserver.m
+__33+[FBSDKPaymentObserver singleton]_block_invoke
++[FBSDKBridgeAPIResponse bridgeAPIResponseWithRequest:error:]
++[FBSDKBridgeAPIResponse bridgeAPIResponseWithRequest:responseURL:sourceApplication:error:]
++[FBSDKBridgeAPIResponse bridgeAPIResponseCancelledWithRequest:]
+-[FBSDKBridgeAPIResponse initWithRequest:responseParameters:cancelled:error:]
+-[FBSDKBridgeAPIResponse copyWithZone:]
+-[FBSDKBridgeAPIResponse isCancelled]
+-[FBSDKBridgeAPIResponse error]
+-[FBSDKBridgeAPIResponse request]
+-[FBSDKBridgeAPIResponse responseParameters]
+-[FBSDKBridgeAPIResponse .cxx_destruct]
+_OBJC_IVAR_$_FBSDKBridgeAPIResponse._request
+_OBJC_IVAR_$_FBSDKBridgeAPIResponse._responseParameters
+_OBJC_IVAR_$_FBSDKBridgeAPIResponse._cancelled
+_OBJC_IVAR_$_FBSDKBridgeAPIResponse._error
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/BridgeAPI/FBSDKBridgeAPIResponse.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/BridgeAPI/FBSDKBridgeAPIResponse.h
+-[FBSDKErrorRecoveryConfiguration initWithRecoveryDescription:optionDescriptions:category:recoveryActionName:]
++[FBSDKErrorRecoveryConfiguration supportsSecureCoding]
+-[FBSDKErrorRecoveryConfiguration initWithCoder:]
+-[FBSDKErrorRecoveryConfiguration encodeWithCoder:]
+-[FBSDKErrorRecoveryConfiguration copyWithZone:]
+-[FBSDKErrorRecoveryConfiguration localizedRecoveryDescription]
+-[FBSDKErrorRecoveryConfiguration localizedRecoveryOptionDescriptions]
+-[FBSDKErrorRecoveryConfiguration errorCategory]
+-[FBSDKErrorRecoveryConfiguration recoveryActionName]
+-[FBSDKErrorRecoveryConfiguration .cxx_destruct]
+_OBJC_IVAR_$_FBSDKErrorRecoveryConfiguration._localizedRecoveryDescription
+_OBJC_IVAR_$_FBSDKErrorRecoveryConfiguration._localizedRecoveryOptionDescriptions
+_OBJC_IVAR_$_FBSDKErrorRecoveryConfiguration._errorCategory
+_OBJC_IVAR_$_FBSDKErrorRecoveryConfiguration._recoveryActionName
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/ServerConfiguration/FBSDKErrorRecoveryConfiguration.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/ServerConfiguration/FBSDKErrorRecoveryConfiguration.h
+-[FBSDKAccessTokenCacheV3_17 init]
+-[FBSDKAccessTokenCacheV3_17 accessToken]
+-[FBSDKAccessTokenCacheV3_17 clearCache]
+-[FBSDKAccessTokenCacheV3_17 setAccessToken:]
+-[FBSDKAccessTokenCacheV3_17 .cxx_destruct]
+_OBJC_IVAR_$_FBSDKAccessTokenCacheV3_17._keychainStore
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/TokenCaching/FBSDKAccessTokenCacheV3_17.m
+-[FBSDKGraphErrorRecoveryProcessor dealloc]
+-[FBSDKGraphErrorRecoveryProcessor processError:request:delegate:]
+___66-[FBSDKGraphErrorRecoveryProcessor processError:request:delegate:]_block_invoke
+___66-[FBSDKGraphErrorRecoveryProcessor processError:request:delegate:]_block_invoke_2
+___copy_helper_block_.32
+___destroy_helper_block_.33
+___66-[FBSDKGraphErrorRecoveryProcessor processError:request:delegate:]_block_invoke.41
+___66-[FBSDKGraphErrorRecoveryProcessor processError:request:delegate:]_block_invoke_2.42
+___copy_helper_block_.43
+___destroy_helper_block_.44
+___copy_helper_block_.46
+___destroy_helper_block_.47
+___66-[FBSDKGraphErrorRecoveryProcessor processError:request:delegate:]_block_invoke.52
+___copy_helper_block_.66
+___destroy_helper_block_.67
+-[FBSDKGraphErrorRecoveryProcessor displayAlertWithRecoverySuggestion:recoveryOptionsTitles:]
+___93-[FBSDKGraphErrorRecoveryProcessor displayAlertWithRecoverySuggestion:recoveryOptionsTitles:]_block_invoke
+-[FBSDKGraphErrorRecoveryProcessor displayAlertWithTitle:message:cancelButtonTitle:]
+___84-[FBSDKGraphErrorRecoveryProcessor displayAlertWithTitle:message:cancelButtonTitle:]_block_invoke
+-[FBSDKGraphErrorRecoveryProcessor didPresentErrorWithRecovery:contextInfo:]
+-[FBSDKGraphErrorRecoveryProcessor delegate]
+-[FBSDKGraphErrorRecoveryProcessor setDelegate:]
+-[FBSDKGraphErrorRecoveryProcessor .cxx_destruct]
+_OBJC_IVAR_$_FBSDKGraphErrorRecoveryProcessor._recoveryAttempter
+_OBJC_IVAR_$_FBSDKGraphErrorRecoveryProcessor._error
+___block_descriptor_tmp.35
+___block_descriptor_tmp.45
+_OBJC_IVAR_$_FBSDKGraphErrorRecoveryProcessor._delegate
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/FBSDKGraphErrorRecoveryProcessor.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/FBSDKGraphErrorRecoveryProcessor.h
+__84-[FBSDKGraphErrorRecoveryProcessor displayAlertWithTitle:message:cancelButtonTitle:]_block_invoke
+__93-[FBSDKGraphErrorRecoveryProcessor displayAlertWithRecoverySuggestion:recoveryOptionsTitles:]_block_invoke
+__66-[FBSDKGraphErrorRecoveryProcessor processError:request:delegate:]_block_invoke.52
+__66-[FBSDKGraphErrorRecoveryProcessor processError:request:delegate:]_block_invoke_2.42
+__66-[FBSDKGraphErrorRecoveryProcessor processError:request:delegate:]_block_invoke.41
+__66-[FBSDKGraphErrorRecoveryProcessor processError:request:delegate:]_block_invoke_2
+__66-[FBSDKGraphErrorRecoveryProcessor processError:request:delegate:]_block_invoke
++[FBSDKUserDataStore initStore]
++[FBSDKUserDataStore setUserDataAndHash:]
++[FBSDKUserDataStore setUserDataAndHash:firstName:lastName:phone:dateOfBirth:gender:city:state:zip:country:]
++[FBSDKUserDataStore getHashedUserData]
++[FBSDKUserDataStore hashUserData:]
++[FBSDKUserDataStore encryptData:]
++[FBSDKUserDataStore normalizeData:data:]
++[FBSDKUserDataStore maybeSHA256Hashed:]
+_initialized
+_hashedUserData
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppEvents/Internal/FBSDKUserDataStore.m
+-[FBSDKAppLinkReturnToRefererController init]
+-[FBSDKAppLinkReturnToRefererController initForDisplayAboveNavController:]
+-[FBSDKAppLinkReturnToRefererController dealloc]
+-[FBSDKAppLinkReturnToRefererController view]
+-[FBSDKAppLinkReturnToRefererController setView:]
+-[FBSDKAppLinkReturnToRefererController showViewForRefererAppLink:]
+___67-[FBSDKAppLinkReturnToRefererController showViewForRefererAppLink:]_block_invoke
+-[FBSDKAppLinkReturnToRefererController showViewForRefererURL:]
+-[FBSDKAppLinkReturnToRefererController removeFromNavController]
+-[FBSDKAppLinkReturnToRefererController returnToRefererViewDidTapInsideCloseButton:]
+-[FBSDKAppLinkReturnToRefererController returnToRefererViewDidTapInsideLink:link:]
+-[FBSDKAppLinkReturnToRefererController statusBarFrameWillChange:]
+___66-[FBSDKAppLinkReturnToRefererController statusBarFrameWillChange:]_block_invoke
+___copy_helper_block_.62
+___destroy_helper_block_.63
+-[FBSDKAppLinkReturnToRefererController statusBarFrameDidChange:]
+___65-[FBSDKAppLinkReturnToRefererController statusBarFrameDidChange:]_block_invoke
+___copy_helper_block_.67
+___destroy_helper_block_.68
+-[FBSDKAppLinkReturnToRefererController orientationDidChange:]
+___62-[FBSDKAppLinkReturnToRefererController orientationDidChange:]_block_invoke
+___copy_helper_block_.70
+___destroy_helper_block_.71
+-[FBSDKAppLinkReturnToRefererController moveNavigationBar]
+-[FBSDKAppLinkReturnToRefererController updateNavigationBarY:]
+-[FBSDKAppLinkReturnToRefererController closeViewAnimated:]
+-[FBSDKAppLinkReturnToRefererController closeViewAnimated:explicitlyClosed:]
+___76-[FBSDKAppLinkReturnToRefererController closeViewAnimated:explicitlyClosed:]_block_invoke
+___copy_helper_block_.87
+___destroy_helper_block_.88
+___76-[FBSDKAppLinkReturnToRefererController closeViewAnimated:explicitlyClosed:]_block_invoke.90
+___76-[FBSDKAppLinkReturnToRefererController closeViewAnimated:explicitlyClosed:]_block_invoke.94
+-[FBSDKAppLinkReturnToRefererController openRefererAppLink:]
+-[FBSDKAppLinkReturnToRefererController delegate]
+-[FBSDKAppLinkReturnToRefererController setDelegate:]
+-[FBSDKAppLinkReturnToRefererController .cxx_destruct]
+_OBJC_IVAR_$_FBSDKAppLinkReturnToRefererController._navigationController
+_OBJC_IVAR_$_FBSDKAppLinkReturnToRefererController._view
+___block_descriptor_tmp.69
+___block_descriptor_tmp.89
+_OBJC_IVAR_$_FBSDKAppLinkReturnToRefererController._delegate
+l_OBJC_PROTOCOL_$_FBSDKAppLinkReturnToRefererViewDelegate
+l_OBJC_LABEL_PROTOCOL_$_FBSDKAppLinkReturnToRefererViewDelegate
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppLink/FBSDKAppLinkReturnToRefererController.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppLink/FBSDKAppLinkReturnToRefererController.h
+__76-[FBSDKAppLinkReturnToRefererController closeViewAnimated:explicitlyClosed:]_block_invoke.94
+__76-[FBSDKAppLinkReturnToRefererController closeViewAnimated:explicitlyClosed:]_block_invoke.90
+__76-[FBSDKAppLinkReturnToRefererController closeViewAnimated:explicitlyClosed:]_block_invoke
+UIEdgeInsetsInsetRect
+/Applications/Xcode-10.1.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.1.sdk/System/Library/Frameworks/UIKit.framework/Headers/UIGeometry.h
+__62-[FBSDKAppLinkReturnToRefererController orientationDidChange:]_block_invoke
+__65-[FBSDKAppLinkReturnToRefererController statusBarFrameDidChange:]_block_invoke
+__66-[FBSDKAppLinkReturnToRefererController statusBarFrameWillChange:]_block_invoke
+__67-[FBSDKAppLinkReturnToRefererController showViewForRefererAppLink:]_block_invoke
++[FBSDKBridgeAPICrypto addCipherKeyToQueryParameters:]
++[FBSDKBridgeAPICrypto decryptResponseForRequest:queryParameters:error:]
++[FBSDKBridgeAPICrypto reset]
++[FBSDKBridgeAPICrypto _cipherKey]
++[FBSDKBridgeAPICrypto _resetCipherKey]
+_g_cipherKey
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/BridgeAPI/FBSDKBridgeAPICrypto.m
++[FBSDKTimeSpentData suspend]
++[FBSDKTimeSpentData restore:]
++[FBSDKTimeSpentData singleton]
+___31+[FBSDKTimeSpentData singleton]_block_invoke
+-[FBSDKTimeSpentData instanceSuspend]
+-[FBSDKTimeSpentData instanceRestore:]
+-[FBSDKTimeSpentData appEventsParametersForActivate]
+-[FBSDKTimeSpentData appEventsParametersForDeactivate]
++[FBSDKTimeSpentData setSourceApplication:openURL:]
++[FBSDKTimeSpentData setSourceApplication:isFromAppLink:]
++[FBSDKTimeSpentData getSourceApplication]
++[FBSDKTimeSpentData resetSourceApplication]
++[FBSDKTimeSpentData registerAutoResetSourceApplication]
+-[FBSDKTimeSpentData .cxx_destruct]
+_OBJC_IVAR_$_FBSDKTimeSpentData._isCurrentlyLoaded
+_OBJC_IVAR_$_FBSDKTimeSpentData._lastRestoreTime
+_OBJC_IVAR_$_FBSDKTimeSpentData._secondsSpentInCurrentSession
+_OBJC_IVAR_$_FBSDKTimeSpentData._numInterruptionsInCurrentSession
+_OBJC_IVAR_$_FBSDKTimeSpentData._sessionID
+_OBJC_IVAR_$_FBSDKTimeSpentData._lastSuspendTime
+_OBJC_IVAR_$_FBSDKTimeSpentData._shouldLogActivateEvent
+_OBJC_IVAR_$_FBSDKTimeSpentData._shouldLogDeactivateEvent
+_OBJC_IVAR_$_FBSDKTimeSpentData._timeSinceLastSuspend
+_INACTIVE_SECONDS_QUANTA
+_g_isOpenedFromAppLink
+_g_sourceApplication
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppEvents/Internal/FBSDKTimeSpentData.m
+__31+[FBSDKTimeSpentData singleton]_block_invoke
+-[FBSDKBridgeAPIProtocolWebV1 requestURLWithActionID:scheme:methodName:methodVersion:parameters:error:]
+-[FBSDKBridgeAPIProtocolWebV1 responseParametersForActionID:queryParameters:cancelled:error:]
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/BridgeAPI/ProtocolVersions/FBSDKBridgeAPIProtocolWebV1.m
++[FBSDKMath ceilForPoint:]
++[FBSDKMath ceilForSize:]
++[FBSDKMath floorForPoint:]
++[FBSDKMath floorForSize:]
++[FBSDKMath hashWithCGFloat:]
++[FBSDKMath hashWithCString:]
++[FBSDKMath hashWithDouble:]
++[FBSDKMath hashWithFloat:]
++[FBSDKMath hashWithInteger:]
++[FBSDKMath hashWithInteger:andInteger:]
++[FBSDKMath hashWithIntegerArray:count:]
++[FBSDKMath hashWithLong:]
++[FBSDKMath hashWithPointer:]
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/FBSDKMath.m
+CGSizeMake
++[FBSDKWebDialog showWithName:parameters:delegate:]
+-[FBSDKWebDialog dealloc]
+-[FBSDKWebDialog show]
+-[FBSDKWebDialog webDialogView:didCompleteWithResults:]
+-[FBSDKWebDialog webDialogView:didFailWithError:]
+-[FBSDKWebDialog webDialogViewDidCancel:]
+-[FBSDKWebDialog webDialogViewDidFinishLoad:]
+___45-[FBSDKWebDialog webDialogViewDidFinishLoad:]_block_invoke
+-[FBSDKWebDialog _addObservers]
+-[FBSDKWebDialog _deviceOrientationDidChangeNotification:]
+___58-[FBSDKWebDialog _deviceOrientationDidChangeNotification:]_block_invoke
+-[FBSDKWebDialog _removeObservers]
+-[FBSDKWebDialog _cancel]
+-[FBSDKWebDialog _completeWithResults:]
+-[FBSDKWebDialog _dismissAnimated:]
+___35-[FBSDKWebDialog _dismissAnimated:]_block_invoke
+___copy_helper_block_.76
+___destroy_helper_block_.77
+___35-[FBSDKWebDialog _dismissAnimated:]_block_invoke.80
+___copy_helper_block_.83
+___destroy_helper_block_.84
+-[FBSDKWebDialog _failWithError:]
+___33-[FBSDKWebDialog _failWithError:]_block_invoke
+___copy_helper_block_.90
+___destroy_helper_block_.91
+-[FBSDKWebDialog _generateURL:]
+-[FBSDKWebDialog _showWebView]
+___30-[FBSDKWebDialog _showWebView]_block_invoke
+___30-[FBSDKWebDialog _showWebView]_block_invoke_2
+___copy_helper_block_.156
+___destroy_helper_block_.157
+-[FBSDKWebDialog _transformForOrientation]
+-[FBSDKWebDialog _applicationFrameForOrientation]
+-[FBSDKWebDialog _updateViewsWithScale:alpha:animationDuration:completion:]
+___75-[FBSDKWebDialog _updateViewsWithScale:alpha:animationDuration:completion:]_block_invoke
+___copy_helper_block_.187
+___destroy_helper_block_.188
+-[FBSDKWebDialog deferVisibility]
+-[FBSDKWebDialog setDeferVisibility:]
+-[FBSDKWebDialog delegate]
+-[FBSDKWebDialog setDelegate:]
+-[FBSDKWebDialog name]
+-[FBSDKWebDialog setName:]
+-[FBSDKWebDialog parameters]
+-[FBSDKWebDialog setParameters:]
+-[FBSDKWebDialog .cxx_destruct]
+_g_currentDialog
+_OBJC_IVAR_$_FBSDKWebDialog._dialogView
+_OBJC_IVAR_$_FBSDKWebDialog._backgroundView
+_OBJC_IVAR_$_FBSDKWebDialog._deferVisibility
+___block_descriptor_tmp.65
+_OBJC_IVAR_$_FBSDKWebDialog._delegate
+___block_descriptor_tmp.85
+___block_descriptor_tmp.92
+___block_descriptor_tmp.158
+___block_descriptor_tmp.161
+___block_descriptor_tmp.189
+_OBJC_IVAR_$_FBSDKWebDialog._name
+_OBJC_IVAR_$_FBSDKWebDialog._parameters
+l_OBJC_PROTOCOL_$_FBSDKWebDialogViewDelegate
+l_OBJC_LABEL_PROTOCOL_$_FBSDKWebDialogViewDelegate
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/WebDialog/FBSDKWebDialog.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/WebDialog/FBSDKWebDialog.h
+__75-[FBSDKWebDialog _updateViewsWithScale:alpha:animationDuration:completion:]_block_invoke
+__30-[FBSDKWebDialog _showWebView]_block_invoke_2
+__30-[FBSDKWebDialog _showWebView]_block_invoke
+__33-[FBSDKWebDialog _failWithError:]_block_invoke
+__35-[FBSDKWebDialog _dismissAnimated:]_block_invoke.80
+__35-[FBSDKWebDialog _dismissAnimated:]_block_invoke
+__58-[FBSDKWebDialog _deviceOrientationDidChangeNotification:]_block_invoke
+__45-[FBSDKWebDialog webDialogViewDidFinishLoad:]_block_invoke
+-[FBSDKEventBinding initWithJSON:]
+-[FBSDKEventBinding trackEvent:]
++[FBSDKEventBinding matchAnyView:pathComponent:]
++[FBSDKEventBinding match:pathComponent:]
++[FBSDKEventBinding isViewMatchPath:path:]
++[FBSDKEventBinding isPath:matchViewPath:]
++[FBSDKEventBinding findViewByPath:parent:level:]
++[FBSDKEventBinding findParameterOfPath:pathType:sourceView:]
+-[FBSDKEventBinding eventName]
+-[FBSDKEventBinding eventType]
+-[FBSDKEventBinding appVersion]
+-[FBSDKEventBinding path]
+-[FBSDKEventBinding pathType]
+-[FBSDKEventBinding parameters]
+-[FBSDKEventBinding .cxx_destruct]
+_OBJC_IVAR_$_FBSDKEventBinding._eventName
+_OBJC_IVAR_$_FBSDKEventBinding._eventType
+_OBJC_IVAR_$_FBSDKEventBinding._appVersion
+_OBJC_IVAR_$_FBSDKEventBinding._pathType
+_OBJC_IVAR_$_FBSDKEventBinding._path
+_OBJC_IVAR_$_FBSDKEventBinding._parameters
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppEvents/Internal/Codeless/FBSDKEventBinding.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppEvents/Internal/Codeless/FBSDKEventBinding.h
+-[FBSDKAccessTokenExpirer init]
+-[FBSDKAccessTokenExpirer dealloc]
+-[FBSDKAccessTokenExpirer _checkAccessTokenExpirationDate]
+-[FBSDKAccessTokenExpirer _timerDidFire]
+-[FBSDKAccessTokenExpirer .cxx_destruct]
+_OBJC_IVAR_$_FBSDKAccessTokenExpirer._timer
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/TokenCaching/FBSDKAccessTokenExpirer.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/UI/FBSDKColor.m
+FBSDKUIColorWithRGB
+FBSDKUIColorWithRGBA
++[FBSDKAppLinkResolver initialize]
+-[FBSDKAppLinkResolver initWithUserInterfaceIdiom:]
+-[FBSDKAppLinkResolver appLinkFromURL:handler:]
+___47-[FBSDKAppLinkResolver appLinkFromURL:handler:]_block_invoke
+-[FBSDKAppLinkResolver appLinksFromURLs:handler:]
+___49-[FBSDKAppLinkResolver appLinksFromURLs:handler:]_block_invoke
+___copy_helper_block_.111
+___destroy_helper_block_.112
+-[FBSDKAppLinkResolver appLinksFromURLsInBackground:]
+___53-[FBSDKAppLinkResolver appLinksFromURLsInBackground:]_block_invoke
+-[FBSDKAppLinkResolver appLinkFromURLInBackground:]
+___51-[FBSDKAppLinkResolver appLinkFromURLInBackground:]_block_invoke
+___copy_helper_block_.136
+___destroy_helper_block_.137
++[FBSDKAppLinkResolver resolver]
+-[FBSDKAppLinkResolver cachedBFAppLinks]
+-[FBSDKAppLinkResolver setCachedBFAppLinks:]
+-[FBSDKAppLinkResolver cachedFBSDKAppLinks]
+-[FBSDKAppLinkResolver setCachedFBSDKAppLinks:]
+-[FBSDKAppLinkResolver userInterfaceIdiom]
+-[FBSDKAppLinkResolver setUserInterfaceIdiom:]
+-[FBSDKAppLinkResolver .cxx_destruct]
+_g_BFTaskCompletionSourceClass
+_g_BFAppLinkTargetClass
+_g_BFTaskClass
+_g_BFAppLinkClass
+_OBJC_IVAR_$_FBSDKAppLinkResolver._cachedFBSDKAppLinks
+___block_descriptor_tmp.114
+___block_descriptor_tmp.129
+___block_descriptor_tmp.139
+_OBJC_IVAR_$_FBSDKAppLinkResolver._cachedBFAppLinks
+_OBJC_IVAR_$_FBSDKAppLinkResolver._userInterfaceIdiom
+l_OBJC_PROTOCOL_$_BFAppLinkResolving
+l_OBJC_LABEL_PROTOCOL_$_BFAppLinkResolving
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppLink/FBSDKAppLinkResolver.m
+__51-[FBSDKAppLinkResolver appLinkFromURLInBackground:]_block_invoke
+__53-[FBSDKAppLinkResolver appLinksFromURLsInBackground:]_block_invoke
+__49-[FBSDKAppLinkResolver appLinksFromURLs:handler:]_block_invoke
+__47-[FBSDKAppLinkResolver appLinkFromURL:handler:]_block_invoke
+-[FBSDKIcon initWithColor:]
+-[FBSDKIcon init]
+-[FBSDKIcon imageWithSize:]
+-[FBSDKIcon pathWithSize:]
+-[FBSDKIcon color]
+-[FBSDKIcon .cxx_destruct]
+_OBJC_IVAR_$_FBSDKIcon._color
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/UI/FBSDKIcon.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/UI/FBSDKIcon.h
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/FBSDKConstants.m
++[FBSDKAppEventsUtility activityParametersDictionaryForEvent:implicitEventsOnly:shouldAccessAdvertisingID:]
+___107+[FBSDKAppEventsUtility activityParametersDictionaryForEvent:implicitEventsOnly:shouldAccessAdvertisingID:]_block_invoke
++[FBSDKAppEventsUtility advertiserID]
++[FBSDKAppEventsUtility advertisingTrackingStatus]
+___50+[FBSDKAppEventsUtility advertisingTrackingStatus]_block_invoke
++[FBSDKAppEventsUtility anonymousID]
++[FBSDKAppEventsUtility attributionID]
++[FBSDKAppEventsUtility clearLibraryFiles]
++[FBSDKAppEventsUtility ensureOnMainThread:className:]
++[FBSDKAppEventsUtility flushReasonToString:]
++[FBSDKAppEventsUtility logAndNotify:]
++[FBSDKAppEventsUtility logAndNotify:allowLogAsDeveloperError:]
++[FBSDKAppEventsUtility matchString:firstCharacterSet:restOfStringCharacterSet:]
++[FBSDKAppEventsUtility regexValidateIdentifier:]
+___49+[FBSDKAppEventsUtility regexValidateIdentifier:]_block_invoke
++[FBSDKAppEventsUtility validateIdentifier:]
++[FBSDKAppEventsUtility persistAnonymousID:]
++[FBSDKAppEventsUtility persistenceFilePath:]
++[FBSDKAppEventsUtility retrievePersistedAnonymousID]
++[FBSDKAppEventsUtility tokenStringToUseFor:]
++[FBSDKAppEventsUtility unixTimeNow]
++[FBSDKAppEventsUtility getVariable:fromInstance:]
++[FBSDKAppEventsUtility getNumberValue:]
++[FBSDKAppEventsUtility isDebugBuild]
++[FBSDKAppEventsUtility isSensitiveUserData:]
++[FBSDKAppEventsUtility isCreditCardNumber:]
++[FBSDKAppEventsUtility isEmailAddress:]
+_activityParametersDictionaryForEvent:implicitEventsOnly:shouldAccessAdvertisingID:.fetchBundleOnce
+_activityParametersDictionaryForEvent:implicitEventsOnly:shouldAccessAdvertisingID:.urlSchemes
+_advertisingTrackingStatus.fetchAdvertisingTrackingStatusOnce
+_advertisingTrackingStatus.status
+___block_descriptor_tmp.81
+___block_literal_global.82
+_regexValidateIdentifier:.firstCharacterSet
+_regexValidateIdentifier:.restOfStringCharacterSet
+_regexValidateIdentifier:.onceToken
+_regexValidateIdentifier:.cachedIdentifiers
+___block_descriptor_tmp.155
+___block_literal_global.156
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppEvents/Internal/FBSDKAppEventsUtility.m
+__49+[FBSDKAppEventsUtility regexValidateIdentifier:]_block_invoke
+__50+[FBSDKAppEventsUtility advertisingTrackingStatus]_block_invoke
+__107+[FBSDKAppEventsUtility activityParametersDictionaryForEvent:implicitEventsOnly:shouldAccessAdvertisingID:]_block_invoke
+-[FBSDKCodelessPathComponent initWithJSON:]
+-[FBSDKCodelessPathComponent className]
+-[FBSDKCodelessPathComponent text]
+-[FBSDKCodelessPathComponent hint]
+-[FBSDKCodelessPathComponent desc]
+-[FBSDKCodelessPathComponent index]
+-[FBSDKCodelessPathComponent tag]
+-[FBSDKCodelessPathComponent section]
+-[FBSDKCodelessPathComponent row]
+-[FBSDKCodelessPathComponent matchBitmask]
+-[FBSDKCodelessPathComponent .cxx_destruct]
+_OBJC_IVAR_$_FBSDKCodelessPathComponent._className
+_OBJC_IVAR_$_FBSDKCodelessPathComponent._text
+_OBJC_IVAR_$_FBSDKCodelessPathComponent._hint
+_OBJC_IVAR_$_FBSDKCodelessPathComponent._desc
+_OBJC_IVAR_$_FBSDKCodelessPathComponent._index
+_OBJC_IVAR_$_FBSDKCodelessPathComponent._section
+_OBJC_IVAR_$_FBSDKCodelessPathComponent._row
+_OBJC_IVAR_$_FBSDKCodelessPathComponent._tag
+_OBJC_IVAR_$_FBSDKCodelessPathComponent._matchBitmask
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppEvents/Internal/Codeless/FBSDKCodelessPathComponent.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppEvents/Internal/Codeless/FBSDKCodelessPathComponent.h
++[FBSDKSettings initialize]
++[FBSDKSettings appID]
++[FBSDKSettings setAppID:]
++[FBSDKSettings appURLSchemeSuffix]
++[FBSDKSettings setAppURLSchemeSuffix:]
++[FBSDKSettings clientToken]
++[FBSDKSettings setClientToken:]
++[FBSDKSettings displayName]
++[FBSDKSettings setDisplayName:]
++[FBSDKSettings facebookDomainPart]
++[FBSDKSettings setFacebookDomainPart:]
++[FBSDKSettings _JPEGCompressionQualityNumber]
++[FBSDKSettings _setJPEGCompressionQualityNumber:]
++[FBSDKSettings codelessDebugLogEnabled]
++[FBSDKSettings setCodelessDebugLogEnabled:]
++[FBSDKSettings setGraphErrorRecoveryDisabled:]
++[FBSDKSettings isGraphErrorRecoveryDisabled]
++[FBSDKSettings JPEGCompressionQuality]
++[FBSDKSettings setJPEGCompressionQuality:]
++[FBSDKSettings limitEventAndDataUsage]
++[FBSDKSettings setLimitEventAndDataUsage:]
++[FBSDKSettings loggingBehaviors]
++[FBSDKSettings setLoggingBehaviors:]
++[FBSDKSettings loggingBehavior]
++[FBSDKSettings setLoggingBehavior:]
++[FBSDKSettings enableLoggingBehavior:]
++[FBSDKSettings disableLoggingBehavior:]
++[FBSDKSettings setLegacyUserDefaultTokenInformationKeyName:]
++[FBSDKSettings legacyUserDefaultTokenInformationKeyName]
++[FBSDKSettings sdkVersion]
++[FBSDKSettings accessTokenCache]
++[FBSDKSettings setAccessTokenCache:]
++[FBSDKSettings userAgentSuffix]
++[FBSDKSettings setUserAgentSuffix:]
++[FBSDKSettings setGraphAPIVersion:]
++[FBSDKSettings graphAPIVersion]
++[FBSDKSettings appEventSettingsForPlistKey:defaultValue:]
++[FBSDKSettings appEventSettingsForUserDefaultsKey:defaultValue:]
++[FBSDKSettings autoLogAppEventsEnabled]
++[FBSDKSettings setAutoLogAppEventsEnabled:]
++[FBSDKSettings advertiserIDCollectionEnabled]
++[FBSDKSettings setAdvertiserIDCollectionEnabled:]
++[FBSDKSettings updateGraphAPIDebugBehavior]
++[FBSDKSettings graphAPIDebugParamValue]
+_g_legacyUserDefaultTokenInformationKeyName
+_g_tokenCache
+_g_accessTokenExpirer
+_g_autoLogAppEventsEnabled
+_g_advertiserIDCollectionEnabled
+_g_FacebookAppID
+_g_FacebookUrlSchemeSuffix
+_g_FacebookClientToken
+_g_FacebookDisplayName
+_g_FacebookDomainPart
+_g_FacebookJpegCompressionQuality
+_g_FacebookCodelessDebugLogEnabled
+_g_disableErrorRecovery
+_g_loggingBehaviors
+_g_userAgentSuffix
+_g_defaultGraphAPIVersion
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/FBSDKSettings.m
++[FBSDKAppLink appLinkWithSourceURL:targets:webURL:isBackToReferrer:]
++[FBSDKAppLink appLinkWithSourceURL:targets:webURL:]
+-[FBSDKAppLink initWithIsBackToReferrer:]
+-[FBSDKAppLink sourceURL]
+-[FBSDKAppLink setSourceURL:]
+-[FBSDKAppLink targets]
+-[FBSDKAppLink setTargets:]
+-[FBSDKAppLink webURL]
+-[FBSDKAppLink setWebURL:]
+-[FBSDKAppLink isBackToReferrer]
+-[FBSDKAppLink setBackToReferrer:]
+-[FBSDKAppLink .cxx_destruct]
+_OBJC_IVAR_$_FBSDKAppLink._backToReferrer
+_OBJC_IVAR_$_FBSDKAppLink._sourceURL
+_OBJC_IVAR_$_FBSDKAppLink._targets
+_OBJC_IVAR_$_FBSDKAppLink._webURL
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppLink/FBSDKAppLink.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppLink/FBSDKAppLink.h
+-[FBSDKAppLinkReturnToRefererView initWithFrame:]
+-[FBSDKAppLinkReturnToRefererView initWithCoder:]
+-[FBSDKAppLinkReturnToRefererView commonInit]
+-[FBSDKAppLinkReturnToRefererView initViews]
+-[FBSDKAppLinkReturnToRefererView intrinsicContentSize]
+-[FBSDKAppLinkReturnToRefererView layoutSubviews]
+-[FBSDKAppLinkReturnToRefererView sizeThatFits:]
+-[FBSDKAppLinkReturnToRefererView statusBarHeight]
+-[FBSDKAppLinkReturnToRefererView setIncludeStatusBarInSize:]
+-[FBSDKAppLinkReturnToRefererView setTextColor:]
+-[FBSDKAppLinkReturnToRefererView setRefererAppLink:]
+-[FBSDKAppLinkReturnToRefererView setClosed:]
+-[FBSDKAppLinkReturnToRefererView setHidden:]
+-[FBSDKAppLinkReturnToRefererView updateLabelText]
+-[FBSDKAppLinkReturnToRefererView updateColors]
+-[FBSDKAppLinkReturnToRefererView drawCloseButtonImageWithColor:]
+-[FBSDKAppLinkReturnToRefererView localizedLabelForReferer:]
+-[FBSDKAppLinkReturnToRefererView hasRefererData]
+-[FBSDKAppLinkReturnToRefererView closeButtonTapped:]
+-[FBSDKAppLinkReturnToRefererView onTapInside:]
+-[FBSDKAppLinkReturnToRefererView updateHidden]
+-[FBSDKAppLinkReturnToRefererView delegate]
+-[FBSDKAppLinkReturnToRefererView setDelegate:]
+-[FBSDKAppLinkReturnToRefererView textColor]
+-[FBSDKAppLinkReturnToRefererView refererAppLink]
+-[FBSDKAppLinkReturnToRefererView includeStatusBarInSize]
+-[FBSDKAppLinkReturnToRefererView closed]
+-[FBSDKAppLinkReturnToRefererView labelView]
+-[FBSDKAppLinkReturnToRefererView setLabelView:]
+-[FBSDKAppLinkReturnToRefererView closeButton]
+-[FBSDKAppLinkReturnToRefererView setCloseButton:]
+-[FBSDKAppLinkReturnToRefererView insideTapGestureRecognizer]
+-[FBSDKAppLinkReturnToRefererView setInsideTapGestureRecognizer:]
+-[FBSDKAppLinkReturnToRefererView .cxx_destruct]
+_OBJC_IVAR_$_FBSDKAppLinkReturnToRefererView._includeStatusBarInSize
+_OBJC_IVAR_$_FBSDKAppLinkReturnToRefererView._labelView
+_OBJC_IVAR_$_FBSDKAppLinkReturnToRefererView._closeButton
+_OBJC_IVAR_$_FBSDKAppLinkReturnToRefererView._insideTapGestureRecognizer
+_OBJC_IVAR_$_FBSDKAppLinkReturnToRefererView._closed
+_OBJC_IVAR_$_FBSDKAppLinkReturnToRefererView._textColor
+_OBJC_IVAR_$_FBSDKAppLinkReturnToRefererView._refererAppLink
+_OBJC_IVAR_$_FBSDKAppLinkReturnToRefererView._explicitlyHidden
+_OBJC_IVAR_$_FBSDKAppLinkReturnToRefererView._delegate
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppLink/FBSDKAppLinkReturnToRefererView.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppLink/FBSDKAppLinkReturnToRefererView.h
+UIInterfaceOrientationIsLandscape
+/Applications/Xcode-10.1.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.1.sdk/System/Library/Frameworks/UIKit.framework/Headers/UIApplication.h
++[FBSDKCodelessIndexer load]
+___28+[FBSDKCodelessIndexer load]_block_invoke
++[FBSDKCodelessIndexer loadCodelessSettingWithCompletionBlock:]
+___63+[FBSDKCodelessIndexer loadCodelessSettingWithCompletionBlock:]_block_invoke
+___63+[FBSDKCodelessIndexer loadCodelessSettingWithCompletionBlock:]_block_invoke_2
++[FBSDKCodelessIndexer requestToLoadCodelessSetup:]
++[FBSDKCodelessIndexer _codelessSetupTimestampIsValid:]
++[FBSDKCodelessIndexer setupGesture]
+___36+[FBSDKCodelessIndexer setupGesture]_block_invoke
++[FBSDKCodelessIndexer checkCodelessIndexingSession]
+___52+[FBSDKCodelessIndexer checkCodelessIndexingSession]_block_invoke
+___copy_helper_block_.142
+___destroy_helper_block_.143
++[FBSDKCodelessIndexer currentSessionDeviceID]
++[FBSDKCodelessIndexer extInfo]
++[FBSDKCodelessIndexer startIndexing]
++[FBSDKCodelessIndexer uploadIndexing]
++[FBSDKCodelessIndexer uploadIndexing:]
+___39+[FBSDKCodelessIndexer uploadIndexing:]_block_invoke
++[FBSDKCodelessIndexer currentViewTree]
++[FBSDKCodelessIndexer recursiveCaptureTree:]
++[FBSDKCodelessIndexer screenshot]
++[FBSDKCodelessIndexer dimensionOf:]
+__codelessSetting
+___block_descriptor_tmp.73
+___block_descriptor_tmp.107
+__isCheckingSession
+__isCodelessIndexingEnabled
+__lastTreeHash
+__appIndexingTimer
+__deviceSessionID
+___block_descriptor_tmp.145
+__isCodelessIndexing
+___block_descriptor_tmp.220
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppEvents/Internal/Codeless/FBSDKCodelessIndexer.m
+__39+[FBSDKCodelessIndexer uploadIndexing:]_block_invoke
+__52+[FBSDKCodelessIndexer checkCodelessIndexingSession]_block_invoke
+__36+[FBSDKCodelessIndexer setupGesture]_block_invoke
+__63+[FBSDKCodelessIndexer loadCodelessSettingWithCompletionBlock:]_block_invoke_2
+__63+[FBSDKCodelessIndexer loadCodelessSettingWithCompletionBlock:]_block_invoke
+__28+[FBSDKCodelessIndexer load]_block_invoke
+-[FBSDKButton initWithFrame:]
+-[FBSDKButton awakeFromNib]
+-[FBSDKButton dealloc]
+-[FBSDKButton setEnabled:]
+-[FBSDKButton imageRectForContentRect:]
+-[FBSDKButton intrinsicContentSize]
+-[FBSDKButton layoutSubviews]
+-[FBSDKButton sizeThatFits:]
+-[FBSDKButton sizeToFit]
+-[FBSDKButton titleRectForContentRect:]
+_FBSDKTextSize
+-[FBSDKButton logTapEventWithEventName:parameters:]
+-[FBSDKButton checkImplicitlyDisabled]
+-[FBSDKButton configureButton]
+-[FBSDKButton configureWithIcon:title:backgroundColor:highlightedColor:]
+-[FBSDKButton configureWithIcon:title:backgroundColor:highlightedColor:selectedTitle:selectedIcon:selectedColor:selectedHighlightedColor:]
+-[FBSDKButton defaultBackgroundColor]
+-[FBSDKButton defaultDisabledColor]
+-[FBSDKButton defaultFont]
+-[FBSDKButton defaultHighlightedColor]
+-[FBSDKButton defaultIcon]
+-[FBSDKButton defaultSelectedColor]
+-[FBSDKButton isImplicitlyDisabled]
+-[FBSDKButton sizeThatFits:title:]
+-[FBSDKButton _applicationDidBecomeActiveNotification:]
+-[FBSDKButton _backgroundImageWithColor:cornerRadius:scale:]
+-[FBSDKButton _configureWithIcon:title:backgroundColor:highlightedColor:selectedTitle:selectedIcon:selectedColor:selectedHighlightedColor:]
+-[FBSDKButton _fontSizeForHeight:]
+-[FBSDKButton _heightForContentRect:]
+-[FBSDKButton _heightForFont:]
+-[FBSDKButton _marginForHeight:]
+-[FBSDKButton _paddingForHeight:]
+-[FBSDKButton _textPaddingCorrectionForHeight:]
+_OBJC_IVAR_$_FBSDKButton._skipIntrinsicContentSizing
+_OBJC_IVAR_$_FBSDKButton._isExplicitlyDisabled
+l_OBJC_PROTOCOL_$_FBSDKButtonImpressionTracking
+l_OBJC_LABEL_PROTOCOL_$_FBSDKButtonImpressionTracking
+l_OBJC_PROTOCOL_REFERENCE_$_FBSDKButtonImpressionTracking
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/FBSDKButton.m
+FBSDKEdgeInsetsOutsetSize
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/UI/FBSDKUIUtility.h
+FBSDKEdgeInsetsInsetSize
+FBSDKTextSize
+-[FBSDKGraphRequestMetadata initWithRequest:completionHandler:batchParameters:]
+-[FBSDKGraphRequestMetadata invokeCompletionHandlerForConnection:withResults:error:]
+-[FBSDKGraphRequestMetadata description]
+-[FBSDKGraphRequestMetadata request]
+-[FBSDKGraphRequestMetadata setRequest:]
+-[FBSDKGraphRequestMetadata completionHandler]
+-[FBSDKGraphRequestMetadata setCompletionHandler:]
+-[FBSDKGraphRequestMetadata batchParameters]
+-[FBSDKGraphRequestMetadata setBatchParameters:]
+-[FBSDKGraphRequestMetadata .cxx_destruct]
+_OBJC_IVAR_$_FBSDKGraphRequestMetadata._request
+_OBJC_IVAR_$_FBSDKGraphRequestMetadata._batchParameters
+_OBJC_IVAR_$_FBSDKGraphRequestMetadata._completionHandler
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/Network/FBSDKGraphRequestMetadata.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/Network/FBSDKGraphRequestMetadata.h
++[FBSDKErrorRecoveryAttempter recoveryAttempterFromConfiguration:]
+-[FBSDKErrorRecoveryAttempter attemptRecoveryFromError:optionIndex:delegate:didRecoverSelector:contextInfo:]
+-[FBSDKErrorRecoveryAttempter(Protected) completeRecovery:delegate:didRecoverSelector:contextInfo:]
+l_OBJC_PROTOCOL_$_FBSDKErrorRecoveryAttempting
+l_OBJC_LABEL_PROTOCOL_$_FBSDKErrorRecoveryAttempting
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/ErrorRecovery/FBSDKErrorRecoveryAttempter.m
++[FBSDKAppLinkTarget appLinkTargetWithURL:appStoreId:appName:]
+-[FBSDKAppLinkTarget URL]
+-[FBSDKAppLinkTarget setURL:]
+-[FBSDKAppLinkTarget appStoreId]
+-[FBSDKAppLinkTarget setAppStoreId:]
+-[FBSDKAppLinkTarget appName]
+-[FBSDKAppLinkTarget setAppName:]
+-[FBSDKAppLinkTarget .cxx_destruct]
+_OBJC_IVAR_$_FBSDKAppLinkTarget._URL
+_OBJC_IVAR_$_FBSDKAppLinkTarget._appStoreId
+_OBJC_IVAR_$_FBSDKAppLinkTarget._appName
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppLink/FBSDKAppLinkTarget.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppLink/FBSDKAppLinkTarget.h
+-[FBSDKProfile initWithUserID:firstName:middleName:lastName:name:linkURL:refreshDate:]
++[FBSDKProfile currentProfile]
++[FBSDKProfile setCurrentProfile:]
+-[FBSDKProfile imageURLForPictureMode:size:]
+-[FBSDKProfile imagePathForPictureMode:size:]
++[FBSDKProfile enableUpdatesOnAccessTokenChange:]
++[FBSDKProfile loadCurrentProfileWithCompletion:]
+-[FBSDKProfile copyWithZone:]
+-[FBSDKProfile hash]
+-[FBSDKProfile isEqual:]
+-[FBSDKProfile isEqualToProfile:]
++[FBSDKProfile supportsSecureCoding]
+-[FBSDKProfile initWithCoder:]
+-[FBSDKProfile encodeWithCoder:]
++[FBSDKProfile loadProfileWithToken:completion:]
+___48+[FBSDKProfile loadProfileWithToken:completion:]_block_invoke
++[FBSDKProfile observeChangeAccessTokenChange:]
+-[FBSDKProfile userID]
+-[FBSDKProfile firstName]
+-[FBSDKProfile middleName]
+-[FBSDKProfile lastName]
+-[FBSDKProfile name]
+-[FBSDKProfile linkURL]
+-[FBSDKProfile refreshDate]
+-[FBSDKProfile .cxx_destruct]
++[FBSDKProfile(Internal) cacheProfile:]
++[FBSDKProfile(Internal) fetchCachedProfile]
+_OBJC_IVAR_$_FBSDKProfile._userID
+_OBJC_IVAR_$_FBSDKProfile._firstName
+_OBJC_IVAR_$_FBSDKProfile._middleName
+_OBJC_IVAR_$_FBSDKProfile._lastName
+_OBJC_IVAR_$_FBSDKProfile._name
+_OBJC_IVAR_$_FBSDKProfile._linkURL
+_OBJC_IVAR_$_FBSDKProfile._refreshDate
+_g_currentProfile
+_loadProfileWithToken:completion:.executingRequestConnection
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/FBSDKProfile.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/FBSDKProfile.h
+__48+[FBSDKProfile loadProfileWithToken:completion:]_block_invoke
+-[FBSDKEventBindingManager init]
++[FBSDKEventBindingManager parseArray:]
+-[FBSDKEventBindingManager initWithJSON:]
+-[FBSDKEventBindingManager start]
+___33-[FBSDKEventBindingManager start]_block_invoke
+___33-[FBSDKEventBindingManager start]_block_invoke.52
+___copy_helper_block_.71
+___destroy_helper_block_.72
+___33-[FBSDKEventBindingManager start]_block_invoke.77
+___copy_helper_block_.78
+___destroy_helper_block_.79
+___33-[FBSDKEventBindingManager start]_block_invoke.86
+-[FBSDKEventBindingManager rematchBindings]
+-[FBSDKEventBindingManager matchSubviewsIn:]
+-[FBSDKEventBindingManager matchView:delegate:]
+_fb_dispatch_on_main_thread
+___47-[FBSDKEventBindingManager matchView:delegate:]_block_invoke
+_fb_dispatch_on_default_thread
+___47-[FBSDKEventBindingManager matchView:delegate:]_block_invoke_2
+___47-[FBSDKEventBindingManager matchView:delegate:]_block_invoke_3
+___47-[FBSDKEventBindingManager matchView:delegate:]_block_invoke.124
+___47-[FBSDKEventBindingManager matchView:delegate:]_block_invoke.268
+___47-[FBSDKEventBindingManager matchView:delegate:]_block_invoke_2.273
+___47-[FBSDKEventBindingManager matchView:delegate:]_block_invoke_3.274
+___copy_helper_block_.283
+___destroy_helper_block_.284
+___copy_helper_block_.286
+___destroy_helper_block_.287
+___copy_helper_block_.293
+___destroy_helper_block_.294
+___47-[FBSDKEventBindingManager matchView:delegate:]_block_invoke.334
+___47-[FBSDKEventBindingManager matchView:delegate:]_block_invoke_2.335
+___47-[FBSDKEventBindingManager matchView:delegate:]_block_invoke_3.336
+___copy_helper_block_.339
+___destroy_helper_block_.340
+___copy_helper_block_.342
+___destroy_helper_block_.343
+___copy_helper_block_.347
+___destroy_helper_block_.348
+___copy_helper_block_.350
+___destroy_helper_block_.351
+___copy_helper_block_.353
+___destroy_helper_block_.354
+-[FBSDKEventBindingManager updateBindings:]
+___43-[FBSDKEventBindingManager updateBindings:]_block_invoke
+___copy_helper_block_.360
+___destroy_helper_block_.361
+-[FBSDKEventBindingManager .cxx_destruct]
+_OBJC_IVAR_$_FBSDKEventBindingManager.isStarted
+_OBJC_IVAR_$_FBSDKEventBindingManager.hasReactNative
+_OBJC_IVAR_$_FBSDKEventBindingManager.reactBindings
+_OBJC_IVAR_$_FBSDKEventBindingManager.validClasses
+_OBJC_IVAR_$_FBSDKEventBindingManager.eventBindings
+___block_descriptor_tmp.74
+___block_descriptor_tmp.90
+l_OBJC_PROTOCOL_$_UIScrollViewDelegate
+l_OBJC_LABEL_PROTOCOL_$_UIScrollViewDelegate
+l_OBJC_PROTOCOL_$_UITableViewDelegate
+l_OBJC_LABEL_PROTOCOL_$_UITableViewDelegate
+l_OBJC_PROTOCOL_REFERENCE_$_UITableViewDelegate
+___block_descriptor_tmp.285
+___block_descriptor_tmp.289
+___block_descriptor_tmp.295
+l_OBJC_PROTOCOL_$_UICollectionViewDelegate
+l_OBJC_LABEL_PROTOCOL_$_UICollectionViewDelegate
+l_OBJC_PROTOCOL_REFERENCE_$_UICollectionViewDelegate
+___block_descriptor_tmp.341
+___block_descriptor_tmp.345
+___block_descriptor_tmp.349
+___block_descriptor_tmp.352
+___block_descriptor_tmp.355
+___block_descriptor_tmp.362
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppEvents/Internal/Codeless/FBSDKEventBindingManager.m
+__43-[FBSDKEventBindingManager updateBindings:]_block_invoke
+__47-[FBSDKEventBindingManager matchView:delegate:]_block_invoke_3.336
+__47-[FBSDKEventBindingManager matchView:delegate:]_block_invoke_2.335
+__47-[FBSDKEventBindingManager matchView:delegate:]_block_invoke.334
+__47-[FBSDKEventBindingManager matchView:delegate:]_block_invoke_3.274
+__47-[FBSDKEventBindingManager matchView:delegate:]_block_invoke_2.273
+__47-[FBSDKEventBindingManager matchView:delegate:]_block_invoke.268
+__47-[FBSDKEventBindingManager matchView:delegate:]_block_invoke.124
+__47-[FBSDKEventBindingManager matchView:delegate:]_block_invoke_3
+__47-[FBSDKEventBindingManager matchView:delegate:]_block_invoke_2
+fb_dispatch_on_default_thread
+__47-[FBSDKEventBindingManager matchView:delegate:]_block_invoke
+fb_dispatch_on_main_thread
+__33-[FBSDKEventBindingManager start]_block_invoke.86
+__33-[FBSDKEventBindingManager start]_block_invoke.77
+__33-[FBSDKEventBindingManager start]_block_invoke.52
+__33-[FBSDKEventBindingManager start]_block_invoke
+-[FBSDKKeychainStore initWithService:accessGroup:]
+-[FBSDKKeychainStore setDictionary:forKey:accessibility:]
+-[FBSDKKeychainStore dictionaryForKey:]
+-[FBSDKKeychainStore setString:forKey:accessibility:]
+-[FBSDKKeychainStore stringForKey:]
+-[FBSDKKeychainStore setData:forKey:accessibility:]
+-[FBSDKKeychainStore dataForKey:]
+-[FBSDKKeychainStore queryForKey:]
+-[FBSDKKeychainStore service]
+-[FBSDKKeychainStore accessGroup]
+-[FBSDKKeychainStore .cxx_destruct]
+_OBJC_IVAR_$_FBSDKKeychainStore._service
+_OBJC_IVAR_$_FBSDKKeychainStore._accessGroup
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/TokenCaching/FBSDKKeychainStore.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/TokenCaching/FBSDKKeychainStore.h
+-[FBSDKGraphRequestConnection init]
+-[FBSDKGraphRequestConnection dealloc]
++[FBSDKGraphRequestConnection setDefaultConnectionTimeout:]
+-[FBSDKGraphRequestConnection addRequest:completionHandler:]
+-[FBSDKGraphRequestConnection addRequest:batchEntryName:completionHandler:]
+-[FBSDKGraphRequestConnection addRequest:batchParameters:completionHandler:]
+-[FBSDKGraphRequestConnection addRequest:completionHandler:batchEntryName:]
+-[FBSDKGraphRequestConnection addRequest:completionHandler:batchParameters:]
+-[FBSDKGraphRequestConnection cancel]
+-[FBSDKGraphRequestConnection overrideGraphAPIVersion:]
+-[FBSDKGraphRequestConnection overrideVersionPartWith:]
+-[FBSDKGraphRequestConnection start]
+___36-[FBSDKGraphRequestConnection start]_block_invoke
+___36-[FBSDKGraphRequestConnection start]_block_invoke_2
+___36-[FBSDKGraphRequestConnection start]_block_invoke.115
+-[FBSDKGraphRequestConnection setDelegateQueue:]
+-[FBSDKGraphRequestConnection addRequest:toBatch:attachments:batchToken:]
+___73-[FBSDKGraphRequestConnection addRequest:toBatch:attachments:batchToken:]_block_invoke
+___copy_helper_block_.150
+___destroy_helper_block_.151
+-[FBSDKGraphRequestConnection appendAttachments:toBody:addFormData:logger:]
+___75-[FBSDKGraphRequestConnection appendAttachments:toBody:addFormData:logger:]_block_invoke
+___copy_helper_block_.179
+___destroy_helper_block_.180
+-[FBSDKGraphRequestConnection appendJSONRequests:toBody:andNameAttachments:logger:]
+-[FBSDKGraphRequestConnection _shouldWarnOnMissingFieldsParam:]
+-[FBSDKGraphRequestConnection _validateFieldsParamForGetRequests:]
+-[FBSDKGraphRequestConnection requestWithBatch:timeout:]
+-[FBSDKGraphRequestConnection urlStringForSingleRequest:forBatch:]
+-[FBSDKGraphRequestConnection completeFBSDKURLSessionWithResponse:data:networkError:]
+-[FBSDKGraphRequestConnection parseJSONResponse:error:statusCode:]
+-[FBSDKGraphRequestConnection parseJSONOrOtherwise:error:]
+-[FBSDKGraphRequestConnection completeWithResults:networkError:]
+___64-[FBSDKGraphRequestConnection completeWithResults:networkError:]_block_invoke
+___copy_helper_block_.401
+___destroy_helper_block_.402
+-[FBSDKGraphRequestConnection processResultBody:error:metadata:canNotifyDelegate:]
+___82-[FBSDKGraphRequestConnection processResultBody:error:metadata:canNotifyDelegate:]_block_invoke
+___copy_helper_block_.417
+___destroy_helper_block_.418
+___82-[FBSDKGraphRequestConnection processResultBody:error:metadata:canNotifyDelegate:]_block_invoke.420
+___copy_helper_block_.428
+___destroy_helper_block_.429
+___82-[FBSDKGraphRequestConnection processResultBody:error:metadata:canNotifyDelegate:]_block_invoke.443
+___82-[FBSDKGraphRequestConnection processResultBody:error:metadata:canNotifyDelegate:]_block_invoke_2
+___copy_helper_block_.447
+___destroy_helper_block_.448
+___copy_helper_block_.450
+___destroy_helper_block_.451
+___82-[FBSDKGraphRequestConnection processResultBody:error:metadata:canNotifyDelegate:]_block_invoke.456
+___copy_helper_block_.457
+___destroy_helper_block_.458
+-[FBSDKGraphRequestConnection processResultDebugDictionary:]
+___60-[FBSDKGraphRequestConnection processResultDebugDictionary:]_block_invoke
+-[FBSDKGraphRequestConnection errorFromResult:request:]
+-[FBSDKGraphRequestConnection errorWithCode:statusCode:parsedJSONResponse:innerError:message:]
+-[FBSDKGraphRequestConnection logRequest:bodyLength:bodyLogger:attachmentLogger:]
+-[FBSDKGraphRequestConnection accessTokenWithRequest:]
+-[FBSDKGraphRequestConnection registerTokenToOmitFromLog:]
++[FBSDKGraphRequestConnection userAgent]
+___40+[FBSDKGraphRequestConnection userAgent]_block_invoke
+-[FBSDKGraphRequestConnection defaultSession]
+-[FBSDKGraphRequestConnection cleanUpSession]
+-[FBSDKGraphRequestConnection URLSession:task:didSendBodyData:totalBytesSent:totalBytesExpectedToSend:]
+-[FBSDKGraphRequestConnection processorDidAttemptRecovery:didRecover:error:]
+___76-[FBSDKGraphRequestConnection processorDidAttemptRecovery:didRecover:error:]_block_invoke
+___copy_helper_block_.584
+___destroy_helper_block_.585
+-[FBSDKGraphRequestConnection description]
+-[FBSDKGraphRequestConnection delegate]
+-[FBSDKGraphRequestConnection setDelegate:]
+-[FBSDKGraphRequestConnection timeout]
+-[FBSDKGraphRequestConnection setTimeout:]
+-[FBSDKGraphRequestConnection URLResponse]
+-[FBSDKGraphRequestConnection session]
+-[FBSDKGraphRequestConnection setSession:]
+-[FBSDKGraphRequestConnection task]
+-[FBSDKGraphRequestConnection setTask:]
+-[FBSDKGraphRequestConnection requests]
+-[FBSDKGraphRequestConnection setRequests:]
+-[FBSDKGraphRequestConnection state]
+-[FBSDKGraphRequestConnection setState:]
+-[FBSDKGraphRequestConnection logger]
+-[FBSDKGraphRequestConnection setLogger:]
+-[FBSDKGraphRequestConnection requestStartTime]
+-[FBSDKGraphRequestConnection setRequestStartTime:]
+-[FBSDKGraphRequestConnection .cxx_destruct]
+_OBJC_IVAR_$_FBSDKGraphRequestConnection._requests
+_g_defaultTimeout
+_OBJC_IVAR_$_FBSDKGraphRequestConnection._timeout
+_OBJC_IVAR_$_FBSDKGraphRequestConnection._state
+_OBJC_IVAR_$_FBSDKGraphRequestConnection._logger
+_OBJC_IVAR_$_FBSDKGraphRequestConnection._session
+_OBJC_IVAR_$_FBSDKGraphRequestConnection._overrideVersionPart
+_start.onceToken
+_g_errorConfiguration
+_OBJC_IVAR_$_FBSDKGraphRequestConnection._requestStartTime
+___block_descriptor_tmp.95
+_OBJC_IVAR_$_FBSDKGraphRequestConnection._delegateQueue
+___block_descriptor_tmp.153
+___block_descriptor_tmp.181
+_OBJC_IVAR_$_FBSDKGraphRequestConnection._URLResponse
+_OBJC_IVAR_$_FBSDKGraphRequestConnection._expectingResults
+_OBJC_IVAR_$_FBSDKGraphRequestConnection._recoveringRequestMetadata
+_OBJC_IVAR_$_FBSDKGraphRequestConnection._errorRecoveryProcessor
+___block_descriptor_tmp.404
+_OBJC_IVAR_$_FBSDKGraphRequestConnection._delegate
+___block_descriptor_tmp.419
+___block_descriptor_tmp.431
+___block_descriptor_tmp.449
+___block_descriptor_tmp.453
+___block_descriptor_tmp.459
+___block_descriptor_tmp.465
+___block_literal_global.466
+_userAgent.agent
+_userAgent.onceToken
+___block_descriptor_tmp.560
+___block_literal_global.561
+___block_descriptor_tmp.587
+_OBJC_IVAR_$_FBSDKGraphRequestConnection._task
+l_OBJC_PROTOCOL_$_NSURLSessionDelegate
+l_OBJC_LABEL_PROTOCOL_$_NSURLSessionDelegate
+l_OBJC_PROTOCOL_$_NSURLSessionTaskDelegate
+l_OBJC_LABEL_PROTOCOL_$_NSURLSessionTaskDelegate
+l_OBJC_PROTOCOL_$_NSURLSessionDataDelegate
+l_OBJC_LABEL_PROTOCOL_$_NSURLSessionDataDelegate
+l_OBJC_PROTOCOL_$_FBSDKGraphErrorRecoveryProcessorDelegate
+l_OBJC_LABEL_PROTOCOL_$_FBSDKGraphErrorRecoveryProcessorDelegate
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/FBSDKGraphRequestConnection.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/FBSDKGraphRequestConnection.h
+__76-[FBSDKGraphRequestConnection processorDidAttemptRecovery:didRecover:error:]_block_invoke
+__40+[FBSDKGraphRequestConnection userAgent]_block_invoke
+__60-[FBSDKGraphRequestConnection processResultDebugDictionary:]_block_invoke
+__82-[FBSDKGraphRequestConnection processResultBody:error:metadata:canNotifyDelegate:]_block_invoke.456
+__82-[FBSDKGraphRequestConnection processResultBody:error:metadata:canNotifyDelegate:]_block_invoke_2
+__82-[FBSDKGraphRequestConnection processResultBody:error:metadata:canNotifyDelegate:]_block_invoke.443
+__82-[FBSDKGraphRequestConnection processResultBody:error:metadata:canNotifyDelegate:]_block_invoke.420
+_CreateExpiredAccessToken
+__82-[FBSDKGraphRequestConnection processResultBody:error:metadata:canNotifyDelegate:]_block_invoke
+__64-[FBSDKGraphRequestConnection completeWithResults:networkError:]_block_invoke
+__75-[FBSDKGraphRequestConnection appendAttachments:toBody:addFormData:logger:]_block_invoke
+__73-[FBSDKGraphRequestConnection addRequest:toBatch:attachments:batchToken:]_block_invoke
+__36-[FBSDKGraphRequestConnection start]_block_invoke.115
+__36-[FBSDKGraphRequestConnection start]_block_invoke_2
+__36-[FBSDKGraphRequestConnection start]_block_invoke
+-[FBSDKAccessTokenCacheV3 accessToken]
+-[FBSDKAccessTokenCacheV3 clearCache]
+-[FBSDKAccessTokenCacheV3 setAccessToken:]
++[FBSDKAccessTokenCacheV3 accessTokenForV3Dictionary:]
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/TokenCaching/FBSDKAccessTokenCacheV3.m
++[FBSDKGateKeeperManager boolForKey:appID:defaultValue:]
++[FBSDKGateKeeperManager loadGateKeepers]
+___41+[FBSDKGateKeeperManager loadGateKeepers]_block_invoke
++[FBSDKGateKeeperManager requestToLoadGateKeepers:]
++[FBSDKGateKeeperManager processLoadRequestResponse:error:appID:]
++[FBSDKGateKeeperManager _gateKeeperTimestampIsValid:]
++[FBSDKGateKeeperManager _gateKeeperIsValid]
+__gateKeepers
+__loadingGateKeepers
+__timestamp
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/ServerConfiguration/FBSDKGateKeeperManager.m
+__41+[FBSDKGateKeeperManager loadGateKeepers]_block_invoke
++[FBSDKAppEvents initialize]
+-[FBSDKAppEvents init]
+___22-[FBSDKAppEvents init]_block_invoke
+-[FBSDKAppEvents registerNotifications]
+-[FBSDKAppEvents dealloc]
++[FBSDKAppEvents logEvent:]
++[FBSDKAppEvents logEvent:valueToSum:]
++[FBSDKAppEvents logEvent:parameters:]
++[FBSDKAppEvents logEvent:valueToSum:parameters:]
++[FBSDKAppEvents logEvent:valueToSum:parameters:accessToken:]
++[FBSDKAppEvents logPurchase:currency:]
++[FBSDKAppEvents logPurchase:currency:parameters:]
++[FBSDKAppEvents logPurchase:currency:parameters:accessToken:]
++[FBSDKAppEvents logPushNotificationOpen:]
++[FBSDKAppEvents logPushNotificationOpen:action:]
++[FBSDKAppEvents logProductItem:availability:condition:description:imageLink:link:title:priceAmount:currency:gtin:mpn:brand:parameters:]
++[FBSDKAppEvents activateApp]
++[FBSDKAppEvents setPushNotificationsDeviceToken:]
++[FBSDKAppEvents setPushNotificationsDeviceTokenString:]
++[FBSDKAppEvents flushBehavior]
++[FBSDKAppEvents setFlushBehavior:]
++[FBSDKAppEvents loggingOverrideAppID]
++[FBSDKAppEvents setLoggingOverrideAppID:]
++[FBSDKAppEvents flush]
++[FBSDKAppEvents setUserID:]
++[FBSDKAppEvents clearUserID]
++[FBSDKAppEvents userID]
++[FBSDKAppEvents setUserData:]
++[FBSDKAppEvents setUserEmail:firstName:lastName:phone:dateOfBirth:gender:city:state:zip:country:]
++[FBSDKAppEvents getUserData]
++[FBSDKAppEvents clearUserData]
++[FBSDKAppEvents updateUserProperties:handler:]
+___47+[FBSDKAppEvents updateUserProperties:handler:]_block_invoke
+___copy_helper_block_.555
+___destroy_helper_block_.556
++[FBSDKAppEvents augmentHybridWKWebView:]
++[FBSDKAppEvents setIsUnityInit:]
++[FBSDKAppEvents sendEventBindingsToUnity]
++[FBSDKAppEvents logImplicitEvent:valueToSum:parameters:accessToken:]
++[FBSDKAppEvents singleton]
+___27+[FBSDKAppEvents singleton]_block_invoke
+-[FBSDKAppEvents flushForReason:]
+___33-[FBSDKAppEvents flushForReason:]_block_invoke
+___copy_helper_block_.626
+___destroy_helper_block_.627
+-[FBSDKAppEvents appID]
+-[FBSDKAppEvents publishInstall]
+___32-[FBSDKAppEvents publishInstall]_block_invoke
+___32-[FBSDKAppEvents publishInstall]_block_invoke_2
+___copy_helper_block_.651
+___destroy_helper_block_.652
+___copy_helper_block_.655
+___destroy_helper_block_.656
+-[FBSDKAppEvents enableCodelessEvents]
+-[FBSDKAppEvents fetchServerConfiguration:]
+___43-[FBSDKAppEvents fetchServerConfiguration:]_block_invoke
+___copy_helper_block_.681
+___destroy_helper_block_.682
+-[FBSDKAppEvents instanceLogEvent:valueToSum:parameters:isImplicitlyLogged:accessToken:]
+___88-[FBSDKAppEvents instanceLogEvent:valueToSum:parameters:isImplicitlyLogged:accessToken:]_block_invoke
+___copy_helper_block_.695
+___destroy_helper_block_.696
+-[FBSDKAppEvents checkPersistedEvents]
+___38-[FBSDKAppEvents checkPersistedEvents]_block_invoke
+___copy_helper_block_.754
+___destroy_helper_block_.755
+-[FBSDKAppEvents flushOnMainQueue:forReason:]
+___45-[FBSDKAppEvents flushOnMainQueue:forReason:]_block_invoke
+___45-[FBSDKAppEvents flushOnMainQueue:forReason:]_block_invoke_2
+___copy_helper_block_.795
+___destroy_helper_block_.796
+___copy_helper_block_.798
+___destroy_helper_block_.799
+-[FBSDKAppEvents handleActivitiesPostCompletion:loggingEntry:appEventsState:]
+-[FBSDKAppEvents flushTimerFired:]
+-[FBSDKAppEvents applicationDidBecomeActive]
+-[FBSDKAppEvents applicationMovingFromActiveStateOrTerminating]
++[FBSDKAppEvents requestForCustomAudienceThirdPartyIDWithAccessToken:]
+-[FBSDKAppEvents flushBehavior]
+-[FBSDKAppEvents setFlushBehavior:]
+-[FBSDKAppEvents disableTimer]
+-[FBSDKAppEvents setDisableTimer:]
+-[FBSDKAppEvents pushNotificationsDeviceTokenString]
+-[FBSDKAppEvents setPushNotificationsDeviceTokenString:]
+-[FBSDKAppEvents flushTimer]
+-[FBSDKAppEvents setFlushTimer:]
+-[FBSDKAppEvents .cxx_destruct]
+_g_overrideAppID
+_OBJC_IVAR_$_FBSDKAppEvents._flushBehavior
+_OBJC_IVAR_$_FBSDKAppEvents._userID
+_OBJC_IVAR_$_FBSDKAppEvents._explicitEventsLoggedYet
+___block_descriptor_tmp.558
+_OBJC_IVAR_$_FBSDKAppEvents._isUnityInit
+_OBJC_IVAR_$_FBSDKAppEvents._serverConfiguration
+___block_descriptor_tmp.620
+_OBJC_IVAR_$_FBSDKAppEvents._appEventsState
+___block_descriptor_tmp.628
+___block_descriptor_tmp.654
+___block_descriptor_tmp.657
+_OBJC_IVAR_$_FBSDKAppEvents._eventBindingManager
+___block_descriptor_tmp.684
+___block_descriptor_tmp.698
+___block_descriptor_tmp.756
+___block_descriptor_tmp.797
+___block_descriptor_tmp.800
+_OBJC_IVAR_$_FBSDKAppEvents._disableTimer
+_OBJC_IVAR_$_FBSDKAppEvents._pushNotificationsDeviceTokenString
+_OBJC_IVAR_$_FBSDKAppEvents._flushTimer
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppEvents/FBSDKAppEvents.m
+__45-[FBSDKAppEvents flushOnMainQueue:forReason:]_block_invoke_2
+__45-[FBSDKAppEvents flushOnMainQueue:forReason:]_block_invoke
+__38-[FBSDKAppEvents checkPersistedEvents]_block_invoke
+__88-[FBSDKAppEvents instanceLogEvent:valueToSum:parameters:isImplicitlyLogged:accessToken:]_block_invoke
+__43-[FBSDKAppEvents fetchServerConfiguration:]_block_invoke
+__32-[FBSDKAppEvents publishInstall]_block_invoke_2
+__32-[FBSDKAppEvents publishInstall]_block_invoke
+__33-[FBSDKAppEvents flushForReason:]_block_invoke
+__27+[FBSDKAppEvents singleton]_block_invoke
+__47+[FBSDKAppEvents updateUserProperties:handler:]_block_invoke
+__22-[FBSDKAppEvents init]_block_invoke
+-[_FBSDKTemporaryErrorRecoveryAttempter attemptRecoveryFromError:optionIndex:delegate:didRecoverSelector:contextInfo:]
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/ErrorRecovery/_FBSDKTemporaryErrorRecoveryAttempter.m
+-[FBSDKMeasurementEvent postNotification]
+-[FBSDKMeasurementEvent initEventWithName:args:]
++[FBSDKMeasurementEvent postNotificationForEventName:args:]
+-[FBSDKMeasurementEvent .cxx_destruct]
+_OBJC_IVAR_$_FBSDKMeasurementEvent._name
+_OBJC_IVAR_$_FBSDKMeasurementEvent._args
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/FBSDKMeasurementEvent.m
+-[FBSDKBridgeAPIProtocolNativeV1 initWithAppScheme:]
+-[FBSDKBridgeAPIProtocolNativeV1 initWithAppScheme:pasteboard:dataLengthThreshold:includeAppIcon:]
+-[FBSDKBridgeAPIProtocolNativeV1 requestURLWithActionID:scheme:methodName:methodVersion:parameters:error:]
+-[FBSDKBridgeAPIProtocolNativeV1 responseParametersForActionID:queryParameters:cancelled:error:]
+-[FBSDKBridgeAPIProtocolNativeV1 _appIcon]
+-[FBSDKBridgeAPIProtocolNativeV1 _bridgeParametersWithActionID:error:]
+-[FBSDKBridgeAPIProtocolNativeV1 _errorWithDictionary:]
+-[FBSDKBridgeAPIProtocolNativeV1 _JSONStringForObject:enablePasteboard:error:]
+___78-[FBSDKBridgeAPIProtocolNativeV1 _JSONStringForObject:enablePasteboard:error:]_block_invoke
++[FBSDKBridgeAPIProtocolNativeV1 clearData:fromPasteboardOnApplicationDidBecomeActive:]
+___87+[FBSDKBridgeAPIProtocolNativeV1 clearData:fromPasteboardOnApplicationDidBecomeActive:]_block_invoke
+___copy_helper_block_.139
+___destroy_helper_block_.140
+-[FBSDKBridgeAPIProtocolNativeV1 appScheme]
+-[FBSDKBridgeAPIProtocolNativeV1 dataLengthThreshold]
+-[FBSDKBridgeAPIProtocolNativeV1 includeAppIcon]
+-[FBSDKBridgeAPIProtocolNativeV1 pasteboard]
+-[FBSDKBridgeAPIProtocolNativeV1 .cxx_destruct]
+_OBJC_IVAR_$_FBSDKBridgeAPIProtocolNativeV1._appScheme
+_OBJC_IVAR_$_FBSDKBridgeAPIProtocolNativeV1._pasteboard
+_OBJC_IVAR_$_FBSDKBridgeAPIProtocolNativeV1._dataLengthThreshold
+_OBJC_IVAR_$_FBSDKBridgeAPIProtocolNativeV1._includeAppIcon
+___block_descriptor_tmp.142
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/BridgeAPI/ProtocolVersions/FBSDKBridgeAPIProtocolNativeV1.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/BridgeAPI/ProtocolVersions/FBSDKBridgeAPIProtocolNativeV1.h
+__87+[FBSDKBridgeAPIProtocolNativeV1 clearData:fromPasteboardOnApplicationDidBecomeActive:]_block_invoke
+__78-[FBSDKBridgeAPIProtocolNativeV1 _JSONStringForObject:enablePasteboard:error:]_block_invoke
+-[FBSDKWebDialogView initWithFrame:]
+-[FBSDKWebDialogView dealloc]
+-[FBSDKWebDialogView loadURL:]
+-[FBSDKWebDialogView stopLoading]
+-[FBSDKWebDialogView drawRect:]
+-[FBSDKWebDialogView layoutSubviews]
+-[FBSDKWebDialogView _close:]
+-[FBSDKWebDialogView webView:didFailLoadWithError:]
+-[FBSDKWebDialogView webView:shouldStartLoadWithRequest:navigationType:]
+-[FBSDKWebDialogView webViewDidFinishLoad:]
+-[FBSDKWebDialogView delegate]
+-[FBSDKWebDialogView setDelegate:]
+-[FBSDKWebDialogView .cxx_destruct]
+_OBJC_IVAR_$_FBSDKWebDialogView._webView
+_OBJC_IVAR_$_FBSDKWebDialogView._closeButton
+_OBJC_IVAR_$_FBSDKWebDialogView._loadingView
+_OBJC_IVAR_$_FBSDKWebDialogView._delegate
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/WebDialog/FBSDKWebDialogView.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/WebDialog/FBSDKWebDialogView.h
++[FBSDKBoltsMeasurementEventListener defaultListener]
+___53+[FBSDKBoltsMeasurementEventListener defaultListener]_block_invoke
+-[FBSDKBoltsMeasurementEventListener logFBAppEventForNotification:]
+-[FBSDKBoltsMeasurementEventListener dealloc]
+_defaultListener.dispatchOnceLocker
+_defaultListener.defaultListener
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppLink/Internal/FBSDKBoltsMeasurementEventListener.m
+__53+[FBSDKBoltsMeasurementEventListener defaultListener]_block_invoke
+-[FBSDKErrorConfiguration initWithDictionary:]
+-[FBSDKErrorConfiguration recoveryConfigurationForCode:subcode:request:]
+-[FBSDKErrorConfiguration parseArray:]
+___38-[FBSDKErrorConfiguration parseArray:]_block_invoke
++[FBSDKErrorConfiguration supportsSecureCoding]
+-[FBSDKErrorConfiguration initWithCoder:]
+-[FBSDKErrorConfiguration encodeWithCoder:]
+-[FBSDKErrorConfiguration copyWithZone:]
+-[FBSDKErrorConfiguration .cxx_destruct]
+_OBJC_IVAR_$_FBSDKErrorConfiguration._configurationDictionary
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/ServerConfiguration/FBSDKErrorConfiguration.m
+__38-[FBSDKErrorConfiguration parseArray:]_block_invoke
+-[FBSDKHybridAppEventsScriptMessageHandler userContentController:didReceiveScriptMessage:]
+l_OBJC_PROTOCOL_$_WKScriptMessageHandler
+l_OBJC_LABEL_PROTOCOL_$_WKScriptMessageHandler
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/AppEvents/Internal/FBSDKHybridAppEventsScriptMessageHandler.m
++[FBSDKDeviceRequestsHelper initialize]
++[FBSDKDeviceRequestsHelper getDeviceInfo]
++[FBSDKDeviceRequestsHelper startAdvertisementService:withDelegate:]
+___68+[FBSDKDeviceRequestsHelper startAdvertisementService:withDelegate:]_block_invoke
++[FBSDKDeviceRequestsHelper isDelegate:forAdvertisementService:]
++[FBSDKDeviceRequestsHelper cleanUpAdvertisementService:]
+_g_mdnsAdvertisementServices
+_startAdvertisementService:withDelegate:.sdkVersion
+_startAdvertisementService:withDelegate:.onceToken
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/FBSDKDeviceRequestsHelper.m
+__68+[FBSDKDeviceRequestsHelper startAdvertisementService:withDelegate:]_block_invoke
+-[FBSDKKeychainStoreViaBundleID init]
+-[FBSDKKeychainStoreViaBundleID initWithService:accessGroup:]
+-[FBSDKKeychainStoreViaBundleID queryForKey:]
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/TokenCaching/FBSDKKeychainStoreViaBundleID.m
+-[FBSDKServerConfiguration initWithAppID:appName:loginTooltipEnabled:loginTooltipText:defaultShareMode:advertisingIDEnabled:implicitLoggingEnabled:implicitPurchaseLoggingEnabled:codelessEventsEnabled:systemAuthenticationEnabled:nativeAuthFlowEnabled:uninstallTrackingEnabled:dialogConfigurations:dialogFlows:timestamp:errorConfiguration:sessionTimeoutInterval:defaults:loggingToken:smartLoginOptions:smartLoginBookmarkIconURL:smartLoginMenuIconURL:updateMessage:eventBindings:]
+-[FBSDKServerConfiguration dialogConfigurationForDialogName:]
+-[FBSDKServerConfiguration useNativeDialogForDialogName:]
+-[FBSDKServerConfiguration useSafariViewControllerForDialogName:]
+-[FBSDKServerConfiguration _useFeatureWithKey:dialogName:]
++[FBSDKServerConfiguration supportsSecureCoding]
+-[FBSDKServerConfiguration initWithCoder:]
+-[FBSDKServerConfiguration encodeWithCoder:]
+-[FBSDKServerConfiguration copyWithZone:]
+-[FBSDKServerConfiguration isAdvertisingIDEnabled]
+-[FBSDKServerConfiguration appID]
+-[FBSDKServerConfiguration appName]
+-[FBSDKServerConfiguration isDefaults]
+-[FBSDKServerConfiguration defaultShareMode]
+-[FBSDKServerConfiguration errorConfiguration]
+-[FBSDKServerConfiguration isImplicitLoggingSupported]
+-[FBSDKServerConfiguration isImplicitPurchaseLoggingSupported]
+-[FBSDKServerConfiguration isCodelessEventsEnabled]
+-[FBSDKServerConfiguration isLoginTooltipEnabled]
+-[FBSDKServerConfiguration isNativeAuthFlowEnabled]
+-[FBSDKServerConfiguration isSystemAuthenticationEnabled]
+-[FBSDKServerConfiguration isUninstallTrackingEnabled]
+-[FBSDKServerConfiguration loginTooltipText]
+-[FBSDKServerConfiguration timestamp]
+-[FBSDKServerConfiguration sessionTimoutInterval]
+-[FBSDKServerConfiguration setSessionTimoutInterval:]
+-[FBSDKServerConfiguration loggingToken]
+-[FBSDKServerConfiguration smartLoginOptions]
+-[FBSDKServerConfiguration smartLoginBookmarkIconURL]
+-[FBSDKServerConfiguration smartLoginMenuIconURL]
+-[FBSDKServerConfiguration updateMessage]
+-[FBSDKServerConfiguration eventBindings]
+-[FBSDKServerConfiguration version]
+-[FBSDKServerConfiguration .cxx_destruct]
+_OBJC_IVAR_$_FBSDKServerConfiguration._appID
+_OBJC_IVAR_$_FBSDKServerConfiguration._appName
+_OBJC_IVAR_$_FBSDKServerConfiguration._loginTooltipEnabled
+_OBJC_IVAR_$_FBSDKServerConfiguration._loginTooltipText
+_OBJC_IVAR_$_FBSDKServerConfiguration._defaultShareMode
+_OBJC_IVAR_$_FBSDKServerConfiguration._advertisingIDEnabled
+_OBJC_IVAR_$_FBSDKServerConfiguration._implicitLoggingEnabled
+_OBJC_IVAR_$_FBSDKServerConfiguration._implicitPurchaseLoggingEnabled
+_OBJC_IVAR_$_FBSDKServerConfiguration._codelessEventsEnabled
+_OBJC_IVAR_$_FBSDKServerConfiguration._systemAuthenticationEnabled
+_OBJC_IVAR_$_FBSDKServerConfiguration._uninstallTrackingEnabled
+_OBJC_IVAR_$_FBSDKServerConfiguration._nativeAuthFlowEnabled
+_OBJC_IVAR_$_FBSDKServerConfiguration._dialogConfigurations
+_OBJC_IVAR_$_FBSDKServerConfiguration._dialogFlows
+_OBJC_IVAR_$_FBSDKServerConfiguration._timestamp
+_OBJC_IVAR_$_FBSDKServerConfiguration._errorConfiguration
+_OBJC_IVAR_$_FBSDKServerConfiguration._sessionTimoutInterval
+_OBJC_IVAR_$_FBSDKServerConfiguration._defaults
+_OBJC_IVAR_$_FBSDKServerConfiguration._loggingToken
+_OBJC_IVAR_$_FBSDKServerConfiguration._smartLoginOptions
+_OBJC_IVAR_$_FBSDKServerConfiguration._smartLoginMenuIconURL
+_OBJC_IVAR_$_FBSDKServerConfiguration._smartLoginBookmarkIconURL
+_OBJC_IVAR_$_FBSDKServerConfiguration._updateMessage
+_OBJC_IVAR_$_FBSDKServerConfiguration._eventBindings
+_OBJC_IVAR_$_FBSDKServerConfiguration._version
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/ServerConfiguration/FBSDKServerConfiguration.m
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/ServerConfiguration/FBSDKServerConfiguration.h
+-[FBSDKMaleSilhouetteIcon pathWithSize:]
+/Users/travis/build/facebook/facebook-objc-sdk/FBSDKCoreKit/FBSDKCoreKit/Internal/UI/FBSDKMaleSilhouetteIcon.m
+__ZL15__ARCLite__loadv
+__ZL30add_image_hook_autoreleasepoolPK11mach_headerl
+__ZL34__arclite_objc_autoreleasePoolPushv
+__ZL33__arclite_objc_autoreleasePoolPopPv
+__ZL19patch_lazy_pointersPK11mach_headerP7patch_tm
+__ZL42__arclite_NSArray_objectAtIndexedSubscriptP7NSArrayP13objc_selectorj
+__ZL53__arclite_NSMutableArray_setObject_atIndexedSubscriptP14NSMutableArrayP13objc_selectorP11objc_objectj
+__ZL46__arclite_NSDictionary_objectForKeyedSubscriptP12NSDictionaryP13objc_selectorP11objc_object
+__ZL47__arclite_NSOrderedSet_objectAtIndexedSubscriptP12NSOrderedSetP13objc_selectorj
+__ZL58__arclite_NSMutableOrderedSet_setObject_atIndexedSubscriptP19NSMutableOrderedSetP13objc_selectorP11objc_objectj
+__ZL58__arclite_NSMutableDictionary__setObject_forKeyedSubscriptP19NSMutableDictionaryP13objc_selectorP11objc_objectS4_
+__ZL18add_image_hook_ARCPK11mach_headerl
+__ZL36__arclite_object_setInstanceVariableP11objc_objectPKcPv
+__ZL24__arclite_object_setIvarP11objc_objectP9objc_ivarS0_
+__ZL21__arclite_object_copyP11objc_objectm
+__ZL21__arclite_objc_retainP11objc_object
+__ZL26__arclite_objc_retainBlockP11objc_object
+__ZL22__arclite_objc_releaseP11objc_object
+__ZL26__arclite_objc_autoreleaseP11objc_object
+__ZL32__arclite_objc_retainAutoreleaseP11objc_object
+__ZL37__arclite_objc_autoreleaseReturnValueP11objc_object
+__ZL43__arclite_objc_retainAutoreleaseReturnValueP11objc_object
+__ZL44__arclite_objc_retainAutoreleasedReturnValueP11objc_object
+__ZL26__arclite_objc_storeStrongPP11objc_objectS0_
+__ZL22add_image_hook_swiftV1PK11mach_headerl
+__ZL42__arclite_NSUndoManagerProxy_isKindOfClassP11objc_objectP13objc_selectorP10objc_class
+__ZL30__arclite_NSManagedObject_initP11objc_objectP13objc_selector
+__ZL41__arclite_NSManagedObject_allocWithEntityP11objc_objectP13objc_selectorS0_
+__ZL36__arclite_NSManagedObject_allocBatchP11objc_objectP13objc_selectorPS0_S0_j
+__ZL37__arclite_NSKKMS_fastIndexForKnownKeyP11objc_objectP13objc_selectorS0_
+__ZL28__arclite_NSKKMS_indexForKeyP11objc_objectP13objc_selectorS0_
+__ZL29__arclite_NSKKsD_objectForKeyP11objc_objectP13objc_selectorS0_
+__ZL35__arclite_NSKKsD_removeObjectForKeyP11objc_objectP13objc_selectorS0_
+__ZL33__arclite_NSKKsD_setObject_forKeyP11objc_objectP13objc_selectorS0_S0_
+__ZL41__arclite_NSKKsD_addEntriesFromDictionaryP11objc_objectP13objc_selectorP12NSDictionary
+__ZL28__arclite_objc_readClassPairP10objc_classPK15objc_image_info
+__ZL32__arclite_objc_allocateClassPairP10objc_classPKcm
+__ZL32__arclite_object_getIndexedIvarsP11objc_object
+__ZL23__arclite_objc_getClassPKc
+__ZL27__arclite_objc_getMetaClassPKc
+__ZL31__arclite_objc_getRequiredClassPKc
+__ZL26__arclite_objc_lookUpClassPKc
+__ZL26__arclite_objc_getProtocolPKc
+__ZL23__arclite_class_getNameP10objc_class
+__ZL26__arclite_protocol_getNameP8Protocol
+__ZL37__arclite_objc_copyClassNamesForImagePKcPj
+__ZL17transcribeMethodsP10objc_classP15glue_class_ro_t
+__ZL19transcribeProtocolsP10objc_classP15glue_class_ro_t
+__ZL20transcribePropertiesP10objc_classP15glue_class_ro_t
+__ZL14initialize_impP11objc_objectP13objc_selector
+__ZL18allocateMaybeSwiftP18glue_swift_class_tm
+__ZL22copySwiftV1MangledNamePKcb
+__ZL13demangledNamePKcb
+__ZL16scanMangledFieldRPKcS0_S1_Ri
+__ZL30arclite_uninitialized_functionv
+__ZL12cxxConstructP11objc_object
+__ZL20fixStringForCoreDataP11objc_object
+_OBJC_METACLASS_$___ARCLite__
+__ZL24OBJC_CLASS_$___ARCLite__
+__ZL31OBJC_METACLASS_RO_$___ARCLite__
+__non_lazy_classes
+__ZL27OBJC_CLASS_RO_$___ARCLite__
+__ZL11_class_name
+__ZL32OBJC_$_CLASS_METHODS___ARCLite__
+__ZL17_load_method_name
+__ZL17_load_method_type
+__ZL23NSAutoreleasePool_class
+__ZZL30add_image_hook_autoreleasepoolPK11mach_headerlE7patches
+__ZGVZL30add_image_hook_autoreleasepoolPK11mach_headerlE7patches
+l_OBJC_PROTOCOL_$___ARCLiteIndexedSubscripting__
+l_OBJC_LABEL_PROTOCOL_$___ARCLiteIndexedSubscripting__
+l_OBJC_PROTOCOL_REFERENCE_$___ARCLiteIndexedSubscripting__
+l_OBJC_PROTOCOL_$___ARCLiteKeyedSubscripting__
+l_OBJC_LABEL_PROTOCOL_$___ARCLiteKeyedSubscripting__
+l_OBJC_PROTOCOL_REFERENCE_$___ARCLiteKeyedSubscripting__
+__ZZL18add_image_hook_ARCPK11mach_headerlE7patches
+__ZGVZL18add_image_hook_ARCPK11mach_headerlE7patches
+__ZL30NSUndoManagerProxy_targetClass
+__ZL29original_NSManagedObject_init
+__ZL40original_NSManagedObject_allocWithEntity
+__ZL35original_NSManagedObject_allocBatch
+__ZL25NSMutableDictionary_class
+__ZL22NSConstantString_class
+__ZL14NSString_class
+__ZL36original_NSKKMS_fastIndexForKnownKey
+__ZL27original_NSKKMS_indexForKey
+__ZL28original_NSKKsD_objectForKey
+__ZL34original_NSKKsD_removeObjectForKey
+__ZL32original_NSKKsD_setObject_forKey
+__ZL40original_NSKKsD_addEntriesFromDictionary
+__ZZL22add_image_hook_swiftV1PK11mach_headerlE7patches
+__ZGVZL22add_image_hook_swiftV1PK11mach_headerlE7patches
+__ZL31original_objc_allocateClassPair
+__ZL31original_object_getIndexedIvars
+__ZL22original_objc_getClass
+__ZL26original_objc_getMetaClass
+__ZL30original_objc_getRequiredClass
+__ZL25original_objc_lookUpClass
+__ZL25original_objc_getProtocol
+__ZL22original_class_getName
+__ZL25original_protocol_getName
+__ZL36original_objc_copyClassNamesForImage
+__ZL12demangleLock
+__ZL9Demangled
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x objective-c++ -arch armv7 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -std=c++11 -Wno-trigraphs -fno-exceptions -fno-rtti -fno-sanitize=vptr -mpascal-strings -Os -Wno-missing-field-initializers -Wmissing-prototypes -Wno-implicit-atomic-properties -Wno-objc-interface-ivars -Wno-arc-repeated-use-of-weak -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wshorten-64-to-32 -Wno-newline-eof -Wno-selector -Wno-strict-selector-match -Wno-undeclared-selector -Wno-deprecated-implementations -Wno-c++11-extensions -D NDEBUG=1 -D OBJC_OLD_DISPATCH_PROTOTYPES=1 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.0.Internal.sdk -fstrict-aliasing -Wprotocol -Wdeprecated-declarations -Winvalid-offsetof -miphoneos-version-min=4.3 -g -fno-threadsafe-statics -Wno-sign-conversion -Wno-infinite-recursion -Wno-move -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -Wno-range-loop-analysis -Wno-semicolon-before-method-body -fembed-bitcode=all -iquote /Library/Caches/com.apple.xbs/Binaries/arclite_iOS/install/TempContent/Objects/arclite.build/arclite_iOS.build/arclite_iphoneos-generated-files.hmap -I /Library/Caches/com.apple.xbs/Binaries/arclite_iOS/install/TempContent/Objects/arclite.build/arclite_iOS.build/arclite_iphoneos-own-target-headers.hmap -I /Library/Caches/com.apple.xbs/Binaries/arclite_iOS/install/TempContent/Objects/arclite.build/arclite_iOS.build/arclite_iphoneos-all-target-headers.hmap -iquote /Library/Caches/com.apple.xbs/Binaries/arclite_iOS/install/TempContent/Objects/arclite.build/arclite_iOS.build/arclite_iphoneos-project-headers.hmap -I /Library/Caches/com.apple.xbs/Binaries/arclite_iOS/install/Symbols/BuiltProducts/include -I /Library/Caches/com.apple.xbs/Binaries/arclite_iOS/install/TempContent/Objects/arclite.build/arclite_iOS.build/DerivedSources/armv7 -I /Library/Caches/com.apple.xbs/Binaries/arclite_iOS/install/TempContent/Objects/arclite.build/arclite_iOS.build/DerivedSources -F/Library/Caches/com.apple.xbs/Binaries/arclite_iOS/install/Symbols/BuiltProducts -iframework /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.0.Internal.sdk/System/Library/PrivateFrameworks -Wall -Wextra -Wno-gcc-compat -Wno-error=incomplete-umbrella -Wno-error=invalid-ios-deployment-target -Wno-error=incomplete-umbrella -Wno-error=invalid-ios-deployment-target -MMD -MT dependencies -MF /Library/Caches/com.apple.xbs/Binaries/arclite_iOS/install/TempContent/Objects/arclite.build/arclite_iOS.build/Objects-normal/armv7/arclite.d --serialize-diagnostics /Library/Caches/com.apple.xbs/Binaries/arclite_iOS/install/TempContent/Objects/arclite.build/arclite_iOS.build/Objects-normal/armv7/arclite.dia -c /Library/Caches/com.apple.xbs/Sources/arclite_iOS/arclite-70/source/arclite.mm -o /Library/Caches/com.apple.xbs/Binaries/arclite_iOS/install/TempContent/Objects/arclite.build/arclite_iOS.build/Objects-normal/armv7/arclite.o -mlinker-version=409.12 -march=armv7a
+/Library/Caches/com.apple.xbs/Sources/arclite_iOS/arclite-70/source/arclite.mm
+/Library/Caches/com.apple.xbs/Sources/arclite_iOS/arclite-70
+fixStringForCoreData
+cxxConstruct
+arclite_uninitialized_function
+scanMangledField
+/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.0.Internal.sdk/usr/include/_ctype.h
+__isctype
+demangledName
+copySwiftV1DemangledName
+copySwiftV1MangledName
+allocateMaybeSwift
+word_align
+isSwift
+initialize_imp
+transcribeProperties
+property_list_nth
+transcribeProtocols
+transcribeMethods
+data
+method_list_nth
+__arclite_objc_copyClassNamesForImage
+__arclite_protocol_getName
+__arclite_class_getName
+__arclite_objc_getProtocol
+__arclite_objc_lookUpClass
+__arclite_objc_getRequiredClass
+__arclite_objc_getMetaClass
+__arclite_objc_getClass
+__arclite_object_getIndexedIvars
+__arclite_objc_allocateClassPair
+metaclass
+__arclite_objc_readClassPair
+transcribeIvars
+ivar_list_nth
+max
+alignment
+ro
+fastFlags
+__arclite_NSKKsD_addEntriesFromDictionary
+__arclite_NSKKsD_setObject_forKey
+__arclite_NSKKsD_removeObjectForKey
+__arclite_NSKKsD_objectForKey
+__arclite_NSKKMS_indexForKey
+__arclite_NSKKMS_fastIndexForKnownKey
+__arclite_NSManagedObject_allocBatch
+__arclite_NSManagedObject_allocWithEntity
+__arclite_NSManagedObject_init
+__arclite_NSUndoManagerProxy_isKindOfClass
+add_image_hook_swiftV1
+patch_t<const char **(const char *, unsigned int *)>
+patch_t<const char *(Protocol *)>
+patch_t<const char *(Class)>
+patch_t<Protocol *(const char *)>
+patch_t<Class (const char *)>
+patch_t<void *(id)>
+patch_t<Class (Class, const char *, unsigned long)>
+patch_t<Class (Class, const objc_image_info *)>
+__arclite_objc_storeStrong
+__arclite_objc_release
+__arclite_objc_retain
+__arclite_objc_retainAutoreleasedReturnValue
+__arclite_objc_retainAutoreleaseReturnValue
+__arclite_objc_autoreleaseReturnValue
+__arclite_objc_retainAutorelease
+__arclite_objc_autorelease
+__arclite_objc_retainBlock
+__arclite_object_copy
+fixupCopiedReferences
+_class_getInstanceStart
+alignedInstanceStart
+__arclite_class_usesAutomaticRetainRelease
+classOrSuperClassesUseARR
+__arclite_object_setIvar
+isScannedOffset
+_ivar_getClass
+__arclite_object_setInstanceVariable
+add_image_hook_ARC
+patch_t<void (id *, id)>
+patch_t<id (id)>
+patch_t<void (id)>
+patch_t<id (id, unsigned long)>
+patch_t<void (id, objc_ivar *, id)>
+patch_t<objc_ivar *(id, const char *, void *)>
+__arclite_NSMutableDictionary__setObject_forKeyedSubscript
+__arclite_NSMutableOrderedSet_setObject_atIndexedSubscript
+__arclite_NSOrderedSet_objectAtIndexedSubscript
+__arclite_NSDictionary_objectForKeyedSubscript
+__arclite_NSMutableArray_setObject_atIndexedSubscript
+__arclite_NSArray_objectAtIndexedSubscript
+patch_lazy_pointers
+__arclite_objc_autoreleasePoolPop
+__arclite_objc_autoreleasePoolPush
+add_image_hook_autoreleasepool
+patch_t<void (void *)>
+patch_t<void *()>
+__ARCLite__load
+install_swiftV1
+replaceMethod
+install_ARC
+install_dict_nil_value
+addOrReplaceMethod
+keyedGetter
+install_subscripting
+addMethod
+indexedGetter
+install_autoreleasepool

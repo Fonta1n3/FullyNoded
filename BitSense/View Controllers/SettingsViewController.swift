@@ -256,6 +256,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                     UserDefaults.standard.removeObject(forKey: "NodePort")
                     UserDefaults.standard.removeObject(forKey: "NodeUsername")
                     UserDefaults.standard.removeObject(forKey: "sshPassword")
+                    UserDefaults.standard.synchronize()
                     self.performSegue(withIdentifier: "reenterCredentials", sender: self)
                     
                 }))

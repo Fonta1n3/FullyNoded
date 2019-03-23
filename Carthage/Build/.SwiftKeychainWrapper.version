@@ -1,9 +1,9 @@
 {
-  "commitish" : "3.0.1",
+  "commitish" : "3.2.0",
   "iOS" : [
     {
       "name" : "SwiftKeychainWrapper",
-      "hash" : "eb1ce68cc569666c850f90993f6af0c8cf9fceb4104c2b4fd55b18748d6d68d1"
+      "hash" : "3a8112619f223f9daf7fd1a7acab8c18aabb4707de4656a4ddd09bfbbb87c2ca"
     }
   ]
 }

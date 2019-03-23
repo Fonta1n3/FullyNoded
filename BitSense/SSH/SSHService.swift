@@ -50,7 +50,6 @@ class SSHService {
             print("decryptSSHKey")
             let pw = KeychainWrapper.standard.string(forKey: "AESPassword")!
             let decryptedkey = AES256CBC.decryptString(keyToDecrypt, password: pw)!
-            print("decryptedkey = \(decryptedkey)")
             return decryptedkey
         }
         
@@ -87,7 +86,7 @@ class SSHService {
         }
         session = NMSSHSession.connect(toHost: host!, withUsername: user!)
         if session?.isConnected == true {
-            print(password!)
+            //print(password!)
             session?.authenticate(byPassword: password!)
             if session?.isAuthorized == true {
                 success((success:true, error:nil))
@@ -99,6 +98,7 @@ class SSHService {
             }
         } else {
             print("Session not connected")
+            success((success:false, error:"Unable to connect via SSH, please make sure your firewall allows SSH connections."))
         }
     }
     
@@ -159,35 +159,5 @@ class SSHService {
             response((string: "", error:"ERROR: \(error)"))
         }
     }
-    
-    
-    /*
-    func getaccountaddress(response: @escaping((address:String?, error:String?)) -> ()) {
-        do {
-            let responseString:String? = try session?.channel.execute("bitcoin-cli \(BTC_COMMAND.getaccountaddress.rawValue) \"\"", error: error ?? nil)
-            guard let responseData = responseString?.data(using: .utf8) else { response((address:nil, error:"JSON ERROR")); return }
-            // TODO: There is a "/n" at the end of this address.  Test...
-            let myAddress: String = (String(data: responseData, encoding: .utf8)?.replacingOccurrences(of: "\n", with: ""))!
-            print(myAddress)
-            response((address:myAddress, error:nil))
-        } catch {
-            response((address:nil, error:"RESPONSE ERROR: \(error)"))
-        }
-    }
-    
-    func listtransactions(arrJson: @escaping([[String:Any]]) -> ()) {
-        do {
-            let responseString:String? = try session?.channel.execute("bitcoin-cli \(BTC_COMMAND.listtransactions.rawValue)", error: error ?? nil)
-            guard let responseData = responseString?.data(using: .utf8) else { return }
-            do {
-                let json = try JSONSerialization.jsonObject(with: responseData, options: []) as! [[String:Any]]
-                arrJson(json)
-            } catch {
-                print("JSON ERROR: \(error)")
-            }
-        } catch {
-            print("RESPONSE ERROR: \(error)")
-        }
-    }*/
     
 }

@@ -1,5 +1,4 @@
 github "NMSSH/NMSSH"
-github "parse-community/Parse-SDK-iOS-OSX"
 github "SwiftyBeaver/AES256CBC"
 github "jrendel/SwiftKeychainWrapper" ~> 3.0
 github "attaswift/BigInt" ~> 3.1

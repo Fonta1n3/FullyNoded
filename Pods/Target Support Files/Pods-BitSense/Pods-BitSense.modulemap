@@ -1,0 +1,6 @@
+module Pods_BitSense {
+  umbrella header "Pods-BitSense-umbrella.h"
+
+  export *
+  module * { export * }
+}

@@ -38,10 +38,10 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
         
         firstTimeHere()
         
-        usernameInput.delegate = self
+        /*usernameInput.delegate = self
         nodePasswordInput.delegate = self
         ipAddressInput.delegate = self
-        portInput.delegate = self
+        portInput.delegate = self*/
         
         textInput.delegate = self
         textInput.backgroundColor = UIColor.white
@@ -54,7 +54,7 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
         
         labelTitle.frame = CGRect(x: 10, y: self.view.frame.maxY / 8, width: self.view.frame.width - 20, height: 100)
         
-        usernameInput.frame = CGRect(x: 50, y: self.labelTitle.frame.maxY + 10, width: self.view.frame.width - 100, height: 50)
+        /*usernameInput.frame = CGRect(x: 50, y: self.labelTitle.frame.maxY + 10, width: self.view.frame.width - 100, height: 50)
         usernameInput.keyboardType = UIKeyboardType.default
         usernameInput.autocapitalizationType = .none
         usernameInput.autocorrectionType = .no
@@ -107,7 +107,7 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
         portInput.placeholder = "Port Number"
         portInput.returnKeyType = UIReturnKeyType.go
         portInput.textAlignment = .center
-        portInput.keyboardAppearance = UIKeyboardAppearance.dark
+        portInput.keyboardAppearance = UIKeyboardAppearance.dark*/
         
         labelTitle.font = UIFont.init(name: "HelveticaNeue-Light", size: 18)
         labelTitle.textColor = UIColor.white
@@ -139,8 +139,6 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
         infoButton.titleLabel?.textAlignment = .right
         infoButton.addTarget(self, action: #selector(showHelp), for: .touchUpInside)
         
-        
-        displayAlert(viewController: self, title: "Attention", message: "Fully Noded is compatible with Bitcoin Core 0.17.0\n\nWe recommend setting up SSH with a log in password to your node as that is more secure then using RPC, Fully Noded allows you to use either SSH or RPC credentials to log in to your node.\n\nIf using RPC you will need to set up the following values in your bitcoin.conf file:\n\nrpcuser=yourusername\nrpcpassword=yourpassword\nrpcallowip=0.0.0.0/0\nserver=1\nrest=1\ndaemon=1")
    }
     
     @objc func showHelp() {
@@ -167,6 +165,7 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
     
     func addNextButton(inputView: UITextField) {
         print("addNextButton")
+        
         DispatchQueue.main.async {
             self.nextButton.removeFromSuperview()
             self.nextButton.frame = CGRect(x: self.view.center.x - 40, y: inputView.frame.maxY + 10, width: 80, height: 55)
@@ -244,13 +243,17 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
                         //self.labelTitle.removeFromSuperview()
                         self.nextButton.removeFromSuperview()
                         self.textInput.removeFromSuperview()
+                        
+                        DispatchQueue.main.async {
+                            self.performSegue(withIdentifier: "goToMainMenu", sender: self)
+                        }
                             
                             
-                        if self.firstTime {
+                        /*if self.firstTime {
                                 
                             DispatchQueue.main.async {
                                 //self.performSegue(withIdentifier: "login", sender: self)
-                                self.getNodeUsername()
+                                //self.getNodeUsername()
                             }
                                 
                         } else {
@@ -259,14 +262,14 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
                                 self.performSegue(withIdentifier: "goToMainMenu", sender: self)
                             }
                                 
-                        }
+                        }*/
                             
                     }
                         
                 }
                 
         } else {
-            //displayAlert(viewController: self, title: "Error", message: "Passwords did not match, try again.")
+            displayAlert(viewController: self, title: "Error", message: "Passwords did not match, try again.")
         }
     } else {
         shakeAlert(viewToShake: self.textInput)
@@ -287,7 +290,7 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
             
             self.firstTime = true
             
-            UserDefaults.standard.set("20,000", forKey: "miningFee")
+            UserDefaults.standard.set("500", forKey: "miningFee")
             
             let key = BTCKey.init()
             var password = ""
@@ -366,7 +369,7 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
     func textFieldDidEndEditing(_ textField: UITextField, reason: UITextFieldDidEndEditingReason) {
         print("textFieldDidEndEditing")
         
-        if textField == self.usernameInput {
+        /*if textField == self.usernameInput {
             
             if self.usernameInput.text != "" {
                 
@@ -412,11 +415,11 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
                 shakeAlert(viewToShake: self.portInput)
                 
             }
-        }
+        }*/
         
     }
     
-    func savePassword(password: String) {
+    /*func savePassword(password: String) {
         
         let stringToSave = self.encryptKey(keyToEncrypt: password)
         UserDefaults.standard.set(stringToSave, forKey: "NodePassword")
@@ -584,6 +587,6 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
             self.addNextButton(inputView: self.nodePasswordInput)
             
         })
-    }
+    }*/
 
 }

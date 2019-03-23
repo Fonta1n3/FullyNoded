@@ -13,6 +13,11 @@
 		D00B9A302111427200E8B95A /* BitSense.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = D00B9A2E2111427200E8B95A /* BitSense.xcdatamodeld */; };
 		D00B9A322111427200E8B95A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D00B9A312111427200E8B95A /* Assets.xcassets */; };
 		D00B9A352111427200E8B95A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D00B9A332111427200E8B95A /* LaunchScreen.storyboard */; };
+		D0126FF022443D1100412629 /* whitePlus.png in Resources */ = {isa = PBXBuildFile; fileRef = D0126FEF22443D1100412629 /* whitePlus.png */; };
+		D0126FF222443D6E00412629 /* whiteSubtract.png in Resources */ = {isa = PBXBuildFile; fileRef = D0126FF122443D6E00412629 /* whiteSubtract.png */; };
+		D0126FF422443DCD00412629 /* whiteSettings.png in Resources */ = {isa = PBXBuildFile; fileRef = D0126FF322443DCD00412629 /* whiteSettings.png */; };
+		D0126FF622446E3800412629 /* InvoiceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0126FF522446E3800412629 /* InvoiceViewController.swift */; };
+		D0126FF82244842000412629 /* bWhite.png in Resources */ = {isa = PBXBuildFile; fileRef = D0126FF72244842000412629 /* bWhite.png */; };
 		D019557121182A550008B662 /* SipHash.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D019556D21182A540008B662 /* SipHash.framework */; };
 		D019557221182A550008B662 /* AES256CBC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D019556E21182A540008B662 /* AES256CBC.framework */; };
 		D019557321182A550008B662 /* BigInt.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D019556F21182A540008B662 /* BigInt.framework */; };
@@ -20,7 +25,6 @@
 		D0196DD721B5AB300081E0AB /* KeyPadButtonView.xib in Resources */ = {isa = PBXBuildFile; fileRef = D0196DD621B5AB300081E0AB /* KeyPadButtonView.xib */; };
 		D0196DD921B5ABBB0081E0AB /* broom.png in Resources */ = {isa = PBXBuildFile; fileRef = D0196DD821B5ABBB0081E0AB /* broom.png */; };
 		D0196DDB21B5AC5F0081E0AB /* KeyPad.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0196DDA21B5AC5F0081E0AB /* KeyPad.swift */; };
-		D0196DDD21BAF50B0081E0AB /* PurchaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0196DDC21BAF50B0081E0AB /* PurchaseViewController.swift */; };
 		D0196DDF21BEF3FF0081E0AB /* NMSSH.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0196DDE21BEF3FF0081E0AB /* NMSSH.framework */; };
 		D0286D6521E2714200954991 /* ReadMe.md in Resources */ = {isa = PBXBuildFile; fileRef = D0286D6421E2714200954991 /* ReadMe.md */; };
 		D0358D9521B1B44B007D56ED /* whiteCheck.png in Resources */ = {isa = PBXBuildFile; fileRef = D0358D9421B1B44A007D56ED /* whiteCheck.png */; };
@@ -36,15 +40,8 @@
 		D071A2A82148A3AE00C4BCB3 /* qr.png in Resources */ = {isa = PBXBuildFile; fileRef = D071A2A72148A3AE00C4BCB3 /* qr.png */; };
 		D08F63E62163263B004B92AE /* plus.png in Resources */ = {isa = PBXBuildFile; fileRef = D08F63E52163263B004B92AE /* plus.png */; };
 		D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B3149E216C4DB1008FDC53 /* CreateRawTxViewController.swift */; };
-		D0C924C121ACDF3B006F614F /* Parse.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0C924C021ACDF3B006F614F /* Parse.framework */; };
-		D0C924C321ACE05C006F614F /* Bolts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0C924C221ACE05C006F614F /* Bolts.framework */; };
 		D0DA7CE72171A66A00A96F7E /* minus.png in Resources */ = {isa = PBXBuildFile; fileRef = D0DA7CE62171A66A00A96F7E /* minus.png */; };
 		D0DA7CE92172F7D800A96F7E /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0DA7CE82172F7D800A96F7E /* StoreKit.framework */; };
-		D0DA7CEB2172F88B00A96F7E /* Products.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DA7CEA2172F88B00A96F7E /* Products.swift */; };
-		D0DA7CED2172F8F400A96F7E /* IAPHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DA7CEC2172F8F400A96F7E /* IAPHelper.swift */; };
-		D0DA7CEF217304A700A96F7E /* PurchaseTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DA7CEE217304A700A96F7E /* PurchaseTableViewController.swift */; };
-		D0DA7CF121730A5700A96F7E /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DA7CF021730A5700A96F7E /* DetailViewController.swift */; };
-		D0DA7CF321730B6400A96F7E /* ProductCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DA7CF221730B6400A96F7E /* ProductCell.swift */; };
 		D0E9B63821183AFC00B416E7 /* ObjectiveCHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = D0E9B63721183AFC00B416E7 /* ObjectiveCHeader.m */; };
 		D0E9B63A211A90D100B416E7 /* CreateAccountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E9B639211A90D100B416E7 /* CreateAccountViewController.swift */; };
 		D0E9B63C211A94C600B416E7 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E9B63B211A94C600B416E7 /* Utilities.swift */; };
@@ -64,6 +61,11 @@
 		D00B9A312111427200E8B95A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D00B9A342111427200E8B95A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		D00B9A362111427200E8B95A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D0126FEF22443D1100412629 /* whitePlus.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whitePlus.png; sourceTree = "<group>"; };
+		D0126FF122443D6E00412629 /* whiteSubtract.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteSubtract.png; sourceTree = "<group>"; };
+		D0126FF322443DCD00412629 /* whiteSettings.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteSettings.png; sourceTree = "<group>"; };
+		D0126FF522446E3800412629 /* InvoiceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceViewController.swift; sourceTree = "<group>"; };
+		D0126FF72244842000412629 /* bWhite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = bWhite.png; sourceTree = "<group>"; };
 		D019556D21182A540008B662 /* SipHash.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SipHash.framework; path = Carthage/Build/iOS/SipHash.framework; sourceTree = "<group>"; };
 		D019556E21182A540008B662 /* AES256CBC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AES256CBC.framework; path = Carthage/Build/iOS/AES256CBC.framework; sourceTree = "<group>"; };
 		D019556F21182A540008B662 /* BigInt.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BigInt.framework; path = Carthage/Build/iOS/BigInt.framework; sourceTree = "<group>"; };
@@ -71,7 +73,6 @@
 		D0196DD621B5AB300081E0AB /* KeyPadButtonView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = KeyPadButtonView.xib; sourceTree = "<group>"; };
 		D0196DD821B5ABBB0081E0AB /* broom.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = broom.png; sourceTree = "<group>"; };
 		D0196DDA21B5AC5F0081E0AB /* KeyPad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyPad.swift; sourceTree = "<group>"; };
-		D0196DDC21BAF50B0081E0AB /* PurchaseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseViewController.swift; sourceTree = "<group>"; };
 		D0196DDE21BEF3FF0081E0AB /* NMSSH.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NMSSH.framework; path = Carthage/Build/iOS/NMSSH.framework; sourceTree = "<group>"; };
 		D0286D6421E2714200954991 /* ReadMe.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ReadMe.md; sourceTree = "<group>"; };
 		D0358D9421B1B44A007D56ED /* whiteCheck.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteCheck.png; sourceTree = "<group>"; };
@@ -87,15 +88,8 @@
 		D071A2A72148A3AE00C4BCB3 /* qr.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = qr.png; sourceTree = "<group>"; };
 		D08F63E52163263B004B92AE /* plus.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = plus.png; sourceTree = "<group>"; };
 		D0B3149E216C4DB1008FDC53 /* CreateRawTxViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateRawTxViewController.swift; sourceTree = "<group>"; };
-		D0C924C021ACDF3B006F614F /* Parse.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Parse.framework; path = Carthage/Build/iOS/Parse.framework; sourceTree = "<group>"; };
-		D0C924C221ACE05C006F614F /* Bolts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Bolts.framework; path = Carthage/Build/iOS/Bolts.framework; sourceTree = "<group>"; };
 		D0DA7CE62171A66A00A96F7E /* minus.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = minus.png; sourceTree = "<group>"; };
 		D0DA7CE82172F7D800A96F7E /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
-		D0DA7CEA2172F88B00A96F7E /* Products.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Products.swift; sourceTree = "<group>"; };
-		D0DA7CEC2172F8F400A96F7E /* IAPHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IAPHelper.swift; sourceTree = "<group>"; };
-		D0DA7CEE217304A700A96F7E /* PurchaseTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseTableViewController.swift; sourceTree = "<group>"; };
-		D0DA7CF021730A5700A96F7E /* DetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViewController.swift; sourceTree = "<group>"; };
-		D0DA7CF221730B6400A96F7E /* ProductCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductCell.swift; sourceTree = "<group>"; };
 		D0E9B63621183AFC00B416E7 /* BitSense-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BitSense-Bridging-Header.h"; sourceTree = "<group>"; };
 		D0E9B63721183AFC00B416E7 /* ObjectiveCHeader.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ObjectiveCHeader.m; sourceTree = "<group>"; };
 		D0E9B639211A90D100B416E7 /* CreateAccountViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateAccountViewController.swift; sourceTree = "<group>"; };
@@ -113,9 +107,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D0DA7CE92172F7D800A96F7E /* StoreKit.framework in Frameworks */,
-				D0C924C321ACE05C006F614F /* Bolts.framework in Frameworks */,
 				D0196DDF21BEF3FF0081E0AB /* NMSSH.framework in Frameworks */,
-				D0C924C121ACDF3B006F614F /* Parse.framework in Frameworks */,
 				D019557121182A550008B662 /* SipHash.framework in Frameworks */,
 				D019557221182A550008B662 /* AES256CBC.framework in Frameworks */,
 				D019557321182A550008B662 /* BigInt.framework in Frameworks */,
@@ -163,7 +155,6 @@
 				D0286D6121E2675D00954991 /* Helpers */,
 				D0286D6021E2672D00954991 /* SSH */,
 				D0FA417A213C7CB70028E4F8 /* Images */,
-				D0E495032181FA3400E68687 /* Purchases */,
 				D00B9A272111427200E8B95A /* AppDelegate.swift */,
 				D0E9B63721183AFC00B416E7 /* ObjectiveCHeader.m */,
 				D0E9B63621183AFC00B416E7 /* BitSense-Bridging-Header.h */,
@@ -199,6 +190,7 @@
 		D0286D6221E2678D00954991 /* View Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				D0126FF522446E3800412629 /* InvoiceViewController.swift */,
 				D0FA4177213C7AC40028E4F8 /* LogInViewController.swift */,
 				D0E9B639211A90D100B416E7 /* CreateAccountViewController.swift */,
 				D0EF29C0216B82B400EB776A /* SettingsViewController.swift */,
@@ -219,8 +211,6 @@
 			isa = PBXGroup;
 			children = (
 				D0196DDE21BEF3FF0081E0AB /* NMSSH.framework */,
-				D0C924C221ACE05C006F614F /* Bolts.framework */,
-				D0C924C021ACDF3B006F614F /* Parse.framework */,
 				D0DA7CE82172F7D800A96F7E /* StoreKit.framework */,
 				D019556E21182A540008B662 /* AES256CBC.framework */,
 				D019556F21182A540008B662 /* BigInt.framework */,
@@ -231,24 +221,15 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		D0E495032181FA3400E68687 /* Purchases */ = {
-			isa = PBXGroup;
-			children = (
-				D0196DDC21BAF50B0081E0AB /* PurchaseViewController.swift */,
-				D0DA7CF221730B6400A96F7E /* ProductCell.swift */,
-				D0DA7CEE217304A700A96F7E /* PurchaseTableViewController.swift */,
-				D0DA7CF021730A5700A96F7E /* DetailViewController.swift */,
-				D0DA7CEA2172F88B00A96F7E /* Products.swift */,
-				D0DA7CEC2172F8F400A96F7E /* IAPHelper.swift */,
-			);
-			path = Purchases;
-			sourceTree = "<group>";
-		};
 		D0FA417A213C7CB70028E4F8 /* Images */ = {
 			isa = PBXGroup;
 			children = (
 				D0FA417B213C7CDA0028E4F8 /* whiteLock.png */,
+				D0126FF72244842000412629 /* bWhite.png */,
+				D0126FF322443DCD00412629 /* whiteSettings.png */,
+				D0126FEF22443D1100412629 /* whitePlus.png */,
 				D0DA7CE62171A66A00A96F7E /* minus.png */,
+				D0126FF122443D6E00412629 /* whiteSubtract.png */,
 				D071A2A72148A3AE00C4BCB3 /* qr.png */,
 				D0196DD821B5ABBB0081E0AB /* broom.png */,
 				D0358D9421B1B44A007D56ED /* whiteCheck.png */,
@@ -335,6 +316,7 @@
 				D0358D9521B1B44B007D56ED /* whiteCheck.png in Resources */,
 				D0DA7CE72171A66A00A96F7E /* minus.png in Resources */,
 				D05315FF214639CD005707D6 /* blackClose.jpg in Resources */,
+				D0126FF022443D1100412629 /* whitePlus.png in Resources */,
 				D00B9A352111427200E8B95A /* LaunchScreen.storyboard in Resources */,
 				D00B9A322111427200E8B95A /* Assets.xcassets in Resources */,
 				D05692E92144AC13006DF0F4 /* back.png in Resources */,
@@ -343,9 +325,12 @@
 				D071A2A0214880F700C4BCB3 /* Search - tripkey.png in Resources */,
 				D0196DD921B5ABBB0081E0AB /* broom.png in Resources */,
 				D0286D6521E2714200954991 /* ReadMe.md in Resources */,
+				D0126FF222443D6E00412629 /* whiteSubtract.png in Resources */,
+				D0126FF82244842000412629 /* bWhite.png in Resources */,
 				D071A2A22148991500C4BCB3 /* settings2.png in Resources */,
 				D0FA417E213C7CED0028E4F8 /* whiteFingerPrint.png in Resources */,
 				D00B9A2D2111427200E8B95A /* Main.storyboard in Resources */,
+				D0126FF422443DCD00412629 /* whiteSettings.png in Resources */,
 				D08F63E62163263B004B92AE /* plus.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -381,8 +366,6 @@
 				"$(SRCROOT)/Carthage/Build/iOS/AES256CBC.framework",
 				"$(SRCROOT)/Carthage/Build/iOS/SipHash.framework",
 				"$(SRCROOT)/Carthage/Build/iOS/SwiftKeychainWrapper.framework",
-				"$(SRCROOT)/Carthage/Build/iOS/Parse.framework",
-				"$(SRCROOT)/Carthage/Build/iOS/Bolts.framework",
 				"$(SRCROOT)/Carthage/Build/iOS/NMSSH.framework",
 			);
 			outputPaths = (
@@ -406,16 +389,11 @@
 				D06C59E421BEF5F0009BCB9C /* SSHService.swift in Sources */,
 				D05692DF21432697006DF0F4 /* SegwitAddrCoder.swift in Sources */,
 				D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */,
-				D0DA7CED2172F8F400A96F7E /* IAPHelper.swift in Sources */,
-				D0DA7CEF217304A700A96F7E /* PurchaseTableViewController.swift in Sources */,
-				D0196DDD21BAF50B0081E0AB /* PurchaseViewController.swift in Sources */,
+				D0126FF622446E3800412629 /* InvoiceViewController.swift in Sources */,
 				D0E9B63821183AFC00B416E7 /* ObjectiveCHeader.m in Sources */,
-				D0DA7CF121730A5700A96F7E /* DetailViewController.swift in Sources */,
 				D00B9A302111427200E8B95A /* BitSense.xcdatamodeld in Sources */,
 				D0FA4178213C7AC40028E4F8 /* LogInViewController.swift in Sources */,
 				D0EF29C1216B82B400EB776A /* SettingsViewController.swift in Sources */,
-				D0DA7CEB2172F88B00A96F7E /* Products.swift in Sources */,
-				D0DA7CF321730B6400A96F7E /* ProductCell.swift in Sources */,
 				D00B9A282111427200E8B95A /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -561,7 +539,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = 69FR345CDA;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -573,7 +551,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
-				PROVISIONING_PROFILE_SPECIFIER = FullyNodedProfile;
+				PROVISIONING_PROFILE_SPECIFIER = FullyNoded_Development_Profile_March_2019;
 				SWIFT_OBJC_BRIDGING_HEADER = "BitSense/BitSense-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.0;

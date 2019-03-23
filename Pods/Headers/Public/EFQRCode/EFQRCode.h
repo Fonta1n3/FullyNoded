@@ -1,0 +1,1 @@
+../../../EFQRCode/Source/EFQRCode.h
