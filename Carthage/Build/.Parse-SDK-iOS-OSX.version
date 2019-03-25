@@ -3,19 +3,19 @@
   "iOS" : [
     {
       "name" : "ParseFacebookUtilsV4",
-      "hash" : "17200c014c9a837768aa863d5ac89a71a4f90ca8a01acfad6824ae48b30c35d0"
+      "hash" : "9e4d994d16a291229e6ca81961a458a31aef49b2a7b97682e82502f899a19398"
     },
     {
       "name" : "ParseTwitterUtils",
-      "hash" : "8c81eb26ace5c46038d20b9601711a1039655f4d51e3ac9d3d00369c9bbb32d5"
+      "hash" : "a2a055b47b512e694391ef1a807864430fb9e227e103305adbe332abb55335e5"
     },
     {
       "name" : "ParseUI",
-      "hash" : "d50da93ba1f07b2d9226f3c8c3293df035bcb9ef93f4a54799232f854f9f1a3f"
+      "hash" : "94e4e6ef9e976017205dcc340ff16faa802bc96fe858aafe58ad050f4cafa372"
     },
     {
       "name" : "Parse",
-      "hash" : "45e7c309717160999d8e1ef0c7da547c468af9138b32e2e262472321ef561221"
+      "hash" : "8dc0c24e7d7e47932c4a960f2d1c13a41e142be85ef9ff6de4e643b213b15352"
     }
   ]
 }

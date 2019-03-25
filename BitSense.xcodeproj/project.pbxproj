@@ -28,9 +28,15 @@
 		D0196DDF21BEF3FF0081E0AB /* NMSSH.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0196DDE21BEF3FF0081E0AB /* NMSSH.framework */; };
 		D0286D6521E2714200954991 /* ReadMe.md in Resources */ = {isa = PBXBuildFile; fileRef = D0286D6421E2714200954991 /* ReadMe.md */; };
 		D0358D9521B1B44B007D56ED /* whiteCheck.png in Resources */ = {isa = PBXBuildFile; fileRef = D0358D9421B1B44A007D56ED /* whiteCheck.png */; };
+		D0452ACC2246AD840013E225 /* Parse.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0452ACB2246AD840013E225 /* Parse.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		D0452ACE2246ADEE0013E225 /* Bolts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0452ACD2246ADEE0013E225 /* Bolts.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		D0452AD02246C47F0013E225 /* 9188.png in Resources */ = {isa = PBXBuildFile; fileRef = D0452ACF2246C47F0013E225 /* 9188.png */; };
+		D0452AD42246C7830013E225 /* clear.png in Resources */ = {isa = PBXBuildFile; fileRef = D0452AD32246C7820013E225 /* clear.png */; };
+		D0452AD62246E0370013E225 /* whiteBroom.png in Resources */ = {isa = PBXBuildFile; fileRef = D0452AD52246E0370013E225 /* whiteBroom.png */; };
+		D0452ADB2247417F0013E225 /* ImportPrivKeyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0452ADA2247417F0013E225 /* ImportPrivKeyViewController.swift */; };
+		D0452ADD224743C50013E225 /* LogInViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0452ADC224743C50013E225 /* LogInViewController.swift */; };
+		D0452ADF224833390013E225 /* Commands.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0452ADE224833390013E225 /* Commands.swift */; };
 		D05315FF214639CD005707D6 /* blackClose.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D05315FE214639CD005707D6 /* blackClose.jpg */; };
-		D05692DF21432697006DF0F4 /* SegwitAddrCoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05692DE21432697006DF0F4 /* SegwitAddrCoder.swift */; };
-		D05692E1214326CE006DF0F4 /* Bech32.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05692E0214326CD006DF0F4 /* Bech32.swift */; };
 		D05692E321434452006DF0F4 /* MainMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05692E221434452006DF0F4 /* MainMenuViewController.swift */; };
 		D05692E92144AC13006DF0F4 /* back.png in Resources */ = {isa = PBXBuildFile; fileRef = D05692E82144AC13006DF0F4 /* back.png */; };
 		D06C59E421BEF5F0009BCB9C /* SSHService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D06C59E321BEF5F0009BCB9C /* SSHService.swift */; };
@@ -46,7 +52,6 @@
 		D0E9B63A211A90D100B416E7 /* CreateAccountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E9B639211A90D100B416E7 /* CreateAccountViewController.swift */; };
 		D0E9B63C211A94C600B416E7 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E9B63B211A94C600B416E7 /* Utilities.swift */; };
 		D0EF29C1216B82B400EB776A /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EF29C0216B82B400EB776A /* SettingsViewController.swift */; };
-		D0FA4178213C7AC40028E4F8 /* LogInViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0FA4177213C7AC40028E4F8 /* LogInViewController.swift */; };
 		D0FA417C213C7CDA0028E4F8 /* whiteLock.png in Resources */ = {isa = PBXBuildFile; fileRef = D0FA417B213C7CDA0028E4F8 /* whiteLock.png */; };
 		D0FA417E213C7CED0028E4F8 /* whiteFingerPrint.png in Resources */ = {isa = PBXBuildFile; fileRef = D0FA417D213C7CED0028E4F8 /* whiteFingerPrint.png */; };
 /* End PBXBuildFile section */
@@ -76,9 +81,15 @@
 		D0196DDE21BEF3FF0081E0AB /* NMSSH.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NMSSH.framework; path = Carthage/Build/iOS/NMSSH.framework; sourceTree = "<group>"; };
 		D0286D6421E2714200954991 /* ReadMe.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ReadMe.md; sourceTree = "<group>"; };
 		D0358D9421B1B44A007D56ED /* whiteCheck.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteCheck.png; sourceTree = "<group>"; };
+		D0452ACB2246AD840013E225 /* Parse.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Parse.framework; path = Carthage/Build/iOS/Parse.framework; sourceTree = "<group>"; };
+		D0452ACD2246ADEE0013E225 /* Bolts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Bolts.framework; path = Carthage/Build/iOS/Bolts.framework; sourceTree = "<group>"; };
+		D0452ACF2246C47F0013E225 /* 9188.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = 9188.png; path = ../../../../../Downloads/9188.png; sourceTree = "<group>"; };
+		D0452AD32246C7820013E225 /* clear.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = clear.png; sourceTree = "<group>"; };
+		D0452AD52246E0370013E225 /* whiteBroom.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteBroom.png; sourceTree = "<group>"; };
+		D0452ADA2247417F0013E225 /* ImportPrivKeyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportPrivKeyViewController.swift; sourceTree = "<group>"; };
+		D0452ADC224743C50013E225 /* LogInViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogInViewController.swift; sourceTree = "<group>"; };
+		D0452ADE224833390013E225 /* Commands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Commands.swift; sourceTree = "<group>"; };
 		D05315FE214639CD005707D6 /* blackClose.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = blackClose.jpg; sourceTree = "<group>"; };
-		D05692DE21432697006DF0F4 /* SegwitAddrCoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SegwitAddrCoder.swift; sourceTree = "<group>"; };
-		D05692E0214326CD006DF0F4 /* Bech32.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Bech32.swift; sourceTree = "<group>"; };
 		D05692E221434452006DF0F4 /* MainMenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuViewController.swift; sourceTree = "<group>"; };
 		D05692E82144AC13006DF0F4 /* back.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = back.png; sourceTree = "<group>"; };
 		D06C59E321BEF5F0009BCB9C /* SSHService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SSHService.swift; sourceTree = "<group>"; };
@@ -95,7 +106,6 @@
 		D0E9B639211A90D100B416E7 /* CreateAccountViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateAccountViewController.swift; sourceTree = "<group>"; };
 		D0E9B63B211A94C600B416E7 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		D0EF29C0216B82B400EB776A /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
-		D0FA4177213C7AC40028E4F8 /* LogInViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogInViewController.swift; sourceTree = "<group>"; };
 		D0FA417B213C7CDA0028E4F8 /* whiteLock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteLock.png; sourceTree = "<group>"; };
 		D0FA417D213C7CED0028E4F8 /* whiteFingerPrint.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteFingerPrint.png; sourceTree = "<group>"; };
 		DDF5C52D26F270D526B8F5D8 /* Pods-BitSense.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BitSense.release.xcconfig"; path = "Pods/Target Support Files/Pods-BitSense/Pods-BitSense.release.xcconfig"; sourceTree = "<group>"; };
@@ -107,6 +117,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				D0DA7CE92172F7D800A96F7E /* StoreKit.framework in Frameworks */,
+				D0452ACC2246AD840013E225 /* Parse.framework in Frameworks */,
+				D0452ACE2246ADEE0013E225 /* Bolts.framework in Frameworks */,
 				D0196DDF21BEF3FF0081E0AB /* NMSSH.framework in Frameworks */,
 				D019557121182A550008B662 /* SipHash.framework in Frameworks */,
 				D019557221182A550008B662 /* AES256CBC.framework in Frameworks */,
@@ -157,7 +169,9 @@
 				D0FA417A213C7CB70028E4F8 /* Images */,
 				D00B9A272111427200E8B95A /* AppDelegate.swift */,
 				D0E9B63721183AFC00B416E7 /* ObjectiveCHeader.m */,
+				D0452AD32246C7820013E225 /* clear.png */,
 				D0E9B63621183AFC00B416E7 /* BitSense-Bridging-Header.h */,
+				D0452ACF2246C47F0013E225 /* 9188.png */,
 				D00B9A2B2111427200E8B95A /* Main.storyboard */,
 				D00B9A312111427200E8B95A /* Assets.xcassets */,
 				D00B9A332111427200E8B95A /* LaunchScreen.storyboard */,
@@ -181,8 +195,7 @@
 				D0196DDA21B5AC5F0081E0AB /* KeyPad.swift */,
 				D0196DD621B5AB300081E0AB /* KeyPadButtonView.xib */,
 				D0E9B63B211A94C600B416E7 /* Utilities.swift */,
-				D05692E0214326CD006DF0F4 /* Bech32.swift */,
-				D05692DE21432697006DF0F4 /* SegwitAddrCoder.swift */,
+				D0452ADE224833390013E225 /* Commands.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -191,11 +204,12 @@
 			isa = PBXGroup;
 			children = (
 				D0126FF522446E3800412629 /* InvoiceViewController.swift */,
-				D0FA4177213C7AC40028E4F8 /* LogInViewController.swift */,
 				D0E9B639211A90D100B416E7 /* CreateAccountViewController.swift */,
+				D0452ADC224743C50013E225 /* LogInViewController.swift */,
 				D0EF29C0216B82B400EB776A /* SettingsViewController.swift */,
 				D0B3149E216C4DB1008FDC53 /* CreateRawTxViewController.swift */,
 				D05692E221434452006DF0F4 /* MainMenuViewController.swift */,
+				D0452ADA2247417F0013E225 /* ImportPrivKeyViewController.swift */,
 			);
 			path = "View Controllers";
 			sourceTree = "<group>";
@@ -210,6 +224,8 @@
 		D08C1FBB211147F600B7CA79 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D0452ACD2246ADEE0013E225 /* Bolts.framework */,
+				D0452ACB2246AD840013E225 /* Parse.framework */,
 				D0196DDE21BEF3FF0081E0AB /* NMSSH.framework */,
 				D0DA7CE82172F7D800A96F7E /* StoreKit.framework */,
 				D019556E21182A540008B662 /* AES256CBC.framework */,
@@ -224,6 +240,7 @@
 		D0FA417A213C7CB70028E4F8 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				D0452AD52246E0370013E225 /* whiteBroom.png */,
 				D0FA417B213C7CDA0028E4F8 /* whiteLock.png */,
 				D0126FF72244842000412629 /* bWhite.png */,
 				D0126FF322443DCD00412629 /* whiteSettings.png */,
@@ -318,11 +335,14 @@
 				D05315FF214639CD005707D6 /* blackClose.jpg in Resources */,
 				D0126FF022443D1100412629 /* whitePlus.png in Resources */,
 				D00B9A352111427200E8B95A /* LaunchScreen.storyboard in Resources */,
+				D0452AD02246C47F0013E225 /* 9188.png in Resources */,
 				D00B9A322111427200E8B95A /* Assets.xcassets in Resources */,
 				D05692E92144AC13006DF0F4 /* back.png in Resources */,
 				D0FA417C213C7CDA0028E4F8 /* whiteLock.png in Resources */,
 				D0196DD721B5AB300081E0AB /* KeyPadButtonView.xib in Resources */,
+				D0452AD62246E0370013E225 /* whiteBroom.png in Resources */,
 				D071A2A0214880F700C4BCB3 /* Search - tripkey.png in Resources */,
+				D0452AD42246C7830013E225 /* clear.png in Resources */,
 				D0196DD921B5ABBB0081E0AB /* broom.png in Resources */,
 				D0286D6521E2714200954991 /* ReadMe.md in Resources */,
 				D0126FF222443D6E00412629 /* whiteSubtract.png in Resources */,
@@ -367,6 +387,8 @@
 				"$(SRCROOT)/Carthage/Build/iOS/SipHash.framework",
 				"$(SRCROOT)/Carthage/Build/iOS/SwiftKeychainWrapper.framework",
 				"$(SRCROOT)/Carthage/Build/iOS/NMSSH.framework",
+				"$(SRCROOT)/Carthage/Build/iOS/Parse.framework",
+				"$(SRCROOT)/Carthage/Build/iOS/Bolts.framework",
 			);
 			outputPaths = (
 			);
@@ -384,15 +406,15 @@
 				D0E9B63C211A94C600B416E7 /* Utilities.swift in Sources */,
 				D0E9B63A211A90D100B416E7 /* CreateAccountViewController.swift in Sources */,
 				D05692E321434452006DF0F4 /* MainMenuViewController.swift in Sources */,
-				D05692E1214326CE006DF0F4 /* Bech32.swift in Sources */,
 				D0196DDB21B5AC5F0081E0AB /* KeyPad.swift in Sources */,
 				D06C59E421BEF5F0009BCB9C /* SSHService.swift in Sources */,
-				D05692DF21432697006DF0F4 /* SegwitAddrCoder.swift in Sources */,
 				D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */,
+				D0452ADD224743C50013E225 /* LogInViewController.swift in Sources */,
+				D0452ADB2247417F0013E225 /* ImportPrivKeyViewController.swift in Sources */,
 				D0126FF622446E3800412629 /* InvoiceViewController.swift in Sources */,
+				D0452ADF224833390013E225 /* Commands.swift in Sources */,
 				D0E9B63821183AFC00B416E7 /* ObjectiveCHeader.m in Sources */,
 				D00B9A302111427200E8B95A /* BitSense.xcdatamodeld in Sources */,
-				D0FA4178213C7AC40028E4F8 /* LogInViewController.swift in Sources */,
 				D0EF29C1216B82B400EB776A /* SettingsViewController.swift in Sources */,
 				D00B9A282111427200E8B95A /* AppDelegate.swift in Sources */,
 			);

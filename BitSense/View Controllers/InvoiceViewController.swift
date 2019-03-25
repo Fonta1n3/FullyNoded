@@ -13,6 +13,7 @@ import EFQRCode
 
 class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
+    var ssh:SSHService!
     var textToShareViaQRCode = String()
     let blurActivityIndicator = UIActivityIndicatorView()
     var isUsingSSH = Bool()
@@ -61,7 +62,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
     
     
-    enum BTC_CLI_COMMAND: String {
+    /*enum BTC_CLI_COMMAND: String {
         case getrawtransaction = "getrawtransaction"
         case decoderawtransaction = "decoderawtransaction"
         case getnewaddress = "getnewaddress"
@@ -81,7 +82,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         case listtransactions = "listtransactions"
         case listunspent = "listunspent"
         case bumpfee = "bumpfee"
-    }
+    }*/
     
     func showAddress() {
         
@@ -135,6 +136,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
     
     func getBech32Address(ssh: SSHService) {
+        print("getBech32Address")
         
         if isUsingSSH {
             DispatchQueue.main.async {
@@ -268,7 +270,12 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         DispatchQueue.main.async {
             let textToShare = [self.addressString]
             let activityViewController = UIActivityViewController(activityItems: textToShare, applicationActivities: nil)
-            self.present(activityViewController, animated: true, completion: nil)
+            //self.present(activityViewController, animated: true, completion: nil)
+            activityViewController.popoverPresentationController?.sourceView = self.view
+            
+            self.present(activityViewController, animated: true) {
+                
+            }
         }
     }
     
@@ -306,14 +313,19 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         
         if let data = UIImagePNGRepresentation(qrImage) {
             
-            let fileName = getDocumentsDirectory().appendingPathComponent("btc")
+            let fileName = getDocumentsDirectory().appendingPathComponent("btc.png")
             try? data.write(to: fileName)
             let objectsToShare = [fileName]
             
             DispatchQueue.main.async {
                 let activityController = UIActivityViewController(activityItems: objectsToShare, applicationActivities: nil)
                 activityController.popoverPresentationController?.sourceView = self.view
-                self.present(activityController, animated: true) {}
+                //self.present(activityController, animated: true) {}
+                activityController.popoverPresentationController?.sourceView = self.view
+                
+                self.present(activityController, animated: true) {
+                    
+                }
             }
             
         }

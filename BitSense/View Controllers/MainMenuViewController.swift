@@ -12,6 +12,7 @@ import AES256CBC
 
 class MainMenuViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate {
     
+    var isPruned = Bool()
     var isTestnet = Bool()
     var rawTxUnsigned = String()
     var rawTxSigned = String()
@@ -32,7 +33,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     var recipientAddress = ""
     let syncStatusLabel = UILabel()
     var latestBlockHeight = Int()
-    let segwit = SegwitAddrCoder()
     let descriptionLabel = UILabel()
     let qrView = UIImageView()
     var tapQRGesture = UITapGestureRecognizer()
@@ -58,29 +58,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     var refresher: UIRefreshControl!
     let rawButton = UIButton()
     var isUsingSSH = Bool()
+    var ssh:SSHService!
     
-    
-    enum BTC_CLI_COMMAND: String {
-        case getrawtransaction = "getrawtransaction"
-        case decoderawtransaction = "decoderawtransaction"
-        case getnewaddress = "getnewaddress"
-        case gettransaction = "gettransaction"
-        case sendrawtransaction = "sendrawtransaction"
-        case signrawtransaction = "signrawtransaction"
-        case createrawtransaction = "createrawtransaction"
-        case getrawchangeaddress = "getrawchangeaddress"
-        case getaccountaddress = "getaddressesbyaccount"
-        case getwalletinfo = "getwalletinfo"
-        case getblockchaininfo = "getblockchaininfo"
-        case getbalance = "getbalance"
-        case getunconfirmedbalance = "getunconfirmedbalance"
-        case listaccounts = "listaccounts"
-        case listreceivedbyaccount = "listreceivedbyaccount"
-        case listreceivedbyaddress = "listreceivedbyaddress"
-        case listtransactions = "listtransactions"
-        case listunspent = "listunspent"
-        case bumpfee = "bumpfee"
-    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -106,15 +85,40 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
-        if segue.identifier == "createRaw" {
+        switch segue.identifier {
+            
+        case "createRaw":
             
             if let vc = segue.destination as? CreateRawTxViewController {
                 
-                vc.ssh = SSHService.sharedInstance as! SSHService
+                vc.ssh = SSHService.sharedInstance
                 vc.isUsingSSH = self.isUsingSSH
                 vc.spendable = self.balance
                 
             }
+            
+        case "goReceive":
+            
+            if let vc = segue.destination as? InvoiceViewController {
+             
+                vc.ssh = SSHService.sharedInstance
+                vc.isUsingSSH = self.isUsingSSH
+                
+            }
+            
+        case "importPrivKey":
+            
+            if let vc = segue.destination as? ImportPrivKeyViewController {
+                
+                vc.ssh = SSHService.sharedInstance
+                vc.isUsingSSH = self.isUsingSSH
+                vc.isPruned = self.isPruned
+                
+            }
+            
+        default:
+            
+            break
             
         }
         
@@ -259,17 +263,21 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 feeLabel.text = "Fee:" + " " + (self.transactionArray[indexPath.row]["fee"] as! String)
             }
             
+            if self.transactionArray[indexPath.row]["abandoned"] as? Bool == true {
+                
+                cell.backgroundColor = UIColor.red
+                
+            }
+            
             return cell
 
         }
-        
-        //return cell
         
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        let ssh = SSHService.sharedInstance
+        //let ssh = SSHService.sharedInstance
         
         let cell = tableView.cellForRow(at: indexPath)!
         
@@ -297,21 +305,44 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         if rbf == "yes" && replacedBy == "" && amount.hasPrefix("-") && !confirmations.hasPrefix("-") {
             
             DispatchQueue.main.async {
-                let alert = UIAlertController(title: "Bump the fee?", message: "This will create a new transaction with an increased fee and will invalidate the original.", preferredStyle: .actionSheet)
+                let alert = UIAlertController(title: "Bump the fee", message: "This will create a new transaction with an increased fee and will invalidate the original.", preferredStyle: .actionSheet)
                 
                 alert.addAction(UIAlertAction(title: NSLocalizedString("Bump the fee", comment: ""), style: .default, handler: { (action) in
+                    
                     if !self.isUsingSSH {
+                        
                         self.executeNodeCommand(method: BTC_CLI_COMMAND.bumpfee.rawValue, param: "\"\(txID)\"")
+                        
                     } else {
-                        self.bumpFee(ssh: ssh)
+                        
+                        self.bumpFee(ssh: self.ssh)
+                        
                     }
                     
                 }))
                 
-                alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { (action) in
-                }))
+                /*alert.addAction(UIAlertAction(title: "Abandon Transaction", style: .default, handler: { (action) in
+                    
+                    if !self.isUsingSSH {
+                        
+                        self.executeNodeCommand(method: BTC_CLI_COMMAND.abandontransaction.rawValue, param: "\"\(txID)\"")
+                        
+                    } else {
+                        
+                        self.abandonTx(ssh: self.ssh)
+                        
+                    }
+                    
+                }))*/
                 
-                self.present(alert, animated: true, completion: nil)
+                alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { (action) in }))
+                
+                //self.present(alert, animated: true, completion: nil)
+                alert.popoverPresentationController?.sourceView = self.view
+                
+                self.present(alert, animated: true) {
+                    
+                }
             }
             
         } else if confirmations == "0" && !amount.hasPrefix("-") {
@@ -341,7 +372,11 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
             let textToShare = [txID]
             let activityViewController = UIActivityViewController(activityItems: textToShare, applicationActivities: nil)
-            self.present(activityViewController, animated: true, completion: nil)
+            activityViewController.popoverPresentationController?.sourceView = self.view
+            
+            self.present(activityViewController, animated: true) {
+                
+            }
         }
     }
     
@@ -395,17 +430,18 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
         if isUsingSSH {
             
-            let ssh = SSHService.sharedInstance
+            //let ssh = SSHService.sharedInstance
+            ssh = SSHService.sharedInstance
             
             let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
             queue.async {
                 
-                ssh.connect { (success, error) in
+                self.ssh.connect { (success, error) in
                     
                     if success {
                         
                         print("connected succesfully")
-                        self.getBlockchainInfo(ssh: ssh)
+                        self.getBlockchainInfo(ssh: self.ssh)
                         
                     } else {
                         
@@ -440,7 +476,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     func getBlockchainInfo(ssh: SSHService) {
         
-        DispatchQueue.main.async {
+        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        queue.async {//DispatchQueue.main.async {
             ssh.execute(command: BTC_COMMAND.getblockchaininfo, params: "", response: { (result, error) in
                 if error != nil {
                     print("error getblockchaininfo")
@@ -456,38 +493,104 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 } else {
                     //print("result = \(String(describing: result))")
                     if let dict = result as? NSDictionary {
+                        
                         if let currentblockheight = dict["blocks"] as? Int {
                             self.currentBlock = currentblockheight
                         }
-                    }
-                    if let chain = (result as? NSDictionary)?["chain"] as? String {
-                        if chain == "test" {
-                            self.isTestnet = true
-                            self.getLatestBlock(isMainnet: false)
-                            self.listTransactions(ssh: ssh)
-                        } else {
-                            self.isTestnet = false
-                            self.getLatestBlock(isMainnet: true)
-                            self.listTransactions(ssh: ssh)
+                        
+                        if let chain = dict["chain"] as? String {
+                            if chain == "test" {
+                                self.isTestnet = true
+                                self.getLatestBlock(isMainnet: false)
+                                self.listTransactions(ssh: ssh)
+                            } else {
+                                self.isTestnet = false
+                                self.getLatestBlock(isMainnet: true)
+                                self.listTransactions(ssh: ssh)
+                            }
                         }
+                        
+                        if let pruned = dict["pruned"] as? Bool {
+                            
+                            if pruned {
+                             
+                                self.isPruned = true
+                                
+                            } else {
+                                
+                                self.isPruned = false
+                                
+                            }
+                            
+                        }
+                        
                     }
+                    
                 }
+                
             })
+            
         }
+        
+    }
+    
+    func abandonTx(ssh: SSHService) {
+        
+        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        queue.async {
+            
+            //ssh.execute(command: BTC_COMMAND.abandontransaction, params: "\"\(self.tx)\"", response: { (result, error) in
+            
+            ssh.executeStringResponse(command: BTC_COMMAND.abandontransaction, params: "\"\(self.tx)\"", response: { (result, error) in
+               
+                
+                if error != nil {
+                    
+                    print("error abandontransaction")
+                    displayAlert(viewController: self, title: "Error", message: "\(error)")
+                    
+                } else {
+                    
+                    print("result = \(String(describing: result))")
+                    
+                    if let _ = result as? Any {
+                        
+                        DispatchQueue.main.async {
+                            self.refresh()
+                        }
+                        
+                        displayAlert(viewController: self, title: "Success", message: "You abandonded the transaction")
+                        
+                    }
+                    
+                }
+                
+            })
+            
+        }
+        
     }
     
     func bumpFee(ssh: SSHService) {
         
-        DispatchQueue.main.async {
+        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        queue.async {
+            
             ssh.execute(command: BTC_COMMAND.bumpfee, params: "\"\(self.tx)\"", response: { (result, error) in
+                
                 if error != nil {
+                    
                     print("error bumpfee")
+                    
                 } else {
+                    
                     print("result = \(String(describing: result))")
+                    
                     if let dict = result as? NSDictionary {
                         
                         let originalFee = dict["origfee"] as! Double
                         let newFee = dict["fee"] as! Double
+                        
                         DispatchQueue.main.async {
                             self.refresh()
                         }
@@ -495,21 +598,26 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                         displayAlert(viewController: self, title: "Success", message: "You increased the fee from \(originalFee.avoidNotation) to \(newFee.avoidNotation)")
                         
                     }
+                    
                 }
+                
             })
+            
         }
         
     }
     
     func listTransactions(ssh: SSHService) {
         
-        DispatchQueue.main.async {
+        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        queue.async {//DispatchQueue.main.async {
             ssh.execute(command: BTC_COMMAND.listtransactions, params: "", response: { (result, error) in
                 if error != nil {
                     print("error listtransactions = \(String(describing: error))")
                 } else {
                     //print("result = \(String(describing: result))")
                     if let transactionsCheck = result as? NSArray {
+                        
                         self.getBalance(ssh: ssh)
                         
                         for item in transactionsCheck {
@@ -567,7 +675,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     func getrawtransaction(txID: String, ssh: SSHService) {
         
-        DispatchQueue.main.async {
+        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        queue.async {//DispatchQueue.main.async {
             ssh.executeStringResponse(command: BTC_COMMAND.getrawtransaction, params: "\(txID)", response: { (result, error) in
                 if error != nil {
                     print("error getrawtransaction = \(String(describing: error))")
@@ -585,7 +694,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     func decodeRawTransaction(raw: String, ssh: SSHService) {
         
-        DispatchQueue.main.async {
+        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        queue.async {//DispatchQueue.main.async {
             ssh.execute(command: BTC_COMMAND.decoderawtransaction, params: "\"\(raw)\"", response: { (result, error) in
                 if error != nil {
                     print("error decoderawtransaction = \(String(describing: error))")
@@ -607,8 +717,10 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func getBalance(ssh: SSHService) {
+        print("getBalance")
         
-        DispatchQueue.main.async {
+        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        queue.async {//DispatchQueue.main.async {
             ssh.executeStringResponse(command: BTC_COMMAND.getbalance, params: "", response: { (result, error) in
                 if error != nil {
                     print("error getbalance = \(String(describing: error))")
@@ -632,7 +744,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     func getUnconfirmedBalance(ssh: SSHService) {
         
-        DispatchQueue.main.async {
+        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        queue.async {//DispatchQueue.main.async {
             ssh.executeStringResponse(command: BTC_COMMAND.getunconfirmedbalance, params: "", response: { (result, error) in
                 if error != nil {
                     print("error getunconfirmedbalance = \(String(describing: error))")
@@ -721,21 +834,49 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         let footerMaxY = self.mainMenu.frame.maxY
         let modelName = UIDevice.modelName
+        print("model = \(modelName)")
         
-        if modelName == "iPhone X" {
-            self.settingsButton.frame = CGRect(x: self.view.frame.maxX - 40, y: 28, width: 40, height: 40)
-            self.balancelabel.frame = CGRect(x: 10, y: 30, width: self.view.frame.width - 100, height: 20)
-            self.searchButton.frame = CGRect(x: self.settingsButton.frame.minX - 95, y: 30, width: 30, height: 29)
-        } else {
+        switch modelName {
+            
+        case "Simulator iPhone X",
+             "iPhone X",
+             "Simulator iPhone XS",
+             "Simulator iPhone XR",
+             "Simulator iPhone XS Max",
+             "iPhone XS",
+             "iPhone XR",
+             "iPhone XS Max",
+             "Simulator iPhone11,8",
+             "iPhone11,8",
+             "Simulator iPhone11,2",
+             "iPhone11,2",
+             "Simulator iPhone11,4",
+             "iPhone11,4":
+            
+            
+            self.balancelabel.frame = CGRect(x: 10, y: 35, width: self.view.frame.width - 100, height: 22)
+            self.unconfirmedBalanceLabel.frame = CGRect(x: 11, y: self.balancelabel.frame.maxY, width: view.frame.width - 100, height: 15)
+            self.syncStatusLabel.frame = CGRect(x: 10, y: unconfirmedBalanceLabel.frame.maxY, width: 100, height: 15)
+            
+            
+            //self.searchButton.frame = CGRect(x: self.settingsButton.frame.minX - 95, y: 33, width: 30, height: 29)
+            
+            self.settingsButton.frame = CGRect(x: self.view.frame.maxX - 40, y: 33, width: 40, height: 40)
+            
+            
+        default:
+            
             self.settingsButton.frame = CGRect(x: self.view.frame.maxX - 50, y: 18, width: 40, height: 40)
             self.balancelabel.frame = CGRect(x: 10, y: 23, width: self.view.frame.width - 100, height: 22)
-            self.searchButton.frame = CGRect(x: self.settingsButton.frame.minX - 95, y: 20, width: 30, height: 29)
+            //self.searchButton.frame = CGRect(x: self.settingsButton.frame.minX - 95, y: 20, width: 30, height: 29)
+            self.syncStatusLabel.frame = CGRect(x: 10, y: unconfirmedBalanceLabel.frame.maxY, width: 100, height: 15)
+            self.unconfirmedBalanceLabel.frame = CGRect(x: 10, y: balancelabel.frame.maxY + 5, width: view.frame.width - 100, height: 15)
+            
         }
         
-        unconfirmedBalanceLabel.frame = CGRect(x: 10, y: balancelabel.frame.maxY + 5, width: view.frame.width - 100, height: 15)
         receiveButton.frame = CGRect(x: 15, y: footerMaxY + ((view.frame.maxY - footerMaxY) / 2) - 15, width: 30, height: 30)
         rawButton.frame = CGRect(x: view.frame.maxX - 45, y: footerMaxY + ((view.frame.maxY - footerMaxY) / 2) - 15, width: 30, height: 30)
-        syncStatusLabel.frame = CGRect(x: 10, y: unconfirmedBalanceLabel.frame.maxY, width: 100, height: 15)
+        
     }
     
     func nodeCommand(command: String) {
@@ -745,6 +886,41 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         default:
             break
         }
+        
+    }
+    
+    func savePassword(password: String) {
+        
+        let stringToSave = self.encryptKey(keyToEncrypt: password)
+        UserDefaults.standard.set(stringToSave, forKey: "NodePassword")
+        
+    }
+    
+    func saveIPAdress(ipAddress: String) {
+        
+        let stringToSave = self.encryptKey(keyToEncrypt: ipAddress)
+        UserDefaults.standard.set(stringToSave, forKey: "NodeIPAddress")
+        
+    }
+    
+    func savePort(port: String) {
+        
+        let stringToSave = self.encryptKey(keyToEncrypt: port)
+        UserDefaults.standard.set(stringToSave, forKey: "NodePort")
+    }
+    
+    func saveUsername(username: String) {
+        
+        let stringToSave = self.encryptKey(keyToEncrypt: username)
+        UserDefaults.standard.set(stringToSave, forKey: "NodeUsername")
+        
+    }
+    
+    func encryptKey(keyToEncrypt: String) -> String {
+        
+        let password = KeychainWrapper.standard.string(forKey: "AESPassword")!
+        let encryptedkey = AES256CBC.encryptString(keyToEncrypt, password: password)!
+        return encryptedkey
         
     }
     
@@ -817,9 +993,19 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             nodeUsername = "bitcoin"
             nodePassword = "password"
             
-            displayAlert(viewController: self, title: "Alert", message: "Looks like you have not logged in to your own node yet or incorrectly filled out your credentials, you are connected to our testnet full node so you can play with the app before connecting to your own, please don't spend all our testnet coins 🙏🏼\n\nTo connect to your own node tap the settings button and \"Log in to your own node\".\n\nIf you have any issues please email me at bitsenseapp@gmail.com"
+            savePort(port: port)
+            saveIPAdress(ipAddress: ip)
+            saveUsername(username: nodeUsername)
+            savePassword(password: nodePassword)
+            
+            displayAlert(viewController: self, title: "Alert", message: "Looks like you have not logged in to your own node yet or incorrectly filled out your credentials, you are connected to our testnet full node so you can play with the app before connecting to your own.\n\nTo connect to your own node tap the settings button and \"Log in to your own node\".\n\nIf you have any issues please email me at bitsenseapp@gmail.com"
             )
         }
+        
+        print("port = \(port)")
+        print("username = \(nodeUsername)")
+        print("password = \(nodePassword)")
+        print("ip = \(ip)")
             
             let url = URL(string: "http://\(nodeUsername):\(nodePassword)@\(ip):\(port)")
             var request = URLRequest(url: url!)
@@ -867,7 +1053,12 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                         
                                         switch method {
                                             
-                                        case BTC_CLI_COMMAND.getrawchangeaddress.rawValue:
+                                        case BTC_CLI_COMMAND.abandontransaction.rawValue:
+                                            
+                                            displayAlert(viewController: self, title: "Success", message: "You have abandoned the transaction!")
+                                                
+                                            
+                                        /*case BTC_CLI_COMMAND.getrawchangeaddress.rawValue:
                                             
                                             if let _ = resultCheck as? String {
                                                 
@@ -880,16 +1071,16 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                                 self.inputs = self.inputs.replacingOccurrences(of: "\\", with: "")
                                                 self.executeNodeCommand(method: BTC_CLI_COMMAND.createrawtransaction.rawValue, param: "\(self.inputs), {\"\(self.address)\":\(self.amount),  \"\(self.changeAddress)\": \(self.changeAmount)}")
                                                 
-                                            }
+                                            }*/
                                             
-                                        case BTC_CLI_COMMAND.decoderawtransaction.rawValue:
+                                        /*case BTC_CLI_COMMAND.decoderawtransaction.rawValue:
                                             
                                             if let decodedTx = resultCheck as? NSDictionary {
                                                 
                                                 print("decoded = \(decodedTx)")
                                                 //get old fee
                                                 
-                                            }
+                                            }*/
                                             
                                         case BTC_CLI_COMMAND.getrawtransaction.rawValue:
                                             
@@ -920,6 +1111,20 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                                         self.isTestnet = false
                                                         self.getLatestBlock(isMainnet: true)
                                                     }
+                                                }
+                                                
+                                                if let pruned = result["pruned"] as? Bool {
+                                                    
+                                                    if pruned {
+                                                        
+                                                        self.isPruned = true
+                                                        
+                                                    } else {
+                                                        
+                                                        self.isPruned = false
+                                                        
+                                                    }
+                                                    
                                                 }
                                             }
                                             
@@ -1111,9 +1316,33 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     @objc func receive() {
         
-        DispatchQueue.main.async {
+        let alert = UIAlertController(title: NSLocalizedString("Select an option", comment: ""), message: nil, preferredStyle: UIAlertControllerStyle.actionSheet)
+        
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Create Invoice", comment: ""), style: .default, handler: { (action) in
             
-            self.performSegue(withIdentifier: "goReceive", sender: self)
+            DispatchQueue.main.async {
+                
+                self.performSegue(withIdentifier: "goReceive", sender: self)
+                
+            }
+            
+        }))
+        
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Import Private Key", comment: ""), style: .default, handler: { (action) in
+            
+            DispatchQueue.main.async {
+                
+                self.performSegue(withIdentifier: "importPrivKey", sender: self)
+                
+            }
+            
+        }))
+        
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { (action) in }))
+        
+        alert.popoverPresentationController?.sourceView = self.view
+        
+        self.present(alert, animated: true) {
             
         }
         
@@ -1563,7 +1792,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     func pushRawTx(ssh: SSHService) {
         
-        DispatchQueue.main.async {
+        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        queue.async {//DispatchQueue.main.async {
             ssh.executeStringResponse(command: BTC_COMMAND.sendrawtransaction, params: "\"\(self.rawTxSigned)\"", response: { (result, error) in
                 if error != nil {
                     print("error sendrawtransaction = \(String(describing: error))")

@@ -31,6 +31,8 @@ public enum BTC_COMMAND: String {
     case signrawtransaction = "signrawtransactionwithwallet"
     case bumpfee = "bumpfee"
     case getrawtransaction = "getrawtransaction"
+    case importprivkey = "importprivkey"
+    case abandontransaction = "abandontransaction"
 }
 
 class SSHService {
@@ -38,6 +40,7 @@ class SSHService {
     let userDefaults = UserDefaults.standard
     var user:String?
     var host:String?
+    var port:String?
     var password:String?
     var session: NMSSHSession?
     static let sharedInstance = SSHService()
@@ -65,88 +68,103 @@ class SSHService {
             user = decryptKey(keyToDecrypt: UserDefaults.standard.string(forKey: "NodeUsername")!)
             host = decryptKey(keyToDecrypt: UserDefaults.standard.string(forKey: "NodeIPAddress")!)
             password = decryptSSHKey(keyToDecrypt: UserDefaults.standard.string(forKey: "sshPassword")!)
+            port = decryptKey(keyToDecrypt: UserDefaults.standard.string(forKey: "NodePort")!)
+            
+            print("user = \(String(describing: user))")
+            print("host = \(String(describing: host))")
+            print("password = \(String(describing: password))")
+            print("port = \(String(describing: port))")
             
         } else {
             
             user = ""
             host = ""
             password = ""
+            port = ""
             
         }
         
- 
-        
-        
-   }
+    }
     
     func connect(success: @escaping((success:Bool, error:String?)) -> ()) {
+        
         guard user != nil, host != nil, password != nil else {
+            
             success((success:false, error:"Error"))
             return
+            
         }
-        session = NMSSHSession.connect(toHost: host!, withUsername: user!)
-        if session?.isConnected == true {
-            //print(password!)
-            session?.authenticate(byPassword: password!)
-            if session?.isAuthorized == true {
-                success((success:true, error:nil))
-                print("success")
+        
+        var portInt = Int()
+        
+        if port != "" {
+            
+            portInt = Int(port!)!
+            
+            session = NMSSHSession.connect(toHost: host!, port: portInt, withUsername: user!)
+            
+            if session?.isConnected == true {
+                
+                session?.authenticate(byPassword: password!)
+                
+                if session?.isAuthorized == true {
+                    
+                    success((success:true, error:nil))
+                    print("success")
+                    
+                } else {
+                    
+                    success((success:false, error:"Error"))
+                    print("fail")
+                    print("\(String(describing: session?.lastError))")
+                    
+                 }
+                
             } else {
-                success((success:false, error:"Error"))
-                print("fail")
-                print("\(String(describing: session?.lastError))")
+                
+                print("Session not connected")
+                success((success:false, error:"Unable to connect via SSH, please make sure your firewall allows SSH connections and ensure you input the correct port."))
+                
             }
-        } else {
-            print("Session not connected")
-            success((success:false, error:"Unable to connect via SSH, please make sure your firewall allows SSH connections."))
+            
         }
+        
+        
     }
     
     func disconnect() {
+        
         session?.disconnect()
+        
     }
     
     func execute(command: BTC_COMMAND, params: String, response: @escaping((dictionary:Any?, error:String?)) -> ()) {
         
-        do {
+        let error = NSErrorPointer.none
             
-            var error: NSErrorPointer?
-            
+        if let responseString = session?.channel.execute("bitcoin-cli \(command.rawValue) \(params)", error: error ?? nil) {
+                    
+            print("responseString = \(String(describing: responseString))")
+                    
+            guard let responseData = responseString.data(using: .utf8) else { return }
+                    
             do {
-               
-                let responseString:String? = try session?.channel.execute("bitcoin-cli \(command.rawValue) \(params)", error: error ?? nil)
-                
-                print("responseString = \(String(describing: responseString))")
-                
-                guard let responseData = responseString?.data(using: .utf8) else { return }
-                
-                do {
-                    
-                    if let json = try JSONSerialization.jsonObject(with: responseData, options: []) as? Any {
                         
-                        response((dictionary:json, error:nil))
-                        
-                    }
-                    
-                } catch {
-                    
-                    response((dictionary:nil, error:"JSON ERROR: \(error)"))
-                    
-                    
+                if let json = try JSONSerialization.jsonObject(with: responseData, options: []) as? Any {
+                            
+                    response((dictionary:json, error:nil))
+                            
                 }
-                
+                        
             } catch {
-                
-                print("error getting response string")
+                        
+                response((dictionary:nil, error:"JSON ERROR: \(error)"))
+                        
             }
-            
-        } catch {
-            
-            response((dictionary:nil, error:"RESPONSE ERROR: \(error)"))
-            
+                    
         }
-        
-    }
+                
+     }
     
     func executeStringResponse(command: BTC_COMMAND, params: String, response: @escaping((string:String?, error:String?)) -> ()) {
         var error: NSErrorPointer?

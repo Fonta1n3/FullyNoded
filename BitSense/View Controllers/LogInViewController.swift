@@ -26,9 +26,6 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     let imageView = UIImageView()
     let fingerPrintView = UIImageView()
     let nextButton = UIButton()
-    let segwit = SegwitAddrCoder()
-    var viewdidJustLoad = Bool()
-    let buyNodeButton = UIButton()
     var reenterCredentials = Bool()
     var helpTitle = ""
     var helpMessage = ""
@@ -36,8 +33,6 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        //KeychainWrapper.standard.removeAllKeys()
         
         passwordInput.delegate = self
         usernameInput.delegate = self
@@ -134,7 +129,6 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         labelTitle.text = "Unlock"
         labelTitle.textAlignment = .center
         
-        touchIDButton.frame = CGRect(x: view.center.x - 50, y: view.frame.maxY - 140, width: 100, height: 100)
         touchIDButton.setImage(UIImage(named: "whiteFingerPrint.png"), for: .normal)
         touchIDButton.backgroundColor = UIColor.clear
         touchIDButton.alpha = 0
@@ -148,7 +142,6 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         infoButton.addTarget(self, action: #selector(showHelp), for: .touchUpInside)
         
         showUnlockScreen()
-        viewdidJustLoad = true
         
     }
     
@@ -167,14 +160,14 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         
         DispatchQueue.main.async {
             self.nextButton.removeFromSuperview()
-            self.nextButton.frame = CGRect(x: self.view.center.x - 40, y: inputView.frame.maxY + 10, width: 80, height: 55)
+            self.nextButton.frame = CGRect(x: self.view.center.x - 40, y: inputView.frame.maxY + 5, width: 80, height: 55)
             self.nextButton.showsTouchWhenHighlighted = true
             self.nextButton.setTitle("Next", for: .normal)
             self.nextButton.setTitleColor(UIColor.white, for: .normal)
             self.nextButton.titleLabel?.font = UIFont.init(name: "HelveticaNeue-Bold", size: 20)
             self.nextButton.addTarget(self, action: #selector(self.nextButtonAction), for: .touchUpInside)
             self.view.addSubview(self.nextButton)
-            //self.addBuyNodeButton(buttonView: self.nextButton)
+            self.touchIDButton.frame = CGRect(x: self.view.center.x - 30, y: self.nextButton.frame.maxY + 20, width: 60, height: 60)
         }
         
     }
@@ -186,64 +179,15 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         return encryptedkey
     }
     
-    func firstTimeHere() {
-        
-        if UserDefaults.standard.object(forKey: "firstTime") == nil {
-            
-            let key = BTCKey.init()
-            var password = ""
-            let compressedPKData = BTCRIPEMD160(BTCSHA256(key?.compressedPublicKey as Data!) as Data!) as Data!
-            
-            do {
-                
-                password = try segwit.encode(hrp: "bc", version: 0, program: compressedPKData!)
-                
-                for _ in password {
-                    
-                    if password.count > 32 {
-                        
-                        password.removeFirst()
-                        
-                    }
-                    
-                }
-                
-                let saveSuccessful:Bool = KeychainWrapper.standard.set(password, forKey: "AESPassword")
-                
-                if saveSuccessful {
-                   
-                    print("Encryption key saved successfully: \(saveSuccessful)")
-                    
-                } else {
-                    
-                    print("error saving encryption key")
-                    
-                }
-                
-                
-            } catch {
-                
-                print("error")
-                
-            }
-            
-            UserDefaults.standard.set(true, forKey: "firstTime")
-            
-        }
-    }
-    
     func showUnlockScreen() {
-        
-        viewdidJustLoad = false
-        
-        firstTimeHere()
         
         self.passwordInput.removeFromSuperview()
         lockView.addSubview(passwordInput)
-        passwordInput.becomeFirstResponder()
         self.labelTitle.removeFromSuperview()
         lockView.addSubview(labelTitle)
         self.addNextButton(inputView: self.passwordInput)
+        touchIDButton.removeFromSuperview()
+        lockView.addSubview(touchIDButton)
             
         DispatchQueue.main.async {
             
@@ -255,6 +199,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
                 
             self.passwordInput.alpha = 1
             self.labelTitle.alpha = 1
+            self.touchIDButton.alpha = 1
                 
         })
         
@@ -277,7 +222,9 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     func textFieldDidEndEditing(_ textField: UITextField, reason: UITextFieldDidEndEditingReason) {
         print("textFieldDidEndEditing")
         
-        if textField == self.passwordInput {
+        switch textField {
+            
+        case self.passwordInput:
             
             if self.passwordInput.text != "" {
                 
@@ -288,7 +235,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
                 shakeAlert(viewToShake: self.passwordInput)
             }
             
-        } else if textField == self.usernameInput {
+        case self.usernameInput:
             
             if self.usernameInput.text != "" {
                 
@@ -299,7 +246,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
                 shakeAlert(viewToShake: self.usernameInput)
             }
             
-        } else if textField == self.nodePasswordInput {
+        case self.nodePasswordInput:
             
             if self.nodePasswordInput.text != "" {
                 
@@ -311,7 +258,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
                 
             }
             
-        } else if textField == self.ipAddressInput {
+        case self.ipAddressInput:
             
             if self.ipAddressInput.text != "" {
                 
@@ -323,7 +270,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
                 
             }
             
-        } else if textField == self.portInput {
+        case self.portInput:
             
             if self.portInput.text != "" {
                 
@@ -334,6 +281,11 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
                 shakeAlert(viewToShake: self.portInput)
                 
             }
+            
+        default:
+            
+            break
+            
         }
         
     }
@@ -344,6 +296,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         
             if self.passwordInput.text! == retrievedPassword {
                 
+                self.touchIDButton.removeFromSuperview()
                 self.nextButton.removeFromSuperview()
                 
                 UIView.animate(withDuration: 0.2, animations: {
@@ -359,9 +312,6 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
                     self.passwordInput.removeFromSuperview()
                     
                     //check if user has saved username and password to node
-                    
-                    print("reenterCredntials = \(self.reenterCredentials)")
-                    
                     if self.reenterCredentials {
                         
                         if UserDefaults.standard.string(forKey: "NodeUsername") != nil {
@@ -495,7 +445,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         self.labelTitle.text = "Enter Your Nodes Port"
         self.labelTitle.adjustsFontSizeToFitWidth = true
         self.helpTitle = "Enter Your Nodes Port"
-        self.helpMessage = "TL;DR: Mainnet = 8332, Testnet = 18332.\n\nThis is only required if you are filling out your RPC credentials to connect to your node. By default Bitcoin Core assigns 8332 for mainnet and 18332 for testnet for listening for RPC calls. If you are using SSH to log in to your node then you can put any number you like here as it will not be used."
+        self.helpMessage = "TL;DR: Mainnet = 8332, Testnet = 18332 for RPC log in.\n\nFor SSH log in its whatever port you have specified in your SSH config file, port 22 is default, we recommend setting a high numbered random port number (max is 65535) for SSH as attackers will by default attack port 22."
         
         UIView.animate(withDuration: 0.2, animations: {
             
@@ -564,7 +514,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         self.labelTitle.text = "Enter Node Password"
         self.labelTitle.adjustsFontSizeToFitWidth = true
         self.helpTitle = "Enter Your Node Password"
-        self.helpMessage = "If using RPC credentials you must input the rpcpassword value that can be found in your bitcoin.conf file, if there isn't one you can add one make sure it is a strong password, you will need to shut down Bitcoin Core and restart it.\n\nIf you are SSHing into the node then you can simply input the SSH password, by default Fully Noded will try to RPC into your node and you may have to wait while the connection times out before an error message prompts you to try and SSH into the node. Select SSH when prompted, if it does not connect right away quit the app and reopen and it should connect quickly."
+        self.helpMessage = "If using RPC credentials you must input the rpcpassword value that can be found in your bitcoin.conf file, if there isn't one you can add one make sure it is a strong password, you will need to shut down Bitcoin Core and restart it.\n\nIf you are SSHing into the node then you can simply input the SSH password, by default Fully Noded will try to RPC into your node first. Select \"Try SSH\" when prompted."
         
         UIView.animate(withDuration: 0.2, animations: {
             
@@ -604,6 +554,64 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         
     }
     
+    func unlock() {
+        
+        self.nextButton.removeFromSuperview()
+        self.touchIDButton.removeFromSuperview()
+        
+        UIView.animate(withDuration: 0.2, animations: {
+            
+            self.passwordInput.alpha = 0
+            self.labelTitle.alpha = 0
+            
+        }, completion: { _ in
+            
+            self.passwordInput.text = ""
+            self.labelTitle.text = ""
+            self.imageView.removeFromSuperview()
+            self.passwordInput.removeFromSuperview()
+            
+            //check if user has saved username and password to node
+            if self.reenterCredentials {
+                
+                if UserDefaults.standard.string(forKey: "NodeUsername") != nil {
+                    
+                    if UserDefaults.standard.string(forKey: "NodePassword") != nil {
+                        
+                        print("go to main menu")
+                        
+                        if UserDefaults.standard.string(forKey: "NodeIPAddress") != nil {
+                            
+                            self.performSegue(withIdentifier: "logInNow", sender: self)
+                            
+                        } else {
+                            
+                            self.getIPAddress()
+                            
+                        }
+                        
+                    } else {
+                        
+                        self.getNodePassword()
+                        
+                    }
+                    
+                } else {
+                    
+                    self.getNodeUsername()
+                    
+                }
+                
+            } else {
+                
+                self.performSegue(withIdentifier: "logInNow", sender: self)
+                
+            }
+            
+            
+        })
+    }
+    
     @objc func authenticationWithTouchID() {
         print("authenticationWithTouchID")
         
@@ -619,37 +627,57 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             localAuthenticationContext.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reasonString) { success, evaluateError in
                 
                 if success {
-                    
                     print("success")
+                    
                     DispatchQueue.main.async {
-                        self.dismiss(animated: true, completion: nil)
+                        
+                        self.unlock()
+                        
                     }
+                    
                 } else {
+                    
                     guard let error = evaluateError else {
+                        
                         return
+                        
                     }
+                    
                     print(self.evaluateAuthenticationPolicyMessageForLA(errorCode: error._code))
+                    
                 }
+                
             }
+            
         } else {
             
             guard let error = authError else {
+                
                 return
+                
             }
+            
             //TODO: Show appropriate alert if biometry/TouchID/FaceID is lockout or not enrolled
             if self.evaluateAuthenticationPolicyMessageForLA(errorCode: error._code) != "Too many failed attempts." {
                 
             }
+            
             print(self.evaluateAuthenticationPolicyMessageForLA(errorCode: error.code))
+            
         }
+        
     }
     
     
     
     func evaluatePolicyFailErrorMessageForLA(errorCode: Int) -> String {
+        
         var message = ""
+        
         if #available(iOS 11.0, macOS 10.13, *) {
+            
             switch errorCode {
+                
             case LAError.biometryNotAvailable.rawValue:
                 message = "Authentication could not start because the device does not support biometric authentication."
                 
@@ -662,8 +690,11 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             default:
                 message = "Did not find error code on LAError object"
             }
+            
         } else {
+            
             switch errorCode {
+                
             case LAError.touchIDLockout.rawValue:
                 message = "Too many failed attempts."
                 
@@ -676,9 +707,11 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             default:
                 message = "Did not find error code on LAError object"
             }
+            
         }
         
-        return message;
+        return message
+        
     }
     
     func evaluateAuthenticationPolicyMessageForLA(errorCode: Int) -> String {

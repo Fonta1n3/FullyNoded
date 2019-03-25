@@ -212,7 +212,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         //if section == 0 {
             //return 360
         //} else {
-            return 60
+            return 80
         //}
        
         

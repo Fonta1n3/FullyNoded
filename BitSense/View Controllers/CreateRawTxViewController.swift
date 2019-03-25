@@ -58,7 +58,7 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
         }
         
     }
-    enum BTC_CLI_COMMAND: String {
+    /*enum BTC_CLI_COMMAND: String {
         case decoderawtransaction = "decoderawtransaction"
         case getnewaddress = "getnewaddress"
         case gettransaction = "gettransaction"
@@ -77,7 +77,7 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
         case listtransactions = "listtransactions"
         case listunspent = "listunspent"
         case bumpfee = "bumpfee"
-    }
+    }*/
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -503,7 +503,7 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                                                 print("sumofutxo = \(sumOfUtxo), txfee = \(txFee)")
                                             }
                                             self.amount = "\(sumOfUtxo - txFee - 0.00050000)"
-                                            print("amount = \(self.amount)")
+                                            print("amount = sumofutxo = \(sumOfUtxo), txfee = \(txFee)")
                                             
                                             self.inputs = self.inputArray.description
                                             self.inputs = self.inputs.replacingOccurrences(of: "[\"", with: "[")
@@ -600,12 +600,39 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                     if let signedTransaction = result as? NSDictionary {
                         
                         self.rawTxSigned = signedTransaction["hex"] as! String
+                        
                         DispatchQueue.main.async {
+                            
                             self.nextButton.removeFromSuperview()
                             self.amountInput.removeFromSuperview()
                             self.textView.text = self.rawTxSigned
-                            self.view.addSubview(self.textView)
+                            self.qrCode = self.generateQrCode(key: self.rawTxSigned)
+                            self.displayQrView.image = self.qrCode
+                            UIPasteboard.general.string = self.rawTxSigned
                             self.view.addSubview(self.decodeButton)
+                            
+                            UIView.animate(withDuration: 0.3, animations: {
+                                self.displayQrView.alpha = 1
+                                self.textView.alpha = 1
+                            })
+                            
+                            self.tapTextViewGesture = UITapGestureRecognizer(target: self, action: #selector(self.shareRawText(_:)))
+                            self.textView.addGestureRecognizer(self.tapTextViewGesture)
+                            self.tapQRGesture = UITapGestureRecognizer(target: self, action: #selector(self.shareQRCode(_:)))
+                            self.displayQrView.addGestureRecognizer(self.tapQRGesture)
+                            
+                            let alert = UIAlertController(title: NSLocalizedString("Copied to clipboard", comment: ""), message: nil, preferredStyle: UIAlertControllerStyle.actionSheet)
+                            
+                            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel, handler: { (action) in
+                                //self.dismiss(animated: true, completion: nil)
+                            }))
+                            
+                            alert.popoverPresentationController?.sourceView = self.view
+                            
+                            self.present(alert, animated: true) {
+                            }
+                            
+                            
                         }
                     }
                 }
@@ -707,7 +734,7 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
         
     }
     
-    @objc func dismissKeyboard (_ sender: UITapGestureRecognizer) {
+    @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
         addressInput.resignFirstResponder()
     }
 
@@ -1089,6 +1116,7 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                                                 }
                                                 
                                             } else {
+                                                
                                                 //sweeping
                                                 self.changeAmount = 0.00050000
                                                 
@@ -1111,6 +1139,7 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                                                                                 if let _ = utxoDict["amount"] as? Double {
                                                                                     
                                                                                     self.spendableUtxos.append(utxoDict)
+                                                                                    
                                                                                 }
                                                                             }
                                                                         }
@@ -1118,7 +1147,6 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                                                                 }
                                                             }
                                                         }
-                                                        
                                                         
                                                         self.inputArray.removeAll()
                                                         
@@ -1141,10 +1169,13 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                                                             if array[1].count > 8 {
                                                                 
                                                                 sumOfUtxo = round(100000000*sumOfUtxo)/100000000
-                                                                print("sumofutxo = \(sumOfUtxo), txfee = \(txFee)")
+                                                                print("sumofutxo = \(sumOfUtxo), txfee = \(txFee.avoidNotation)")
                                                             }
-                                                            self.amount = "\(sumOfUtxo - txFee - 0.00050000)"
-                                                            print("amount = \(self.amount)")
+                                                            
+                                                            let total = sumOfUtxo - txFee - 0.00050000
+                                                            let totalRounded = round(100000000*total)/100000000
+                                                            self.amount = "\(totalRounded)"
+                                                            print("amount = \(self.amount) sumofutxo = \(sumOfUtxo), txfee = \(txFee.avoidNotation)")
                                                             
                                                             self.inputs = self.inputArray.description
                                                             self.inputs = self.inputs.replacingOccurrences(of: "[\"", with: "[")
@@ -1267,9 +1298,9 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
     
     func generateQrCode(key: String) -> UIImage {
         
-        //let filter = CIFilter(name: "CISepiaTone")!
-        //filter.setValue(1.0, forKey: kCIInputIntensityKey)
-        let cgImage = EFQRCode.generate(content: key,
+        var imageToReturn = UIImage()
+        
+        if let cgImage = EFQRCode.generate(content: key,
                                         size: EFIntSize.init(width: 256, height: 256),
                                         backgroundColor: UIColor.clear.cgColor,
                                         foregroundColor: UIColor.white.cgColor,
@@ -1283,10 +1314,25 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                                         mode: EFQRCodeMode.none,
                                         binarizationThreshold: 0,
                                         magnification: EFIntSize.init(width: 50, height: 50),
-                                        foregroundPointOffset: 0)
-        let qrImage = UIImage(cgImage: cgImage!)
+                                        foregroundPointOffset: 0) {
+            
+            imageToReturn = UIImage(cgImage: cgImage)
+            
+        } else {
+            
+            imageToReturn = UIImage(named: "clear.png")!
+            
+            let label = UILabel()
+            label.text = "Data too large to create QR Code"
+            label.frame = CGRect(x: 0, y: self.displayQrView.frame.minY + 20, width: self.displayQrView.frame.width, height: 40)
+            label.textColor = UIColor.white
+            label.textAlignment = .center
+            
+            self.displayQrView.addSubview(label)
+            
+        }
         
-        return qrImage
+        return imageToReturn
         
     }
     
@@ -1304,7 +1350,9 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
             
             let textToShare = [self.rawTxSigned]
             let activityViewController = UIActivityViewController(activityItems: textToShare, applicationActivities: nil)
-            self.present(activityViewController, animated: true, completion: nil)
+            //self.present(activityViewController, animated: true, completion: nil)
+            activityViewController.popoverPresentationController?.sourceView = self.view
+            self.present(activityViewController, animated: true) {}
         }
     }
     
@@ -1327,7 +1375,7 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                 
             }
             
-            let cgImage = EFQRCode.generate(content: self.rawTxSigned,
+            if let cgImage = EFQRCode.generate(content: self.rawTxSigned,
                                             size: EFIntSize.init(width: 256, height: 256),
                                             backgroundColor: UIColor.white.cgColor,
                                             foregroundColor: UIColor.black.cgColor,
@@ -1341,18 +1389,19 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                                             mode: EFQRCodeMode.none,
                                             binarizationThreshold: 0,
                                             magnification: EFIntSize.init(width: 50, height: 50),
-                                            foregroundPointOffset: 0)
-            let qrImage = UIImage(cgImage: cgImage!)
-            
-            if let data = UIImagePNGRepresentation(qrImage) {
+                                            foregroundPointOffset: 0) {
                 
-                let fileName = getDocumentsDirectory().appendingPathComponent("btc")
-                try? data.write(to: fileName)
-                let objectsToShare = [fileName]
+                let qrImage = UIImage(cgImage: cgImage)
+                
+                
+                let objectsToShare = [qrImage]
                 
                 DispatchQueue.main.async {
                     
                     let activityController = UIActivityViewController(activityItems: objectsToShare, applicationActivities: nil)
+                    activityController.completionWithItemsHandler = { (type,completed,items,error) in
+                        print("completed. type=\(String(describing: type)) completed=\(completed) items=\(String(describing: items)) error=\(String(describing: error))")
+                    }
                     activityController.popoverPresentationController?.sourceView = self.view
                     self.present(activityController, animated: true) {}
                     
@@ -1371,5 +1420,6 @@ extension String {
         return NumberFormatter().number(from: self)?.doubleValue
     }
 }
+
 
 
