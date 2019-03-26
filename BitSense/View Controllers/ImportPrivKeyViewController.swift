@@ -424,7 +424,7 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate, AVCapt
         if isUsingSSH {
             let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
             queue.async {//DispatchQueue.main.async {
-                ssh.executeStringResponse(command: BTC_COMMAND.importprivkey, params: "\"\(pk)\"", response: { (result, error) in
+                ssh.executeStringResponse(command: BTC_CLI_COMMAND.importprivkey, params: "\"\(pk)\"", response: { (result, error) in
                     if error != nil {
                         print("error importPrivateKey = \(String(describing: error))")
                     } else {

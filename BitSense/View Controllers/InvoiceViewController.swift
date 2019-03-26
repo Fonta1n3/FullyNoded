@@ -140,7 +140,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         
         if isUsingSSH {
             DispatchQueue.main.async {
-                ssh.executeStringResponse(command: BTC_COMMAND.getnewaddress, params: "\"\", \"bech32\"", response: { (result, error) in
+                ssh.executeStringResponse(command: BTC_CLI_COMMAND.getnewaddress, params: "\"\", \"bech32\"", response: { (result, error) in
                     if error != nil {
                         print("error getbalance = \(String(describing: error))")
                     } else {
@@ -165,7 +165,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         if isUsingSSH {
             
             DispatchQueue.main.async {
-                ssh.executeStringResponse(command: BTC_COMMAND.getnewaddress, params: "", response: { (result, error) in
+                ssh.executeStringResponse(command: BTC_CLI_COMMAND.getnewaddress, params: "", response: { (result, error) in
                     if error != nil {
                         print("error getbalance = \(String(describing: error))")
                     } else {
@@ -190,7 +190,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         
         if isUsingSSH {
             DispatchQueue.main.async {
-                ssh.executeStringResponse(command: BTC_COMMAND.getnewaddress, params: "\"\", \"legacy\"", response: { (result, error) in
+                ssh.executeStringResponse(command: BTC_CLI_COMMAND.getnewaddress, params: "\"\", \"legacy\"", response: { (result, error) in
                     if error != nil {
                         print("error getbalance = \(String(describing: error))")
                     } else {

@@ -11,30 +11,6 @@ import NMSSH
 import AES256CBC
 import SwiftKeychainWrapper
 
-public enum BTC_COMMAND: String {
-    case sendrawtransaction = "sendrawtransaction"
-    case decoderawtransaction = "decoderawtransaction"
-    case getaccountaddress = "getaccountaddress"
-    case getnewaddress = "getnewaddress"
-    case getinfo = "getinfo"
-    case getbalance = "getbalance"
-    case getblockchaininfo = "getblockchaininfo"
-    case getunconfirmedbalance = "getunconfirmedbalance"
-    case getwalletinfo = "getwalletinfo"
-    case listunspent = "listunspent"
-    case listaccounts = "listaccounts"
-    case listreceivedbyaccount = "listreceivedbyaccount"
-    case listreceivedbyaddress = "listreceivedbyaddress"
-    case listtransactions = "listtransactions"
-    case getrawchangeaddress = "getrawchangeaddress"
-    case createrawtransaction = "createrawtransaction"
-    case signrawtransaction = "signrawtransactionwithwallet"
-    case bumpfee = "bumpfee"
-    case getrawtransaction = "getrawtransaction"
-    case importprivkey = "importprivkey"
-    case abandontransaction = "abandontransaction"
-}
-
 class SSHService {
     
     let userDefaults = UserDefaults.standard
@@ -138,7 +114,7 @@ class SSHService {
         
     }
     
-    func execute(command: BTC_COMMAND, params: String, response: @escaping((dictionary:Any?, error:String?)) -> ()) {
+    func execute(command: BTC_CLI_COMMAND, params: String, response: @escaping((dictionary:Any?, error:String?)) -> ()) {
         
         let error = NSErrorPointer.none
             
@@ -166,7 +142,7 @@ class SSHService {
                 
      }
     
-    func executeStringResponse(command: BTC_COMMAND, params: String, response: @escaping((string:String?, error:String?)) -> ()) {
+    func executeStringResponse(command: BTC_CLI_COMMAND, params: String, response: @escaping((string:String?, error:String?)) -> ()) {
         var error: NSErrorPointer?
         do {
             let responseString:String? = try session?.channel.execute("bitcoin-cli \(command.rawValue) \(params)", error: error ?? nil).replacingOccurrences(of: "\n", with: "")

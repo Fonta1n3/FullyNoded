@@ -31,4 +31,7 @@ public enum BTC_CLI_COMMAND: String {
     case bumpfee = "bumpfee"
     case importprivkey = "importprivkey"
     case abandontransaction = "abandontransaction"
+    case getpeerinfo = "getpeerinfo"
+    case getnetworkinfo = "getnetworkinfo"
+    case getmininginfo = "getmininginfo"
 }
