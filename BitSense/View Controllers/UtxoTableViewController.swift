@@ -27,16 +27,11 @@ class UtxoTableViewController: UITableViewController {
         
     }
     
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem
         
+        utxoTable.tableFooterView = UIView(frame: .zero)
+
         if !isUsingSSH {
             
             executeNodeCommand(method: BTC_CLI_COMMAND.listunspent, param: "")
@@ -52,13 +47,15 @@ class UtxoTableViewController: UITableViewController {
     // MARK: - Table view data source
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        // #warning Incomplete implementation, return the number of sections
+        
         return 1
+        
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of rows
+        
         return utxoArray.count
+        
     }
 
     
@@ -67,8 +64,6 @@ class UtxoTableViewController: UITableViewController {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         
         let dict = utxoArray[indexPath.row] as! NSDictionary
-        //let keys = dict.allKeys
-        //let values = dict.allValues
         let address = cell.viewWithTag(1) as! UILabel
         let txId = cell.viewWithTag(2) as! UILabel
         let redScript = cell.viewWithTag(3) as! UILabel
@@ -81,9 +76,6 @@ class UtxoTableViewController: UITableViewController {
         let spendable = cell.viewWithTag(10) as! UILabel
         
         for (key, value) in dict {
-            
-            print("key = \(key)")
-            print("value = \(value)")
             
             let keyString = key as! String
             
@@ -165,52 +157,6 @@ class UtxoTableViewController: UITableViewController {
         
     }
     
-
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return true
-    }
-    */
-
-    /*
-    // Override to support editing the table view.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            // Delete the row from the data source
-            tableView.deleteRows(at: [indexPath], with: .fade)
-        } else if editingStyle == .insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }    
-    }
-    */
-
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
-
-    }
-    */
-
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the item to be re-orderable.
-        return true
-    }
-    */
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
-    
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: Any) {
         
         func decrypt(item: String) -> String {
@@ -253,7 +199,9 @@ class UtxoTableViewController: UITableViewController {
                             if let errorCheck = jsonAddressResult["error"] as? NSDictionary {
                                 
                                 if let error = errorCheck["message"] as? String {
+                                    
                                     displayAlert(viewController: self, title: "Error", message: error)
+                                    
                                 }
                                 
                             } else {
@@ -269,6 +217,8 @@ class UtxoTableViewController: UITableViewController {
                                             if resultArray.count > 0 {
                                                 
                                                 self.utxoArray = resultArray
+                                                
+                                                self.getUtxoSize()
                                                 
                                                 DispatchQueue.main.async {
                                                     
@@ -329,11 +279,95 @@ class UtxoTableViewController: UITableViewController {
                             
                             self.utxoArray = resultArray
                             
+                            self.getUtxoSize()
+                            
                             DispatchQueue.main.async {
                                 
                                 self.utxoTable.reloadData()
                                 
                             }
+                            
+                        }
+                        
+                    }
+                    
+                }
+                
+            })
+            
+        }
+        
+    }
+    
+    func getUtxoSize() {
+        
+        for (index, utxo) in self.utxoArray.enumerated() {
+            
+            let dict = utxo as! NSDictionary
+            let txid = dict["txid"] as! String
+            
+            if !self.isUsingSSH {
+                
+                self.executeNodeCommand(method: BTC_CLI_COMMAND.getrawtransaction, param: "\"\(txid)\"")
+                
+            } else {
+                
+                self.getRawTx(txid: txid, index: index)
+                
+            }
+        }
+    }
+    
+    func getRawTx(txid: String, index: Int) {
+        
+        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        queue.async {
+            
+            self.ssh.executeStringResponse(command: BTC_CLI_COMMAND.getrawtransaction, params: "\"\(txid)\"", response: { (result, error) in
+                
+                if error != nil {
+                    
+                    print("error getRawTx")
+                    displayAlert(viewController: self, title: "Error", message: "\(String(describing: error))")
+                    
+                } else {
+                    
+                    self.decodeRawTx(rawtx: result!, index: index)
+                    
+                }
+                
+            })
+            
+        }
+        
+    }
+    
+    func decodeRawTx(rawtx: String, index: Int) {
+        
+        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        queue.async {
+            
+            self.ssh.execute(command: BTC_CLI_COMMAND.decoderawtransaction, params: "\"\(rawtx)\"", response: { (result, error) in
+                
+                if error != nil {
+                    
+                    print("error decodeRawTx")
+                    displayAlert(viewController: self, title: "Error", message: "\(String(describing: error))")
+                    
+                } else {
+                    
+                    if let dict = result as? NSDictionary {
+                        
+                        let size = dict["size"] as! Int
+                        let vsize = dict["vsize"] as! Int
+                        
+                        DispatchQueue.main.async {
+                            
+                            let cell = self.utxoTable.cellForRow(at: IndexPath.init(row: index, section: 0))
+                            let sizeLabel = cell?.viewWithTag(11) as! UILabel
+                            let vsizeLabel = cell?.viewWithTag(12) as! UILabel
+                            sizeLabel.text = "\(size)"
+                            vsizeLabel.text = "\(vsize)"
                             
                         }
                         

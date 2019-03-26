@@ -121,10 +121,15 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
         case "goToUtxos":
             
-            if let vc = segue.destination as? UtxoTableViewController {
+            
+            if let navController = segue.destination as? UINavigationController {
                 
-                vc.ssh = self.ssh
-                vc.isUsingSSH = self.isUsingSSH
+                if let chidVC = navController.topViewController as? UtxoTableViewController {
+                    
+                    chidVC.ssh = self.ssh
+                    chidVC.isUsingSSH = self.isUsingSSH
+                    
+                }
                 
             }
             
