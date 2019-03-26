@@ -46,6 +46,7 @@
 		D071A2A82148A3AE00C4BCB3 /* qr.png in Resources */ = {isa = PBXBuildFile; fileRef = D071A2A72148A3AE00C4BCB3 /* qr.png */; };
 		D08F63E62163263B004B92AE /* plus.png in Resources */ = {isa = PBXBuildFile; fileRef = D08F63E52163263B004B92AE /* plus.png */; };
 		D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B3149E216C4DB1008FDC53 /* CreateRawTxViewController.swift */; };
+		D0CAE42D224A4F650066AC23 /* UtxoTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0CAE42C224A4F650066AC23 /* UtxoTableViewController.swift */; };
 		D0DA7CE72171A66A00A96F7E /* minus.png in Resources */ = {isa = PBXBuildFile; fileRef = D0DA7CE62171A66A00A96F7E /* minus.png */; };
 		D0DA7CE92172F7D800A96F7E /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0DA7CE82172F7D800A96F7E /* StoreKit.framework */; };
 		D0E9B63821183AFC00B416E7 /* ObjectiveCHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = D0E9B63721183AFC00B416E7 /* ObjectiveCHeader.m */; };
@@ -99,6 +100,7 @@
 		D071A2A72148A3AE00C4BCB3 /* qr.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = qr.png; sourceTree = "<group>"; };
 		D08F63E52163263B004B92AE /* plus.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = plus.png; sourceTree = "<group>"; };
 		D0B3149E216C4DB1008FDC53 /* CreateRawTxViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateRawTxViewController.swift; sourceTree = "<group>"; };
+		D0CAE42C224A4F650066AC23 /* UtxoTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtxoTableViewController.swift; sourceTree = "<group>"; };
 		D0DA7CE62171A66A00A96F7E /* minus.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = minus.png; sourceTree = "<group>"; };
 		D0DA7CE82172F7D800A96F7E /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		D0E9B63621183AFC00B416E7 /* BitSense-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BitSense-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -203,6 +205,7 @@
 		D0286D6221E2678D00954991 /* View Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				D0CAE42C224A4F650066AC23 /* UtxoTableViewController.swift */,
 				D0126FF522446E3800412629 /* InvoiceViewController.swift */,
 				D0E9B639211A90D100B416E7 /* CreateAccountViewController.swift */,
 				D0452ADC224743C50013E225 /* LogInViewController.swift */,
@@ -417,6 +420,7 @@
 				D00B9A302111427200E8B95A /* BitSense.xcdatamodeld in Sources */,
 				D0EF29C1216B82B400EB776A /* SettingsViewController.swift in Sources */,
 				D00B9A282111427200E8B95A /* AppDelegate.swift in Sources */,
+				D0CAE42D224A4F650066AC23 /* UtxoTableViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

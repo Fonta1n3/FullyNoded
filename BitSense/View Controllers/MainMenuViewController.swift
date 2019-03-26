@@ -94,7 +94,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
             if let vc = segue.destination as? CreateRawTxViewController {
                 
-                vc.ssh = SSHService.sharedInstance
+                vc.ssh = self.ssh
                 vc.isUsingSSH = self.isUsingSSH
                 vc.spendable = self.balance
                 
@@ -104,7 +104,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
             if let vc = segue.destination as? InvoiceViewController {
              
-                vc.ssh = SSHService.sharedInstance
+                vc.ssh = self.ssh
                 vc.isUsingSSH = self.isUsingSSH
                 
             }
@@ -113,9 +113,18 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
             if let vc = segue.destination as? ImportPrivKeyViewController {
                 
-                vc.ssh = SSHService.sharedInstance
+                vc.ssh = self.ssh
                 vc.isUsingSSH = self.isUsingSSH
                 vc.isPruned = self.isPruned
+                
+            }
+            
+        case "goToUtxos":
+            
+            if let vc = segue.destination as? UtxoTableViewController {
+                
+                vc.ssh = self.ssh
+                vc.isUsingSSH = self.isUsingSSH
                 
             }
             
@@ -524,7 +533,35 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     @objc func createRaw() {
         
-        self.performSegue(withIdentifier: "createRaw", sender: self)
+        let alert = UIAlertController(title: NSLocalizedString("Select an option", comment: ""), message: nil, preferredStyle: UIAlertControllerStyle.actionSheet)
+        
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Create Raw", comment: ""), style: .default, handler: { (action) in
+            
+            DispatchQueue.main.async {
+                
+                self.performSegue(withIdentifier: "createRaw", sender: self)
+                
+            }
+            
+        }))
+        
+        alert.addAction(UIAlertAction(title: NSLocalizedString("See UTXOs", comment: ""), style: .default, handler: { (action) in
+            
+            DispatchQueue.main.async {
+                
+                self.performSegue(withIdentifier: "goToUtxos", sender: self)
+                
+            }
+            
+        }))
+        
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { (action) in }))
+        
+        alert.popoverPresentationController?.sourceView = self.view
+        
+        self.present(alert, animated: true) {
+            
+        }
         
     }
     
@@ -1639,582 +1676,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         self.performSegue(withIdentifier: "goToSettings", sender: self)
         
     }
-    
-    /*func decodeTx(rawTx: String) {
-        
-        var nodeUsername = ""
-        var nodePassword = ""
-        var ip = ""
-        var port = ""
-        var credentialsComplete = Bool()
-        
-        func decrypt(item: String) -> String {
-            
-            var decrypted = ""
-            if let password = KeychainWrapper.standard.string(forKey: "AESPassword") {
-                if let decryptedCheck = AES256CBC.decryptString(item, password: password) {
-                    decrypted = decryptedCheck
-                }
-            }
-            return decrypted
-        }
-        
-        if UserDefaults.standard.string(forKey: "NodeUsername") != nil {
-            
-            nodeUsername = decrypt(item: UserDefaults.standard.string(forKey: "NodeUsername")!)
-            credentialsComplete = true
-            
-        } else {
-            
-            credentialsComplete = false
-        }
-        
-        if UserDefaults.standard.string(forKey: "NodePassword") != nil {
-            
-            nodePassword = decrypt(item: UserDefaults.standard.string(forKey: "NodePassword")!)
-            credentialsComplete = true
-            
-        } else {
-            
-            credentialsComplete = false
-        }
-        
-        if UserDefaults.standard.string(forKey: "NodeIPAddress") != nil {
-            
-            ip = decrypt(item: UserDefaults.standard.string(forKey: "NodeIPAddress")!)
-            credentialsComplete = true
-            
-        } else {
-            
-            credentialsComplete = false
-        }
-        
-        if UserDefaults.standard.string(forKey: "NodePort") != nil {
-            
-            port = decrypt(item: UserDefaults.standard.string(forKey: "NodePort")!)
-            credentialsComplete = true
-            
-        } else {
-            
-            credentialsComplete = false
-        }
-        
-        if credentialsComplete {
-            
-            let url = URL(string: "http://\(nodeUsername):\(nodePassword)@\(ip):\(port)")
-            var request = URLRequest(url: url!)
-            request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
-            request.httpMethod = "POST"
-            request.httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(BTC_CLI_COMMAND.decoderawtransaction.rawValue)\",\"params\":[\("\"\(rawTx)\"")]}".data(using: .utf8)
-            
-            let task = URLSession.shared.dataTask(with: request) { (data, response, error) -> Void in
-                
-                do {
-                    
-                    if error != nil {
-                        DispatchQueue.main.async {
-                            self.mainMenu.isUserInteractionEnabled = true
-                            self.removeSpinner()
-                            self.showConnectionError()
-                        }
-                        
-                    } else {
-                        
-                        if let urlContent = data {
-                            
-                            do {
-                                
-                                let jsonAddressResult = try JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as! NSDictionary
-                                
-                                if let errorCheck = jsonAddressResult["error"] as? NSDictionary {
-                                    
-                                    print("error = \(errorCheck.description)")
-                                    DispatchQueue.main.async {
-                                        if let errorMessage = errorCheck["message"] as? String {
-                                            displayAlert(viewController: self, title: "Error", message: errorMessage)
-                                        }
-                                    }
-                                    
-                                } else {
-                                    
-                                    if let resultCheck = jsonAddressResult["result"] as? Any {
-                                        
-                                        if let decodedTx = resultCheck as? NSDictionary {
-                                            
-                                            print("decoded = \(decodedTx)")
-                                            self.parseDecodedTx(decodedTx: decodedTx)
-                                        }
-                                        
-                                    } else {
-                                        
-                                        print("no results")
-                                        
-                                        
-                                    }
-                                    
-                                }
-                                
-                            } catch {
-                                
-                                DispatchQueue.main.async {
-                                    
-                                    self.showConnectionError()
-                                }
-                                
-                            }
-                        }
-                    }
-                }
-            }
-            
-            task.resume()
-            
-        } else {
-            
-            DispatchQueue.main.async {
-                
-                self.showConnectionError()
-            }
-        }
-        
-        
-    }*/
-    
-    /*func getPrevInputValueForCPFP(txID: String, prevvout: Int) {
-        print("getPrevInputValueForCPFP")
-        
-        DispatchQueue.main.async {
-            self.ssh.executeStringResponse(command: BTC_COMMAND.getrawtransaction, params: "\(txID)", response: { (result, error) in
-                if error != nil {
-                    print("error getrawtransaction = \(String(describing: error))")
-                } else {
-                    //print("result = \(String(describing: result))")
-                    if let rw = result as? String {
-                        print("raw transaction result = \(rw)")
-                        
-                        
-                        DispatchQueue.main.async {
-                            self.ssh.execute(command: BTC_COMMAND.decoderawtransaction, params: "\"\(rw)\"", response: { (result, error) in
-                                if error != nil {
-                                    print("error decoderawtransaction = \(String(describing: error))")
-                                } else {
-                                    //print("result = \(String(describing: result))")
-                                    
-                                    if let decodedTx = result as? NSDictionary {
-                                        DispatchQueue.main.async {
-                                            print("decodedTx Prevoutput = \(decodedTx)")
-                                            
-                                            
-                                            if let vout = decodedTx["vout"] as? NSArray {
-                                                
-                                                print("vout = \(vout)")
-                                                
-                                                var total = 0.0
-                                                
-                                                for i in vout {
-                                                    
-                                                    if let dict = i as? NSDictionary {
-                                                        
-                                                        if let n = dict["n"] as? Int {
-                                                         
-                                                            if n == prevvout {
-                                                             
-                                                                if let value = dict["value"] as? Double {
-                                                                    
-                                                                    print("value = \(value)")
-                                                                    total = value + total
-                                                                    self.totalInputs = total
-                                                                    
-                                                                    
-                                                                }
-                                                                
-                                                            }
-                                                            
-                                                        }
-                                                        
-                                                        
-                                                        
-                                                        /*if let voutN = dict["n"] as? Int {
-                                                            
-                                                            if voutN == self.utxoVout {
-                                                                // ding ding sing this is the previnput amount to get the original mining fee by subtracting this amount to the amount received
-                                                                //print("ding ding = \(i)")
-                                                                
-                                                                if let value = dict["value"] as? Double {
-                                                                    
-                                                                    print("value = \(value)")
-                                                                    total = value + total
-                                                                    self.prevInputAmountTotal = total
-                                                                    
-                                                                    let amountDouble = Double(self.amount)!
-                                                                    self.newFee = self.prevInputAmountTotal - amountDouble
-                                                                    print("self.prevInputAmountTotal = \(self.prevInputAmountTotal), amount = \(self.amount)")
-                                                                    self.getChangeAddressForCPFP()
-                                                                }
-                                                            }
-                                                        }*/
-                                                        
-                                                        /*if let scriptPubKey = dict["scriptPubKey"] as? NSDictionary {
-                                                            
-                                                            if let addresses = scriptPubKey["addresses"] as? NSArray {
-                                                                
-                                                                for i in addresses {
-                                                                    
-                                                                    if let address = i as? String {
-                                                                        
-                                                                        if address == self.address {
-                                                                            
-                                                                            if let value = dict["value"] as? Double {
-                                                                                
-                                                                                print("value = \(value)")
-                                                                                total = value + total
-                                                                                self.prevInputAmountTotal = total
-                                                                                
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-                                                                
-                                                                let amountDouble = Double(self.amount)!
-                                                                self.newFee = self.prevInputAmountTotal - amountDouble
-                                                                print("self.prevInputAmountTotal = \(self.prevInputAmountTotal), amount = \(self.amount)")
-                                                                self.getChangeAddressForCPFP()
-                                                                
-                                                            }
-                                                        }*/
-                                                    }
-                                                }
-                                                
-                                                let amountDouble = Double(self.amount)!
-                                                self.newFee = self.totalInputs - self.totalOutputs//amountDouble
-                                                self.newFee = round(100000000*self.newFee)/100000000
-                                                let newamount = amountDouble - (self.newFee * 2)
-                                                self.amount = String(newamount)
-                                                print("new amount = \(self.amount)")
-                                                print("totalInputs = \(self.totalInputs) - totalOutputs = \(self.totalOutputs)")
-                                                self.getChangeAddressForCPFP()
-                                            }
-                                        }
-                                    }
-                                }
-                            })
-                        }
-                    }
-                }
-            })
-        }
-    }*/
-    
-    /*func getChangeAddressForCPFP() {
-        
-        DispatchQueue.main.async {
-            self.ssh.executeStringResponse(command: BTC_COMMAND.getrawchangeaddress, params: "", response: { (result, error) in
-                if error != nil {
-                    print("error getrawchangeaddress = \(String(describing: error))")
-                } else {
-                    //print("result = \(String(describing: result))")
-                    if let _ = result as? String {
-                        
-                        self.changeAddress = result!
-                        /*print("amount = \(self.amount)")
-                        var amountDouble = Double(self.amount)!
-                        print("amountDouble = \(amountDouble)")
-                        print("newfee = \(self.newFee)")
-                        amountDouble = amountDouble - self.newFee
-                        print("amountDouble = \(amountDouble)")
-                        self.amount = String(amountDouble)
-                        print("amount = \(self.amount)")
-                        let array = self.amount.split(separator: ".")
-                        if array[1].count > 8 {
-                            
-                            let roundedamount = round(100000000*self.changeAmount)/100000000
-                            self.amount = String(roundedamount)
-                            //print("sumofutxo = \(sumOfUtxo), txfee = \(txFee)")
-                        }
-                        print("amount = \(self.amount)")
-                        self.changeAmount = self.changeAmount - (self.newFee * 2)
-                        if self.changeAmount < 0 {
-                            self.changeAmount = -1 * self.changeAmount
-                            
-                            let array = String(self.changeAmount).split(separator: ".")
-                            if array[1].count > 8 {
-                                
-                                self.changeAmount = round(100000000*self.changeAmount)/100000000
-                                //print("sumofutxo = \(sumOfUtxo), txfee = \(txFee)")
-                            }
-                            //self.amount = "\(sumOfUtxo - txFee - 0.00050000)"
-                            
-                        }*/
-                        self.createRawTransactionCPFP()
-                    }
-                }
-            })
-        }
-    }*/
-    
-    /*func createRawTransactionCPFP() {
-        
-        DispatchQueue.main.async {
-            self.ssh.executeStringResponse(command: BTC_COMMAND.createrawtransaction, params: "\'\(self.inputs)\' \'{\"\(self.address)\":\(self.amount), \"\(self.changeAddress)\": \(self.changeAmount)}\'", response: { (result, error) in
-                if error != nil {
-                    print("error createrawtransaction = \(String(describing: error))")
-                } else {
-                    print("result = \(String(describing: result))")
-                    if let rawTx = result as? String {
-                        
-                        self.rawTxUnsigned = rawTx
-                        self.signRawTransactionCPFP()
-                        
-                    }
-                    
-                }
-            })
-        }
-    }*/
-    
-    /*func signRawTransactionCPFP() {
-        
-        DispatchQueue.main.async {
-            self.ssh.execute(command: BTC_COMMAND.signrawtransaction, params: "\'\(self.rawTxUnsigned)\'", response: { (result, error) in
-                if error != nil {
-                    print("error signrawtransaction = \(String(describing: error))")
-                } else {
-                    print("result = \(String(describing: result))")
-                    
-                    if let signedTransaction = result as? NSDictionary {
-                        
-                        self.rawTxSigned = signedTransaction["hex"] as! String
-                        self.pushRawTx()
-                    }
-                }
-            })
-        }
-    }*/
-    
-    /*func pushRawTx(ssh: SSHService) {
-        
-        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
-        queue.async {//DispatchQueue.main.async {
-            ssh.executeStringResponse(command: BTC_COMMAND.sendrawtransaction, params: "\"\(self.rawTxSigned)\"", response: { (result, error) in
-                if error != nil {
-                    print("error sendrawtransaction = \(String(describing: error))")
-                } else {
-                    print("result = \(String(describing: result))")
-                    
-                    if let txID = result as? String {
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.refresh()
-                            displayAlert(viewController: self, title: "Success", message: "Fee doubled and transaction resent.")
-                            
-                            
-                            /*UIPasteboard.general.string = txID
-                            
-                            let alert = UIAlertController(title: NSLocalizedString("Success", comment: ""), message: "ID copied to clipboard", preferredStyle: UIAlertControllerStyle.actionSheet)
-                            
-                            alert.addAction(UIAlertAction(title: NSLocalizedString("Done", comment: ""), style: .cancel, handler: { (action) in
-                                self.dismiss(animated: true, completion: nil)
-                            }))
-                            
-                            alert.popoverPresentationController?.sourceView = self.view
-                            
-                            self.present(alert, animated: true) {
-                            }*/
-                        }
-                        
-                    } else {
-                        displayAlert(viewController: self, title: "Error", message: "Unable to parse Transaction ID.")
-                    }
-                }
-            })
-        }
-        
-    }*/
-    
-    /*func parseDecodedTx(decodedTx: NSDictionary) {
-        
-        print("parseDecodedTx")
-        
-        if let vin = decodedTx["vin"] as? NSArray {
-            
-            for i in vin {
-                
-                print("i = \(i)")
-             
-                if let dict = i as? NSDictionary {
-                 
-                    if let inputTxID = dict["txid"] as? String {
-                        
-                        print("preInputID = \(inputTxID)")
-                        //self.getPrevInputValueForCPFP(txID: inputTxID, prevvout)
-                    }
-                    
-                }
-                
-            }
-            
-        }
-        
-        if let vout = decodedTx["vout"] as? NSArray {
-            
-            print("vout = \(vout)")
-            
-            for i in vout {
-                
-                if let dict = i as? NSDictionary {
-                    
-                    if let value = dict["value"] as? Double {
-                        
-                        print("value = \(value)")
-                        self.total = value + self.total
-                        
-                    }
-                    
-                    if let scriptPubKey = dict["scriptPubKey"] as? NSDictionary {
-                        
-                        if let addresses = scriptPubKey["addresses"] as? NSArray {
-                            
-                            for i in addresses {
-                                
-                                if let address = i as? String {
-                                    
-                                    if address == self.recipientAddress {
-                                        
-                                        if let voutN = dict["n"] as? Int {
-                                            
-                                            print("voutN = \(voutN)")
-                                            self.utxoVout = voutN
-                                            
-                                            if let txID = decodedTx["txid"] as? String {
-                                                
-                                                print("txID = \(txID)")
-                                                self.utxoTxId = txID
-                                                let input = "{\"txid\":\"\(self.utxoTxId)\",\"vout\": \(self.utxoVout),\"sequence\": 1}"
-                                                self.inputArray.append(input)
-                                                self.inputs = self.inputArray.description
-                                                self.inputs = self.inputs.replacingOccurrences(of: "[\"", with: "[")
-                                                self.inputs = self.inputs.replacingOccurrences(of: "\"]", with: "]")
-                                                self.inputs = self.inputs.replacingOccurrences(of: "\"{", with: "{")
-                                                self.inputs = self.inputs.replacingOccurrences(of: "}\"", with: "}")
-                                                self.inputs = self.inputs.replacingOccurrences(of: "\\", with: "")
-                                                
-                                                //get old fee and double it
-                                                //get new change address
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }*/
-    
-    /*func parseDecodedTxCPFP(decodedTx: NSDictionary) {
-        
-        print("parseDecodedTxCPFP")
-        
-        
-        
-        if let vout = decodedTx["vout"] as? NSArray {
-            
-            print("vout = \(vout)")
-            
-            self.totalOutputs = 0
-            
-            for i in vout {
-                
-                if let dict = i as? NSDictionary {
-                    
-                    if let value = dict["value"] as? Double {
-                        
-                        print("value = \(value)")
-                        self.totalOutputs = self.totalOutputs + value
-                        
-                    }
-                    
-                    if let scriptPubKey = dict["scriptPubKey"] as? NSDictionary {
-                        
-                        if let addresses = scriptPubKey["addresses"] as? NSArray {
-                            
-                            for i in addresses {
-                                
-                                if let address = i as? String {
-                                    
-                                    if address == self.recipientAddress {
-                                        
-                                        if let voutN = dict["n"] as? Int {
-                                            
-                                            print("voutN = \(voutN)")
-                                            self.utxoVout = voutN
-                                            
-                                            if let txID = decodedTx["hash"] as? String {
-                                                
-                                                print("txID = \(txID)")
-                                                self.utxoTxId = txID
-                                                let input = "{\"txid\":\"\(self.utxoTxId)\",\"vout\": \(self.utxoVout),\"sequence\": 1}"
-                                                self.inputArray.append(input)
-                                                self.inputs = self.inputArray.description
-                                                self.inputs = self.inputs.replacingOccurrences(of: "[\"", with: "[")
-                                                self.inputs = self.inputs.replacingOccurrences(of: "\"]", with: "]")
-                                                self.inputs = self.inputs.replacingOccurrences(of: "\"{", with: "{")
-                                                self.inputs = self.inputs.replacingOccurrences(of: "}\"", with: "}")
-                                                self.inputs = self.inputs.replacingOccurrences(of: "\\", with: "")
-                                                
-                                                print("inputarray = \(self.inputArray)")
-                                                
-                                                
-                                                //get old fee and double it
-                                                //get new change address
-                                                
-                                                if let vin = decodedTx["vin"] as? NSArray {
-                                                    
-                                                    for i in vin {
-                                                        
-                                                        if let dict = i as? NSDictionary {
-                                                            
-                                                            print("input = \(dict)")
-                                                            
-                                                            if let inputTxID = dict["txid"] as? String {
-                                                                
-                                                                if let inputVout = dict["vout"] as? Int {
-                                                                    
-                                                                    self.getPrevInputValueForCPFP(txID: inputTxID, prevvout: inputVout)
-                                                                    
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                                
-                                                /*if let vin = decodedTx["vin"] as? NSArray {
-                                                    
-                                                    for i in vin {
-                                                        
-                                                        if let dict = i as? NSDictionary {
-                                                            
-                                                            if let inputTxID = dict["txid"] as? String {
-                                                                
-                                                                print("preInputID = \(inputTxID)")
-                                                                self.getPrevInputValueForCPFP(txID: inputTxID)
-                                                            }
-                                                        }
-                                                    }
-                                                }*/
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }*/
     
     func showConnectionError() {
      

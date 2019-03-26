@@ -262,7 +262,8 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
     
     func decodeRawTransaction() {
         
-        DispatchQueue.main.async {
+        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        queue.async {
             self.ssh.execute(command: BTC_CLI_COMMAND.decoderawtransaction, params: "\"\(self.rawTxSigned)\"", response: { (result, error) in
                 if error != nil {
                     print("error decoderawtransaction = \(String(describing: error))")
@@ -349,7 +350,8 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
     
     func listUnspent() {
         
-        DispatchQueue.main.async {
+        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        queue.async {
             self.ssh.execute(command: BTC_CLI_COMMAND.listunspent, params: "", response: { (result, error) in
                 if error != nil {
                     print("error listunspent")
@@ -534,7 +536,8 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
     
     func getRawChangeAddress() {
         
-        DispatchQueue.main.async {
+        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        queue.async {
             self.ssh.executeStringResponse(command: BTC_CLI_COMMAND.getrawchangeaddress, params: "", response: { (result, error) in
                 if error != nil {
                     print("error getrawchangeaddress = \(String(describing: error))")
@@ -570,7 +573,8 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
     
     func createRawTransaction() {
         
-        DispatchQueue.main.async {
+        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        queue.async {
             self.ssh.executeStringResponse(command: BTC_CLI_COMMAND.createrawtransaction, params: "\'\(self.inputs)\' \'{\"\(self.address)\":\(self.amount), \"\(self.changeAddress)\": \(self.changeAmount)}\'", response: { (result, error) in
                 if error != nil {
                     print("error createrawtransaction = \(String(describing: error))")
@@ -590,7 +594,8 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
     
     func signRawTransaction() {
         
-        DispatchQueue.main.async {
+        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        queue.async {
             self.ssh.execute(command: BTC_CLI_COMMAND.signrawtransaction, params: "\'\(self.rawTxUnsigned)\'", response: { (result, error) in
                 if error != nil {
                     print("error signrawtransaction = \(String(describing: error))")
