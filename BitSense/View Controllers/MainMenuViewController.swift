@@ -47,7 +47,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     let subview = UIView()
     let receiveButton = UIButton()
     let settingsButton = UIButton()
-    let searchButton = UIButton()
     let qrButton = UIButton()
     var balance = Double()
     let balancelabel = UILabel()
@@ -176,7 +175,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                                 self.syncStatusLabel.alpha = 1
                                             })
                                         }
-                                        self.executeNodeCommand(method: BTC_CLI_COMMAND.listtransactions.rawValue, param: "")
+                                        self.executeNodeCommand(method: BTC_CLI_COMMAND.listtransactions, param: "")
                                         
                                     } else {
                                         
@@ -242,6 +241,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         if indexPath.section == 0 {
             
             let cell = tableView.dequeueReusableCell(withIdentifier: "NodeInfo", for: indexPath)
+            cell.selectionStyle = .none
+            cell.isSelected = false
             let network = cell.viewWithTag(1) as! UILabel
             let pruned = cell.viewWithTag(2) as! UILabel
             let connections = cell.viewWithTag(3) as! UILabel
@@ -311,9 +312,28 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 } else {
                     suffix = "tBTC"
                 }
-                amountLabel.text = (self.transactionArray[indexPath.row]["amount"] as! String) + " " + suffix
+                
+                let amount = self.transactionArray[indexPath.row]["amount"] as! String
+                
+                if amount.hasPrefix("-") {
+                    
+                    amountLabel.text = amount + " " + suffix
+                    
+                } else {
+                    
+                    amountLabel.text = "+" + amount + " " + suffix
+                    
+                }
+                
                 confirmationsLabel.text = (self.transactionArray[indexPath.row]["confirmations"] as! String) + " " + "CONFS"
-                labelLabel.text = self.transactionArray[indexPath.row]["label"] as? String
+                let label = self.transactionArray[indexPath.row]["label"] as? String
+                
+                if label != "," {
+                    
+                   labelLabel.text = label
+                    
+                }
+                
                 dateLabel.text = self.transactionArray[indexPath.row]["date"] as? String
                 if self.transactionArray[indexPath.row]["fee"] as? String != "" {
                     feeLabel.text = "Fee:" + " " + (self.transactionArray[indexPath.row]["fee"] as! String)
@@ -331,6 +351,46 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
         }
         
+    }
+    
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        
+        (view as! UITableViewHeaderFooterView).backgroundView?.backgroundColor = UIColor.clear
+        (view as! UITableViewHeaderFooterView).textLabel?.textAlignment = .left
+        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.init(name: "HelveticaNeue", size: 20)
+        (view as! UITableViewHeaderFooterView).textLabel?.textColor = UIColor.lightText
+        
+    }
+    
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        
+        if section == 0 {
+            
+            return "Node Stats:"
+            
+        } else if section == 1 {
+            
+            return "Last 10 Transactions:"
+            
+        } else {
+            
+            return ""
+            
+        }
+        
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        
+        if section == 0 {
+            
+            return 35
+            
+        } else {
+            
+            return 50
+            
+        }
         
     }
     
@@ -370,7 +430,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                         
                         if !self.isUsingSSH {
                             
-                            self.executeNodeCommand(method: BTC_CLI_COMMAND.bumpfee.rawValue, param: "\"\(txID)\"")
+                            self.executeNodeCommand(method: BTC_CLI_COMMAND.bumpfee, param: "\"\(txID)\"")
                             
                         } else {
                             
@@ -492,7 +552,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
         if isUsingSSH {
             
-            //let ssh = SSHService.sharedInstance
             ssh = SSHService.sharedInstance
             
             let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
@@ -530,7 +589,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
         } else {
             
-           self.executeNodeCommand(method: BTC_CLI_COMMAND.getblockchaininfo.rawValue, param: "")
+           self.executeNodeCommand(method: BTC_CLI_COMMAND.getblockchaininfo, param: "")
             
         }
     
@@ -637,10 +696,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                         }
                         
                         self.getNetworkInfoSSH()
-                        /*DispatchQueue.main.async {
-                            self.removeSpinner()
-                            self.mainMenu.reloadData()
-                        }*/
                         
                     }
                     
@@ -801,13 +856,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     //print("result = \(String(describing: result))")
                     if let transactionsCheck = result as? NSArray {
                         
-                        //self.getBalance()
-                        
                         for item in transactionsCheck {
                             
                             if let transaction = item as? NSDictionary {
-                                
-                                //print("transaction = \(transaction)")
                                 
                                 var label = String()
                                 var fee = String()
@@ -858,129 +909,130 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         }
     }
     
-    /*func getrawtransaction(txID: String, ssh: SSHService) {
-        
-        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
-        queue.async {//DispatchQueue.main.async {
-            ssh.executeStringResponse(command: BTC_COMMAND.getrawtransaction, params: "\(txID)", response: { (result, error) in
-                if error != nil {
-                    print("error getrawtransaction = \(String(describing: error))")
-                } else {
-                    print("result = \(String(describing: result))")
-                    if let rw = result as? String {
-                        print("raw transaction result = \(rw)")
-                        self.decodeRawTransaction(raw: rw, ssh: ssh)
-                    }
-                }
-            })
-        }
-        
-    }*/
-    
-    /*func decodeRawTransaction(raw: String, ssh: SSHService) {
-        
-        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
-        queue.async {//DispatchQueue.main.async {
-            ssh.execute(command: BTC_COMMAND.decoderawtransaction, params: "\"\(raw)\"", response: { (result, error) in
-                if error != nil {
-                    print("error decoderawtransaction = \(String(describing: error))")
-                } else {
-                    //print("result = \(String(describing: result))")
-                    
-                    if let decodedTx = result as? NSDictionary {
-                        DispatchQueue.main.async {
-                            //print("decodedTx = \(decodedTx)")
-                            
-                            //self.parseDecodedTxCPFP(decodedTx: decodedTx)
-                        }
-                    }
-                }
-            })
-        }
-        
-        
-    }*/
-    
     func getBalance() {
         print("getBalance")
         
         let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
-        queue.async {//DispatchQueue.main.async {
+        queue.async {
+            
             self.ssh.executeStringResponse(command: BTC_CLI_COMMAND.getbalance, params: "", response: { (result, error) in
+                
                 if error != nil {
+                    
                     print("error getbalance = \(String(describing: error))")
+                    
                 } else {
-                    //print("result = \(String(describing: result))")
+                    
                     if let balanceCheck = result as? String {
+                        
                         self.balance = Double(balanceCheck)!
+                        
                         DispatchQueue.main.async {
+                            
                             if !self.isTestnet {
+                                
                                 self.balancelabel.text = "\(self.balance.avoidNotation) BTC"
+                                
                             } else {
+                                
                                 self.balancelabel.text = "\(self.balance.avoidNotation) tBTC"
+                                
                             }
+                            
                             self.getUnconfirmedBalance()
+                            
                         }
+                        
                     }
+                    
                 }
+                
             })
+            
         }
+        
     }
     
     func getUnconfirmedBalance() {
         
         let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
         queue.async {
+            
             self.ssh.executeStringResponse(command: BTC_CLI_COMMAND.getunconfirmedbalance, params: "", response: { (result, error) in
+                
                 if error != nil {
+                    
                     print("error getunconfirmedbalance = \(String(describing: error))")
+                    
                 } else {
-                    //print("result = \(String(describing: result))")
+                    
                     if let unconfirmedBalanceCheck = result as? String {
+                        
                         let unconfirmedBalance = Double(unconfirmedBalanceCheck)!
+                        
                         if unconfirmedBalance != 0.0 || unconfirmedBalance != 0 {
+                            
                             DispatchQueue.main.async {
                                 
                                 if !self.isTestnet {
+                                    
                                     self.unconfirmedBalanceLabel.text = "\(unconfirmedBalance.avoidNotation) BTC Unconfirmed"
+                                    
                                 } else {
+                                    
                                     self.unconfirmedBalanceLabel.text = "\(unconfirmedBalance.avoidNotation) tBTC Unconfirmed"
+                                    
                                 }
                                 
-                                //self.removeSpinner()
                                 UIView.animate(withDuration: 0.5, animations: {
+                                    
                                     self.balancelabel.alpha = 1
                                     self.qrButton.alpha = 1
                                     self.receiveButton.alpha = 1
                                     self.rawButton.alpha = 1
-                                    self.searchButton.alpha = 1
                                     self.unconfirmedBalanceLabel.alpha = 1
+                                    
                                 })
+                                
                             }
+                            
                         } else {
+                            
                             DispatchQueue.main.async {
+                                
                                 if !self.isTestnet {
+                                    
                                     self.unconfirmedBalanceLabel.text = "0 BTC Unconfirmed"
+                                    
                                 } else {
+                                    
                                     self.unconfirmedBalanceLabel.text = "0 tBTC Unconfirmed"
+                                    
                                 }
+                                
                                 UIView.animate(withDuration: 0.5, animations: {
+                                    
                                     self.balancelabel.alpha = 1
                                     self.qrButton.alpha = 1
                                     self.receiveButton.alpha = 1
                                     self.rawButton.alpha = 1
-                                    self.searchButton.alpha = 1
                                     self.unconfirmedBalanceLabel.alpha = 1
+                                    
                                 })
-                                //self.removeSpinner()
+                                
                             }
+                            
                         }
                         
                         self.getPeerInfoSSH()
                     }
+                    
                 }
+                
             })
+            
         }
+        
     }
     
     func addSyncStatusLabel(title: String) {
@@ -1062,7 +1114,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     func nodeCommand(command: String) {
         
         switch command {
-        case "getBalance": self.executeNodeCommand(method: BTC_CLI_COMMAND.getbalance.rawValue, param: "")
+        case "getBalance": self.executeNodeCommand(method: BTC_CLI_COMMAND.getbalance, param: "")
         default:
             break
         }
@@ -1104,7 +1156,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
-    func executeNodeCommand(method: String, param: Any) {
+    func executeNodeCommand(method: BTC_CLI_COMMAND, param: Any) {
         print("executeNodeCommand")
         
         var nodeUsername = ""
@@ -1164,8 +1216,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             credentialsComplete = false
         }
         
-        //if credentialsComplete {
-        
         if !credentialsComplete {
             
             port = "18332"
@@ -1180,6 +1230,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
             displayAlert(viewController: self, title: "Alert", message: "Looks like you have not logged in to your own node yet or incorrectly filled out your credentials, you are connected to our testnet full node so you can play with the app before connecting to your own.\n\nTo connect to your own node tap the settings button and \"Log in to your own node\".\n\nIf you have any issues please email me at bitsenseapp@gmail.com"
             )
+            
         }
         
         print("port = \(port)")
@@ -1192,7 +1243,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             request.timeoutInterval = 5
             request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
             request.httpMethod = "POST"
-            request.httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method)\",\"params\":[\(param)]}".data(using: .utf8)
+            request.httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method.rawValue)\",\"params\":[\(param)]}".data(using: .utf8)
             
             let task = URLSession.shared.dataTask(with: request) { (data, response, error) -> Void in
                 
@@ -1219,12 +1270,18 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                 if let errorCheck = jsonAddressResult["error"] as? NSDictionary {
                                     
                                     print("error = \(errorCheck.description)")
+                                    
                                     DispatchQueue.main.async {
+                                        
                                         self.removeSpinner()
                                         self.mainMenu.isUserInteractionEnabled = true
+                                        
                                         if let errorMessage = errorCheck["message"] as? String {
+                                            
                                             displayAlert(viewController: self, title: "Error", message: errorMessage)
+                                            
                                         }
+                                        
                                     }
                                     
                                 } else {
@@ -1233,45 +1290,67 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                         
                                         switch method {
                                             
-                                        case BTC_CLI_COMMAND.abandontransaction.rawValue:
+                                            
+                                        case BTC_CLI_COMMAND.getmininginfo:
+                                            
+                                            if let networkinfo = resultCheck as? NSDictionary {
+                                                
+                                                self.hashrateString = (networkinfo["networkhashps"] as! Double).withCommas()
+                                                
+                                                DispatchQueue.main.async {
+                                                    
+                                                    self.removeSpinner()
+                                                    self.mainMenu.reloadData()
+                                                    
+                                                }
+                                                
+                                            }
+                                            
+                                        case BTC_CLI_COMMAND.getnetworkinfo:
+                                            
+                                            if let networkinfo = resultCheck as? NSDictionary {
+                                                
+                                                self.version = (networkinfo["subversion"] as! String).replacingOccurrences(of: "/", with: "")
+                                                self.executeNodeCommand(method: BTC_CLI_COMMAND.getmininginfo, param: "")
+                                                
+                                            }
+                                            
+                                        case BTC_CLI_COMMAND.getpeerinfo:
+                                            
+                                            if let peers = resultCheck as? NSArray {
+                                                
+                                                self.incomingCount = 0
+                                                self.outgoingCount = 0
+                                                
+                                                for peer in peers {
+                                                    
+                                                    let peerDict = peer as! NSDictionary
+                                                    
+                                                    let incoming = peerDict["inbound"] as! Bool
+                                                    
+                                                    if incoming {
+                                                        
+                                                        print("incoming")
+                                                        self.incomingCount = self.incomingCount + 1
+                                                        
+                                                    } else {
+                                                        
+                                                        print("outgoing")
+                                                        self.outgoingCount = self.outgoingCount + 1
+                                                        
+                                                    }
+                                                    
+                                                }
+                                                
+                                                self.executeNodeCommand(method: BTC_CLI_COMMAND.getnetworkinfo, param: "")
+                                                
+                                            }
+                                            
+                                        case BTC_CLI_COMMAND.abandontransaction:
                                             
                                             displayAlert(viewController: self, title: "Success", message: "You have abandoned the transaction!")
                                                 
-                                            
-                                        /*case BTC_CLI_COMMAND.getrawchangeaddress.rawValue:
-                                            
-                                            if let _ = resultCheck as? String {
-                                                
-                                                let changeAddress = resultCheck as! String
-                                                self.inputs = self.inputArray.description
-                                                self.inputs = self.inputs.replacingOccurrences(of: "[\"", with: "[")
-                                                self.inputs = self.inputs.replacingOccurrences(of: "\"]", with: "]")
-                                                self.inputs = self.inputs.replacingOccurrences(of: "\"{", with: "{")
-                                                self.inputs = self.inputs.replacingOccurrences(of: "}\"", with: "}")
-                                                self.inputs = self.inputs.replacingOccurrences(of: "\\", with: "")
-                                                self.executeNodeCommand(method: BTC_CLI_COMMAND.createrawtransaction.rawValue, param: "\(self.inputs), {\"\(self.address)\":\(self.amount),  \"\(self.changeAddress)\": \(self.changeAmount)}")
-                                                
-                                            }*/
-                                            
-                                        /*case BTC_CLI_COMMAND.decoderawtransaction.rawValue:
-                                            
-                                            if let decodedTx = resultCheck as? NSDictionary {
-                                                
-                                                print("decoded = \(decodedTx)")
-                                                //get old fee
-                                                
-                                            }*/
-                                            
-                                        /*case BTC_CLI_COMMAND.getrawtransaction.rawValue:
-                                            
-                                            if let result = resultCheck as? String {
-                                                
-                                                print("raw transaction result = \(result)")
-                                                self.decodeTx(rawTx: result)
-                                                
-                                            }*/
-                                            
-                                        case BTC_CLI_COMMAND.getblockchaininfo.rawValue:
+                                        case BTC_CLI_COMMAND.getblockchaininfo:
                                             
                                             if let result = resultCheck as? NSDictionary {
                                                 
@@ -1284,13 +1363,19 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                                 
                                                 if let chain = result["chain"] as? String {
                                                     print("chain = \(chain)")
+                                                    
                                                     if chain == "test" {
+                                                        
                                                         self.isTestnet = true
                                                         self.getLatestBlock(isMainnet: false)
+                                                        
                                                     } else {
+                                                        
                                                         self.isTestnet = false
                                                         self.getLatestBlock(isMainnet: true)
+                                                        
                                                     }
+                                                    
                                                 }
                                                 
                                                 if let pruned = result["pruned"] as? Bool {
@@ -1306,14 +1391,16 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                                     }
                                                     
                                                 }
+                                                
                                             }
                                             
-                                        case BTC_CLI_COMMAND.bumpfee.rawValue:
+                                        case BTC_CLI_COMMAND.bumpfee:
                                             
                                             if let result = resultCheck as? NSDictionary {
                                                 
                                                 let originalFee = result["origfee"] as! Double
                                                 let newFee = result["fee"] as! Double
+                                                
                                                 DispatchQueue.main.async {
                                                     self.refresh()
                                                 }
@@ -1322,7 +1409,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                                 
                                             }
                                             
-                                        case BTC_CLI_COMMAND.getunconfirmedbalance.rawValue:
+                                        case BTC_CLI_COMMAND.getunconfirmedbalance:
                                             
                                             if let unconfirmedBalance = resultCheck as? Double {
                                                 
@@ -1331,12 +1418,16 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                                     DispatchQueue.main.async {
                                                         
                                                         if !self.isTestnet {
+                                                            
                                                             self.unconfirmedBalanceLabel.text = "\(unconfirmedBalance.avoidNotation) BTC Unconfirmed"
+                                                            
                                                         } else {
+                                                            
                                                             self.unconfirmedBalanceLabel.text = "\(unconfirmedBalance.avoidNotation) tBTC Unconfirmed"
+                                                            
                                                         }
                                                         
-                                                        self.removeSpinner()
+                                                        self.executeNodeCommand(method: BTC_CLI_COMMAND.getpeerinfo, param: "")
                                                         
                                                         UIView.animate(withDuration: 0.5, animations: {
                                                             
@@ -1344,7 +1435,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                                             self.qrButton.alpha = 1
                                                             self.receiveButton.alpha = 1
                                                             self.rawButton.alpha = 1
-                                                            self.searchButton.alpha = 1
                                                             self.unconfirmedBalanceLabel.alpha = 1
                                                             
                                                         })
@@ -1355,10 +1445,16 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                                     DispatchQueue.main.async {
                                                         
                                                         if !self.isTestnet {
+                                                            
                                                             self.unconfirmedBalanceLabel.text = "0 BTC Unconfirmed"
+                                                            
                                                         } else {
+                                                            
                                                             self.unconfirmedBalanceLabel.text = "0 tBTC Unconfirmed"
+                                                            
                                                         }
+                                                        
+                                                        self.executeNodeCommand(method: BTC_CLI_COMMAND.getpeerinfo, param: "")
                                                         
                                                         UIView.animate(withDuration: 0.5, animations: {
                                                             
@@ -1366,19 +1462,17 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                                             self.qrButton.alpha = 1
                                                             self.receiveButton.alpha = 1
                                                             self.rawButton.alpha = 1
-                                                            self.searchButton.alpha = 1
                                                             self.unconfirmedBalanceLabel.alpha = 1
                                                             
                                                         })
                                                         
-                                                        self.removeSpinner()
                                                     }
                                                     
                                                 }
                                                 
                                             }
                                             
-                                        case BTC_CLI_COMMAND.getbalance.rawValue:
+                                        case BTC_CLI_COMMAND.getbalance:
                                             
                                             if let balanceCheck = resultCheck as? Double {
                                                 
@@ -1387,27 +1481,27 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                                 DispatchQueue.main.async {
                                                     
                                                     if !self.isTestnet {
+                                                        
                                                        self.balancelabel.text = "\(balanceCheck.avoidNotation) BTC"
+                                                        
                                                     } else {
+                                                        
                                                         self.balancelabel.text = "\(balanceCheck.avoidNotation) tBTC"
+                                                        
                                                     }
                                                     
-                                                    self.executeNodeCommand(method: BTC_CLI_COMMAND.getunconfirmedbalance.rawValue, param: "")
+                                                    self.executeNodeCommand(method: BTC_CLI_COMMAND.getunconfirmedbalance, param: "")
                                                 }
                                                 
                                             }
                                             
-                                        case BTC_CLI_COMMAND.listtransactions.rawValue:
+                                        case BTC_CLI_COMMAND.listtransactions:
                                             
                                             if let transactionsCheck = resultCheck as? NSArray {
-                                                
-                                                self.nodeCommand(command: "getBalance")
                                                 
                                                 for item in transactionsCheck {
                                                     
                                                     if let transaction = item as? NSDictionary {
-                                                        
-                                                        //print("transaction = \(transaction)")
                                                         
                                                         var label = String()
                                                         var fee = String()
@@ -1441,18 +1535,27 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                                     
                                                 }
                                                 
+                                                self.nodeCommand(command: "getBalance")
+                                                
                                                 DispatchQueue.main.async {
+                                                    
                                                     self.transactionArray = self.transactionArray.reversed()
                                                     self.mainMenu.reloadData()
                                                     self.mainMenu.isUserInteractionEnabled = true
+                                                    
                                                     UIView.animate(withDuration: 0.5) {
+                                                        
                                                         self.mainMenu.alpha = 1
+                                                        
                                                     }
+                                                    
                                                 }
                                                 
                                             }
                                             
-                                        default: break
+                                        default:
+                                            
+                                            break
                                             
                                         }
                                         
@@ -1476,22 +1579,17 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                 }
                                 
                             }
+                            
                         }
+                        
                     }
+                    
                 }
+                
             }
             
             task.resume()
-            
-        /*} else {
-            
-            DispatchQueue.main.async {
-                self.removeSpinner()
-                self.mainMenu.isUserInteractionEnabled = true
-                self.refresher.endRefreshing()
-                self.showConnectionError()
-            }
-        }*/
+    
     }
     
     @objc func receive() {
