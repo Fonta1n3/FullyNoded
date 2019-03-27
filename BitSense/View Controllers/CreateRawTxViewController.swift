@@ -513,7 +513,6 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                                             self.inputs = self.inputs.replacingOccurrences(of: "\"{", with: "{")
                                             self.inputs = self.inputs.replacingOccurrences(of: "}\"", with: "}")
                                             self.inputs = self.inputs.replacingOccurrences(of: "\\", with: "")
-                                            //self.createRawTransaction()
                                             self.getRawChangeAddress()
                                             
                                         }
