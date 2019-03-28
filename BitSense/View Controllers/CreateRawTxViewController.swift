@@ -58,26 +58,6 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
         }
         
     }
-    /*enum BTC_CLI_COMMAND: String {
-        case decoderawtransaction = "decoderawtransaction"
-        case getnewaddress = "getnewaddress"
-        case gettransaction = "gettransaction"
-        case sendrawtransaction = "sendrawtransaction"
-        case signrawtransaction = "signrawtransactionwithwallet"
-        case createrawtransaction = "createrawtransaction"
-        case getrawchangeaddress = "getrawchangeaddress"
-        case getaccountaddress = "getaddressesbyaccount"
-        case getwalletinfo = "getwalletinfo"
-        case getblockchaininfo = "getblockchaininfo"
-        case getbalance = "getbalance"
-        case getunconfirmedbalance = "getunconfirmedbalance"
-        case listaccounts = "listaccounts"
-        case listreceivedbyaccount = "listreceivedbyaccount"
-        case listreceivedbyaddress = "listreceivedbyaddress"
-        case listtransactions = "listtransactions"
-        case listunspent = "listunspent"
-        case bumpfee = "bumpfee"
-    }*/
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -548,7 +528,6 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                         
                         if self.sweep {
                             
-                            //self.executeNodeCommand(method: BTC_CLI_COMMAND.createrawtransaction.rawValue, param: "\(self.inputs), {\"\(self.address)\":\(self.amount),  \"\(self.changeAddress)\": \(self.changeAmount)}")
                             self.createRawTransaction()
                             self.sweep = false
                             
@@ -625,17 +604,7 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                             self.tapQRGesture = UITapGestureRecognizer(target: self, action: #selector(self.shareQRCode(_:)))
                             self.displayQrView.addGestureRecognizer(self.tapQRGesture)
                             
-                            let alert = UIAlertController(title: NSLocalizedString("Copied to clipboard", comment: ""), message: nil, preferredStyle: UIAlertControllerStyle.actionSheet)
-                            
-                            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel, handler: { (action) in
-                                //self.dismiss(animated: true, completion: nil)
-                            }))
-                            
-                            alert.popoverPresentationController?.sourceView = self.view
-                            
-                            self.present(alert, animated: true) {
-                            }
-                            
+                            self.estimateFeeSSH()
                             
                         }
                     }
@@ -1237,16 +1206,7 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                                                 self.tapQRGesture = UITapGestureRecognizer(target: self, action: #selector(self.shareQRCode(_:)))
                                                 self.displayQrView.addGestureRecognizer(self.tapQRGesture)
                                                 
-                                                let alert = UIAlertController(title: NSLocalizedString("Copied to clipboard", comment: ""), message: nil, preferredStyle: UIAlertControllerStyle.actionSheet)
-                                                
-                                                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel, handler: { (action) in
-                                                    //self.dismiss(animated: true, completion: nil)
-                                                }))
-                                                
-                                                alert.popoverPresentationController?.sourceView = self.view
-                                                
-                                                self.present(alert, animated: true) {
-                                                }
+                                                self.getSmartFeeRPC(method: BTC_CLI_COMMAND.decoderawtransaction, param: "\"\(self.rawTxSigned)\"", index: 0, vsize: 0)
                                                 
                                                 
                                             }
@@ -1415,6 +1375,244 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
             
         }
         
+    }
+    
+    func getSmartFeeRPC(method: BTC_CLI_COMMAND, param: Any, index: Int, vsize: Int) {
+        
+        func decrypt(item: String) -> String {
+            
+            var decrypted = ""
+            if let password = KeychainWrapper.standard.string(forKey: "AESPassword") {
+                if let decryptedCheck = AES256CBC.decryptString(item, password: password) {
+                    decrypted = decryptedCheck
+                }
+            }
+            return decrypted
+        }
+        
+        let nodeUsername = decrypt(item: UserDefaults.standard.string(forKey: "NodeUsername")!)
+        let nodePassword = decrypt(item: UserDefaults.standard.string(forKey: "NodePassword")!)
+        let ip = decrypt(item: UserDefaults.standard.string(forKey: "NodeIPAddress")!)
+        let port = decrypt(item: UserDefaults.standard.string(forKey: "NodePort")!)
+        let url = URL(string: "http://\(nodeUsername):\(nodePassword)@\(ip):\(port)")
+        var request = URLRequest(url: url!)
+        request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
+        request.httpMethod = "POST"
+        request.httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method.rawValue)\",\"params\":[\(param)]}".data(using: .utf8)
+        
+        let task = URLSession.shared.dataTask(with: request) { (data, response, error) -> Void in
+            
+            do {
+                
+                if error != nil {
+                    
+                    displayAlert(viewController: self, title: "Error", message: "\(error.debugDescription)")
+                    
+                } else {
+                    
+                    if let urlContent = data {
+                        
+                        do {
+                            
+                            let jsonAddressResult = try JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as! NSDictionary
+                            
+                            if let errorCheck = jsonAddressResult["error"] as? NSDictionary {
+                                
+                                if let error = errorCheck["message"] as? String {
+                                    
+                                    displayAlert(viewController: self, title: "Error", message: error)
+                                    
+                                }
+                                
+                            } else {
+                                
+                                if let resultCheck = jsonAddressResult["result"] as? Any {
+                                    
+                                    switch method {
+                                        
+                                    case BTC_CLI_COMMAND.estimatesmartfee:
+                                        
+                                        if let dict = resultCheck as? NSDictionary {
+                                            
+                                            let miningFeeString = UserDefaults.standard.object(forKey: "miningFee") as! String
+                                            let txSize = Double(vsize)
+                                            let btcPerKbyte = dict["feerate"] as! Double
+                                            let btcPerByte = btcPerKbyte / 1000
+                                            let satsPerByte = btcPerByte * 100000000
+                                            let optimalFeeForSixBlocks = satsPerByte * txSize
+                                            let actualFeeInSats = Double(miningFeeString)!
+                                            let diff = optimalFeeForSixBlocks - actualFeeInSats
+                                            
+                                            if diff < 0 {
+                                                
+                                                //overpaying
+                                                let percentageDifference = Int(((actualFeeInSats / optimalFeeForSixBlocks) * 100)).avoidNotation
+                                                
+                                                DispatchQueue.main.async {
+                                                    
+                                                    let alert = UIAlertController(title: NSLocalizedString("Fee Alert", comment: ""), message: "The optimal fee to get this tx included in the next 6 blocks is \(Int(optimalFeeForSixBlocks)) satoshis.\n\nYou are currently paying a fee of \(Int(actualFeeInSats)) satoshis which is \(percentageDifference)% higher then necessary.\n\nWe suggest going to settings and lowering your mining fee to the suggested amount.", preferredStyle: UIAlertControllerStyle.alert)
+                                                    
+                                                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: { (action) in
+                                                    }))
+                                                    
+                                                    self.present(alert, animated: true)
+                                                    
+                                                }
+                                                
+                                            } else {
+                                                
+                                                //underpaying
+                                                let percentageDifference = Int((((optimalFeeForSixBlocks - actualFeeInSats) / optimalFeeForSixBlocks) * 100)).avoidNotation
+                                                
+                                                DispatchQueue.main.async {
+                                                    
+                                                    let alert = UIAlertController(title: NSLocalizedString("Fee Alert", comment: ""), message: "The optimal fee to get this tx included in the next 6 blocks is \(Int(optimalFeeForSixBlocks)) satoshis.\n\nYou are currently paying a fee of \(Int(actualFeeInSats)) satoshis which is \(percentageDifference)% lower then necessary.\n\nWe suggest going to settings and raising your mining fee to the suggested amount, however RBF is enabled by default, you can always tap an unconfirmed tx in the home screen to bump the fee.", preferredStyle: UIAlertControllerStyle.alert)
+                                                    
+                                                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: { (action) in
+                                                    }))
+                                                    
+                                                    self.present(alert, animated: true)
+                                                    
+                                                }
+                                                
+                                            }
+                                            
+                                        }
+                                        
+                                    case BTC_CLI_COMMAND.decoderawtransaction:
+                                        
+                                        if let dict = resultCheck as? NSDictionary {
+                                            
+                                            let vsize = dict["vsize"] as! Int
+                                            
+                                            self.getSmartFeeRPC(method: BTC_CLI_COMMAND.estimatesmartfee, param: "6", index: 0, vsize: vsize)
+                                            
+                                        }
+                                        
+                                    default:
+                                        
+                                        break
+                                        
+                                    }
+                                    
+                                }
+                                
+                            }
+                            
+                        } catch {
+                            
+                            print("error processing json")
+                            
+                        }
+                        
+                    }
+                    
+                }
+                
+            }
+            
+        }
+        
+        task.resume()
+        
+    }
+    
+    func estimateFeeSSH() {
+        
+        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        queue.async {
+            
+            self.ssh.execute(command: BTC_CLI_COMMAND.decoderawtransaction, params: "\"\(self.rawTxSigned)\"", response: { (result, error) in
+                
+                if error != nil {
+                    
+                    print("error decodeRawTx")
+                    displayAlert(viewController: self, title: "Error", message: "\(String(describing: error))")
+                    
+                } else {
+                    
+                    if let dict = result as? NSDictionary {
+                        
+                        let vsize = dict["vsize"] as! Int
+                        
+                        self.getSmartFee(vsize: vsize)
+                        
+                    }
+                    
+                }
+                
+            })
+            
+        }
+        
+    }
+    
+    func getSmartFee(vsize: Int) {
+        
+        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        queue.async {
+            
+            self.ssh.execute(command: BTC_CLI_COMMAND.estimatesmartfee, params: "6", response: { (result, error) in
+                
+                if error != nil {
+                    
+                    print("error decodeRawTx")
+                    displayAlert(viewController: self, title: "Error", message: "\(String(describing: error))")
+                    
+                } else {
+                    
+                    if let dict = result as? NSDictionary {
+                        
+                        let miningFeeString = UserDefaults.standard.object(forKey: "miningFee") as! String
+                        let txSize = Double(vsize)
+                        let btcPerKbyte = dict["feerate"] as! Double
+                        let btcPerByte = btcPerKbyte / 1000
+                        let satsPerByte = btcPerByte * 100000000
+                        let optimalFeeForSixBlocks = satsPerByte * txSize
+                        let actualFeeInSats = Double(miningFeeString)!
+                        let diff = optimalFeeForSixBlocks - actualFeeInSats
+                        
+                        if diff < 0 {
+                            
+                            //overpaying
+                            let percentageDifference = Int(((actualFeeInSats / optimalFeeForSixBlocks) * 100)).avoidNotation
+                            
+                            DispatchQueue.main.async {
+                                
+                                let alert = UIAlertController(title: NSLocalizedString("Fee Alert", comment: ""), message: "The optimal fee to get this tx included in the next 6 blocks is \(Int(optimalFeeForSixBlocks)) satoshis.\n\nYou are currently paying a fee of \(Int(actualFeeInSats)) satoshis which is \(percentageDifference)% higher then necessary.\n\nWe suggest going to settings and lowering your mining fee to the suggested amount.", preferredStyle: UIAlertControllerStyle.alert)
+                                
+                                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: { (action) in
+                                }))
+                                
+                                self.present(alert, animated: true)
+                                
+                            }
+                            
+                        } else {
+                            
+                            //underpaying
+                            let percentageDifference = Int((((optimalFeeForSixBlocks - actualFeeInSats) / optimalFeeForSixBlocks) * 100)).avoidNotation
+                            
+                            DispatchQueue.main.async {
+                                
+                                let alert = UIAlertController(title: NSLocalizedString("Fee Alert", comment: ""), message: "The optimal fee to get this tx included in the next 6 blocks is \(Int(optimalFeeForSixBlocks)) satoshis.\n\nYou are currently paying a fee of \(Int(actualFeeInSats)) satoshis which is \(percentageDifference)% lower then necessary.\n\nWe suggest going to settings and raising your mining fee to the suggested amount, however RBF is enabled by default, you can always tap an unconfirmed tx in the home screen to bump the fee.", preferredStyle: UIAlertControllerStyle.alert)
+                                
+                                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: { (action) in
+                                }))
+                                
+                                self.present(alert, animated: true)
+                                
+                            }
+                            
+                        }
+                        
+                    }
+                    
+                }
+                
+            })
+            
+        }
     }
     
 }

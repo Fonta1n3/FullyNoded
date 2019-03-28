@@ -23,9 +23,9 @@ public enum BTC_CLI_COMMAND: String {
     case getblockchaininfo = "getblockchaininfo"
     case getbalance = "getbalance"
     case getunconfirmedbalance = "getunconfirmedbalance"
-    case listaccounts = "listaccounts"
-    case listreceivedbyaccount = "listreceivedbyaccount"
-    case listreceivedbyaddress = "listreceivedbyaddress"
+    //case listaccounts = "listaccounts"
+    //case listreceivedbyaccount = "listreceivedbyaccount"
+    //case listreceivedbyaddress = "listreceivedbyaddress"
     case listtransactions = "listtransactions"
     case listunspent = "listunspent"
     case bumpfee = "bumpfee"
@@ -34,4 +34,5 @@ public enum BTC_CLI_COMMAND: String {
     case getpeerinfo = "getpeerinfo"
     case getnetworkinfo = "getnetworkinfo"
     case getmininginfo = "getmininginfo"
+    case estimatesmartfee = "estimatesmartfee"
 }

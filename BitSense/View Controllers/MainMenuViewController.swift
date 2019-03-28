@@ -550,7 +550,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
         }))
         
-        alert.addAction(UIAlertAction(title: NSLocalizedString("See UTXOs", comment: ""), style: .default, handler: { (action) in
+        alert.addAction(UIAlertAction(title: NSLocalizedString("UTXOs", comment: ""), style: .default, handler: { (action) in
             
             DispatchQueue.main.async {
                 
