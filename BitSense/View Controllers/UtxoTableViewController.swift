@@ -15,9 +15,9 @@ import EFQRCode
 
 class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObjectsDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate {
     
+    let decodeButton = UIButton()
     var tapQRGesture = UITapGestureRecognizer()
     var tapTextViewGesture = UITapGestureRecognizer()
-    let label = UILabel()
     var rawSigned = String()
     let avCaptureVideoPreviewLayer = AVCaptureVideoPreviewLayer()
     let titleLabel = UILabel()
@@ -41,17 +41,29 @@ class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObj
     var changeAddress = ""
     var changeAmount = ""
     var miningFee = Double()
+    var utxoToSpendArray = [Any]()
+    var textView = UITextView()
     
     @IBOutlet var utxoTable: UITableView!
     
     @IBAction func createRaw(_ sender: UIBarButtonItem) {
         
-        if self.inputArray.count > 0 {
+        if self.utxoToSpendArray.count > 0 {
             
-            self.getAddress()
+            updateInputs()
+            
+            if self.inputArray.count > 0 {
+                
+                self.getAddress()
+                
+            } else {
+                
+                displayAlert(viewController: self, title: "Error", message: "You need to select at least one UTXO first")
+                
+            }
             
         } else {
-         
+            
             displayAlert(viewController: self, title: "Error", message: "You need to select at least one UTXO first")
             
         }
@@ -75,8 +87,6 @@ class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObj
         
         if !isUsingSSH {
             
-            
-            
             let roundedAmount = rounded(number: self.amountTotal - miningFee)
           
             self.executeNodeCommand(method: BTC_CLI_COMMAND.createrawtransaction, param: "\(self.inputs), {\"\(self.address)\":\(roundedAmount)}", index: 0)
@@ -87,9 +97,7 @@ class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObj
             
         }
         
-        
    }
-    
     
     @IBAction func back(_ sender: UIBarButtonItem) {
         
@@ -120,7 +128,7 @@ class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObj
         blurView.addGestureRecognizer(tapGesture)
         
         imageImportView.isUserInteractionEnabled = true
-        label.isUserInteractionEnabled = true
+        textView.isUserInteractionEnabled = true
         
         let miningFeeCheck = UserDefaults.standard.object(forKey: "miningFee") as! String
         var miningFeeString = ""
@@ -128,6 +136,51 @@ class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObj
         miningFeeString = miningFeeString.replacingOccurrences(of: ",", with: "")
         let fee = (Double(miningFeeString)!) / 100000000
         miningFee = fee
+        
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        print("viewDidAppear")
+        
+        if self.utxoToSpendArray.count > 0 {
+         
+            for (index, _) in self.utxoToSpendArray.enumerated() {
+                
+                if let cell = utxoTable.cellForRow(at: IndexPath.init(row: index, section: 0)) {
+                    
+                    if cell.isSelected {
+                     
+                        let checkmark = cell.viewWithTag(13) as! UIImageView
+                        
+                        DispatchQueue.main.async {
+                            
+                            UIView.animate(withDuration: 0.2, animations: {
+                                
+                                checkmark.alpha = 0
+                                cell.alpha = 0
+                                
+                            }) { _ in
+                                
+                                UIView.animate(withDuration: 0.2, animations: {
+                                    
+                                    cell.alpha = 1
+                                    cell.isSelected = false
+                                    
+                                })
+                                
+                            }
+                            
+                        }
+                        
+                    }
+                    
+                }
+                
+            }
+            
+        }
+        
+        self.utxoToSpendArray.removeAll()
         
     }
     
@@ -308,49 +361,75 @@ class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObj
             
         }
         
-        let utxo = utxoArray[indexPath.row] as! [String:Any]
-        let amount = utxo["amount"] as! Double
-        amountTotal = amountTotal + amount
-        let txid = utxo["txid"] as! String
-        let vout = utxo["vout"] as! Int
-        let input = "{\"txid\":\"\(txid)\",\"vout\": \(vout),\"sequence\": 1}"
-        inputArray.append(input)
+        utxoToSpendArray.append(utxoArray[indexPath.row] as! [String:Any])
         
     }
     
-    
+    func updateInputs() {
+        
+        inputArray.removeAll()
+        
+        for utxo in self.utxoToSpendArray {
+            
+            let dict = utxo as! [String:Any]
+            let amount = dict["amount"] as! Double
+            amountTotal = amountTotal + amount
+            let txid = dict["txid"] as! String
+            let vout = dict["vout"] as! Int
+            let input = "{\"txid\":\"\(txid)\",\"vout\": \(vout),\"sequence\": 1}"
+            inputArray.append(input)
+            
+        }
+     
+    }
     
     override func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
         
-        let cell = utxoTable.cellForRow(at: indexPath)
-        let checkmark = cell?.viewWithTag(13) as! UIImageView
-        cell?.isSelected = false
-        
-        let impact = UIImpactFeedbackGenerator()
-        impact.impactOccurred()
-        
-        DispatchQueue.main.async {
+        if let cell = utxoTable.cellForRow(at: indexPath) {
             
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                checkmark.alpha = 0
-                cell?.alpha = 0
-                
-            }) { _ in
+            let checkmark = cell.viewWithTag(13) as! UIImageView
+            let cellTxid = (cell.viewWithTag(2) as! UILabel).text
+            let cellAddress = (cell.viewWithTag(1) as! UILabel).text
+            let impact = UIImpactFeedbackGenerator()
+            impact.impactOccurred()
+            
+            DispatchQueue.main.async {
                 
                 UIView.animate(withDuration: 0.2, animations: {
                     
-                    cell?.alpha = 1
+                    checkmark.alpha = 0
+                    cell.alpha = 0
                     
-                })
+                }) { _ in
+                    
+                    UIView.animate(withDuration: 0.2, animations: {
+                        
+                        cell.alpha = 1
+                        
+                    })
+                    
+                }
                 
             }
             
-        }
-        
-        if inputArray.count == indexPath.row || inputArray.count > indexPath.row {
-         
-            inputArray.remove(at: indexPath.row)
+            if utxoToSpendArray.count > 0 {
+                
+                for (index, utxo) in (self.utxoToSpendArray as! [[String:Any]]).enumerated() {
+                     
+                    let txid = utxo["txid"] as! String
+                    let address = utxo["address"] as! String
+                    print("txid = \(txid)")
+                        
+                    if txid == cellTxid && address == cellAddress {
+                         
+                        self.utxoToSpendArray.remove(at: index)
+                        print("utxoToSpendArray = \(utxoToSpendArray)")
+                            
+                    }
+                        
+                }
+                    
+            }
             
         }
         
@@ -405,7 +484,7 @@ class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObj
                                 
                             } else {
                                 
-                                if let resultCheck = jsonAddressResult["result"] as? Any {
+                                let resultCheck = jsonAddressResult["result"] as Any
                                     
                                     switch method {
                                         
@@ -487,8 +566,6 @@ class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObj
                                         
                                     }
                                     
-                                }
-                                
                             }
                             
                         } catch {
@@ -524,9 +601,9 @@ class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObj
                     
                 } else {
                     
-                    if let rawTx = result as? String {
+                    if result != "" {
                         
-                        self.signRawTransaction(raw: rawTx)
+                        self.signRawTransaction(raw: result!)
                         
                     }
                     
@@ -755,7 +832,28 @@ class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObj
     
     @objc func goBack() {
         
-        blurView.removeFromSuperview()
+        UIView.animate(withDuration: 0.3, animations: {
+            
+            self.blurView.alpha = 0
+            
+        }) { _ in
+            
+            self.textView.text = ""
+            if self.imageImportView.image != nil {
+               self.imageImportView.image = nil
+            }
+            self.decodeButton.removeFromSuperview()
+            self.imageImportView.removeFromSuperview()
+            self.blurView.removeFromSuperview()
+            self.textView.removeFromSuperview()
+            self.uploadButton.alpha = 1
+            self.addressInput.alpha = 1
+            self.rawSigned = ""
+            self.amountTotal = 0.0
+            self.inputs = ""
+            self.inputArray.removeAll()
+            
+        }
         
     }
     
@@ -778,8 +876,16 @@ class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObj
     
     func getAddress() {
         
-        blurView.frame = view.frame
-        view.addSubview(blurView)
+        let currentWindow: UIWindow? = UIApplication.shared.keyWindow
+        blurView.frame = currentWindow!.frame
+        blurView.alpha = 0
+        currentWindow!.addSubview(blurView)
+        
+        UIView.animate(withDuration: 0.3) {
+            
+            self.blurView.alpha = 1
+            
+        }
         
         addressInput.frame = CGRect(x: blurView.frame.minX + 25, y: blurView.frame.maxY / 7, width: blurView.frame.width - 50, height: 50)
         addressInput.textAlignment = .center
@@ -1001,29 +1107,39 @@ class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObj
             
             //get qr code
             let image = self.getQR(raw: raw)
-            self.label.numberOfLines = 0
-            self.label.textColor = UIColor.white
-            self.label.textAlignment = .natural
-            self.label.font = UIFont.init(name: "HelveticaNeue", size: 10)
-            self.label.alpha = 0
-            self.label.text = raw
-            self.label.frame = CGRect(x: 10, y: self.blurView.frame.maxY + 300, width: self.blurView.frame.width - 20, height: 200)
-            self.label.sizeToFit()
-            self.blurView.contentView.addSubview(self.label)
+            self.textView.frame = CGRect(x: 10, y: self.imageImportView.frame.maxY + 500, width: self.blurView.frame.width - 20, height: self.imageImportView.frame.height / 2)
+            self.textView.backgroundColor = UIColor.clear
+            self.textView.alpha = 0
+            self.textView.text = raw
+            self.textView.textColor = UIColor.white
+            self.textView.textAlignment = .natural
+            self.textView.font = UIFont.init(name: "HelveticaNeue-Light", size: 14)
+            self.textView.adjustsFontForContentSizeCategory = true
+            self.blurView.contentView.addSubview(self.textView)
+            
+            self.decodeButton.alpha = 0
+            self.decodeButton.frame = CGRect(x: self.blurView.frame.maxX - 105, y: self.blurView.frame.maxY - 55, width: 100, height: 50)
+            self.decodeButton.setTitle("Decode", for: .normal)
+            self.decodeButton.setTitleColor(UIColor.white, for: .normal)
+            self.decodeButton.titleLabel?.font = UIFont.init(name: "HelveticaNeue-Bold", size: 20)
+            self.decodeButton.titleLabel?.textAlignment = .right
+            self.decodeButton.addTarget(self, action: #selector(self.decode), for: .touchUpInside)
+            self.blurView.contentView.addSubview(self.decodeButton)
             
             UIView.animate(withDuration: 0.75, animations: {
                 
                 self.imageImportView.image = image
                 self.imageImportView.frame = CGRect(x: self.blurView.center.x - ((self.blurView.frame.width - 10)/2), y: 45, width: self.blurView.frame.width - 10, height: self.blurView.frame.width - 10)
-                self.label.frame = CGRect(x: 10, y: self.imageImportView.frame.maxY + 5, width: self.blurView.frame.width - 20, height: self.label.frame.height)
-                self.label.alpha = 1
+                self.textView.frame = CGRect(x: 10, y: self.imageImportView.frame.maxY + 5, width: self.blurView.frame.width - 20, height: self.imageImportView.frame.height / 2)
+                self.textView.alpha = 1
+                self.decodeButton.alpha = 1
                 
             }, completion: { _ in
                 
                 self.addressInput.removeFromSuperview()
                 self.uploadButton.removeFromSuperview()
                 self.tapTextViewGesture = UITapGestureRecognizer(target: self, action: #selector(self.shareRawText(_:)))
-                self.label.addGestureRecognizer(self.tapTextViewGesture)
+                self.textView.addGestureRecognizer(self.tapTextViewGesture)
                 self.tapQRGesture = UITapGestureRecognizer(target: self, action: #selector(self.shareQRCode(_:)))
                 self.imageImportView.addGestureRecognizer(self.tapQRGesture)
                 
@@ -1043,15 +1159,76 @@ class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObj
         
     }
     
+    @objc func encodeText() {
+        print("encodeText")
+        
+        DispatchQueue.main.async {
+            
+            self.textView.text = self.rawSigned
+            self.decodeButton.setTitle("Decode", for: .normal)
+            self.decodeButton.removeTarget(self, action: #selector(self.encodeText), for: .touchUpInside)
+            self.decodeButton.addTarget(self, action: #selector(self.decode), for: .touchUpInside)
+            
+        }
+        
+    }
+    
+    @objc func decode() {
+        
+        if !self.isUsingSSH {
+            
+            self.getSmartFeeRPC(method: BTC_CLI_COMMAND.decoderawtransaction, param: "\"\(self.rawSigned)\"", index: 0, vsize: 1)
+            
+        } else {
+            
+            self.decodeRawTransaction()
+        }
+        
+    }
+    
+    func decodeRawTransaction() {
+        
+        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        queue.async {
+            
+            self.ssh.execute(command: BTC_CLI_COMMAND.decoderawtransaction, params: "\"\(self.rawSigned)\"", response: { (result, error) in
+                
+                if error != nil {
+                    
+                    print("error decoderawtransaction = \(String(describing: error))")
+                    
+                } else {
+                    
+                    if let decodedTx = result as? NSDictionary {
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.textView.text = "\(decodedTx)"
+                            self.decodeButton.setTitle("Encode", for: .normal)
+                            self.decodeButton.removeTarget(self, action: #selector(self.decode), for: .touchUpInside)
+                            self.decodeButton.addTarget(self, action: #selector(self.encodeText), for: .touchUpInside)
+                            
+                        }
+                        
+                    }
+                    
+                }
+                
+            })
+            
+        }
+        
+    }
+    
     @objc func shareRawText(_ sender: UITapGestureRecognizer) {
         
         DispatchQueue.main.async {
             
             UIView.animate(withDuration: 0.2, animations: {
-                self.label.alpha = 0
+                self.textView.alpha = 0
             }) { _ in
                 UIView.animate(withDuration: 0.2, animations: {
-                    self.label.alpha = 1
+                    self.textView.alpha = 1
                 })
             }
             
@@ -1166,47 +1343,7 @@ class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObj
                     
                     if let dict = result as? NSDictionary {
                         
-                        let txSize = Double(vsize)
-                        let btcPerKbyte = dict["feerate"] as! Double
-                        let btcPerByte = btcPerKbyte / 1000
-                        let satsPerByte = btcPerByte * 100000000
-                        let optimalFeeForSixBlocks = satsPerByte * txSize
-                        let actualFeeInSats = (self.miningFee * 100000000)
-                        let diff = optimalFeeForSixBlocks - actualFeeInSats
-                        
-                        if diff < 0 {
-                            
-                            //overpaying
-                            let percentageDifference = Int(((actualFeeInSats / optimalFeeForSixBlocks) * 100)).avoidNotation
-                            
-                            DispatchQueue.main.async {
-                                
-                                let alert = UIAlertController(title: NSLocalizedString("Fee Alert", comment: ""), message: "The optimal fee to get this tx included in the next 6 blocks is \(Int(optimalFeeForSixBlocks)) satoshis.\n\nYou are currently paying a fee of \(Int(actualFeeInSats)) satoshis which is \(percentageDifference)% higher then necessary.\n\nWe suggest going to settings and lowering your mining fee to the suggested amount.", preferredStyle: UIAlertControllerStyle.alert)
-                                
-                                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: { (action) in
-                                }))
-                                
-                                self.present(alert, animated: true)
-                                
-                            }
-                            
-                        } else {
-                            
-                            //underpaying
-                            let percentageDifference = Int((((optimalFeeForSixBlocks - actualFeeInSats) / optimalFeeForSixBlocks) * 100)).avoidNotation
-                            
-                            DispatchQueue.main.async {
-                                
-                                let alert = UIAlertController(title: NSLocalizedString("Fee Alert", comment: ""), message: "The optimal fee to get this tx included in the next 6 blocks is \(Int(optimalFeeForSixBlocks)) satoshis.\n\nYou are currently paying a fee of \(Int(actualFeeInSats)) satoshis which is \(percentageDifference)% lower then necessary.\n\nWe suggest going to settings and raising your mining fee to the suggested amount, however RBF is enabled by default, you can always tap an unconfirmed tx in the home screen to bump the fee.", preferredStyle: UIAlertControllerStyle.alert)
-                                
-                                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: { (action) in
-                                }))
-                                
-                                self.present(alert, animated: true)
-                                
-                            }
-                            
-                        }
+                        self.showFeeAlert(dict: dict, vsize: vsize)
                         
                     }
                     
@@ -1215,6 +1352,7 @@ class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObj
             })
             
         }
+        
     }
     
     func getSmartFeeRPC(method: BTC_CLI_COMMAND, param: Any, index: Int, vsize: Int) {
@@ -1266,66 +1404,40 @@ class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObj
                                 
                             } else {
                                 
-                                if let resultCheck = jsonAddressResult["result"] as? Any {
+                                let resultCheck = jsonAddressResult["result"] as Any
                                     
-                                    switch method {
+                                switch method {
                                         
-                                    case BTC_CLI_COMMAND.estimatesmartfee:
+                                case BTC_CLI_COMMAND.estimatesmartfee:
                                         
-                                        if let dict = resultCheck as? NSDictionary {
+                                    if let dict = resultCheck as? NSDictionary {
+                                        
+                                        self.showFeeAlert(dict: dict, vsize: vsize)
                                             
-                                            let txSize = Double(vsize)
-                                            let btcPerKbyte = dict["feerate"] as! Double
-                                            let btcPerByte = btcPerKbyte / 1000
-                                            let satsPerByte = btcPerByte * 100000000
-                                            let optimalFeeForSixBlocks = satsPerByte * txSize
-                                            let actualFeeInSats = (self.miningFee * 100000000)
-                                            let diff = optimalFeeForSixBlocks - actualFeeInSats
-                                            
-                                            if diff < 0 {
-                                                
-                                                //overpaying
-                                                let percentageDifference = Int(((actualFeeInSats / optimalFeeForSixBlocks) * 100)).avoidNotation
-                                                
-                                                DispatchQueue.main.async {
-                                                    
-                                                    let alert = UIAlertController(title: NSLocalizedString("Fee Alert", comment: ""), message: "The optimal fee to get this tx included in the next 6 blocks is \(Int(optimalFeeForSixBlocks)) satoshis.\n\nYou are currently paying a fee of \(Int(actualFeeInSats)) satoshis which is \(percentageDifference)% higher then necessary.\n\nWe suggest going to settings and lowering your mining fee to the suggested amount.", preferredStyle: UIAlertControllerStyle.alert)
-                                                    
-                                                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: { (action) in
-                                                    }))
-                                                    
-                                                    self.present(alert, animated: true)
-                                                    
-                                                }
-                                                
-                                            } else {
-                                                
-                                                //underpaying
-                                                let percentageDifference = Int((((optimalFeeForSixBlocks - actualFeeInSats) / optimalFeeForSixBlocks) * 100)).avoidNotation
-                                                //(40-30)/40 * 100 = 25%
-                                                
-                                                DispatchQueue.main.async {
-                                                    
-                                                    let alert = UIAlertController(title: NSLocalizedString("Fee Alert", comment: ""), message: "The optimal fee to get this tx included in the next 6 blocks is \(Int(optimalFeeForSixBlocks)) satoshis.\n\nYou are currently paying a fee of \(Int(actualFeeInSats)) satoshis which is \(percentageDifference)% lower then necessary.\n\nWe suggest going to settings and raising your mining fee to the suggested amount, however RBF is enabled by default, you can always tap an unconfirmed tx in the home screen to bump the fee.", preferredStyle: UIAlertControllerStyle.alert)
-                                                    
-                                                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: { (action) in
-                                                    }))
-                                                    
-                                                    self.present(alert, animated: true)
-                                                    
-                                                }
-                                                
-                                            }
-                                            
-                                        }
+                                    }
                                         
                                     case BTC_CLI_COMMAND.decoderawtransaction:
                                         
                                         if let dict = resultCheck as? NSDictionary {
                                             
-                                            let vsize = dict["vsize"] as! Int
-                                            
-                                            self.getSmartFeeRPC(method: BTC_CLI_COMMAND.estimatesmartfee, param: "6", index: 0, vsize: vsize)
+                                            if vsize == 1 {
+                                             
+                                                DispatchQueue.main.async {
+                                                    
+                                                    self.textView.text = "\(dict)"
+                                                    self.decodeButton.setTitle("Encode", for: .normal)
+                                                    self.decodeButton.removeTarget(self, action: #selector(self.decode), for: .touchUpInside)
+                                                    self.decodeButton.addTarget(self, action: #selector(self.encodeText), for: .touchUpInside)
+                                                    
+                                                }
+                                                
+                                            } else {
+                                                
+                                                let vsize = dict["vsize"] as! Int
+                                                
+                                                self.getSmartFeeRPC(method: BTC_CLI_COMMAND.estimatesmartfee, param: "6", index: 0, vsize: vsize)
+                                                
+                                            }
                                             
                                         }
                                         
@@ -1333,10 +1445,8 @@ class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObj
                                         
                                         break
                                         
-                                    }
-                                    
                                 }
-                                
+                                    
                             }
                             
                         } catch {
@@ -1354,6 +1464,52 @@ class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObj
         }
         
         task.resume()
+        
+    }
+    
+    func showFeeAlert(dict: NSDictionary, vsize: Int) {
+     
+        let txSize = Double(vsize)
+        let btcPerKbyte = dict["feerate"] as! Double
+        let btcPerByte = btcPerKbyte / 1000
+        let satsPerByte = btcPerByte * 100000000
+        let optimalFeeForSixBlocks = satsPerByte * txSize
+        let actualFeeInSats = (self.miningFee * 100000000)
+        let diff = optimalFeeForSixBlocks - actualFeeInSats
+        
+        if diff < 0 {
+            
+            //overpaying
+            let percentageDifference = Int(((actualFeeInSats / optimalFeeForSixBlocks) * 100)).avoidNotation
+            
+            DispatchQueue.main.async {
+                
+                let alert = UIAlertController(title: NSLocalizedString("Fee Alert", comment: ""), message: "The optimal fee to get this tx included in the next 6 blocks is \(Int(optimalFeeForSixBlocks)) satoshis.\n\nYou are currently paying a fee of \(Int(actualFeeInSats)) satoshis which is \(percentageDifference)% higher then necessary.\n\nWe suggest going to settings and lowering your mining fee to the suggested amount.", preferredStyle: UIAlertControllerStyle.alert)
+                
+                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: { (action) in
+                }))
+                
+                self.present(alert, animated: true)
+                
+            }
+            
+        } else {
+            
+            //underpaying
+            let percentageDifference = Int((((optimalFeeForSixBlocks - actualFeeInSats) / optimalFeeForSixBlocks) * 100)).avoidNotation
+            
+            DispatchQueue.main.async {
+                
+                let alert = UIAlertController(title: NSLocalizedString("Fee Alert", comment: ""), message: "The optimal fee to get this tx included in the next 6 blocks is \(Int(optimalFeeForSixBlocks)) satoshis.\n\nYou are currently paying a fee of \(Int(actualFeeInSats)) satoshis which is \(percentageDifference)% lower then necessary.\n\nWe suggest going to settings and raising your mining fee to the suggested amount, however RBF is enabled by default, you can always tap an unconfirmed tx in the home screen to bump the fee.", preferredStyle: UIAlertControllerStyle.alert)
+                
+                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: { (action) in
+                }))
+                
+                self.present(alert, animated: true)
+                
+            }
+            
+        }
         
     }
 

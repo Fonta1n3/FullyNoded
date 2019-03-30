@@ -33,29 +33,6 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate, AVCapt
         
     }
     
-    /*enum BTC_CLI_COMMAND: String {
-        case getrawtransaction = "getrawtransaction"
-        case decoderawtransaction = "decoderawtransaction"
-        case getnewaddress = "getnewaddress"
-        case gettransaction = "gettransaction"
-        case sendrawtransaction = "sendrawtransaction"
-        case signrawtransaction = "signrawtransaction"
-        case createrawtransaction = "createrawtransaction"
-        case getrawchangeaddress = "getrawchangeaddress"
-        case getaccountaddress = "getaddressesbyaccount"
-        case getwalletinfo = "getwalletinfo"
-        case getblockchaininfo = "getblockchaininfo"
-        case getbalance = "getbalance"
-        case getunconfirmedbalance = "getunconfirmedbalance"
-        case listaccounts = "listaccounts"
-        case listreceivedbyaccount = "listreceivedbyaccount"
-        case listreceivedbyaddress = "listreceivedbyaddress"
-        case listtransactions = "listtransactions"
-        case listunspent = "listunspent"
-        case bumpfee = "bumpfee"
-        case importprivkey = "importprivkey"
-    }*/
-    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -117,8 +94,6 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate, AVCapt
             DispatchQueue.main.async {
                 
                 let pk = self.textInput.text!
-                
-                //self.executeNodeCommand(method: BTC_CLI_COMMAND.importprivkey.rawValue, param: "\"\(pk)\"")
                 self.importPrivateKey(ssh: self.ssh, pk: pk)
                 
             }
@@ -172,8 +147,8 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate, AVCapt
                 
                 DispatchQueue.main.async {
                     
-                    //self.executeNodeCommand(method: BTC_CLI_COMMAND.importprivkey.rawValue, param: "\"\(qrCodeLink)\"")
                     self.importPrivateKey(ssh: self.ssh, pk: qrCodeLink)
+                    
                 }
                 
             }
@@ -181,6 +156,7 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate, AVCapt
         }
         
         dismiss(animated: true, completion: nil)
+        
     }
     
     func scanQRNow() throws {
@@ -226,6 +202,7 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate, AVCapt
     }
     
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
+        
         if metadataObjects.count > 0 {
             print("metadataOutput")
             
@@ -234,7 +211,6 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate, AVCapt
             if machineReadableCode.type == AVMetadataObject.ObjectType.qr {
                 
                 let stringURL = machineReadableCode.stringValue!
-                //self.executeNodeCommand(method: BTC_CLI_COMMAND.importprivkey.rawValue, param: "\"\(stringURL)\"")
                 self.importPrivateKey(ssh: self.ssh, pk: stringURL)
                 self.avCaptureSession.stopRunning()
                 
@@ -345,45 +321,32 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate, AVCapt
                                 if let errorCheck = jsonAddressResult["error"] as? NSDictionary {
                                     
                                     DispatchQueue.main.async {
+                                        
                                         //self.removeSpinner()
                                         if let errorMessage = errorCheck["message"] as? String {
                                             displayAlert(viewController: self, title: "Error", message: errorMessage)
                                         }
+                                        
                                     }
                                     
                                 } else {
                                     
-                                    if let resultCheck = jsonAddressResult["result"] as? Any {
-                                        
-                                        print("resultCheck = \(resultCheck)")
-                                        
-                                        switch method {
+                                    switch method {
                                             
-                                        case BTC_CLI_COMMAND.importprivkey.rawValue:
+                                    case BTC_CLI_COMMAND.importprivkey.rawValue:
                                             
-                                            if let result = resultCheck as? String {
-                                                
-                                                DispatchQueue.main.async {
+                                        DispatchQueue.main.async {
                                                     
-                                                    print("result = \(result)")
-                                                    displayAlert(viewController: self, title: "Success", message: "Private key imported, your node will need to rescan the blockchain which can take some time before the balance will show up.")
-                                                }
+                                            displayAlert(viewController: self, title: "Success", message: "Private key imported, your node will need to rescan the blockchain which can take some time before the balance will show up.")
                                                 
-                                            }
-                                            
-                                        default:
-                                            
-                                            break
-                                            
                                         }
-                                        
-                                    } else {
-                                        
-                                        print("no results")
-                                        //self.removeSpinner()
-                                        
+                                                
+                                    default:
+                                            
+                                        break
+                                            
                                     }
-                                    
+                                        
                                 }
                                 
                             } catch {
@@ -422,24 +385,36 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate, AVCapt
         print("importPrivateKey")
         
         if isUsingSSH {
+            
             let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
-            queue.async {//DispatchQueue.main.async {
+            queue.async {
+                
                 ssh.executeStringResponse(command: BTC_CLI_COMMAND.importprivkey, params: "\"\(pk)\"", response: { (result, error) in
+                    
                     if error != nil {
+                        
                         print("error importPrivateKey = \(String(describing: error))")
+                        
                     } else {
-                        print("result = \(String(describing: result))")
-                        if let _ = result as? String {
-                            DispatchQueue.main.async {
-                                displayAlert(viewController: self, title: "Success", message: "Private key imported, your node will need to rescan the blockchain which can take some time before the balance will show up.")
-                            }
+                        
+                        DispatchQueue.main.async {
+                                
+                            displayAlert(viewController: self, title: "Success", message: "Private key imported, your node will need to rescan the blockchain which can take some time before the balance will show up.")
+                                
                         }
+                        
                     }
+                    
                 })
+                
             }
+            
         } else {
+            
             self.executeNodeCommand(method: BTC_CLI_COMMAND.importprivkey.rawValue, param: "\"\(pk)\"")
+            
         }
+        
     }
 
 }

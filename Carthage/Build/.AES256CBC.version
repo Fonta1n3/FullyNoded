@@ -3,7 +3,7 @@
   "iOS" : [
     {
       "name" : "AES256CBC",
-      "hash" : "ff986ca3c5ba431b9f2b602e25e28cb543e4a728a16c81dfe650066af6c71167"
+      "hash" : "2ac2abe696af2e1a5787d7a8008833714f33a2d068a054a486c96846a9f59a4e"
     }
   ]
 }

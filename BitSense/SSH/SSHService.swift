@@ -41,10 +41,15 @@ class SSHService {
         
         if UserDefaults.standard.string(forKey: "sshPassword") != nil {
             
-            user = decryptKey(keyToDecrypt: UserDefaults.standard.string(forKey: "NodeUsername")!)
-            host = decryptKey(keyToDecrypt: UserDefaults.standard.string(forKey: "NodeIPAddress")!)
-            password = decryptSSHKey(keyToDecrypt: UserDefaults.standard.string(forKey: "sshPassword")!)
-            port = decryptKey(keyToDecrypt: UserDefaults.standard.string(forKey: "NodePort")!)
+            let encUser = userDefaults.string(forKey: "NodeUsername")!
+            let encHost = userDefaults.string(forKey: "NodeIPAddress")!
+            let encPass = userDefaults.string(forKey: "sshPassword")!
+            let encPort = userDefaults.string(forKey: "NodePort")!
+            
+            user = decryptKey(keyToDecrypt: encUser)
+            host = decryptKey(keyToDecrypt: encHost)
+            password = decryptSSHKey(keyToDecrypt: encPass)
+            port = decryptKey(keyToDecrypt: encPort)
             
             print("user = \(String(describing: user))")
             print("host = \(String(describing: host))")
@@ -77,6 +82,8 @@ class SSHService {
             
             portInt = Int(port!)!
             
+            print("host = \(String(describing: host)), port = \(String(describing: port)), user = \(String(describing: user))")
+            
             session = NMSSHSession.connect(toHost: host!, port: portInt, withUsername: user!)
             
             if session?.isConnected == true {
@@ -90,7 +97,7 @@ class SSHService {
                     
                 } else {
                     
-                    success((success:false, error:"Error"))
+                    success((success:false, error:"\(String(describing: session?.lastError))"))
                     print("fail")
                     print("\(String(describing: session?.lastError))")
                     
@@ -104,7 +111,6 @@ class SSHService {
             }
             
         }
-        
         
     }
     
@@ -126,12 +132,11 @@ class SSHService {
                     
             do {
                         
-                if let json = try JSONSerialization.jsonObject(with: responseData, options: []) as? Any {
+                let json = try JSONSerialization.jsonObject(with: responseData, options: []) as Any
                             
-                    response((dictionary:json, error:nil))
+                response((dictionary:json, error:nil))
                             
-                }
-                        
+                
             } catch {
                         
                 response((dictionary:nil, error:"JSON ERROR: \(error)"))
@@ -143,15 +148,40 @@ class SSHService {
      }
     
     func executeStringResponse(command: BTC_CLI_COMMAND, params: String, response: @escaping((string:String?, error:String?)) -> ()) {
-        var error: NSErrorPointer?
-        do {
+        
+        let error = NSErrorPointer.none
+        
+        if let responseString = session?.channel.execute("bitcoin-cli \(command.rawValue) \(params)", error: error ?? nil).replacingOccurrences(of: "\n", with: "") {
+            
+            if error != nil {
+                
+                print("error getting response string")
+                response((string: "", error:"ERROR: \(error!.debugDescription)"))
+                
+            } else {
+                
+                print("responseString = \(String(describing: responseString))")
+                response((string: responseString, error:nil))
+                
+            }
+            
+        }
+        
+        /*do {
+            
             let responseString:String? = try session?.channel.execute("bitcoin-cli \(command.rawValue) \(params)", error: error ?? nil).replacingOccurrences(of: "\n", with: "")
+            
             print("responseString = \(String(describing: responseString))")
+            
             response((string: responseString, error:nil))
+            
         } catch {
+            
             print("error getting response string")
             response((string: "", error:"ERROR: \(error)"))
-        }
+            
+        }*/
+        
     }
     
 }

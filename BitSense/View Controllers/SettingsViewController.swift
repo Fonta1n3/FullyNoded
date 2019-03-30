@@ -209,36 +209,32 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         
-        //if section == 0 {
-            //return 360
-        //} else {
-            return 80
-        //}
-       
+        return 80
         
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        
         return 50
-    }
-    
-    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
-        
-    
         
     }
     
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+   override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
         if segue.identifier == "reenterCredentials" || segue.identifier == "goLogIn" {
             
             if let vc = segue.destination as? LogInViewController {
                 
                 DispatchQueue.main.async {
+                    
                     vc.reenterCredentials = true
+                    
                 }
+                
             }
+            
         }
+    
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -271,6 +267,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         } else if indexPath.section == 1 {
             
             DispatchQueue.main.async {
+                
                 let alert = UIAlertController(title: "Set a mining fee in Satoshis", message: "Please enter your custom mining fee in Satoshis.", preferredStyle: .alert)
                 
                 alert.addTextField { (textField1) in
@@ -286,25 +283,21 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                     if alert.textFields![0].text! != "" {
                         
                         let fee = Int(alert.textFields![0].text!)
-                        print("fee = \(String(describing: fee))")
                         let feeString = fee?.withCommas()
                         UserDefaults.standard.set(feeString, forKey: "miningFee")
-                        print("feeString = \(String(describing: feeString))")
-                        
                         let cell = tableView.cellForRow(at: indexPath)!
                         
                         DispatchQueue.main.async {
+                            
                             cell.textLabel?.text = "\(UserDefaults.standard.object(forKey: "miningFee") as! String) Satoshis"
+                            
                         }
                         
                     }
                     
                 }))
                 
-                alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { (action) in
-                    
-                    
-                }))
+                alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { (action) in }))
                 
                 self.present(alert, animated: true, completion: nil)
             }
@@ -312,9 +305,10 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         } else if indexPath.section == 2 {
             
             DispatchQueue.main.async {
+                
                 self.showUnlockScreen()
+                
             }
-            
             
         }
         
@@ -325,6 +319,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         if self.textInput.text != "" {
             
             DispatchQueue.main.async {
+                
                 self.labelTitle.textAlignment = .natural
                 self.labelTitle.text = "Please confirm the Password to ensure there were no typos."
                 self.firstPassword = self.textInput.text!
@@ -332,9 +327,13 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 self.nextButton.setTitle("Confirm", for: .normal)
                 self.nextButton.removeTarget(self, action: #selector(self.setLockPassword), for: .touchUpInside)
                 self.nextButton.addTarget(self, action: #selector(self.confirmLockPassword), for: .touchUpInside)
+                
             }
+            
         } else {
+            
             shakeAlert(viewToShake: self.textInput)
+            
         }
         
     }
@@ -364,7 +363,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                             
                         }) { _ in
                             
-                            //self.labelTitle.removeFromSuperview()
                             self.textInput.text = ""
                             self.passwordInput.text = ""
                             self.labelTitle.text = "Unlock"
@@ -379,8 +377,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                         }
                         
                     }
-                    
-                
                 
             } else {
                 
@@ -399,6 +395,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     func addNextButton(inputView: UITextField) {
         
         DispatchQueue.main.async {
+            
             self.nextButton.removeFromSuperview()
             self.nextButton.frame = CGRect(x: self.view.center.x - 40, y: inputView.frame.maxY + 10, width: 80, height: 55)
             self.nextButton.showsTouchWhenHighlighted = true
@@ -407,6 +404,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             self.nextButton.titleLabel?.font = UIFont.init(name: "HelveticaNeue-Bold", size: 20)
             self.nextButton.addTarget(self, action: #selector(self.nextButtonAction), for: .touchUpInside)
             self.lockView.addSubview(self.nextButton)
+            
         }
         
     }
@@ -432,15 +430,19 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             self.lockView.addSubview(self.nextButton)
             
             UIView.animate(withDuration: 0.2, animations: {
+                
                 self.labelTitle.alpha = 1
                 self.textInput.alpha = 1
                 self.nextButton.alpha = 1
+                
             }, completion: { _ in
+                
                 self.textInput.becomeFirstResponder()
+                
             })
             
-            
         }
+        
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {

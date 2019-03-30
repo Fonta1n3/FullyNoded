@@ -1,1 +1,0 @@
-../../../CoreBitcoin/CoreBitcoin/BTCNetwork.h

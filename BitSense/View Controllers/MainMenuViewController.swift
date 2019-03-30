@@ -706,11 +706,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
      
                 if error != nil {
      
-                    print("error getblockchaininfo \(error)")
+                    displayAlert(viewController: self, title: "Error", message: "\(error!.debugDescription)")
      
                 } else {
-     
-                    print("result = \(String(describing: result))")
      
                     if let peers = result as? NSArray {
                         
@@ -819,29 +817,23 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
         queue.async {
             
-            //ssh.execute(command: BTC_COMMAND.abandontransaction, params: "\"\(self.tx)\"", response: { (result, error) in
-            
             ssh.executeStringResponse(command: BTC_CLI_COMMAND.abandontransaction, params: "\"\(self.tx)\"", response: { (result, error) in
                
                 
                 if error != nil {
                     
                     print("error abandontransaction")
-                    displayAlert(viewController: self, title: "Error", message: "\(error)")
+                    displayAlert(viewController: self, title: "Error", message: "\(error!.debugDescription)")
                     
                 } else {
                     
-                    print("result = \(String(describing: result))")
-                    
-                    if let _ = result as? Any {
+                    DispatchQueue.main.async {
                         
-                        DispatchQueue.main.async {
-                            self.refresh()
-                        }
-                        
-                        displayAlert(viewController: self, title: "Success", message: "You abandonded the transaction")
+                        self.refresh()
                         
                     }
+                        
+                    displayAlert(viewController: self, title: "Success", message: "You abandonded the transaction")
                     
                 }
                 
@@ -961,13 +953,13 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 if error != nil {
                     
-                    print("error getbalance = \(String(describing: error))")
+                    displayAlert(viewController: self, title: "Error", message: "\(error!.debugDescription)")
                     
                 } else {
                     
-                    if let balanceCheck = result as? String {
+                    if result != "" {
                         
-                        self.balance = Double(balanceCheck)!
+                        self.balance = Double(result!)!
                         
                         DispatchQueue.main.async {
                             
@@ -1004,13 +996,13 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 if error != nil {
                     
-                    print("error getunconfirmedbalance = \(String(describing: error))")
+                    displayAlert(viewController: self, title: "Error", message: "\(error!.debugDescription)")
                     
                 } else {
                     
-                    if let unconfirmedBalanceCheck = result as? String {
+                    if result != "" {
                         
-                        let unconfirmedBalance = Double(unconfirmedBalanceCheck)!
+                        let unconfirmedBalance = Double(result!)!
                         
                         if unconfirmedBalance != 0.0 || unconfirmedBalance != 0 {
                             
@@ -1115,7 +1107,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         let footerMaxY = self.mainMenu.frame.maxY
         let modelName = UIDevice.modelName
-        print("model = \(modelName)")
         
         switch modelName {
             
@@ -1311,8 +1302,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                 
                                 if let errorCheck = jsonAddressResult["error"] as? NSDictionary {
                                     
-                                    print("error = \(errorCheck.description)")
-                                    
                                     DispatchQueue.main.async {
                                         
                                         self.removeSpinner()
@@ -1328,7 +1317,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                     
                                 } else {
                                     
-                                    if let resultCheck = jsonAddressResult["result"] as? Any {
+                                    let resultCheck = jsonAddressResult["result"] as Any
                                         
                                         switch method {
                                             
@@ -1601,13 +1590,13 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                             
                                         }
                                         
-                                    } else {
+                                    /*} else {
                                         
                                         print("no results")
                                         self.mainMenu.isUserInteractionEnabled = true
                                         self.removeSpinner()
                                         
-                                    }
+                                    }*/
                                     
                                 }
                                 

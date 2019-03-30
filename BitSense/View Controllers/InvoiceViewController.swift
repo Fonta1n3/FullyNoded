@@ -41,17 +41,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
     
 
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
-    
-    @IBAction func backAction(_ sender: Any) {
+   @IBAction func backAction(_ sender: Any) {
         
         DispatchQueue.main.async {
             
@@ -61,32 +51,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    
-    /*enum BTC_CLI_COMMAND: String {
-        case getrawtransaction = "getrawtransaction"
-        case decoderawtransaction = "decoderawtransaction"
-        case getnewaddress = "getnewaddress"
-        case gettransaction = "gettransaction"
-        case sendrawtransaction = "sendrawtransaction"
-        case signrawtransaction = "signrawtransaction"
-        case createrawtransaction = "createrawtransaction"
-        case getrawchangeaddress = "getrawchangeaddress"
-        case getaccountaddress = "getaddressesbyaccount"
-        case getwalletinfo = "getwalletinfo"
-        case getblockchaininfo = "getblockchaininfo"
-        case getbalance = "getbalance"
-        case getunconfirmedbalance = "getunconfirmedbalance"
-        case listaccounts = "listaccounts"
-        case listreceivedbyaccount = "listreceivedbyaccount"
-        case listreceivedbyaddress = "listreceivedbyaddress"
-        case listtransactions = "listtransactions"
-        case listunspent = "listunspent"
-        case bumpfee = "bumpfee"
-    }*/
-    
     func showAddress() {
-        
-        let ssh = SSHService.sharedInstance
         
         DispatchQueue.main.async {
             
@@ -98,18 +63,52 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             let alert = UIAlertController(title: "Which Address Format?", message: "Create a new address", preferredStyle: UIAlertControllerStyle.actionSheet)
             
             alert.addAction(UIAlertAction(title: NSLocalizedString("Legacy", comment: ""), style: .default, handler: { (action) in
+                
                 self.blurActivityIndicator.startAnimating()
-                self.getLegacyAddress(ssh: ssh)
+                
+                if !self.isUsingSSH {
+                    
+                    self.executeNodeCommand(method: BTC_CLI_COMMAND.getnewaddress.rawValue, param: "\"\", \"legacy\"")
+                    
+                } else {
+                    
+                   self.getLegacyAddress(ssh: self.ssh)
+                    
+                }
+                
             }))
             
             alert.addAction(UIAlertAction(title: NSLocalizedString("Segwit P2SH", comment: ""), style: .default, handler: { (action) in
+                
                 self.blurActivityIndicator.startAnimating()
-                self.getSegwitAddress(ssh: ssh)
+                
+                if !self.isUsingSSH {
+                    
+                    self.executeNodeCommand(method: BTC_CLI_COMMAND.getnewaddress.rawValue, param: "")
+                    
+                } else {
+                    
+                    self.getSegwitAddress(ssh: self.ssh)
+                    
+                }
+                
+                
             }))
             
             alert.addAction(UIAlertAction(title: NSLocalizedString("Segwit Bech32", comment: ""), style: .default, handler: { (action) in
+                
                 self.blurActivityIndicator.startAnimating()
-                self.getBech32Address(ssh: ssh)
+                
+                if !self.isUsingSSH {
+                    
+                    self.executeNodeCommand(method: BTC_CLI_COMMAND.getnewaddress.rawValue, param: "\"\", \"bech32\"")
+                    
+                } else {
+                    
+                    self.getBech32Address(ssh: self.ssh)
+                    
+                }
+                
             }))
             
             alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { (action) in
@@ -118,96 +117,123 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                     
                     UIView.animate(withDuration: 0.15, animations: {
                         
-                        //self.receiveBlurView.alpha = 0
                         
                     }) { _ in
                         
                         self.qrView.image = nil
                         self.qrView.removeFromSuperview()
                         self.label.text = ""
-                        //self.receiveBlurView.removeFromSuperview()
+                        
                     }
+                    
                 }
+                
             }))
             
             alert.popoverPresentationController?.sourceView = self.view
             self.present(alert, animated: true) {}
+            
         }
     }
     
     func getBech32Address(ssh: SSHService) {
         print("getBech32Address")
         
-        if isUsingSSH {
-            DispatchQueue.main.async {
-                ssh.executeStringResponse(command: BTC_CLI_COMMAND.getnewaddress, params: "\"\", \"bech32\"", response: { (result, error) in
-                    if error != nil {
-                        print("error getbalance = \(String(describing: error))")
-                    } else {
-                        print("result = \(String(describing: result))")
-                        if let address = result as? String {
-                            DispatchQueue.main.async {
-                                self.blurActivityIndicator.stopAnimating()
-                                self.addressString = address
-                                self.showAddress(address: address)
-                            }
+        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        queue.async {
+                
+            ssh.executeStringResponse(command: BTC_CLI_COMMAND.getnewaddress, params: "\"\", \"bech32\"", response: { (result, error) in
+                    
+                if error != nil {
+                        
+                    print("error getbalance = \(String(describing: error))")
+                        
+                } else {
+                        
+                    if result != "" {
+                            
+                        DispatchQueue.main.async {
+                                
+                            self.blurActivityIndicator.stopAnimating()
+                            self.addressString = result!
+                            self.showAddress(address: result!)
+                                
                         }
+                            
                     }
-                })
-            }
-        } else {
-            self.executeNodeCommand(method: BTC_CLI_COMMAND.getnewaddress.rawValue, param: "\"\", \"bech32\"")
+                        
+                }
+                    
+            })
+                
         }
+        
     }
     
     func getSegwitAddress(ssh: SSHService) {
         
-        if isUsingSSH {
-            
-            DispatchQueue.main.async {
-                ssh.executeStringResponse(command: BTC_CLI_COMMAND.getnewaddress, params: "", response: { (result, error) in
-                    if error != nil {
-                        print("error getbalance = \(String(describing: error))")
-                    } else {
-                        print("result = \(String(describing: result))")
-                        if let address = result as? String {
-                            DispatchQueue.main.async {
-                                self.blurActivityIndicator.stopAnimating()
-                                self.addressString = address
-                                self.showAddress(address: address)
-                            }
+        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        queue.async {
+                
+            ssh.executeStringResponse(command: BTC_CLI_COMMAND.getnewaddress, params: "", response: { (result, error) in
+                    
+                if error != nil {
+                        
+                    print("error getbalance = \(String(describing: error))")
+                        
+                } else {
+                        
+                    if result != "" {
+                            
+                        DispatchQueue.main.async {
+                                
+                            self.blurActivityIndicator.stopAnimating()
+                            self.addressString = result!
+                            self.showAddress(address: result!)
+                                
                         }
+                            
                     }
-                })
-            }
-            
-        } else {
-            self.executeNodeCommand(method: BTC_CLI_COMMAND.getnewaddress.rawValue, param: "")
+                        
+                }
+                    
+            })
+                
         }
+        
     }
     
     func getLegacyAddress(ssh:SSHService) {
         
-        if isUsingSSH {
-            DispatchQueue.main.async {
-                ssh.executeStringResponse(command: BTC_CLI_COMMAND.getnewaddress, params: "\"\", \"legacy\"", response: { (result, error) in
-                    if error != nil {
-                        print("error getbalance = \(String(describing: error))")
-                    } else {
-                        print("result = \(String(describing: result))")
-                        if let address = result as? String {
-                            DispatchQueue.main.async {
-                                self.blurActivityIndicator.stopAnimating()
-                                self.addressString = address
-                                self.showAddress(address: address)
-                            }
+        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        queue.async {
+                
+            ssh.executeStringResponse(command: BTC_CLI_COMMAND.getnewaddress, params: "\"\", \"legacy\"", response: { (result, error) in
+                    
+                if error != nil {
+                        
+                    print("error getbalance = \(String(describing: error))")
+                        
+                } else {
+                        
+                    if result != "" {
+                        
+                        DispatchQueue.main.async {
+                                
+                            self.blurActivityIndicator.stopAnimating()
+                            self.addressString = result!
+                            self.showAddress(address: result!)
+                                
                         }
+                            
                     }
-                })
-            }
-        } else {
-            self.executeNodeCommand(method: BTC_CLI_COMMAND.getnewaddress.rawValue, param: "\"\", \"legacy\"")
+                        
+                }
+                    
+            })
+                
         }
+        
     }
     
     func showAddress(address: String) {
@@ -260,38 +286,50 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     @objc func shareAddressText(_ sender: UITapGestureRecognizer) {
         
         UIView.animate(withDuration: 0.2, animations: {
+            
             self.label.alpha = 0
+            
         }) { _ in
+            
             UIView.animate(withDuration: 0.2, animations: {
+                
                 self.label.alpha = 1
+                
             })
+            
         }
         
         DispatchQueue.main.async {
+            
             let textToShare = [self.addressString]
             let activityViewController = UIActivityViewController(activityItems: textToShare, applicationActivities: nil)
-            //self.present(activityViewController, animated: true, completion: nil)
             activityViewController.popoverPresentationController?.sourceView = self.view
+            self.present(activityViewController, animated: true) {}
             
-            self.present(activityViewController, animated: true) {
-                
-            }
         }
+        
     }
     
     @objc func shareQRCode(_ sender: UITapGestureRecognizer) {
         
         UIView.animate(withDuration: 0.2, animations: {
+            
             self.qrView.alpha = 0
+            
         }) { _ in
+            
             UIView.animate(withDuration: 0.2, animations: {
+                
                 self.qrView.alpha = 1
+                
             })
+            
         }
         
         if self.textToShareViaQRCode == "" {
             
             self.textToShareViaQRCode = self.addressString
+            
         }
         
         let cgImage = EFQRCode.generate(content: self.textToShareViaQRCode,
@@ -309,6 +347,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                                         binarizationThreshold: 0,
                                         magnification: EFIntSize.init(width: 50, height: 50),
                                         foregroundPointOffset: 0)
+        
         let qrImage = UIImage(cgImage: cgImage!)
         
         if let data = UIImagePNGRepresentation(qrImage) {
@@ -320,15 +359,14 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             DispatchQueue.main.async {
                 let activityController = UIActivityViewController(activityItems: objectsToShare, applicationActivities: nil)
                 activityController.popoverPresentationController?.sourceView = self.view
-                //self.present(activityController, animated: true) {}
                 activityController.popoverPresentationController?.sourceView = self.view
                 
-                self.present(activityController, animated: true) {
-                    
-                }
+                self.present(activityController, animated: true) {}
+                
             }
             
         }
+        
     }
     
     func executeNodeCommand(method: String, param: Any) {
@@ -407,8 +445,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                         
                         DispatchQueue.main.async {
                             
-                            //self.removeSpinner()
-                            //self.showConnectionError()
+                            displayAlert(viewController: self, title: "Error", message: "\(error.debugDescription)")
                             
                         }
                         
@@ -423,55 +460,59 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                                 if let errorCheck = jsonAddressResult["error"] as? NSDictionary {
                                     
                                     DispatchQueue.main.async {
-                                        //self.removeSpinner()
+                                        
                                         if let errorMessage = errorCheck["message"] as? String {
+                                            
                                             displayAlert(viewController: self, title: "Error", message: errorMessage)
+                                            
                                         }
+                                        
                                     }
                                     
                                 } else {
                                     
-                                    if let resultCheck = jsonAddressResult["result"] as? Any {
+                                    let resultCheck = jsonAddressResult["result"] as Any
                                         
-                                        switch method {
+                                    switch method {
                                             
-                                        case BTC_CLI_COMMAND.getnewaddress.rawValue:
+                                    case BTC_CLI_COMMAND.getnewaddress.rawValue:
                                             
-                                            if let address = resultCheck as? String {
+                                        if let address = resultCheck as? String {
                                                 
-                                                DispatchQueue.main.async {
-                                                    self.blurActivityIndicator.stopAnimating()
-                                                    self.addressString = address
-                                                    self.showAddress(address: address)
-                                                }
+                                            DispatchQueue.main.async {
+                                                
+                                                self.blurActivityIndicator.stopAnimating()
+                                                self.addressString = address
+                                                self.showAddress(address: address)
                                                 
                                             }
-                                            
-                                        
-                                            
-                                        default: break
-                                            
+                                                
                                         }
-                                        
-                                    } else {
-                                        
-                                        print("no results")
-                                        //self.removeSpinner()
-                                        
+                                            
+                                    default:
+                                            
+                                        break
+                                            
                                     }
-                                    
+                                        
                                 }
                                 
                             } catch {
                                 
                                 DispatchQueue.main.async {
-                                    //self.removeSpinner()
+                                    
+                                    displayAlert(viewController: self, title: "Error", message: "Sorry we had an issue")
+                                    
                                 }
-                                
+                            
                             }
+                            
                         }
+                        
                     }
+                    
                 }
+                
             }
             
             task.resume()
@@ -479,9 +520,13 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         } else {
             
             DispatchQueue.main.async {
-                //self.removeSpinner()
+                
+                displayAlert(viewController: self, title: "Error", message: "Sorry we had an issue")
+                
             }
+            
         }
+        
     }
     
     @objc func textFieldDidChange(_ textField: UITextField) {
@@ -519,6 +564,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                                         binarizationThreshold: 0,
                                         magnification: EFIntSize.init(width: 50, height: 50),
                                         foregroundPointOffset: 0)
+        
         let qrImage = UIImage(cgImage: cgImage!)
         
         return qrImage

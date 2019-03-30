@@ -91,8 +91,8 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
     }
     
     @objc func sweepButtonClicked() {
-        
         print("sweep button clicked")
+        
         sweep = true
         self.view.endEditing(true)
         
@@ -104,41 +104,37 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
         func getaddress(processedKey: String) {
             print("getaddress: \(processedKey)")
             
-            //if processedKey.hasPrefix("1") || processedKey.hasPrefix("3") || processedKey.hasPrefix("bc") || processedKey.hasPrefix("2") || processedKey.hasPrefix("m") || processedKey.hasPrefix("tb") || processedKey.hasPrefix("2") {
+            self.address = processedKey
+            self.addressInput.removeFromSuperview()
+            self.imageImportView.removeFromSuperview()
+            self.qrImageView.removeFromSuperview()
+            self.uploadButton.removeFromSuperview()
                 
-                self.address = processedKey
-                print("recipient address = \(self.address)")
-                self.addressInput.removeFromSuperview()
-                self.imageImportView.removeFromSuperview()
-                self.qrImageView.removeFromSuperview()
-                self.uploadButton.removeFromSuperview()
+            if self.amount != "" {
                 
-                if self.amount != "" {
-                    DispatchQueue.main.async {
-                        self.amountInput.text = self.amount
-                    }
+                DispatchQueue.main.async {
+                    
+                    self.amountInput.text = self.amount
+                    
                 }
                 
-                self.titleLabel.text = ""
-                self.amountInput.placeholder = "Amount in BTC"
-                self.amountInput.keyboardType = UIKeyboardType.decimalPad
-                self.amountInput.frame = CGRect(x: self.view.frame.minX + 25, y: 150, width: self.view.frame.width - 50, height: 50)
-                self.amountInput.textAlignment = .center
-                self.amountInput.borderStyle = .roundedRect
-                self.amountInput.autocorrectionType = .no
-                self.amountInput.autocapitalizationType = .none
-                self.amountInput.keyboardAppearance = UIKeyboardAppearance.dark
-                self.amountInput.backgroundColor = UIColor.groupTableViewBackground
-                self.amountInput.returnKeyType = UIReturnKeyType.go
-                self.amountInput.becomeFirstResponder()
-                self.amountInput.inputAccessoryView = sweepButtonView
-                self.view.addSubview(self.amountInput)
-                self.addNextButton(inputView: self.amountInput)
-            /*} else {
+            }
                 
-                //displayAlert(viewController: self, title: "Error", message: "Thats not a valid Bitcoin Address")
-                
-            }*/
+            self.titleLabel.text = ""
+            self.amountInput.placeholder = "Amount in BTC"
+            self.amountInput.keyboardType = UIKeyboardType.decimalPad
+            self.amountInput.frame = CGRect(x: self.view.frame.minX + 25, y: 150, width: self.view.frame.width - 50, height: 50)
+            self.amountInput.textAlignment = .center
+            self.amountInput.borderStyle = .roundedRect
+            self.amountInput.autocorrectionType = .no
+            self.amountInput.autocapitalizationType = .none
+            self.amountInput.keyboardAppearance = UIKeyboardAppearance.dark
+            self.amountInput.backgroundColor = UIColor.groupTableViewBackground
+            self.amountInput.returnKeyType = UIReturnKeyType.go
+            self.amountInput.becomeFirstResponder()
+            self.amountInput.inputAccessoryView = sweepButtonView
+            self.view.addSubview(self.amountInput)
+            self.addNextButton(inputView: self.amountInput)
 
         }
         
@@ -150,15 +146,13 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
             if address.hasPrefix(" ") {
                 
                 address = address.replacingOccurrences(of: " ", with: "")
-                //getaddress(processedKey: address)
+                
             }
             
             if address.contains("?") {
                 
                 let formatArray = address.split(separator: "?")
-                print("formatArray = \(formatArray)")
                 self.address = formatArray[0].replacingOccurrences(of: "bitcoin:", with: "")
-                
                 
                 if formatArray[1].contains("amount=") && formatArray[1].contains("&") {
                     
@@ -172,10 +166,6 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                     //just amount parameter present
                     self.amount = formatArray[1].replacingOccurrences(of: "amount=", with: "")
                     
-                } else {
-                    
-                    //has no amount but does have other parameters
-                    //getaddress(processedKey: address)
                 }
                 
                 getaddress(processedKey: self.address)
@@ -184,84 +174,49 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                 
                 //has no amount or other parameters
                 getaddress(processedKey: address)
+                
             }
             
         } else {
+            
             //normal address
             getaddress(processedKey: address)
+            
         }
         
     }
-    
-    /*func pushRawTx() {
-        
-        DispatchQueue.main.async {
-            self.ssh.executeStringResponse(command: BTC_COMMAND.sendrawtransaction, params: "\"\(self.rawTxSigned)\"", response: { (result, error) in
-                if error != nil {
-                    print("error sendrawtransaction = \(String(describing: error))")
-                } else {
-                    print("result = \(String(describing: result))")
-                    
-                    if let txID = result as? String {
-                        
-                        DispatchQueue.main.async {
-                            
-                            UIPasteboard.general.string = txID
-                            
-                            self.sentAnimation()
-                            
-                            let alert = UIAlertController(title: NSLocalizedString("Success", comment: ""), message: "ID copied to clipboard", preferredStyle: UIAlertControllerStyle.actionSheet)
-                            
-                            alert.addAction(UIAlertAction(title: NSLocalizedString("Done", comment: ""), style: .cancel, handler: { (action) in
-                                self.dismiss(animated: true, completion: nil)
-                            }))
-                            
-                            alert.popoverPresentationController?.sourceView = self.view
-                            
-                            self.present(alert, animated: true) {
-                            }
-                        }
-                        
-                    } else {
-                        displayAlert(viewController: self, title: "Error", message: "Unable to parse Transaction ID.")
-                    }
-                }
-            })
-        }
-        
-    }*/
-    
-    /*@objc func push() {
-        
-        if !self.isUsingSSH {
-            self.executeNodeCommand(method: BTC_CLI_COMMAND.sendrawtransaction.rawValue, param: "\"\(self.rawTxSigned)\"")
-        } else {
-            pushRawTx()
-        }
-    }*/
     
     func decodeRawTransaction() {
         
         let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
         queue.async {
+            
             self.ssh.execute(command: BTC_CLI_COMMAND.decoderawtransaction, params: "\"\(self.rawTxSigned)\"", response: { (result, error) in
+                
                 if error != nil {
+                    
                     print("error decoderawtransaction = \(String(describing: error))")
+                    
                 } else {
-                    print("result = \(String(describing: result))")
                     
                     if let decodedTx = result as? NSDictionary {
+                        
                         DispatchQueue.main.async {
+                            
                             self.textView.text = "\(decodedTx)"
                             self.decodeButton.setTitle("Encode", for: .normal)
                             self.decodeButton.removeTarget(self, action: #selector(self.decode), for: .touchUpInside)
                             self.decodeButton.addTarget(self, action: #selector(self.encodeText), for: .touchUpInside)
+                            
                         }
+                        
                     }
+                    
                 }
+                
             })
+            
         }
-        
         
     }
     
@@ -292,32 +247,9 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
         
     }
     
-    func sentAnimation() {
-        self.decodeButton.removeFromSuperview()
-        //self.pushButton.removeFromSuperview()
-        self.textView.removeFromSuperview()
-        self.titleLabel.removeFromSuperview()
-        let imageView = UIImageView()
-        imageView.frame = CGRect(x: self.view.center.x - 95, y: (self.view.center.y - 95) - (self.view.frame.height / 5), width: 190, height: 190)
-        imageView.image = UIImage(named: "whiteCheck")
-        imageView.alpha = 0
-        self.view.addSubview(imageView)
-        
-        imageView.transform = CGAffineTransform(scaleX: 0.6, y: 0.6)
-        
-        UIView.animate(withDuration: 2.0, delay: 0, usingSpringWithDamping: CGFloat(0.20), initialSpringVelocity: CGFloat(6.0), options: UIViewAnimationOptions.allowUserInteraction, animations: {
-            
-            imageView.alpha = 1
-            imageView.transform = CGAffineTransform.identity
-            
-        })
-    }
-    
     override func viewDidLayoutSubviews() {
         
         titleLabel.frame = CGRect(x: view.center.x - ((view.frame.width - 50) / 2), y: 60, width: view.frame.width - 50, height: 55)
-        //textView.frame = CGRect(x: 10, y: self.titleLabel.frame.maxY + 60, width: self.view.frame.width - 20, height: self.view.frame.maxY - (self.titleLabel.frame.maxY + 120))
-        //pushButton.frame = CGRect(x: 10, y: view.frame.maxY - 55, width: 100, height: 50)
         decodeButton.frame = CGRect(x: self.view.frame.maxX - 105, y: view.frame.maxY - 55, width: 100, height: 50)
         
     }
@@ -332,197 +264,160 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
         
         let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
         queue.async {
+            
             self.ssh.execute(command: BTC_CLI_COMMAND.listunspent, params: "", response: { (result, error) in
+                
                 if error != nil {
+                    
                     print("error listunspent")
+                    
                 } else {
-                    print("result = \(String(describing: result))")
-                    if let dict = result as? NSArray {
+                    
+                    if let resultArray = result as? NSArray {
                         
                         if let miningFeeCheck = UserDefaults.standard.object(forKey: "miningFee") as? String {
                             
-                            var txFee = Double()
-                            var miningFeeString = ""
-                            miningFeeString = miningFeeCheck
-                            miningFeeString = miningFeeString.replacingOccurrences(of: ",", with: "")
-                            let fee = (Double(miningFeeString)!) / 100000000
-                            txFee = fee
+                            let txFee = self.convertMiningFeeToDouble(miningFeeCheck: miningFeeCheck)
                             
                             if !self.sweep {
                                 
                                 if self.spendable < Double(self.amount)! + txFee {
                                     
                                     DispatchQueue.main.async {
+                                        
                                         displayAlert(viewController: self, title: "Error", message: "Insufficient funds.")
+                                        
                                     }
                                     
                                 } else {
                                     
-                                    if let resultArray = dict as? NSArray {
-                                        
-                                        if resultArray.count > 0 {
-                                            
-                                            for utxo in resultArray {
-                                                
-                                                if let utxoDict = utxo as? NSDictionary {
-                                                    
-                                                    if let _ = utxoDict["txid"] as? String {
-                                                        
-                                                        if let spendableCheck = utxoDict["spendable"] as? Bool {
-                                                            
-                                                            if spendableCheck {
-                                                                
-                                                                if let _ = utxoDict["vout"] as? Int {
-                                                                    
-                                                                    if let _ = utxoDict["amount"] as? Double {
-                                                                        
-                                                                        self.spendableUtxos.append(utxoDict)
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            
-                                            var loop = true
-                                            
-                                            self.inputArray.removeAll()
-                                            
-                                            if self.spendableUtxos.count > 0 {
-                                                
-                                                var sumOfUtxo = 0.0
-                                                
-                                                for spendable in self.spendableUtxos {
-                                                    
-                                                    if loop {
-                                                        
-                                                        let amountAvailable = spendable["amount"] as! Double
-                                                        sumOfUtxo = sumOfUtxo + amountAvailable
-                                                        
-                                                        if sumOfUtxo < (Double(self.amount)! + fee) {
-                                                            
-                                                            self.utxoTxId = spendable["txid"] as! String
-                                                            self.utxoVout = spendable["vout"] as! Int
-                                                            let input = "{\"txid\":\"\(self.utxoTxId)\",\"vout\": \(self.utxoVout),\"sequence\": 1}"
-                                                            self.inputArray.append(input)
-                                                            
-                                                        } else {
-                                                            
-                                                            loop = false
-                                                            self.utxoTxId = spendable["txid"] as! String
-                                                            self.utxoVout = spendable["vout"] as! Int
-                                                            let input = "{\"txid\":\"\(self.utxoTxId)\",\"vout\": \(self.utxoVout),\"sequence\": 1}"
-                                                            self.inputArray.append(input)
-                                                            self.changeAmount = sumOfUtxo - (Double(self.amount)! + fee)
-                                                            self.changeAmount = Double(round(100000000*self.changeAmount)/100000000)
-                                                            //self.executeNodeCommand(method: BTC_CLI_COMMAND.getrawchangeaddress.rawValue, param: "")
-                                                            self.getRawChangeAddress()
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            
-                                        } else {
-                                            displayAlert(viewController: self, title: "Error", message: "You have no available UTXO's to create a transaction with, try bumping the fee of pending transactions so they clear quicker or fund your wallet with more Bitcoin.")
-                                        }
-                                    }
-                                }
-                                
-                            } else {
-                                //sweeping
-                                self.changeAmount = 0.00050000
-                                
-                                if let resultArray = dict as? NSArray {
-                                    
                                     if resultArray.count > 0 {
                                         
-                                        for utxo in resultArray {
-                                            
-                                            if let utxoDict = utxo as? NSDictionary {
-                                                
-                                                if let _ = utxoDict["txid"] as? String {
-                                                    
-                                                    if let spendableCheck = utxoDict["spendable"] as? Bool {
-                                                        
-                                                        if spendableCheck {
-                                                            
-                                                            if let _ = utxoDict["vout"] as? Int {
-                                                                
-                                                                if let _ = utxoDict["amount"] as? Double {
-                                                                    
-                                                                    self.spendableUtxos.append(utxoDict)
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        
-                                        
+                                        self.parseUtxos(resultArray: resultArray)
+                                        var loop = true
                                         self.inputArray.removeAll()
                                         
                                         if self.spendableUtxos.count > 0 {
-                                            
+                                                
                                             var sumOfUtxo = 0.0
                                             
                                             for spendable in self.spendableUtxos {
-                                                
-                                                let amountAvailable = spendable["amount"] as! Double
-                                                sumOfUtxo = sumOfUtxo + amountAvailable
-                                                self.utxoTxId = spendable["txid"] as! String
-                                                self.utxoVout = spendable["vout"] as! Int
-                                                let input = "{\"txid\":\"\(self.utxoTxId)\",\"vout\": \(self.utxoVout),\"sequence\": 1}"
-                                                self.inputArray.append(input)
-                                                
+                                                    
+                                                if loop {
+                                                        
+                                                    let amountAvailable = spendable["amount"] as! Double
+                                                    sumOfUtxo = sumOfUtxo + amountAvailable
+                                                        
+                                                    if sumOfUtxo < (Double(self.amount)! + txFee) {
+                                                            
+                                                        self.utxoTxId = spendable["txid"] as! String
+                                                        self.utxoVout = spendable["vout"] as! Int
+                                                        let input = "{\"txid\":\"\(self.utxoTxId)\",\"vout\": \(self.utxoVout),\"sequence\": 1}"
+                                                        self.inputArray.append(input)
+                                                            
+                                                    } else {
+                                                            
+                                                        loop = false
+                                                        self.utxoTxId = spendable["txid"] as! String
+                                                        self.utxoVout = spendable["vout"] as! Int
+                                                        let input = "{\"txid\":\"\(self.utxoTxId)\",\"vout\": \(self.utxoVout),\"sequence\": 1}"
+                                                        self.inputArray.append(input)
+                                                        self.changeAmount = sumOfUtxo - (Double(self.amount)! + txFee)
+                                                        self.changeAmount = Double(round(100000000*self.changeAmount)/100000000)
+                                                        self.getRawChangeAddress()
+                                                            
+                                                    }
+                                                        
+                                                }
+                                                    
                                             }
-                                            
-                                            let array = String(sumOfUtxo).split(separator: ".")
-                                            if array[1].count > 8 {
                                                 
-                                                sumOfUtxo = round(100000000*sumOfUtxo)/100000000
-                                                print("sumofutxo = \(sumOfUtxo), txfee = \(txFee)")
-                                            }
-                                            self.amount = "\(sumOfUtxo - txFee - 0.00050000)"
-                                            print("amount = sumofutxo = \(sumOfUtxo), txfee = \(txFee)")
-                                            
-                                            self.inputs = self.inputArray.description
-                                            self.inputs = self.inputs.replacingOccurrences(of: "[\"", with: "[")
-                                            self.inputs = self.inputs.replacingOccurrences(of: "\"]", with: "]")
-                                            self.inputs = self.inputs.replacingOccurrences(of: "\"{", with: "{")
-                                            self.inputs = self.inputs.replacingOccurrences(of: "}\"", with: "}")
-                                            self.inputs = self.inputs.replacingOccurrences(of: "\\", with: "")
-                                            self.getRawChangeAddress()
-                                            
                                         }
-                                        
+                                            
                                     } else {
                                         displayAlert(viewController: self, title: "Error", message: "You have no available UTXO's to create a transaction with, try bumping the fee of pending transactions so they clear quicker or fund your wallet with more Bitcoin.")
                                     }
+                                    
                                 }
+                                
+                            } else {
+                                
+                                //sweeping
+                                self.changeAmount = 0.00050000
+                                
+                                if resultArray.count > 0 {
+                                    
+                                    self.parseUtxos(resultArray: resultArray)
+                                        
+                                    self.inputArray.removeAll()
+                                        
+                                    if self.spendableUtxos.count > 0 {
+                                            
+                                        var sumOfUtxo = 0.0
+                                            
+                                        for spendable in self.spendableUtxos {
+                                                
+                                            let amountAvailable = spendable["amount"] as! Double
+                                            sumOfUtxo = sumOfUtxo + amountAvailable
+                                            self.utxoTxId = spendable["txid"] as! String
+                                            self.utxoVout = spendable["vout"] as! Int
+                                            let input = "{\"txid\":\"\(self.utxoTxId)\",\"vout\": \(self.utxoVout),\"sequence\": 1}"
+                                            self.inputArray.append(input)
+                                                
+                                        }
+                                            
+                                        let array = String(sumOfUtxo).split(separator: ".")
+                                            
+                                        if array[1].count > 8 {
+                                                
+                                            sumOfUtxo = round(100000000*sumOfUtxo)/100000000
+                                            
+                                        }
+                                            
+                                        self.amount = "\(sumOfUtxo - txFee - 0.00050000)"
+                                        self.processInputs()
+                                        self.getRawChangeAddress()
+                                            
+                                    }
+                                        
+                                } else {
+                                    
+                                    displayAlert(viewController: self, title: "Error", message: "You have no available UTXO's to create a transaction with, try bumping the fee of pending transactions so they clear quicker or fund your wallet with more Bitcoin.")
+                                    
+                                }
+                                
                             }
                             
                         } else {
+                            
                             displayAlert(viewController: self, title: "Error", message: "No mining fee set, please go to settings to set the mining fee.")
+                            
                         }
                         
                     }
+                    
                 }
+                
             })
+            
         }
+        
     }
     
     func getRawChangeAddress() {
         
         let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
         queue.async {
+            
             self.ssh.executeStringResponse(command: BTC_CLI_COMMAND.getrawchangeaddress, params: "", response: { (result, error) in
+                
                 if error != nil {
+                    
                     print("error getrawchangeaddress = \(String(describing: error))")
+                    
                 } else {
-                    print("result = \(String(describing: result))")
-                    if let _ = result as? String {
+                    
+                    if result != "" {
                         
                         self.changeAddress = result!
                         
@@ -533,52 +428,61 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                             
                         } else {
                             
-                            self.inputs = self.inputArray.description
-                            self.inputs = self.inputs.replacingOccurrences(of: "[\"", with: "[")
-                            self.inputs = self.inputs.replacingOccurrences(of: "\"]", with: "]")
-                            self.inputs = self.inputs.replacingOccurrences(of: "\"{", with: "{")
-                            self.inputs = self.inputs.replacingOccurrences(of: "}\"", with: "}")
-                            self.inputs = self.inputs.replacingOccurrences(of: "\\", with: "")
+                            self.processInputs()
                             self.createRawTransaction()
+                            
                         }
                         
-                        
                     }
+                    
                 }
+                
             })
+            
         }
+        
     }
     
     func createRawTransaction() {
         
         let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
         queue.async {
+            
             self.ssh.executeStringResponse(command: BTC_CLI_COMMAND.createrawtransaction, params: "\'\(self.inputs)\' \'{\"\(self.address)\":\(self.amount), \"\(self.changeAddress)\": \(self.changeAmount)}\'", response: { (result, error) in
+                
                 if error != nil {
+                    
                     print("error createrawtransaction = \(String(describing: error))")
+                    
                 } else {
-                    print("result = \(String(describing: result))")
-                    if let rawTx = result as? String {
+                    
+                    if result != "" {
                         
-                        self.rawTxUnsigned = rawTx
+                        self.rawTxUnsigned = result!
                         self.signRawTransaction()
                         
                     }
                     
                 }
+                
             })
+            
         }
+        
     }
     
     func signRawTransaction() {
         
         let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
         queue.async {
+            
             self.ssh.execute(command: BTC_CLI_COMMAND.signrawtransaction, params: "\'\(self.rawTxUnsigned)\'", response: { (result, error) in
+                
                 if error != nil {
+                    
                     print("error signrawtransaction = \(String(describing: error))")
+                    
                 } else {
-                    print("result = \(String(describing: result))")
                     
                     if let signedTransaction = result as? NSDictionary {
                         
@@ -586,31 +490,19 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                         
                         DispatchQueue.main.async {
                             
-                            self.nextButton.removeFromSuperview()
-                            self.amountInput.removeFromSuperview()
-                            self.textView.text = self.rawTxSigned
-                            self.qrCode = self.generateQrCode(key: self.rawTxSigned)
-                            self.displayQrView.image = self.qrCode
-                            UIPasteboard.general.string = self.rawTxSigned
-                            self.view.addSubview(self.decodeButton)
-                            
-                            UIView.animate(withDuration: 0.3, animations: {
-                                self.displayQrView.alpha = 1
-                                self.textView.alpha = 1
-                            })
-                            
-                            self.tapTextViewGesture = UITapGestureRecognizer(target: self, action: #selector(self.shareRawText(_:)))
-                            self.textView.addGestureRecognizer(self.tapTextViewGesture)
-                            self.tapQRGesture = UITapGestureRecognizer(target: self, action: #selector(self.shareQRCode(_:)))
-                            self.displayQrView.addGestureRecognizer(self.tapQRGesture)
-                            
+                            self.displayQR()
                             self.estimateFeeSSH()
                             
                         }
+                        
                     }
+                    
                 }
+                
             })
+            
         }
+        
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
@@ -635,32 +527,48 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                 
                 if dbl != nil && dbl! > 0.0 {
                     
-                    print("amount = \(String(describing: self.amountInput.text))")
                     self.amount = self.amountInput.text!
+                    
                     if self.amount.hasPrefix(".") {
+                        
                         self.amount = "0" + self.amount
                         
                         if !self.isUsingSSH {
+                            
                             self.executeNodeCommand(method: BTC_CLI_COMMAND.listunspent.rawValue, param: "")
+                            
                         } else {
+                            
                             self.listUnspent()
+                            
                         }
                         
                     } else {
                         
                         if !self.isUsingSSH {
+                            
                             self.executeNodeCommand(method: BTC_CLI_COMMAND.listunspent.rawValue, param: "")
+                            
                         } else {
+                            
                             self.listUnspent()
+                            
                         }
+                        
                     }
                     
                 } else {
+                    
                     displayAlert(viewController: self, title: "Error", message: "Only valid numbers allowed.")
+                    
                     DispatchQueue.main.async {
+                        
                         self.amountInput.text = ""
+                        
                     }
+                    
                 }
+                
             }
             
         }
@@ -695,6 +603,7 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
     func addNextButton(inputView: UITextField) {
         
         DispatchQueue.main.async {
+            
             self.nextButton.removeFromSuperview()
             self.nextButton.frame = CGRect(x: self.view.center.x - 40, y: inputView.frame.maxY + 10, width: 80, height: 55)
             self.nextButton.showsTouchWhenHighlighted = true
@@ -703,6 +612,7 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
             self.nextButton.titleLabel?.font = UIFont.init(name: "HelveticaNeue-Bold", size: 20)
             self.nextButton.addTarget(self, action: #selector(self.nextButtonAction), for: .touchUpInside)
             self.view.addSubview(self.nextButton)
+            
         }
         
     }
@@ -726,7 +636,6 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
             
         } else if textField == self.amountInput && self.amountInput.text != "" {
             
-            print("amount = \(String(describing: self.amountInput.text))")
             
         } else {
             
@@ -906,17 +815,6 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
     
     func executeNodeCommand(method: String, param: Any) {
         
-       func decrypt(item: String) -> String {
-            
-            var decrypted = ""
-            if let password = KeychainWrapper.standard.string(forKey: "AESPassword") {
-                if let decryptedCheck = AES256CBC.decryptString(item, password: password) {
-                    decrypted = decryptedCheck
-                }
-            }
-            return decrypted
-        }
-        
         let nodeUsername = decrypt(item: UserDefaults.standard.string(forKey: "NodeUsername")!)
         let nodePassword = decrypt(item: UserDefaults.standard.string(forKey: "NodePassword")!)
         let ip = decrypt(item: UserDefaults.standard.string(forKey: "NodeIPAddress")!)
@@ -951,20 +849,23 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                                 
                             } else {
                                 
-                                if let resultCheck = jsonAddressResult["result"] as? Any {
+                                let resultCheck = jsonAddressResult["result"] as Any
                                     
                                     switch method {
                                         
                                     case BTC_CLI_COMMAND.decoderawtransaction.rawValue:
                                         
                                         if let decodedTx = resultCheck as? NSDictionary {
+                                            
                                             DispatchQueue.main.async {
+                                                
                                                 self.textView.text = "\(decodedTx)"
-                                                //self.view.addSubview(self.pushButton)
                                                 self.decodeButton.setTitle("Encode", for: .normal)
                                                 self.decodeButton.removeTarget(self, action: #selector(self.decode), for: .touchUpInside)
                                                 self.decodeButton.addTarget(self, action: #selector(self.encodeText), for: .touchUpInside)
+                                                
                                             }
+                                            
                                         }
                                         
                                     case BTC_CLI_COMMAND.getbalance.rawValue:
@@ -986,14 +887,11 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                                                     
                                                 } else {
                                                     
-                                                    self.inputs = self.inputArray.description
-                                                    self.inputs = self.inputs.replacingOccurrences(of: "[\"", with: "[")
-                                                    self.inputs = self.inputs.replacingOccurrences(of: "\"]", with: "]")
-                                                    self.inputs = self.inputs.replacingOccurrences(of: "\"{", with: "{")
-                                                    self.inputs = self.inputs.replacingOccurrences(of: "}\"", with: "}")
-                                                    self.inputs = self.inputs.replacingOccurrences(of: "\\", with: "")
+                                                    self.processInputs()
                                                     self.executeNodeCommand(method: BTC_CLI_COMMAND.createrawtransaction.rawValue, param: "\(self.inputs), {\"\(self.address)\":\(self.amount),  \"\(self.changeAddress)\": \(self.changeAmount)}")
+                                                    
                                                 }
+                                                
                                             }
                                             
                                         
@@ -1001,19 +899,16 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                                         
                                         if let miningFeeCheck = UserDefaults.standard.object(forKey: "miningFee") as? String {
                                             
-                                            var txFee = Double()
-                                            var miningFeeString = ""
-                                            miningFeeString = miningFeeCheck
-                                            miningFeeString = miningFeeString.replacingOccurrences(of: ",", with: "")
-                                            let fee = (Double(miningFeeString)!) / 100000000
-                                            txFee = fee
+                                            let txFee = self.convertMiningFeeToDouble(miningFeeCheck: miningFeeCheck)
                                             
                                             if !self.sweep {
                                                
                                                 if self.spendable < Double(self.amount)! + txFee {
                                                     
                                                     DispatchQueue.main.async {
+                                                        
                                                         displayAlert(viewController: self, title: "Error", message: "Insufficient funds.")
+                                                        
                                                     }
                                                     
                                                 } else {
@@ -1022,28 +917,7 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                                                         
                                                         if resultArray.count > 0 {
                                                             
-                                                            for utxo in resultArray {
-                                                                
-                                                                if let utxoDict = utxo as? NSDictionary {
-                                                                    
-                                                                    if let _ = utxoDict["txid"] as? String {
-                                                                        
-                                                                        if let spendableCheck = utxoDict["spendable"] as? Bool {
-                                                                            
-                                                                            if spendableCheck {
-                                                                                
-                                                                                if let _ = utxoDict["vout"] as? Int {
-                                                                                    
-                                                                                    if let _ = utxoDict["amount"] as? Double {
-                                                                                        
-                                                                                        self.spendableUtxos.append(utxoDict)
-                                                                                    }
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
+                                                            self.parseUtxos(resultArray: resultArray)
                                                             
                                                             var loop = true
                                                             
@@ -1060,7 +934,7 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                                                                         let amountAvailable = spendable["amount"] as! Double
                                                                         sumOfUtxo = sumOfUtxo + amountAvailable
                                                                         
-                                                                        if sumOfUtxo < (Double(self.amount)! + fee) {
+                                                                        if sumOfUtxo < (Double(self.amount)! + txFee) {
                                                                             
                                                                             self.utxoTxId = spendable["txid"] as! String
                                                                             self.utxoVout = spendable["vout"] as! Int
@@ -1074,18 +948,26 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                                                                             self.utxoVout = spendable["vout"] as! Int
                                                                             let input = "{\"txid\":\"\(self.utxoTxId)\",\"vout\": \(self.utxoVout),\"sequence\": 1}"
                                                                             self.inputArray.append(input)
-                                                                            self.changeAmount = sumOfUtxo - (Double(self.amount)! + fee)
+                                                                            self.changeAmount = sumOfUtxo - (Double(self.amount)! + txFee)
                                                                             self.changeAmount = Double(round(100000000*self.changeAmount)/100000000)
                                                                             self.executeNodeCommand(method: BTC_CLI_COMMAND.getrawchangeaddress.rawValue, param: "")
+                                                                            
                                                                         }
+                                                                        
                                                                     }
+                                                                    
                                                                 }
+                                                                
                                                             }
                                                             
                                                         } else {
+                                                            
                                                             displayAlert(viewController: self, title: "Error", message: "You have no available UTXO's to create a transaction with, try bumping the fee of pending transactions so they clear quicker or fund your wallet with more Bitcoin.")
+                                                            
                                                         }
+                                                        
                                                     }
+                                                    
                                                 }
                                                 
                                             } else {
@@ -1097,29 +979,7 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                                                     
                                                     if resultArray.count > 0 {
                                                         
-                                                        for utxo in resultArray {
-                                                            
-                                                            if let utxoDict = utxo as? NSDictionary {
-                                                                
-                                                                if let _ = utxoDict["txid"] as? String {
-                                                                    
-                                                                    if let spendableCheck = utxoDict["spendable"] as? Bool {
-                                                                        
-                                                                        if spendableCheck {
-                                                                            
-                                                                            if let _ = utxoDict["vout"] as? Int {
-                                                                                
-                                                                                if let _ = utxoDict["amount"] as? Double {
-                                                                                    
-                                                                                    self.spendableUtxos.append(utxoDict)
-                                                                                    
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
+                                                        self.parseUtxos(resultArray: resultArray)
                                                         
                                                         self.inputArray.removeAll()
                                                         
@@ -1142,32 +1002,31 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                                                             if array[1].count > 8 {
                                                                 
                                                                 sumOfUtxo = round(100000000*sumOfUtxo)/100000000
-                                                                print("sumofutxo = \(sumOfUtxo), txfee = \(txFee.avoidNotation)")
+                                                                
                                                             }
                                                             
                                                             let total = sumOfUtxo - txFee - 0.00050000
                                                             let totalRounded = round(100000000*total)/100000000
                                                             self.amount = "\(totalRounded)"
-                                                            print("amount = \(self.amount) sumofutxo = \(sumOfUtxo), txfee = \(txFee.avoidNotation)")
-                                                            
-                                                            self.inputs = self.inputArray.description
-                                                            self.inputs = self.inputs.replacingOccurrences(of: "[\"", with: "[")
-                                                            self.inputs = self.inputs.replacingOccurrences(of: "\"]", with: "]")
-                                                            self.inputs = self.inputs.replacingOccurrences(of: "\"{", with: "{")
-                                                            self.inputs = self.inputs.replacingOccurrences(of: "}\"", with: "}")
-                                                            self.inputs = self.inputs.replacingOccurrences(of: "\\", with: "")
+                                                            self.processInputs()
                                                             self.executeNodeCommand(method: BTC_CLI_COMMAND.getrawchangeaddress.rawValue, param: "")
                                                             
                                                        }
                                                         
                                                     } else {
+                                                        
                                                         displayAlert(viewController: self, title: "Error", message: "You have no available UTXO's to create a transaction with, try bumping the fee of pending transactions so they clear quicker or fund your wallet with more Bitcoin.")
+                                                        
                                                     }
+                                                    
                                                 }
+                                                
                                             }
                                             
                                         } else {
+                                            
                                             displayAlert(viewController: self, title: "Error", message: "No mining fee set, please go to settings to set the mining fee.")
+                                            
                                         }
                                         
                                     case BTC_CLI_COMMAND.createrawtransaction.rawValue:
@@ -1185,78 +1044,62 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                                             
                                             self.rawTxSigned = signedTransaction["hex"] as! String
                                             
-                                            
                                             DispatchQueue.main.async {
                                                 
-                                                self.nextButton.removeFromSuperview()
-                                                self.amountInput.removeFromSuperview()
-                                                self.textView.text = self.rawTxSigned
-                                                self.qrCode = self.generateQrCode(key: self.rawTxSigned)
-                                                self.displayQrView.image = self.qrCode
-                                                UIPasteboard.general.string = self.rawTxSigned
-                                                self.view.addSubview(self.decodeButton)
-                                                
-                                                UIView.animate(withDuration: 0.3, animations: {
-                                                    self.displayQrView.alpha = 1
-                                                    self.textView.alpha = 1
-                                                })
-                                                
-                                                self.tapTextViewGesture = UITapGestureRecognizer(target: self, action: #selector(self.shareRawText(_:)))
-                                                self.textView.addGestureRecognizer(self.tapTextViewGesture)
-                                                self.tapQRGesture = UITapGestureRecognizer(target: self, action: #selector(self.shareQRCode(_:)))
-                                                self.displayQrView.addGestureRecognizer(self.tapQRGesture)
-                                                
+                                                self.displayQR()
                                                 self.getSmartFeeRPC(method: BTC_CLI_COMMAND.decoderawtransaction, param: "\"\(self.rawTxSigned)\"", index: 0, vsize: 0)
                                                 
-                                                
-                                            }
-                                        }
-                                        
-                                    case BTC_CLI_COMMAND.sendrawtransaction.rawValue:
-                                        
-                                        if let txID = resultCheck as? String {
-                                            
-                                            DispatchQueue.main.async {
-                                                
-                                                UIPasteboard.general.string = txID
-                                                
-                                                self.sentAnimation()
-                                                
-                                                let alert = UIAlertController(title: NSLocalizedString("Success", comment: ""), message: "ID copied to clipboard", preferredStyle: UIAlertControllerStyle.actionSheet)
-                                                
-                                                alert.addAction(UIAlertAction(title: NSLocalizedString("Done", comment: ""), style: .cancel, handler: { (action) in
-                                                    self.dismiss(animated: true, completion: nil)
-                                                }))
-                                                
-                                                alert.popoverPresentationController?.sourceView = self.view
-                                                
-                                                self.present(alert, animated: true) {
-                                                }
                                             }
                                             
-                                        } else {
-                                            displayAlert(viewController: self, title: "Error", message: "Unable to parse Transaction ID.")
                                         }
                                         
-                                    default: break
+                                    default:
+                                        
+                                        break
                                         
                                     }
                                     
                                 }
                                 
-                            }
-                            
                         } catch {
                             
                             print("error processing json")
                             
                         }
+                        
                     }
+                    
                 }
+                
             }
+            
         }
         
         task.resume()
+        
+    }
+    
+    func displayQR() {
+     
+        self.nextButton.removeFromSuperview()
+        self.amountInput.removeFromSuperview()
+        self.textView.text = self.rawTxSigned
+        self.qrCode = self.generateQrCode(key: self.rawTxSigned)
+        self.displayQrView.image = self.qrCode
+        UIPasteboard.general.string = self.rawTxSigned
+        self.view.addSubview(self.decodeButton)
+        
+        UIView.animate(withDuration: 0.3, animations: {
+            
+            self.displayQrView.alpha = 1
+            self.textView.alpha = 1
+            
+        })
+        
+        self.tapTextViewGesture = UITapGestureRecognizer(target: self, action: #selector(self.shareRawText(_:)))
+        self.textView.addGestureRecognizer(self.tapTextViewGesture)
+        self.tapQRGesture = UITapGestureRecognizer(target: self, action: #selector(self.shareQRCode(_:)))
+        self.displayQrView.addGestureRecognizer(self.tapQRGesture)
         
     }
     
@@ -1291,7 +1134,6 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
             label.frame = CGRect(x: 0, y: self.displayQrView.frame.minY + 20, width: self.displayQrView.frame.width, height: 40)
             label.textColor = UIColor.white
             label.textAlignment = .center
-            
             self.displayQrView.addSubview(label)
             
         }
@@ -1314,10 +1156,11 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
             
             let textToShare = [self.rawTxSigned]
             let activityViewController = UIActivityViewController(activityItems: textToShare, applicationActivities: nil)
-            //self.present(activityViewController, animated: true, completion: nil)
             activityViewController.popoverPresentationController?.sourceView = self.view
             self.present(activityViewController, animated: true) {}
+            
         }
+        
     }
     
     @objc func shareQRCode(_ sender: UITapGestureRecognizer) {
@@ -1363,9 +1206,7 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                 DispatchQueue.main.async {
                     
                     let activityController = UIActivityViewController(activityItems: objectsToShare, applicationActivities: nil)
-                    activityController.completionWithItemsHandler = { (type,completed,items,error) in
-                        print("completed. type=\(String(describing: type)) completed=\(completed) items=\(String(describing: items)) error=\(String(describing: error))")
-                    }
+                    activityController.completionWithItemsHandler = { (type,completed,items,error) in }
                     activityController.popoverPresentationController?.sourceView = self.view
                     self.present(activityController, animated: true) {}
                     
@@ -1377,18 +1218,25 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
         
     }
     
-    func getSmartFeeRPC(method: BTC_CLI_COMMAND, param: Any, index: Int, vsize: Int) {
+    func decrypt(item: String) -> String {
         
-        func decrypt(item: String) -> String {
+        var decrypted = ""
+        
+        if let password = KeychainWrapper.standard.string(forKey: "AESPassword") {
             
-            var decrypted = ""
-            if let password = KeychainWrapper.standard.string(forKey: "AESPassword") {
-                if let decryptedCheck = AES256CBC.decryptString(item, password: password) {
-                    decrypted = decryptedCheck
-                }
+            if let decryptedCheck = AES256CBC.decryptString(item, password: password) {
+                
+                decrypted = decryptedCheck
+                
             }
-            return decrypted
+            
         }
+        
+        return decrypted
+        
+    }
+    
+    func getSmartFeeRPC(method: BTC_CLI_COMMAND, param: Any, index: Int, vsize: Int) {
         
         let nodeUsername = decrypt(item: UserDefaults.standard.string(forKey: "NodeUsername")!)
         let nodePassword = decrypt(item: UserDefaults.standard.string(forKey: "NodePassword")!)
@@ -1426,77 +1274,34 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                                 
                             } else {
                                 
-                                if let resultCheck = jsonAddressResult["result"] as? Any {
+                                let resultCheck = jsonAddressResult["result"] as Any
                                     
-                                    switch method {
+                                switch method {
                                         
-                                    case BTC_CLI_COMMAND.estimatesmartfee:
+                                case BTC_CLI_COMMAND.estimatesmartfee:
                                         
-                                        if let dict = resultCheck as? NSDictionary {
+                                    if let dict = resultCheck as? NSDictionary {
                                             
-                                            let miningFeeString = UserDefaults.standard.object(forKey: "miningFee") as! String
-                                            let txSize = Double(vsize)
-                                            let btcPerKbyte = dict["feerate"] as! Double
-                                            let btcPerByte = btcPerKbyte / 1000
-                                            let satsPerByte = btcPerByte * 100000000
-                                            let optimalFeeForSixBlocks = satsPerByte * txSize
-                                            let actualFeeInSats = Double(miningFeeString)!
-                                            let diff = optimalFeeForSixBlocks - actualFeeInSats
+                                        self.displayFeeAlert(dict: dict, vsize: vsize)
                                             
-                                            if diff < 0 {
-                                                
-                                                //overpaying
-                                                let percentageDifference = Int(((actualFeeInSats / optimalFeeForSixBlocks) * 100)).avoidNotation
-                                                
-                                                DispatchQueue.main.async {
-                                                    
-                                                    let alert = UIAlertController(title: NSLocalizedString("Fee Alert", comment: ""), message: "The optimal fee to get this tx included in the next 6 blocks is \(Int(optimalFeeForSixBlocks)) satoshis.\n\nYou are currently paying a fee of \(Int(actualFeeInSats)) satoshis which is \(percentageDifference)% higher then necessary.\n\nWe suggest going to settings and lowering your mining fee to the suggested amount.", preferredStyle: UIAlertControllerStyle.alert)
-                                                    
-                                                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: { (action) in
-                                                    }))
-                                                    
-                                                    self.present(alert, animated: true)
-                                                    
-                                                }
-                                                
-                                            } else {
-                                                
-                                                //underpaying
-                                                let percentageDifference = Int((((optimalFeeForSixBlocks - actualFeeInSats) / optimalFeeForSixBlocks) * 100)).avoidNotation
-                                                
-                                                DispatchQueue.main.async {
-                                                    
-                                                    let alert = UIAlertController(title: NSLocalizedString("Fee Alert", comment: ""), message: "The optimal fee to get this tx included in the next 6 blocks is \(Int(optimalFeeForSixBlocks)) satoshis.\n\nYou are currently paying a fee of \(Int(actualFeeInSats)) satoshis which is \(percentageDifference)% lower then necessary.\n\nWe suggest going to settings and raising your mining fee to the suggested amount, however RBF is enabled by default, you can always tap an unconfirmed tx in the home screen to bump the fee.", preferredStyle: UIAlertControllerStyle.alert)
-                                                    
-                                                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: { (action) in
-                                                    }))
-                                                    
-                                                    self.present(alert, animated: true)
-                                                    
-                                                }
-                                                
-                                            }
-                                            
-                                        }
-                                        
-                                    case BTC_CLI_COMMAND.decoderawtransaction:
-                                        
-                                        if let dict = resultCheck as? NSDictionary {
-                                            
-                                            let vsize = dict["vsize"] as! Int
-                                            
-                                            self.getSmartFeeRPC(method: BTC_CLI_COMMAND.estimatesmartfee, param: "6", index: 0, vsize: vsize)
-                                            
-                                        }
-                                        
-                                    default:
-                                        
-                                        break
-                                        
                                     }
-                                    
+                                        
+                                case BTC_CLI_COMMAND.decoderawtransaction:
+                                        
+                                    if let dict = resultCheck as? NSDictionary {
+                                            
+                                        let vsize = dict["vsize"] as! Int
+                                            
+                                        self.getSmartFeeRPC(method: BTC_CLI_COMMAND.estimatesmartfee, param: "6", index: 0, vsize: vsize)
+                                            
+                                    }
+                                        
+                                default:
+                                        
+                                    break
+                                        
                                 }
-                                
+                                    
                             }
                             
                         } catch {
@@ -1563,44 +1368,82 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                     
                     if let dict = result as? NSDictionary {
                         
-                        let miningFeeString = UserDefaults.standard.object(forKey: "miningFee") as! String
-                        let txSize = Double(vsize)
-                        let btcPerKbyte = dict["feerate"] as! Double
-                        let btcPerByte = btcPerKbyte / 1000
-                        let satsPerByte = btcPerByte * 100000000
-                        let optimalFeeForSixBlocks = satsPerByte * txSize
-                        let actualFeeInSats = Double(miningFeeString)!
-                        let diff = optimalFeeForSixBlocks - actualFeeInSats
+                        self.displayFeeAlert(dict: dict, vsize: vsize)
                         
-                        if diff < 0 {
+                    }
+                    
+                }
+                
+            })
+            
+        }
+        
+    }
+    
+    func displayFeeAlert(dict: NSDictionary, vsize: Int) {
+     
+        let miningFeeString = UserDefaults.standard.object(forKey: "miningFee") as! String
+        let txSize = Double(vsize)
+        let btcPerKbyte = dict["feerate"] as! Double
+        let btcPerByte = btcPerKbyte / 1000
+        let satsPerByte = btcPerByte * 100000000
+        let optimalFeeForSixBlocks = satsPerByte * txSize
+        let actualFeeInSats = Double(miningFeeString)!
+        let diff = optimalFeeForSixBlocks - actualFeeInSats
+        
+        if diff < 0 {
+            
+            //overpaying
+            let percentageDifference = Int(((actualFeeInSats / optimalFeeForSixBlocks) * 100)).avoidNotation
+            
+            DispatchQueue.main.async {
+                
+                let alert = UIAlertController(title: NSLocalizedString("Fee Alert", comment: ""), message: "The optimal fee to get this tx included in the next 6 blocks is \(Int(optimalFeeForSixBlocks)) satoshis.\n\nYou are currently paying a fee of \(Int(actualFeeInSats)) satoshis which is \(percentageDifference)% higher then necessary.\n\nWe suggest going to settings and lowering your mining fee to the suggested amount.", preferredStyle: UIAlertControllerStyle.alert)
+                
+                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: { (action) in }))
+                
+                self.present(alert, animated: true)
+                
+            }
+            
+        } else {
+            
+            //underpaying
+            let percentageDifference = Int((((optimalFeeForSixBlocks - actualFeeInSats) / optimalFeeForSixBlocks) * 100)).avoidNotation
+            
+            DispatchQueue.main.async {
+                
+                let alert = UIAlertController(title: NSLocalizedString("Fee Alert", comment: ""), message: "The optimal fee to get this tx included in the next 6 blocks is \(Int(optimalFeeForSixBlocks)) satoshis.\n\nYou are currently paying a fee of \(Int(actualFeeInSats)) satoshis which is \(percentageDifference)% lower then necessary.\n\nWe suggest going to settings and raising your mining fee to the suggested amount, however RBF is enabled by default, you can always tap an unconfirmed tx in the home screen to bump the fee.", preferredStyle: UIAlertControllerStyle.alert)
+                
+                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: { (action) in }))
+                
+                self.present(alert, animated: true)
+                
+            }
+            
+        }
+        
+    }
+    
+    func parseUtxos(resultArray: NSArray) {
+        
+        for utxo in resultArray {
+            
+            if let utxoDict = utxo as? NSDictionary {
+                
+                if let _ = utxoDict["txid"] as? String {
+                    
+                    if let spendableCheck = utxoDict["spendable"] as? Bool {
+                        
+                        if spendableCheck {
                             
-                            //overpaying
-                            let percentageDifference = Int(((actualFeeInSats / optimalFeeForSixBlocks) * 100)).avoidNotation
-                            
-                            DispatchQueue.main.async {
+                            if let _ = utxoDict["vout"] as? Int {
                                 
-                                let alert = UIAlertController(title: NSLocalizedString("Fee Alert", comment: ""), message: "The optimal fee to get this tx included in the next 6 blocks is \(Int(optimalFeeForSixBlocks)) satoshis.\n\nYou are currently paying a fee of \(Int(actualFeeInSats)) satoshis which is \(percentageDifference)% higher then necessary.\n\nWe suggest going to settings and lowering your mining fee to the suggested amount.", preferredStyle: UIAlertControllerStyle.alert)
-                                
-                                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: { (action) in
-                                }))
-                                
-                                self.present(alert, animated: true)
-                                
-                            }
-                            
-                        } else {
-                            
-                            //underpaying
-                            let percentageDifference = Int((((optimalFeeForSixBlocks - actualFeeInSats) / optimalFeeForSixBlocks) * 100)).avoidNotation
-                            
-                            DispatchQueue.main.async {
-                                
-                                let alert = UIAlertController(title: NSLocalizedString("Fee Alert", comment: ""), message: "The optimal fee to get this tx included in the next 6 blocks is \(Int(optimalFeeForSixBlocks)) satoshis.\n\nYou are currently paying a fee of \(Int(actualFeeInSats)) satoshis which is \(percentageDifference)% lower then necessary.\n\nWe suggest going to settings and raising your mining fee to the suggested amount, however RBF is enabled by default, you can always tap an unconfirmed tx in the home screen to bump the fee.", preferredStyle: UIAlertControllerStyle.alert)
-                                
-                                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: { (action) in
-                                }))
-                                
-                                self.present(alert, animated: true)
+                                if let _ = utxoDict["amount"] as? Double {
+                                    
+                                    self.spendableUtxos.append(utxoDict)
+                                    
+                                }
                                 
                             }
                             
@@ -1610,9 +1453,28 @@ class CreateRawTxViewController: UIViewController, AVCaptureMetadataOutputObject
                     
                 }
                 
-            })
+            }
             
         }
+        
+    }
+    
+    func processInputs() {
+     
+        self.inputs = self.inputArray.description
+        self.inputs = self.inputs.replacingOccurrences(of: "[\"", with: "[")
+        self.inputs = self.inputs.replacingOccurrences(of: "\"]", with: "]")
+        self.inputs = self.inputs.replacingOccurrences(of: "\"{", with: "{")
+        self.inputs = self.inputs.replacingOccurrences(of: "}\"", with: "}")
+        self.inputs = self.inputs.replacingOccurrences(of: "\\", with: "")
+        
+    }
+    
+    func convertMiningFeeToDouble(miningFeeCheck: String) -> Double {
+     
+        let miningFeeString = miningFeeCheck.replacingOccurrences(of: ",", with: "")
+        return (Double(miningFeeString)!) / 100000000
+        
     }
     
 }

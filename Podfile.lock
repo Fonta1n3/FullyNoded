@@ -1,35 +1,20 @@
 PODS:
-  - CoreBitcoin (0.6.8.1):
-    - ISO8601DateFormatter
-    - OpenSSL-Universal (= 1.0.1.16)
   - EFQRCode (4.5.0):
     - swift_qrcodejs (~> 1.0.1)
-  - ISO8601DateFormatter (0.8)
-  - OpenSSL-Universal (1.0.1.16)
   - swift_qrcodejs (1.0.1)
 
 DEPENDENCIES:
-  - CoreBitcoin (from `https://raw.github.com/oleganza/CoreBitcoin/master/CoreBitcoin.podspec`)
   - EFQRCode (~> 4.5.0)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
     - EFQRCode
-    - ISO8601DateFormatter
-    - OpenSSL-Universal
     - swift_qrcodejs
 
-EXTERNAL SOURCES:
-  CoreBitcoin:
-    :podspec: https://raw.github.com/oleganza/CoreBitcoin/master/CoreBitcoin.podspec
-
 SPEC CHECKSUMS:
-  CoreBitcoin: 4ac6f6a61e543f08399c2fe57496d4fdcbaf74f9
   EFQRCode: 842f431e660da841f518993af8f4cbd275601d84
-  ISO8601DateFormatter: 4551b6ce4f83185425f583b0b3feb3c7b59b942c
-  OpenSSL-Universal: 85ef63bf81d0741b03c8719cd29685c37c59518d
   swift_qrcodejs: c181fe5c849d30c699546a23762d7e3dd143ab37
 
-PODFILE CHECKSUM: 31cb01cdb535d63d0521d214a30d34c172003062
+PODFILE CHECKSUM: 5e8e0c2258301226f48fa6c45b436d2a5cc6d8d6
 
 COCOAPODS: 1.5.3

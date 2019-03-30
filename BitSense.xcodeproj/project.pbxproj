@@ -28,6 +28,7 @@
 		D0196DDF21BEF3FF0081E0AB /* NMSSH.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0196DDE21BEF3FF0081E0AB /* NMSSH.framework */; };
 		D0286D6521E2714200954991 /* ReadMe.md in Resources */ = {isa = PBXBuildFile; fileRef = D0286D6421E2714200954991 /* ReadMe.md */; };
 		D0358D9521B1B44B007D56ED /* whiteCheck.png in Resources */ = {isa = PBXBuildFile; fileRef = D0358D9421B1B44A007D56ED /* whiteCheck.png */; };
+		D0410617224ED189004AC0D0 /* ObjectiveCHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = D0410616224ED189004AC0D0 /* ObjectiveCHeader.m */; };
 		D0452ACC2246AD840013E225 /* Parse.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0452ACB2246AD840013E225 /* Parse.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		D0452ACE2246ADEE0013E225 /* Bolts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0452ACD2246ADEE0013E225 /* Bolts.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		D0452AD02246C47F0013E225 /* 9188.png in Resources */ = {isa = PBXBuildFile; fileRef = D0452ACF2246C47F0013E225 /* 9188.png */; };
@@ -49,12 +50,12 @@
 		D0CAE42D224A4F650066AC23 /* UtxoTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0CAE42C224A4F650066AC23 /* UtxoTableViewController.swift */; };
 		D0DA7CE72171A66A00A96F7E /* minus.png in Resources */ = {isa = PBXBuildFile; fileRef = D0DA7CE62171A66A00A96F7E /* minus.png */; };
 		D0DA7CE92172F7D800A96F7E /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0DA7CE82172F7D800A96F7E /* StoreKit.framework */; };
-		D0E9B63821183AFC00B416E7 /* ObjectiveCHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = D0E9B63721183AFC00B416E7 /* ObjectiveCHeader.m */; };
 		D0E9B63A211A90D100B416E7 /* CreateAccountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E9B639211A90D100B416E7 /* CreateAccountViewController.swift */; };
 		D0E9B63C211A94C600B416E7 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E9B63B211A94C600B416E7 /* Utilities.swift */; };
 		D0EF29C1216B82B400EB776A /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EF29C0216B82B400EB776A /* SettingsViewController.swift */; };
 		D0FA417C213C7CDA0028E4F8 /* whiteLock.png in Resources */ = {isa = PBXBuildFile; fileRef = D0FA417B213C7CDA0028E4F8 /* whiteLock.png */; };
 		D0FA417E213C7CED0028E4F8 /* whiteFingerPrint.png in Resources */ = {isa = PBXBuildFile; fileRef = D0FA417D213C7CED0028E4F8 /* whiteFingerPrint.png */; };
+		D0FAAE7F225004D200CD43BC /* DisplayRawViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0FAAE7E225004D200CD43BC /* DisplayRawViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -82,6 +83,8 @@
 		D0196DDE21BEF3FF0081E0AB /* NMSSH.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NMSSH.framework; path = Carthage/Build/iOS/NMSSH.framework; sourceTree = "<group>"; };
 		D0286D6421E2714200954991 /* ReadMe.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ReadMe.md; sourceTree = "<group>"; };
 		D0358D9421B1B44A007D56ED /* whiteCheck.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteCheck.png; sourceTree = "<group>"; };
+		D0410615224ED188004AC0D0 /* BitSense-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BitSense-Bridging-Header.h"; sourceTree = "<group>"; };
+		D0410616224ED189004AC0D0 /* ObjectiveCHeader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ObjectiveCHeader.m; sourceTree = "<group>"; };
 		D0452ACB2246AD840013E225 /* Parse.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Parse.framework; path = Carthage/Build/iOS/Parse.framework; sourceTree = "<group>"; };
 		D0452ACD2246ADEE0013E225 /* Bolts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Bolts.framework; path = Carthage/Build/iOS/Bolts.framework; sourceTree = "<group>"; };
 		D0452ACF2246C47F0013E225 /* 9188.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = 9188.png; path = ../../../../../Downloads/9188.png; sourceTree = "<group>"; };
@@ -103,13 +106,12 @@
 		D0CAE42C224A4F650066AC23 /* UtxoTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtxoTableViewController.swift; sourceTree = "<group>"; };
 		D0DA7CE62171A66A00A96F7E /* minus.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = minus.png; sourceTree = "<group>"; };
 		D0DA7CE82172F7D800A96F7E /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
-		D0E9B63621183AFC00B416E7 /* BitSense-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BitSense-Bridging-Header.h"; sourceTree = "<group>"; };
-		D0E9B63721183AFC00B416E7 /* ObjectiveCHeader.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ObjectiveCHeader.m; sourceTree = "<group>"; };
 		D0E9B639211A90D100B416E7 /* CreateAccountViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateAccountViewController.swift; sourceTree = "<group>"; };
 		D0E9B63B211A94C600B416E7 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		D0EF29C0216B82B400EB776A /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		D0FA417B213C7CDA0028E4F8 /* whiteLock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteLock.png; sourceTree = "<group>"; };
 		D0FA417D213C7CED0028E4F8 /* whiteFingerPrint.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteFingerPrint.png; sourceTree = "<group>"; };
+		D0FAAE7E225004D200CD43BC /* DisplayRawViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayRawViewController.swift; sourceTree = "<group>"; };
 		DDF5C52D26F270D526B8F5D8 /* Pods-BitSense.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BitSense.release.xcconfig"; path = "Pods/Target Support Files/Pods-BitSense/Pods-BitSense.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -170,9 +172,9 @@
 				D0286D6021E2672D00954991 /* SSH */,
 				D0FA417A213C7CB70028E4F8 /* Images */,
 				D00B9A272111427200E8B95A /* AppDelegate.swift */,
-				D0E9B63721183AFC00B416E7 /* ObjectiveCHeader.m */,
 				D0452AD32246C7820013E225 /* clear.png */,
-				D0E9B63621183AFC00B416E7 /* BitSense-Bridging-Header.h */,
+				D0410615224ED188004AC0D0 /* BitSense-Bridging-Header.h */,
+				D0410616224ED189004AC0D0 /* ObjectiveCHeader.m */,
 				D0452ACF2246C47F0013E225 /* 9188.png */,
 				D00B9A2B2111427200E8B95A /* Main.storyboard */,
 				D00B9A312111427200E8B95A /* Assets.xcassets */,
@@ -213,6 +215,7 @@
 				D0B3149E216C4DB1008FDC53 /* CreateRawTxViewController.swift */,
 				D05692E221434452006DF0F4 /* MainMenuViewController.swift */,
 				D0452ADA2247417F0013E225 /* ImportPrivKeyViewController.swift */,
+				D0FAAE7E225004D200CD43BC /* DisplayRawViewController.swift */,
 			);
 			path = "View Controllers";
 			sourceTree = "<group>";
@@ -390,8 +393,6 @@
 				"$(SRCROOT)/Carthage/Build/iOS/SipHash.framework",
 				"$(SRCROOT)/Carthage/Build/iOS/SwiftKeychainWrapper.framework",
 				"$(SRCROOT)/Carthage/Build/iOS/NMSSH.framework",
-				"$(SRCROOT)/Carthage/Build/iOS/Parse.framework",
-				"$(SRCROOT)/Carthage/Build/iOS/Bolts.framework",
 			);
 			outputPaths = (
 			);
@@ -414,9 +415,10 @@
 				D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */,
 				D0452ADD224743C50013E225 /* LogInViewController.swift in Sources */,
 				D0452ADB2247417F0013E225 /* ImportPrivKeyViewController.swift in Sources */,
+				D0FAAE7F225004D200CD43BC /* DisplayRawViewController.swift in Sources */,
 				D0126FF622446E3800412629 /* InvoiceViewController.swift in Sources */,
 				D0452ADF224833390013E225 /* Commands.swift in Sources */,
-				D0E9B63821183AFC00B416E7 /* ObjectiveCHeader.m in Sources */,
+				D0410617224ED189004AC0D0 /* ObjectiveCHeader.m in Sources */,
 				D00B9A302111427200E8B95A /* BitSense.xcdatamodeld in Sources */,
 				D0EF29C1216B82B400EB776A /* SettingsViewController.swift in Sources */,
 				D00B9A282111427200E8B95A /* AppDelegate.swift in Sources */,

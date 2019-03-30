@@ -1,1 +1,0 @@
-../../../CoreBitcoin/CoreBitcoin/NSData+BTCData.h

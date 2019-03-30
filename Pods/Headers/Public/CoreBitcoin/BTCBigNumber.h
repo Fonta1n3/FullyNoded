@@ -1,1 +1,0 @@
-../../../CoreBitcoin/CoreBitcoin/BTCBigNumber.h

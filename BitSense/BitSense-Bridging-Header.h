@@ -3,7 +3,7 @@
 //
 
 
-#import <CoreBitcoin/BTCTransactionBuilder.h>
+/*#import <CoreBitcoin/BTCTransactionBuilder.h>
 #import <CoreBitcoin/BTCAddress.h>
 #import <CoreBitcoin/BTCBase58.h>
 #import <CoreBitcoin/BTCBigNumber.h>
@@ -32,4 +32,4 @@
 #import <CoreBitcoin/BTCData.h>
 #import <CoreBitcoin/BTCBase58.h>
 #import <CoreBitcoin/BTCKey.h>
-#import <CoreBitcoin/BTCAddress.h>
+#import <CoreBitcoin/BTCAddress.h>*/

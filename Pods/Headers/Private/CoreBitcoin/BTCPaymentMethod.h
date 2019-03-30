@@ -1,1 +1,0 @@
-../../../CoreBitcoin/CoreBitcoin/BTCPaymentMethod.h

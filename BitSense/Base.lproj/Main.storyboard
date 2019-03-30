@@ -481,6 +481,7 @@
                     <connections>
                         <outlet property="displayQrView" destination="xAu-wG-A1S" id="Tzm-h5-6b9"/>
                         <outlet property="textView" destination="k0H-tS-DtV" id="6xY-ns-WlH"/>
+                        <segue destination="CEy-gF-dFz" kind="show" identifier="showraw" id="J5y-6m-4Zo"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="BlL-9x-Sif" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -543,6 +544,21 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="k6b-ep-z2U" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="2622" y="1780"/>
+        </scene>
+        <!--Display Raw View Controller-->
+        <scene sceneID="TfL-dh-RsA">
+            <objects>
+                <viewController id="CEy-gF-dFz" customClass="DisplayRawViewController" customModule="BitSense" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="BkX-wH-DSH">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <viewLayoutGuide key="safeArea" id="gQ0-fu-yUo"/>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="j62-O1-VQU" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1004" y="2503"/>
         </scene>
         <!--UTXOs-->
         <scene sceneID="y4v-8f-vPk">
