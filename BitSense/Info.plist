@@ -35,6 +35,8 @@
 	<string>We dont use your location</string>
 	<key>NSLocationUsageDescription</key>
 	<string>We dont use your location</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>To log into the app with FaceID</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We dont use your loaction</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>

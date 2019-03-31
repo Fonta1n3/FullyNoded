@@ -35,4 +35,5 @@ public enum BTC_CLI_COMMAND: String {
     case getnetworkinfo = "getnetworkinfo"
     case getmininginfo = "getmininginfo"
     case estimatesmartfee = "estimatesmartfee"
+    case dumpwallet = "dumpwallet"
 }

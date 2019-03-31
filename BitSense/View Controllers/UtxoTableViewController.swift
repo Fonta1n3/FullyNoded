@@ -7,14 +7,12 @@
 //
 
 import UIKit
-import AES256CBC
-import SwiftKeychainWrapper
 import EFQRCode
 import AVFoundation
-import EFQRCode
 
 class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObjectsDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate {
     
+    var makeRPCCall:MakeRPCCall!
     let decodeButton = UIButton()
     var tapQRGesture = UITapGestureRecognizer()
     var tapTextViewGesture = UITapGestureRecognizer()
@@ -435,9 +433,109 @@ class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObj
         
     }
     
+    func parseSignedTx(result: NSDictionary) {
+     
+        let hex = result["hex"] as! String
+        self.rawSigned = hex
+        self.displayRaw(raw: hex)
+        
+    }
+    
+    func parseDecodedTx(decodedTx: NSDictionary) {
+     
+        let size = decodedTx["size"] as! Int
+        let vsize = decodedTx["vsize"] as! Int
+        
+        DispatchQueue.main.async {
+            
+            let dict = ["size":"\(size)", "vsize":"\(vsize)"]
+            self.sizeArray.append(dict)
+            self.currentIndex = self.currentIndex + 1
+            self.utxoTable.reloadData()
+            self.getUtxoSizeRPC()
+            
+            if self.currentIndex == self.utxoArray.count {
+                
+                self.removeSpinner()
+                
+            }
+            
+        }
+        
+    }
+    
+    func parseUnspent(utxos: NSArray) {
+     
+        if utxos.count > 0 {
+            
+            self.utxoArray = utxos as! Array
+            
+            self.getUtxoSizeRPC()
+            
+            DispatchQueue.main.async {
+                
+                self.utxoTable.reloadData()
+                
+            }
+            
+        } else {
+            
+            self.removeSpinner()
+            
+        }
+        
+    }
+    
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: Any, index: Int) {
         
-        func decrypt(item: String) -> String {
+        func getResult() {
+            
+            if !makeRPCCall.errorBool {
+                
+                switch method {
+                    
+                case BTC_CLI_COMMAND.signrawtransaction:
+                    
+                    let result = makeRPCCall.dictToReturn
+                    parseSignedTx(result: result)
+                    
+                case BTC_CLI_COMMAND.createrawtransaction:
+                    
+                    let unsigned = makeRPCCall.stringToReturn
+                    self.executeNodeCommand(method: BTC_CLI_COMMAND.signrawtransaction, param: "\"\(unsigned)\"", index: 0)
+                        
+                case BTC_CLI_COMMAND.decoderawtransaction:
+                    
+                    let dict = makeRPCCall.dictToReturn
+                    parseDecodedTx(decodedTx: dict)
+                        
+                case BTC_CLI_COMMAND.getrawtransaction:
+                    
+                    let rawtx = makeRPCCall.stringToReturn
+                    self.executeNodeCommand(method: BTC_CLI_COMMAND.decoderawtransaction, param: "\"\(rawtx)\"", index: index)
+                    
+                case BTC_CLI_COMMAND.listunspent:
+                    
+                    let resultArray = makeRPCCall.arrayToReturn
+                    parseUnspent(utxos: resultArray)
+                    
+                default:
+                    
+                    break
+                    
+                }
+                
+            } else {
+            
+                displayAlert(viewController: self, title: "Error", message: makeRPCCall.errorDescription)
+                
+            }
+    
+        }
+        
+        makeRPCCall.executeRPCCommand(method: method, param: param, completion: getResult)
+        
+        /*func decrypt(item: String) -> String {
             
             var decrypted = ""
             if let password = KeychainWrapper.standard.string(forKey: "AESPassword") {
@@ -486,87 +584,9 @@ class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObj
                                 
                                 let resultCheck = jsonAddressResult["result"] as Any
                                     
-                                    switch method {
-                                        
-                                    case BTC_CLI_COMMAND.signrawtransaction:
-                                        
-                                        if let result = resultCheck as? NSDictionary {
-                                            
-                                            let hex = result["hex"] as! String
-                                            self.rawSigned = hex
-                                            self.displayRaw(raw: hex)
-                                            
-                                        }
-                                        
-                                    case BTC_CLI_COMMAND.createrawtransaction:
-                                        
-                                        if let unsigned = resultCheck as? String {
-                                            
-                                            self.executeNodeCommand(method: BTC_CLI_COMMAND.signrawtransaction, param: "\"\(unsigned)\"", index: 0)
-                                            
-                                        }
-                                        
-                                    case BTC_CLI_COMMAND.decoderawtransaction:
-                                        
-                                        if let dict = resultCheck as? NSDictionary {
-                                            
-                                            let size = dict["size"] as! Int
-                                            let vsize = dict["vsize"] as! Int
-                                            
-                                            DispatchQueue.main.async {
-                                                
-                                                let dict = ["size":"\(size)", "vsize":"\(vsize)"]
-                                                self.sizeArray.append(dict)
-                                                self.currentIndex = self.currentIndex + 1
-                                                self.utxoTable.reloadData()
-                                                self.getUtxoSizeRPC()
-                                                
-                                                if self.currentIndex == self.utxoArray.count {
-                                                    
-                                                    self.removeSpinner()
-                                                    
-                                                }
-                                                
-                                            }
-                                            
-                                        }
-                                        
-                                    case BTC_CLI_COMMAND.getrawtransaction:
-                                        
-                                        let rawtx = resultCheck as! String
-                                        self.executeNodeCommand(method: BTC_CLI_COMMAND.decoderawtransaction, param: "\"\(rawtx)\"", index: index)
-                                        
-                                    case BTC_CLI_COMMAND.listunspent:
-                                        
-                                        if let resultArray = resultCheck as? NSArray {
-                                            
-                                            if resultArray.count > 0 {
-                                                
-                                                self.utxoArray = resultArray as! Array
-                                                
-                                                self.getUtxoSizeRPC()
-                                                
-                                                DispatchQueue.main.async {
-                                                    
-                                                    self.utxoTable.reloadData()
-                                                    
-                                                }
-                                                
-                                            } else {
-                                                
-                                                self.removeSpinner()
-                                                
-                                            }
-                                            
-                                        }
-                                        
-                                    default:
-                                        
-                                        break
-                                        
-                                    }
+                                    */
                                     
-                            }
+                            /*}
                             
                         } catch {
                             
@@ -582,7 +602,7 @@ class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObj
             
         }
         
-        task.resume()
+        task.resume()*/
         
     }
     
@@ -915,7 +935,7 @@ class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObj
         uploadButton.addTarget(self, action: #selector(chooseQRCodeFromLibrary), for: .touchUpInside)
         
         let closeButton = UIButton()
-        closeButton.frame = CGRect(x: 10, y: 20, width: 20, height: 20)
+        closeButton.frame = CGRect(x: 10, y: 40, width: 20, height: 20)
         closeButton.setImage(UIImage(named: "back.png"), for: .normal)
         closeButton.addTarget(self, action: #selector(goBack), for: .touchUpInside)
         
@@ -1129,7 +1149,7 @@ class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObj
             UIView.animate(withDuration: 0.75, animations: {
                 
                 self.imageImportView.image = image
-                self.imageImportView.frame = CGRect(x: self.blurView.center.x - ((self.blurView.frame.width - 10)/2), y: 45, width: self.blurView.frame.width - 10, height: self.blurView.frame.width - 10)
+                self.imageImportView.frame = CGRect(x: self.blurView.center.x - ((self.blurView.frame.width - 10)/2), y: 65, width: self.blurView.frame.width - 10, height: self.blurView.frame.width - 10)
                 self.textView.frame = CGRect(x: 10, y: self.imageImportView.frame.maxY + 5, width: self.blurView.frame.width - 20, height: self.imageImportView.frame.height / 2)
                 self.textView.alpha = 1
                 self.decodeButton.alpha = 1
@@ -1355,9 +1375,63 @@ class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObj
         
     }
     
+    func parseDecodedForFeeEstimate(dict: NSDictionary, vsize: Int) {
+     
+        if vsize == 1 {
+            
+            DispatchQueue.main.async {
+                
+                self.textView.text = "\(dict)"
+                self.decodeButton.setTitle("Encode", for: .normal)
+                self.decodeButton.removeTarget(self, action: #selector(self.decode), for: .touchUpInside)
+                self.decodeButton.addTarget(self, action: #selector(self.encodeText), for: .touchUpInside)
+                
+            }
+            
+        } else {
+            
+            let vsize = dict["vsize"] as! Int
+            self.getSmartFeeRPC(method: BTC_CLI_COMMAND.estimatesmartfee, param: "6", index: 0, vsize: vsize)
+            
+        }
+        
+    }
+    
     func getSmartFeeRPC(method: BTC_CLI_COMMAND, param: Any, index: Int, vsize: Int) {
         
-        func decrypt(item: String) -> String {
+        func getResult() {
+            
+            if !makeRPCCall.errorBool {
+                
+                switch method {
+                    
+                case BTC_CLI_COMMAND.estimatesmartfee:
+                    
+                    let dict = makeRPCCall.dictToReturn
+                    self.showFeeAlert(dict: dict, vsize: vsize)
+                        
+                case BTC_CLI_COMMAND.decoderawtransaction:
+                    
+                    let dict = makeRPCCall.dictToReturn
+                    parseDecodedForFeeEstimate(dict: dict, vsize: vsize)
+                    
+                default:
+                    
+                    break
+                    
+                }
+                
+            } else {
+             
+                displayAlert(viewController: self, title: "Error", message: makeRPCCall.errorDescription)
+                
+            }
+            
+        }
+        
+        makeRPCCall.executeRPCCommand(method: method, param: param, completion: getResult)
+        
+        /*func decrypt(item: String) -> String {
             
             var decrypted = ""
             if let password = KeychainWrapper.standard.string(forKey: "AESPassword") {
@@ -1406,48 +1480,9 @@ class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObj
                                 
                                 let resultCheck = jsonAddressResult["result"] as Any
                                     
-                                switch method {
-                                        
-                                case BTC_CLI_COMMAND.estimatesmartfee:
-                                        
-                                    if let dict = resultCheck as? NSDictionary {
-                                        
-                                        self.showFeeAlert(dict: dict, vsize: vsize)
-                                            
-                                    }
-                                        
-                                    case BTC_CLI_COMMAND.decoderawtransaction:
-                                        
-                                        if let dict = resultCheck as? NSDictionary {
-                                            
-                                            if vsize == 1 {
-                                             
-                                                DispatchQueue.main.async {
-                                                    
-                                                    self.textView.text = "\(dict)"
-                                                    self.decodeButton.setTitle("Encode", for: .normal)
-                                                    self.decodeButton.removeTarget(self, action: #selector(self.decode), for: .touchUpInside)
-                                                    self.decodeButton.addTarget(self, action: #selector(self.encodeText), for: .touchUpInside)
-                                                    
-                                                }
-                                                
-                                            } else {
-                                                
-                                                let vsize = dict["vsize"] as! Int
-                                                
-                                                self.getSmartFeeRPC(method: BTC_CLI_COMMAND.estimatesmartfee, param: "6", index: 0, vsize: vsize)
-                                                
-                                            }
-                                            
-                                        }
-                                        
-                                    default:
-                                        
-                                        break
-                                        
-                                }
+                                */
                                     
-                            }
+                            /*}
                             
                         } catch {
                             
@@ -1463,7 +1498,7 @@ class UtxoTableViewController: UITableViewController, AVCaptureMetadataOutputObj
             
         }
         
-        task.resume()
+        task.resume()*/
         
     }
     

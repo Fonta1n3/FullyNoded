@@ -14,11 +14,11 @@ import SwiftKeychainWrapper
 class SSHService {
     
     let userDefaults = UserDefaults.standard
-    var user:String?
-    var host:String?
-    var port:String?
-    var password:String?
-    var session: NMSSHSession?
+    var user:String!
+    var host:String!
+    var port:String!
+    var password:String!
+    var session: NMSSHSession!
     static let sharedInstance = SSHService()
     
     private init() {
@@ -86,18 +86,18 @@ class SSHService {
             
             session = NMSSHSession.connect(toHost: host!, port: portInt, withUsername: user!)
             
-            if session?.isConnected == true {
+            if session.isConnected == true {
                 
-                session?.authenticate(byPassword: password!)
+                session.authenticate(byPassword: password!)
                 
-                if session?.isAuthorized == true {
+                if session.isAuthorized == true {
                     
                     success((success:true, error:nil))
                     print("success")
                     
                 } else {
                     
-                    success((success:false, error:"\(String(describing: session?.lastError))"))
+                    success((success:false, error:"\(String(describing: session.lastError!))"))
                     print("fail")
                     print("\(String(describing: session?.lastError))")
                     

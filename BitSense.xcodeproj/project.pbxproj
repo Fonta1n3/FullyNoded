@@ -46,6 +46,8 @@
 		D071A2A62148A14400C4BCB3 /* blackSearch.png in Resources */ = {isa = PBXBuildFile; fileRef = D071A2A52148A14400C4BCB3 /* blackSearch.png */; };
 		D071A2A82148A3AE00C4BCB3 /* qr.png in Resources */ = {isa = PBXBuildFile; fileRef = D071A2A72148A3AE00C4BCB3 /* qr.png */; };
 		D08F63E62163263B004B92AE /* plus.png in Resources */ = {isa = PBXBuildFile; fileRef = D08F63E52163263B004B92AE /* plus.png */; };
+		D0A2918F225114670099A2F3 /* MakeRPCCall.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A2918E225114670099A2F3 /* MakeRPCCall.swift */; };
+		D0A291912251743B0099A2F3 /* settings90.png in Resources */ = {isa = PBXBuildFile; fileRef = D0A291902251743B0099A2F3 /* settings90.png */; };
 		D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B3149E216C4DB1008FDC53 /* CreateRawTxViewController.swift */; };
 		D0CAE42D224A4F650066AC23 /* UtxoTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0CAE42C224A4F650066AC23 /* UtxoTableViewController.swift */; };
 		D0DA7CE72171A66A00A96F7E /* minus.png in Resources */ = {isa = PBXBuildFile; fileRef = D0DA7CE62171A66A00A96F7E /* minus.png */; };
@@ -102,6 +104,8 @@
 		D071A2A52148A14400C4BCB3 /* blackSearch.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blackSearch.png; sourceTree = "<group>"; };
 		D071A2A72148A3AE00C4BCB3 /* qr.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = qr.png; sourceTree = "<group>"; };
 		D08F63E52163263B004B92AE /* plus.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = plus.png; sourceTree = "<group>"; };
+		D0A2918E225114670099A2F3 /* MakeRPCCall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MakeRPCCall.swift; sourceTree = "<group>"; };
+		D0A291902251743B0099A2F3 /* settings90.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = settings90.png; sourceTree = "<group>"; };
 		D0B3149E216C4DB1008FDC53 /* CreateRawTxViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateRawTxViewController.swift; sourceTree = "<group>"; };
 		D0CAE42C224A4F650066AC23 /* UtxoTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtxoTableViewController.swift; sourceTree = "<group>"; };
 		D0DA7CE62171A66A00A96F7E /* minus.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = minus.png; sourceTree = "<group>"; };
@@ -181,6 +185,7 @@
 				D00B9A332111427200E8B95A /* LaunchScreen.storyboard */,
 				D00B9A362111427200E8B95A /* Info.plist */,
 				D00B9A2E2111427200E8B95A /* BitSense.xcdatamodeld */,
+				D0A2918E225114670099A2F3 /* MakeRPCCall.swift */,
 			);
 			path = BitSense;
 			sourceTree = "<group>";
@@ -246,6 +251,7 @@
 		D0FA417A213C7CB70028E4F8 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				D0A291902251743B0099A2F3 /* settings90.png */,
 				D0452AD52246E0370013E225 /* whiteBroom.png */,
 				D0FA417B213C7CDA0028E4F8 /* whiteLock.png */,
 				D0126FF72244842000412629 /* bWhite.png */,
@@ -339,6 +345,7 @@
 				D0358D9521B1B44B007D56ED /* whiteCheck.png in Resources */,
 				D0DA7CE72171A66A00A96F7E /* minus.png in Resources */,
 				D05315FF214639CD005707D6 /* blackClose.jpg in Resources */,
+				D0A291912251743B0099A2F3 /* settings90.png in Resources */,
 				D0126FF022443D1100412629 /* whitePlus.png in Resources */,
 				D00B9A352111427200E8B95A /* LaunchScreen.storyboard in Resources */,
 				D0452AD02246C47F0013E225 /* 9188.png in Resources */,
@@ -414,6 +421,7 @@
 				D06C59E421BEF5F0009BCB9C /* SSHService.swift in Sources */,
 				D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */,
 				D0452ADD224743C50013E225 /* LogInViewController.swift in Sources */,
+				D0A2918F225114670099A2F3 /* MakeRPCCall.swift in Sources */,
 				D0452ADB2247417F0013E225 /* ImportPrivKeyViewController.swift in Sources */,
 				D0FAAE7F225004D200CD43BC /* DisplayRawViewController.swift in Sources */,
 				D0126FF622446E3800412629 /* InvoiceViewController.swift in Sources */,

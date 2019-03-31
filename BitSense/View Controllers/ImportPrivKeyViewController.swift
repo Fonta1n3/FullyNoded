@@ -13,6 +13,7 @@ import AES256CBC
 
 class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate, AVCaptureMetadataOutputObjectsDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
+    var makeRPCCall:MakeRPCCall!
     var ssh:SSHService!
     var isUsingSSH = Bool()
     let textInput = UITextField()
@@ -226,158 +227,38 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate, AVCapt
         
     }
     
-    func executeNodeCommand(method: String, param: Any) {
+    func executeNodeCommand(method: BTC_CLI_COMMAND, param: Any) {
         print("executeNodeCommand")
         
-        var nodeUsername = ""
-        var nodePassword = ""
-        var ip = ""
-        var port = ""
-        var credentialsComplete = Bool()
-        
-        func decrypt(item: String) -> String {
+        func getResult() {
             
-            var decrypted = ""
-            if let password = KeychainWrapper.standard.string(forKey: "AESPassword") {
-                if let decryptedCheck = AES256CBC.decryptString(item, password: password) {
-                    decrypted = decryptedCheck
-                }
-            }
-            return decrypted
-        }
-        
-        if UserDefaults.standard.string(forKey: "NodeUsername") != nil {
-            
-            nodeUsername = decrypt(item: UserDefaults.standard.string(forKey: "NodeUsername")!)
-            credentialsComplete = true
-            
-        } else {
-            
-            credentialsComplete = false
-        }
-        
-        if UserDefaults.standard.string(forKey: "NodePassword") != nil {
-            
-            nodePassword = decrypt(item: UserDefaults.standard.string(forKey: "NodePassword")!)
-            credentialsComplete = true
-            
-        } else {
-            
-            credentialsComplete = false
-        }
-        
-        if UserDefaults.standard.string(forKey: "NodeIPAddress") != nil {
-            
-            ip = decrypt(item: UserDefaults.standard.string(forKey: "NodeIPAddress")!)
-            credentialsComplete = true
-            
-        } else {
-            
-            credentialsComplete = false
-            
-        }
-        
-        if UserDefaults.standard.string(forKey: "NodePort") != nil {
-            
-            port = decrypt(item: UserDefaults.standard.string(forKey: "NodePort")!)
-            credentialsComplete = true
-            
-        } else {
-            
-            credentialsComplete = false
-            
-        }
-        
-        if credentialsComplete {
-            
-            let url = URL(string: "http://\(nodeUsername):\(nodePassword)@\(ip):\(port)")
-            var request = URLRequest(url: url!)
-            request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
-            request.httpMethod = "POST"
-            request.httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method)\",\"params\":[\(param)]}".data(using: .utf8)
-            
-            let task = URLSession.shared.dataTask(with: request) { (data, response, error) -> Void in
+            if !makeRPCCall.errorBool {
                 
-                print("response = \(String(describing: response))")
-                
-                do {
+                switch method {
                     
-                    if error != nil {
+                case BTC_CLI_COMMAND.importprivkey:
+                    
+                    DispatchQueue.main.async {
                         
-                        DispatchQueue.main.async {
-                            
-                            displayAlert(viewController: self, title: "Error", message: "\(String(describing: error?.localizedDescription))")
-                            
-                        }
-                        
-                    } else {
-                        
-                        if let urlContent = data {
-                            
-                            do {
-                                
-                                let jsonAddressResult = try JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as! NSDictionary
-                                
-                                if let errorCheck = jsonAddressResult["error"] as? NSDictionary {
-                                    
-                                    DispatchQueue.main.async {
-                                        
-                                        //self.removeSpinner()
-                                        if let errorMessage = errorCheck["message"] as? String {
-                                            displayAlert(viewController: self, title: "Error", message: errorMessage)
-                                        }
-                                        
-                                    }
-                                    
-                                } else {
-                                    
-                                    switch method {
-                                            
-                                    case BTC_CLI_COMMAND.importprivkey.rawValue:
-                                            
-                                        DispatchQueue.main.async {
-                                                    
-                                            displayAlert(viewController: self, title: "Success", message: "Private key imported, your node will need to rescan the blockchain which can take some time before the balance will show up.")
-                                                
-                                        }
-                                                
-                                    default:
-                                            
-                                        break
-                                            
-                                    }
-                                        
-                                }
-                                
-                            } catch {
-                                
-                                DispatchQueue.main.async {
-                                    
-                                    //self.removeSpinner()
-                                    
-                                }
-                                
-                            }
-                            
-                        }
+                        displayAlert(viewController: self, title: "Success", message: "Private key imported, your node will need to rescan the blockchain which can take some time before the balance will show up.")
                         
                     }
                     
+                default:
+                    
+                    break
+                    
                 }
                 
-            }
-            
-            task.resume()
-            
-        } else {
-            
-            DispatchQueue.main.async {
+            } else {
                 
-                //self.removeSpinner()
+                displayAlert(viewController: self, title: "Error", message: makeRPCCall.errorDescription)
                 
             }
             
         }
+        
+        makeRPCCall.executeRPCCommand(method: method, param: param, completion: getResult)
         
     }
     
@@ -411,7 +292,7 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate, AVCapt
             
         } else {
             
-            self.executeNodeCommand(method: BTC_CLI_COMMAND.importprivkey.rawValue, param: "\"\(pk)\"")
+            self.executeNodeCommand(method: BTC_CLI_COMMAND.importprivkey, param: "\"\(pk)\"")
             
         }
         

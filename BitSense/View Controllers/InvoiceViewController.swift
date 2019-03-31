@@ -13,6 +13,7 @@ import EFQRCode
 
 class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
+    var makeRPCCall:MakeRPCCall!
     var ssh:SSHService!
     var textToShareViaQRCode = String()
     let blurActivityIndicator = UIActivityIndicatorView()
@@ -68,7 +69,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 
                 if !self.isUsingSSH {
                     
-                    self.executeNodeCommand(method: BTC_CLI_COMMAND.getnewaddress.rawValue, param: "\"\", \"legacy\"")
+                    self.executeNodeCommand(method: BTC_CLI_COMMAND.getnewaddress, param: "\"\", \"legacy\"")
                     
                 } else {
                     
@@ -84,7 +85,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 
                 if !self.isUsingSSH {
                     
-                    self.executeNodeCommand(method: BTC_CLI_COMMAND.getnewaddress.rawValue, param: "")
+                    self.executeNodeCommand(method: BTC_CLI_COMMAND.getnewaddress, param: "")
                     
                 } else {
                     
@@ -101,7 +102,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 
                 if !self.isUsingSSH {
                     
-                    self.executeNodeCommand(method: BTC_CLI_COMMAND.getnewaddress.rawValue, param: "\"\", \"bech32\"")
+                    self.executeNodeCommand(method: BTC_CLI_COMMAND.getnewaddress, param: "\"\", \"bech32\"")
                     
                 } else {
                     
@@ -369,163 +370,42 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    func executeNodeCommand(method: String, param: Any) {
+    func executeNodeCommand(method: BTC_CLI_COMMAND, param: Any) {
         print("executeNodeCommand")
         
-        var nodeUsername = ""
-        var nodePassword = ""
-        var ip = ""
-        var port = ""
-        var credentialsComplete = Bool()
-        
-        func decrypt(item: String) -> String {
+        func getResult() {
             
-            var decrypted = ""
-            if let password = KeychainWrapper.standard.string(forKey: "AESPassword") {
-                if let decryptedCheck = AES256CBC.decryptString(item, password: password) {
-                    decrypted = decryptedCheck
-                }
-            }
-            return decrypted
-        }
-        
-        if UserDefaults.standard.string(forKey: "NodeUsername") != nil {
-            
-            nodeUsername = decrypt(item: UserDefaults.standard.string(forKey: "NodeUsername")!)
-            credentialsComplete = true
-            
-        } else {
-            
-            credentialsComplete = false
-        }
-        
-        if UserDefaults.standard.string(forKey: "NodePassword") != nil {
-            
-            nodePassword = decrypt(item: UserDefaults.standard.string(forKey: "NodePassword")!)
-            credentialsComplete = true
-            
-        } else {
-            
-            credentialsComplete = false
-        }
-        
-        if UserDefaults.standard.string(forKey: "NodeIPAddress") != nil {
-            
-            ip = decrypt(item: UserDefaults.standard.string(forKey: "NodeIPAddress")!)
-            credentialsComplete = true
-            
-        } else {
-            
-            credentialsComplete = false
-        }
-        
-        if UserDefaults.standard.string(forKey: "NodePort") != nil {
-            
-            port = decrypt(item: UserDefaults.standard.string(forKey: "NodePort")!)
-            credentialsComplete = true
-            
-        } else {
-            
-            credentialsComplete = false
-        }
-        
-        if credentialsComplete {
-            
-            let url = URL(string: "http://\(nodeUsername):\(nodePassword)@\(ip):\(port)")
-            var request = URLRequest(url: url!)
-            request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
-            request.httpMethod = "POST"
-            request.httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method)\",\"params\":[\(param)]}".data(using: .utf8)
-            
-            let task = URLSession.shared.dataTask(with: request) { (data, response, error) -> Void in
+            if !makeRPCCall.errorBool {
                 
-                do {
+                switch method {
                     
-                    if error != nil {
+                case BTC_CLI_COMMAND.getnewaddress:
+                    
+                    let address = makeRPCCall.stringToReturn
                         
-                        DispatchQueue.main.async {
+                    DispatchQueue.main.async {
                             
-                            displayAlert(viewController: self, title: "Error", message: "\(error.debugDescription)")
+                        self.blurActivityIndicator.stopAnimating()
+                        self.addressString = address
+                        self.showAddress(address: address)
                             
-                        }
-                        
-                    } else {
-                        
-                        if let urlContent = data {
-                            
-                            do {
-                                
-                                let jsonAddressResult = try JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as! NSDictionary
-                                
-                                if let errorCheck = jsonAddressResult["error"] as? NSDictionary {
-                                    
-                                    DispatchQueue.main.async {
-                                        
-                                        if let errorMessage = errorCheck["message"] as? String {
-                                            
-                                            displayAlert(viewController: self, title: "Error", message: errorMessage)
-                                            
-                                        }
-                                        
-                                    }
-                                    
-                                } else {
-                                    
-                                    let resultCheck = jsonAddressResult["result"] as Any
-                                        
-                                    switch method {
-                                            
-                                    case BTC_CLI_COMMAND.getnewaddress.rawValue:
-                                            
-                                        if let address = resultCheck as? String {
-                                                
-                                            DispatchQueue.main.async {
-                                                
-                                                self.blurActivityIndicator.stopAnimating()
-                                                self.addressString = address
-                                                self.showAddress(address: address)
-                                                
-                                            }
-                                                
-                                        }
-                                            
-                                    default:
-                                            
-                                        break
-                                            
-                                    }
-                                        
-                                }
-                                
-                            } catch {
-                                
-                                DispatchQueue.main.async {
-                                    
-                                    displayAlert(viewController: self, title: "Error", message: "Sorry we had an issue")
-                                    
-                                }
-                            
-                            }
-                            
-                        }
-                        
                     }
+                        
+                default:
+                    
+                    break
                     
                 }
                 
-            }
-            
-            task.resume()
-            
-        } else {
-            
-            DispatchQueue.main.async {
+            } else {
                 
-                displayAlert(viewController: self, title: "Error", message: "Sorry we had an issue")
+                displayAlert(viewController: self, title: "Error", message: makeRPCCall.errorDescription)
                 
             }
             
         }
+        
+        makeRPCCall.executeRPCCommand(method: method, param: param, completion: getResult)
         
     }
     

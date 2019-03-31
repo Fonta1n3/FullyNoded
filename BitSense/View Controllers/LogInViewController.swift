@@ -621,7 +621,6 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         var authError: NSError?
         let reasonString = "To Unlock"
         
-        
         if localAuthenticationContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &authError) {
             
             localAuthenticationContext.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reasonString) { success, evaluateError in
