@@ -7,18 +7,18 @@
 //
 
 import Foundation
-import SwiftKeychainWrapper
-import AES256CBC
+import UIKit
 
 final class MakeRPCCall {
     
     static let sharedInstance = MakeRPCCall()
+    let aes = AESService.sharedInstance
+    let cd = CoreDataService.sharedInstance
     var nodeUsername = ""
     var nodePassword = ""
     var ip = ""
     var port = ""
     var credentialsComplete = Bool()
-    let userDefaults = UserDefaults.standard
     var vc = UIViewController()
     var dictToReturn = NSDictionary()
     var doubleToReturn = Double()
@@ -27,102 +27,64 @@ final class MakeRPCCall {
     var errorBool = Bool()
     var errorDescription = String()
     
-    func decrypt(item: String) -> String {
+    func executeRPCCommand(method: BTC_CLI_COMMAND, param: Any, completion: @escaping () -> Void) {
+        print("executeNodeCommand")
         
-        var decrypted = ""
+        let nodes = cd.retrieveCredentials()
+        var activeNode = [String:Any]()
         
-        if let password = KeychainWrapper.standard.string(forKey: "AESPassword") {
+        for node in nodes {
             
-            if let decryptedCheck = AES256CBC.decryptString(item, password: password) {
-                
-                decrypted = decryptedCheck
+            if (node["isActive"] as! Bool) {
+             
+                activeNode = node
                 
             }
             
         }
         
-        return decrypted
-        
-    }
-    
-    func encryptKey(keyToEncrypt: String) -> String {
-        
-        let password = KeychainWrapper.standard.string(forKey: "AESPassword")!
-        
-        let encryptedkey = AES256CBC.encryptString(keyToEncrypt, password: password)!
-        
-        return encryptedkey
-        
-    }
-    
-    func savePassword(password: String) {
-        
-        let stringToSave = self.encryptKey(keyToEncrypt: password)
-        userDefaults.set(stringToSave, forKey: "NodePassword")
-        
-    }
-    
-    func saveIPAdress(ipAddress: String) {
-        
-        let stringToSave = self.encryptKey(keyToEncrypt: ipAddress)
-        userDefaults.set(stringToSave, forKey: "NodeIPAddress")
-        
-    }
-    
-    func savePort(port: String) {
-        
-        let stringToSave = self.encryptKey(keyToEncrypt: port)
-        userDefaults.set(stringToSave, forKey: "NodePort")
-    }
-    
-    func saveUsername(username: String) {
-        
-        let stringToSave = self.encryptKey(keyToEncrypt: username)
-        userDefaults.set(stringToSave, forKey: "NodeUsername")
-        
-    }
-    
-    func executeRPCCommand(method: BTC_CLI_COMMAND, param: Any, completion: @escaping () -> Void) {
-        print("executeNodeCommand")
-        
-        if userDefaults.string(forKey: "NodeUsername") != nil {
+        if activeNode["port"] != nil {
             
-            nodeUsername = decrypt(item: userDefaults.string(forKey: "NodeUsername")!)
+            port = aes.decryptKey(keyToDecrypt: activeNode["port"] as! String)
             credentialsComplete = true
             
         } else {
             
             credentialsComplete = false
+            
         }
         
-        if userDefaults.string(forKey: "NodePassword") != nil {
+        if activeNode["ip"] != nil {
             
-            nodePassword = decrypt(item: userDefaults.string(forKey: "NodePassword")!)
+            ip = aes.decryptKey(keyToDecrypt: activeNode["ip"] as! String)
             credentialsComplete = true
             
         } else {
             
             credentialsComplete = false
+            
         }
         
-        if userDefaults.string(forKey: "NodeIPAddress") != nil {
+        if activeNode["username"] != nil {
             
-            ip = decrypt(item: userDefaults.string(forKey: "NodeIPAddress")!)
+            nodeUsername = aes.decryptKey(keyToDecrypt: activeNode["username"] as! String)
             credentialsComplete = true
             
         } else {
             
             credentialsComplete = false
+            
         }
         
-        if userDefaults.string(forKey: "NodePort") != nil {
+        if activeNode["password"] != nil {
             
-            port = decrypt(item: userDefaults.string(forKey: "NodePort")!)
+            nodePassword = aes.decryptKey(keyToDecrypt: activeNode["password"] as! String)
             credentialsComplete = true
             
         } else {
             
             credentialsComplete = false
+            
         }
         
         if !credentialsComplete {
@@ -131,11 +93,6 @@ final class MakeRPCCall {
             ip = "46.101.239.249"
             nodeUsername = "bitcoin"
             nodePassword = "password"
-            
-            savePort(port: port)
-            saveIPAdress(ipAddress: ip)
-            saveUsername(username: nodeUsername)
-            savePassword(password: nodePassword)
             
             displayAlert(viewController: vc, title: "Alert", message: "Looks like you have not logged in to your own node yet or incorrectly filled out your credentials, you are connected to our testnet full node so you can play with the app before connecting to your own.\n\nTo connect to your own node tap the settings button and \"Log in to your own node\".\n\nIf you have any issues please email me at bitsenseapp@gmail.com"
             )
@@ -149,7 +106,7 @@ final class MakeRPCCall {
         
         let url = URL(string: "http://\(nodeUsername):\(nodePassword)@\(ip):\(port)")
         var request = URLRequest(url: url!)
-        request.timeoutInterval = 5
+        //request.timeoutInterval = 30
         request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
         request.httpMethod = "POST"
         request.httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method.rawValue)\",\"params\":[\(param)]}".data(using: .utf8)
@@ -164,7 +121,7 @@ final class MakeRPCCall {
                         
                         print("error = \(error.debugDescription)")
                         self.errorBool = true
-                        self.errorDescription = "Unable to connect via RPC, please go to settings and enable SSH to try to connect via SSH"
+                        self.errorDescription = error!.localizedDescription
                         completion()
                         
                     }

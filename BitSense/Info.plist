@@ -17,9 +17,9 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.40</string>
+	<string>1.41</string>
 	<key>CFBundleVersion</key>
-	<string>41</string>
+	<string>42</string>
 	<key>LSRequiresIPhoneOS</key>
 	<false/>
 	<key>NSAppTransportSecurity</key>
@@ -29,14 +29,14 @@
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>So we can upload a QR code from your photo library</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>To log into the app with FaceID</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>We dont use your location</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>We dont use your location</string>
 	<key>NSLocationUsageDescription</key>
 	<string>We dont use your location</string>
-	<key>NSFaceIDUsageDescription</key>
-	<string>To log into the app with FaceID</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We dont use your loaction</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>

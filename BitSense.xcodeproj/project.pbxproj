@@ -26,8 +26,12 @@
 		D0196DD921B5ABBB0081E0AB /* broom.png in Resources */ = {isa = PBXBuildFile; fileRef = D0196DD821B5ABBB0081E0AB /* broom.png */; };
 		D0196DDB21B5AC5F0081E0AB /* KeyPad.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0196DDA21B5AC5F0081E0AB /* KeyPad.swift */; };
 		D0196DDF21BEF3FF0081E0AB /* NMSSH.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0196DDE21BEF3FF0081E0AB /* NMSSH.framework */; };
+		D02094EE2256B06B002E8E7A /* Transition.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02094ED2256B06B002E8E7A /* Transition.swift */; };
+		D02094F02257FB78002E8E7A /* FirstTime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02094EF2257FB78002E8E7A /* FirstTime.swift */; };
+		D02094F3225936D2002E8E7A /* ConnectingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02094F2225936D2002E8E7A /* ConnectingView.swift */; };
 		D0286D6521E2714200954991 /* ReadMe.md in Resources */ = {isa = PBXBuildFile; fileRef = D0286D6421E2714200954991 /* ReadMe.md */; };
 		D0358D9521B1B44B007D56ED /* whiteCheck.png in Resources */ = {isa = PBXBuildFile; fileRef = D0358D9421B1B44A007D56ED /* whiteCheck.png */; };
+		D037068C2255BEC10069BD1C /* NodeDetailTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D037068B2255BEC10069BD1C /* NodeDetailTableViewController.swift */; };
 		D0410617224ED189004AC0D0 /* ObjectiveCHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = D0410616224ED189004AC0D0 /* ObjectiveCHeader.m */; };
 		D0452ACC2246AD840013E225 /* Parse.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0452ACB2246AD840013E225 /* Parse.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		D0452ACE2246ADEE0013E225 /* Bolts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0452ACD2246ADEE0013E225 /* Bolts.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
@@ -45,6 +49,10 @@
 		D071A2A22148991500C4BCB3 /* settings2.png in Resources */ = {isa = PBXBuildFile; fileRef = D071A2A12148991500C4BCB3 /* settings2.png */; };
 		D071A2A62148A14400C4BCB3 /* blackSearch.png in Resources */ = {isa = PBXBuildFile; fileRef = D071A2A52148A14400C4BCB3 /* blackSearch.png */; };
 		D071A2A82148A3AE00C4BCB3 /* qr.png in Resources */ = {isa = PBXBuildFile; fileRef = D071A2A72148A3AE00C4BCB3 /* qr.png */; };
+		D073E16E22558CDE0012A28C /* CoreDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D073E16D22558CDE0012A28C /* CoreDataService.swift */; };
+		D073E17022558DF30012A28C /* AESService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D073E16F22558DF30012A28C /* AESService.swift */; };
+		D073E17222559A6D0012A28C /* CredentialConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D073E17122559A6D0012A28C /* CredentialConverter.swift */; };
+		D073E1742255A42B0012A28C /* NodesTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D073E1732255A42B0012A28C /* NodesTableViewController.swift */; };
 		D08F63E62163263B004B92AE /* plus.png in Resources */ = {isa = PBXBuildFile; fileRef = D08F63E52163263B004B92AE /* plus.png */; };
 		D0A2918F225114670099A2F3 /* MakeRPCCall.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A2918E225114670099A2F3 /* MakeRPCCall.swift */; };
 		D0A291912251743B0099A2F3 /* settings90.png in Resources */ = {isa = PBXBuildFile; fileRef = D0A291902251743B0099A2F3 /* settings90.png */; };
@@ -83,8 +91,12 @@
 		D0196DD821B5ABBB0081E0AB /* broom.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = broom.png; sourceTree = "<group>"; };
 		D0196DDA21B5AC5F0081E0AB /* KeyPad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyPad.swift; sourceTree = "<group>"; };
 		D0196DDE21BEF3FF0081E0AB /* NMSSH.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NMSSH.framework; path = Carthage/Build/iOS/NMSSH.framework; sourceTree = "<group>"; };
+		D02094ED2256B06B002E8E7A /* Transition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transition.swift; sourceTree = "<group>"; };
+		D02094EF2257FB78002E8E7A /* FirstTime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstTime.swift; sourceTree = "<group>"; };
+		D02094F2225936D2002E8E7A /* ConnectingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectingView.swift; sourceTree = "<group>"; };
 		D0286D6421E2714200954991 /* ReadMe.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ReadMe.md; sourceTree = "<group>"; };
 		D0358D9421B1B44A007D56ED /* whiteCheck.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteCheck.png; sourceTree = "<group>"; };
+		D037068B2255BEC10069BD1C /* NodeDetailTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDetailTableViewController.swift; sourceTree = "<group>"; };
 		D0410615224ED188004AC0D0 /* BitSense-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BitSense-Bridging-Header.h"; sourceTree = "<group>"; };
 		D0410616224ED189004AC0D0 /* ObjectiveCHeader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ObjectiveCHeader.m; sourceTree = "<group>"; };
 		D0452ACB2246AD840013E225 /* Parse.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Parse.framework; path = Carthage/Build/iOS/Parse.framework; sourceTree = "<group>"; };
@@ -103,6 +115,10 @@
 		D071A2A12148991500C4BCB3 /* settings2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = settings2.png; sourceTree = "<group>"; };
 		D071A2A52148A14400C4BCB3 /* blackSearch.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blackSearch.png; sourceTree = "<group>"; };
 		D071A2A72148A3AE00C4BCB3 /* qr.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = qr.png; sourceTree = "<group>"; };
+		D073E16D22558CDE0012A28C /* CoreDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataService.swift; sourceTree = "<group>"; };
+		D073E16F22558DF30012A28C /* AESService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AESService.swift; sourceTree = "<group>"; };
+		D073E17122559A6D0012A28C /* CredentialConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialConverter.swift; sourceTree = "<group>"; };
+		D073E1732255A42B0012A28C /* NodesTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodesTableViewController.swift; sourceTree = "<group>"; };
 		D08F63E52163263B004B92AE /* plus.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = plus.png; sourceTree = "<group>"; };
 		D0A2918E225114670099A2F3 /* MakeRPCCall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MakeRPCCall.swift; sourceTree = "<group>"; };
 		D0A291902251743B0099A2F3 /* settings90.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = settings90.png; sourceTree = "<group>"; };
@@ -170,10 +186,10 @@
 		D00B9A262111427200E8B95A /* BitSense */ = {
 			isa = PBXGroup;
 			children = (
+				D02094F122593698002E8E7A /* Sub Views */,
 				D0286D6221E2678D00954991 /* View Controllers */,
 				D0286D6321E267AD00954991 /* Miscellaneous */,
 				D0286D6121E2675D00954991 /* Helpers */,
-				D0286D6021E2672D00954991 /* SSH */,
 				D0FA417A213C7CB70028E4F8 /* Images */,
 				D00B9A272111427200E8B95A /* AppDelegate.swift */,
 				D0452AD32246C7820013E225 /* clear.png */,
@@ -185,9 +201,16 @@
 				D00B9A332111427200E8B95A /* LaunchScreen.storyboard */,
 				D00B9A362111427200E8B95A /* Info.plist */,
 				D00B9A2E2111427200E8B95A /* BitSense.xcdatamodeld */,
-				D0A2918E225114670099A2F3 /* MakeRPCCall.swift */,
 			);
 			path = BitSense;
+			sourceTree = "<group>";
+		};
+		D02094F122593698002E8E7A /* Sub Views */ = {
+			isa = PBXGroup;
+			children = (
+				D02094F2225936D2002E8E7A /* ConnectingView.swift */,
+			);
+			path = "Sub Views";
 			sourceTree = "<group>";
 		};
 		D0286D6021E2672D00954991 /* SSH */ = {
@@ -201,10 +224,17 @@
 		D0286D6121E2675D00954991 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				D02094EF2257FB78002E8E7A /* FirstTime.swift */,
+				D073E16D22558CDE0012A28C /* CoreDataService.swift */,
+				D073E16F22558DF30012A28C /* AESService.swift */,
+				D073E17122559A6D0012A28C /* CredentialConverter.swift */,
 				D0196DDA21B5AC5F0081E0AB /* KeyPad.swift */,
 				D0196DD621B5AB300081E0AB /* KeyPadButtonView.xib */,
 				D0E9B63B211A94C600B416E7 /* Utilities.swift */,
 				D0452ADE224833390013E225 /* Commands.swift */,
+				D0286D6021E2672D00954991 /* SSH */,
+				D073E16C225588EF0012A28C /* RPC */,
+				D02094ED2256B06B002E8E7A /* Transition.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -212,6 +242,7 @@
 		D0286D6221E2678D00954991 /* View Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				D037068B2255BEC10069BD1C /* NodeDetailTableViewController.swift */,
 				D0CAE42C224A4F650066AC23 /* UtxoTableViewController.swift */,
 				D0126FF522446E3800412629 /* InvoiceViewController.swift */,
 				D0E9B639211A90D100B416E7 /* CreateAccountViewController.swift */,
@@ -221,6 +252,7 @@
 				D05692E221434452006DF0F4 /* MainMenuViewController.swift */,
 				D0452ADA2247417F0013E225 /* ImportPrivKeyViewController.swift */,
 				D0FAAE7E225004D200CD43BC /* DisplayRawViewController.swift */,
+				D073E1732255A42B0012A28C /* NodesTableViewController.swift */,
 			);
 			path = "View Controllers";
 			sourceTree = "<group>";
@@ -230,6 +262,14 @@
 			children = (
 			);
 			path = Miscellaneous;
+			sourceTree = "<group>";
+		};
+		D073E16C225588EF0012A28C /* RPC */ = {
+			isa = PBXGroup;
+			children = (
+				D0A2918E225114670099A2F3 /* MakeRPCCall.swift */,
+			);
+			path = RPC;
 			sourceTree = "<group>";
 		};
 		D08C1FBB211147F600B7CA79 /* Frameworks */ = {
@@ -415,21 +455,29 @@
 			buildActionMask = 2147483647;
 			files = (
 				D0E9B63C211A94C600B416E7 /* Utilities.swift in Sources */,
+				D02094F02257FB78002E8E7A /* FirstTime.swift in Sources */,
 				D0E9B63A211A90D100B416E7 /* CreateAccountViewController.swift in Sources */,
 				D05692E321434452006DF0F4 /* MainMenuViewController.swift in Sources */,
+				D073E17222559A6D0012A28C /* CredentialConverter.swift in Sources */,
+				D073E1742255A42B0012A28C /* NodesTableViewController.swift in Sources */,
+				D02094F3225936D2002E8E7A /* ConnectingView.swift in Sources */,
 				D0196DDB21B5AC5F0081E0AB /* KeyPad.swift in Sources */,
 				D06C59E421BEF5F0009BCB9C /* SSHService.swift in Sources */,
 				D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */,
 				D0452ADD224743C50013E225 /* LogInViewController.swift in Sources */,
 				D0A2918F225114670099A2F3 /* MakeRPCCall.swift in Sources */,
 				D0452ADB2247417F0013E225 /* ImportPrivKeyViewController.swift in Sources */,
+				D073E17022558DF30012A28C /* AESService.swift in Sources */,
 				D0FAAE7F225004D200CD43BC /* DisplayRawViewController.swift in Sources */,
 				D0126FF622446E3800412629 /* InvoiceViewController.swift in Sources */,
 				D0452ADF224833390013E225 /* Commands.swift in Sources */,
 				D0410617224ED189004AC0D0 /* ObjectiveCHeader.m in Sources */,
+				D02094EE2256B06B002E8E7A /* Transition.swift in Sources */,
 				D00B9A302111427200E8B95A /* BitSense.xcdatamodeld in Sources */,
 				D0EF29C1216B82B400EB776A /* SettingsViewController.swift in Sources */,
 				D00B9A282111427200E8B95A /* AppDelegate.swift in Sources */,
+				D073E16E22558CDE0012A28C /* CoreDataService.swift in Sources */,
+				D037068C2255BEC10069BD1C /* NodeDetailTableViewController.swift in Sources */,
 				D0CAE42D224A4F650066AC23 /* UtxoTableViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

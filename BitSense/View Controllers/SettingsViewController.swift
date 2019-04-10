@@ -6,13 +6,9 @@
 //  Copyright © 2018 Fontaine. All rights reserved.
 //
 
-import SwiftKeychainWrapper
 import UIKit
-import StoreKit
-import Parse
-import AES256CBC
 
-class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate {
+class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, UITabBarControllerDelegate {
     
     let userDefaults = UserDefaults.standard
     let imageView = UIImageView()
@@ -25,19 +21,13 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     var firstPassword = String()
     var secondPassword = String()
     @IBOutlet var settingsTable: UITableView!
-    var sections = ["Node credentials", "Use our testing node", "Mining fee", "Password", "SSH"]
+    var sections = ["Mining fee", "Password"]
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        tabBarController!.delegate = self
         settingsTable.delegate = self
-        
-        let backButton = UIButton()
-        backButton.frame = CGRect(x: 15, y: 40, width: 25, height: 25)
-        backButton.showsTouchWhenHighlighted = true
-        backButton.setImage(#imageLiteral(resourceName: "back.png"), for: .normal)
-        backButton.addTarget(self, action: #selector(self.goBack), for: .touchUpInside)
-        self.view.addSubview(backButton)
         
         textInput.delegate = self
         textInput.backgroundColor = UIColor.white
@@ -48,7 +38,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         textInput.keyboardAppearance = UIKeyboardAppearance.dark
         textInput.autocorrectionType = .no
         
-        labelTitle.font = UIFont.init(name: "HelveticaNeue-Light", size: 30)
+        labelTitle.font = UIFont.init(name: "HiraginoSans-W6", size: 30)
         labelTitle.textColor = UIColor.white
         labelTitle.alpha = 0
         labelTitle.numberOfLines = 0
@@ -84,7 +74,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
         labelTitle.frame = CGRect(x: self.view.center.x - ((view.frame.width - 10) / 2), y: passwordInput.frame.minY - 50, width: view.frame.width - 10, height: 50)
         
-        nextButton.titleLabel?.font = UIFont.init(name: "HelveticaNeue-Bold", size: 20)
+        nextButton.titleLabel?.font = UIFont.init(name: "HiraginoSans-W6", size: 20)
         nextButton.titleLabel?.textAlignment = .right
         nextButton.backgroundColor = UIColor.clear
         nextButton.showsTouchWhenHighlighted = true
@@ -98,13 +88,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
-    
-    @objc func goBack() {
-        
-        self.dismiss(animated: true, completion: nil)
-    }
-    
-
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "settingsCell", for: indexPath)
@@ -113,48 +96,36 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         cell.selectionStyle = .none
         
         switch indexPath.section {
+            
         case 0:
-            label.text = "Log in to your own node"
+            
+            if let fee = userDefaults.object(forKey: "miningFee") as? String {
+                
+                label.text = "\(fee) Satoshis"
+                
+            } else {
+                
+                label.text = "500 Satoshis"
+                
+            }
+            
             check.alpha = 0
             
         case 1:
             
-            label.text = "Log Into a Test Node"
-            check.alpha = 0
-            
-        case 2:
-            
-            if let fee = UserDefaults.standard.object(forKey: "miningFee") as? String {
-                label.text = "\(fee) Satoshis"
-            } else {
-                label.text = "500 Satoshis"
-            }
-            check.alpha = 0
-            
-        case 3:
-            
             label.text = "Reset Password"
             check.alpha = 0
             
-        case 4:
-            
-            label.text = "Connect With SSH"
-            if UserDefaults.standard.string(forKey: "sshPassword") != nil {
-                
-                check.alpha = 1
-                
-            } else {
-                
-                check.alpha = 0
-                
-            }
-            
         default:
+            
             break
+            
         }
         
         cell.textLabel?.textColor = UIColor.white
+        
         return cell
+        
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -179,7 +150,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
         (view as! UITableViewHeaderFooterView).backgroundView?.backgroundColor = UIColor.clear
         (view as! UITableViewHeaderFooterView).textLabel?.textAlignment = .left
-        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.init(name: "HelveticaNeue", size: 15)
+        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.init(name: "HiraginoSans-W3", size: 15)
         (view as! UITableViewHeaderFooterView).textLabel?.textColor = UIColor.white
         
     }
@@ -192,61 +163,25 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         if section == 0 {
             
             footerView = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: 20))
-            explanationLabel = UILabel(frame: CGRect(x: 20, y: 0, width: view.frame.size.width - 40, height: 20))
+            explanationLabel = UILabel(frame: CGRect(x: 20, y: 0, width: view.frame.size.width - 40, height: 40))
             explanationLabel.textColor = UIColor.white
             explanationLabel.numberOfLines = 0
             explanationLabel.backgroundColor = UIColor.clear
             footerView.backgroundColor = UIColor.clear
-            explanationLabel.font = UIFont.init(name: "HelveticaNeue-Light", size: 10)
-            explanationLabel.text = "Reset your node credentials. This will replace existing credentials."
+            explanationLabel.font = UIFont.init(name: "HiraginoSans-W3", size: 10)
+            explanationLabel.text = "Input a custom mining fee in Satoshis."
             footerView.addSubview(explanationLabel)
             
         } else if section == 1 {
-                
-                footerView = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: 20))
-                explanationLabel = UILabel(frame: CGRect(x: 20, y: 0, width: view.frame.size.width - 40, height: 40))
-                explanationLabel.textColor = UIColor.white
-                explanationLabel.numberOfLines = 0
-                explanationLabel.backgroundColor = UIColor.clear
-                footerView.backgroundColor = UIColor.clear
-                explanationLabel.font = UIFont.init(name: "HelveticaNeue-Light", size: 10)
-                explanationLabel.text = "Log back into our node for testing purposes."
-                footerView.addSubview(explanationLabel)
-            
-        } else if section == 2 {
-            
-            footerView = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: 20))
-            explanationLabel = UILabel(frame: CGRect(x: 20, y: 0, width: view.frame.size.width - 40, height: 40))
-            explanationLabel.textColor = UIColor.white
-            explanationLabel.numberOfLines = 0
-            explanationLabel.backgroundColor = UIColor.clear
-            footerView.backgroundColor = UIColor.clear
-            explanationLabel.font = UIFont.init(name: "HelveticaNeue-Light", size: 10)
-            explanationLabel.text = "Input a custom mining fee in Satoshis. All transactions utilize RBF so we recommend a low fee that you can later increase by tapping the unconfirmed transaction in the home screen if needed."
-            footerView.addSubview(explanationLabel)
-            
-        } else if section == 3 {
             
             footerView = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: 40))
             explanationLabel = UILabel(frame: CGRect(x: 20, y: 0, width: view.frame.size.width - 40, height: 40))
             explanationLabel.textColor = UIColor.white
             explanationLabel.numberOfLines = 0
-            explanationLabel.font = UIFont.init(name: "HelveticaNeue-Light", size: 10)
+            explanationLabel.font = UIFont.init(name: "HiraginoSans-W3", size: 10)
             explanationLabel.backgroundColor = UIColor.clear
             footerView.backgroundColor = UIColor.clear
             explanationLabel.text = "Reset your password for unlocking the app. You will first need to enter your existing password."
-            footerView.addSubview(explanationLabel)
-            
-        } else if section == 4 {
-            
-            footerView = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: 40))
-            explanationLabel = UILabel(frame: CGRect(x: 20, y: 0, width: view.frame.size.width - 40, height: 40))
-            explanationLabel.textColor = UIColor.white
-            explanationLabel.numberOfLines = 0
-            explanationLabel.font = UIFont.init(name: "HelveticaNeue-Light", size: 10)
-            explanationLabel.backgroundColor = UIColor.clear
-            footerView.backgroundColor = UIColor.clear
-            explanationLabel.text = "Enable SSH connectivity to your node."
             footerView.addSubview(explanationLabel)
             
         }
@@ -267,70 +202,9 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
-   override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        
-        if segue.identifier == "reenterCredentials" || segue.identifier == "goLogIn" {
-            
-            if let vc = segue.destination as? LogInViewController {
-                
-                DispatchQueue.main.async {
-                    
-                    vc.reenterCredentials = true
-                    
-                }
-                
-            }
-            
-        }
-    
-    }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+   func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         if indexPath.section == 0 {
-            
-            DispatchQueue.main.async {
-                
-                let alert = UIAlertController(title: "Settings", message: "Add new credentials?\nThis will delete the old credentials!", preferredStyle: UIAlertControllerStyle.alert)
-                
-                alert.addAction(UIAlertAction(title: NSLocalizedString("Renew credentials", comment: ""), style: .destructive, handler: { (action) in
-                    
-                    UserDefaults.standard.removeObject(forKey: "NodePassword")
-                    UserDefaults.standard.removeObject(forKey: "NodeIPAddress")
-                    UserDefaults.standard.removeObject(forKey: "NodePort")
-                    UserDefaults.standard.removeObject(forKey: "NodeUsername")
-                    UserDefaults.standard.removeObject(forKey: "sshPassword")
-                    UserDefaults.standard.synchronize()
-                    self.performSegue(withIdentifier: "reenterCredentials", sender: self)
-                    
-                }))
-                
-                alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { (action) in }))
-                
-                self.present(alert, animated: true)
-            }
-            
-        } else if indexPath.section == 1 {
-            
-            DispatchQueue.main.async {
-                
-                let port = "18332"
-                let ip = "46.101.239.249"
-                let nodeUsername = "bitcoin"
-                let nodePassword = "password"
-                
-                self.savePort(port: port)
-                self.saveIPAdress(ipAddress: ip)
-                self.saveUsername(username: nodeUsername)
-                self.savePassword(password: nodePassword)
-                
-                self.userDefaults.synchronize()
-                
-                self.dismiss(animated: true, completion: nil)
-                
-            }
-            
-        } else if indexPath.section == 2 {
             
             DispatchQueue.main.async {
                 
@@ -350,12 +224,12 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                         
                         let fee = Int(alert.textFields![0].text!)
                         let feeString = fee?.withCommas()
-                        UserDefaults.standard.set(feeString, forKey: "miningFee")
+                        self.userDefaults.set(feeString, forKey: "miningFee")
                         let cell = tableView.cellForRow(at: indexPath)!
                         
                         DispatchQueue.main.async {
                             
-                            cell.textLabel?.text = "\(UserDefaults.standard.object(forKey: "miningFee") as! String) Satoshis"
+                            cell.textLabel?.text = "\(self.userDefaults.object(forKey: "miningFee") as! String) Satoshis"
                             
                         }
                         
@@ -368,7 +242,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 self.present(alert, animated: true, completion: nil)
             }
             
-        } else if indexPath.section == 3 {
+        } else if indexPath.section == 1 {
             
             DispatchQueue.main.async {
                 
@@ -376,81 +250,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 
             }
             
-        } else if indexPath.section == 4 {
-            
-            if let password = UserDefaults.standard.string(forKey: "NodePassword") {
-                
-                let cell = tableView.cellForRow(at: indexPath)!
-                
-                if UserDefaults.standard.string(forKey: "sshPassword") != nil {
-                    
-                    DispatchQueue.main.async {
-                        
-                        let cell = tableView.cellForRow(at: indexPath)!
-                        let image = cell.viewWithTag(2) as! UIImageView
-                        UserDefaults.standard.removeObject(forKey: "sshPassword")
-                        image.alpha = 0
-                        
-                    }
-                    
-                } else {
-                    
-                    DispatchQueue.main.async {
-                        
-                        UserDefaults.standard.set(password, forKey: "sshPassword")
-                        let image = cell.viewWithTag(2) as! UIImageView
-                        image.alpha = 1
-                        
-                    }
-                    
-                }
-                
-                
-                
-            } else {
-                
-                displayAlert(viewController: self, title: "Error", message: "You need to fill out your credentials first by tapping \"Log into my own node\"")
-                
-            }
-            
         }
-        
-    }
-    
-    func encryptKey(keyToEncrypt: String) -> String {
-        
-        let password = KeychainWrapper.standard.string(forKey: "AESPassword")!
-        
-        let encryptedkey = AES256CBC.encryptString(keyToEncrypt, password: password)!
-        
-        return encryptedkey
-        
-    }
-    
-    func savePassword(password: String) {
-        
-        let stringToSave = self.encryptKey(keyToEncrypt: password)
-        userDefaults.set(stringToSave, forKey: "NodePassword")
-        
-    }
-    
-    func saveIPAdress(ipAddress: String) {
-        
-        let stringToSave = self.encryptKey(keyToEncrypt: ipAddress)
-        userDefaults.set(stringToSave, forKey: "NodeIPAddress")
-        
-    }
-    
-    func savePort(port: String) {
-        
-        let stringToSave = self.encryptKey(keyToEncrypt: port)
-        userDefaults.set(stringToSave, forKey: "NodePort")
-    }
-    
-    func saveUsername(username: String) {
-        
-        let stringToSave = self.encryptKey(keyToEncrypt: username)
-        userDefaults.set(stringToSave, forKey: "NodeUsername")
         
     }
     
@@ -486,7 +286,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
             if self.firstPassword == self.secondPassword {
                 
-                UserDefaults.standard.set(self.secondPassword, forKey: "UnlockPassword")
+                userDefaults.set(self.secondPassword, forKey: "UnlockPassword")
                 
                     self.nextButton.removeTarget(self, action: #selector(self.confirmLockPassword), for: .touchUpInside)
                     self.textInput.text = ""
@@ -622,8 +422,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
         DispatchQueue.main.async {
             
-            
-        
         self.view.addSubview(self.lockView)
         self.lockView.addSubview(self.imageView)
         self.lockView.addSubview(self.passwordInput)
@@ -648,7 +446,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     func checkPassword(password: String) {
         
-        let retrievedPassword = UserDefaults.standard.string(forKey: "UnlockPassword")
+        let retrievedPassword = userDefaults.string(forKey: "UnlockPassword")
         
         if self.passwordInput.text! == retrievedPassword {
             
@@ -687,6 +485,12 @@ public extension Int {
         return numberFormatter.string(from: NSNumber(value:self))!
     }
     
+}
+
+extension SettingsViewController  {
+    func tabBarController(_ tabBarController: UITabBarController, animationControllerForTransitionFrom fromVC: UIViewController, to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        return MyTransition(viewControllers: tabBarController.viewControllers)
+    }
 }
 
 

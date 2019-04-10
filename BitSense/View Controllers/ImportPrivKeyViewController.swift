@@ -56,6 +56,7 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate, AVCapt
         textInput.returnKeyType = UIReturnKeyType.go
         textInput.placeholder = "Private Key"
         
+        uploadButton.frame = CGRect(x: view.frame.maxX - 160, y: view.frame.maxY - 60, width: 150, height: 50)
         uploadButton.showsTouchWhenHighlighted = true
         uploadButton.setTitle("From Photos", for: .normal)
         uploadButton.setTitleColor(UIColor.white, for: .normal)
@@ -95,7 +96,32 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate, AVCapt
             DispatchQueue.main.async {
                 
                 let pk = self.textInput.text!
-                self.importPrivateKey(ssh: self.ssh, pk: pk)
+                
+                if pk.hasPrefix("L") || pk.hasPrefix("5") || pk.hasPrefix("9") || pk.hasPrefix("c") {
+                    
+                    if !self.isUsingSSH {
+                        
+                        self.executeNodeCommand(method: BTC_CLI_COMMAND.importprivkey, param: "\"\(pk)\"")
+                        
+                    } else {
+                        
+                        self.importPrivateKey(ssh: self.ssh, pk: pk)
+                        
+                    }
+                    
+                } else if pk.hasPrefix("1") || pk.hasPrefix("3") || pk.hasPrefix("tb1") || pk.hasPrefix("bc1") || pk.hasPrefix("2") || pk.hasPrefix("m") {
+                    
+                    if !self.isUsingSSH {
+                        
+                        self.executeNodeCommand(method: BTC_CLI_COMMAND.importaddress, param: "\"\(pk)\"")
+                        
+                    } else {
+                        
+                        self.importAddress(ssh: self.ssh, address: pk)
+                        
+                    }
+                    
+                }
                 
             }
             
@@ -148,7 +174,31 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate, AVCapt
                 
                 DispatchQueue.main.async {
                     
-                    self.importPrivateKey(ssh: self.ssh, pk: qrCodeLink)
+                    if qrCodeLink.hasPrefix("L") || qrCodeLink.hasPrefix("5") || qrCodeLink.hasPrefix("9") || qrCodeLink.hasPrefix("c") {
+                        
+                        if !self.isUsingSSH {
+                            
+                            self.executeNodeCommand(method: BTC_CLI_COMMAND.importprivkey, param: "\"\(qrCodeLink)\"")
+                            
+                        } else {
+                            
+                            self.importPrivateKey(ssh: self.ssh, pk: qrCodeLink)
+                            
+                        }
+                        
+                    } else if qrCodeLink.hasPrefix("1") || qrCodeLink.hasPrefix("3") || qrCodeLink.hasPrefix("tb1") || qrCodeLink.hasPrefix("bc1") || qrCodeLink.hasPrefix("2") || qrCodeLink.hasPrefix("m") {
+                        
+                        if !self.isUsingSSH {
+                            
+                            self.executeNodeCommand(method: BTC_CLI_COMMAND.importaddress, param: "\"\(qrCodeLink)\"")
+                            
+                        } else {
+                            
+                            self.importAddress(ssh: self.ssh, address: qrCodeLink)
+                            
+                        }
+                        
+                    }
                     
                 }
                 
@@ -212,7 +262,33 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate, AVCapt
             if machineReadableCode.type == AVMetadataObject.ObjectType.qr {
                 
                 let stringURL = machineReadableCode.stringValue!
-                self.importPrivateKey(ssh: self.ssh, pk: stringURL)
+                
+                if stringURL.hasPrefix("L") || stringURL.hasPrefix("5") || stringURL.hasPrefix("9") || stringURL.hasPrefix("c") {
+                    
+                    if !self.isUsingSSH {
+                        
+                        self.executeNodeCommand(method: BTC_CLI_COMMAND.importprivkey, param: "\"\(stringURL)\"")
+                        
+                    } else {
+                        
+                        self.importPrivateKey(ssh: self.ssh, pk: stringURL)
+                        
+                    }
+                    
+                } else if stringURL.hasPrefix("1") || stringURL.hasPrefix("3") || stringURL.hasPrefix("tb1") || stringURL.hasPrefix("bc1") || stringURL.hasPrefix("2") || stringURL.hasPrefix("m") {
+                    
+                    if !self.isUsingSSH {
+                        
+                        self.executeNodeCommand(method: BTC_CLI_COMMAND.importaddress, param: "\"\(stringURL)\"")
+                        
+                    } else {
+                        
+                        self.importAddress(ssh: self.ssh, address: stringURL)
+                        
+                    }
+                    
+                }
+                
                 self.avCaptureSession.stopRunning()
                 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
@@ -290,9 +366,37 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate, AVCapt
                 
             }
             
-        } else {
+        }
+        
+    }
+    
+    func importAddress(ssh: SSHService, address: String) {
+        print("importPrivateKey")
+        
+        if isUsingSSH {
             
-            self.executeNodeCommand(method: BTC_CLI_COMMAND.importprivkey, param: "\"\(pk)\"")
+            let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+            queue.async {
+                
+                ssh.executeStringResponse(command: BTC_CLI_COMMAND.importaddress, params: "\"\(address)\"", response: { (result, error) in
+                    
+                    if error != nil {
+                        
+                        print("error importPrivateKey = \(String(describing: error))")
+                        
+                    } else {
+                        
+                        DispatchQueue.main.async {
+                            
+                            displayAlert(viewController: self, title: "Success", message: "Address imported, your node will need to rescan the blockchain which can take some time before the balance will show up.")
+                            
+                        }
+                        
+                    }
+                    
+                })
+                
+            }
             
         }
         

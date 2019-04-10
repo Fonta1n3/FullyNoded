@@ -86,8 +86,6 @@ class CreateAccountViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    
-    
     @objc func nextButtonAction() {
         
         self.view.endEditing(true)
