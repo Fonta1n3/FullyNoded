@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="KeyPad" customModule="BitSense" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="50"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qtS-ah-wEI">
+                    <rect key="frame" x="323" y="7" width="36" height="36"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="36" id="gZG-dh-E38"/>
+                        <constraint firstAttribute="width" constant="36" id="wf6-M4-n2z"/>
+                    </constraints>
+                    <state key="normal" title="Button" image="whiteBroom.png"/>
+                    <connections>
+                        <action selector="sweep:" destination="iN0-l3-epB" eventType="touchUpInside" id="ylD-nC-mjn"/>
+                    </connections>
+                </button>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="qtS-ah-wEI" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" constant="7" id="KCC-NU-TAo"/>
+                <constraint firstItem="qtS-ah-wEI" firstAttribute="trailing" secondItem="vUN-kp-3ea" secondAttribute="trailing" constant="-16" id="hiZ-0O-Hbf"/>
+                <constraint firstItem="qtS-ah-wEI" firstAttribute="bottom" secondItem="vUN-kp-3ea" secondAttribute="bottom" constant="-7" id="jEo-ig-DwN"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <connections>
+                <outlet property="sweepButtonOutlet" destination="qtS-ah-wEI" id="ycA-ru-w6P"/>
+            </connections>
+            <point key="canvasLocation" x="138.40000000000001" y="-124.13793103448276"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="whiteBroom.png" width="90" height="90"/>
+    </resources>
+</document>
