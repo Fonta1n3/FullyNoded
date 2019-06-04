@@ -8,8 +8,13 @@
 
 import Foundation
 
-
 public enum BTC_CLI_COMMAND: String {
+    
+    case fundrawtransaction = "fundrawtransaction"
+    case uptime = "uptime"
+    case importmulti = "importmulti"
+    case getdescriptorinfo = "getdescriptorinfo"
+    case deriveaddresses = "deriveaddresses"
     case getrawtransaction = "getrawtransaction"
     case decoderawtransaction = "decoderawtransaction"
     case getnewaddress = "getnewaddress"
@@ -34,4 +39,5 @@ public enum BTC_CLI_COMMAND: String {
     case estimatesmartfee = "estimatesmartfee"
     case dumpwallet = "dumpwallet"
     case importaddress = "importaddress"
+    
 }

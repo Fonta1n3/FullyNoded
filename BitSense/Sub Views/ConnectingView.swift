@@ -43,7 +43,6 @@ class ConnectingView: UIView {
         label.textAlignment = .center
         label.alpha = 0
         label.numberOfLines = 0
-        //label.sizeToFit()
         blurView.contentView.addSubview(label)
         
         UIView.animate(withDuration: 0.5) {

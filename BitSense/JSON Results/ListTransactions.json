@@ -1,0 +1,197 @@
+{
+    "result": [
+        {
+            "account": "",
+            "address": "bc1qj3sqh76wcttfjk7agxapejmw8r6ehy0eqkxzgl",
+            "category": "receive",
+            "amount": 0.0065589,
+            "label": "",
+            "vout": 1,
+            "confirmations": 44361,
+            "blockhash": "000000000000000000250cffa73c2a08e64e53dab398ede3f38b1c30ae5c66ca",
+            "blockindex": 317,
+            "blocktime": 1529098309,
+            "txid": "07b1d3fbc4d78d480d510264bb01bd390e81cda34dcb01e882e94adfa9355d10",
+            "walletconflicts": [
+                
+            ],
+            "time": 1529098115,
+            "timereceived": 1529098115,
+            "bip125-replaceable": "no"
+        },
+        {
+            "account": "",
+            "address": "bc1qj3sqh76wcttfjk7agxapejmw8r6ehy0eqkxzgl",
+            "category": "send",
+            "amount": -0.003444048,
+            "vout": 0,
+            "fee": -0.00000952,
+            "confirmations": 6039,
+            "blockhash": "0000000000000000000311a3da527cad31b48ac12356f590ba8d97eb9e7b3b5c",
+            "blockindex": 1677,
+            "blocktime": 1551912550,
+            "txid": "62a1cbfc115b9e5ed40309a2b8248554e5a7aaf4a7883582d7fae4405587eefa",
+            "walletconflicts": [
+                
+            ],
+            "time": 1551905752,
+            "timereceived": 1551905752,
+            "bip125-replaceable": "no",
+            "abandoned": false
+        },
+        {
+            "account": "",
+            "address": "bc1qkfzq9uewaee8zqa4wv6dgg4d6jrvgyw2v4jg6p",
+            "category": "send",
+            "amount": 0.002141,
+            "label": "",
+            "vout": 1,
+            "confirmations": 44361,
+            "blockhash": "000000000000000000250cffa73c2a08e64e53dab398ede3f38b1c30ae5c66ca",
+            "blockindex": 317,
+            "blocktime": 1529098309,
+            "txid": "07b1d3fbc4d78d480d510264bb01bd390e81cda34dcb01e882e94adfa9355d10",
+            "walletconflicts": [
+                
+            ],
+            "time": 1529098115,
+            "timereceived": 1529098115,
+            "bip125-replaceable": "no"
+        },
+        {
+            "account": "",
+            "address": "bc1q8ycmw538vgcy4rsucjdj3mzy7e6e8cfnaw8ucd",
+            "category": "receive",
+            "amount": 0.198938,
+            "label": "",
+            "vout": 1,
+            "confirmations": 44361,
+            "blockhash": "000000000000000000250cffa73c2a08e64e53dab398ede3f38b1c30ae5c66ca",
+            "blockindex": 317,
+            "blocktime": 1529098309,
+            "txid": "07b1d3fbc4d78d480d510264bb01bd390e81cda34dcb01e882e94adfa9355d10",
+            "walletconflicts": [
+                
+            ],
+            "time": 1529098115,
+            "timereceived": 1529098115,
+            "bip125-replaceable": "no"
+        },
+        {
+            "account": "",
+            "address": "bc1qczy27sflztyz7aejjregyvfeul9e8pq4xd6nvk",
+            "category": "send",
+            "amount": 0.00004000,
+            "label": "",
+            "vout": 1,
+            "confirmations": 44361,
+            "blockhash": "000000000000000000250cffa73c2a08e64e53dab398ede3f38b1c30ae5c66ca",
+            "blockindex": 317,
+            "blocktime": 1529098309,
+            "txid": "07b1d3fbc4d78d480d510264bb01bd390e81cda34dcb01e882e94adfa9355d10",
+            "walletconflicts": [
+                
+            ],
+            "time": 1529098115,
+            "timereceived": 1529098115,
+            "bip125-replaceable": "no"
+        },
+        {
+            "account": "",
+            "address": "32NFcoB96ANoPnqycLH9WUd94o7bwRyq66",
+            "category": "receive",
+            "amount": 0.00478920,
+            "label": "Salary",
+            "vout": 1,
+            "confirmations": 44361,
+            "blockhash": "000000000000000000250cffa73c2a08e64e53dab398ede3f38b1c30ae5c66ca",
+            "blockindex": 317,
+            "blocktime": 1529098309,
+            "txid": "07b1d3fbc4d78d480d510264bb01bd390e81cda34dcb01e882e94adfa9355d10",
+            "walletconflicts": [
+                
+            ],
+            "time": 1529098115,
+            "timereceived": 1529098115,
+            "bip125-replaceable": "no"
+        },
+        {
+            "account": "",
+            "address": "32NFcoB96ANoPnqycLH9WUd94o7bwRyq66",
+            "category": "send",
+            "amount": -0.00999900,
+            "label": "Hodlonaut donation",
+            "vout": 1,
+            "confirmations": 44361,
+            "blockhash": "000000000000000000250cffa73c2a08e64e53dab398ede3f38b1c30ae5c66ca",
+            "blockindex": 317,
+            "blocktime": 1529098309,
+            "txid": "07b1d3fbc4d78d480d510264bb01bd390e81cda34dcb01e882e94adfa9355d10",
+            "walletconflicts": [
+                
+            ],
+            "time": 1529098115,
+            "timereceived": 1529098115,
+            "bip125-replaceable": "no"
+        },
+        {
+            "account": "",
+            "address": "32NFcoB96ANoPnqycLH9WUd94o7bwRyq66",
+            "category": "send",
+            "amount": -0.06552727,
+            "label": "Wikileaks Donation",
+            "vout": 1,
+            "confirmations": 44361,
+            "blockhash": "000000000000000000250cffa73c2a08e64e53dab398ede3f38b1c30ae5c66ca",
+            "blockindex": 317,
+            "blocktime": 1529098309,
+            "txid": "07b1d3fbc4d78d480d510264bb01bd390e81cda34dcb01e882e94adfa9355d10",
+            "walletconflicts": [
+                
+            ],
+            "time": 1529098115,
+            "timereceived": 1529098115,
+            "bip125-replaceable": "no"
+        },
+        {
+            "account": "",
+            "address": "bc1qkfzq9uewaee8zqa4wv6dgg4d6jrvgyw2v4jg6p",
+            "category": "send",
+            "amount": -0.00885738,
+            "label": "Coffee",
+            "vout": 1,
+            "confirmations": 44361,
+            "blockhash": "000000000000000000250cffa73c2a08e64e53dab398ede3f38b1c30ae5c66ca",
+            "blockindex": 317,
+            "blocktime": 1529098309,
+            "txid": "07b1d3fbc4d78d480d510264bb01bd390e81cda34dcb01e882e94adfa9355d10",
+            "walletconflicts": [
+                
+            ],
+            "time": 1529098115,
+            "timereceived": 1529098115,
+            "bip125-replaceable": "no"
+        },
+        {
+            "account": "",
+            "address": "bc1qj3sqh76wcttfjk7agxapejmw8r6ehy0eqkxzgl",
+            "category": "send",
+            "amount": -0.00385000,
+            "label": "Electricity bill",
+            "vout": 1,
+            "confirmations": 44361,
+            "blockhash": "000000000000000000250cffa73c2a08e64e53dab398ede3f38b1c30ae5c66ca",
+            "blockindex": 317,
+            "blocktime": 1529098309,
+            "txid": "07b1d3fbc4d78d480d510264bb01bd390e81cda34dcb01e882e94adfa9355d10",
+            "walletconflicts": [
+                
+            ],
+            "time": 1529098115,
+            "timereceived": 1529098115,
+            "bip125-replaceable": "no"
+        }
+    ],
+    "error": null,
+    "id": null
+}

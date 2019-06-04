@@ -33,11 +33,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
             let loginVC = storyboard.instantiateViewController(withIdentifier: "LogIn")
             let topVC = self.window?.rootViewController?.topViewController()
+            
             if topVC!.restorationIdentifier != "LogIn" {
+                
                 topVC!.present(loginVC, animated: true, completion: nil)
+                
             }
             
         }
+        
     }
 
     func applicationWillEnterForeground(_ application: UIApplication) {

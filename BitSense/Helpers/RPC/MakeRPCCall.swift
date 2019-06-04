@@ -12,13 +12,12 @@ import UIKit
 final class MakeRPCCall {
     
     static let sharedInstance = MakeRPCCall()
-    let aes = AESService.sharedInstance
-    let cd = CoreDataService.sharedInstance
+    let aes = AESService()
+    let cd = CoreDataService()
     var nodeUsername = ""
     var nodePassword = ""
     var ip = ""
     var port = ""
-    var credentialsComplete = Bool()
     var vc = UIViewController()
     var dictToReturn = NSDictionary()
     var doubleToReturn = Double()
@@ -28,7 +27,7 @@ final class MakeRPCCall {
     var errorDescription = String()
     
     func executeRPCCommand(method: BTC_CLI_COMMAND, param: Any, completion: @escaping () -> Void) {
-        print("executeNodeCommand")
+        print("executeRPCCommand")
         
         let nodes = cd.retrieveCredentials()
         var activeNode = [String:Any]()
@@ -46,67 +45,30 @@ final class MakeRPCCall {
         if activeNode["port"] != nil {
             
             port = aes.decryptKey(keyToDecrypt: activeNode["port"] as! String)
-            credentialsComplete = true
-            
-        } else {
-            
-            credentialsComplete = false
             
         }
         
         if activeNode["ip"] != nil {
             
             ip = aes.decryptKey(keyToDecrypt: activeNode["ip"] as! String)
-            credentialsComplete = true
-            
-        } else {
-            
-            credentialsComplete = false
             
         }
         
         if activeNode["username"] != nil {
             
             nodeUsername = aes.decryptKey(keyToDecrypt: activeNode["username"] as! String)
-            credentialsComplete = true
-            
-        } else {
-            
-            credentialsComplete = false
             
         }
         
         if activeNode["password"] != nil {
             
             nodePassword = aes.decryptKey(keyToDecrypt: activeNode["password"] as! String)
-            credentialsComplete = true
-            
-        } else {
-            
-            credentialsComplete = false
             
         }
-        
-        if !credentialsComplete {
-            
-            port = "18332"
-            ip = "46.101.239.249"
-            nodeUsername = "bitcoin"
-            nodePassword = "password"
-            
-            displayAlert(viewController: vc, title: "Alert", message: "Looks like you have not logged in to your own node yet or incorrectly filled out your credentials, you are connected to our testnet full node so you can play with the app before connecting to your own.\n\nTo connect to your own node tap the settings button and \"Log in to your own node\".\n\nIf you have any issues please email me at bitsenseapp@gmail.com"
-            )
-            
-        }
-        
-        print("port = \(port)")
-        print("username = \(nodeUsername)")
-        print("password = \(nodePassword)")
-        print("ip = \(ip)")
         
         let url = URL(string: "http://\(nodeUsername):\(nodePassword)@\(ip):\(port)")
         var request = URLRequest(url: url!)
-        //request.timeoutInterval = 30
+        request.timeoutInterval = 15
         request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
         request.httpMethod = "POST"
         request.httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method.rawValue)\",\"params\":[\(param)]}".data(using: .utf8)
@@ -119,7 +81,6 @@ final class MakeRPCCall {
                     
                     DispatchQueue.main.async {
                         
-                        print("error = \(error.debugDescription)")
                         self.errorBool = true
                         self.errorDescription = error!.localizedDescription
                         completion()
@@ -143,7 +104,6 @@ final class MakeRPCCall {
                                     if let errorMessage = errorCheck["message"] as? String {
                                         
                                         self.errorDescription = errorMessage
-                                        
                                         
                                     } else {
                                         
@@ -206,10 +166,6 @@ final class MakeRPCCall {
         
     }
     
-    private init() {
-        
-        
-        
-    }
+    private init() {}
     
 }

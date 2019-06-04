@@ -6,5 +6,4 @@
 //  Copyright © 2018 Fontaine. All rights reserved.
 //
 
-//#import <Foundation/Foundation.h>
-//#import <CoreBitcoin/CoreBitcoin.h>
+

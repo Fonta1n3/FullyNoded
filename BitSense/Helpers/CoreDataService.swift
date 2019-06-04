@@ -12,8 +12,6 @@ import UIKit
 
 class CoreDataService {
     
-    static let sharedInstance = CoreDataService()
-    
     func saveCredentialsToCoreData(vc: UIViewController, credentials: [String:Any]) -> Bool {
         print("saveCredentialsToCoreData")
         
@@ -26,7 +24,7 @@ class CoreDataService {
             
         } else {
             
-            displayAlert(viewController: vc, title: "Error", message: "Unable to convert credentials to coredata.")
+            displayAlert(viewController: vc, isError: true, message: "Unable to convert credentials to coredata.")
             success = false
             
         }
@@ -113,7 +111,7 @@ class CoreDataService {
             } else {
                 
                 boolToReturn = false
-                displayAlert(viewController: viewController, title: "Error", message: "Something strange has happened and we do not have access to app delegate, please try again.")
+                displayAlert(viewController: viewController, isError: true, message: "Something strange has happened and we do not have access to app delegate, please try again.")
                 
             }
             
@@ -166,8 +164,6 @@ class CoreDataService {
                 
             }
             
-        //}
-        
         return boolToReturn
         
     }
@@ -186,7 +182,7 @@ class CoreDataService {
             } else {
                 
                 boolToReturn = false
-                displayAlert(viewController: viewController, title: "Error", message: "Something strange has happened and we do not have access to app delegate, please try again.")
+                displayAlert(viewController: viewController, isError: true, message: "Something strange has happened and we do not have access to app delegate, please try again.")
                 
             }
             
@@ -258,7 +254,7 @@ class CoreDataService {
             } else {
                 
                 boolToReturn = false
-                displayAlert(viewController: vc, title: "Error", message: "Something strange has happened and we do not have access to app delegate, please try again.")
+                displayAlert(viewController: vc, isError: true, message: "Something strange has happened and we do not have access to app delegate, please try again.")
                 
             }
             

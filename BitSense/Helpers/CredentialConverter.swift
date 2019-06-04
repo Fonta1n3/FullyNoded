@@ -11,19 +11,10 @@ import UIKit
 
 class CredentialConverter {
     
-    static let sharedInstance = CredentialConverter()
-    
     func convertCredentials(vc: UIViewController) {
         
-        func randomString(length: Int) -> String {
-            
-            let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-            return String((0...length-1).map{ _ in letters.randomElement()! })
-            
-        }
-        
-        let cd = CoreDataService.sharedInstance
-        var credentialsExist = Bool()
+        let cd = CoreDataService()
+        var credentialsExist = false
         let userDefaults = UserDefaults.standard
         var credentials = [String:Any]()
         var username = String()
@@ -31,8 +22,6 @@ class CredentialConverter {
         var port = String()
         var ip = String()
         var sshPassword = String()
-        var isRPC = Bool()
-        var isSSH = Bool()
         
         credentials["id"] = randomString(length: 7)
         
@@ -42,10 +31,6 @@ class CredentialConverter {
             credentials["username"] = username
             credentialsExist = true
             
-        } else {
-            
-            credentialsExist = false
-            
         }
         
         if userDefaults.string(forKey: "NodeIPAddress") != nil {
@@ -53,10 +38,6 @@ class CredentialConverter {
             ip = userDefaults.string(forKey: "NodeIPAddress")!
             credentials["ip"] = ip
             credentialsExist = true
-            
-        } else {
-            
-            credentialsExist = false
             
         }
         
@@ -66,70 +47,78 @@ class CredentialConverter {
             credentials["port"] = port
             credentialsExist = true
             
-        } else {
+        }
+        
+        if userDefaults.string(forKey: "NodePassword") != nil {
             
-            credentialsExist = false
+            sshPassword = userDefaults.string(forKey: "NodePassword")!
+            credentials["password"] = sshPassword
+            credentialsExist = true
             
         }
         
         if userDefaults.string(forKey: "sshPassword") != nil {
             
-            isSSH = true
-            isRPC = false
             sshPassword = userDefaults.string(forKey: "sshPassword")!
             credentials["password"] = sshPassword
             credentialsExist = true
             
-        } else {
+        }
+        
+        if credentialsExist {
             
-            isSSH = false
-            isRPC = true
+            credentials["isActive"] = true
+            credentials["label"] = "Your node"
             
-            if userDefaults.string(forKey: "NodePassword") != nil {
+            let success = cd.saveCredentialsToCoreData(vc: vc, credentials: credentials)
+            
+            if success {
                 
-                password = userDefaults.string(forKey: "NodePassword")!
-                credentials["password"] = password
-                credentialsExist = true
+                print("converted node saved")
+                
+                userDefaults.removeObject(forKey: "sshPassword")
+                userDefaults.removeObject(forKey: "NodePassword")
+                userDefaults.removeObject(forKey: "NodePort")
+                userDefaults.removeObject(forKey: "NodeIPAddress")
+                userDefaults.removeObject(forKey: "NodeUsername")
+                
+                userDefaults.set(true, forKey: "hasConverted")
                 
             } else {
                 
-                credentialsExist = false
+                print("failed to save default node")
                 
             }
             
         }
-        
-        credentials["isRPC"] = isRPC
-        credentials["isSSH"] = isSSH
-        credentials["isActive"] = true
-        
-        let aes = AESService.sharedInstance
+            
+        let aes = AESService()
         
         func saveDefaultNode() {
             
             var defaultNode = [String:Any]()
-            let prt = aes.encryptKey(keyToEncrypt: "18332")
-            let host = aes.encryptKey(keyToEncrypt: "46.101.239.249")
-            let un = aes.encryptKey(keyToEncrypt: "bitcoin")
+            let prt = aes.encryptKey(keyToEncrypt: "22")
+            let host = aes.encryptKey(keyToEncrypt: "someIP")
+            let un = aes.encryptKey(keyToEncrypt: "user")
             let pw = aes.encryptKey(keyToEncrypt: "password")
             defaultNode["port"] = prt
             defaultNode["ip"] = host
             defaultNode["username"] = un
             defaultNode["password"] = pw
             defaultNode["id"] = randomString(length: 7)
-            defaultNode["isSSH"] = false
             
             if credentialsExist {
                 
                 defaultNode["isActive"] = false
+                defaultNode["isDefault"] = false
                 
             } else {
                 
                 defaultNode["isActive"] = true
+                defaultNode["isDefault"] = true
                 
             }
             
-            defaultNode["isRPC"] = true
             defaultNode["label"] = "Testing Node"
             
             let saveDef = cd.saveCredentialsToCoreData(vc: vc, credentials: defaultNode)
@@ -137,7 +126,7 @@ class CredentialConverter {
             if saveDef {
                 
                 print("default node saved")
-                //delete from user defaults
+                
                 userDefaults.set(true, forKey: "hasConverted")
                 
             } else {
@@ -148,43 +137,7 @@ class CredentialConverter {
             
         }
         
-        if credentialsExist {
-            
-            let decPort = aes.decryptKey(keyToDecrypt: port)
-            let decIp = aes.decryptKey(keyToDecrypt: ip)
-            let decUsername = aes.decryptKey(keyToDecrypt: username)
-            let decPass = aes.decryptKey(keyToDecrypt: password)
-            
-            if decPort != "18332" && decIp != "46.101.239.249" && decUsername != "bitcoin" && decPass != "password" {
-                
-                credentials["label"] = "Your Node - tap to edit"
-                
-                let success = cd.saveCredentialsToCoreData(vc: vc, credentials: credentials)
-                
-                if success {
-                    
-                    print("Converted credentials to coredata")
-                    //delete from user defaults
-                    userDefaults.set(true, forKey: "hasConverted")
-                    
-                } else {
-                    
-                    print("failed to ocnvert credentials to coredata")
-                    
-                }
-                
-                
-            } else {
-                
-                saveDefaultNode()
-                
-            }
-            
-        } else {
-            
-            saveDefaultNode()
-            
-        }
+        saveDefaultNode()
         
     }
     

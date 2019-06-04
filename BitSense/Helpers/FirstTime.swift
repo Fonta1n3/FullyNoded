@@ -11,23 +11,14 @@ import SwiftKeychainWrapper
 
 class FirstTime {
     
-    static let sharedInstance = FirstTime()
-    
     func firstTimeHere() {
         print("firstTimeHere")
         
-        //KeychainWrapper.standard.removeAllKeys()
-        
         if UserDefaults.standard.object(forKey: "firstTime") == nil {
             
-            UserDefaults.standard.set("500", forKey: "miningFee")
+            UserDefaults.standard.set("bitcoin-cli", forKey: "path")
             
-            func randomString(length: Int) -> String {
-                
-                let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-                return String((0...length-1).map{ _ in letters.randomElement()! })
-                
-            }
+            UserDefaults.standard.set("500", forKey: "miningFee")
             
             let password = randomString(length: 32)
             
@@ -36,14 +27,13 @@ class FirstTime {
             if saveSuccessful {
                 
                 print("Encryption key saved successfully: \(saveSuccessful)")
+                UserDefaults.standard.set(true, forKey: "firstTime")
                 
             } else {
                 
                 print("error saving encryption key")
                 
             }
-            
-            UserDefaults.standard.set(true, forKey: "firstTime")
             
         }
         

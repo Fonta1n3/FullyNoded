@@ -11,22 +11,45 @@ import NMSSH
 
 class SSHService {
     
-    var user:String!
-    var host:String!
-    var port:String!
-    var password:String!
     var session:NMSSHSession!
     static let sharedInstance = SSHService()
     
-    private init() {
-        
-        print("SSHService")
-        
-    }
+    private init() {}
     
-    func connect(success: @escaping((success:Bool, error:String?)) -> ()) {
+    func connect(activeNode: [String:Any], success: @escaping((success:Bool, error:String?)) -> ()) {
         
-        guard user != nil, host != nil, password != nil else {
+        let aes = AESService()
+        
+        var port = "22"
+        var user = "user"
+        var host = "host"
+        var password = "password"
+        
+        if let portCheck = aes.decryptKey(keyToDecrypt: activeNode["port"] as! String) as? String {
+            
+            port = portCheck
+            
+        }
+        
+        if let userCheck = aes.decryptKey(keyToDecrypt: activeNode["username"] as! String) as? String {
+            
+            user = userCheck
+            
+        }
+        
+        if let hostCheck = aes.decryptKey(keyToDecrypt: activeNode["ip"] as! String) as? String {
+            
+            host = hostCheck
+            
+        }
+        
+        if let passwordCheck = aes.decryptKey(keyToDecrypt: activeNode["password"] as! String) as? String {
+            
+            password = passwordCheck
+            
+        }
+        
+        guard user != "", host != "", password != "" else {
             
             success((success:false, error:"Incomplete Credentials"))
             return
@@ -37,34 +60,36 @@ class SSHService {
         
         if port != "" {
             
-            portInt = Int(port!)!
+            portInt = Int(port)!
             
-            print("host = \(String(describing: host)), port = \(String(describing: port)), user = \(String(describing: user))")
+            let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+            queue.async {
             
-            session = NMSSHSession.connect(toHost: host!, port: portInt, withUsername: user!)
+            self.session = NMSSHSession.connect(toHost: host, port: portInt, withUsername: user)
             
-            if session.isConnected == true {
+            if self.session.isConnected == true {
                 
-                session.authenticate(byPassword: password!)
+                self.session.authenticate(byPassword: password)
                 
-                if session.isAuthorized == true {
+                if self.session.isAuthorized {
                     
                     success((success:true, error:nil))
                     print("success")
                     
                 } else {
                     
-                    success((success:false, error:"\(String(describing: session.lastError!))"))
+                    success((success:false, error:"\(String(describing: self.session.lastError!))"))
                     print("fail")
-                    print("\(String(describing: session?.lastError))")
+                    print("\(String(describing: self.session?.lastError))")
                     
                  }
                 
             } else {
                 
                 print("Session not connected")
+                success((success:false, error:"Unable to connect"))
                 
-                success((success:false, error:"Unable to connect via SSH, please make sure your firewall allows SSH connections and ensure you input the correct port."))
+            }
                 
             }
             
@@ -78,38 +103,80 @@ class SSHService {
         
     }
     
-    func execute(command: BTC_CLI_COMMAND, params: String, response: @escaping((dictionary:Any?, error:String?)) -> ()) {
+    func execute(command: BTC_CLI_COMMAND, params: Any, response: @escaping((dictionary:Any?, error:String?)) -> ()) {
         
-        let error = NSErrorPointer.none
+        var error: NSError?
+        var path = "bitcoin-cli"
+        
+        if UserDefaults.standard.object(forKey: "path") != nil {
             
-        if let responseString = session?.channel.execute("bitcoin-cli \(command.rawValue) \(params)", error: error ?? nil) {
-                    
-            print("responseString = \(String(describing: responseString))")
-                    
-            guard let responseData = responseString.data(using: .utf8) else { return }
-                    
-            do {
-                        
-                let json = try JSONSerialization.jsonObject(with: responseData, options: []) as Any
-                            
-                response((dictionary:json, error:nil))
-                            
-                
-            } catch {
-                        
-                response((dictionary:nil, error:"JSON ERROR: \(error)"))
-                        
-            }
-                    
+            path = UserDefaults.standard.object(forKey: "path") as! String
+            
         }
+        
+        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        queue.async {
+            
+            if let responseString = self.session?.channel.execute("\(path) \(command.rawValue) \(params)", error: &error) {
                 
+                print("responseString = \(String(describing: responseString))")
+                
+                if error != nil {
+                    
+                    print("error = \(error!.localizedDescription)")
+                    response((dictionary:nil, error:error!.localizedDescription))
+                    
+                } else {
+                    
+                    if command == BTC_CLI_COMMAND.getnewaddress || command == BTC_CLI_COMMAND.getrawchangeaddress || command == BTC_CLI_COMMAND.createrawtransaction {
+                        
+                        if responseString.hasSuffix("\n") {
+                            
+                            let address = responseString.replacingOccurrences(of: "\n", with: "")
+                            
+                            response((dictionary: address,error: nil))
+                            
+                        } else {
+                            
+                            response((dictionary:responseString,error:nil))
+                            
+                        }
+                        
+                    } else {
+                        
+                        guard let responseData = responseString.data(using: .utf8) else { return }
+                        
+                        do {
+                            
+                            let json = try JSONSerialization.jsonObject(with: responseData, options: [.allowFragments]) as Any
+                            
+                            response((dictionary:json, error:nil))
+                            
+                        } catch {
+                            
+                            response((dictionary:nil, error:"JSON ERROR: \(error)"))
+                            print("error = \(error)")
+                            
+                        }
+                        
+                    }
+                    
+                }
+                
+            }
+            
+        }
+            
      }
     
-    func executeStringResponse(command: BTC_CLI_COMMAND, params: String, response: @escaping((string:String?, error:String?)) -> ()) {
+    
+    
+    /*func executeStringResponse(command: BTC_CLI_COMMAND, params: String, response: @escaping((string:String?, error:String?)) -> ()) {
         
         let error = NSErrorPointer.none
         
-        if let responseString = session?.channel.execute("bitcoin-cli \(command.rawValue) \(params)", error: error ?? nil).replacingOccurrences(of: "\n", with: "") {
+        if let responseString = session?.channel.execute("/usr/local/bin/bitcoin-cli \(command.rawValue) \(params)",
+            error: error ?? nil).replacingOccurrences(of: "\n", with: "") {
             
             if error != nil {
                 
@@ -125,6 +192,6 @@ class SSHService {
             
         }
         
-    }
+    }*/
     
 }

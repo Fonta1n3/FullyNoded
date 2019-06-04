@@ -12,8 +12,6 @@ import SwiftKeychainWrapper
 
 class AESService {
     
-    static let sharedInstance = AESService()
-    
     func decryptKey(keyToDecrypt:String) -> String {
         print("decryptKey")
         
