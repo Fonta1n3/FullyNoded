@@ -14,6 +14,9 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate 
     var isPruned = Bool()
     var makeSSHCall:SSHelper!
     var ssh:SSHService!
+    var torClient:TorClient!
+    var torRPC:MakeRPCCall!
+    var activeNode = [String:Any]()
     @IBOutlet var incomingsTable: UITableView!
     
     override func viewDidLoad() {
@@ -222,6 +225,7 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate 
                 vc.ssh = self.ssh
                 vc.makeSSHCall = self.makeSSHCall
                 vc.isPruned = self.isPruned
+                vc.activeNode = self.activeNode
                 
             }
             

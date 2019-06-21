@@ -25,6 +25,8 @@ class MultiOutputViewController: UIViewController, UITextFieldDelegate, UITableV
     var rawTxSigned = ""
     var miningFee = Double()
     
+    var torRPC:MakeRPCCall!
+    var torClient:TorClient!
     var makeSSHCall:SSHelper!
     var ssh:SSHService!
     
@@ -162,12 +164,12 @@ class MultiOutputViewController: UIViewController, UITextFieldDelegate, UITableV
         
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(keyboardWillShow),
-                                               name: NSNotification.Name.UIKeyboardWillShow,
+                                               name: UIResponder.keyboardWillShowNotification,
                                                object: nil)
         
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(keyboardWillHide),
-                                               name: NSNotification.Name.UIKeyboardWillHide,
+                                               name: UIResponder.keyboardWillHideNotification,
                                                object: nil)
         
         let miningFeeCheck = UserDefaults.standard.object(forKey: "miningFee") as! String
@@ -181,15 +183,15 @@ class MultiOutputViewController: UIViewController, UITextFieldDelegate, UITableV
     
     @objc func keyboardWillShow(_ notification:Notification) {
         
-        if let keyboardSize = (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue {
-            multiOutputTable.contentInset = UIEdgeInsetsMake(0, 0, keyboardSize.height, 0)
+        if let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue {
+            multiOutputTable.contentInset = UIEdgeInsets.init(top: 0, left: 0, bottom: keyboardSize.height, right: 0)
         }
     }
     
     @objc func keyboardWillHide(_ notification:Notification) {
         
-        if let keyboardSize = (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue {
-            multiOutputTable.contentInset = UIEdgeInsetsMake(0, 0, 0, 0)
+        if let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue {
+            multiOutputTable.contentInset = UIEdgeInsets.init(top: 0, left: 0, bottom: 0, right: 0)
         }
     }
     
@@ -288,7 +290,7 @@ class MultiOutputViewController: UIViewController, UITextFieldDelegate, UITableV
         
         button.removeFromSuperview()
         let blur = UIVisualEffectView()
-        blur.effect = UIBlurEffect(style: UIBlurEffectStyle.dark)
+        blur.effect = UIBlurEffect(style: UIBlurEffect.Style.dark)
         blur.frame = frame
         blur.clipsToBounds = true
         blur.layer.cornerRadius = frame.width / 2
@@ -446,7 +448,7 @@ class MultiOutputViewController: UIViewController, UITextFieldDelegate, UITableV
         
     }
     
-    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         
         if editingStyle == .delete {
             
@@ -538,7 +540,7 @@ class MultiOutputViewController: UIViewController, UITextFieldDelegate, UITableV
         
     }
     
-    func textFieldDidEndEditing(_ textField: UITextField, reason: UITextFieldDidEndEditingReason) {
+    func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason) {
         print("textFieldDidEndEditing")
         
         let amountTextField = amountField()

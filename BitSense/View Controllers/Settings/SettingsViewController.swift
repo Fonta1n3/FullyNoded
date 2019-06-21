@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import KeychainSwift
 
 class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, UITabBarControllerDelegate {
     
@@ -20,20 +21,25 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     let labelTitle = UILabel()
     var firstPassword = String()
     var secondPassword = String()
+    var bip44 = Bool()
+    var bip84 = Bool()
+    var addToKeypool = Bool()
+    var ssh:SSHService!
+    var makeSSHCall:SSHelper!
     @IBOutlet var settingsTable: UITableView!
     
     var sections = ["Mining fee",
                     "Password",
-                    "Address Format",
-                    "Rescan",
-                    "RPC Credentials",
-                    "Path"]
+                    "Invoice Address Format",
+                    "Importing"]
     
     var nativeSegwit = Bool()
     var p2shSegwit = Bool()
     var legacy = Bool()
     var rescan = Bool()
-    var path = ""
+    var isInternal = Bool()
+    var range = String()
+    var fingerprint = String()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -93,36 +99,16 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         nextButton.setTitleColor(UIColor.white, for: .normal)
         nextButton.alpha = 0
         
-        if userDefaults.object(forKey: "reScan") != nil {
-            
-            rescan = userDefaults.bool(forKey: "reScan")
-            
-        } else {
-            
-            rescan = true
-            
-        }
-        
     }
 
     override func viewDidAppear(_ animated: Bool) {
         
-        getAddressSettings()
+        getSettings()
         settingsTable.reloadData()
         
     }
     
-    func getAddressSettings() {
-        
-        if userDefaults.object(forKey: "path") != nil {
-            
-            path = userDefaults.object(forKey: "path") as! String
-            
-        } else {
-            
-            path = "bitcoin-cli"
-            
-        }
+    func getSettings() {
         
         if userDefaults.object(forKey: "nativeSegwit") != nil {
             
@@ -154,6 +140,76 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
         }
         
+        if userDefaults.object(forKey: "bip44") != nil {
+            
+            bip44 = userDefaults.bool(forKey: "bip44")
+            
+        } else {
+            
+            bip44 = false
+            
+        }
+        
+        if userDefaults.object(forKey: "bip84") != nil {
+            
+            bip84 = userDefaults.bool(forKey: "bip84")
+            
+        } else {
+            
+            bip84 = true
+            
+        }
+        
+        if userDefaults.object(forKey: "addToKeypool") != nil {
+            
+            addToKeypool = userDefaults.bool(forKey: "addToKeypool")
+            
+        } else {
+            
+            addToKeypool = false
+            
+        }
+        
+        if userDefaults.object(forKey: "reScan") != nil {
+            
+            rescan = userDefaults.bool(forKey: "reScan")
+            
+        } else {
+            
+            rescan = true
+            
+        }
+        
+        if userDefaults.object(forKey: "isInternal") != nil {
+            
+            isInternal = userDefaults.bool(forKey: "isInternal")
+            
+        } else {
+            
+            isInternal = false
+            
+        }
+        
+        if userDefaults.object(forKey: "range") != nil {
+            
+            range = userDefaults.object(forKey: "range") as! String
+            
+        } else {
+            
+            range = "0 to 99"
+            
+        }
+        
+        if userDefaults.object(forKey: "fingerprint") != nil {
+            
+            fingerprint = userDefaults.object(forKey: "fingerprint") as! String
+            
+        } else {
+            
+            fingerprint = ""
+            
+        }
+        
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -162,12 +218,17 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         let label = cell.viewWithTag(1) as! UILabel
         let check = cell.viewWithTag(2) as! UIImageView
         let switcher = cell.viewWithTag(3) as! UISwitch
+        let rangeLabel = cell.viewWithTag(4) as! UILabel
         switcher.alpha = 0
         cell.selectionStyle = .none
         
         switch indexPath.section {
             
         case 0:
+            
+            rangeLabel.alpha = 0
+            
+            label.textColor = UIColor.white
             
             if let fee = userDefaults.object(forKey: "miningFee") as? String {
                 
@@ -183,10 +244,14 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
         case 1:
             
+            rangeLabel.alpha = 0
+            label.textColor = UIColor.white
             label.text = "Reset Password"
             check.alpha = 0
             
         case 2:
+            
+            rangeLabel.alpha = 0
             
             switch indexPath.row {
                 
@@ -247,45 +312,134 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
         case 3:
             
-            switcher.alpha = 1
-            label.text = "Rescan"
-            check.alpha = 0
+            switch indexPath.row {
+                
+            /*case 0:
+                
+                rangeLabel.alpha = 0
+                label.text = "BIP44"
+                check.alpha = 0
+                
+                if bip44 {
+                    
+                    check.alpha = 1
+                    label.textColor = UIColor.white
+                    
+                } else {
+                    
+                    check.alpha = 0
+                    label.textColor = UIColor.darkGray
+                    
+                }
+                
+            case 1:
+                
+                rangeLabel.alpha = 0
+                label.text = "BIP84"
+                check.alpha = 0
+                
+                if bip84 {
+                    
+                    check.alpha = 1
+                    label.textColor = UIColor.white
+                    
+                } else {
+                    
+                    check.alpha = 0
+                    label.textColor = UIColor.darkGray
+                    
+                }
+                
+            case 2:
+                
+                switcher.alpha = 0
+                check.alpha = 0
+                rangeLabel.alpha = 1
+                label.text = "Fingerprint:"
+                rangeLabel.text = fingerprint
+                rangeLabel.textColor = UIColor.white
+                
+                if fingerprint == "" {
+                    
+                    label.textColor = UIColor.darkGray
+                    
+                } else {
+                    
+                    label.textColor = UIColor.white
+                    
+                }*/
+                
+            case 0:
+                
+                label.text = "Range:"
+                switcher.alpha = 0
+                check.alpha = 0
+                rangeLabel.alpha = 1
+                rangeLabel.text = range
+                rangeLabel.textColor = UIColor.white
+                
+            case 1:
+                
+                rangeLabel.alpha = 0
+                label.text = "Add to Keypool"
+                switcher.alpha = 1
+                check.alpha = 0
+                switcher.isOn = addToKeypool
+                switcher.addTarget(self, action: #selector(switchAddToKeypool), for: .touchUpInside)
+                
+                if addToKeypool {
+                    
+                    label.textColor = UIColor.white
+                    
+                } else {
+                    
+                    label.textColor = UIColor.darkGray
+                    
+                }
+                
+            case 2:
+                
+                rangeLabel.alpha = 0
+                switcher.alpha = 1
+                label.text = "Rescan"
+                check.alpha = 0
+                switcher.isOn = rescan
+                
+                if rescan {
+                    
+                    label.textColor = UIColor.white
+                    
+                } else {
+                    
+                    label.textColor = UIColor.darkGray
+                    
+                }
+                
+                switcher.addTarget(self, action: #selector(switchRescan), for: .touchUpInside)
             
-            if rescan {
+            case 3:
                 
-                switcher.isOn = true
-                label.textColor = UIColor.white
+                rangeLabel.alpha = 0
+                label.text = "Import as change addresses"
+                switcher.alpha = 1
+                check.alpha = 0
+                switcher.isOn = isInternal
                 
-            } else {
+                if isInternal {
+                    
+                    label.textColor = UIColor.white
+                    
+                } else {
+                    
+                    label.textColor = UIColor.darkGray
+                    
+                }
                 
-                switcher.isOn = false
-                label.textColor = UIColor.darkGray
+                switcher.addTarget(self, action: #selector(switchInternal), for: .touchUpInside)
                 
-            }
-            
-            switcher.addTarget(self, action: #selector(switchRescan), for: .touchUpInside)
-            
-        case 4:
-            
-            switcher.alpha = 0
-            check.alpha = 0
-            label.text = "Set RPC Login"
-            label.textColor = UIColor.white
-            
-        case 5:
-            
-            switcher.alpha = 0
-            check.alpha = 0
-            label.textColor = UIColor.white
-            
-            if userDefaults.object(forKey: "path") != nil {
+            default:
                 
-                label.text = (userDefaults.object(forKey: "path") as! String)
-                
-            } else {
-                
-                label.text = path
-                
+                break
             }
             
         default:
@@ -309,6 +463,10 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         if section == 2 {
             
             return 3
+            
+        } else if section == 3 {
+            
+            return 4
             
         } else {
             
@@ -338,7 +496,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         var footerView = UIView()
         var explanationLabel = UILabel()
         footerView = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: 20))
-        explanationLabel = UILabel(frame: CGRect(x: 20, y: 0, width: view.frame.size.width - 40, height: 40))
+        explanationLabel = UILabel(frame: CGRect(x: 20, y: 5, width: view.frame.size.width - 40, height: 40))
         explanationLabel.textColor = UIColor.darkGray
         explanationLabel.numberOfLines = 0
         explanationLabel.backgroundColor = UIColor.clear
@@ -347,27 +505,19 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
         if section == 0 {
             
-            explanationLabel.text = "Input a custom mining fee in Satoshis."
+            explanationLabel.text = "Input a custom mining fee in Satoshis.\n\n\n"
             
         } else if section == 1 {
             
-            explanationLabel.text = "Reset your password for unlocking the app. You will first need to enter your existing password."
+            explanationLabel.text = "Reset your password for unlocking the app. You will first need to enter your existing password.\n\n"
             
         } else if section == 2 {
             
-            explanationLabel.text = "Choose an address format, Native Segwit (bech32) is default."
+            explanationLabel.text = "Choose an address format, Native Segwit (bech32) is default.\n\n\n"
             
         } else if section == 3 {
             
-            explanationLabel.text = "Rescans the blockchain when importing keys."
-            
-        } else if section == 4 {
-            
-            explanationLabel.text = "In order to sign an unsigned raw tx with a private key you need to set your RPC credentials you DO NOT need to open any port we are only using SSH to connect to the node."
-            
-        } else if section == 5 {
-            
-            explanationLabel.text = "You can set a custom path to bitcoin-cli, by default the path is \"bitcoin-cli\". For example on a mac the path is \"/usr/local/bin/bitcoin-cli\""
+            explanationLabel.text = "Custom settings for importing keys.\n\n\n"
             
         }
         
@@ -390,6 +540,13 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    
+    DispatchQueue.main.async {
+        
+        let impact = UIImpactFeedbackGenerator()
+        impact.impactOccurred()
+        
+    }
         
         if indexPath.section == 0 {
             
@@ -440,13 +597,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
         } else if indexPath.section == 2 {
             
-            DispatchQueue.main.async {
-                
-                let impact = UIImpactFeedbackGenerator()
-                impact.impactOccurred()
-                
-            }
-            
             for row in 0 ..< tableView.numberOfRows(inSection: 2) {
                 
                 if let cell = self.settingsTable.cellForRow(at: IndexPath(row: row, section: 2)) {
@@ -486,30 +636,109 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 
             }
             
-        } else if indexPath.section == 4 {
+        } else if indexPath.section == 3 {
             
-            setRPC()
+            /*let cell = self.settingsTable.cellForRow(at: indexPath)!
+            let label = cell.viewWithTag(1) as! UILabel
+            let check = cell.viewWithTag(2) as! UIImageView
             
-        } else if indexPath.section == 5 {
+            if indexPath.row == 0 {
+                
+                let bip84cell = self.settingsTable.cellForRow(at: IndexPath.init(row: 1, section: 3))!
+                let bip84Label = bip84cell.viewWithTag(1) as! UILabel
+                let bip84Check = bip84cell.viewWithTag(2) as! UIImageView
+                
+                if bip44 {
+                    
+                    self.userDefaults.set(false, forKey: "bip44")
+                    self.userDefaults.set(true, forKey: "bip84")
+                    
+                    DispatchQueue.main.async {
+                        
+                        label.textColor = UIColor.darkGray
+                        check.alpha = 0
+                        bip84Label.textColor = UIColor.white
+                        bip84Check.alpha = 1
+                        
+                    }
+                    
+                } else {
+                    
+                    self.userDefaults.set(true, forKey: "bip44")
+                    self.userDefaults.set(false, forKey: "bip84")
+                    
+                    DispatchQueue.main.async {
+                        
+                        label.textColor = UIColor.white
+                        check.alpha = 1
+                        bip84Label.textColor = UIColor.darkGray
+                        bip84Check.alpha = 0
+                        
+                    }
+                    
+                }
+                
+            } else if indexPath.row == 1 {
+                
+                let bip44cell = self.settingsTable.cellForRow(at: IndexPath.init(row: 0, section: 3))!
+                let bip44Label = bip44cell.viewWithTag(1) as! UILabel
+                let bip44Check = bip44cell.viewWithTag(2) as! UIImageView
+                
+                if bip84 {
+                    
+                    self.userDefaults.set(true, forKey: "bip44")
+                    self.userDefaults.set(false, forKey: "bip84")
+                    
+                    DispatchQueue.main.async {
+                        
+                        label.textColor = UIColor.darkGray
+                        check.alpha = 0
+                        bip44Label.textColor = UIColor.white
+                        bip44Check.alpha = 1
+                        
+                    }
+                    
+                } else {
+                    
+                    self.userDefaults.set(false, forKey: "bip44")
+                    self.userDefaults.set(true, forKey: "bip84")
+                    
+                    DispatchQueue.main.async {
+                        
+                        label.textColor = UIColor.white
+                        check.alpha = 1
+                        bip44Label.textColor = UIColor.darkGray
+                        bip44Check.alpha = 0
+                        
+                    }
+                    
+                }
+                
+            } else if indexPath.row == 2 {
+                
+                changeFingerprint()
+                
+            } else */if indexPath.row == 0 {
+                
+                changeRange()
+                
+            }
             
-            setPath()
+            //getSettings()
             
         }
         
     }
     
-    func setPath() {
+    func changeFingerprint() {
         
         DispatchQueue.main.async {
             
-            let impact = UIImpactFeedbackGenerator()
-            impact.impactOccurred()
-            
-            let alert = UIAlertController(title: "Set your path", message: "In your terminal type something like \"where bitcoin-cli\" and it will give you your path, copy that and save it here. In a mac you would type \"which bitcoin-cli\"\n\nThis should only be used if you are troubleshooting your connection, generally just a path of \"bitcoin-cli\" works.", preferredStyle: .alert)
+            let alert = UIAlertController(title: "Master Key Fingerprint", message: "", preferredStyle: .alert)
             
             alert.addTextField { (textField1) in
                 
-                textField1.placeholder = "/usr/local/bin/bitcoin-cli"
+                textField1.placeholder = ""
                 textField1.keyboardType = UIKeyboardType.default
                 textField1.keyboardAppearance = UIKeyboardAppearance.dark
                 
@@ -517,11 +746,13 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
             alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: { (action) in
                 
-                if alert.textFields![0].text! != "" {
+                let fp = alert.textFields![0].text!
+                
+                if fp != "" {
                     
-                    let userDefaults = UserDefaults.standard
-                    let path = alert.textFields![0].text!
-                    userDefaults.set(path, forKey: "path")
+                    self.userDefaults.set(fp, forKey: "fingerprint")
+                    
+                    self.getSettings()
                     
                     DispatchQueue.main.async {
                         
@@ -529,15 +760,11 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                         
                     }
                     
-                    displayAlert(viewController: self,
-                                 isError: false,
-                                 message: "Path set to: \(path)")
-                    
                 } else {
                     
                     displayAlert(viewController: self,
                                  isError: true,
-                                 message: "Fill out both fields")
+                                 message: "Must input your master key fingerprint")
                     
                 }
                 
@@ -551,64 +778,70 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
-    func setRPC() {
+    func changeRange() {
+        
+        let cell = settingsTable.cellForRow(at: IndexPath.init(row: 2, section: 3))
+        let label = cell?.viewWithTag(4) as! UILabel
         
         DispatchQueue.main.async {
             
-            let impact = UIImpactFeedbackGenerator()
-            impact.impactOccurred()
+            let alert = UIAlertController(title: "Choose a range of keys to import", message: "Only applies for importing xpub's and xprv's", preferredStyle: .actionSheet)
             
-            let alert = UIAlertController(title: "RPC Credentials", message: "Please enter your RPC credentials as they appear in your bitcoin.conf file.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("0 to 99", comment: ""), style: .default, handler: { (action) in
+                
+                DispatchQueue.main.async {
+                    
+                    label.text = "0 to 99"
+                    self.range = "0 to 99"
+                    self.userDefaults.set(self.range, forKey: "range")
+                    
+                }
+                
+            }))
             
-            alert.addTextField { (textField1) in
+            alert.addAction(UIAlertAction(title: NSLocalizedString("100 to 199", comment: ""), style: .default, handler: { (action) in
                 
-                textField1.isSecureTextEntry = true
-                textField1.placeholder = "rpcuser"
-                textField1.keyboardType = UIKeyboardType.default
-                textField1.keyboardAppearance = UIKeyboardAppearance.dark
+                DispatchQueue.main.async {
+                    
+                    label.text = "100 to 199"
+                    self.range = "100 to 199"
+                    self.userDefaults.set(self.range, forKey: "range")
+                    
+                }
                 
-            }
+            }))
             
-            alert.addTextField { (textField2) in
+            alert.addAction(UIAlertAction(title: NSLocalizedString("200 to 299", comment: ""), style: .default, handler: { (action) in
                 
-                textField2.isSecureTextEntry = true
-                textField2.placeholder = "rpcpassword"
-                textField2.keyboardType = UIKeyboardType.default
-                textField2.keyboardAppearance = UIKeyboardAppearance.dark
+                DispatchQueue.main.async {
+                    
+                    label.text = "200 to 299"
+                    self.range = "200 to 299"
+                    self.userDefaults.set(self.range, forKey: "range")
+                    
+                }
                 
-            }
+            }))
             
-            alert.addTextField { (textField3) in
+            alert.addAction(UIAlertAction(title: NSLocalizedString("300 to 399", comment: ""), style: .default, handler: { (action) in
                 
-                textField3.isSecureTextEntry = false
-                textField3.placeholder = "rpcport"
-                textField3.keyboardType = UIKeyboardType.numberPad
-                textField3.keyboardAppearance = UIKeyboardAppearance.dark
+                DispatchQueue.main.async {
+                    
+                    label.text = "300 to 399"
+                    self.range = "300 to 399"
+                    self.userDefaults.set(self.range, forKey: "range")
+                    
+                }
                 
-            }
+            }))
             
-            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: { (action) in
+            alert.addAction(UIAlertAction(title: NSLocalizedString("400 to 499", comment: ""), style: .default, handler: { (action) in
                 
-                if alert.textFields![0].text! != "" && alert.textFields![1].text! != "" && alert.textFields![2].text! != "" {
+                DispatchQueue.main.async {
                     
-                    let userDefaults = UserDefaults.standard
-                    let rpcuser = alert.textFields![0].text!
-                    let rpcpassword = alert.textFields![1].text!
-                    let port = alert.textFields![2].text!
-                    userDefaults.set(rpcuser, forKey: "rpcuser")
-                    userDefaults.set(rpcpassword, forKey: "rpcpassword")
-                    userDefaults.set(port, forKey: "rpcport")
-                    
-                    displayAlert(viewController: self,
-                                 isError: false,
-                                 message: "RPC Credentials set")
-                    
-                } else {
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: "Fill out both fields")
-                    
+                    label.text = "400 to 499"
+                    self.range = "400 to 499"
+                    self.userDefaults.set(self.range, forKey: "range")
                 }
                 
             }))
@@ -616,15 +849,210 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { (action) in }))
             
             self.present(alert, animated: true, completion: nil)
+        }
+        
+    }
+    
+    @objc func switchInternal() {
+        
+        print("switchInternal")
+        
+        let cell = self.settingsTable.cellForRow(at: IndexPath(row: 5, section: 3))!
+        let switcher = cell.viewWithTag(3) as! UISwitch
+        let label = cell.viewWithTag(1) as! UILabel
+        
+        func checkIfPrivKeysEnabled() {
+            
+            func getResult() {
+                
+                if !makeSSHCall.errorBool {
+                    
+                    let result = makeSSHCall.dictToReturn
+                    let privKeysEnabled = result["private_keys_enabled"] as! Bool
+                    
+                    if privKeysEnabled {
+                        
+                        isInternal = false
+                        
+                        userDefaults.set(false, forKey: "isInternal")
+                        
+                        DispatchQueue.main.async {
+                            
+                            label.textColor = UIColor.darkGray
+                            switcher.isOn = false
+                            
+                        }
+                        
+                        displayAlert(viewController: self,
+                                     isError: true,
+                                     message: "In order to add imported keys to the change keypool your wallet needs to be created with private keys disabled.")
+                        
+                    } else {
+                        
+                        if isInternal {
+                            
+                            isInternal = false
+                            
+                            userDefaults.set(false, forKey: "isInternal")
+                            
+                            DispatchQueue.main.async {
+                                
+                                label.textColor = UIColor.darkGray
+                                
+                            }
+                            
+                        } else {
+                            
+                            isInternal = true
+                            
+                            userDefaults.set(true, forKey: "isInternal")
+                            
+                            DispatchQueue.main.async {
+                                
+                                label.textColor = UIColor.white
+                                
+                            }
+                            
+                            if !addToKeypool {
+                                
+                                DispatchQueue.main.async {
+                                    
+                                    let addToKeypoolCell = self.settingsTable.cellForRow(at: IndexPath.init(row: 3, section: 3))!
+                                    let keypoolLabel = addToKeypoolCell.viewWithTag(1) as! UILabel
+                                    let keypoolSwitch = addToKeypoolCell.viewWithTag(3) as! UISwitch
+                                
+                                    keypoolLabel.textColor = UIColor.white
+                                    keypoolSwitch.isOn = true
+                                    self.addToKeypool = true
+                                    self.userDefaults.set(true, forKey: "addToKeypool")
+                                    
+                                }
+                                
+                            }
+                            
+                        }
+                        
+                    }
+                    
+                }
+                
+            }
+            
+            if ssh.session.isConnected {
+                
+                makeSSHCall.executeSSHCommand(ssh: ssh,
+                                              method: BTC_CLI_COMMAND.getwalletinfo,
+                                              param: "",
+                                              completion: getResult)
+                
+            } else {
+                
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: "SSH not connected, we need to check your nodes settings before you can update this setting")
+                
+            }
             
         }
+        
+        checkIfPrivKeysEnabled()
+        
+    }
+    
+    @objc func switchAddToKeypool() {
+        
+        print("switchAddToKeypool")
+        
+        let cell = self.settingsTable.cellForRow(at: IndexPath(row: 3, section: 3))!
+        let switcher = cell.viewWithTag(3) as! UISwitch
+        let label = cell.viewWithTag(1) as! UILabel
+        
+        func checkIfPrivKeysEnabled() {
+            
+            func getResult() {
+                
+                if !makeSSHCall.errorBool {
+                    
+                    let result = makeSSHCall.dictToReturn
+                    let privKeysEnabled = result["private_keys_enabled"] as! Bool
+                    
+                    if privKeysEnabled {
+                        
+                        addToKeypool = false
+                        
+                        userDefaults.set(false, forKey: "addToKeypool")
+                        
+                        DispatchQueue.main.async {
+                            
+                            label.textColor = UIColor.darkGray
+                            switcher.isOn = false
+                            
+                        }
+                        
+                        displayAlert(viewController: self,
+                                     isError: true,
+                                     message: "In order to add imported keys to the keypool your wallet needs to be created with private keys disabled.")
+                        
+                    } else {
+                        
+                        if addToKeypool {
+                            
+                            addToKeypool = false
+                            
+                            userDefaults.set(false, forKey: "addToKeypool")
+                            
+                            DispatchQueue.main.async {
+                                
+                                label.textColor = UIColor.darkGray
+                                
+                            }
+                            
+                        } else {
+                            
+                            addToKeypool = true
+                            
+                            userDefaults.set(true, forKey: "addToKeypool")
+                            
+                            DispatchQueue.main.async {
+                                
+                                label.textColor = UIColor.white
+                                
+                            }
+                            
+                        }
+                        
+                    }
+                    
+                }
+                
+            }
+            
+            if ssh.session.isConnected {
+                
+                makeSSHCall.executeSSHCommand(ssh: ssh,
+                                              method: BTC_CLI_COMMAND.getwalletinfo,
+                                              param: "",
+                                              completion: getResult)
+                
+            } else {
+                
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: "SSH not connected, we need to check your nodes settings before you can update this setting")
+                
+            }
+            
+        }
+        
+        checkIfPrivKeysEnabled()
         
     }
     
     @objc func switchRescan() {
         
-        let cell = self.settingsTable.cellForRow(at: IndexPath(row: 0, section: 3))!
-        let switcher = cell.viewWithTag(3) as! UISwitch
+        print("switchRescan")
+        
+        let cell = self.settingsTable.cellForRow(at: IndexPath(row: 4, section: 3))!
         let label = cell.viewWithTag(1) as! UILabel
         
         if rescan {
@@ -635,7 +1063,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
             DispatchQueue.main.async {
                 
-                switcher.isOn = false
                 label.textColor = UIColor.darkGray
                 
             }
@@ -648,7 +1075,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
             DispatchQueue.main.async {
                 
-                switcher.isOn = true
                 label.textColor = UIColor.white
                 
             }
@@ -689,7 +1115,8 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
             if self.firstPassword == self.secondPassword {
                 
-                userDefaults.set(self.secondPassword, forKey: "UnlockPassword")
+                let keychain = KeychainSwift()
+                keychain.set(self.secondPassword, forKey: "UnlockPassword")
                 
                     self.nextButton.removeTarget(self, action: #selector(self.confirmLockPassword), for: .touchUpInside)
                     self.textInput.text = ""
@@ -796,7 +1223,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
-    func textFieldDidEndEditing(_ textField: UITextField, reason: UITextFieldDidEndEditingReason) {
+    func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason) {
         print("textFieldDidEndEditing")
         
         if textField == self.passwordInput {
@@ -825,12 +1252,12 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
         DispatchQueue.main.async {
             
-        self.view.addSubview(self.lockView)
-        self.lockView.addSubview(self.imageView)
-        self.lockView.addSubview(self.passwordInput)
-        self.lockView.addSubview(self.labelTitle)
-        self.addNextButton(inputView: self.passwordInput)
-        UIImpactFeedbackGenerator().impactOccurred()
+            self.view.addSubview(self.lockView)
+            self.lockView.addSubview(self.imageView)
+            self.lockView.addSubview(self.passwordInput)
+            self.lockView.addSubview(self.labelTitle)
+            self.addNextButton(inputView: self.passwordInput)
+            UIImpactFeedbackGenerator().impactOccurred()
             
         }
         
@@ -849,7 +1276,8 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     func checkPassword(password: String) {
         
-        let retrievedPassword = userDefaults.string(forKey: "UnlockPassword")
+        let keychain = KeychainSwift()
+        let retrievedPassword = keychain.get("UnlockPassword")
         
         if self.passwordInput.text! == retrievedPassword {
             
@@ -877,6 +1305,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         }
         
     }
+    
 }
 
 public extension Int {

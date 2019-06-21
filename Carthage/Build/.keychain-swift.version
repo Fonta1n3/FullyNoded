@@ -1,0 +1,10 @@
+{
+  "commitish" : "16.0.1",
+  "iOS" : [
+    {
+      "name" : "KeychainSwift",
+      "hash" : "f9288f341a40b3d61222b13e9292062daf701c82211a5f11b7e563016152c3af",
+      "swiftToolchainVersion" : "5.0.1 (swiftlang-1001.0.82.4 clang-1001.0.46.5)"
+    }
+  ]
+}

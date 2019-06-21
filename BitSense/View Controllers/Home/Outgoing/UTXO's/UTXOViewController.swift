@@ -11,6 +11,8 @@ import UIKit
 class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate {
     
     var makeSSHCall:SSHelper!
+    var torClient:TorClient!
+    var torRPC:MakeRPCCall!
     var tapQRGesture = UITapGestureRecognizer()
     var tapTextViewGesture = UITapGestureRecognizer()
     var rawSigned = String()
@@ -32,7 +34,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     var scannerShowing = false
     var blurArray = [UIVisualEffectView]()
     
-    let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffectStyle.dark))
+    let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     let qrGenerator = QRGenerator()
     var isTorchOn = Bool()
     let qrScanner = QRScanner()
@@ -200,7 +202,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         utxoTable.tableFooterView = UIView(frame: .zero)
         refresher.tintColor = UIColor.white
         refresher.addTarget(self, action: #selector(refresh),
-                            for: UIControlEvents.valueChanged)
+                            for: UIControl.Event.valueChanged)
         utxoTable.addSubview(refresher)
         refresh()
         
@@ -731,7 +733,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     func addBlurView(frame: CGRect, button: UIButton) {
         
         button.removeFromSuperview()
-        let blur = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffectStyle.dark))
+        let blur = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
         blur.frame = frame
         blur.clipsToBounds = true
         blur.layer.cornerRadius = frame.width / 2

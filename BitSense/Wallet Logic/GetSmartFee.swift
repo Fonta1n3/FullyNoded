@@ -114,7 +114,7 @@ class GetSmartFee {
             DispatchQueue.main.async {
                 
                 let alert = UIAlertController(title: NSLocalizedString("Fee Alert", comment: ""),
-                                              message: "The optimal fee to get this tx included in the next 6 blocks is \(Int(optimalFeeForSixBlocks)) satoshis.\n\nYou are currently paying a fee of \(Int(actualFeeInSats)) satoshis which is \(percentageDifference)% higher then necessary.\n\nWe suggest going to settings and lowering your mining fee to the suggested amount.", preferredStyle: UIAlertControllerStyle.alert)
+                                              message: "The optimal fee to get this tx included in the next 6 blocks is \(Int(optimalFeeForSixBlocks)) satoshis.\n\nYou are currently paying a fee of \(Int(actualFeeInSats)) satoshis which is \(percentageDifference)% higher then necessary.\n\nWe suggest going to settings and lowering your mining fee to the suggested amount.", preferredStyle: UIAlertController.Style.alert)
                 
                 alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""),
                                               style: .default,
@@ -133,7 +133,7 @@ class GetSmartFee {
                 
                 let alert = UIAlertController(title: NSLocalizedString("Fee Alert", comment: ""),
                                               message: "The optimal fee to get this tx included in the next 6 blocks is \(Int(optimalFeeForSixBlocks)) satoshis.\n\nYou are currently paying a fee of \(Int(actualFeeInSats)) satoshis which is \(percentageDifference)% lower then necessary.\n\nWe suggest going to settings and raising your mining fee to the suggested amount, however RBF is enabled by default, you can always tap an unconfirmed tx in the home screen to bump the fee.",
-                    preferredStyle: UIAlertControllerStyle.alert)
+                    preferredStyle: UIAlertController.Style.alert)
                 
                 alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""),
                                               style: .default,

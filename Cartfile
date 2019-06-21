@@ -1,5 +1,4 @@
 github "NMSSH/NMSSH"
-github "SwiftyBeaver/AES256CBC"
-github "jrendel/SwiftKeychainWrapper" ~> 3.0
-github "attaswift/BigInt" ~> 3.1
 github "iCepa/Tor.framework" "master"
+github "krzyzanowskim/CryptoSwift"
+github "evgenyneu/keychain-swift" ~> 16.0

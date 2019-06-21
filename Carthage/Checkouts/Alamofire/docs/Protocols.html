@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Protocols  Reference</title>
+    <link rel="stylesheet" type="text/css" href="css/jazzy.css" />
+    <link rel="stylesheet" type="text/css" href="css/highlight.css" />
+    <meta charset="utf-8">
+    <script src="js/jquery.min.js" defer></script>
+    <script src="js/jazzy.js" defer></script>
+    
+    <script src="js/lunr.min.js" defer></script>
+    <script src="js/typeahead.jquery.js" defer></script>
+    <script src="js/jazzy.search.js" defer></script>
+  </head>
+  <body>
+
+    <a name="//apple_ref/swift/Section/Protocols" class="dashAnchor"></a>
+
+    <a title="Protocols  Reference"></a>
+
+    <header class="header">
+      <p class="header-col header-col--primary">
+        <a class="header-link" href="index.html">
+          Alamofire Docs
+        </a>
+         (77% documented)
+      </p>
+    
+      <p class="header-col--secondary">
+        <form role="search" action="search.json">
+          <input type="text" placeholder="Search documentation" data-typeahead>
+        </form>
+      </p>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="https://github.com/Alamofire/Alamofire">
+            <img class="header-icon" src="img/gh.png"/>
+            View on GitHub
+          </a>
+        </p>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="dash-feed://https%3A%2F%2Falamofire%2Egithub%2Eio%2FAlamofire%2Fdocsets%2FAlamofire%2Exml">
+            <img class="header-icon" src="img/dash.png"/>
+            Install in Dash
+          </a>
+        </p>
+    </header>
+
+    <p class="breadcrumbs">
+      <a class="breadcrumb" href="index.html">Alamofire Reference</a>
+      <img class="carat" src="img/carat.png" />
+      Protocols  Reference
+    </p>
+
+    <div class="content-wrapper">
+      <nav class="navigation">
+        <ul class="nav-groups">
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Classes.html">Classes</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/Adapter.html">Adapter</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/AlamofireNotifications.html">AlamofireNotifications</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/ClosureEventMonitor.html">ClosureEventMonitor</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/CompositeEventMonitor.html">CompositeEventMonitor</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/CompositeTrustEvaluator.html">CompositeTrustEvaluator</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/ConnectionLostRetryPolicy.html">ConnectionLostRetryPolicy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/DataRequest.html">DataRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/DataResponseSerializer.html">DataResponseSerializer</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/DecodableResponseSerializer.html">DecodableResponseSerializer</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/DefaultTrustEvaluator.html">DefaultTrustEvaluator</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/DisabledEvaluator.html">DisabledEvaluator</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/DownloadRequest.html">DownloadRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/DownloadRequest/Options.html">– Options</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/DownloadRequest/Downloadable.html">– Downloadable</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/Interceptor.html">Interceptor</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/JSONParameterEncoder.html">JSONParameterEncoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/JSONResponseSerializer.html">JSONResponseSerializer</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/MultipartFormData.html">MultipartFormData</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/NetworkReachabilityManager.html">NetworkReachabilityManager</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/NetworkReachabilityManager/NetworkReachabilityStatus.html">– NetworkReachabilityStatus</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/NetworkReachabilityManager/ConnectionType.html">– ConnectionType</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/PinnedCertificatesTrustEvaluator.html">PinnedCertificatesTrustEvaluator</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/PublicKeysTrustEvaluator.html">PublicKeysTrustEvaluator</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/Request.html">Request</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/Request/State.html">– State</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/Retrier.html">Retrier</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/RetryPolicy.html">RetryPolicy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/RevocationTrustEvaluator.html">RevocationTrustEvaluator</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/RevocationTrustEvaluator/Options.html">– Options</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/ServerTrustManager.html">ServerTrustManager</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/Session.html">Session</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/SessionDelegate.html">SessionDelegate</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/StringResponseSerializer.html">StringResponseSerializer</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/URLEncodedFormEncoder.html">URLEncodedFormEncoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/URLEncodedFormEncoder/BoolEncoding.html">– BoolEncoding</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/URLEncodedFormEncoder/ArrayEncoding.html">– ArrayEncoding</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/URLEncodedFormEncoder/SpaceEncoding.html">– SpaceEncoding</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/URLEncodedFormEncoder/Error.html">– Error</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/URLEncodedFormParameterEncoder.html">URLEncodedFormParameterEncoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/URLEncodedFormParameterEncoder/Destination.html">– Destination</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/UploadRequest.html">UploadRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/UploadRequest/Uploadable.html">– Uploadable</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Enums.html">Enumerations</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/AF.html">AF</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/AFError.html">AFError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/AFError/ParameterEncodingFailureReason.html">– ParameterEncodingFailureReason</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/AFError/ParameterEncoderFailureReason.html">– ParameterEncoderFailureReason</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/AFError/MultipartEncodingFailureReason.html">– MultipartEncodingFailureReason</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/AFError/ResponseValidationFailureReason.html">– ResponseValidationFailureReason</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/AFError/ResponseSerializationFailureReason.html">– ResponseSerializationFailureReason</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/AFError/ServerTrustFailureReason.html">– ServerTrustFailureReason</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/HTTPMethod.html">HTTPMethod</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/RetryResult.html">RetryResult</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Extensions.html">Extensions</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Extensions/Array.html">Array</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Extensions/CharacterSet.html">CharacterSet</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Extensions/Error.html">Error</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Extensions/HTTPURLResponse.html">HTTPURLResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Extensions/Notification.html">Notification</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Extensions/String.html">String</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Extensions/URL.html">URL</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Extensions/URLComponents.html">URLComponents</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Extensions/URLRequest.html">URLRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Extensions/URLSessionConfiguration.html">URLSessionConfiguration</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Functions.html">Functions</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Functions.html#/s:9Alamofire2eeoiySbAA26NetworkReachabilityManagerC0cD6StatusO_AFtF">==(_:_:)</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Protocols.html">Protocols</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/AlamofireExtended.html">AlamofireExtended</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/CachedResponseHandler.html">CachedResponseHandler</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/DataDecoder.html">DataDecoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/DataResponseSerializerProtocol.html">DataResponseSerializerProtocol</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/DownloadResponseSerializerProtocol.html">DownloadResponseSerializerProtocol</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/EmptyResponse.html">EmptyResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/EventMonitor.html">EventMonitor</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/ParameterEncoder.html">ParameterEncoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/ParameterEncoding.html">ParameterEncoding</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/RedirectHandler.html">RedirectHandler</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/RequestAdapter.html">RequestAdapter</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/RequestDelegate.html">RequestDelegate</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/RequestInterceptor.html">RequestInterceptor</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/RequestRetrier.html">RequestRetrier</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/ResponseSerializer.html">ResponseSerializer</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/ServerTrustEvaluating.html">ServerTrustEvaluating</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/URLConvertible.html">URLConvertible</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/URLRequestConvertible.html">URLRequestConvertible</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols.html#/s:9Alamofire17UploadConvertibleP">UploadConvertible</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/UploadableConvertible.html">UploadableConvertible</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Structs.html">Structures</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/AlamofireExtension.html">AlamofireExtension</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/DataResponse.html">DataResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/DownloadResponse.html">DownloadResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/Empty.html">Empty</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/HTTPHeader.html">HTTPHeader</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/HTTPHeaders.html">HTTPHeaders</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/JSONEncoding.html">JSONEncoding</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/Redirector.html">Redirector</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/Redirector/Behavior.html">– Behavior</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ResponseCacher.html">ResponseCacher</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ResponseCacher/Behavior.html">– Behavior</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/URLEncoding.html">URLEncoding</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/URLEncoding/Destination.html">– Destination</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/URLEncoding/ArrayEncoding.html">– ArrayEncoding</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/URLEncoding/BoolEncoding.html">– BoolEncoding</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Typealiases.html">Type Aliases</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Typealiases.html#/s:9Alamofire8AFResulta">AFResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Typealiases.html#/s:9Alamofire12AdaptHandlera">AdaptHandler</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Typealiases.html#/s:9Alamofire10Parametersa">Parameters</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Typealiases.html#/s:9Alamofire12RetryHandlera">RetryHandler</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <article class="main-content">
+
+        <section class="section">
+          <div class="section-content">
+            <h1>Protocols</h1>
+            <p>The following protocols are available globally.</p>
+
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-content">
+            <div class="task-group">
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire0A8ExtendedP"></a>
+                    <a name="//apple_ref/swift/Protocol/AlamofireExtended" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire0A8ExtendedP">AlamofireExtended</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Protocol describing the <code>af</code> extension points for Alamofire extended types.</p>
+
+                        <a href="Protocols/AlamofireExtended.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">AlamofireExtended</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire21CachedResponseHandlerP"></a>
+                    <a name="//apple_ref/swift/Protocol/CachedResponseHandler" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire21CachedResponseHandlerP">CachedResponseHandler</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A type that handles whether the data task should store the HTTP response in the cache.</p>
+
+                        <a href="Protocols/CachedResponseHandler.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">CachedResponseHandler</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire12EventMonitorP"></a>
+                    <a name="//apple_ref/swift/Protocol/EventMonitor" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire12EventMonitorP">EventMonitor</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Protocol outlining the lifetime events inside Alamofire. It includes both events received from the various
+<code>URLSession</code> delegate protocols as well as various events from the lifetime of <code><a href="Classes/Request.html">Request</a></code> and its subclasses.</p>
+
+                        <a href="Protocols/EventMonitor.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">EventMonitor</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire16ParameterEncoderP"></a>
+                    <a name="//apple_ref/swift/Protocol/ParameterEncoder" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire16ParameterEncoderP">ParameterEncoder</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A type that can encode any <code>Encodable</code> type into a <code>URLRequest</code>.</p>
+
+                        <a href="Protocols/ParameterEncoder.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">ParameterEncoder</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire17ParameterEncodingP"></a>
+                    <a name="//apple_ref/swift/Protocol/ParameterEncoding" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire17ParameterEncodingP">ParameterEncoding</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A type used to define how a set of parameters are applied to a <code>URLRequest</code>.</p>
+
+                        <a href="Protocols/ParameterEncoding.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">ParameterEncoding</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire15RedirectHandlerP"></a>
+                    <a name="//apple_ref/swift/Protocol/RedirectHandler" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire15RedirectHandlerP">RedirectHandler</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A type that handles how an HTTP redirect response from a remote server should be redirected to the new request.</p>
+
+                        <a href="Protocols/RedirectHandler.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">RedirectHandler</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/Protocol%20Conformances"></a>
+                <a name="//apple_ref/swift/Section/Protocol Conformances" class="dashAnchor"></a>
+                <a href="#/Protocol%20Conformances">
+                  <h3 class="section-name">Protocol Conformances</h3>
+                </a>
+              </div>
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire15RequestDelegateP"></a>
+                    <a name="//apple_ref/swift/Protocol/RequestDelegate" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire15RequestDelegateP">RequestDelegate</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Protocol abstraction for <code><a href="Classes/Request.html">Request</a></code>&lsquo;s communication back to the <code><a href="Classes/SessionDelegate.html">SessionDelegate</a></code>.</p>
+
+                        <a href="Protocols/RequestDelegate.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">RequestDelegate</span> <span class="p">:</span> <span class="kt">AnyObject</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/DataRequest"></a>
+                <a name="//apple_ref/swift/Section/DataRequest" class="dashAnchor"></a>
+                <a href="#/DataRequest">
+                  <h3 class="section-name">DataRequest</h3>
+                </a>
+              </div>
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire21UploadableConvertibleP"></a>
+                    <a name="//apple_ref/swift/Protocol/UploadableConvertible" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire21UploadableConvertibleP">UploadableConvertible</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                        <a href="Protocols/UploadableConvertible.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">UploadableConvertible</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire17UploadConvertibleP"></a>
+                    <a name="//apple_ref/swift/Protocol/UploadConvertible" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire17UploadConvertibleP">UploadConvertible</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">UploadConvertible</span> <span class="p">:</span> <span class="kt"><a href="Protocols/URLRequestConvertible.html">URLRequestConvertible</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/UploadableConvertible.html">UploadableConvertible</a></span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire14RequestAdapterP"></a>
+                    <a name="//apple_ref/swift/Protocol/RequestAdapter" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire14RequestAdapterP">RequestAdapter</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A type that can inspect and optionally adapt a <code>URLRequest</code> in some manner if necessary.</p>
+
+                        <a href="Protocols/RequestAdapter.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">RequestAdapter</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire14RequestRetrierP"></a>
+                    <a name="//apple_ref/swift/Protocol/RequestRetrier" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire14RequestRetrierP">RequestRetrier</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A type that determines whether a request should be retried after being executed by the specified session manager
+and encountering an error.</p>
+
+                        <a href="Protocols/RequestRetrier.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">RequestRetrier</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire18RequestInterceptorP"></a>
+                    <a name="//apple_ref/swift/Protocol/RequestInterceptor" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire18RequestInterceptorP">RequestInterceptor</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A type that intercepts requests to potentially adapt and retry them.</p>
+
+                        <a href="Protocols/RequestInterceptor.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">RequestInterceptor</span> <span class="p">:</span> <span class="kt"><a href="Protocols/RequestAdapter.html">RequestAdapter</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/RequestRetrier.html">RequestRetrier</a></span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/Protocols"></a>
+                <a name="//apple_ref/swift/Section/Protocols" class="dashAnchor"></a>
+                <a href="#/Protocols">
+                  <h3 class="section-name">Protocols</h3>
+                </a>
+              </div>
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire30DataResponseSerializerProtocolP"></a>
+                    <a name="//apple_ref/swift/Protocol/DataResponseSerializerProtocol" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire30DataResponseSerializerProtocolP">DataResponseSerializerProtocol</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The type to which all data response serializers must conform in order to serialize a response.</p>
+
+                        <a href="Protocols/DataResponseSerializerProtocol.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">DataResponseSerializerProtocol</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire34DownloadResponseSerializerProtocolP"></a>
+                    <a name="//apple_ref/swift/Protocol/DownloadResponseSerializerProtocol" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire34DownloadResponseSerializerProtocolP">DownloadResponseSerializerProtocol</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The type to which all download response serializers must conform in order to serialize a response.</p>
+
+                        <a href="Protocols/DownloadResponseSerializerProtocol.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">DownloadResponseSerializerProtocol</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire18ResponseSerializerP"></a>
+                    <a name="//apple_ref/swift/Protocol/ResponseSerializer" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire18ResponseSerializerP">ResponseSerializer</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A serializer that can handle both data and download responses.</p>
+
+                        <a href="Protocols/ResponseSerializer.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">ResponseSerializer</span> <span class="p">:</span> <span class="kt"><a href="Protocols/DataResponseSerializerProtocol.html">DataResponseSerializerProtocol</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/DownloadResponseSerializerProtocol.html">DownloadResponseSerializerProtocol</a></span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/Empty"></a>
+                <a name="//apple_ref/swift/Section/Empty" class="dashAnchor"></a>
+                <a href="#/Empty">
+                  <h3 class="section-name">Empty</h3>
+                </a>
+              </div>
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire13EmptyResponseP"></a>
+                    <a name="//apple_ref/swift/Protocol/EmptyResponse" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire13EmptyResponseP">EmptyResponse</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A protocol for a type representing an empty response. Use <code>T.emptyValue</code> to get an instance.</p>
+
+                        <a href="Protocols/EmptyResponse.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">EmptyResponse</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/DataDecoder%20Protocol"></a>
+                <a name="//apple_ref/swift/Section/DataDecoder Protocol" class="dashAnchor"></a>
+                <a href="#/DataDecoder%20Protocol">
+                  <h3 class="section-name">DataDecoder Protocol</h3>
+                </a>
+              </div>
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire11DataDecoderP"></a>
+                    <a name="//apple_ref/swift/Protocol/DataDecoder" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire11DataDecoderP">DataDecoder</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Any type which can decode <code>Data</code>.</p>
+
+                        <a href="Protocols/DataDecoder.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">DataDecoder</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire21ServerTrustEvaluatingP"></a>
+                    <a name="//apple_ref/swift/Protocol/ServerTrustEvaluating" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire21ServerTrustEvaluatingP">ServerTrustEvaluating</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A protocol describing the API used to evaluate server trusts.</p>
+
+                        <a href="Protocols/ServerTrustEvaluating.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">ServerTrustEvaluating</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire14URLConvertibleP"></a>
+                    <a name="//apple_ref/swift/Protocol/URLConvertible" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire14URLConvertibleP">URLConvertible</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Types adopting the <code>URLConvertible</code> protocol can be used to construct <code>URL</code>s, which can then be used to construct
+<code>URLRequests</code>.</p>
+
+                        <a href="Protocols/URLConvertible.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">URLConvertible</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire21URLRequestConvertibleP"></a>
+                    <a name="//apple_ref/swift/Protocol/URLRequestConvertible" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire21URLRequestConvertibleP">URLRequestConvertible</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Types adopting the <code>URLRequestConvertible</code> protocol can be used to safely construct <code>URLRequest</code>s.</p>
+
+                        <a href="Protocols/URLRequestConvertible.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">URLRequestConvertible</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+      </article>
+    </div>
+    <section class="footer">
+      <p>&copy; 2019 <a class="link" href="http://alamofire.org/" target="_blank" rel="external">Alamofire Software Foundation</a>. All rights reserved. (Last updated: 2019-04-12)</p>
+      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+    </section>
+  </body>
+</div>
+</html>

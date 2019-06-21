@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>DownloadRequest Class Reference</title>
+    <link rel="stylesheet" type="text/css" href="../css/jazzy.css" />
+    <link rel="stylesheet" type="text/css" href="../css/highlight.css" />
+    <meta charset="utf-8">
+    <script src="../js/jquery.min.js" defer></script>
+    <script src="../js/jazzy.js" defer></script>
+    
+    <script src="../js/lunr.min.js" defer></script>
+    <script src="../js/typeahead.jquery.js" defer></script>
+    <script src="../js/jazzy.search.js" defer></script>
+  </head>
+  <body>
+
+    <a name="//apple_ref/swift/Class/DownloadRequest" class="dashAnchor"></a>
+
+    <a title="DownloadRequest Class Reference"></a>
+
+    <header class="header">
+      <p class="header-col header-col--primary">
+        <a class="header-link" href="../index.html">
+          Alamofire Docs
+        </a>
+         (77% documented)
+      </p>
+    
+      <p class="header-col--secondary">
+        <form role="search" action="../search.json">
+          <input type="text" placeholder="Search documentation" data-typeahead>
+        </form>
+      </p>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="https://github.com/Alamofire/Alamofire">
+            <img class="header-icon" src="../img/gh.png"/>
+            View on GitHub
+          </a>
+        </p>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="dash-feed://https%3A%2F%2Falamofire%2Egithub%2Eio%2FAlamofire%2Fdocsets%2FAlamofire%2Exml">
+            <img class="header-icon" src="../img/dash.png"/>
+            Install in Dash
+          </a>
+        </p>
+    </header>
+
+    <p class="breadcrumbs">
+      <a class="breadcrumb" href="../index.html">Alamofire Reference</a>
+      <img class="carat" src="../img/carat.png" />
+      DownloadRequest Class Reference
+    </p>
+
+    <div class="content-wrapper">
+      <nav class="navigation">
+        <ul class="nav-groups">
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Classes.html">Classes</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/Adapter.html">Adapter</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AlamofireNotifications.html">AlamofireNotifications</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ClosureEventMonitor.html">ClosureEventMonitor</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/CompositeEventMonitor.html">CompositeEventMonitor</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/CompositeTrustEvaluator.html">CompositeTrustEvaluator</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ConnectionLostRetryPolicy.html">ConnectionLostRetryPolicy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DataRequest.html">DataRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DataResponseSerializer.html">DataResponseSerializer</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DecodableResponseSerializer.html">DecodableResponseSerializer</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DefaultTrustEvaluator.html">DefaultTrustEvaluator</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DisabledEvaluator.html">DisabledEvaluator</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DownloadRequest.html">DownloadRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DownloadRequest/Options.html">– Options</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DownloadRequest/Downloadable.html">– Downloadable</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/Interceptor.html">Interceptor</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/JSONParameterEncoder.html">JSONParameterEncoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/JSONResponseSerializer.html">JSONResponseSerializer</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/MultipartFormData.html">MultipartFormData</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/NetworkReachabilityManager.html">NetworkReachabilityManager</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/NetworkReachabilityManager/NetworkReachabilityStatus.html">– NetworkReachabilityStatus</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/NetworkReachabilityManager/ConnectionType.html">– ConnectionType</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/PinnedCertificatesTrustEvaluator.html">PinnedCertificatesTrustEvaluator</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/PublicKeysTrustEvaluator.html">PublicKeysTrustEvaluator</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/Request.html">Request</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/Request/State.html">– State</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/Retrier.html">Retrier</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/RetryPolicy.html">RetryPolicy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/RevocationTrustEvaluator.html">RevocationTrustEvaluator</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/RevocationTrustEvaluator/Options.html">– Options</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ServerTrustManager.html">ServerTrustManager</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/Session.html">Session</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SessionDelegate.html">SessionDelegate</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/StringResponseSerializer.html">StringResponseSerializer</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/URLEncodedFormEncoder.html">URLEncodedFormEncoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/URLEncodedFormEncoder/BoolEncoding.html">– BoolEncoding</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/URLEncodedFormEncoder/ArrayEncoding.html">– ArrayEncoding</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/URLEncodedFormEncoder/SpaceEncoding.html">– SpaceEncoding</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/URLEncodedFormEncoder/Error.html">– Error</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/URLEncodedFormParameterEncoder.html">URLEncodedFormParameterEncoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/URLEncodedFormParameterEncoder/Destination.html">– Destination</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/UploadRequest.html">UploadRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/UploadRequest/Uploadable.html">– Uploadable</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Enums.html">Enumerations</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/AF.html">AF</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/AFError.html">AFError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/AFError/ParameterEncodingFailureReason.html">– ParameterEncodingFailureReason</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/AFError/ParameterEncoderFailureReason.html">– ParameterEncoderFailureReason</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/AFError/MultipartEncodingFailureReason.html">– MultipartEncodingFailureReason</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/AFError/ResponseValidationFailureReason.html">– ResponseValidationFailureReason</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/AFError/ResponseSerializationFailureReason.html">– ResponseSerializationFailureReason</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/AFError/ServerTrustFailureReason.html">– ServerTrustFailureReason</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/HTTPMethod.html">HTTPMethod</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/RetryResult.html">RetryResult</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Extensions.html">Extensions</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/Array.html">Array</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/CharacterSet.html">CharacterSet</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/Error.html">Error</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/HTTPURLResponse.html">HTTPURLResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/Notification.html">Notification</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/String.html">String</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/URL.html">URL</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/URLComponents.html">URLComponents</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/URLRequest.html">URLRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/URLSessionConfiguration.html">URLSessionConfiguration</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Functions.html">Functions</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Functions.html#/s:9Alamofire2eeoiySbAA26NetworkReachabilityManagerC0cD6StatusO_AFtF">==(_:_:)</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Protocols.html">Protocols</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/AlamofireExtended.html">AlamofireExtended</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/CachedResponseHandler.html">CachedResponseHandler</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/DataDecoder.html">DataDecoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/DataResponseSerializerProtocol.html">DataResponseSerializerProtocol</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/DownloadResponseSerializerProtocol.html">DownloadResponseSerializerProtocol</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/EmptyResponse.html">EmptyResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/EventMonitor.html">EventMonitor</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/ParameterEncoder.html">ParameterEncoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/ParameterEncoding.html">ParameterEncoding</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/RedirectHandler.html">RedirectHandler</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/RequestAdapter.html">RequestAdapter</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/RequestDelegate.html">RequestDelegate</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/RequestInterceptor.html">RequestInterceptor</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/RequestRetrier.html">RequestRetrier</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/ResponseSerializer.html">ResponseSerializer</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/ServerTrustEvaluating.html">ServerTrustEvaluating</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/URLConvertible.html">URLConvertible</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/URLRequestConvertible.html">URLRequestConvertible</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols.html#/s:9Alamofire17UploadConvertibleP">UploadConvertible</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/UploadableConvertible.html">UploadableConvertible</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Structs.html">Structures</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/AlamofireExtension.html">AlamofireExtension</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/DataResponse.html">DataResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/DownloadResponse.html">DownloadResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Empty.html">Empty</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/HTTPHeader.html">HTTPHeader</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/HTTPHeaders.html">HTTPHeaders</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/JSONEncoding.html">JSONEncoding</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Redirector.html">Redirector</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Redirector/Behavior.html">– Behavior</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ResponseCacher.html">ResponseCacher</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ResponseCacher/Behavior.html">– Behavior</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/URLEncoding.html">URLEncoding</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/URLEncoding/Destination.html">– Destination</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/URLEncoding/ArrayEncoding.html">– ArrayEncoding</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/URLEncoding/BoolEncoding.html">– BoolEncoding</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Typealiases.html">Type Aliases</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:9Alamofire8AFResulta">AFResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:9Alamofire12AdaptHandlera">AdaptHandler</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:9Alamofire10Parametersa">Parameters</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:9Alamofire12RetryHandlera">RetryHandler</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <article class="main-content">
+
+        <section class="section">
+          <div class="section-content">
+            <h1>DownloadRequest</h1>
+              <div class="declaration">
+                <div class="language">
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">DownloadRequest</span> <span class="p">:</span> <span class="kt"><a href="../Classes/Request.html">Request</a></span></code></pre>
+
+                </div>
+              </div>
+            <p>Undocumented</p>
+
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-content">
+            <div class="task-group">
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire15DownloadRequestC7OptionsV"></a>
+                    <a name="//apple_ref/swift/Struct/Options" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire15DownloadRequestC7OptionsV">Options</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A collection of options to be executed prior to moving a downloaded file from the temporary URL to the
+destination URL.</p>
+
+                        <a href="../Classes/DownloadRequest/Options.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">Options</span> <span class="p">:</span> <span class="kt">OptionSet</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire15DownloadRequestC11Destinationa"></a>
+                    <a name="//apple_ref/swift/Alias/Destination" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire15DownloadRequestC11Destinationa">Destination</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A closure executed once a download request has successfully completed in order to determine where to move the
+temporary file written to during the download process. The closure takes two arguments: the temporary file URL
+and the URL response, and returns a two arguments: the file URL where the temporary file should be moved and
+the options defining how the file should be moved.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">typealias</span> <span class="kt">Destination</span> <span class="o">=</span> <span class="p">(</span><span class="n">_</span> <span class="nv">temporaryURL</span><span class="p">:</span> <span class="kt">URL</span><span class="p">,</span> <span class="n">_</span> <span class="nv">response</span><span class="p">:</span> <span class="kt">HTTPURLResponse</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="nv">destinationURL</span><span class="p">:</span> <span class="kt">URL</span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Classes/DownloadRequest/Options.html">Options</a></span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/Destination"></a>
+                <a name="//apple_ref/swift/Section/Destination" class="dashAnchor"></a>
+                <a href="#/Destination">
+                  <h3 class="section-name">Destination</h3>
+                </a>
+              </div>
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire15DownloadRequestC09suggestedB11Destination3for2in7options10Foundation3URLV011destinationJ0_AC7OptionsVAGtAJ_So17NSHTTPURLResponseCtcSo21NSSearchPathDirectoryV_So0nO10DomainMaskVAMtFZ"></a>
+                    <a name="//apple_ref/swift/Method/suggestedDownloadDestination(for:in:options:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire15DownloadRequestC09suggestedB11Destination3for2in7options10Foundation3URLV011destinationJ0_AC7OptionsVAGtAJ_So17NSHTTPURLResponseCtcSo21NSSearchPathDirectoryV_So0nO10DomainMaskVAMtFZ">suggestedDownloadDestination(for:in:options:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Creates a download file destination closure which uses the default file manager to move the temporary file to a
+file URL in the first available directory with the specified search path directory and search path domain mask.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kd">func</span> <span class="nf">suggestedDownloadDestination</span><span class="p">(</span><span class="k">for</span> <span class="nv">directory</span><span class="p">:</span> <span class="kt">FileManager</span><span class="o">.</span><span class="kt">SearchPathDirectory</span> <span class="o">=</span> <span class="o">.</span><span class="n">documentDirectory</span><span class="p">,</span>
+                                               <span class="k">in</span> <span class="nv">domain</span><span class="p">:</span> <span class="kt">FileManager</span><span class="o">.</span><span class="kt">SearchPathDomainMask</span> <span class="o">=</span> <span class="o">.</span><span class="n">userDomainMask</span><span class="p">,</span>
+                                               <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Classes/DownloadRequest/Options.html">Options</a></span> <span class="o">=</span> <span class="p">[])</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Classes/DownloadRequest.html#/s:9Alamofire15DownloadRequestC11Destinationa">Destination</a></span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>directory</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The search path directory. <code>.documentDirectory</code> by default.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>domain</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The search path domain mask. <code>.userDomainMask</code> by default.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A download file destination closure.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire15DownloadRequestC12DownloadableO"></a>
+                    <a name="//apple_ref/swift/Enum/Downloadable" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire15DownloadRequestC12DownloadableO">Downloadable</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                        <a href="../Classes/DownloadRequest/Downloadable.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Downloadable</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/Initial%20State"></a>
+                <a name="//apple_ref/swift/Section/Initial State" class="dashAnchor"></a>
+                <a href="#/Initial%20State">
+                  <h3 class="section-name">Initial State</h3>
+                </a>
+              </div>
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire15DownloadRequestC12downloadableAC12DownloadableOvp"></a>
+                    <a name="//apple_ref/swift/Property/downloadable" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire15DownloadRequestC12downloadableAC12DownloadableOvp">downloadable</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">downloadable</span><span class="p">:</span> <span class="kt"><a href="../Classes/DownloadRequest/Downloadable.html">Downloadable</a></span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/Updated%20State"></a>
+                <a name="//apple_ref/swift/Section/Updated State" class="dashAnchor"></a>
+                <a href="#/Updated%20State">
+                  <h3 class="section-name">Updated State</h3>
+                </a>
+              </div>
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire15DownloadRequestC10resumeData10Foundation0E0VSgvp"></a>
+                    <a name="//apple_ref/swift/Property/resumeData" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire15DownloadRequestC10resumeData10Foundation0E0VSgvp">resumeData</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">resumeData</span><span class="p">:</span> <span class="kt">Data</span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire15DownloadRequestC7fileURL10Foundation0E0VSgvp"></a>
+                    <a name="//apple_ref/swift/Property/fileURL" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire15DownloadRequestC7fileURL10Foundation0E0VSgvp">fileURL</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">fileURL</span><span class="p">:</span> <span class="kt">URL</span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/Init"></a>
+                <a name="//apple_ref/swift/Section/Init" class="dashAnchor"></a>
+                <a href="#/Init">
+                  <h3 class="section-name">Init</h3>
+                </a>
+              </div>
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire15DownloadRequestC4task13forResumeData5usingSo16NSURLSessionTaskC10Foundation0G0V_So0I0CtF"></a>
+                    <a name="//apple_ref/swift/Method/task(forResumeData:using:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire15DownloadRequestC4task13forResumeData5usingSo16NSURLSessionTaskC10Foundation0G0V_So0I0CtF">task(forResumeData:using:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">task</span><span class="p">(</span><span class="n">forResumeData</span> <span class="nv">data</span><span class="p">:</span> <span class="kt">Data</span><span class="p">,</span> <span class="n">using</span> <span class="nv">session</span><span class="p">:</span> <span class="kt">URLSession</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">URLSessionTask</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire15DownloadRequestC6cancelACXDyF"></a>
+                    <a name="//apple_ref/swift/Method/cancel()" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire15DownloadRequestC6cancelACXDyF">cancel()</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="k">override</span> <span class="kd">func</span> <span class="nf">cancel</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="k">Self</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire15DownloadRequestC8validateyACXDs6ResultOyyts5Error_pG10Foundation10URLRequestVSg_So17NSHTTPURLResponseCAI3URLVSgtcF"></a>
+                    <a name="//apple_ref/swift/Method/validate(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire15DownloadRequestC8validateyACXDs6ResultOyyts5Error_pG10Foundation10URLRequestVSg_So17NSHTTPURLResponseCAI3URLVSgtcF">validate(_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Validates the request, using the specified closure.</p>
+
+<p>If validation fails, subsequent calls to response handlers will have an associated error.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">validate</span><span class="p">(</span><span class="n">_</span> <span class="nv">validation</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Classes/DownloadRequest.html#/s:9Alamofire15DownloadRequestC10Validationa">Validation</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="k">Self</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>validation</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>A closure to validate the request.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The request.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/Default"></a>
+                <a name="//apple_ref/swift/Section/Default" class="dashAnchor"></a>
+                <a href="#/Default">
+                  <h3 class="section-name">Default</h3>
+                </a>
+              </div>
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire15DownloadRequestC8response5queue17completionHandlerACXDSo012OS_dispatch_E0C_yAA0B8ResponseVy10Foundation3URLVSgGctF"></a>
+                    <a name="//apple_ref/swift/Method/response(queue:completionHandler:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire15DownloadRequestC8response5queue17completionHandlerACXDSo012OS_dispatch_E0C_yAA0B8ResponseVy10Foundation3URLVSgGctF">response(queue:completionHandler:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Adds a handler to be called once the request has finished.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">response</span><span class="p">(</span>
+    <span class="nv">queue</span><span class="p">:</span> <span class="kt">DispatchQueue</span> <span class="o">=</span> <span class="o">.</span><span class="n">main</span><span class="p">,</span>
+    <span class="nv">completionHandler</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Structs/DownloadResponse.html">DownloadResponse</a></span><span class="o">&lt;</span><span class="kt">URL</span><span class="p">?</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span>
+    <span class="o">-&gt;</span> <span class="k">Self</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>queue</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The queue on which the completion handler is dispatched. Defaults to <code>.main</code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>completionHandler</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The code to be executed once the request has finished.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The request.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire15DownloadRequestC8response5queue0D10Serializer17completionHandlerACXDSo012OS_dispatch_E0C_xyAA0B8ResponseVy16SerializedObjectQzGctAA0bkF8ProtocolRzlF"></a>
+                    <a name="//apple_ref/swift/Method/response(queue:responseSerializer:completionHandler:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire15DownloadRequestC8response5queue0D10Serializer17completionHandlerACXDSo012OS_dispatch_E0C_xyAA0B8ResponseVy16SerializedObjectQzGctAA0bkF8ProtocolRzlF">response(queue:responseSerializer:completionHandler:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Adds a handler to be called once the request has finished.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="n">response</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">:</span> <span class="kt"><a href="../Protocols/DownloadResponseSerializerProtocol.html">DownloadResponseSerializerProtocol</a></span><span class="o">&gt;</span><span class="p">(</span>
+    <span class="nv">queue</span><span class="p">:</span> <span class="kt">DispatchQueue</span> <span class="o">=</span> <span class="o">.</span><span class="n">main</span><span class="p">,</span>
+    <span class="nv">responseSerializer</span><span class="p">:</span> <span class="kt">T</span><span class="p">,</span>
+    <span class="nv">completionHandler</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Structs/DownloadResponse.html">DownloadResponse</a></span><span class="o">&lt;</span><span class="kt">T</span><span class="o">.</span><span class="kt">SerializedObject</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span>
+    <span class="o">-&gt;</span> <span class="k">Self</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>queue</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The queue on which the completion handler is dispatched. Defaults to <code>.main</code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>responseSerializer</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The response serializer responsible for serializing the request, response, and data
+                contained in the destination url.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>completionHandler</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The code to be executed once the request has finished.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The request.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/Data"></a>
+                <a name="//apple_ref/swift/Section/Data" class="dashAnchor"></a>
+                <a href="#/Data">
+                  <h3 class="section-name">Data</h3>
+                </a>
+              </div>
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire15DownloadRequestC12responseData5queue17completionHandlerACXDSo012OS_dispatch_F0C_yAA0B8ResponseVy10Foundation0E0VGctF"></a>
+                    <a name="//apple_ref/swift/Method/responseData(queue:completionHandler:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire15DownloadRequestC12responseData5queue17completionHandlerACXDSo012OS_dispatch_F0C_yAA0B8ResponseVy10Foundation0E0VGctF">responseData(queue:completionHandler:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Adds a handler to be called once the request has finished.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">responseData</span><span class="p">(</span>
+    <span class="nv">queue</span><span class="p">:</span> <span class="kt">DispatchQueue</span> <span class="o">=</span> <span class="o">.</span><span class="n">main</span><span class="p">,</span>
+    <span class="nv">completionHandler</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Structs/DownloadResponse.html">DownloadResponse</a></span><span class="o">&lt;</span><span class="kt">Data</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span>
+    <span class="o">-&gt;</span> <span class="k">Self</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>queue</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The queue on which the completion handler is dispatched. Defaults to <code>.main</code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>completionHandler</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The code to be executed once the request has finished.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The request.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/String"></a>
+                <a name="//apple_ref/swift/Section/String" class="dashAnchor"></a>
+                <a href="#/String">
+                  <h3 class="section-name">String</h3>
+                </a>
+              </div>
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire15DownloadRequestC14responseString5queue8encoding17completionHandlerACXDSo012OS_dispatch_F0C_SS10FoundationE8EncodingVSgyAA0B8ResponseVySSGctF"></a>
+                    <a name="//apple_ref/swift/Method/responseString(queue:encoding:completionHandler:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire15DownloadRequestC14responseString5queue8encoding17completionHandlerACXDSo012OS_dispatch_F0C_SS10FoundationE8EncodingVSgyAA0B8ResponseVySSGctF">responseString(queue:encoding:completionHandler:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Adds a handler to be called once the request has finished.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">responseString</span><span class="p">(</span>
+    <span class="nv">queue</span><span class="p">:</span> <span class="kt">DispatchQueue</span> <span class="o">=</span> <span class="o">.</span><span class="n">main</span><span class="p">,</span>
+    <span class="nv">encoding</span><span class="p">:</span> <span class="kt">String</span><span class="o">.</span><span class="kt">Encoding</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">completionHandler</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Structs/DownloadResponse.html">DownloadResponse</a></span><span class="o">&lt;</span><span class="kt">String</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span>
+    <span class="o">-&gt;</span> <span class="k">Self</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>queue</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The queue on which the completion handler is dispatched. Defaults to <code>.main</code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>encoding</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The string encoding. Defaults to <code>nil</code>, in which case the encoding will be determined from
+               the server response, falling back to the default HTTP character set, <code>ISO-8859-1</code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>completionHandler</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>A closure to be executed once the request has finished.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The request.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/JSON"></a>
+                <a name="//apple_ref/swift/Section/JSON" class="dashAnchor"></a>
+                <a href="#/JSON">
+                  <h3 class="section-name">JSON</h3>
+                </a>
+              </div>
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire15DownloadRequestC12responseJSON5queue7options17completionHandlerACXDSo012OS_dispatch_F0C_So20NSJSONReadingOptionsVyAA0B8ResponseVyypGctF"></a>
+                    <a name="//apple_ref/swift/Method/responseJSON(queue:options:completionHandler:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire15DownloadRequestC12responseJSON5queue7options17completionHandlerACXDSo012OS_dispatch_F0C_So20NSJSONReadingOptionsVyAA0B8ResponseVyypGctF">responseJSON(queue:options:completionHandler:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Adds a handler to be called once the request has finished.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">responseJSON</span><span class="p">(</span>
+    <span class="nv">queue</span><span class="p">:</span> <span class="kt">DispatchQueue</span> <span class="o">=</span> <span class="o">.</span><span class="n">main</span><span class="p">,</span>
+    <span class="nv">options</span><span class="p">:</span> <span class="kt">JSONSerialization</span><span class="o">.</span><span class="kt">ReadingOptions</span> <span class="o">=</span> <span class="o">.</span><span class="n">allowFragments</span><span class="p">,</span>
+    <span class="nv">completionHandler</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Structs/DownloadResponse.html">DownloadResponse</a></span><span class="o">&lt;</span><span class="kt">Any</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span>
+    <span class="o">-&gt;</span> <span class="k">Self</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>queue</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The queue on which the completion handler is dispatched. Defaults to <code>.main</code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>options</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The JSON serialization reading options. Defaults to <code>.allowFragments</code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>completionHandler</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>A closure to be executed once the request has finished.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The request.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire15DownloadRequestC10Validationa"></a>
+                    <a name="//apple_ref/swift/Alias/Validation" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire15DownloadRequestC10Validationa">Validation</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A closure used to validate a request that takes a URL request, a URL response, a temporary URL and a
+destination URL, and returns whether the request was valid.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">typealias</span> <span class="kt">Validation</span> <span class="o">=</span> <span class="p">(</span><span class="n">_</span> <span class="nv">request</span><span class="p">:</span> <span class="kt">URLRequest</span><span class="p">?,</span> <span class="n">_</span> <span class="nv">response</span><span class="p">:</span> <span class="kt">HTTPURLResponse</span><span class="p">,</span> <span class="n">_</span> <span class="nv">fileURL</span><span class="p">:</span> <span class="kt">URL</span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">ValidationResult</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire15DownloadRequestC8validate10statusCodeACXDx_tSTRzSi7ElementRtzlF"></a>
+                    <a name="//apple_ref/swift/Method/validate(statusCode:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire15DownloadRequestC8validate10statusCodeACXDx_tSTRzSi7ElementRtzlF">validate(statusCode:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Validates that the response has a status code in the specified sequence.</p>
+
+<p>If validation fails, subsequent calls to response handlers will have an associated error.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="n">validate</span><span class="o">&lt;</span><span class="kt">S</span><span class="o">&gt;</span><span class="p">(</span><span class="n">statusCode</span> <span class="nv">acceptableStatusCodes</span><span class="p">:</span> <span class="kt">S</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="k">Self</span> <span class="k">where</span> <span class="kt">S</span> <span class="p">:</span> <span class="kt">Sequence</span><span class="p">,</span> <span class="kt">S</span><span class="o">.</span><span class="kt">Element</span> <span class="o">==</span> <span class="kt">Int</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>range</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The range of acceptable status codes.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The request.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire15DownloadRequestC8validate11contentTypeACXDxyXA_tSTRzSS7ElementRtzlF"></a>
+                    <a name="//apple_ref/swift/Method/validate(contentType:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire15DownloadRequestC8validate11contentTypeACXDxyXA_tSTRzSS7ElementRtzlF">validate(contentType:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Validates that the response has a content type in the specified sequence.</p>
+
+<p>If validation fails, subsequent calls to response handlers will have an associated error.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="n">validate</span><span class="o">&lt;</span><span class="kt">S</span><span class="p">:</span> <span class="kt">Sequence</span><span class="o">&gt;</span><span class="p">(</span><span class="n">contentType</span> <span class="nv">acceptableContentTypes</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kd">@autoclosure</span> <span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">S</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="k">Self</span> <span class="k">where</span> <span class="kt">S</span><span class="o">.</span><span class="kt">Iterator</span><span class="o">.</span><span class="kt">Element</span> <span class="o">==</span> <span class="kt">String</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>contentType</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The acceptable content types, which may specify wildcard types and/or subtypes.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The request.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire15DownloadRequestC8validateACXDyF"></a>
+                    <a name="//apple_ref/swift/Method/validate()" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire15DownloadRequestC8validateACXDyF">validate()</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Validates that the response has a status code in the default acceptable range of 200&hellip;299, and that the content
+type matches any specified in the Accept HTTP header field.</p>
+
+<p>If validation fails, subsequent calls to response handlers will have an associated error.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">validate</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="k">Self</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The request.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+      </article>
+    </div>
+    <section class="footer">
+      <p>&copy; 2019 <a class="link" href="http://alamofire.org/" target="_blank" rel="external">Alamofire Software Foundation</a>. All rights reserved. (Last updated: 2019-04-12)</p>
+      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+    </section>
+  </body>
+</div>
+</html>

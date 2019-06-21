@@ -8,14 +8,14 @@
 
 import UIKit
 import CoreData
-import SwiftKeychainWrapper
+import KeychainSwift
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
         return true
@@ -28,7 +28,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationDidEnterBackground(_ application: UIApplication) {
         
-        if KeychainWrapper.standard.string(forKey: "UnlockPassword") != nil {
+        let keychain = KeychainSwift()
+        
+        if keychain.get("UnlockPassword") != nil {
             
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
             let loginVC = storyboard.instantiateViewController(withIdentifier: "LogIn")

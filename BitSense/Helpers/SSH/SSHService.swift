@@ -13,39 +13,65 @@ class SSHService {
     
     var session:NMSSHSession!
     static let sharedInstance = SSHService()
+    var path = "bitcoin-cli"
+    let aes = AESService()
     
     private init() {}
     
     func connect(activeNode: [String:Any], success: @escaping((success:Bool, error:String?)) -> ()) {
         
-        let aes = AESService()
+        var port = ""
+        var user = ""
+        var host = ""
+        var password = ""
         
-        var port = "22"
-        var user = "user"
-        var host = "host"
-        var password = "password"
-        
-        if let portCheck = aes.decryptKey(keyToDecrypt: activeNode["port"] as! String) as? String {
+        if let pathCheck = activeNode["path"] as? String {
             
-            port = portCheck
+            if aes.decryptKey(keyToDecrypt: pathCheck) != "" {
+                
+                path = aes.decryptKey(keyToDecrypt: pathCheck)
+                
+            }
             
         }
         
-        if let userCheck = aes.decryptKey(keyToDecrypt: activeNode["username"] as! String) as? String {
+        if let portCheck = activeNode["port"] as? String {
             
-            user = userCheck
-            
-        }
-        
-        if let hostCheck = aes.decryptKey(keyToDecrypt: activeNode["ip"] as! String) as? String {
-            
-            host = hostCheck
+            if aes.decryptKey(keyToDecrypt: portCheck) != "" {
+                
+                port = aes.decryptKey(keyToDecrypt: portCheck)
+                
+            }
             
         }
         
-        if let passwordCheck = aes.decryptKey(keyToDecrypt: activeNode["password"] as! String) as? String {
+        if let userCheck = activeNode["username"] as? String {
             
-            password = passwordCheck
+            if aes.decryptKey(keyToDecrypt: userCheck) != "" {
+                
+                user = aes.decryptKey(keyToDecrypt: userCheck)
+                
+            }
+            
+        }
+        
+        if let hostCheck = activeNode["ip"] as? String {
+            
+            if aes.decryptKey(keyToDecrypt: hostCheck) != "" {
+                
+                host = aes.decryptKey(keyToDecrypt: hostCheck)
+                
+            }
+            
+        }
+        
+        if let passwordCheck = activeNode["password"] as? String {
+            
+            if aes.decryptKey(keyToDecrypt: passwordCheck) != "" {
+                
+                password = aes.decryptKey(keyToDecrypt: passwordCheck)
+                
+            }
             
         }
         
@@ -63,33 +89,34 @@ class SSHService {
             portInt = Int(port)!
             
             let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+            
             queue.async {
-            
-            self.session = NMSSHSession.connect(toHost: host, port: portInt, withUsername: user)
-            
-            if self.session.isConnected == true {
                 
-                self.session.authenticate(byPassword: password)
+                self.session = NMSSHSession.connect(toHost: host, port: portInt, withUsername: user)
                 
-                if self.session.isAuthorized {
+                if self.session.isConnected == true {
                     
-                    success((success:true, error:nil))
-                    print("success")
+                    self.session.authenticate(byPassword: password)
+                    
+                    if self.session.isAuthorized {
+                        
+                        success((success:true, error:nil))
+                        print("success")
+                        
+                    } else {
+                        
+                        success((success:false, error:"\(String(describing: self.session.lastError!.localizedDescription))"))
+                        print("fail")
+                        print("\(String(describing: self.session?.lastError))")
+                        
+                    }
                     
                 } else {
                     
-                    success((success:false, error:"\(String(describing: self.session.lastError!))"))
-                    print("fail")
-                    print("\(String(describing: self.session?.lastError))")
+                    print("Session not connected")
+                    success((success:false, error:"Unable to connect to your node with SSH"))
                     
-                 }
-                
-            } else {
-                
-                print("Session not connected")
-                success((success:false, error:"Unable to connect"))
-                
-            }
+                }
                 
             }
             
@@ -105,57 +132,77 @@ class SSHService {
     
     func execute(command: BTC_CLI_COMMAND, params: Any, response: @escaping((dictionary:Any?, error:String?)) -> ()) {
         
-        var error: NSError?
-        var path = "bitcoin-cli"
+        var commandToExecute = "\(self.path) \(command.rawValue) \(params)"
         
-        if UserDefaults.standard.object(forKey: "path") != nil {
+        if let walletName = UserDefaults.standard.object(forKey: "walletName") as? String {
             
-            path = UserDefaults.standard.object(forKey: "path") as! String
+            let b = isWalletRPC(command: command)
+            
+            if b {
+                
+                commandToExecute = "\(self.path) -rpcwallet=\(walletName) \(command.rawValue) \(params)"
+                
+            }
             
         }
+            
+        var error: NSError?
         
         let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        
         queue.async {
             
-            if let responseString = self.session?.channel.execute("\(path) \(command.rawValue) \(params)", error: &error) {
+            if let responseString = self.session?.channel.execute(commandToExecute, error: &error) {
                 
                 print("responseString = \(String(describing: responseString))")
                 
-                if error != nil {
+                if responseString == "" && command == BTC_CLI_COMMAND.importprivkey || command == BTC_CLI_COMMAND.importaddress {
                     
-                    print("error = \(error!.localizedDescription)")
-                    response((dictionary:nil, error:error!.localizedDescription))
+                    response((dictionary:"Imported key success", error:nil))
+                    
+                } else if responseString == "" && command == BTC_CLI_COMMAND.unloadwallet {
+                    
+                    response((dictionary:"Wallet unloaded", error:nil))
                     
                 } else {
                     
-                    if command == BTC_CLI_COMMAND.getnewaddress || command == BTC_CLI_COMMAND.getrawchangeaddress || command == BTC_CLI_COMMAND.createrawtransaction {
+                    if error != nil {
                         
-                        if responseString.hasSuffix("\n") {
-                            
-                            let address = responseString.replacingOccurrences(of: "\n", with: "")
-                            
-                            response((dictionary: address,error: nil))
-                            
-                        } else {
-                            
-                            response((dictionary:responseString,error:nil))
-                            
-                        }
+                        print("error = \(error!.localizedDescription)")
+                        response((dictionary:nil, error:error!.localizedDescription))
                         
                     } else {
                         
-                        guard let responseData = responseString.data(using: .utf8) else { return }
-                        
-                        do {
+                        if command == BTC_CLI_COMMAND.getnewaddress || command == BTC_CLI_COMMAND.getrawchangeaddress || command == BTC_CLI_COMMAND.createrawtransaction {
                             
-                            let json = try JSONSerialization.jsonObject(with: responseData, options: [.allowFragments]) as Any
+                            if responseString.hasSuffix("\n") {
+                                
+                                let address = responseString.replacingOccurrences(of: "\n", with: "")
+                                
+                                response((dictionary: address,error: nil))
+                                
+                            } else {
+                                
+                                response((dictionary:responseString,error:nil))
+                                
+                            }
                             
-                            response((dictionary:json, error:nil))
+                        } else {
                             
-                        } catch {
+                            guard let responseData = responseString.data(using: .utf8) else { return }
                             
-                            response((dictionary:nil, error:"JSON ERROR: \(error)"))
-                            print("error = \(error)")
+                            do {
+                                
+                                let json = try JSONSerialization.jsonObject(with: responseData, options: [.allowFragments]) as Any
+                                
+                                response((dictionary:json, error:nil))
+                                
+                            } catch {
+                                
+                                response((dictionary:nil, error:"\(error.localizedDescription)"))
+                                print("error = \(error)")
+                                
+                            }
                             
                         }
                         
@@ -169,29 +216,32 @@ class SSHService {
             
      }
     
-    
-    
-    /*func executeStringResponse(command: BTC_CLI_COMMAND, params: String, response: @escaping((string:String?, error:String?)) -> ()) {
+    func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
         
-        let error = NSErrorPointer.none
+        var boolToReturn = Bool()
         
-        if let responseString = session?.channel.execute("/usr/local/bin/bitcoin-cli \(command.rawValue) \(params)",
-            error: error ?? nil).replacingOccurrences(of: "\n", with: "") {
+        switch command {
             
-            if error != nil {
-                
-                print("error getting response string")
-                response((string: "", error:"ERROR: \(error!.debugDescription)"))
-                
-            } else {
-                
-                print("responseString = \(String(describing: responseString))")
-                response((string: responseString, error:nil))
-                
-            }
+        case BTC_CLI_COMMAND.listtransactions,
+             BTC_CLI_COMMAND.getbalance,
+             BTC_CLI_COMMAND.getunconfirmedbalance,
+             BTC_CLI_COMMAND.getnewaddress,
+             BTC_CLI_COMMAND.getwalletinfo,
+             BTC_CLI_COMMAND.importmulti,
+             BTC_CLI_COMMAND.rescanblockchain,
+             BTC_CLI_COMMAND.fundrawtransaction,
+             BTC_CLI_COMMAND.listunspent:
+            
+            boolToReturn = true
+            
+        default:
+            
+            boolToReturn = false
             
         }
         
-    }*/
+        return boolToReturn
+        
+    }
     
 }

@@ -8,173 +8,190 @@
 
 import UIKit
 
-class NodeDetailViewController: UIViewController, UITextFieldDelegate {
+class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
     
-    var node = [String:Any]()
+    var selectedNode = [String:Any]()
     let aes = AESService()
     let cd = CoreDataService()
     var createNew = Bool()
     var newNode = [String:Any]()
     
-    @IBOutlet var nodeUsername: UITextField!
     @IBOutlet var nodeLabel: UITextField!
-    @IBOutlet var nodePassword: UITextField!
-    @IBOutlet var nodeIp: UITextField!
-    @IBOutlet var nodePort: UITextField!
-    @IBOutlet var saveButton: UIButton!
+    @IBOutlet var rpcUserField: UITextField!
+    @IBOutlet var rpcPassword: UITextField!
+    @IBOutlet var rpcPort: UITextField!
     
+    @IBOutlet var saveButton: UIButton!
     
     @IBAction func save(_ sender: Any) {
         
         if createNew {
             
-            newNode["id"] = randomString(length: 7)
-            newNode["isDefault"] = false
-            
             if nodeLabel.text != "" {
                 
-                newNode["label"] = nodeLabel.text!
+                let enc = aes.encryptKey(keyToEncrypt: nodeLabel.text!)
+                newNode["label"] = enc
                 
             }
             
-            if nodeUsername.text != "" {
+            if rpcUserField.text != "" {
                 
-                let enc = aes.encryptKey(keyToEncrypt: nodeUsername.text!)
-                newNode["username"] = enc
-                
-            }
-            
-            if nodePassword.text != "" {
-                
-                let enc = aes.encryptKey(keyToEncrypt: nodePassword.text!)
-                newNode["password"] = enc
+                let enc = aes.encryptKey(keyToEncrypt: rpcUserField.text!)
+                newNode["rpcuser"] = enc
                 
             }
             
-            if nodeIp.text != "" {
+            if rpcPassword.text != "" {
                 
-                let enc = aes.encryptKey(keyToEncrypt: nodeIp.text!)
-                newNode["ip"] = enc
-                
-            }
-            
-            if nodePort.text != "" {
-                
-                let enc = aes.encryptKey(keyToEncrypt: nodePort.text!)
-                newNode["port"] = enc
+                let enc = aes.encryptKey(keyToEncrypt: rpcPassword.text!)
+                newNode["rpcpassword"] = enc
                 
             }
             
-            if nodeLabel.text != "" && nodeUsername.text != "" && nodePassword.text != "" && nodeIp.text != "" && nodePort.text != "" {
+            if rpcPort.text != "" {
                 
-                let success = cd.saveCredentialsToCoreData(vc: self,
-                                                           credentials: newNode)
+                let enc = aes.encryptKey(keyToEncrypt: rpcPort.text!)
+                newNode["rpcport"] = enc
                 
-                if success {
+            }
+            
+            if !(newNode["usingSSH"] as! Bool) {
+                
+                if nodeLabel.text != "" && rpcPort.text != "" && rpcPassword.text != "" && rpcUserField.text != "" {
                     
-                    displayAlert(viewController: navigationController!,
-                                 isError: false,
-                                 message: "Added succesfully")
-                    
-                    self.navigationController!.popToRootViewController(animated: true)
+                    DispatchQueue.main.async {
+                        
+                        self.performSegue(withIdentifier: "goToTorDetails", sender: self)
+                        
+                    }
                     
                 } else {
                     
                     displayAlert(viewController: navigationController!,
                                  isError: true,
-                                 message: "Could not save")
+                                 message: "Fill out all fields first")
                     
                 }
                 
             } else {
                 
-                displayAlert(viewController: navigationController!,
-                             isError: true,
-                             message: "Fill out all fields")
+                if nodeLabel.text != "" {
+                    
+                    //segue to ssh node
+                    DispatchQueue.main.async {
+                        
+                        self.performSegue(withIdentifier: "sshCredentials",
+                                          sender: self)
+                        
+                    }
+                    
+                } else {
+                    
+                    displayAlert(viewController: navigationController!,
+                                 isError: true,
+                                 message: "Give your node a label first")
+                    
+                }
                 
             }
             
         } else {
             
             //updating
-            let id = node["id"] as! String
-            var success1 = Bool()
-            var success2 = Bool()
-            var success3 = Bool()
-            var success4 = Bool()
-            var success5 = Bool()
+            
+            let id = selectedNode["id"] as! String
             
             if nodeLabel.text != "" {
                 
-                success1 = cd.updateNode(viewController: self,
-                                         id: id,
-                                         newValue: nodeLabel.text!,
-                                         keyToEdit: "label")
+                let enc = aes.encryptKey(keyToEncrypt: nodeLabel.text!)
+                selectedNode["label"] = enc
+                
+                let success = cd.updateNode(viewController: self,
+                                            id: id,
+                                            newValue: enc,
+                                            keyToEdit: "label")
                 
             }
             
-            if nodeUsername.text != "" {
+            if rpcUserField.text != "" {
                 
-                let enc = aes.encryptKey(keyToEncrypt: nodeUsername.text!)
+                let enc = aes.encryptKey(keyToEncrypt: rpcUserField.text!)
+                selectedNode["rpcuser"] = enc
                 
-                success2 = cd.updateNode(viewController: self,
-                                         id: id,
-                                         newValue: enc,
-                                         keyToEdit: "username")
-                
-            }
-            
-            if nodePassword.text != "" {
-                
-                let enc = aes.encryptKey(keyToEncrypt: nodePassword.text!)
-                
-                success3 = cd.updateNode(viewController: self,
-                                         id: id,
-                                         newValue: enc,
-                                         keyToEdit: "password")
+                let success = cd.updateNode(viewController: self,
+                                            id: id,
+                                            newValue: enc,
+                                            keyToEdit: "rpcuser")
                 
             }
             
-            if nodeIp.text != "" {
+            if rpcPassword.text != "" {
                 
-                let enc = aes.encryptKey(keyToEncrypt: nodeIp.text!)
+                let enc = aes.encryptKey(keyToEncrypt: rpcPassword.text!)
+                selectedNode["rpcpassword"] = enc
                 
-                success4 = cd.updateNode(viewController: self,
-                                         id: id,
-                                         newValue: enc,
-                                         keyToEdit: "ip")
-                
-            }
-            
-            if nodePort.text != "" {
-                
-                let enc = aes.encryptKey(keyToEncrypt: nodePort.text!)
-                
-                success5 = cd.updateNode(viewController: self,
-                                         id: id,
-                                         newValue: enc,
-                                         keyToEdit: "port")
+                let success = cd.updateNode(viewController: self,
+                                            id: id,
+                                            newValue: enc,
+                                            keyToEdit: "rpcpassword")
                 
             }
             
-            if success1 && success2 && success3 && success4 && success5 {
+            if rpcPort.text != "" {
                 
-                displayAlert(viewController: navigationController!,
-                             isError: false,
-                             message: "Node updated")
+                let enc = aes.encryptKey(keyToEncrypt: rpcPort.text!)
+                selectedNode["rpcport"] = enc
                 
-            } else {
+                let success = cd.updateNode(viewController: self,
+                                            id: id,
+                                            newValue: enc,
+                                            keyToEdit: "rpcport")
                 
-                displayAlert(viewController: navigationController!,
-                             isError: true,
-                             message: "Update failed")
+            }
+            
+            if (selectedNode["usingSSH"] as! Bool) {
+                
+                let success = cd.updateNode(viewController: self,
+                                            id: id,
+                                            newValue: true,
+                                            keyToEdit: "usingSSH")
+                
+                let success2 = cd.updateNode(viewController: self,
+                                            id: id,
+                                            newValue: false,
+                                            keyToEdit: "usingTor")
+                
+                DispatchQueue.main.async {
+                    
+                    self.performSegue(withIdentifier: "sshCredentials", sender: self)
+                    
+                }
+                
+            }
+            
+            if (selectedNode["usingTor"] as! Bool) {
+                
+                let success = cd.updateNode(viewController: self,
+                                            id: id,
+                                            newValue: false,
+                                            keyToEdit: "usingSSH")
+                
+                let success2 = cd.updateNode(viewController: self,
+                                             id: id,
+                                             newValue: true,
+                                             keyToEdit: "usingTor")
+                
+                DispatchQueue.main.async {
+                    
+                    self.performSegue(withIdentifier: "goToTorDetails", sender: self)
+                    
+                }
                 
             }
             
         }
         
     }
-    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -186,43 +203,58 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate {
         view.addGestureRecognizer(tapGesture)
         
         nodeLabel.delegate = self
-        nodePort.delegate = self
-        nodeIp.delegate = self
-        nodePassword.delegate = self
-        nodeUsername.delegate = self
+        rpcPort.delegate = self
+        rpcPassword.delegate = self
+        rpcUserField.delegate = self
+        
+        rpcPassword.isSecureTextEntry = true
+        
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
         
         loadValues()
-        
-        if !createNew {
-            
-            saveButton.setTitle("Update", for: .normal)
-            
-        }
         
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         
         nodeLabel.text = ""
-        nodePort.text = ""
-        nodePassword.text = ""
-        nodeIp.text = ""
-        nodeUsername.text = ""
+        rpcUserField.text = ""
+        rpcPassword.text = ""
+        rpcPort.text = ""
         
     }
     
     func loadValues() {
         
-        if node["id"] != nil {
+        if selectedNode["id"] != nil {
             
-            nodeUsername.text = aes.decryptKey(keyToDecrypt: (node["username"] as! String))
-            nodePassword.text = aes.decryptKey(keyToDecrypt: (node["password"] as! String))
-            nodeIp.text = aes.decryptKey(keyToDecrypt: (node["ip"] as! String))
-            nodePort.text = aes.decryptKey(keyToDecrypt: (node["port"] as! String))
+            let usingssh = (selectedNode["usingSSH"] as! Bool)
             
-            if node["label"] != nil {
+            if selectedNode["rpcport"] != nil {
                 
-                nodeLabel.text = (node["label"] as! String)
+                rpcPort.text = aes.decryptKey(keyToDecrypt: (selectedNode["rpcport"] as! String))
+                
+            } else {
+                
+                if usingssh {
+                    
+                    rpcPort.attributedPlaceholder = NSAttributedString(string: "Optional",
+                                                                       attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
+                    
+                } else {
+                    
+                    rpcPort.attributedPlaceholder = NSAttributedString(string: "RPC Port",
+                                                                       attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
+                    
+                }
+                
+            }
+            
+            if selectedNode["label"] != nil {
+                
+                nodeLabel.text = aes.decryptKey(keyToDecrypt: (selectedNode["label"] as! String))
                 
             } else {
                 
@@ -231,16 +263,67 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate {
                 
             }
             
+            if selectedNode["rpcuser"] != nil {
+                
+                rpcUserField.text = aes.decryptKey(keyToDecrypt: (selectedNode["rpcuser"] as! String))
+                
+            } else {
+                
+                if usingssh {
+                    
+                    rpcUserField.attributedPlaceholder = NSAttributedString(string: "Optional",
+                                                                            attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
+                    
+                } else {
+                    
+                    rpcUserField.attributedPlaceholder = NSAttributedString(string: "RPC User",
+                                                                            attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
+                    
+                }
+                
+            }
+            
+            if selectedNode["rpcpassword"] != nil {
+                
+                rpcPassword.text = aes.decryptKey(keyToDecrypt: (selectedNode["rpcpassword"] as! String))
+                
+            } else {
+                
+                if usingssh {
+                    
+                    rpcPassword.attributedPlaceholder = NSAttributedString(string: "Optional",
+                                                                           attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
+                    
+                } else {
+                    
+                    rpcPassword.attributedPlaceholder = NSAttributedString(string: "RPC Password",
+                                                                           attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
+                    
+                }
+                
+            }
+            
         } else {
             
-            nodeUsername.attributedPlaceholder = NSAttributedString(string: "Enter SSH host user",
-                                                                attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
-            nodePassword.attributedPlaceholder = NSAttributedString(string: "Enter SSH host password",
-                                                                attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
-            nodeIp.attributedPlaceholder = NSAttributedString(string: "Enter SSH host IP",
-                                                          attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
-            nodePort.attributedPlaceholder = NSAttributedString(string: "Enter SSH host port",
-                                                            attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
+            if (newNode["usingSSH"] as! Bool) {
+                
+                rpcPassword.attributedPlaceholder = NSAttributedString(string: "Optional",
+                                                                       attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
+                rpcUserField.attributedPlaceholder = NSAttributedString(string: "Optional",
+                                                                        attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
+                rpcPort.attributedPlaceholder = NSAttributedString(string: "Optional",
+                                                                   attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
+                
+            } else {
+                
+                rpcPassword.attributedPlaceholder = NSAttributedString(string: "RPC Password",
+                                                                       attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
+                rpcUserField.attributedPlaceholder = NSAttributedString(string: "RPC User",
+                                                                        attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
+                rpcPort.attributedPlaceholder = NSAttributedString(string: "RPC Port",
+                                                                   attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
+            }
+            
             nodeLabel.attributedPlaceholder = NSAttributedString(string: "Give your node a label",
                                                              attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
             
@@ -251,10 +334,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate {
     @objc func dismissKeyboard (_ sender: UITapGestureRecognizer) {
         
         nodeLabel.resignFirstResponder()
-        nodeUsername.resignFirstResponder()
-        nodePassword.resignFirstResponder()
-        nodeIp.resignFirstResponder()
-        nodePort.resignFirstResponder()
+        rpcUserField.resignFirstResponder()
+        rpcPassword.resignFirstResponder()
+        rpcPort.resignFirstResponder()
         
     }
     
@@ -263,6 +345,38 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate {
         self.view.endEditing(true)
         
         return true
+        
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        
+        switch segue.identifier {
+            
+        case "sshCredentials":
+            
+            if let vc = segue.destination as? SSHCredentialsViewController {
+                
+                vc.selectedNode = self.selectedNode
+                vc.newNode = self.newNode
+                vc.createNew = self.createNew
+                
+            }
+            
+        case "goToTorDetails":
+            
+            if let vc = segue.destination as? TorCredentialViewController {
+                
+                vc.newNode = self.newNode
+                vc.selectedNode = self.selectedNode
+                vc.createNew = self.createNew
+                
+            }
+            
+        default:
+            
+            break
+            
+        }
         
     }
 

@@ -26,6 +26,9 @@ class RawTransaction {
     var signedRawTx = ""
     var errorBool = Bool()
     var errorDescription = ""
+    var isUsingSSH = Bool()
+    var torClient:TorClient!
+    var torRPC:MakeRPCCall!
     
     func createRawTransaction(completion: @escaping () -> Void) {
         
@@ -86,6 +89,62 @@ class RawTransaction {
             
         }
         
+        func executeNodeCommandTor(method: BTC_CLI_COMMAND, param: String) {
+            
+            func getResult() {
+                
+                if !torRPC.errorBool {
+                    
+                    switch method {
+                        
+                    case BTC_CLI_COMMAND.signrawtransaction:
+                        
+                        let dict = torRPC.dictToReturn
+                        signedRawTx = dict["hex"] as! String
+                        completion()
+                        
+                    case BTC_CLI_COMMAND.listunspent:
+                        
+                        let resultArray = torRPC.arrayToReturn
+                        parseUnspent(utxos: resultArray)
+                        
+                    case BTC_CLI_COMMAND.createrawtransaction:
+                        
+                        let unsignedRawTx = torRPC.stringToReturn
+                        executeNodeCommandTor(method: BTC_CLI_COMMAND.signrawtransaction, param: "\'\(unsignedRawTx)\'")
+                        
+                    default:
+                        
+                        break
+                        
+                    }
+                    
+                } else {
+                    
+                    errorBool = true
+                    errorDescription = torRPC.errorDescription
+                    completion()
+                    
+                }
+                
+            }
+            
+            if self.torClient.isOperational {
+                
+                self.torRPC.executeRPCCommand(method: method,
+                                              param: param,
+                                              completion: getResult)
+                
+            } else {
+                
+                errorBool = true
+                errorDescription = "Not connected"
+                completion()
+                
+            }
+            
+        }
+        
         func parseUnspent(utxos: NSArray) {
             
             if !self.sweep {
@@ -132,8 +191,18 @@ class RawTransaction {
                                     
                                     let param = "\'\(self.inputs)\' \'{\"\(self.addressToPay)\":\(self.amount), \"\(self.changeAddress)\": \(self.changeAmount)}\'"
                                     
-                                    executeNodeCommandSsh(method: BTC_CLI_COMMAND.createrawtransaction,
-                                                               param: param)
+                                    if isUsingSSH {
+                                        
+                                        executeNodeCommandSsh(method: BTC_CLI_COMMAND.createrawtransaction,
+                                                              param: param)
+                                        
+                                    } else {
+                                     
+                                        executeNodeCommandTor(method: BTC_CLI_COMMAND.createrawtransaction,
+                                                              param: param)
+                                        
+                                    }
+                                    
                                     
                                 }
                                 
@@ -253,7 +322,15 @@ class RawTransaction {
             
         }
         
-        executeNodeCommandSsh(method: BTC_CLI_COMMAND.listunspent, param: "")
+        if isUsingSSH {
+            
+            executeNodeCommandSsh(method: BTC_CLI_COMMAND.listunspent, param: "")
+            
+        } else {
+         
+            executeNodeCommandTor(method: BTC_CLI_COMMAND.listunspent, param: "")
+            
+        }
         
     }
     

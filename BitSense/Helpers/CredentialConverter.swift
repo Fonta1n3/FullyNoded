@@ -101,11 +101,15 @@ class CredentialConverter {
             let host = aes.encryptKey(keyToEncrypt: "someIP")
             let un = aes.encryptKey(keyToEncrypt: "user")
             let pw = aes.encryptKey(keyToEncrypt: "password")
+            let path = aes.encryptKey(keyToEncrypt: "bitcoin-cli")
+            let label = aes.encryptKey(keyToEncrypt: "Testing Node")
             defaultNode["port"] = prt
             defaultNode["ip"] = host
             defaultNode["username"] = un
             defaultNode["password"] = pw
             defaultNode["id"] = randomString(length: 7)
+            defaultNode["path"] = path
+            defaultNode["label"] = label
             
             if credentialsExist {
                 
@@ -118,8 +122,6 @@ class CredentialConverter {
                 defaultNode["isDefault"] = true
                 
             }
-            
-            defaultNode["label"] = "Testing Node"
             
             let saveDef = cd.saveCredentialsToCoreData(vc: vc, credentials: defaultNode)
             

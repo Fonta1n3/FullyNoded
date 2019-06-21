@@ -1,1 +1,0 @@
-../../../swift_qrcodejs/Sources/swift_qrcodejs.h

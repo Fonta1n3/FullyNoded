@@ -10,6 +10,7 @@ import UIKit
 
 class MainMenuViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITabBarControllerDelegate {
     
+    @IBOutlet var activeWallet: UILabel!
     let dateFormatter = DateFormatter()
     var syncStatus = String()
     var hashrateString = String()
@@ -38,12 +39,30 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     var nodes = [[String:Any]]()
     let plusButton = UIButton()
     let minusButton = UIButton()
-    let tests = Tests()
+    let utilityImage = UIImageView()
+    let utilityButton = UIButton()
     var uptime = Int()
+    var buttonViews = [UIView()]
+    var activeNode = [String:Any]()
+    var torClient:TorClient!
+    var torRPC:MakeRPCCall!
+    var isUsingSSH = Bool()
+    var existingNodeID = ""
+    var initialLoad = Bool()
+    var torConnected = Bool()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         print("main menu")
+        
+        initialLoad = true
+        
+        if UserDefaults.standard.object(forKey: "updatedToSwift5") == nil {
+            
+            deleteAllNodes()
+            UserDefaults.standard.removeObject(forKey: "firstTime")
+            
+        }
         
         firstTimeHere()
         mainMenu.delegate = self
@@ -51,47 +70,346 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         configureRefresher()
         mainMenu.tableFooterView = UIView(frame: .zero)
         addBalanceLabel()
-        convertCredentials()
-        refresh()
+        //convertCredentials()
         
         plusButton.addTarget(self, action: #selector(receive), for: .touchUpInside)
         minusButton.addTarget(self, action: #selector(createRaw), for: .touchUpInside)
+        utilityButton.addTarget(self, action: #selector(utilities), for: .touchUpInside)
         
         plusButton.backgroundColor = UIColor.clear
         minusButton.backgroundColor = UIColor.clear
+        utilityButton.backgroundColor = UIColor.clear
         
-        plusImage.image = UIImage(named: "whitePlus.png")
-        minusImage.image = UIImage(named: "whiteSubtract.png")
+        plusImage.image = UIImage(named: "Image-1")
+        minusImage.image = UIImage(named: "Image-2")
+        utilityImage.image = UIImage(named: "Image-4")
+        
+        torConnected = false
+        connectWithTor()
         
     }
     
     override func viewDidAppear(_ animated: Bool) {
         
-        addBlurView(frame: CGRect(x: 10,
-                                  y: tabBarController!.tabBar.frame.minY - 80,
-                                  width: 70,
-                                  height: 70), image: plusImage)
+        if torConnected {
+         
+            nodes = cd.retrieveCredentials()
+            
+            if nodes.count > 0 {
+                
+                let ud = UserDefaults.standard
+                
+                let isActive = isAnyNodeActive(nodes: nodes)
+                
+                if isActive {
+                    
+                    for node in nodes {
+                        
+                        if (node["isActive"] as! Bool) {
+                            
+                            self.activeNode = node
+                            
+                            let newId = node["id"] as! String
+                            
+                            if newId != existingNodeID {
+                                
+                                if !initialLoad {
+                                    
+                                    ud.removeObject(forKey: "walletName")
+                                    
+                                }
+                                
+                                self.isUsingSSH = node["usingSSH"] as! Bool
+                                self.refresh()
+                                
+                            }
+                            
+                        }
+                        
+                    }
+                    
+                } else {
+                    
+                    displayAlert(viewController: self,
+                                 isError: true,
+                                 message: "No active nodes")
+                    
+                }
+                
+                if ud.object(forKey: "walletName") != nil {
+                    
+                    DispatchQueue.main.async {
+                        
+                        self.activeWallet.text = (ud.object(forKey: "walletName") as! String)
+                        
+                    }
+                    
+                } else {
+                    
+                    DispatchQueue.main.async {
+                        
+                        self.activeWallet.text = ""
+                        
+                    }
+                    
+                }
+                
+            } else {
+                
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: "Go to Nodes to add a node")
+                
+            }
+            
+            initialLoad = false
+            
+        }
         
-        addBlurView(frame: CGRect(x: view.frame.maxX - 80,
-                                  y: tabBarController!.tabBar.frame.minY - 80,
-                                  width: 70,
-                                  height: 70), image: minusImage)
+    }
+    
+    func loadTableDataTor(method: BTC_CLI_COMMAND, param: Any) {
+        print("loadTableDataTor")
+        
+        func getResult() {
+            print("get result")
+            
+            if !torRPC.errorBool {
+                
+                DispatchQueue.main.async {
+                    
+                    self.connectingView.label.text = "bitcoin-cli \(method.rawValue)"
+                    
+                }
+                
+                switch method {
+                    
+                case BTC_CLI_COMMAND.uptime:
+                    
+                    self.uptime = Int(torRPC.doubleToReturn)
+                    
+                    DispatchQueue.main.async {
+                        
+                        self.removeSpinner()
+                        self.mainMenu.reloadData()
+                        
+                    }
+                    
+                case BTC_CLI_COMMAND.getmininginfo:
+                    
+                    let miningInfo = torRPC.dictToReturn
+                    parseMiningInfo(miningInfo: miningInfo)
+                    
+                case BTC_CLI_COMMAND.getnetworkinfo:
+                    
+                    let networkInfo = torRPC.dictToReturn
+                    parseNetworkInfo(networkInfo: networkInfo)
+                    
+                case BTC_CLI_COMMAND.getpeerinfo:
+                    
+                    let peerInfo = torRPC.arrayToReturn
+                    parsePeerInfo(peerInfo: peerInfo)
+                    
+                case BTC_CLI_COMMAND.abandontransaction:
+                    
+                    displayAlert(viewController: self,
+                                 isError: false,
+                                 message: "Transaction abandoned")
+                    
+                case BTC_CLI_COMMAND.getblockchaininfo:
+                    
+                    let blockchainInfo = torRPC.dictToReturn
+                    parseBlockchainInfo(blockchainInfo: blockchainInfo)
+                    
+                case BTC_CLI_COMMAND.bumpfee:
+                    
+                    let result = torRPC.dictToReturn
+                    bumpFee(result: result)
+                    
+                case BTC_CLI_COMMAND.getunconfirmedbalance:
+                    
+                    let unconfirmedBalance = torRPC.doubleToReturn
+                    parseUncomfirmedBalance(unconfirmedBalance: unconfirmedBalance)
+                    
+                case BTC_CLI_COMMAND.getbalance:
+                    
+                    let balanceCheck = torRPC.doubleToReturn
+                    parseBalance(balance: balanceCheck)
+                    
+                case BTC_CLI_COMMAND.listtransactions:
+                    
+                    let transactionsCheck = torRPC.arrayToReturn
+                    parseTransactions(transactions: transactionsCheck)
+                    
+                default:
+                    
+                    break
+                    
+                }
+                
+            } else {
+                
+                self.removeSpinner()
+                
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: torRPC.errorDescription + " " + "last command: \(method.rawValue)")
+                
+            }
+            
+        }
+        
+        if self.torClient.isOperational {
+        
+            self.torRPC.executeRPCCommand(method: method,
+                                          param: param,
+                                          completion: getResult)
+            
+        } else {
+            
+            displayAlert(viewController: self,
+                         isError: true,
+                         message: "Tor not connected")
+            
+        }
+        
+    }
+    
+    func connectWithTor() {
+        
+        self.connectingView.addConnectingView(vc: self,
+                                              description: "Connecting Tor")
+        
+        torClient = TorClient()
+        
+        func getData() {
+            print("getData")
+            
+            torConnected = true
+            
+            nodes = cd.retrieveCredentials()
+            
+            if nodes.count > 0 {
+                
+                let ud = UserDefaults.standard
+                
+                let isActive = isAnyNodeActive(nodes: nodes)
+                
+                if isActive {
+                    
+                    for node in nodes {
+                        
+                        if (node["isActive"] as! Bool) {
+                            
+                            self.activeNode = node
+                            
+                            let newId = node["id"] as! String
+                            
+                            if newId != existingNodeID {
+                                
+                                if !initialLoad {
+                                    
+                                    ud.removeObject(forKey: "walletName")
+                                    
+                                }
+                                
+                                self.isUsingSSH = node["usingSSH"] as! Bool
+                                self.refresh()
+                                
+                            }
+                            
+                        }
+                        
+                    }
+                    
+                } else {
+                    
+                    displayAlert(viewController: self,
+                                 isError: true,
+                                 message: "No active nodes")
+                    
+                }
+                
+                if ud.object(forKey: "walletName") != nil {
+                    
+                    DispatchQueue.main.async {
+                        
+                        self.activeWallet.text = (ud.object(forKey: "walletName") as! String)
+                        
+                    }
+                    
+                } else {
+                    
+                    DispatchQueue.main.async {
+                        
+                        self.activeWallet.text = ""
+                        
+                    }
+                    
+                }
+                
+            } else {
+                
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: "Go to Nodes to add a node")
+                
+            }
+            
+            initialLoad = false
+            
+        }
+        
+        torClient.start(completion: getData)
+        
+    }
+    
+    override func viewDidLayoutSubviews() {
+        
+        for view in buttonViews {
+            
+            view.removeFromSuperview()
+            
+        }
+        
+        addBlurView(frame: CGRect(x: 10,
+                                  y: tabBarController!.tabBar.frame.minY - 85,
+                                  width: 75,
+                                  height: 75), image: plusImage)
+        
+        addBlurView(frame: CGRect(x: view.frame.maxX - 85,
+                                  y: tabBarController!.tabBar.frame.minY - 85,
+                                  width: 75,
+                                  height: 75), image: minusImage)
+        
+        addBlurView(frame: CGRect(x: view.frame.midX - 37.5,
+                                  y: tabBarController!.tabBar.frame.minY - 85,
+                                  width: 75,
+                                  height: 75), image: utilityImage)
         
         plusButton.frame = CGRect(x: 10,
                                   y: tabBarController!.tabBar.frame.minY - 80,
-                                  width: 70,
+                                  width: 150,
                                   height: 70)
         
         minusButton.frame = CGRect(x: view.frame.maxX - 80,
                                    y: tabBarController!.tabBar.frame.minY - 80,
-                                   width: 70,
+                                   width: 150,
                                    height: 70)
+        
+        utilityButton.frame = CGRect(x: view.frame.midX - 37.5,
+                                     y: tabBarController!.tabBar.frame.minY - 80,
+                                     width: 100,
+                                     height: 70)
         
         plusButton.removeFromSuperview()
         view.addSubview(plusButton)
         
         minusButton.removeFromSuperview()
         view.addSubview(minusButton)
+        
+        utilityButton.removeFromSuperview()
+        view.addSubview(utilityButton)
         
     }
     
@@ -179,7 +497,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
             } else {
                 
-                notConnectedView.addNoConnectionView(cell: cell)
+                //notConnectedView.addNoConnectionView(cell: cell)
                 
             }
             
@@ -208,7 +526,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 let confirmationsLabel = cell.viewWithTag(3) as! UILabel
                 let labelLabel = cell.viewWithTag(4) as! UILabel
                 let dateLabel = cell.viewWithTag(5) as! UILabel
-                let feeLabel = cell.viewWithTag(6) as! UILabel
+                let watchOnlyLabel = cell.viewWithTag(6) as! UILabel
                 let dict = self.transactionArray[indexPath.row]
                 
                 addressLabel.text = dict["address"] as? String
@@ -240,16 +558,16 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 dateLabel.text = dict["date"] as? String
                 
-                if dict["fee"] as? String != "" {
-                    
-                    feeLabel.text = "Fee:" + " " + (dict["fee"] as! String)
-                    
-                }
-                
                 if dict["abandoned"] as? Bool == true {
                     
                     cell.backgroundColor = UIColor.red
                     
+                }
+                
+                if dict["involvesWatchonly"] as? Bool == true {
+                    
+                    watchOnlyLabel.text = "👀"
+                                        
                 }
                 
                 return cell
@@ -311,7 +629,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
         } else if indexPath.section == 1{
             
-            return 108
+            return 101
             
         } else {
             
@@ -486,7 +804,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         }
         
         self.loadTableDataSsh(method: BTC_CLI_COMMAND.listtransactions,
-                              param: "")
+                              param: "\"*\" 10 0 true")
         
     }
     
@@ -597,6 +915,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 var label = String()
                 var fee = String()
                 var replaced_by_txid = String()
+                var isCold = false
                 
                 let address = transaction["address"] as! String
                 let amount = transaction["amount"] as! Double
@@ -631,12 +950,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     
                 }
                 
-                if let feeCheck = transaction["fee"] as? Double {
-                    
-                    fee = feeCheck.avoidNotation
-                    
-                }
-                
                 let secondsSince = transaction["time"] as! Double
                 let rbf = transaction["bip125-replaceable"] as! String
                 let txID = transaction["txid"] as! String
@@ -645,6 +958,12 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
                 let dateString = dateFormatter.string(from: date)
                 
+                if let boolCheck = transaction["involvesWatchonly"] as? Bool {
+                    
+                    isCold = boolCheck
+                    
+                }
+                
                 self.transactionArray.append(["address": address,
                                               "amount": amountString,
                                               "confirmations": confirmations,
@@ -652,8 +971,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                               "date": dateString,
                                               "rbf": rbf,
                                               "txID": txID,
-                                              "fee": fee,
-                                              "replacedBy": replaced_by_txid])
+                                              "replacedBy": replaced_by_txid,
+                                              "involvesWatchonly":isCold])
                 
             }
             
@@ -673,7 +992,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         }
         
         self.loadTableDataSsh(method: BTC_CLI_COMMAND.getbalance,
-                              param: "")
+                              param: "\"*\" 0 true")
         
     }
     
@@ -682,103 +1001,116 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     func loadTableDataSsh(method: BTC_CLI_COMMAND, param: String) {
         print("loadTableDataRpc")
         
-        func getResult() {
-            print("get result")
+        if !self.isUsingSSH {
             
-            if !makeSSHCall.errorBool {
+            self.loadTableDataTor(method: method, param: param)
+            
+        } else {
+            
+            func getResult() {
+                print("get result")
                 
-                switch method {
-                    
-                case BTC_CLI_COMMAND.uptime:
-                    
-                    self.uptime = Int(makeSSHCall.doubleToReturn)
+                if !makeSSHCall.errorBool {
                     
                     DispatchQueue.main.async {
                         
-                        self.removeSpinner()
-                        self.mainMenu.reloadData()
+                        self.connectingView.label.text = "bitcoin-cli \(method.rawValue)"
                         
                     }
                     
-                case BTC_CLI_COMMAND.getmininginfo:
+                    switch method {
+                        
+                    case BTC_CLI_COMMAND.uptime:
+                        
+                        self.uptime = Int(makeSSHCall.doubleToReturn)
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.removeSpinner()
+                            self.mainMenu.reloadData()
+                            
+                        }
+                        
+                    case BTC_CLI_COMMAND.getmininginfo:
+                        
+                        let miningInfo = makeSSHCall.dictToReturn
+                        parseMiningInfo(miningInfo: miningInfo)
+                        
+                    case BTC_CLI_COMMAND.getnetworkinfo:
+                        
+                        let networkInfo = makeSSHCall.dictToReturn
+                        parseNetworkInfo(networkInfo: networkInfo)
+                        
+                    case BTC_CLI_COMMAND.getpeerinfo:
+                        
+                        let peerInfo = makeSSHCall.arrayToReturn
+                        parsePeerInfo(peerInfo: peerInfo)
+                        
+                    case BTC_CLI_COMMAND.abandontransaction:
+                        
+                        displayAlert(viewController: self,
+                                     isError: false,
+                                     message: "Transaction abandoned")
+                        
+                    case BTC_CLI_COMMAND.getblockchaininfo:
+                        
+                        let blockchainInfo = makeSSHCall.dictToReturn
+                        parseBlockchainInfo(blockchainInfo: blockchainInfo)
+                        
+                    case BTC_CLI_COMMAND.bumpfee:
+                        
+                        let result = makeSSHCall.dictToReturn
+                        bumpFee(result: result)
+                        
+                    case BTC_CLI_COMMAND.getunconfirmedbalance:
+                        
+                        let unconfirmedBalance = makeSSHCall.doubleToReturn
+                        parseUncomfirmedBalance(unconfirmedBalance: unconfirmedBalance)
+                        
+                    case BTC_CLI_COMMAND.getbalance:
+                        
+                        let balanceCheck = makeSSHCall.doubleToReturn
+                        parseBalance(balance: balanceCheck)
+                        
+                    case BTC_CLI_COMMAND.listtransactions:
+                        
+                        let transactionsCheck = makeSSHCall.arrayToReturn
+                        parseTransactions(transactions: transactionsCheck)
+                        
+                    default:
+                        
+                        break
+                        
+                    }
                     
-                    let miningInfo = makeSSHCall.dictToReturn
-                    parseMiningInfo(miningInfo: miningInfo)
+                } else {
                     
-                case BTC_CLI_COMMAND.getnetworkinfo:
-                    
-                    let networkInfo = makeSSHCall.dictToReturn
-                    parseNetworkInfo(networkInfo: networkInfo)
-                    
-                case BTC_CLI_COMMAND.getpeerinfo:
-                    
-                    let peerInfo = makeSSHCall.arrayToReturn
-                    parsePeerInfo(peerInfo: peerInfo)
-                    
-                case BTC_CLI_COMMAND.abandontransaction:
+                    self.removeSpinner()
                     
                     displayAlert(viewController: self,
-                                 isError: false,
-                                 message: "Transaction abandoned")
-                    
-                case BTC_CLI_COMMAND.getblockchaininfo:
-                    
-                    let blockchainInfo = makeSSHCall.dictToReturn
-                    parseBlockchainInfo(blockchainInfo: blockchainInfo)
-                    print("blockchainInfo = \(blockchainInfo)")
-                    
-                case BTC_CLI_COMMAND.bumpfee:
-                    
-                    let result = makeSSHCall.dictToReturn
-                    bumpFee(result: result)
-                    
-                case BTC_CLI_COMMAND.getunconfirmedbalance:
-                    
-                    let unconfirmedBalance = makeSSHCall.doubleToReturn
-                    parseUncomfirmedBalance(unconfirmedBalance: unconfirmedBalance)
-                    
-                case BTC_CLI_COMMAND.getbalance:
-                    
-                    let balanceCheck = makeSSHCall.doubleToReturn
-                    parseBalance(balance: balanceCheck)
-                    
-                case BTC_CLI_COMMAND.listtransactions:
-                    
-                    let transactionsCheck = makeSSHCall.arrayToReturn
-                    parseTransactions(transactions: transactionsCheck)
-                    
-                default:
-                    
-                    break
+                                 isError: true,
+                                 message: makeSSHCall.errorDescription + " " + "last command: \(method.rawValue)")
                     
                 }
                 
-            } else {
-                
-                self.removeSpinner()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: makeSSHCall.errorDescription)
-                
             }
             
-        }
-        
-        if self.ssh.session.isAuthorized {
-            
-            if self.ssh.session.isConnected {
+            if self.ssh.session.isAuthorized {
                 
-                self.makeSSHCall.executeSSHCommand(ssh: self.ssh,
+                if self.ssh.session.isConnected {
+                    
+                    self.makeSSHCall.executeSSHCommand(ssh: self.ssh,
                                                        method: method,
                                                        param: param,
                                                        completion: getResult)
-                
-            } else {
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "Not connected")
+                    
+                } else {
+                    
+                    displayAlert(viewController: self,
+                                 isError: true,
+                                 message: "SSH not connected")
+                    
+                }
                 
             }
             
@@ -786,24 +1118,76 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
-    
     //MARK: User Interface
     
     func addBlurView(frame: CGRect, image: UIImageView) {
         
-        image.removeFromSuperview()
-        let blur = UIView()
+        let buttonView = UIView()
         
-        image.frame = CGRect(x: 17.5,
-                             y: 17.5,
+        image.removeFromSuperview()
+        
+        image.frame = CGRect(x: 20,
+                             y: 15,
                              width: 35,
                              height: 35)
-        blur.frame = frame
-        blur.clipsToBounds = true
-        blur.layer.cornerRadius = frame.width / 2
-        blur.backgroundColor = UIColor.black
-        blur.addSubview(image)
-        view.addSubview(blur)
+        
+        buttonView.frame = frame
+        buttonView.clipsToBounds = true
+        buttonView.layer.cornerRadius = frame.width / 2
+        buttonView.backgroundColor = UIColor.black
+        buttonView.addSubview(image)
+        view.addSubview(buttonView)
+        buttonViews.append(buttonView)
+        
+        if image == plusImage {
+            
+            let incomingsLabel = UILabel()
+            incomingsLabel.textColor = UIColor.white
+            incomingsLabel.font = UIFont.init(name: "HiraginoSans-W6", size: 8)
+            incomingsLabel.textAlignment = .center
+            incomingsLabel.text = "Incomings"
+            
+            incomingsLabel.frame = CGRect(x: image.center.x - 35,
+                                          y: image.frame.maxY,
+                                          width: 70,
+                                          height: 10)
+            
+            incomingsLabel.removeFromSuperview()
+            buttonView.addSubview(incomingsLabel)
+            
+        } else if image == minusImage {
+            
+            let outgoingsLabel = UILabel()
+            outgoingsLabel.textColor = UIColor.white
+            outgoingsLabel.font = UIFont.init(name: "HiraginoSans-W6", size: 8)
+            outgoingsLabel.textAlignment = .center
+            outgoingsLabel.text = "Outgoings"
+            
+            outgoingsLabel.frame = CGRect(x: image.center.x - 35,
+                                          y: image.frame.maxY,
+                                          width: 70,
+                                          height: 10)
+            
+            outgoingsLabel.removeFromSuperview()
+            buttonView.addSubview(outgoingsLabel)
+            
+        } else if image == utilityImage {
+            
+            let utilityLabel = UILabel()
+            utilityLabel.textColor = UIColor.white
+            utilityLabel.font = UIFont.init(name: "HiraginoSans-W6", size: 8)
+            utilityLabel.textAlignment = .center
+            utilityLabel.text = "Utilities"
+            
+            utilityLabel.frame = CGRect(x: image.center.x - 35,
+                                          y: image.frame.maxY,
+                                          width: 70,
+                                          height: 10)
+            
+            utilityLabel.removeFromSuperview()
+            buttonView.addSubview(utilityLabel)
+            
+        }
         
     }
     
@@ -898,12 +1282,24 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         refresher.attributedTitle = NSAttributedString(string: "pull to refresh",
                                                        attributes: [NSAttributedString.Key.foregroundColor: UIColor.white])
         
-        refresher.addTarget(self, action: #selector(self.refresh), for: UIControlEvents.valueChanged)
+        refresher.addTarget(self, action: #selector(self.refresh), for: UIControl.Event.valueChanged)
         mainMenu.addSubview(refresher)
         
     }
     
     //MARK: User Actions
+    
+    @objc func utilities() {
+        
+        print("utilities")
+        
+        DispatchQueue.main.async {
+            
+            self.performSegue(withIdentifier: "goToUtilities", sender: self)
+            
+        }
+        
+    }
     
     @objc func createRaw() {
         
@@ -934,74 +1330,147 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     @objc func refresh() {
         print("refresh")
         
-        notConnectedView.removeFromSuperview()
-        transactionArray.removeAll()
-        addBalanceLabel()
-        
-        nodes.removeAll()
-        nodes = cd.retrieveCredentials()
-        var activeNode = [String:Any]()
-        let isActive = isAnyNodeActive(nodes: nodes)
-        
-        if isActive {
+        DispatchQueue.main.async {
             
-            let dispatchGroup = DispatchGroup()
-            dispatchGroup.enter()
+            self.notConnectedView.removeFromSuperview()
+            self.transactionArray.removeAll()
+            self.addBalanceLabel()
             
-            for node in nodes {
-                
-                if (node["isActive"] as! Bool) {
-                    
-                    activeNode = node
-                    dispatchGroup.leave()
-                    
-                }
-                
-            }
+            self.nodes.removeAll()
             
-            dispatchGroup.notify(queue: DispatchQueue.main) {
+            self.nodes = self.cd.retrieveCredentials()
+            
+            let isActive = self.isAnyNodeActive(nodes: self.nodes)
+            
+            if isActive {
                 
-                if let isDefault = activeNode["isDefault"] as? Bool {
+                let dispatchGroup = DispatchGroup()
+                dispatchGroup.enter()
+                
+                for node in self.nodes {
                     
-                    if isDefault {
+                    if (node["isActive"] as! Bool) {
                         
-                        //displayAlert(viewController: self, isError: true, message: "Test node connected")
+                        self.activeNode = node
+                        self.existingNodeID = node["id"] as! String
+                        dispatchGroup.leave()
                         
                     }
                     
                 }
                 
-                self.connectingView.addConnectingView(vc: self,
-                                                      description: "Connecting to \(activeNode["label"] as! String)")
-                
-                self.ssh = SSHService.sharedInstance
-                
-                self.ssh.connect(activeNode: activeNode) { (success, error) in
+                dispatchGroup.notify(queue: DispatchQueue.main) {
                     
-                    if success {
+                    if let isDefault = self.activeNode["isDefault"] as? Bool {
                         
-                        print("connected succesfully")
-                        self.makeSSHCall = SSHelper.sharedInstance
+                        if isDefault {
+                            
+                            //displayAlert(viewController: self, isError: true, message: "Test node connected")
+                            
+                        }
                         
-                        self.loadTableDataSsh(method: BTC_CLI_COMMAND.getblockchaininfo,
-                                              param: "")
+                    }
+                    
+                    let aes = AESService()
+                    let enc = self.activeNode["label"] as! String
+                    let dec = aes.decryptKey(keyToDecrypt: enc)
+                    
+                    self.connectingView.addConnectingView(vc: self,
+                                                          description: "Connecting to \(dec)")
+                    
+                    if (self.activeNode["usingSSH"] as! Bool) {
                         
-                    } else {
+                        self.isUsingSSH = true
                         
-                        print("ssh fail")
-                        self.removeSpinner()
+                        self.ssh = SSHService.sharedInstance
                         
-                        if error != nil {
+                        self.ssh.connect(activeNode: self.activeNode) { (success, error) in
+                            
+                            if success {
+                                
+                                print("connected succesfully")
+                                self.makeSSHCall = SSHelper.sharedInstance
+                                
+                                var settingsTab = self.tabBarController!.viewControllers![2] as! SettingsViewController
+                                settingsTab.makeSSHCall = self.makeSSHCall
+                                settingsTab.ssh = self.ssh
+                                
+                                self.loadTableDataSsh(method: BTC_CLI_COMMAND.getblockchaininfo,
+                                                      param: "")
+                                
+                            } else {
+                                
+                                print("ssh fail")
+                                self.removeSpinner()
+                                
+                                if error != nil {
+                                    
+                                    displayAlert(viewController: self,
+                                                 isError: true,
+                                                 message: String(describing: error!))
+                                    
+                                } else {
+                                    
+                                    displayAlert(viewController: self,
+                                                 isError: true,
+                                                 message: "Unable to connect")
+                                    
+                                }
+                                
+                            }
+                            
+                        }
+                        
+                    } else if (self.activeNode["usingTor"] as! Bool) {
+                        
+                        self.isUsingSSH = false
+                        
+                        if self.torClient != nil {
+                            
+                            self.torClient.resign()
+                            
+                            self.torClient = nil
+                            
+                            self.removeSpinner()
                             
                             displayAlert(viewController: self,
                                          isError: true,
-                                         message: String(describing: error!))
+                                         message: "Tor thread disconnected, refresh to connect")
                             
                         } else {
                             
-                            displayAlert(viewController: self,
-                                         isError: true,
-                                         message: "Unable to connect")
+                            self.torClient = TorClient()
+                            
+                            func completed() {
+                                
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 5, execute: {
+                                    
+                                    if self.torClient.isOperational {
+                                        print("Tor connected")
+                                        
+                                        self.torRPC = MakeRPCCall.sharedInstance
+                                        self.torRPC.torClient = self.torClient
+                                        
+                                        self.loadTableDataTor(method: BTC_CLI_COMMAND.getblockchaininfo,
+                                                              param: "")
+                                        
+                                    } else {
+                                        
+                                        print("error connecting tor")
+                                        
+                                        self.removeSpinner()
+                                        
+                                        displayAlert(viewController: self,
+                                                     isError: true,
+                                                     message: "Unable to connect to Tor")
+                                        
+                                    }
+                                    
+                                })
+                                
+                            }
+                            
+                            self.torClient.start(completion: completed)
                             
                         }
                         
@@ -1009,15 +1478,15 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     
                 }
                 
+            } else {
+                
+                self.removeSpinner()
+                
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: "No active nodes")
+                
             }
-            
-        } else {
-            
-            self.removeSpinner()
-            
-            displayAlert(viewController: self,
-                         isError: true,
-                         message: "No active nodes")
             
         }
         
@@ -1062,6 +1531,11 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     childVC.ssh = self.ssh
                     childVC.makeSSHCall = self.makeSSHCall
                     childVC.isTestnet = self.isTestnet
+                    childVC.activeNode = self.activeNode
+                    childVC.torRPC = self.torRPC
+                    childVC.torClient = self.torClient
+                    childVC.isUsingSSH = self.isUsingSSH
+                    childVC.balance = self.balance
                     
                 }
                 
@@ -1076,6 +1550,23 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     childVC.ssh = self.ssh
                     childVC.makeSSHCall = self.makeSSHCall
                     childVC.isPruned = self.isPruned
+                    childVC.torRPC = self.torRPC
+                    childVC.torClient = self.torClient
+                    childVC.activeNode = self.activeNode
+                    
+                }
+                
+            }
+            
+        case "goToUtilities":
+            
+            if let navController = segue.destination as? UINavigationController {
+                
+                if let childVC = navController.topViewController as? UtilitiesMenuTableViewController {
+                    
+                    childVC.ssh = self.ssh
+                    childVC.makeSSHCall = self.makeSSHCall
+                    childVC.activeNode = self.activeNode
                     
                 }
                 
@@ -1157,7 +1648,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
         }
         
-        let task = URLSession.shared.dataTask(with: urlToUse as URL) { (data, response, error) -> Void in
+        let task = self.torClient.session.dataTask(with: urlToUse as URL) { (data, response, error) -> Void in
             
             do {
                 
@@ -1189,6 +1680,12 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                 let percentage = (self.currentBlock * 100) / heightCheck
                                 let percentageString = "\(percentage)%"
                                 self.syncStatus = percentageString
+                                
+                                DispatchQueue.main.async {
+                                    
+                                    self.mainMenu.reloadRows(at: [IndexPath.init(row: 0, section: 0)], with: .none)
+                                    
+                                }
                                 
                             }
                             

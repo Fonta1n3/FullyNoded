@@ -59,7 +59,7 @@ class CreateUnsigned {
                             unsignedRawTx = makeSSHCall.stringToReturn
                             
                             executeNodeCommandSsh(method: BTC_CLI_COMMAND.fundrawtransaction,
-                                                  param: "\"\(unsignedRawTx)\"")
+                                                  param: "\"\(unsignedRawTx)\" true")
                             
                         } else {
                             
@@ -227,21 +227,31 @@ class CreateUnsigned {
                     
                     if let _ = utxoDict["txid"] as? String {
                         
-                        if let spendableCheck = utxoDict["spendable"] as? Bool {
-                            
-                            if spendableCheck {
+                        if noInputs {
+                         
+                            //no inputs provided so can only spend spendable utxos that are in the wallet
+                            if let spendableCheck = utxoDict["spendable"] as? Bool {
                                 
-                                if let _ = utxoDict["vout"] as? Int {
+                                if spendableCheck {
                                     
-                                    if let _ = utxoDict["amount"] as? Double {
+                                    if let _ = utxoDict["vout"] as? Int {
                                         
-                                        self.spendableUtxos.append(utxoDict)
+                                        if let _ = utxoDict["amount"] as? Double {
+                                            
+                                            self.spendableUtxos.append(utxoDict)
+                                            
+                                        }
                                         
                                     }
                                     
                                 }
                                 
                             }
+                            
+                        } else {
+                            
+                            //inputs provided so no need to check if they are spendable or not
+                            self.spendableUtxos.append(utxoDict)
                             
                         }
                         

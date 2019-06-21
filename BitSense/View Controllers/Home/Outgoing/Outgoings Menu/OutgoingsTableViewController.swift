@@ -11,9 +11,13 @@ import UIKit
 class OutgoingsTableViewController: UITableViewController {
 
     var ssh:SSHService!
+    var torClient:TorClient!
+    var torRPC:MakeRPCCall!
     var balance = Double()
     var makeSSHCall:SSHelper!
     var isTestnet = Bool()
+    var activeNode = [String:Any]()
+    var isUsingSSH = Bool()
     
     @IBOutlet var outgoingsTable: UITableView!
     override func viewDidLoad() {
@@ -41,7 +45,7 @@ class OutgoingsTableViewController: UITableViewController {
     
     override func numberOfSections(in tableView: UITableView) -> Int {
         
-        return 5
+        return 6
         
     }
     
@@ -91,6 +95,10 @@ class OutgoingsTableViewController: UITableViewController {
         } else if section == 4 {
             
             explanationLabel.text = "Sign an unsigned transaction with the nodes wallet or with a private key that resides outside of the node."
+            
+        } else if section == 5 {
+            
+            explanationLabel.text = "Go to PSBT's"
             
         }
         
@@ -180,6 +188,16 @@ class OutgoingsTableViewController: UITableViewController {
             
             return cell
             
+        } else if indexPath.section == 5 {
+            
+            let cell = tableView.dequeueReusableCell(withIdentifier: "psbtCell", for: indexPath)
+            
+            cell.selectionStyle = .none
+            let label = cell.viewWithTag(1) as! UILabel
+            label.adjustsFontSizeToFitWidth = true
+            
+            return cell
+            
         } else {
             
             let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
@@ -245,6 +263,14 @@ class OutgoingsTableViewController: UITableViewController {
                         
                     }
                     
+                } else if indexPath.section == 5 {
+                    
+                    DispatchQueue.main.async {
+                        
+                        self.performSegue(withIdentifier: "goToPSBTs", sender: self)
+                        
+                    }
+                    
                 }
                 
                 UIView.animate(withDuration: 0.2, animations: {
@@ -270,6 +296,9 @@ class OutgoingsTableViewController: UITableViewController {
                 vc.ssh = self.ssh
                 vc.spendable = self.balance
                 vc.makeSSHCall = self.makeSSHCall
+                vc.isUsingSSH = self.isUsingSSH
+                vc.torClient = self.torClient
+                vc.torRPC = self.torRPC
                 
             }
             
@@ -286,8 +315,8 @@ class OutgoingsTableViewController: UITableViewController {
             
             if let vc = segue.destination as? MultiOutputViewController {
                 
-                vc.makeSSHCall = self.makeSSHCall
                 vc.ssh = self.ssh
+                vc.makeSSHCall = self.makeSSHCall
                 
             }
             
@@ -307,6 +336,21 @@ class OutgoingsTableViewController: UITableViewController {
                 vc.makeSSHCall = self.makeSSHCall
                 vc.ssh = self.ssh
                 vc.isTestnet = self.isTestnet
+                vc.activeNode = self.activeNode
+                
+            }
+            
+        case "goToPSBTs":
+            
+            if let navController = segue.destination as? UINavigationController {
+                
+                if let childVC = navController.topViewController as? PSBTMenuTableViewController {
+                    
+                    childVC.ssh = self.ssh
+                    childVC.makeSSHCall = self.makeSSHCall
+                    childVC.activeNode = self.activeNode
+                    
+                }
                 
             }
             

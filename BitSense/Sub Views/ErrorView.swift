@@ -12,7 +12,7 @@ import UIKit
 class ErrorView: UIView {
     
     let errorLabel = UILabel()
-    let blurEffectView = UIVisualEffectView()
+    //let blurEffectView = UIVisualEffectView()
     
     let impact = UIImpactFeedbackGenerator()
     let backgroundView = UIView()
@@ -26,13 +26,13 @@ class ErrorView: UIView {
      
         UIView.animate(withDuration: 0.2, animations: {
             
-            self.backgroundView.frame = CGRect(x: 10,
-                                          y: -118,
+            self.backgroundView.frame = CGRect(x: 0,
+                                          y: -100,
                                           width: self.backgroundView.frame.width,
                                           height: 100)
             
-            self.errorLabel.frame = CGRect(x: 10,
-                                           y: -118,
+            self.errorLabel.frame = CGRect(x: 0,
+                                           y: -100,
                                            width: self.backgroundView.frame.width,
                                            height: 100)
             
@@ -40,12 +40,12 @@ class ErrorView: UIView {
             
             UIView.animate(withDuration: 0.2, animations: {
                 
-                self.blurEffectView.alpha = 0
+                //self.blurEffectView.alpha = 0
                 
             }, completion: { _ in
                 
                 self.backgroundView.removeFromSuperview()
-                self.blurEffectView.removeFromSuperview()
+                //self.blurEffectView.removeFromSuperview()
                 
             })
             
@@ -57,18 +57,18 @@ class ErrorView: UIView {
         
         self.isUserInteractionEnabled = true
         
-        let blurEffect = UIBlurEffect(style: .dark)
+        /*let blurEffect = UIBlurEffect(style: .dark)
         blurEffectView.effect = blurEffect
         blurEffectView.frame = vc.view.frame
         blurEffectView.alpha = 0
-        blurEffectView.isUserInteractionEnabled = true
+        blurEffectView.isUserInteractionEnabled = true*/
         upSwipe.direction = .up
         upSwipe.addTarget(self, action: #selector(handleSwipes(_:)))
-        self.addGestureRecognizer(self.upSwipe)
+        backgroundView.addGestureRecognizer(self.upSwipe)
         
-        let width = vc.view.frame.width - 20
+        let width = vc.view.frame.width
         
-        backgroundView.frame = CGRect(x: 10,
+        backgroundView.frame = CGRect(x: 0,
                                       y: -100,
                                       width: width,
                                       height: 100)
@@ -84,11 +84,14 @@ class ErrorView: UIView {
             
         } else {
             
-            backgroundView.backgroundColor = UIColor.green
+            backgroundView.backgroundColor = UIColor(#colorLiteral(red: 0.007097487926, green: 0.6329314721, blue: 0, alpha: 1))
+            
+            
+            
             
         }
         
-        errorLabel.frame = CGRect(x: 10,
+        errorLabel.frame = CGRect(x: 0,
                                   y: -100,
                                   width: width,
                                   height: 100)
@@ -99,25 +102,26 @@ class ErrorView: UIView {
         errorLabel.numberOfLines = 0
         errorLabel.textAlignment = .center
         
-        blurEffectView.contentView.addSubview(errorLabel)
+        //blurEffectView.contentView.addSubview(errorLabel)
+        backgroundView.addSubview(errorLabel)
         vc.view.addSubview(backgroundView)
-        vc.view.addSubview(blurEffectView)
+        //vc.view.addSubview(blurEffectView)
         
         UIView.animate(withDuration: 0.3, animations: {
             
             self.backgroundView.alpha = 1
             
-            self.backgroundView.frame = CGRect(x: 10,
-                                               y: 100,
+            self.backgroundView.frame = CGRect(x: 0,
+                                               y: 0,
                                                width: width,
                                                height: 100)
             
-            self.errorLabel.frame = CGRect(x: 10,
-                                           y: 100,
+            self.errorLabel.frame = CGRect(x: 0,
+                                           y: 5,
                                            width: width,
                                            height: 100)
             
-            self.blurEffectView.alpha = 1
+            //self.blurEffectView.alpha = 1
             
         }) { _ in
             
@@ -127,17 +131,25 @@ class ErrorView: UIView {
                 
             }
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: {
+            var deadlineTime = 5.0
+            
+            if !isError {
+                
+               deadlineTime = 2.0
+                
+            }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + deadlineTime, execute: {
                 
                 UIView.animate(withDuration: 0.3, animations: {
                     
-                    self.backgroundView.frame = CGRect(x: 10,
-                                                       y: -118,
+                    self.backgroundView.frame = CGRect(x: 0,
+                                                       y: -100,
                                                        width: width,
                                                        height: 100)
                     
-                    self.errorLabel.frame = CGRect(x: 10,
-                                                   y: -118,
+                    self.errorLabel.frame = CGRect(x: 0,
+                                                   y: -100,
                                                    width: width,
                                                    height: 100)
                     
@@ -145,12 +157,12 @@ class ErrorView: UIView {
                     
                     UIView.animate(withDuration: 0.3, animations: {
                         
-                        self.blurEffectView.alpha = 0
+                        //self.blurEffectView.alpha = 0
                         
                     }, completion: { _ in
                         
                         self.backgroundView.removeFromSuperview()
-                        self.blurEffectView.removeFromSuperview()
+                        //self.blurEffectView.removeFromSuperview()
              
                     })
                     

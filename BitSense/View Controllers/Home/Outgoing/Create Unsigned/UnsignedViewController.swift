@@ -15,9 +15,9 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
     let qrGenerator = QRGenerator()
     let rawDisplayer = RawDisplayer()
     let creatingView = ConnectingView()
-    let tests = Tests()
     let createUnsigned = CreateUnsigned()
     
+    var torRPC:MakeRPCCall!
     var isFirstTime = Bool()
     var isTorchOn = Bool()
     var blurArray = [UIVisualEffectView]()
@@ -32,8 +32,9 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
     var isSpendingFrom = Bool()
     var isReceiving = Bool()
     var isChange = Bool()
+    var torClient:TorClient!
     
-    let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffectStyle.dark))
+    let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
 
     @IBOutlet var changeField: UITextField!
     @IBOutlet var amountField: UITextField!
@@ -417,7 +418,7 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
     func addBlurView(frame: CGRect, button: UIButton) {
         
         button.removeFromSuperview()
-        let blur = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffectStyle.dark))
+        let blur = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
         blur.frame = frame
         blur.clipsToBounds = true
         blur.layer.cornerRadius = frame.width / 2
@@ -618,13 +619,6 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
             self.creatingView.removeConnectingView()
             self.rawDisplayer.addRawDisplay()
             
-            let getSmartFee = GetSmartFee()
-            getSmartFee.rawSigned = self.unsignedTx
-            getSmartFee.ssh = self.ssh
-            getSmartFee.makeSSHCall = self.makeSSHCall
-            getSmartFee.vc = self
-            getSmartFee.getSmartFee()
-            
         }
         
     }
@@ -667,49 +661,9 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         print("textFieldShouldReturn")
         
-        /*if textField == receivingField && receivingField.text != "" {
-            
-            let address = receivingField.text!
-            addressParser.url = address
-            parseAddress(address: address)
-            
-        } else if textField == spendingField && spendingField.text != "" {
-            
-            let address = spendingField.text!
-            addressParser.url = address
-            parseAddress(address: address)
-            
-        } else if textField == changeField && changeField.text != "" {
-            
-            let address = changeField.text!
-            addressParser.url = address
-            parseAddress(address: address)
-            
-        } else if textField == amountField && amountField.text != "" {
-            
-            if let amountCheck = Double(amountField.text!) {
-                
-                self.amount = amountCheck
-                
-            } else {
-                
-                amountField.text = ""
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "Only valid numbers allowed")
-                
-            }
-            
-        } else {
-            
-            shakeAlert(viewToShake: textField)
-            
-        }*/
-        
         textField.endEditing(true)
-        
         return true
+        
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {

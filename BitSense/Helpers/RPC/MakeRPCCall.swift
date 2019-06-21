@@ -14,10 +14,10 @@ final class MakeRPCCall {
     static let sharedInstance = MakeRPCCall()
     let aes = AESService()
     let cd = CoreDataService()
-    var nodeUsername = ""
-    var nodePassword = ""
-    var ip = ""
-    var port = ""
+    var rpcusername = ""
+    var rpcpassword = ""
+    var onionAddress = ""
+    var rpcport = ""
     var vc = UIViewController()
     var dictToReturn = NSDictionary()
     var doubleToReturn = Double()
@@ -25,6 +25,7 @@ final class MakeRPCCall {
     var stringToReturn = String()
     var errorBool = Bool()
     var errorDescription = String()
+    var torClient:TorClient!
     
     func executeRPCCommand(method: BTC_CLI_COMMAND, param: Any, completion: @escaping () -> Void) {
         print("executeRPCCommand")
@@ -35,45 +36,45 @@ final class MakeRPCCall {
         for node in nodes {
             
             if (node["isActive"] as! Bool) {
-             
+                
                 activeNode = node
                 
             }
             
         }
         
-        if activeNode["port"] != nil {
+        if activeNode["onionAddress"] != nil {
             
-            port = aes.decryptKey(keyToDecrypt: activeNode["port"] as! String)
-            
-        }
-        
-        if activeNode["ip"] != nil {
-            
-            ip = aes.decryptKey(keyToDecrypt: activeNode["ip"] as! String)
+            onionAddress = aes.decryptKey(keyToDecrypt: activeNode["onionAddress"] as! String)
+            print("address = \(onionAddress)")
             
         }
         
-        if activeNode["username"] != nil {
+        if activeNode["rpcuser"] != nil {
             
-            nodeUsername = aes.decryptKey(keyToDecrypt: activeNode["username"] as! String)
-            
-        }
-        
-        if activeNode["password"] != nil {
-            
-            nodePassword = aes.decryptKey(keyToDecrypt: activeNode["password"] as! String)
+            rpcusername = aes.decryptKey(keyToDecrypt: activeNode["rpcuser"] as! String)
+            print("username = \(rpcusername)")
             
         }
         
-        let url = URL(string: "http://\(nodeUsername):\(nodePassword)@\(ip):\(port)")
+        if activeNode["rpcpassword"] != nil {
+            
+            rpcpassword = aes.decryptKey(keyToDecrypt: activeNode["rpcpassword"] as! String)
+            print("password = \(rpcpassword)")
+            
+        }
+        
+        let url = URL(string: "http://\(rpcusername):\(rpcpassword)@\(onionAddress)")
         var request = URLRequest(url: url!)
-        request.timeoutInterval = 15
         request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
         request.httpMethod = "POST"
-        request.httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method.rawValue)\",\"params\":[\(param)]}".data(using: .utf8)
+        request.httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method)\",\"params\":[\(param)]}".data(using: .utf8)
         
-        let task = URLSession.shared.dataTask(with: request) { (data, response, error) -> Void in
+        let task = torClient.session.dataTask(with: request) { (data, response, error) in
+            
+            print("error = \(String(describing: error?.localizedDescription))")
+            print("response = \(String(describing: response))")
+            print("data = \(String(describing: data))")
             
             do {
                 
@@ -84,6 +85,7 @@ final class MakeRPCCall {
                         self.errorBool = true
                         self.errorDescription = error!.localizedDescription
                         completion()
+                        print("error = \(error!.localizedDescription)")
                         
                     }
                     
@@ -95,8 +97,6 @@ final class MakeRPCCall {
                             
                             let jsonAddressResult = try JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as! NSDictionary
                             
-                            print("jsonAddressResult = \(jsonAddressResult)")
-                            
                             if let errorCheck = jsonAddressResult["error"] as? NSDictionary {
                                 
                                 DispatchQueue.main.async {
@@ -104,6 +104,7 @@ final class MakeRPCCall {
                                     if let errorMessage = errorCheck["message"] as? String {
                                         
                                         self.errorDescription = errorMessage
+                                        print("error message = \(errorMessage)")
                                         
                                     } else {
                                         
@@ -123,24 +124,28 @@ final class MakeRPCCall {
                                     self.dictToReturn = result
                                     self.errorBool = false
                                     completion()
+                                    print("result = \(result)")
                                     
                                 } else if let result = jsonAddressResult["result"] as? NSArray {
                                     
                                     self.arrayToReturn = result
                                     self.errorBool = false
                                     completion()
+                                    print("result = \(result)")
                                     
                                 } else if let result = jsonAddressResult["result"] as? Double {
                                     
                                     self.doubleToReturn = result
                                     self.errorBool = false
                                     completion()
+                                    print("result = \(result)")
                                     
                                 } else if let result = jsonAddressResult["result"] as? String {
                                     
                                     self.stringToReturn = result
                                     self.errorBool = false
                                     completion()
+                                    print("result = \(result)")
                                     
                                 }
                                 
@@ -151,6 +156,7 @@ final class MakeRPCCall {
                             self.errorBool = true
                             self.errorDescription = "Uknown Error"
                             completion()
+                            print("unknown error")
                             
                         }
                         
@@ -163,7 +169,6 @@ final class MakeRPCCall {
         }
         
         task.resume()
-        
     }
     
     private init() {}

@@ -9,9 +9,8 @@
 //need to copy account creation to create account view controller
 
 import UIKit
-import SwiftKeychainWrapper
+import KeychainSwift
 import LocalAuthentication
-import AES256CBC
 
 class LogInViewController: UIViewController, UITextFieldDelegate {
 
@@ -128,7 +127,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    func textFieldDidEndEditing(_ textField: UITextField, reason: UITextFieldDidEndEditingReason) {
+    func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason) {
         print("textFieldDidEndEditing")
         
         switch textField {
@@ -153,8 +152,10 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     }
 
     func checkPassword(password: String) {
+        
+        let keychain = KeychainSwift()
  
-        let retrievedPassword = UserDefaults.standard.string(forKey: "UnlockPassword")
+        let retrievedPassword = keychain.get("UnlockPassword")
         
             if self.passwordInput.text! == retrievedPassword {
                 

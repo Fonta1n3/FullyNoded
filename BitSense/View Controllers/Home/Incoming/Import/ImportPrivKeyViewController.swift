@@ -10,18 +10,54 @@ import UIKit
 
 class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
     
+    var torClient:TorClient!
+    var torRPC:MakeRPCCall!
     var ssh:SSHService!
     var isPruned = Bool()
-    var rescan = String()
     @IBOutlet var qrView: UIImageView!
     let qrScanner = QRScanner()
     var isTorchOn = Bool()
-    let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffectStyle.dark))
+    let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     let connectingView = ConnectingView()
     @IBOutlet var backButtonImage: UIImageView!
     var makeSSHCall = SSHelper()
+    var activeNode = [String:Any]()
+    
     var reScan = Bool()
     var isWatchOnly = Bool()
+    var desc = "wpkh"
+    var importedKey = ""
+    var addToKeypool = false
+    var isInternal = false
+    var range = "0 to 99"
+    var convertedRange = [0,99]
+    var fingerprint = ""
+    
+    func convertRange() -> [Int] {
+        
+        var arrayToReturn = [Int]()
+        
+        switch range {
+            
+        case "0 to 99":
+            arrayToReturn = [0,99]
+        case "100 to 199":
+            arrayToReturn = [100,199]
+        case "200 to 299":
+            arrayToReturn = [200,299]
+        case "300 to 399":
+            arrayToReturn = [300,99]
+        case "400 to 499":
+            arrayToReturn = [400,499]
+            
+        default:
+            
+            break
+            
+        }
+        
+        return arrayToReturn
+    }
     
     @IBAction func backAction(_ sender: Any) {
         
@@ -43,7 +79,7 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
         
         button.removeFromSuperview()
         let blur = UIVisualEffectView()
-        blur.effect = UIBlurEffect(style: UIBlurEffectStyle.dark)
+        blur.effect = UIBlurEffect(style: UIBlurEffect.Style.dark)
         blur.frame = frame
         blur.clipsToBounds = true
         blur.layer.cornerRadius = frame.width / 2
@@ -84,34 +120,6 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
         addShadow(view: backButtonImage)
         isTorchOn = false
         addScanner()
-        
-        reScan = true
-        
-        let userDefaults = UserDefaults.standard
-        
-        if userDefaults.object(forKey: "reScan") != nil {
-            
-            reScan = userDefaults.bool(forKey: "reScan")
-            
-        }
-        
-        if isPruned {
-            
-            reScan = false
-            
-        }
-        
-        if reScan {
-            
-            DispatchQueue.main.async {
-                
-                let alert = UIAlertController(title: "Alert", message: "If the keys you are importing have transaction history your node will need to rescan the blockchain in order for those transactions to appear in Bitcoin Core, by default we enable rescanning, if your keys have never been used we recommend disabling \"Rescan\" in settings. Rescanning the blockchain can take up to an hour.", preferredStyle: UIAlertControllerStyle.alert)
-                alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
-                self.present(alert, animated: true, completion: nil)
-                
-            }
-            
-        }
         
     }
     
@@ -160,6 +168,117 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                                   width: 70,
                                   height: 70), button: qrScanner.torchButton)
         
+        getSettings()
+        
+    }
+    
+    func getSettings() {
+        
+        let userDefaults = UserDefaults.standard
+        var bip44 = Bool()
+        var bip84 = Bool()
+        
+        if userDefaults.object(forKey: "bip44") != nil {
+            
+            bip44 = userDefaults.bool(forKey: "bip44")
+            
+        } else {
+            
+            bip44 = false
+            
+        }
+        
+        if userDefaults.object(forKey: "bip84") != nil {
+            
+            bip84 = userDefaults.bool(forKey: "bip84")
+            
+        } else {
+            
+            bip84 = true
+            
+        }
+        
+        if bip44 {
+            
+            desc = "pkh"
+            
+        } else {
+            
+            desc = "wpkh"
+            
+        }
+        
+        if bip84 {
+            
+            desc = "wpkh"
+            
+        } else {
+            
+            desc = "pkh"
+            
+        }
+        
+        if userDefaults.object(forKey: "addToKeypool") != nil {
+            
+            addToKeypool = userDefaults.bool(forKey: "addToKeypool")
+            
+        }
+        
+        if userDefaults.object(forKey: "isInternal") != nil {
+            
+            isInternal = userDefaults.bool(forKey: "isInternal")
+            
+        }
+        
+        if userDefaults.object(forKey: "range") != nil {
+            
+            range = userDefaults.object(forKey: "range") as! String
+            
+        }
+        
+        convertedRange = convertRange()
+        
+        if userDefaults.object(forKey: "reScan") != nil {
+            
+            reScan = userDefaults.bool(forKey: "reScan")
+            
+        } else {
+            
+            reScan = false
+            
+        }
+        
+        if isPruned {
+            
+            reScan = false
+            
+        }
+        
+        if userDefaults.object(forKey: "fingerprint") != nil {
+            
+            fingerprint = userDefaults.object(forKey: "fingerprint") as! String
+            
+        }
+        
+        if reScan {
+            
+            DispatchQueue.main.async {
+                
+                let alert = UIAlertController(title: "Alert",
+                                              message: "You have enabled rescanning of the blockchain.\n\nWhen you import a key it will take up to an hour to rescan the entire blockchain.\n\nIf you do not want to rescan the blockchain go to settings and disable rescan.", preferredStyle: UIAlertController.Style.alert)
+                
+                alert.addAction(UIAlertAction(title: "OK",
+                                              style: UIAlertAction.Style.default,
+                                              handler: nil))
+                
+                self.present(alert,
+                             animated: true,
+                             completion: nil)
+                
+            }
+            
+        }
+        
     }
     
     @objc func toggleTorch() {
@@ -184,7 +303,7 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                                          action: #selector(chooseQRCodeFromLibrary),
                                          for: .touchUpInside)
         
-        qrScanner.keepRunning = true
+        qrScanner.keepRunning = false
         qrView.frame = view.frame
         qrScanner.imageView = qrView
         qrScanner.vc = self
@@ -199,17 +318,39 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
         func getDescriptor() {
             
             let result = self.makeSSHCall.dictToReturn
-            let descriptor = "\"\(result["descriptor"] as! String)\""
-            let params = "'[{ \"desc\": \(descriptor), \"timestamp\": \"now\", \"range\": 100, \"watchonly\": false, \"label\": \"Hot Storage\", \"keypool\": false, \"rescan\": \(reScan) }]'"
             
-            self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.importmulti,
-                                       param: params)
+            if makeSSHCall.errorBool {
+                
+                connectingView.removeConnectingView()
+                
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: makeSSHCall.errorDescription)
+                
+            } else {
+                
+                let descriptor = "\"\(result["descriptor"] as! String)\""
+                
+                let label = "\"Fully Noded Hot Storage\""
+                
+                var params = "'[{ \"desc\": \(descriptor), \"timestamp\": \"now\", \"range\": \(convertedRange), \"watchonly\": false, \"label\": \(label), \"keypool\": \(addToKeypool), \"internal\": \(isInternal)}]' '{\"rescan\": \(reScan)}'"
+                
+                if isInternal {
+                    
+                    params = "'[{ \"desc\": \(descriptor), \"timestamp\": \"now\", \"range\": \(convertedRange), \"watchonly\": false, \"keypool\": \(addToKeypool), \"internal\": \(isInternal)}]' '{\"rescan\": \(reScan)}'"
+                    
+                }
+                
+                self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.importmulti,
+                                           param: params)
+                
+            }
             
         }
         
         makeSSHCall.executeSSHCommand(ssh: self.ssh,
                                       method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                      param: "\"wpkh(\(xprv)/*)\"", completion: getDescriptor)
+                                      param: "\"\(desc)(\(xprv)/*)\"", completion: getDescriptor)
         
     }
     
@@ -218,22 +359,158 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
         func getDescriptor() {
             
             let result = self.makeSSHCall.dictToReturn
-            let descriptor = "\"\(result["descriptor"] as! String)\""
-            let params = "'[{ \"desc\": \(descriptor), \"timestamp\": \"now\", \"range\": 100, \"watchonly\": true, \"label\": \"Cold Storage\", \"keypool\": true, \"rescan\": \(reScan) }]'"
             
-            self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.importmulti,
-                                       param: params)
+            if makeSSHCall.errorBool {
+                
+                connectingView.removeConnectingView()
+                
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: makeSSHCall.errorDescription)
+                
+            } else {
+                
+                let descriptor = "\"\(result["descriptor"] as! String)\""
+                
+                let label = "\"Fully Noded Cold Storage\""
+                
+                var params = "'[{ \"desc\": \(descriptor), \"timestamp\": \"now\", \"range\": \(convertedRange), \"watchonly\": true, \"label\": \(label), \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }]' '{\"rescan\": \(reScan)}'"
+                
+                if isInternal {
+                    
+                    params = "\'[{ \"desc\": \(descriptor), \"timestamp\": \"now\", \"range\": \(convertedRange), \"watchonly\": true, \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }]' '{\"rescan\": \(reScan)}'"
+                    
+                }
+                
+                /*let aes = AESService()
+                
+                var rpcuser = "bitcoin"
+                var rpcpassword = "password"
+                var port = "8332"
+                
+                //delete!!!!
+                //port = "18443"
+                
+                if activeNode["rpcuser"] != nil {
+                    
+                    let enc = activeNode["rpcuser"] as! String
+                    rpcuser = aes.decryptKey(keyToDecrypt: enc)
+                    
+                }
+                
+                if activeNode["rpcpassword"] != nil {
+                    
+                    let enc = activeNode["rpcpassword"] as! String
+                    rpcpassword = aes.decryptKey(keyToDecrypt: enc)
+                    
+                }
+                
+                if activeNode["rpcport"] != nil {
+                    
+                    let enc = activeNode["rpcport"] as! String
+                    port = aes.decryptKey(keyToDecrypt: enc)
+                    
+                }
+                
+                var url = "http://\(rpcuser):\(rpcpassword)@127.0.0.1:\(port)/"
+                
+                if UserDefaults.standard.object(forKey: "walletName") != nil {
+                    
+                    let walletName = UserDefaults.standard.object(forKey: "walletName") as! String
+                    
+                    url += "wallet/" + walletName
+                    
+                }
+                
+                 let command = "curl --data-binary '{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"importmulti\", \"params\":\(params) }' -H 'content-type: text/plain;' \(url)"
+                
+                var error: NSError?
+                
+                let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+                queue.async {
+                    
+                    if let responseString = self.ssh.session?.channel.execute(command, error: &error) {
+                        
+                        guard let responseData = responseString.data(using: .utf8) else { return }
+                        
+                        do {
+                            
+                            let json = try JSONSerialization.jsonObject(with: responseData, options: [.allowFragments]) as! NSDictionary
+                            
+                            print("json = \(json)")
+                            
+                            if let result = json["result"] as? NSArray {
+                                
+                                print("result = \(result)")
+                                
+                                let success = (result[0] as! NSDictionary)["success"] as! Bool
+                                
+                                if success {
+                                    
+                                    self.connectingView.removeConnectingView()
+                                    
+                                    if self.isWatchOnly {
+                                        
+                                        displayAlert(viewController: self,
+                                                     isError: false,
+                                                     message: "\(self.range) watch only addresses imported!")
+                                        
+                                    } else {
+                                        
+                                        displayAlert(viewController: self,
+                                                     isError: false,
+                                                     message: "\(self.range) keys imported!")
+                                        
+                                    }
+                                    
+                                } else {
+                                    
+                                    let error = ((result[0] as! NSDictionary)["error"] as! NSDictionary)["message"] as! String
+                                    
+                                    self.connectingView.removeConnectingView()
+                                    
+                                    displayAlert(viewController: self,
+                                                 isError: true,
+                                                 message: error)
+                                    
+                                }
+                                
+                            } else {
+                                
+                                let error = json["error"] as! NSDictionary
+                                let errorMessage = error["message"] as! String
+                                
+                                displayAlert(viewController: self,
+                                             isError: true,
+                                             message: errorMessage)
+                                
+                            }
+                            
+                        } catch {
+                            
+                            
+                        }
+                        
+                    }
+                    
+                }*/
+                
+                self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.importmulti,
+                                           param: params)
+                
+            }
             
         }
         
         makeSSHCall.executeSSHCommand(ssh: self.ssh,
                                       method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                      param: "\"wpkh(\(xpub)/*)\"",
-                                      completion: getDescriptor)
+                                      param: "\"\(desc)(\(xpub)/*)\"", completion: getDescriptor)
         
     }
     
     func parseKey(key: String) {
+        
+        importedKey = key
         
         qrScanner.textField.resignFirstResponder()
         
@@ -292,6 +569,7 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                  _ where prefix.hasPrefix("tb1"),
                  _ where prefix.hasPrefix("bc1"),
                  _ where prefix.hasPrefix("2"),
+                 _ where prefix.hasPrefix("n"),
                  _ where prefix.hasPrefix("m"):
                 
                 DispatchQueue.main.async {
@@ -316,27 +594,33 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                     
                 }
                 
-            case _ where prefix.hasPrefix("xpub"):
+            case _ where prefix.hasPrefix("xpub"),
+                 _ where prefix.hasPrefix("tpub"),
+                 _ where prefix.hasPrefix("zpub"),
+                 _ where prefix.hasPrefix("vpub"):
                 
                 isWatchOnly = true
                 
                 DispatchQueue.main.async {
                     
                     self.connectingView.addConnectingView(vc: self,
-                                                          description: "Importing first 100 XPUB addresses")
+                                                          description: "Importing index \(self.range) addresses from xpub")
                     
                 }
                 
                 importXpub(xpub: key)
                 
-            case _ where prefix.hasPrefix("xprv"):
+            case _ where prefix.hasPrefix("xprv"),
+                 _ where prefix.hasPrefix("tprv"),
+                 _ where prefix.hasPrefix("zprv"),
+                 _ where prefix.hasPrefix("vprv"):
                 
                 isWatchOnly = false
                 
                 DispatchQueue.main.async {
                     
                     self.connectingView.addConnectingView(vc: self,
-                                                          description: "Importing first 100 keys from xprv")
+                                                          description: "Importing index \(self.range) keys from xprv")
                     
                 }
                 
@@ -406,17 +690,29 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                     
                     self.connectingView.removeConnectingView()
                     
-                    displayAlert(viewController: self,
-                                 isError: false,
-                                 message: "Success, your node will now rescan the blockchain.")
+                    let result = makeSSHCall.stringToReturn
+                    
+                    if result == "Imported key success" {
+                        
+                        displayAlert(viewController: self,
+                                     isError: false,
+                                     message: "Successesfully imported private key: \(self.importedKey).")
+                        
+                    }
                     
                 case BTC_CLI_COMMAND.importaddress:
                     
                     self.connectingView.removeConnectingView()
                     
-                    displayAlert(viewController: self,
-                                 isError: false,
-                                 message: "Success, your node will now rescan the blockchain.")
+                    let result = makeSSHCall.stringToReturn
+                    
+                    if result == "Imported key success" {
+                        
+                        displayAlert(viewController: self,
+                                     isError: false,
+                                     message: "Successesfully imported address: \(self.importedKey).")
+                        
+                    }
                     
                 case BTC_CLI_COMMAND.importmulti:
                     
@@ -433,13 +729,13 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                             
                             displayAlert(viewController: self,
                                          isError: false,
-                                         message: "100 watch only addresses imported!")
+                                         message: "\(range) watch only addresses imported!")
                             
                         } else {
                             
                             displayAlert(viewController: self,
                                          isError: false,
-                                         message: "100 keys imported!")
+                                         message: "\(range) keys imported!")
                             
                         }
                         
@@ -455,19 +751,21 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                         
                     }
                     
-                    let warnings = (result[0] as! NSDictionary)["warnings"] as! NSArray
-                    
-                    if warnings.count > 0 {
+                    if let warnings = (result[0] as! NSDictionary)["warnings"] as? NSArray {
                         
-                        for warning in warnings {
+                        if warnings.count > 0 {
                             
-                            let warn = warning as! String
-                            
-                            DispatchQueue.main.async {
+                            for warning in warnings {
                                 
-                                let alert = UIAlertController(title: "Warning", message: warn, preferredStyle: UIAlertControllerStyle.alert)
-                                alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
-                                self.present(alert, animated: true, completion: nil)
+                                let warn = warning as! String
+                                
+                                DispatchQueue.main.async {
+                                    
+                                    let alert = UIAlertController(title: "Warning", message: warn, preferredStyle: UIAlertController.Style.alert)
+                                    alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil))
+                                    self.present(alert, animated: true, completion: nil)
+                                    
+                                }
                                 
                             }
                             
@@ -488,8 +786,8 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                     self.connectingView.removeConnectingView()
                     
                     displayAlert(viewController: self,
-                                 isError: true,
-                                 message: self.makeSSHCall.errorDescription)
+                                     isError: true,
+                                     message: self.makeSSHCall.errorDescription)
                     
                 }
                 

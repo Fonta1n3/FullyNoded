@@ -11,7 +11,7 @@ import UIKit
 
 class ConnectingView: UIView {
     
-    let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffectStyle.dark))
+    let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     let label = UILabel()
     let activityIndicator = UIActivityIndicatorView()
     
@@ -27,7 +27,7 @@ class ConnectingView: UIView {
                                          height: 50)
         
         activityIndicator.hidesWhenStopped = true
-        activityIndicator.activityIndicatorViewStyle = UIActivityIndicatorViewStyle.whiteLarge
+        activityIndicator.style = UIActivityIndicatorView.Style.whiteLarge
         activityIndicator.alpha = 0
         blurView.contentView.addSubview(activityIndicator)
         activityIndicator.startAnimating()

@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import SwiftKeychainWrapper
+import KeychainSwift
 
 class FirstTime {
     
@@ -22,16 +22,24 @@ class FirstTime {
             
             let password = randomString(length: 32)
             
-            let saveSuccessful:Bool = KeychainWrapper.standard.set(password, forKey: "AESPassword")
+            let keychain = KeychainSwift()
             
-            if saveSuccessful {
+            if UserDefaults.standard.string(forKey: "UnlockPassword") != nil {
                 
-                print("Encryption key saved successfully: \(saveSuccessful)")
+                keychain.set(UserDefaults.standard.string(forKey: "UnlockPassword")!, forKey: "UnlockPassword")
+                UserDefaults.standard.removeObject(forKey: "UnlockPassword")
+                
+            }
+            
+            if keychain.set(password, forKey: "AESPassword") {
+                
+                print("keychain set AESPassword succesfully")
                 UserDefaults.standard.set(true, forKey: "firstTime")
+                UserDefaults.standard.set(true, forKey: "updatedToSwift5")
                 
             } else {
                 
-                print("error saving encryption key")
+                print("error setting AESPassword in keychain")
                 
             }
             

@@ -10,6 +10,16 @@ import Foundation
 
 public enum BTC_CLI_COMMAND: String {
     
+    case listwallets = "listwallets"
+    case unloadwallet = "unloadwallet"
+    case rescanblockchain = "rescanblockchain"
+    case listwalletdir = "listwalletdir"
+    case loadwallet = "loadwallet"
+    case createwallet = "createwallet"
+    case finalizepsbt = "finalizepsbt"
+    case walletprocesspsbt = "walletprocesspsbt"
+    case decodepsbt = "decodepsbt"
+    case walletcreatefundedpsbt = "walletcreatefundedpsbt"
     case fundrawtransaction = "fundrawtransaction"
     case uptime = "uptime"
     case importmulti = "importmulti"

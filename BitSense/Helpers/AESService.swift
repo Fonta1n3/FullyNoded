@@ -7,23 +7,35 @@
 //
 
 import Foundation
-import AES256CBC
-import SwiftKeychainWrapper
+import CryptoSwift
+import KeychainSwift
 
 class AESService {
+    
+    let keychain = KeychainSwift()
     
     func decryptKey(keyToDecrypt:String) -> String {
         print("decryptKey")
         
         var stringtoReturn = ""
         
-        if let pw = KeychainWrapper.standard.string(forKey: "AESPassword") {
+        if let pw = keychain.get("AESPassword") as? String {
             
-            if let check = AES256CBC.decryptString(keyToDecrypt, password: pw) {
+            do {
                 
-                stringtoReturn = check
+                let aes = try AES(key: pw, iv: "drowssapdrowssap") // aes128
+                let decrypted = try aes.decrypt(Array<UInt8>(hex: keyToDecrypt))
+                stringtoReturn = String(data: Data(bytes: decrypted), encoding: .utf8)!
+                
+            } catch {
+                
+                print("error decrypting")
                 
             }
+            
+        } else {
+            
+            print("error getting AESPassword from keychain")
             
         }
         
@@ -35,13 +47,29 @@ class AESService {
         
         var stringtoReturn = ""
         
-        if let password = KeychainWrapper.standard.string(forKey: "AESPassword") {
+        if let pw = keychain.get("AESPassword") as? String {
             
-            if let check = AES256CBC.encryptString(keyToEncrypt, password: password) {
+            do {
                 
-                stringtoReturn = check
+                let aes = try AES(key: pw, iv: "drowssapdrowssap")
+                let encrypted = try aes.encrypt(Array<UInt8>(keyToEncrypt.utf8))
+                stringtoReturn = encrypted.toHexString()
+                
+                /*let aes = try AES(key: pw, iv: "drowssapdrowssap") // aes128
+                let encrypted = try aes.encrypt(Array(keyToEncrypt.utf8))
+                stringtoReturn = encrypted.toHexString()*/
+                
+                print("encrypted = \(encrypted)")
+                
+            } catch {
+                
+                print("error decrypting")
                 
             }
+            
+        } else {
+            
+            print("error getting AESPassword from keychain")
             
         }
         

@@ -69,6 +69,8 @@ class AddressParser {
         
         var address = url
         
+        //bitcoin:175tWpb8K1S7NmH4Zx6rewF9WQrcZv245W?amount=20.3&label=Luke-Jr
+        
         if address.contains("bitcoin:") || address.contains("?") || address.contains("=") {
             
             if address.hasPrefix(" ") {

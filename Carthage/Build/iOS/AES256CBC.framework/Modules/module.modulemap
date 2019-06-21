@@ -1,4 +1,0 @@
-framework module AES256CBC {
-  header "AES256CBC-Swift.h"
-  requires objc
-}

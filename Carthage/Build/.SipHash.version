@@ -3,7 +3,8 @@
   "iOS" : [
     {
       "name" : "SipHash",
-      "hash" : "3e334e8ecb08a4a2495e0ec5a37c8e61e558d15db80df5ceda6ea843f628824b"
+      "hash" : "c28118e39fc4d748b348db7f3fb01fad2c6bb8b5411967242829bbedc75cfce8",
+      "swiftToolchainVersion" : "5.0.1 (swiftlang-1001.0.82.4 clang-1001.0.46.5)"
     }
   ]
 }

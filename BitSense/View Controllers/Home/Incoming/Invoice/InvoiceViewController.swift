@@ -10,6 +10,8 @@ import UIKit
 
 class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
+    var torClient:TorClient!
+    var torRPC:MakeRPCCall!
     var makeSSHCall:SSHelper!
     var ssh:SSHService!
     var textToShareViaQRCode = String()
@@ -110,12 +112,12 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             if self.nativeSegwit {
                 
                 self.executeNodeCommandSSH(method: BTC_CLI_COMMAND.getnewaddress,
-                                           param: "\"\", \"bech32\"")
+                                           param: "\"*\", \"bech32\"")
                 
             } else if self.legacy {
                 
                 self.executeNodeCommandSSH(method: BTC_CLI_COMMAND.getnewaddress,
-                                           param: "\"\", \"legacy\"")
+                                           param: "\"*\", \"legacy\"")
                 
             } else if self.p2shSegwit {
                 
@@ -257,7 +259,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         qrGenerator.textInput = self.textToShareViaQRCode
         let qr = qrGenerator.getQRCode()
         
-        if let data = UIImagePNGRepresentation(qr) {
+        if let data = qr.pngData() {
             
             let fileName = getDocumentsDirectory().appendingPathComponent("btc.png")
             try? data.write(to: fileName)
@@ -373,8 +375,8 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             
         } else if self.amountField.text != "" && self.labelField.text != "" {
             
-            newImage = self.generateQrCode(key:"bitcoin:\(self.addressString)?amount=\(self.amountField.text!)?label=\(self.labelField.text!)")
-            textToShareViaQRCode = "bitcoin:\(self.addressString)?amount=\(self.amountField.text!)?label=\(self.labelField.text!)"
+            newImage = self.generateQrCode(key:"bitcoin:\(self.addressString)?amount=\(self.amountField.text!)&label=\(self.labelField.text!)")
+            textToShareViaQRCode = "bitcoin:\(self.addressString)?amount=\(self.amountField.text!)&label=\(self.labelField.text!)"
             
         } else if self.amountField.text != "" && self.labelField.text == "" {
             

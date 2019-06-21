@@ -1,0 +1,2449 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Request Class Reference</title>
+    <link rel="stylesheet" type="text/css" href="../css/jazzy.css" />
+    <link rel="stylesheet" type="text/css" href="../css/highlight.css" />
+    <meta charset="utf-8">
+    <script src="../js/jquery.min.js" defer></script>
+    <script src="../js/jazzy.js" defer></script>
+    
+    <script src="../js/lunr.min.js" defer></script>
+    <script src="../js/typeahead.jquery.js" defer></script>
+    <script src="../js/jazzy.search.js" defer></script>
+  </head>
+  <body>
+
+    <a name="//apple_ref/swift/Class/Request" class="dashAnchor"></a>
+
+    <a title="Request Class Reference"></a>
+
+    <header class="header">
+      <p class="header-col header-col--primary">
+        <a class="header-link" href="../index.html">
+          Alamofire Docs
+        </a>
+         (77% documented)
+      </p>
+    
+      <p class="header-col--secondary">
+        <form role="search" action="../search.json">
+          <input type="text" placeholder="Search documentation" data-typeahead>
+        </form>
+      </p>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="https://github.com/Alamofire/Alamofire">
+            <img class="header-icon" src="../img/gh.png"/>
+            View on GitHub
+          </a>
+        </p>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="dash-feed://https%3A%2F%2Falamofire%2Egithub%2Eio%2FAlamofire%2Fdocsets%2FAlamofire%2Exml">
+            <img class="header-icon" src="../img/dash.png"/>
+            Install in Dash
+          </a>
+        </p>
+    </header>
+
+    <p class="breadcrumbs">
+      <a class="breadcrumb" href="../index.html">Alamofire Reference</a>
+      <img class="carat" src="../img/carat.png" />
+      Request Class Reference
+    </p>
+
+    <div class="content-wrapper">
+      <nav class="navigation">
+        <ul class="nav-groups">
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Classes.html">Classes</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/Adapter.html">Adapter</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AlamofireNotifications.html">AlamofireNotifications</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ClosureEventMonitor.html">ClosureEventMonitor</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/CompositeEventMonitor.html">CompositeEventMonitor</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/CompositeTrustEvaluator.html">CompositeTrustEvaluator</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ConnectionLostRetryPolicy.html">ConnectionLostRetryPolicy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DataRequest.html">DataRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DataResponseSerializer.html">DataResponseSerializer</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DecodableResponseSerializer.html">DecodableResponseSerializer</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DefaultTrustEvaluator.html">DefaultTrustEvaluator</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DisabledEvaluator.html">DisabledEvaluator</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DownloadRequest.html">DownloadRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DownloadRequest/Options.html">– Options</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DownloadRequest/Downloadable.html">– Downloadable</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/Interceptor.html">Interceptor</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/JSONParameterEncoder.html">JSONParameterEncoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/JSONResponseSerializer.html">JSONResponseSerializer</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/MultipartFormData.html">MultipartFormData</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/NetworkReachabilityManager.html">NetworkReachabilityManager</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/NetworkReachabilityManager/NetworkReachabilityStatus.html">– NetworkReachabilityStatus</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/NetworkReachabilityManager/ConnectionType.html">– ConnectionType</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/PinnedCertificatesTrustEvaluator.html">PinnedCertificatesTrustEvaluator</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/PublicKeysTrustEvaluator.html">PublicKeysTrustEvaluator</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/Request.html">Request</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/Request/State.html">– State</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/Retrier.html">Retrier</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/RetryPolicy.html">RetryPolicy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/RevocationTrustEvaluator.html">RevocationTrustEvaluator</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/RevocationTrustEvaluator/Options.html">– Options</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ServerTrustManager.html">ServerTrustManager</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/Session.html">Session</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SessionDelegate.html">SessionDelegate</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/StringResponseSerializer.html">StringResponseSerializer</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/URLEncodedFormEncoder.html">URLEncodedFormEncoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/URLEncodedFormEncoder/BoolEncoding.html">– BoolEncoding</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/URLEncodedFormEncoder/ArrayEncoding.html">– ArrayEncoding</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/URLEncodedFormEncoder/SpaceEncoding.html">– SpaceEncoding</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/URLEncodedFormEncoder/Error.html">– Error</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/URLEncodedFormParameterEncoder.html">URLEncodedFormParameterEncoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/URLEncodedFormParameterEncoder/Destination.html">– Destination</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/UploadRequest.html">UploadRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/UploadRequest/Uploadable.html">– Uploadable</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Enums.html">Enumerations</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/AF.html">AF</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/AFError.html">AFError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/AFError/ParameterEncodingFailureReason.html">– ParameterEncodingFailureReason</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/AFError/ParameterEncoderFailureReason.html">– ParameterEncoderFailureReason</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/AFError/MultipartEncodingFailureReason.html">– MultipartEncodingFailureReason</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/AFError/ResponseValidationFailureReason.html">– ResponseValidationFailureReason</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/AFError/ResponseSerializationFailureReason.html">– ResponseSerializationFailureReason</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/AFError/ServerTrustFailureReason.html">– ServerTrustFailureReason</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/HTTPMethod.html">HTTPMethod</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/RetryResult.html">RetryResult</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Extensions.html">Extensions</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/Array.html">Array</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/CharacterSet.html">CharacterSet</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/Error.html">Error</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/HTTPURLResponse.html">HTTPURLResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/Notification.html">Notification</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/String.html">String</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/URL.html">URL</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/URLComponents.html">URLComponents</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/URLRequest.html">URLRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/URLSessionConfiguration.html">URLSessionConfiguration</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Functions.html">Functions</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Functions.html#/s:9Alamofire2eeoiySbAA26NetworkReachabilityManagerC0cD6StatusO_AFtF">==(_:_:)</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Protocols.html">Protocols</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/AlamofireExtended.html">AlamofireExtended</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/CachedResponseHandler.html">CachedResponseHandler</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/DataDecoder.html">DataDecoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/DataResponseSerializerProtocol.html">DataResponseSerializerProtocol</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/DownloadResponseSerializerProtocol.html">DownloadResponseSerializerProtocol</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/EmptyResponse.html">EmptyResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/EventMonitor.html">EventMonitor</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/ParameterEncoder.html">ParameterEncoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/ParameterEncoding.html">ParameterEncoding</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/RedirectHandler.html">RedirectHandler</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/RequestAdapter.html">RequestAdapter</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/RequestDelegate.html">RequestDelegate</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/RequestInterceptor.html">RequestInterceptor</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/RequestRetrier.html">RequestRetrier</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/ResponseSerializer.html">ResponseSerializer</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/ServerTrustEvaluating.html">ServerTrustEvaluating</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/URLConvertible.html">URLConvertible</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/URLRequestConvertible.html">URLRequestConvertible</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols.html#/s:9Alamofire17UploadConvertibleP">UploadConvertible</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/UploadableConvertible.html">UploadableConvertible</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Structs.html">Structures</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/AlamofireExtension.html">AlamofireExtension</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/DataResponse.html">DataResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/DownloadResponse.html">DownloadResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Empty.html">Empty</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/HTTPHeader.html">HTTPHeader</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/HTTPHeaders.html">HTTPHeaders</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/JSONEncoding.html">JSONEncoding</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Redirector.html">Redirector</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Redirector/Behavior.html">– Behavior</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ResponseCacher.html">ResponseCacher</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ResponseCacher/Behavior.html">– Behavior</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/URLEncoding.html">URLEncoding</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/URLEncoding/Destination.html">– Destination</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/URLEncoding/ArrayEncoding.html">– ArrayEncoding</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/URLEncoding/BoolEncoding.html">– BoolEncoding</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Typealiases.html">Type Aliases</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:9Alamofire8AFResulta">AFResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:9Alamofire12AdaptHandlera">AdaptHandler</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:9Alamofire10Parametersa">Parameters</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:9Alamofire12RetryHandlera">RetryHandler</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <article class="main-content">
+
+        <section class="section">
+          <div class="section-content">
+            <h1>Request</h1>
+              <div class="declaration">
+                <div class="language">
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">Request</span></code></pre>
+
+                </div>
+              </div>
+            <p><code>Request</code> is the common superclass of all Alamofire request types and provides common state, delegate, and callback
+handling.</p>
+
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-content">
+            <div class="task-group">
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC5StateO"></a>
+                    <a name="//apple_ref/swift/Enum/State" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC5StateO">State</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>State of the <code><a href="../Classes/Request.html">Request</a></code>, with managed transitions between states set when calling <code><a href="../Classes/Request.html#/s:9Alamofire7RequestC6resumeACXDyF">resume()</a></code>, <code><a href="../Classes/Request.html#/s:9Alamofire7RequestC7suspendACXDyF">suspend()</a></code>, or
+<code><a href="../Classes/Request.html#/s:9Alamofire7RequestC6cancelACXDyF">cancel()</a></code> on the <code><a href="../Classes/Request.html">Request</a></code>.</p>
+
+<ul>
+<li>initialized: Initial state of the <code><a href="../Classes/Request.html">Request</a></code>.</li>
+<li>resumed:   Set when <code><a href="../Classes/Request.html#/s:9Alamofire7RequestC6resumeACXDyF">resume()</a></code> is called. Any tasks created for the <code><a href="../Classes/Request.html">Request</a></code> will have <code><a href="../Classes/Request.html#/s:9Alamofire7RequestC6resumeACXDyF">resume()</a></code> called on
+         them in this state.</li>
+<li>suspended: Set when <code><a href="../Classes/Request.html#/s:9Alamofire7RequestC7suspendACXDyF">suspend()</a></code> is called. Any tasks created for the <code><a href="../Classes/Request.html">Request</a></code> will have <code><a href="../Classes/Request.html#/s:9Alamofire7RequestC7suspendACXDyF">suspend()</a></code> called on
+         them in this state.</li>
+<li>cancelled: Set when <code><a href="../Classes/Request.html#/s:9Alamofire7RequestC6cancelACXDyF">cancel()</a></code> is called. Any tasks created for the <code><a href="../Classes/Request.html">Request</a></code> will have <code><a href="../Classes/Request.html#/s:9Alamofire7RequestC6cancelACXDyF">cancel()</a></code> called on
+         them. Unlike <code>resumed</code> or <code>suspended</code>, once in the <code>cancelled</code> state, the <code><a href="../Classes/Request.html">Request</a></code> can no longer
+         transition to any other state.</li>
+</ul>
+
+                        <a href="../Classes/Request/State.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">State</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/Initial%20State"></a>
+                <a name="//apple_ref/swift/Section/Initial State" class="dashAnchor"></a>
+                <a href="#/Initial%20State">
+                  <h3 class="section-name">Initial State</h3>
+                </a>
+              </div>
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC2id10Foundation4UUIDVvp"></a>
+                    <a name="//apple_ref/swift/Property/id" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC2id10Foundation4UUIDVvp">id</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p><code>UUID</code> prividing a unique identifier for the <code>Request</code>, used in the <code>Hashable</code> and <code>Equatable</code> conformances.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">id</span><span class="p">:</span> <span class="kt">UUID</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC15underlyingQueueSo17OS_dispatch_queueCvp"></a>
+                    <a name="//apple_ref/swift/Property/underlyingQueue" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC15underlyingQueueSo17OS_dispatch_queueCvp">underlyingQueue</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The serial queue for all internal async actions.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">underlyingQueue</span><span class="p">:</span> <span class="kt">DispatchQueue</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC18serializationQueueSo17OS_dispatch_queueCvp"></a>
+                    <a name="//apple_ref/swift/Property/serializationQueue" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC18serializationQueueSo17OS_dispatch_queueCvp">serializationQueue</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The queue used for all serialization actions. By default it&rsquo;s a serial queue that targets <code><a href="../Classes/Request.html#/s:9Alamofire7RequestC15underlyingQueueSo17OS_dispatch_queueCvp">underlyingQueue</a></code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">serializationQueue</span><span class="p">:</span> <span class="kt">DispatchQueue</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC12eventMonitorAA05EventD0_pSgvp"></a>
+                    <a name="//apple_ref/swift/Property/eventMonitor" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC12eventMonitorAA05EventD0_pSgvp">eventMonitor</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p><code><a href="../Protocols/EventMonitor.html">EventMonitor</a></code> used for event callbacks.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">eventMonitor</span><span class="p">:</span> <span class="kt"><a href="../Protocols/EventMonitor.html">EventMonitor</a></span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC11interceptorAA0B11Interceptor_pSgvp"></a>
+                    <a name="//apple_ref/swift/Property/interceptor" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC11interceptorAA0B11Interceptor_pSgvp">interceptor</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The <code>Request</code>&lsquo;s interceptor.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">interceptor</span><span class="p">:</span> <span class="kt"><a href="../Protocols/RequestInterceptor.html">RequestInterceptor</a></span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC8delegateAA0B8Delegate_pSgvp"></a>
+                    <a name="//apple_ref/swift/Property/delegate" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC8delegateAA0B8Delegate_pSgvp">delegate</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The <code>Request</code>&lsquo;s delegate.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">private(set)</span> <span class="k">weak</span> <span class="k">var</span> <span class="nv">delegate</span><span class="p">:</span> <span class="kt"><a href="../Protocols/RequestDelegate.html">RequestDelegate</a></span><span class="p">?</span> <span class="p">{</span>
+  <span class="k">get</span>
+  <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/Updated%20State"></a>
+                <a name="//apple_ref/swift/Section/Updated State" class="dashAnchor"></a>
+                <a href="#/Updated%20State">
+                  <h3 class="section-name">Updated State</h3>
+                </a>
+              </div>
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC5stateAC5StateOvp"></a>
+                    <a name="//apple_ref/swift/Property/state" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC5stateAC5StateOvp">state</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p><code><a href="../Classes/Request/State.html">State</a></code> of the <code>Request</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">fileprivate</span><span class="p">(</span><span class="k">set</span><span class="p">)</span> <span class="k">var</span> <span class="nv">state</span><span class="p">:</span> <span class="kt"><a href="../Classes/Request/State.html">State</a></span> <span class="p">{</span> <span class="k">get</span> <span class="k">set</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC11isCancelledSbvp"></a>
+                    <a name="//apple_ref/swift/Property/isCancelled" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC11isCancelledSbvp">isCancelled</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Returns whether <code><a href="../Classes/Request.html#/s:9Alamofire7RequestC5stateAC5StateOvp">state</a></code> is <code>.cancelled</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">isCancelled</span><span class="p">:</span> <span class="kt">Bool</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC9isResumedSbvp"></a>
+                    <a name="//apple_ref/swift/Property/isResumed" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC9isResumedSbvp">isResumed</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Returns whether <code>state is</code>.resumed`.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">isResumed</span><span class="p">:</span> <span class="kt">Bool</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC11isSuspendedSbvp"></a>
+                    <a name="//apple_ref/swift/Property/isSuspended" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC11isSuspendedSbvp">isSuspended</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Returns whether <code><a href="../Classes/Request.html#/s:9Alamofire7RequestC5stateAC5StateOvp">state</a></code> is <code>.suspended</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">isSuspended</span><span class="p">:</span> <span class="kt">Bool</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC13isInitializedSbvp"></a>
+                    <a name="//apple_ref/swift/Property/isInitialized" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC13isInitializedSbvp">isInitialized</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Returns whether <code><a href="../Classes/Request.html#/s:9Alamofire7RequestC5stateAC5StateOvp">state</a></code> is <code>.initialized</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">isInitialized</span><span class="p">:</span> <span class="kt">Bool</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC15ProgressHandlera"></a>
+                    <a name="//apple_ref/swift/Alias/ProgressHandler" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC15ProgressHandlera">ProgressHandler</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Closure type executed when monitoring the upload or download progress of a request.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">typealias</span> <span class="kt">ProgressHandler</span> <span class="o">=</span> <span class="p">(</span><span class="kt">Progress</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC14uploadProgressSo10NSProgressCvp"></a>
+                    <a name="//apple_ref/swift/Property/uploadProgress" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC14uploadProgressSo10NSProgressCvp">uploadProgress</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p><code>Progress</code> of the upload of the body of the executed <code>URLRequest</code>. Reset to <code>0</code> if the <code>Request</code> is retried.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">uploadProgress</span><span class="p">:</span> <span class="kt">Progress</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC16downloadProgressSo10NSProgressCvp"></a>
+                    <a name="//apple_ref/swift/Property/downloadProgress" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC16downloadProgressSo10NSProgressCvp">downloadProgress</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p><code>Progress</code> of the download of any response data. Reset to <code>0</code> if the <code>Request</code> is retried.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">downloadProgress</span><span class="p">:</span> <span class="kt">Progress</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC15redirectHandlerAA08RedirectD0_pSgvp"></a>
+                    <a name="//apple_ref/swift/Property/redirectHandler" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC15redirectHandlerAA08RedirectD0_pSgvp">redirectHandler</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">private(set)</span> <span class="k">var</span> <span class="nv">redirectHandler</span><span class="p">:</span> <span class="kt"><a href="../Protocols/RedirectHandler.html">RedirectHandler</a></span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="k">set</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC21cachedResponseHandlerAA06CacheddE0_pSgvp"></a>
+                    <a name="//apple_ref/swift/Property/cachedResponseHandler" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC21cachedResponseHandlerAA06CacheddE0_pSgvp">cachedResponseHandler</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">private(set)</span> <span class="k">var</span> <span class="nv">cachedResponseHandler</span><span class="p">:</span> <span class="kt"><a href="../Protocols/CachedResponseHandler.html">CachedResponseHandler</a></span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="k">set</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC10credentialSo15NSURLCredentialCSgvp"></a>
+                    <a name="//apple_ref/swift/Property/credential" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC10credentialSo15NSURLCredentialCSgvp">credential</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p><code>URLCredential</code> used for authentication challenges. Created by calling one of the <code>authenticate</code> methods.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">private(set)</span> <span class="k">var</span> <span class="nv">credential</span><span class="p">:</span> <span class="kt">URLCredential</span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="k">set</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC8requestsSay10Foundation10URLRequestVGvp"></a>
+                    <a name="//apple_ref/swift/Property/requests" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC8requestsSay10Foundation10URLRequestVGvp">requests</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>All <code>URLRequests</code> created on behalf of the <code>Request</code>, including original and adapted requests.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">requests</span><span class="p">:</span> <span class="p">[</span><span class="kt">URLRequest</span><span class="p">]</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC05firstB010Foundation10URLRequestVSgvp"></a>
+                    <a name="//apple_ref/swift/Property/firstRequest" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC05firstB010Foundation10URLRequestVSgvp">firstRequest</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>First <code>URLRequest</code> created on behalf of the <code>Request</code>. May not be the first one actually executed.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">firstRequest</span><span class="p">:</span> <span class="kt">URLRequest</span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC04lastB010Foundation10URLRequestVSgvp"></a>
+                    <a name="//apple_ref/swift/Property/lastRequest" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC04lastB010Foundation10URLRequestVSgvp">lastRequest</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Last <code>URLRequest</code> created on behalf of the <code>Request</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">lastRequest</span><span class="p">:</span> <span class="kt">URLRequest</span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC7request10Foundation10URLRequestVSgvp"></a>
+                    <a name="//apple_ref/swift/Property/request" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC7request10Foundation10URLRequestVSgvp">request</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Current <code>URLRequest</code> created on behalf of the <code>Request</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">request</span><span class="p">:</span> <span class="kt">URLRequest</span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC17performedRequestsSay10Foundation10URLRequestVGvp"></a>
+                    <a name="//apple_ref/swift/Property/performedRequests" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC17performedRequestsSay10Foundation10URLRequestVGvp">performedRequests</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p><code>URLRequest</code>s from all of the <code>URLSessionTask</code>s executed on behalf of the <code>Request</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">performedRequests</span><span class="p">:</span> <span class="p">[</span><span class="kt">URLRequest</span><span class="p">]</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC8responseSo17NSHTTPURLResponseCSgvp"></a>
+                    <a name="//apple_ref/swift/Property/response" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC8responseSo17NSHTTPURLResponseCSgvp">response</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p><code>HTTPURLResponse</code> received from the server, if any. If the <code>Request</code> was retried, this is the response of the
+last <code>URLSessionTask</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">response</span><span class="p">:</span> <span class="kt">HTTPURLResponse</span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC5tasksSaySo16NSURLSessionTaskCGvp"></a>
+                    <a name="//apple_ref/swift/Property/tasks" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC5tasksSaySo16NSURLSessionTaskCGvp">tasks</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>All <code>URLSessionTask</code>s created on behalf of the <code>Request</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">tasks</span><span class="p">:</span> <span class="p">[</span><span class="kt">URLSessionTask</span><span class="p">]</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC9firstTaskSo012NSURLSessionD0CSgvp"></a>
+                    <a name="//apple_ref/swift/Property/firstTask" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC9firstTaskSo012NSURLSessionD0CSgvp">firstTask</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>First <code>URLSessionTask</code> created on behalf of the <code>Request</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">firstTask</span><span class="p">:</span> <span class="kt">URLSessionTask</span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC8lastTaskSo012NSURLSessionD0CSgvp"></a>
+                    <a name="//apple_ref/swift/Property/lastTask" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC8lastTaskSo012NSURLSessionD0CSgvp">lastTask</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Last <code>URLSessionTask</code> crated on behalf of the <code>Request</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">lastTask</span><span class="p">:</span> <span class="kt">URLSessionTask</span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC4taskSo16NSURLSessionTaskCSgvp"></a>
+                    <a name="//apple_ref/swift/Property/task" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC4taskSo16NSURLSessionTaskCSgvp">task</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Current <code>URLSessionTask</code> created on behalf of the <code>Request</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">task</span><span class="p">:</span> <span class="kt">URLSessionTask</span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC10allMetricsSaySo016NSURLSessionTaskD0CGvp"></a>
+                    <a name="//apple_ref/swift/Property/allMetrics" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC10allMetricsSaySo016NSURLSessionTaskD0CGvp">allMetrics</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>All <code>URLSessionTaskMetrics</code> gathered on behalf of the <code>Request</code>. Should correspond to the <code><a href="../Classes/Request.html#/s:9Alamofire7RequestC5tasksSaySo16NSURLSessionTaskCGvp">tasks</a></code> created.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">allMetrics</span><span class="p">:</span> <span class="p">[</span><span class="kt">URLSessionTaskMetrics</span><span class="p">]</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC12firstMetricsSo016NSURLSessionTaskD0CSgvp"></a>
+                    <a name="//apple_ref/swift/Property/firstMetrics" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC12firstMetricsSo016NSURLSessionTaskD0CSgvp">firstMetrics</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>First <code>URLSessionTaskMetrics</code> gathered on behalf of the <code>Request</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">firstMetrics</span><span class="p">:</span> <span class="kt">URLSessionTaskMetrics</span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC11lastMetricsSo016NSURLSessionTaskD0CSgvp"></a>
+                    <a name="//apple_ref/swift/Property/lastMetrics" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC11lastMetricsSo016NSURLSessionTaskD0CSgvp">lastMetrics</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Last <code>URLSessionTaskMetrics</code> gathered on behalf of the <code>Request</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">lastMetrics</span><span class="p">:</span> <span class="kt">URLSessionTaskMetrics</span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC7metricsSo23NSURLSessionTaskMetricsCSgvp"></a>
+                    <a name="//apple_ref/swift/Property/metrics" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC7metricsSo23NSURLSessionTaskMetricsCSgvp">metrics</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Current <code>URLSessionTaskMetrics</code> gathered on behalf of the <code>Request</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">metrics</span><span class="p">:</span> <span class="kt">URLSessionTaskMetrics</span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC10retryCountSivp"></a>
+                    <a name="//apple_ref/swift/Property/retryCount" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC10retryCountSivp">retryCount</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Number of times the <code>Request</code> has been retried.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">retryCount</span><span class="p">:</span> <span class="kt">Int</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC5errors5Error_pSgvp"></a>
+                    <a name="//apple_ref/swift/Property/error" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC5errors5Error_pSgvp">error</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p><code>Error</code> returned from Alamofire internally, from the network request directly, or any validators executed.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="nf">fileprivate</span><span class="p">(</span><span class="k">set</span><span class="p">)</span> <span class="kd">public</span> <span class="k">var</span> <span class="nv">error</span><span class="p">:</span> <span class="kt">Error</span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="k">set</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC2id15underlyingQueue013serializationE012eventMonitor11interceptor8delegateAC10Foundation4UUIDV_So17OS_dispatch_queueCAnA05EventH0_pSgAA0B11Interceptor_pSgAA0B8Delegate_ptcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(id:underlyingQueue:serializationQueue:eventMonitor:interceptor:delegate:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC2id15underlyingQueue013serializationE012eventMonitor11interceptor8delegateAC10Foundation4UUIDV_So17OS_dispatch_queueCAnA05EventH0_pSgAA0B11Interceptor_pSgAA0B8Delegate_ptcfc">init(id:underlyingQueue:serializationQueue:eventMonitor:interceptor:delegate:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Default initializer for the <code>Request</code> superclass.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">id</span><span class="p">:</span> <span class="kt">UUID</span> <span class="o">=</span> <span class="kt">UUID</span><span class="p">(),</span>
+            <span class="nv">underlyingQueue</span><span class="p">:</span> <span class="kt">DispatchQueue</span><span class="p">,</span>
+            <span class="nv">serializationQueue</span><span class="p">:</span> <span class="kt">DispatchQueue</span><span class="p">,</span>
+            <span class="nv">eventMonitor</span><span class="p">:</span> <span class="kt"><a href="../Protocols/EventMonitor.html">EventMonitor</a></span><span class="p">?,</span>
+            <span class="nv">interceptor</span><span class="p">:</span> <span class="kt"><a href="../Protocols/RequestInterceptor.html">RequestInterceptor</a></span><span class="p">?,</span>
+            <span class="nv">delegate</span><span class="p">:</span> <span class="kt"><a href="../Protocols/RequestDelegate.html">RequestDelegate</a></span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>id</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p><code>UUID</code> used for the <code>Hashable</code> and <code>Equatable</code> implementations. Defaults to a random <code>UUID</code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>underlyingQueue</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p><code>DispatchQueue</code> on which all internal <code>Request</code> work is performed.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>serializationQueue</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p><code>DispatchQueue</code> on which all serialization work is performed. Targets the
+                <code><a href="../Classes/Request.html#/s:9Alamofire7RequestC15underlyingQueueSo17OS_dispatch_queueCvp">underlyingQueue</a></code> when created by a <code>SessionManager</code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>eventMonitor</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p><code><a href="../Protocols/EventMonitor.html">EventMonitor</a></code> used for event callbacks from internal <code>Request</code> actions.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>interceptor</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p><code><a href="../Protocols/RequestInterceptor.html">RequestInterceptor</a></code> used throughout the request lifecycle.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>delegate</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p><code><a href="../Protocols/RequestDelegate.html">RequestDelegate</a></code> that provides an interface to actions not performed by the <code>Request</code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/State"></a>
+                <a name="//apple_ref/swift/Section/State" class="dashAnchor"></a>
+                <a href="#/State">
+                  <h3 class="section-name">State</h3>
+                </a>
+              </div>
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC6cancelACXDyF"></a>
+                    <a name="//apple_ref/swift/Method/cancel()" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC6cancelACXDyF">cancel()</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Cancels the <code>Request</code>. Once cancelled, a <code>Request</code> can no longer be resumed or suspended.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">cancel</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="k">Self</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The <code>Request</code>.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC7suspendACXDyF"></a>
+                    <a name="//apple_ref/swift/Method/suspend()" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC7suspendACXDyF">suspend()</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Suspends the <code>Request</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">suspend</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="k">Self</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The <code>Request</code>.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC6resumeACXDyF"></a>
+                    <a name="//apple_ref/swift/Method/resume()" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC6resumeACXDyF">resume()</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Resumes the <code>Request</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">resume</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="k">Self</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The <code>Request</code>.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/Closure%20API"></a>
+                <a name="//apple_ref/swift/Section/Closure API" class="dashAnchor"></a>
+                <a href="#/Closure%20API">
+                  <h3 class="section-name">Closure API</h3>
+                </a>
+              </div>
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC12authenticate8username8password11persistenceACXDSS_SSSo26NSURLCredentialPersistenceVtF"></a>
+                    <a name="//apple_ref/swift/Method/authenticate(username:password:persistence:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC12authenticate8username8password11persistenceACXDSS_SSSo26NSURLCredentialPersistenceVtF">authenticate(username:password:persistence:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Associates a credential using the provided values with the <code>Request</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">authenticate</span><span class="p">(</span><span class="nv">username</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">password</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">persistence</span><span class="p">:</span> <span class="kt">URLCredential</span><span class="o">.</span><span class="kt">Persistence</span> <span class="o">=</span> <span class="o">.</span><span class="n">forSession</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="k">Self</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>username</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The username.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>password</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The password.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>persistence</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The <code>URLCredential.Persistence</code> for the created <code>URLCredential</code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The <code>Request</code>.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC12authenticate4withACXDSo15NSURLCredentialC_tF"></a>
+                    <a name="//apple_ref/swift/Method/authenticate(with:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC12authenticate4withACXDSo15NSURLCredentialC_tF">authenticate(with:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Associates the provided credential with the <code>Request</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">authenticate</span><span class="p">(</span><span class="n">with</span> <span class="nv">credential</span><span class="p">:</span> <span class="kt">URLCredential</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="k">Self</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>credential</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The <code>URLCredential</code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The <code>Request</code>.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC16downloadProgress5queue7closureACXDSo012OS_dispatch_E0C_ySo10NSProgressCctF"></a>
+                    <a name="//apple_ref/swift/Method/downloadProgress(queue:closure:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC16downloadProgress5queue7closureACXDSo012OS_dispatch_E0C_ySo10NSProgressCctF">downloadProgress(queue:closure:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Sets a closure to be called periodically during the lifecycle of the <code>Request</code> as data is read from the server.</p>
+
+<p>Only the last closure provided is used.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">downloadProgress</span><span class="p">(</span><span class="nv">queue</span><span class="p">:</span> <span class="kt">DispatchQueue</span> <span class="o">=</span> <span class="o">.</span><span class="n">main</span><span class="p">,</span> <span class="nv">closure</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Classes/Request.html#/s:9Alamofire7RequestC15ProgressHandlera">ProgressHandler</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="k">Self</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>queue</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The <code>DispatchQueue</code> to execute the closure on. Defaults to <code>.main</code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>closure</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The code to be executed periodically as data is read from the server.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The <code>Request</code>.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC14uploadProgress5queue7closureACXDSo012OS_dispatch_E0C_ySo10NSProgressCctF"></a>
+                    <a name="//apple_ref/swift/Method/uploadProgress(queue:closure:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC14uploadProgress5queue7closureACXDSo012OS_dispatch_E0C_ySo10NSProgressCctF">uploadProgress(queue:closure:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Sets a closure to be called periodically during the lifecycle of the <code>Request</code> as data is sent to the server.</p>
+
+<p>Only the last closure provided is used.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">uploadProgress</span><span class="p">(</span><span class="nv">queue</span><span class="p">:</span> <span class="kt">DispatchQueue</span> <span class="o">=</span> <span class="o">.</span><span class="n">main</span><span class="p">,</span> <span class="nv">closure</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Classes/Request.html#/s:9Alamofire7RequestC15ProgressHandlera">ProgressHandler</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="k">Self</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>queue</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The <code>DispatchQueue</code> to execute the closure on. Defaults to <code>.main</code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>closure</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The closure to be executed periodically as data is sent to the server.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The <code>Request</code>.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/Redirects"></a>
+                <a name="//apple_ref/swift/Section/Redirects" class="dashAnchor"></a>
+                <a href="#/Redirects">
+                  <h3 class="section-name">Redirects</h3>
+                </a>
+              </div>
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC8redirect5usingACXDAA15RedirectHandler_p_tF"></a>
+                    <a name="//apple_ref/swift/Method/redirect(using:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC8redirect5usingACXDAA15RedirectHandler_p_tF">redirect(using:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Sets the redirect handler for the <code>Request</code> which will be used if a redirect response is encountered.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">redirect</span><span class="p">(</span><span class="n">using</span> <span class="nv">handler</span><span class="p">:</span> <span class="kt"><a href="../Protocols/RedirectHandler.html">RedirectHandler</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="k">Self</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>handler</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The <code><a href="../Protocols/RedirectHandler.html">RedirectHandler</a></code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The <code>Request</code>.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/Cached%20Responses"></a>
+                <a name="//apple_ref/swift/Section/Cached Responses" class="dashAnchor"></a>
+                <a href="#/Cached%20Responses">
+                  <h3 class="section-name">Cached Responses</h3>
+                </a>
+              </div>
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC13cacheResponse5usingACXDAA06CachedD7Handler_p_tF"></a>
+                    <a name="//apple_ref/swift/Method/cacheResponse(using:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC13cacheResponse5usingACXDAA06CachedD7Handler_p_tF">cacheResponse(using:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Sets the cached response handler for the <code>Request</code> which will be used when attempting to cache a response.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">cacheResponse</span><span class="p">(</span><span class="n">using</span> <span class="nv">handler</span><span class="p">:</span> <span class="kt"><a href="../Protocols/CachedResponseHandler.html">CachedResponseHandler</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="k">Self</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>handler</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The <code><a href="../Protocols/CachedResponseHandler.html">CachedResponseHandler</a></code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The <code>Request</code>.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/Cleanup"></a>
+                <a name="//apple_ref/swift/Section/Cleanup" class="dashAnchor"></a>
+                <a href="#/Cleanup">
+                  <h3 class="section-name">Cleanup</h3>
+                </a>
+              </div>
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC7cleanupyyF"></a>
+                    <a name="//apple_ref/swift/Method/cleanup()" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC7cleanupyyF">cleanup()</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Final cleanup step executed when a <code>Request</code> finishes response serialization.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">cleanup</span><span class="p">()</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC21didResumeNotificationSo18NSNotificationNameavpZ"></a>
+                    <a name="//apple_ref/swift/Variable/didResumeNotification" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC21didResumeNotificationSo18NSNotificationNameavpZ">didResumeNotification</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Posted when a <code>Request</code> is resumed. The <code>Notification</code> contains the resumed <code>Request</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">static</span> <span class="k">let</span> <span class="nv">didResumeNotification</span><span class="p">:</span> <span class="kt">Notification</span><span class="o">.</span><span class="kt">Name</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC22didSuspendNotificationSo18NSNotificationNameavpZ"></a>
+                    <a name="//apple_ref/swift/Variable/didSuspendNotification" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC22didSuspendNotificationSo18NSNotificationNameavpZ">didSuspendNotification</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Posted when a <code>Request</code> is suspended. The <code>Notification</code> contains the suspended <code>Request</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">static</span> <span class="k">let</span> <span class="nv">didSuspendNotification</span><span class="p">:</span> <span class="kt">Notification</span><span class="o">.</span><span class="kt">Name</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC21didCancelNotificationSo18NSNotificationNameavpZ"></a>
+                    <a name="//apple_ref/swift/Variable/didCancelNotification" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC21didCancelNotificationSo18NSNotificationNameavpZ">didCancelNotification</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Posted when a <code>Request</code> is cancelled. The <code>Notification</code> contains the cancelled <code>Request</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">static</span> <span class="k">let</span> <span class="nv">didCancelNotification</span><span class="p">:</span> <span class="kt">Notification</span><span class="o">.</span><span class="kt">Name</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC21didFinishNotificationSo18NSNotificationNameavpZ"></a>
+                    <a name="//apple_ref/swift/Variable/didFinishNotification" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC21didFinishNotificationSo18NSNotificationNameavpZ">didFinishNotification</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Posted when a <code>Request</code> is finished. The <code>Notification</code> contains the completed <code>Request</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">static</span> <span class="k">let</span> <span class="nv">didFinishNotification</span><span class="p">:</span> <span class="kt">Notification</span><span class="o">.</span><span class="kt">Name</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC25didResumeTaskNotificationSo18NSNotificationNameavpZ"></a>
+                    <a name="//apple_ref/swift/Variable/didResumeTaskNotification" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC25didResumeTaskNotificationSo18NSNotificationNameavpZ">didResumeTaskNotification</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Posted when a <code>URLSessionTask</code> is resumed. The <code>Notification</code> contains the <code>Request</code> associated with the <code>URLSessionTask</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">static</span> <span class="k">let</span> <span class="nv">didResumeTaskNotification</span><span class="p">:</span> <span class="kt">Notification</span><span class="o">.</span><span class="kt">Name</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC26didSuspendTaskNotificationSo18NSNotificationNameavpZ"></a>
+                    <a name="//apple_ref/swift/Variable/didSuspendTaskNotification" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC26didSuspendTaskNotificationSo18NSNotificationNameavpZ">didSuspendTaskNotification</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Posted when a <code>URLSessionTask</code> is suspended. The <code>Notification</code> contains the <code>Request</code> associated with the <code>URLSessionTask</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">static</span> <span class="k">let</span> <span class="nv">didSuspendTaskNotification</span><span class="p">:</span> <span class="kt">Notification</span><span class="o">.</span><span class="kt">Name</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC25didCancelTaskNotificationSo18NSNotificationNameavpZ"></a>
+                    <a name="//apple_ref/swift/Variable/didCancelTaskNotification" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC25didCancelTaskNotificationSo18NSNotificationNameavpZ">didCancelTaskNotification</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Posted when a <code>URLSessionTask</code> is cancelled. The <code>Notification</code> contains the <code>Request</code> associated with the <code>URLSessionTask</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">static</span> <span class="k">let</span> <span class="nv">didCancelTaskNotification</span><span class="p">:</span> <span class="kt">Notification</span><span class="o">.</span><span class="kt">Name</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC27didCompleteTaskNotificationSo18NSNotificationNameavpZ"></a>
+                    <a name="//apple_ref/swift/Variable/didCompleteTaskNotification" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC27didCompleteTaskNotificationSo18NSNotificationNameavpZ">didCompleteTaskNotification</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Posted when a <code>URLSessionTask</code> is completed. The <code>Notification</code> contains the <code>Request</code> associated with the <code>URLSessionTask</code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">static</span> <span class="k">let</span> <span class="nv">didCompleteTaskNotification</span><span class="p">:</span> <span class="kt">Notification</span><span class="o">.</span><span class="kt">Name</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/Protocol%20Conformances"></a>
+                <a name="//apple_ref/swift/Section/Protocol Conformances" class="dashAnchor"></a>
+                <a href="#/Protocol%20Conformances">
+                  <h3 class="section-name">Protocol Conformances</h3>
+                </a>
+              </div>
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:SQ2eeoiySbx_xtFZ"></a>
+                    <a name="//apple_ref/swift/Method/==(_:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:SQ2eeoiySbx_xtFZ">==(_:_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="o">==</span> <span class="p">(</span><span class="nv">lhs</span><span class="p">:</span> <span class="kt">Request</span><span class="p">,</span> <span class="nv">rhs</span><span class="p">:</span> <span class="kt">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Bool</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/Protocol%20Conformances2"></a>
+                <a name="//apple_ref/swift/Section/Protocol Conformances" class="dashAnchor"></a>
+                <a href="#/Protocol%20Conformances2">
+                  <h3 class="section-name">Protocol Conformances</h3>
+                </a>
+              </div>
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:SH4hash4intoys6HasherVz_tF"></a>
+                    <a name="//apple_ref/swift/Method/hash(into:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:SH4hash4intoys6HasherVz_tF">hash(into:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">hash</span><span class="p">(</span><span class="n">into</span> <span class="nv">hasher</span><span class="p">:</span> <span class="k">inout</span> <span class="kt">Hasher</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/Protocol%20Conformances3"></a>
+                <a name="//apple_ref/swift/Section/Protocol Conformances" class="dashAnchor"></a>
+                <a href="#/Protocol%20Conformances3">
+                  <h3 class="section-name">Protocol Conformances</h3>
+                </a>
+              </div>
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC11descriptionSSvp"></a>
+                    <a name="//apple_ref/swift/Property/description" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC11descriptionSSvp">description</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A textual representation of this instance, including the <code><a href="../Enums/HTTPMethod.html">HTTPMethod</a></code> and <code>URL</code> if the <code>URLRequest</code> has been
+created, as well as the response status code, if a response has been received.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">description</span><span class="p">:</span> <span class="kt">String</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/Protocol%20Conformances4"></a>
+                <a name="//apple_ref/swift/Section/Protocol Conformances" class="dashAnchor"></a>
+                <a href="#/Protocol%20Conformances4">
+                  <h3 class="section-name">Protocol Conformances</h3>
+                </a>
+              </div>
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC16debugDescriptionSSvp"></a>
+                    <a name="//apple_ref/swift/Property/debugDescription" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC16debugDescriptionSSvp">debugDescription</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A textual representation of this instance in the form of a cURL command.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">debugDescription</span><span class="p">:</span> <span class="kt">String</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/Helper%20Types"></a>
+                <a name="//apple_ref/swift/Section/Helper Types" class="dashAnchor"></a>
+                <a href="#/Helper%20Types">
+                  <h3 class="section-name">Helper Types</h3>
+                </a>
+              </div>
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9Alamofire7RequestC16ValidationResulta"></a>
+                    <a name="//apple_ref/swift/Alias/ValidationResult" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9Alamofire7RequestC16ValidationResulta">ValidationResult</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Used to represent whether a validation succeeded or failed.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">typealias</span> <span class="kt">ValidationResult</span> <span class="o">=</span> <span class="kt"><a href="../Typealiases.html#/s:9Alamofire8AFResulta">AFResult</a></span><span class="o">&lt;</span><span class="kt">Void</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+      </article>
+    </div>
+    <section class="footer">
+      <p>&copy; 2019 <a class="link" href="http://alamofire.org/" target="_blank" rel="external">Alamofire Software Foundation</a>. All rights reserved. (Last updated: 2019-04-12)</p>
+      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+    </section>
+  </body>
+</div>
+</html>

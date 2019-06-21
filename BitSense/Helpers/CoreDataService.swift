@@ -60,9 +60,20 @@ class CoreDataService {
         print("retrieveCredentials")
         
         var credentials = [[String:Any]]()
+        var appDelegate = AppDelegate()
         
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
-                return credentials
+        DispatchQueue.main.async {
+            
+            if let appDelegateCheck = UIApplication.shared.delegate as? AppDelegate {
+                
+                appDelegate = appDelegateCheck
+                
+            } else {
+                
+                print("error can't access app delegate")
+                
+            }
+            
         }
         
         let context = appDelegate.persistentContainer.viewContext

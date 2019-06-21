@@ -1,0 +1,24 @@
+This directory is meant for manually vendored dependencies, i.e. ones which are
+either taken from tarballs or git repositories, rather than being vendored with
+`cargo vendor` via the `scripts/maint/updateRustDependencies.sh` script.  The
+dependencies in this directory must be present for builds, regardless of whether
+--enable-cargo-online-mode was specified.  The reason for this is that there may
+exist external dependencies which are not available through crates.io (and/or
+via cargo), but which we wish to ship with by manually vendoring (similarly to
+the rest of the C code in the `src/ext/` directory).
+
+In order to explain how to add a dependency here, imagine you're working on the
+following example crate `tor-foo` which lives at `src/rust/tor-foo`, and that
+your `tor-foo` crate has a dependency on a crate, `bar`, which is not uploaded
+to any registry.  To add `bar`, create a `src/ext/rust/vendor/bar-$COMMIT_ID`
+directory here, where $COMMIT_ID is either some version number, commit id, or
+globally unique identifier for the dependency version.  Let's say the `bar`
+crate's $COMMIT_ID is "abcdef01".  Then, create a Cargo.toml.in at
+`src/rust/tor-foo/Cargo.toml.in` and specify this dependency with:
+
+[dependencies]
+bar = { version = "=abcdef01", path = @srcdir@"/src/ext/rust/vendor/bar-abcdef01" }
+
+(Yes, literally include the "=" before the $COMMIT_ID.)  Next, add
+"src/rust/tor-foo/Cargo.toml.in" to the EXTRA_DIST list in
+`src/rust/include.am`.

@@ -36,6 +36,14 @@ class NodesTableViewController: UITableViewController, UITabBarControllerDelegat
         nodeArray = cd.retrieveCredentials()
         print("nodearray = \(nodeArray)")
         
+        if nodeArray.count == 0 {
+            
+            displayAlert(viewController: self,
+                         isError: true,
+                         message: "No nodes added yet, tap the + sign to add one")
+            
+        }
+        
     }
 
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -59,7 +67,9 @@ class NodesTableViewController: UITableViewController, UITabBarControllerDelegat
         
         if nodeArray[indexPath.row]["label"] != nil {
             
-            label.text = (nodeArray[indexPath.row]["label"] as! String)
+            let aes = AESService()
+            let enc = (nodeArray[indexPath.row]["label"] as! String)
+            label.text = aes.decryptKey(keyToDecrypt: enc)
             
         } else {
             
@@ -111,9 +121,15 @@ class NodesTableViewController: UITableViewController, UITabBarControllerDelegat
                         
                         DispatchQueue.main.async {
                             
-                            self.performSegue(withIdentifier: "showCredentials", sender: self)
+                            self.performSegue(withIdentifier: "updateNode", sender: self)
                             
                         }
+                        
+                    } else {
+                        
+                        displayAlert(viewController: self,
+                                     isError: true,
+                                     message: "You can not edit the testing node")
                         
                     }
                     
@@ -127,22 +143,22 @@ class NodesTableViewController: UITableViewController, UITabBarControllerDelegat
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
-        if segue.identifier == "showCredentials" {
+        if segue.identifier == "updateNode" {
             
-            if let vc = segue.destination as? NodeDetailViewController {
+            if let vc = segue.destination as? ChooseConnectionTypeViewController {
                 
-                vc.node = self.nodeArray[selectedIndex]
-                vc.createNew = false
+                vc.selectedNode = self.nodeArray[selectedIndex]
+                vc.isUpdating = true
                 
             }
             
         }
         
-        if segue.identifier == "createNew" {
+        if segue.identifier == "addNewNode" {
             
-            if let vc = segue.destination as? NodeDetailViewController {
+            if let vc = segue.destination as? ChooseConnectionTypeViewController {
                 
-                vc.createNew = true
+                vc.isUpdating = false
                 
             }
             
@@ -150,9 +166,9 @@ class NodesTableViewController: UITableViewController, UITabBarControllerDelegat
         
     }
     
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         
-        if editingStyle == UITableViewCellEditingStyle.delete {
+        if editingStyle == UITableViewCell.EditingStyle.delete {
             
             let success = cd.deleteNode(viewController: self, id: nodeArray[indexPath.row]["id"] as! String)
                 
@@ -236,8 +252,6 @@ class NodesTableViewController: UITableViewController, UITabBarControllerDelegat
         }
         
     }
-    
-    
 
 }
 
