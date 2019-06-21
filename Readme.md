@@ -25,15 +25,15 @@ You will need an instance of Bitcoin Core running on a computer that you can SSH
 
 - In Fully Noded tap "Nodes" -> "+"
 
-<img src="Images/addNode.PNG" height="500">
+<img src="BitSense/Images/addNode.PNG" height="500">
 
 - Add a label and SSH credentials for your node then tap "Save"
 
-<img src="Images/IMG_7887.PNG" height="500">
+<img src="BitSense/Images/IMG_7887.PNG" height="500">
 
 - Switch the node on
 
-<img src="Images/switcher.PNG" height="500">
+<img src="BitSense/Images/switcher.PNG" height="500">
 
 - In the "Home" screen pull the table down to connect to your node
 
@@ -44,7 +44,7 @@ You will need an instance of Bitcoin Core running on a computer that you can SSH
 - Click "Sharing"
 - Follow below image for instructions:
 
-<img src="Images/screenShot.png" width="800">
+<img src="BitSense/Images/screenShot.png" width="800">
 
 ## Troubleshooting
 
