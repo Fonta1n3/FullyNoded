@@ -63,7 +63,6 @@
 		D0855FBB22AE1B2B00DBBFC2 /* KeychainSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FBA22AE1B2B00DBBFC2 /* KeychainSwift.framework */; };
 		D0855FBD22AE1B3000DBBFC2 /* CryptoSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FBC22AE1B3000DBBFC2 /* CryptoSwift.framework */; };
 		D0855FC122AE8DC700DBBFC2 /* PSBTMenuTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0855FC022AE8DC700DBBFC2 /* PSBTMenuTableViewController.swift */; };
-		D0855FC422AFB8F700DBBFC2 /* torrc.rtf in Resources */ = {isa = PBXBuildFile; fileRef = D0855FC322AFB8F700DBBFC2 /* torrc.rtf */; };
 		D0855FC622B08EE000DBBFC2 /* TorClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0855FC522B08EE000DBBFC2 /* TorClient.swift */; };
 		D0855FC822B0C71900DBBFC2 /* CreatePSBTViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0855FC722B0C71900DBBFC2 /* CreatePSBTViewController.swift */; };
 		D0855FCA22B0CEA800DBBFC2 /* CreatePSBT.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0855FC922B0CEA800DBBFC2 /* CreatePSBT.swift */; };
@@ -83,6 +82,10 @@
 		D0C474952269C89A007EC9EF /* dino1.png in Resources */ = {isa = PBXBuildFile; fileRef = D0C474912269C89A007EC9EF /* dino1.png */; };
 		D0C474962269C89A007EC9EF /* dino4.png in Resources */ = {isa = PBXBuildFile; fileRef = D0C474922269C89A007EC9EF /* dino4.png */; };
 		D0DA7CE72171A66A00A96F7E /* minus.png in Resources */ = {isa = PBXBuildFile; fileRef = D0DA7CE62171A66A00A96F7E /* minus.png */; };
+		D0DE292B22BCFE9900D9EBCF /* Readme.md in Resources */ = {isa = PBXBuildFile; fileRef = D0DE292A22BCFE9900D9EBCF /* Readme.md */; };
+		D0DE292D22BCFEEA00D9EBCF /* addNode.PNG in Resources */ = {isa = PBXBuildFile; fileRef = D0DE292C22BCFEEA00D9EBCF /* addNode.PNG */; };
+		D0DE292F22BCFF0400D9EBCF /* switcher.PNG in Resources */ = {isa = PBXBuildFile; fileRef = D0DE292E22BCFF0400D9EBCF /* switcher.PNG */; };
+		D0DE293322BCFFAB00D9EBCF /* screenShot.png in Resources */ = {isa = PBXBuildFile; fileRef = D0DE293222BCFFAB00D9EBCF /* screenShot.png */; };
 		D0E51E592265640F005D1909 /* ErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E51E582265640F005D1909 /* ErrorView.swift */; };
 		D0E51E5B226592C9005D1909 /* NodeDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E51E5A226592C9005D1909 /* NodeDetailViewController.swift */; };
 		D0E9B63C211A94C600B416E7 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E9B63B211A94C600B416E7 /* Utilities.swift */; };
@@ -161,7 +164,6 @@
 		D0855FBA22AE1B2B00DBBFC2 /* KeychainSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = KeychainSwift.framework; path = Carthage/Build/iOS/KeychainSwift.framework; sourceTree = "<group>"; };
 		D0855FBC22AE1B3000DBBFC2 /* CryptoSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CryptoSwift.framework; path = Carthage/Build/iOS/CryptoSwift.framework; sourceTree = "<group>"; };
 		D0855FC022AE8DC700DBBFC2 /* PSBTMenuTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PSBTMenuTableViewController.swift; sourceTree = "<group>"; };
-		D0855FC322AFB8F700DBBFC2 /* torrc.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = torrc.rtf; sourceTree = "<group>"; };
 		D0855FC522B08EE000DBBFC2 /* TorClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TorClient.swift; path = "New Group/TorClient.swift"; sourceTree = "<group>"; };
 		D0855FC722B0C71900DBBFC2 /* CreatePSBTViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePSBTViewController.swift; sourceTree = "<group>"; };
 		D0855FC922B0CEA800DBBFC2 /* CreatePSBT.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePSBT.swift; sourceTree = "<group>"; };
@@ -182,6 +184,10 @@
 		D0C474922269C89A007EC9EF /* dino4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = dino4.png; sourceTree = "<group>"; };
 		D0DA7CE62171A66A00A96F7E /* minus.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = minus.png; sourceTree = "<group>"; };
 		D0DA7CE82172F7D800A96F7E /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		D0DE292A22BCFE9900D9EBCF /* Readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Readme.md; sourceTree = "<group>"; };
+		D0DE292C22BCFEEA00D9EBCF /* addNode.PNG */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = addNode.PNG; sourceTree = "<group>"; };
+		D0DE292E22BCFF0400D9EBCF /* switcher.PNG */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = switcher.PNG; sourceTree = "<group>"; };
+		D0DE293222BCFFAB00D9EBCF /* screenShot.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = screenShot.png; sourceTree = "<group>"; };
 		D0E51E582265640F005D1909 /* ErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorView.swift; sourceTree = "<group>"; };
 		D0E51E5A226592C9005D1909 /* NodeDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDetailViewController.swift; sourceTree = "<group>"; };
 		D0E9B63B211A94C600B416E7 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
@@ -284,6 +290,7 @@
 		D00B9A1B2111427200E8B95A = {
 			isa = PBXGroup;
 			children = (
+				D0DE292A22BCFE9900D9EBCF /* Readme.md */,
 				D00B9A262111427200E8B95A /* BitSense */,
 				D00B9A252111427200E8B95A /* Products */,
 				D08C1FBB211147F600B7CA79 /* Frameworks */,
@@ -316,7 +323,6 @@
 				D00B9A332111427200E8B95A /* LaunchScreen.storyboard */,
 				D00B9A362111427200E8B95A /* Info.plist */,
 				D00B9A2E2111427200E8B95A /* BitSense.xcdatamodeld */,
-				D0855FC322AFB8F700DBBFC2 /* torrc.rtf */,
 			);
 			path = BitSense;
 			sourceTree = "<group>";
@@ -516,6 +522,9 @@
 		D0FA417A213C7CB70028E4F8 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				D0DE293222BCFFAB00D9EBCF /* screenShot.png */,
+				D0DE292E22BCFF0400D9EBCF /* switcher.PNG */,
+				D0DE292C22BCFEEA00D9EBCF /* addNode.PNG */,
 				D05D9731226433B60035F1DE /* strobe.png */,
 				D0C474912269C89A007EC9EF /* dino1.png */,
 				D0C4748F2269C89A007EC9EF /* dino2.png */,
@@ -612,11 +621,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				D071A2A82148A3AE00C4BCB3 /* qr.png in Resources */,
+				D0DE292F22BCFF0400D9EBCF /* switcher.PNG in Resources */,
 				D071A2A62148A14400C4BCB3 /* blackSearch.png in Resources */,
 				D0358D9521B1B44B007D56ED /* whiteCheck.png in Resources */,
 				D0DA7CE72171A66A00A96F7E /* minus.png in Resources */,
 				D05315FF214639CD005707D6 /* blackClose.jpg in Resources */,
 				D0A291912251743B0099A2F3 /* settings90.png in Resources */,
+				D0DE292B22BCFE9900D9EBCF /* Readme.md in Resources */,
 				D0126FF022443D1100412629 /* whitePlus.png in Resources */,
 				D05D9730226425730035F1DE /* images.png in Resources */,
 				D00B9A352111427200E8B95A /* LaunchScreen.storyboard in Resources */,
@@ -625,6 +636,7 @@
 				D0FA417C213C7CDA0028E4F8 /* whiteLock.png in Resources */,
 				D0196DD721B5AB300081E0AB /* KeyPadButtonView.xib in Resources */,
 				D0452AD62246E0370013E225 /* whiteBroom.png in Resources */,
+				D0DE292D22BCFEEA00D9EBCF /* addNode.PNG in Resources */,
 				D071A2A0214880F700C4BCB3 /* Search - tripkey.png in Resources */,
 				D0452AD42246C7830013E225 /* clear.png in Resources */,
 				D0C474932269C89A007EC9EF /* dino2.png in Resources */,
@@ -638,8 +650,8 @@
 				D0C474942269C89A007EC9EF /* dino3.png in Resources */,
 				D0126FF422443DCD00412629 /* whiteSettings.png in Resources */,
 				D0C474962269C89A007EC9EF /* dino4.png in Resources */,
-				D0855FC422AFB8F700DBBFC2 /* torrc.rtf in Resources */,
 				D08F63E62163263B004B92AE /* plus.png in Resources */,
+				D0DE293322BCFFAB00D9EBCF /* screenShot.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
