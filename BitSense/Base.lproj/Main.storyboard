@@ -482,6 +482,7 @@
                         <segue destination="l4n-lV-57s" kind="show" identifier="outgoings" id="cKI-nv-5X9"/>
                         <segue destination="3CA-J5-QLi" kind="presentation" identifier="incoming" id="1Fe-xi-L2T"/>
                         <segue destination="2Yw-iO-uuQ" kind="show" identifier="goToUtilities" id="Ya7-1t-usE"/>
+                        <segue destination="bKH-sI-MiM" kind="show" identifier="lockScreen" id="xZg-QU-AT7"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dhK-90-srt" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -3121,7 +3122,7 @@
         <image name="whiteCheck.png" width="2048" height="2048"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="ckQ-WD-ole"/>
+        <segue reference="xZg-QU-AT7"/>
         <segue reference="iAl-Tj-0O6"/>
         <segue reference="UCu-Iz-rId"/>
     </inferredMetricsTieBreakers>

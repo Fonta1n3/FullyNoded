@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import KeychainSwift
 
 class MainMenuViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITabBarControllerDelegate {
     
@@ -56,9 +57,12 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         print("main menu")
         
         initialLoad = true
+        let keychain = KeychainSwift()
         
         if UserDefaults.standard.object(forKey: "updatedToSwift5") == nil {
             
+            keychain.delete("UnlockPassword")
+            keychain.delete("AESPassword")
             deleteAllNodes()
             UserDefaults.standard.removeObject(forKey: "firstTime")
             
@@ -86,6 +90,16 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         //torConnected = false
         //connectWithTor()
+        
+        if keychain.get("UnlockPassword") != nil {
+            
+            DispatchQueue.main.async {
+                
+                self.performSegue(withIdentifier: "lockScreen", sender: self)
+                
+            }
+            
+        }
         
     }
     
@@ -158,7 +172,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 displayAlert(viewController: self,
                              isError: true,
-                             message: "Go to Nodes to add a node")
+                             message: "Go to Nodes to add your own node")
                 
             }
             
@@ -1690,12 +1704,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                 let percentage = (self.currentBlock * 100) / heightCheck
                                 let percentageString = "\(percentage)%"
                                 self.syncStatus = percentageString
-                                
-                                DispatchQueue.main.async {
-                                    
-                                    self.mainMenu.reloadRows(at: [IndexPath.init(row: 0, section: 0)], with: .none)
-                                    
-                                }
                                 
                             }
                             

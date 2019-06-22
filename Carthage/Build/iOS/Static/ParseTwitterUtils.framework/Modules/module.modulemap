@@ -1,6 +1,0 @@
-framework module ParseTwitterUtils {
-  umbrella header "ParseTwitterUtils.h"
-
-  export *
-  module * { export * }
-}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2011-2019 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the OpenSSL license (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -357,10 +357,15 @@ static void felem_diff64(felem out, const felem in)
 static void felem_diff_128_64(largefelem out, const felem in)
 {
     /*
-     * In order to prevent underflow, we add 0 mod p before subtracting.
+     * In order to prevent underflow, we add 64p mod p (which is equivalent
+     * to 0 mod p) before subtracting. p is 2^521 - 1, i.e. in binary a 521
+     * digit number with all bits set to 1. See "The representation of field
+     * elements" comment above for a description of how limbs are used to
+     * represent a number. 64p is represented with 8 limbs containing a number
+     * with 58 bits set and one limb with a number with 57 bits set.
      */
-    static const limb two63m6 = (((limb) 1) << 62) - (((limb) 1) << 5);
-    static const limb two63m5 = (((limb) 1) << 62) - (((limb) 1) << 4);
+    static const limb two63m6 = (((limb) 1) << 63) - (((limb) 1) << 6);
+    static const limb two63m5 = (((limb) 1) << 63) - (((limb) 1) << 5);
 
     out[0] += two63m6 - in[0];
     out[1] += two63m5 - in[1];
@@ -1631,6 +1636,7 @@ const EC_METHOD *EC_GFp_nistp521_method(void)
         ec_GFp_nist_field_mul,
         ec_GFp_nist_field_sqr,
         0 /* field_div */ ,
+        ec_GFp_simple_field_inv,
         0 /* field_encode */ ,
         0 /* field_decode */ ,
         0,                      /* field_set_to_one */
@@ -1642,7 +1648,8 @@ const EC_METHOD *EC_GFp_nistp521_method(void)
         ec_key_simple_generate_public_key,
         0, /* keycopy */
         0, /* keyfinish */
-        ecdh_simple_compute_key
+        ecdh_simple_compute_key,
+        0  /* blind_coordinates */
     };
 
     return &ret;

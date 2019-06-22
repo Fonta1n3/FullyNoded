@@ -11,6 +11,7 @@ import KeychainSwift
 
 class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, UITabBarControllerDelegate {
     
+    let keychain = KeychainSwift()
     let userDefaults = UserDefaults.standard
     let imageView = UIImageView()
     let lockView = UIView()
@@ -246,7 +247,17 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
             rangeLabel.alpha = 0
             label.textColor = UIColor.white
-            label.text = "Reset Password"
+            
+            if keychain.get("UnlockPassword") != nil {
+                
+               label.text = "Reset Password"
+                
+            } else {
+                
+                label.text = "Set a password"
+                
+            }
+            
             check.alpha = 0
             
         case 2:
@@ -1089,7 +1100,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
             DispatchQueue.main.async {
                 
-                self.labelTitle.textAlignment = .natural
+                self.labelTitle.textAlignment = .center
                 self.labelTitle.text = "Please confirm the Password to ensure there were no typos."
                 self.firstPassword = self.textInput.text!
                 self.textInput.text = ""
@@ -1250,28 +1261,63 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     func showUnlockScreen() {
         
-        DispatchQueue.main.async {
+        let keychain = KeychainSwift()
+        
+        if keychain.get("UnlockPassword") != nil {
             
-            self.view.addSubview(self.lockView)
-            self.lockView.addSubview(self.imageView)
-            self.lockView.addSubview(self.passwordInput)
-            self.lockView.addSubview(self.labelTitle)
-            self.addNextButton(inputView: self.passwordInput)
-            UIImpactFeedbackGenerator().impactOccurred()
+            DispatchQueue.main.async {
+                
+                self.view.addSubview(self.lockView)
+                self.lockView.addSubview(self.imageView)
+                self.lockView.addSubview(self.passwordInput)
+                self.lockView.addSubview(self.labelTitle)
+                self.addNextButton(inputView: self.passwordInput)
+                UIImpactFeedbackGenerator().impactOccurred()
+                
+            }
+            
+            UIView.animate(withDuration: 0.2, animations: {
+                
+                self.lockView.alpha = 1
+                self.imageView.alpha = 1
+                self.passwordInput.alpha = 1
+                self.labelTitle.alpha = 1
+                self.nextButton.alpha = 1
+                
+            })
+            
+            self.passwordInput.becomeFirstResponder()
+            
+        } else {
+            
+            print("set a password")
+            DispatchQueue.main.async {
+                
+                self.view.addSubview(self.lockView)
+                self.lockView.addSubview(self.imageView)
+                self.lockView.addSubview(self.passwordInput)
+                self.lockView.addSubview(self.labelTitle)
+                self.addNextButton(inputView: self.passwordInput)
+                UIImpactFeedbackGenerator().impactOccurred()
+                
+            }
+            
+            UIView.animate(withDuration: 0.2, animations: {
+                
+                self.lockView.alpha = 1
+                self.imageView.alpha = 1
+                self.passwordInput.alpha = 1
+                self.labelTitle.alpha = 1
+                self.nextButton.alpha = 1
+                
+            })
+            
+            self.passwordInput.becomeFirstResponder()
+            addPassword()
             
         }
         
-        UIView.animate(withDuration: 0.2, animations: {
-            
-            self.lockView.alpha = 1
-            self.imageView.alpha = 1
-            self.passwordInput.alpha = 1
-            self.labelTitle.alpha = 1
-            self.nextButton.alpha = 1
-            
-        })
         
-        self.passwordInput.becomeFirstResponder()
     }
     
     func checkPassword(password: String) {

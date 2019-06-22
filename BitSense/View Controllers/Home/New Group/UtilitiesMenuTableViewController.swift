@@ -393,7 +393,9 @@ class UtilitiesMenuTableViewController: UITableViewController, UINavigationContr
             
             alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { (action) in }))
             
-            self.present(alert, animated: true, completion: nil)
+            alert.popoverPresentationController?.sourceView = self.view
+            
+            self.present(alert, animated: true)
             
         }
         
@@ -431,7 +433,9 @@ class UtilitiesMenuTableViewController: UITableViewController, UINavigationContr
             
             alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { (action) in }))
             
-            self.present(alert, animated: true, completion: nil)
+            alert.popoverPresentationController?.sourceView = self.view
+            
+            self.present(alert, animated: true)
             
         }
         
@@ -479,7 +483,9 @@ class UtilitiesMenuTableViewController: UITableViewController, UINavigationContr
             
             alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { (action) in }))
             
-            self.present(alert, animated: true, completion: nil)
+            alert.popoverPresentationController?.sourceView = self.view
+            
+            self.present(alert, animated: true)
             
         }
         

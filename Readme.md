@@ -7,7 +7,23 @@ A Bitcoin Core GUI for iOS devices. Allows you to connect to and control multipl
 
 ## Build From Source
 
-You will need to use brew to setu
+If you want to use Tor first you will need to use brew to install the dependencies for Tor.framework (if not you can skip to the next steps):
+
+`brew install automake autoconf libtool gettext`
+
+then
+
+```
+git clone git@github.com:iCepa/Tor.framework
+
+cd Tor.framework
+
+git submodule init
+git submodule update
+
+carthage build --no-skip-current --platform iOS
+
+```
 
 You will need Xcode and Carthage.
 

@@ -1,9 +1,0 @@
-{
-  "commitish" : "1.3.1",
-  "iOS" : [
-    {
-      "name" : "AES256CBC",
-      "hash" : "2ac2abe696af2e1a5787d7a8008833714f33a2d068a054a486c96846a9f59a4e"
-    }
-  ]
-}
