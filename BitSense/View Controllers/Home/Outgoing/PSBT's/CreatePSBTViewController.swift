@@ -109,7 +109,7 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
                 
             }
             
-            let command = "curl --data-binary '{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"walletcreatefundedpsbt\", \"params\":[[],\(param), 0, {\"includeWatching\": true}] }' -H 'content-type: text/plain;' \(url)"
+            let command = "curl --data-binary '{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"walletcreatefundedpsbt\", \"params\":[[],\(param), 0, {\"includeWatching\": true}, true] }' -H 'content-type: text/plain;' \(url)"
             
             var error: NSError?
             

@@ -26,7 +26,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     var legacy = Bool()
     let connectingView = ConnectingView()
     let qrGenerator = QRGenerator()
-    let tests = Tests()
     @IBOutlet var amountField: UITextField!
     @IBOutlet var labelField: UITextField!
     @IBOutlet var qrView: UIImageView!
@@ -112,12 +111,12 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             if self.nativeSegwit {
                 
                 self.executeNodeCommandSSH(method: BTC_CLI_COMMAND.getnewaddress,
-                                           param: "\"*\", \"bech32\"")
+                                           param: "\"\", \"bech32\"")
                 
             } else if self.legacy {
                 
                 self.executeNodeCommandSSH(method: BTC_CLI_COMMAND.getnewaddress,
-                                           param: "\"*\", \"legacy\"")
+                                           param: "\"\", \"legacy\"")
                 
             } else if self.p2shSegwit {
                 

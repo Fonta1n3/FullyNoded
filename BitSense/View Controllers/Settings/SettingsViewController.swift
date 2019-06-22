@@ -314,7 +314,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
             switch indexPath.row {
                 
-            /*case 0:
+            case 0:
                 
                 rangeLabel.alpha = 0
                 label.text = "BIP44"
@@ -350,7 +350,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                     
                 }
                 
-            case 2:
+            /*case 2:
                 
                 switcher.alpha = 0
                 check.alpha = 0
@@ -369,7 +369,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                     
                 }*/
                 
-            case 0:
+            case 2:
                 
                 label.text = "Range:"
                 switcher.alpha = 0
@@ -378,7 +378,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 rangeLabel.text = range
                 rangeLabel.textColor = UIColor.white
                 
-            case 1:
+            case 3:
                 
                 rangeLabel.alpha = 0
                 label.text = "Add to Keypool"
@@ -397,7 +397,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                     
                 }
                 
-            case 2:
+            case 4:
                 
                 rangeLabel.alpha = 0
                 switcher.alpha = 1
@@ -417,7 +417,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 switcher.addTarget(self, action: #selector(switchRescan), for: .touchUpInside)
             
-            case 3:
+            case 5:
                 
                 rangeLabel.alpha = 0
                 label.text = "Import as change addresses"
@@ -466,7 +466,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
         } else if section == 3 {
             
-            return 4
+            return 6
             
         } else {
             
@@ -638,7 +638,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
         } else if indexPath.section == 3 {
             
-            /*let cell = self.settingsTable.cellForRow(at: indexPath)!
+            let cell = self.settingsTable.cellForRow(at: indexPath)!
             let label = cell.viewWithTag(1) as! UILabel
             let check = cell.viewWithTag(2) as! UIImageView
             
@@ -714,11 +714,11 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                     
                 }
                 
+            /*} else if indexPath.row == 2 {
+                
+                changeFingerprint()*/
+                
             } else if indexPath.row == 2 {
-                
-                changeFingerprint()
-                
-            } else */if indexPath.row == 0 {
                 
                 changeRange()
                 

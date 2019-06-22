@@ -84,14 +84,14 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         minusImage.image = UIImage(named: "Image-2")
         utilityImage.image = UIImage(named: "Image-4")
         
-        torConnected = false
-        connectWithTor()
+        //torConnected = false
+        //connectWithTor()
         
     }
     
     override func viewDidAppear(_ animated: Bool) {
         
-        if torConnected {
+        //if torConnected {
          
             nodes = cd.retrieveCredentials()
             
@@ -164,7 +164,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
             initialLoad = false
             
-        }
+        //}
         
     }
     
@@ -275,48 +275,78 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
-    func connectWithTor() {
+    /*func connectWithTor() {
         
-        self.connectingView.addConnectingView(vc: self,
-                                              description: "Connecting Tor")
-        
-        torClient = TorClient()
-        
-        func getData() {
-            print("getData")
-            
-            torConnected = true
-            
-            nodes = cd.retrieveCredentials()
-            
-            if nodes.count > 0 {
+//        self.connectingView.addConnectingView(vc: self,
+//                                              description: "Connecting Tor")
+//
+//        Tor only working well on simulator or when device is connected to Xcode - PLEASE HELP
+//
+//        torClient = TorClient()
+//        
+//        func getData() {
+//            print("getData")
+//
+//            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+//                
+//                self.torConnected = true
                 
-                let ud = UserDefaults.standard
+                self.nodes = self.cd.retrieveCredentials()
                 
-                let isActive = isAnyNodeActive(nodes: nodes)
-                
-                if isActive {
+                if self.nodes.count > 0 {
                     
-                    for node in nodes {
+                    let ud = UserDefaults.standard
+                    
+                    let isActive = self.isAnyNodeActive(nodes: self.nodes)
+                    
+                    if isActive {
                         
-                        if (node["isActive"] as! Bool) {
+                        for node in self.nodes {
                             
-                            self.activeNode = node
-                            
-                            let newId = node["id"] as! String
-                            
-                            if newId != existingNodeID {
+                            if (node["isActive"] as! Bool) {
                                 
-                                if !initialLoad {
+                                self.activeNode = node
+                                
+                                let newId = node["id"] as! String
+                                
+                                if newId != self.existingNodeID {
                                     
-                                    ud.removeObject(forKey: "walletName")
+                                    if !self.initialLoad {
+                                        
+                                        ud.removeObject(forKey: "walletName")
+                                        
+                                    }
+                                    
+                                    self.isUsingSSH = node["usingSSH"] as! Bool
+                                    self.refresh()
                                     
                                 }
                                 
-                                self.isUsingSSH = node["usingSSH"] as! Bool
-                                self.refresh()
-                                
                             }
+                            
+                        }
+                        
+                    } else {
+                        
+                        displayAlert(viewController: self,
+                                     isError: true,
+                                     message: "No active nodes")
+                        
+                    }
+                    
+                    if ud.object(forKey: "walletName") != nil {
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.activeWallet.text = (ud.object(forKey: "walletName") as! String)
+                            
+                        }
+                        
+                    } else {
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.activeWallet.text = ""
                             
                         }
                         
@@ -326,43 +356,19 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     
                     displayAlert(viewController: self,
                                  isError: true,
-                                 message: "No active nodes")
+                                 message: "Go to Nodes to add a node")
                     
                 }
                 
-                if ud.object(forKey: "walletName") != nil {
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.activeWallet.text = (ud.object(forKey: "walletName") as! String)
-                        
-                    }
-                    
-                } else {
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.activeWallet.text = ""
-                        
-                    }
-                    
-                }
+                self.initialLoad = false
                 
-            } else {
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "Go to Nodes to add a node")
-                
-            }
+            //}
             
-            initialLoad = false
-            
-        }
+        //}
         
-        torClient.start(completion: getData)
+        //torClient.start(completion: getData)
         
-    }
+    }*/
     
     override func viewDidLayoutSubviews() {
         
@@ -1648,7 +1654,11 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
         }
         
-        let task = self.torClient.session.dataTask(with: urlToUse as URL) { (data, response, error) -> Void in
+        // Tor only working well on simulator or when device is attached to Xcode - PLEASE HELP
+        
+        //let task = self.torClient.session.dataTask(with: urlToUse as URL) { (data, response, error) -> Void in
+        
+        let task = URLSession.shared.dataTask(with: urlToUse as URL) { (data, response, error) -> Void in
             
             do {
                 

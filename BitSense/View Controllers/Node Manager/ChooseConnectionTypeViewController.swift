@@ -58,6 +58,20 @@ class ChooseConnectionTypeViewController: UIViewController {
             
             sshSwitchOutlet.isOn = false
             
+            DispatchQueue.main.async {
+                
+                let alert = UIAlertController(title: "Alert", message: "Connecting via Tor hidden service only worked in the simulator for us, please do try it out but do not be suprised if it does not connect. We need help debugging this and are offering a bounty of $200 in BTC to anyone who can solve the issue.\n\nReach out on Twitter @FullyNoded if you want to help.", preferredStyle: .alert)
+                
+                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: { (action) in
+                    
+                    
+                    
+                }))
+                
+                self.present(alert, animated: true, completion: nil)
+                
+            }
+            
         } else {
             
             sshSwitchOutlet.isOn = true

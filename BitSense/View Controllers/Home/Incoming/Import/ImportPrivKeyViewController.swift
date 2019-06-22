@@ -370,7 +370,11 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                 
             } else {
                 
-                let descriptor = "\"\(result["descriptor"] as! String)\""
+                var descriptor = "\"\(result["descriptor"] as! String)\""
+                
+                descriptor = descriptor.replacingOccurrences(of: "4'", with: "4'\"'\"'")
+                descriptor = descriptor.replacingOccurrences(of: "1'", with: "1'\"'\"'")
+                descriptor = descriptor.replacingOccurrences(of: "0'", with: "0'\"'\"'")
                 
                 let label = "\"Fully Noded Cold Storage\""
                 

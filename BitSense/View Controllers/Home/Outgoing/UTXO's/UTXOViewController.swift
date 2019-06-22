@@ -29,7 +29,6 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     var nativeSegwit = Bool()
     var p2shSegwit = Bool()
     var legacy = Bool()
-    let tests = Tests()
     var selectedArray = [Bool]()
     var scannerShowing = false
     var blurArray = [UIVisualEffectView]()

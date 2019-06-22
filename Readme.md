@@ -7,6 +7,8 @@ A Bitcoin Core GUI for iOS devices. Allows you to connect to and control multipl
 
 ## Build From Source
 
+You will need to use brew to setu
+
 You will need Xcode and Carthage.
 
 - Install [Xcode](https://itunes.apple.com/id/app/xcode/id497799835?mt=12)
