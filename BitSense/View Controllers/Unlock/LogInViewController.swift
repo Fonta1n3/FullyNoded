@@ -26,21 +26,20 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        let tapGesture = UITapGestureRecognizer(target: self,
+                                                action: #selector(self.dismissKeyboard (_:)))
+        
+        tapGesture.numberOfTapsRequired = 1
+        self.view.addGestureRecognizer(tapGesture)
+        
         passwordInput.delegate = self
         
-        lockView.frame = self.view.frame
         lockView.backgroundColor = UIColor.black
         lockView.alpha = 1
-        lockView.removeFromSuperview()
-        view.addSubview(lockView)
         
         imageView.image = UIImage(named: "whiteLock.png")
         imageView.alpha = 1
-        imageView.frame = CGRect(x: self.view.center.x - 40, y: 40, width: 80, height: 80)
-        imageView.removeFromSuperview()
-        lockView.addSubview(imageView)
         
-        passwordInput.frame = CGRect(x: 50, y: imageView.frame.maxY + 80, width: view.frame.width - 100, height: 50)
         passwordInput.keyboardType = UIKeyboardType.default
         passwordInput.autocapitalizationType = .none
         passwordInput.autocorrectionType = .no
@@ -54,7 +53,6 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         passwordInput.textAlignment = .center
         passwordInput.keyboardAppearance = UIKeyboardAppearance.dark
         
-        labelTitle.frame = CGRect(x: self.view.center.x - ((view.frame.width - 10) / 2), y: passwordInput.frame.minY - 50, width: view.frame.width - 10, height: 50)
         labelTitle.font = UIFont.init(name: "HelveticaNeue-Light", size: 30)
         labelTitle.textColor = UIColor.white
         labelTitle.alpha = 0
@@ -67,7 +65,56 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         touchIDButton.alpha = 0
         touchIDButton.addTarget(self, action: #selector(authenticationWithTouchID), for: .touchUpInside)
         
+        view.addSubview(lockView)
+        
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        
+        imageView.removeFromSuperview()
+        lockView.addSubview(imageView)
+        
+        passwordInput.removeFromSuperview()
+        lockView.addSubview(passwordInput)
+        
+        labelTitle.removeFromSuperview()
+        lockView.addSubview(labelTitle)
+        
+        addNextButton(inputView: self.passwordInput)
+        
+        touchIDButton.removeFromSuperview()
+        lockView.addSubview(touchIDButton)
+        
         showUnlockScreen()
+        
+        DispatchQueue.main.async {
+            
+            UIImpactFeedbackGenerator().impactOccurred()
+            
+        }
+        
+        passwordInput.becomeFirstResponder()
+        
+    }
+    
+    override func viewDidLayoutSubviews() {
+        
+        lockView.frame = self.view.frame
+        imageView.frame = CGRect(x: self.view.center.x - 40, y: 40, width: 80, height: 80)
+        passwordInput.frame = CGRect(x: 50, y: imageView.frame.maxY + 80, width: view.frame.width - 100, height: 50)
+        labelTitle.frame = CGRect(x: self.view.center.x - ((view.frame.width - 10) / 2), y: passwordInput.frame.minY - 50, width: view.frame.width - 10, height: 50)
+        nextButton.frame = CGRect(x: self.view.center.x - 40, y: passwordInput.frame.maxY + 5, width: 80, height: 55)
+        touchIDButton.frame = CGRect(x: self.view.center.x - 30, y: self.nextButton.frame.maxY + 20, width: 60, height: 60)
+        
+    }
+    
+    @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
+        
+        DispatchQueue.main.async {
+            
+            self.passwordInput.resignFirstResponder()
+            
+        }
         
     }
     
@@ -75,34 +122,19 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         
         DispatchQueue.main.async {
             self.nextButton.removeFromSuperview()
-            self.nextButton.frame = CGRect(x: self.view.center.x - 40, y: inputView.frame.maxY + 5, width: 80, height: 55)
             self.nextButton.showsTouchWhenHighlighted = true
             self.nextButton.setTitle("Next", for: .normal)
             self.nextButton.setTitleColor(UIColor.white, for: .normal)
             self.nextButton.titleLabel?.font = UIFont.init(name: "HelveticaNeue-Bold", size: 20)
             self.nextButton.addTarget(self, action: #selector(self.nextButtonAction), for: .touchUpInside)
             self.view.addSubview(self.nextButton)
-            self.touchIDButton.frame = CGRect(x: self.view.center.x - 30, y: self.nextButton.frame.maxY + 20, width: 60, height: 60)
+            
         }
         
     }
     
     func showUnlockScreen() {
         
-        self.passwordInput.removeFromSuperview()
-        lockView.addSubview(passwordInput)
-        self.labelTitle.removeFromSuperview()
-        lockView.addSubview(labelTitle)
-        self.addNextButton(inputView: self.passwordInput)
-        touchIDButton.removeFromSuperview()
-        lockView.addSubview(touchIDButton)
-            
-        DispatchQueue.main.async {
-            
-            UIImpactFeedbackGenerator().impactOccurred()
-            
-        }
-            
         UIView.animate(withDuration: 0.2, animations: {
                 
             self.passwordInput.alpha = 1
@@ -136,7 +168,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             
             if self.passwordInput.text != "" {
                 
-                self.checkPassword(password: self.passwordInput.text!)
+                //self.checkPassword(password: self.passwordInput.text!)
                 
             } else {
                 
@@ -189,7 +221,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     
     func fallbackToPassword() {
         
-        DispatchQueue.main.async {
+        /*DispatchQueue.main.async {
             
             self.passwordInput.removeFromSuperview()
             self.lockView.addSubview(self.passwordInput)
@@ -209,7 +241,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
                 self.passwordInput.alpha = 1
                 self.labelTitle.alpha = 1
             })
-        }
+        }*/
         
     }
     
@@ -235,8 +267,8 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
                 self.dismiss(animated: true, completion: nil)
             }
             
-            
         })
+        
     }
     
     @objc func authenticationWithTouchID() {
@@ -348,15 +380,15 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             
         case LAError.authenticationFailed.rawValue:
             message = "The user failed to provide valid credentials"
-            self.fallbackToPassword()
+            //self.fallbackToPassword()
             
         case LAError.appCancel.rawValue:
             message = "Authentication was cancelled by application"
-            self.fallbackToPassword()
+            //self.fallbackToPassword()
             
         case LAError.invalidContext.rawValue:
             message = "The context is invalid"
-            self.fallbackToPassword()
+            //self.fallbackToPassword()
             
         case LAError.notInteractive.rawValue:
             message = "Not interactive"
@@ -364,19 +396,19 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             
         case LAError.passcodeNotSet.rawValue:
             message = "Passcode is not set on the device"
-            self.fallbackToPassword()
+            //self.fallbackToPassword()
             
         case LAError.systemCancel.rawValue:
             message = "Authentication was cancelled by the system"
-            self.fallbackToPassword()
+            //self.fallbackToPassword()
             
         case LAError.userCancel.rawValue:
             message = "The user did cancel"
-            self.fallbackToPassword()
+            //self.fallbackToPassword()
             
         case LAError.userFallback.rawValue:
             message = "The user chose to use the fallback"
-            self.fallbackToPassword()
+            //self.fallbackToPassword()
             
         default:
             message = evaluatePolicyFailErrorMessageForLA(errorCode: errorCode)
@@ -385,7 +417,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         return message
     }
     
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask { return UIInterfaceOrientationMask.portrait }
+    //override var supportedInterfaceOrientations: UIInterfaceOrientationMask { return UIInterfaceOrientationMask.portrait }
     
 }
 

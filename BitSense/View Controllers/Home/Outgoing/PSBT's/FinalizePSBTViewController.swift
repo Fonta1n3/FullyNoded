@@ -86,10 +86,18 @@ class FinalizePSBTViewController: UIViewController {
         
         if textView.text != "" {
             
+            creatingView.addConnectingView(vc: self, description: "Finalizing PSBT")
+            
             let processedPsbt = textView.text!
             
             self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.finalizepsbt,
                                        param: processedPsbt)
+            
+        } else {
+            
+            displayAlert(viewController: self,
+                         isError: true,
+                         message: "You need to input a PSBT into the text field first")
             
         }
         
@@ -126,6 +134,8 @@ class FinalizePSBTViewController: UIViewController {
                     let isComplete = dict["complete"] as! Bool
                     self.rawTx = dict["hex"] as! String
                     
+                    creatingView.removeConnectingView()
+                    
                     displayRaw(raw: self.rawTx)
                     
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
@@ -159,6 +169,8 @@ class FinalizePSBTViewController: UIViewController {
                 
             } else {
                 
+                creatingView.removeConnectingView()
+                
                 displayAlert(viewController: self,
                              isError: true,
                              message: makeSSHCall.errorDescription)
@@ -175,6 +187,8 @@ class FinalizePSBTViewController: UIViewController {
                                           completion: getResult)
             
         } else {
+            
+            creatingView.removeConnectingView()
             
             displayAlert(viewController: self,
                          isError: true,

@@ -329,7 +329,11 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                 
             } else {
                 
-                let descriptor = "\"\(result["descriptor"] as! String)\""
+                var descriptor = "\"\(result["descriptor"] as! String)\""
+                
+                descriptor = descriptor.replacingOccurrences(of: "4'", with: "4'\"'\"'")
+                descriptor = descriptor.replacingOccurrences(of: "1'", with: "1'\"'\"'")
+                descriptor = descriptor.replacingOccurrences(of: "0'", with: "0'\"'\"'")
                 
                 let label = "\"Fully Noded Hot Storage\""
                 
@@ -385,119 +389,6 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                     params = "\'[{ \"desc\": \(descriptor), \"timestamp\": \"now\", \"range\": \(convertedRange), \"watchonly\": true, \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }]' '{\"rescan\": \(reScan)}'"
                     
                 }
-                
-                /*let aes = AESService()
-                
-                var rpcuser = "bitcoin"
-                var rpcpassword = "password"
-                var port = "8332"
-                
-                //delete!!!!
-                //port = "18443"
-                
-                if activeNode["rpcuser"] != nil {
-                    
-                    let enc = activeNode["rpcuser"] as! String
-                    rpcuser = aes.decryptKey(keyToDecrypt: enc)
-                    
-                }
-                
-                if activeNode["rpcpassword"] != nil {
-                    
-                    let enc = activeNode["rpcpassword"] as! String
-                    rpcpassword = aes.decryptKey(keyToDecrypt: enc)
-                    
-                }
-                
-                if activeNode["rpcport"] != nil {
-                    
-                    let enc = activeNode["rpcport"] as! String
-                    port = aes.decryptKey(keyToDecrypt: enc)
-                    
-                }
-                
-                var url = "http://\(rpcuser):\(rpcpassword)@127.0.0.1:\(port)/"
-                
-                if UserDefaults.standard.object(forKey: "walletName") != nil {
-                    
-                    let walletName = UserDefaults.standard.object(forKey: "walletName") as! String
-                    
-                    url += "wallet/" + walletName
-                    
-                }
-                
-                 let command = "curl --data-binary '{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"importmulti\", \"params\":\(params) }' -H 'content-type: text/plain;' \(url)"
-                
-                var error: NSError?
-                
-                let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
-                queue.async {
-                    
-                    if let responseString = self.ssh.session?.channel.execute(command, error: &error) {
-                        
-                        guard let responseData = responseString.data(using: .utf8) else { return }
-                        
-                        do {
-                            
-                            let json = try JSONSerialization.jsonObject(with: responseData, options: [.allowFragments]) as! NSDictionary
-                            
-                            print("json = \(json)")
-                            
-                            if let result = json["result"] as? NSArray {
-                                
-                                print("result = \(result)")
-                                
-                                let success = (result[0] as! NSDictionary)["success"] as! Bool
-                                
-                                if success {
-                                    
-                                    self.connectingView.removeConnectingView()
-                                    
-                                    if self.isWatchOnly {
-                                        
-                                        displayAlert(viewController: self,
-                                                     isError: false,
-                                                     message: "\(self.range) watch only addresses imported!")
-                                        
-                                    } else {
-                                        
-                                        displayAlert(viewController: self,
-                                                     isError: false,
-                                                     message: "\(self.range) keys imported!")
-                                        
-                                    }
-                                    
-                                } else {
-                                    
-                                    let error = ((result[0] as! NSDictionary)["error"] as! NSDictionary)["message"] as! String
-                                    
-                                    self.connectingView.removeConnectingView()
-                                    
-                                    displayAlert(viewController: self,
-                                                 isError: true,
-                                                 message: error)
-                                    
-                                }
-                                
-                            } else {
-                                
-                                let error = json["error"] as! NSDictionary
-                                let errorMessage = error["message"] as! String
-                                
-                                displayAlert(viewController: self,
-                                             isError: true,
-                                             message: errorMessage)
-                                
-                            }
-                            
-                        } catch {
-                            
-                            
-                        }
-                        
-                    }
-                    
-                }*/
                 
                 self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.importmulti,
                                            param: params)

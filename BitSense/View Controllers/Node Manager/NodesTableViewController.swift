@@ -34,7 +34,6 @@ class NodesTableViewController: UITableViewController, UITabBarControllerDelegat
     func getNodes() {
         
         nodeArray = cd.retrieveCredentials()
-        print("nodearray = \(nodeArray)")
         
         if nodeArray.count == 0 {
             

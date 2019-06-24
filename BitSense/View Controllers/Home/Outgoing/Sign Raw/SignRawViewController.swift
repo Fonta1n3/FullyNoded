@@ -333,6 +333,7 @@ class SignRawViewController: UIViewController, UITextFieldDelegate {
         
         let stringURL = scanner.stringToReturn
         parseText(text: stringURL)
+        closeScanner()
         
     }
     
@@ -346,6 +347,7 @@ class SignRawViewController: UIViewController, UITextFieldDelegate {
         
         let qrString = scanner.qrString
         parseText(text: qrString)
+        closeScanner()
         
     }
     

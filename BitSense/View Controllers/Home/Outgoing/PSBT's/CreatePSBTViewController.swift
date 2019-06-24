@@ -67,6 +67,9 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
         
         if receivingField.text != "" && amountField.text != "" {
             
+            creatingView.addConnectingView(vc: self,
+                                           description: "Creating PSBT")
+            
             let aes = AESService()
             
             let param = "[{\"\(receivingField.text!)\":\(Double(amountField.text!)!)}]"
@@ -104,7 +107,6 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
             if UserDefaults.standard.object(forKey: "walletName") != nil {
                 
                 let walletName = UserDefaults.standard.object(forKey: "walletName") as! String
-             
                 url += "wallet/" + walletName
                 
             }
@@ -124,7 +126,7 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
                         
                         let json = try JSONSerialization.jsonObject(with: responseData, options: [.allowFragments]) as! NSDictionary
                         
-                        print("json = \(json)")
+                        self.creatingView.removeConnectingView()
                         
                         if let result = json["result"] as? NSDictionary {
                             
@@ -145,6 +147,11 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
                         
                     } catch {
                         
+                        self.creatingView.removeConnectingView()
+                        
+                        displayAlert(viewController: self,
+                                     isError: true,
+                                     message: "Unknown error")
                         
                     }
                     
@@ -180,10 +187,6 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
         
         configureScanner()
         
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        print("ssh is connected = \(ssh.session.isConnected)")
     }
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {

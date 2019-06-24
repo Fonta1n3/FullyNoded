@@ -5,6 +5,13 @@ A Bitcoin Core GUI for iOS devices. Allows you to connect to and control multipl
 
 [Download the testflight on your iOS device by tapping here](https://testflight.apple.com/join/PuFnSqgi)
 
+## Changes v1.47
+
+- Bug fix where QR scanner did not self dismiss when scanning a QR while signing an unsigned transaction.
+- Fixes layout issues for log in screen when switching from landscape to portrait.
+- Add spinner view to PSBT tasks.
+- Bug fix where user could create a node with both SSH and Tor disabled.
+
 ## Changes v1.46
 
 - Update to Swift 5 / Xcode v10.2.1

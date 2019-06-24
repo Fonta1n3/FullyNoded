@@ -83,11 +83,20 @@ class ProcessPSBTViewController: UIViewController {
     @IBAction func processNow(_ sender: Any) {
         
         if textView.text != "" {
+            
+            creatingView.addConnectingView(vc: self,
+                                           description: "Processing PSBT")
            
             let unprocessedPsbt = textView.text!
             
             self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.walletprocesspsbt,
                                        param: unprocessedPsbt)
+            
+        } else {
+            
+            displayAlert(viewController: self,
+                         isError: true,
+                         message: "You need to add a PSBT into the text field first")
             
         }
         
@@ -124,6 +133,8 @@ class ProcessPSBTViewController: UIViewController {
                     let isComplete = dict["complete"] as! Bool
                     let processedPSBT = dict["psbt"] as! String
                     
+                    creatingView.removeConnectingView()
+                    
                     displayRaw(raw: processedPSBT)
                     
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
@@ -157,6 +168,8 @@ class ProcessPSBTViewController: UIViewController {
                 
             } else {
                 
+                creatingView.removeConnectingView()
+                
                 displayAlert(viewController: self,
                              isError: true,
                              message: makeSSHCall.errorDescription)
@@ -173,6 +186,8 @@ class ProcessPSBTViewController: UIViewController {
                                           completion: getResult)
             
         } else {
+            
+            creatingView.removeConnectingView()
             
             displayAlert(viewController: self,
                          isError: true,

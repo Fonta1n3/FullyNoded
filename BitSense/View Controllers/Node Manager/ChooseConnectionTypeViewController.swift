@@ -20,7 +20,17 @@ class ChooseConnectionTypeViewController: UIViewController {
     
     @IBAction func nextAction(_ sender: Any) {
         
-        self.performSegue(withIdentifier: "goToNodeDetails", sender: self)
+        if torSwitchOutlet.isOn || sshSwitchOutlet.isOn {
+            
+            self.performSegue(withIdentifier: "goToNodeDetails", sender: self)
+            
+        } else {
+            
+            displayAlert(viewController: self,
+                         isError: true,
+                         message: "You need to either choose Tor or SSH")
+            
+        }
         
     }
     
