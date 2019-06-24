@@ -5,6 +5,34 @@ A Bitcoin Core GUI for iOS devices. Allows you to connect to and control multipl
 
 [Download the testflight on your iOS device by tapping here](https://testflight.apple.com/join/PuFnSqgi)
 
+## Changes v1.46
+
+- Update to Swift 5 / Xcode v10.2.1
+- Replaced [AES256CBC](https://github.com/SwiftyBeaver/AES256CBC) with [CryptoSwift](https://github.com/krzyzanowskim/CryptoSwift)
+- Replaced [Swift Keychain Wrapper](https://github.com/jrendel/SwiftKeychainWrapper) with [keychain-swift](https://github.com/evgenyneu/keychain-swift)
+- The replaced libraries are not maintained/updated or as widely used, which is why we switched, this is a breaking change which forced us to delete all your previous node credentials and encryption key and use these updated libraries instead.
+- Automatically add and connect to a testnet node so users may test the app properly before adding their own node. (this does not happen if building from source).
+- Added the ability to use Tor in the app to connect to your nodes V3 hidden service, however this is only working in the simulator for now, if you can help debug why it is only working in the simulator please do reach out, if it does work on your device please do let us know about it.
+- Added "Utilities" button on the home screen which allows users to take advantage of the "multiwalletrpc" which allows you to create wallets, load them and unload them. When you create a wallet it is automatically loaded and the app will call all wallet rpc functions to this wallet only. If you want to revert to using another wallet you can unload them and load the wallet you would like to use or revert back to the default wallet by tapping that option in utilities.
+- When the user creates a wallet in utilities it is by default a watch-only wallet with private keys disbaled and an empty keypool, which allows the user to import keys into the keypool and as change adresses making it very easy to create unsigned transactions (raw or PSBT) with the watch-only wallet.
+- Make sure to go to settings and input the correct settings when importing your xpub.
+- Supports importing of BIP32 extended xpub/xprv. Importing an xprv DOES NOT import private keys as of Bitcoin Core v0.18.0 this is going to change in v0.19.0.
+- Allows users to switch between adding the keys to the receive keypool or change keypool.
+- Allows users to enable or disable rescanning of the blockchain when imporitng xpubs.
+- Allows users to specify a range of addresses to import. For example you would import 0 to 99 to the keypool with change addresses disabled then import 100 to 199 with change addresses enabled.
+- PSBT functionality added, create (walletcreatefundedpsbt), process, and finalze.
+- Updated to UI for creating raw transactions, unsigned transactions and signing transactions, just tap the QR button to scan or upload a qr code.
+- Updated the UI home screen so that it shown an up arrow for outgoings and a down arrow for incomings.
+- Updated the minus button to a play button, once you have filled out the necessary info to build a transaction just tap the play button to create it.
+- Updated the UI so that when you press the sweep button it diplsays the amount we will sweep from you wallet, we always deduct your mining fee PLUS 50,000 satoshis to the sweep amount to ensure we can bump the fee incase you set too low of a mining fee.
+- Updated the UI of the outgoings buttons to more accurately describe the tools.
+- Updated the Node management flow, for some wallet functionality (createwalletfundedpsbt and signrawtransactionwithkey) we must use a curl command via ssh to send the sommand as raw data instead of a string. Therefore we need your rpcusername and rpcpassword to issue the http command to your local host 127.0.0.1. For this reason when adding node it is optional to first add your rpc credentials, if you do not add the rpc credenitals 99% of the apps functionality will still work but createwalletfundedpsbt and signrawtransactionwithkey will not.
+- When editing node credentials you must navigate to the end of the credentials and tap "Update" otherwise changes will not be saved.
+- Updated the error reporting, the error will now show up for 5 seconds and not blur out the entire screen, also the error is swipable so you can swip it up to dismiss it.
+- Add ability to manually rescan the blockchain in "Utilties"
+- Add the 👀 emoji to any transaction that is controlled by watch-only addresses in the home screen.
+- Add a label to display the name of your rpcwallet in home screen (top left) that you either created or manually loaded in utilities.
+
 ## Build From Source
 
 If you want to use Tor first you will need to use brew to install the dependencies for Tor.framework (if not you can skip to the next steps):
@@ -135,6 +163,7 @@ Please feel free to build from source in xcode and submit PR's. I need help and 
 
 ## Built With
 
-- [NMSSH](https://github.com/NMSSH/NMSSH) for SSHing into your node.
-- [AES256CBC](https://github.com/SwiftyBeaver/AES256CBC) for encrypting your log in credentials
-- [Swift Keychain Wrapper](https://github.com/jrendel/SwiftKeychainWrapper) for storing your nodes credentials on your iPhones secure enclave
+- [NMSSH](https://github.com/NMSSH/NMSSH) for SSH'ing into your node.
+- [CryptoSwift](https://github.com/krzyzanowskim/CryptoSwift) for encrypting your nodes credentials.
+- [keychain-swift](https://github.com/evgenyneu/keychain-swift) for storing your nodes credentials decryption key on your iPhones secure enclave.
+- [Tor](https://github.com/iCepa/Tor.framework) for connecting to your node more privately and securely.
