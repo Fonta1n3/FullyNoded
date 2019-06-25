@@ -23,6 +23,7 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
     var makeSSHCall = SSHelper()
     var activeNode = [String:Any]()
     
+    var isTestnet = Bool()
     var reScan = Bool()
     var isWatchOnly = Bool()
     var desc = "wpkh"
@@ -352,9 +353,57 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
             
         }
         
-        makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                      method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                      param: "\"\(desc)(\(xprv)/*)\"", completion: getDescriptor)
+        if fingerprint != "" {
+            
+            //compatible with coldcard
+            
+            if desc == "pkh" {
+                
+                //BIP44
+                
+                if isTestnet {
+                    
+                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
+                                                  method: BTC_CLI_COMMAND.getdescriptorinfo,
+                                                  param: "\"\(desc)([\(fingerprint)/44h/1h/0h]\(xprv)/0/*)\"", completion: getDescriptor)
+                    
+                } else {
+                    
+                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
+                                                  method: BTC_CLI_COMMAND.getdescriptorinfo,
+                                                  param: "\"\(desc)([\(fingerprint)/44h/0h/0h]\(xprv)/0/*)\"", completion: getDescriptor)
+                    
+                }
+                
+            } else {
+                
+                //BIP84
+                
+                if isTestnet {
+                    
+                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
+                                                  method: BTC_CLI_COMMAND.getdescriptorinfo,
+                                                  param: "\"\(desc)([\(fingerprint)/84h/1h/0h]\(xprv)/0/*)\"", completion: getDescriptor)
+                    
+                } else {
+                    
+                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
+                                                  method: BTC_CLI_COMMAND.getdescriptorinfo,
+                                                  param: "\"\(desc)([\(fingerprint)/84h/0h/0h]\(xprv)/0/*)\"", completion: getDescriptor)
+                    
+                }
+                
+            }
+            
+        } else {
+            
+            //treat the xpub as a BIP32 extended key
+            
+            makeSSHCall.executeSSHCommand(ssh: self.ssh,
+                                          method: BTC_CLI_COMMAND.getdescriptorinfo,
+                                          param: "\"\(desc)(\(xprv)/*)\"", completion: getDescriptor)
+            
+        }
         
     }
     
@@ -375,7 +424,6 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
             } else {
                 
                 var descriptor = "\"\(result["descriptor"] as! String)\""
-                
                 descriptor = descriptor.replacingOccurrences(of: "4'", with: "4'\"'\"'")
                 descriptor = descriptor.replacingOccurrences(of: "1'", with: "1'\"'\"'")
                 descriptor = descriptor.replacingOccurrences(of: "0'", with: "0'\"'\"'")
@@ -397,11 +445,59 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
             
         }
         
-        makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                      method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                      param: "\"\(desc)(\(xpub)/*)\"", completion: getDescriptor)
+        if fingerprint != "" {
+            
+            //compatible with coldcard
+            
+            if desc == "pkh" {
+                
+                //BIP44
+                
+                if isTestnet {
+                    
+                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
+                                                  method: BTC_CLI_COMMAND.getdescriptorinfo,
+                                                  param: "\"\(desc)([\(fingerprint)/44h/1h/0h]\(xpub)/0/*)\"", completion: getDescriptor)
+                    
+                } else {
+                    
+                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
+                                                  method: BTC_CLI_COMMAND.getdescriptorinfo,
+                                                  param: "\"\(desc)([\(fingerprint)/44h/0h/0h]\(xpub)/0/*)\"", completion: getDescriptor)
+                    
+                }
+                
+            } else {
+                
+                //BIP84
+                
+                if isTestnet {
+                 
+                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
+                                                  method: BTC_CLI_COMMAND.getdescriptorinfo,
+                                                  param: "\"\(desc)([\(fingerprint)/84h/1h/0h]\(xpub)/0/*)\"", completion: getDescriptor)
+                    
+                } else {
+                 
+                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
+                                                  method: BTC_CLI_COMMAND.getdescriptorinfo,
+                                                  param: "\"\(desc)([\(fingerprint)/84h/0h/0h]\(xpub)/0/*)\"", completion: getDescriptor)
+                    
+                }
+                
+            }
+            
+        } else {
+         
+            //treat the xpub as a BIP32 extended key
+            
+            makeSSHCall.executeSSHCommand(ssh: self.ssh,
+                                          method: BTC_CLI_COMMAND.getdescriptorinfo,
+                                          param: "\"\(desc)(\(xpub)/*)\"", completion: getDescriptor)
+            
+        }
         
-    }
+     }
     
     func parseKey(key: String) {
         

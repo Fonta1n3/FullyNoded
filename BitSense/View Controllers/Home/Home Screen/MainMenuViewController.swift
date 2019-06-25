@@ -1573,6 +1573,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     childVC.torRPC = self.torRPC
                     childVC.torClient = self.torClient
                     childVC.activeNode = self.activeNode
+                    childVC.isTestnet = self.isTestnet
                     
                 }
                 

@@ -361,7 +361,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                     
                 }
                 
-            /*case 2:
+            case 2:
                 
                 switcher.alpha = 0
                 check.alpha = 0
@@ -378,9 +378,9 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                     
                     label.textColor = UIColor.white
                     
-                }*/
+                }
                 
-            case 2:
+            case 3:
                 
                 label.text = "Range:"
                 switcher.alpha = 0
@@ -389,7 +389,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 rangeLabel.text = range
                 rangeLabel.textColor = UIColor.white
                 
-            case 3:
+            case 4:
                 
                 rangeLabel.alpha = 0
                 label.text = "Add to Keypool"
@@ -408,7 +408,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                     
                 }
                 
-            case 4:
+            case 5:
                 
                 rangeLabel.alpha = 0
                 switcher.alpha = 1
@@ -428,7 +428,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 switcher.addTarget(self, action: #selector(switchRescan), for: .touchUpInside)
             
-            case 5:
+            case 6:
                 
                 rangeLabel.alpha = 0
                 label.text = "Import as change addresses"
@@ -477,7 +477,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
         } else if section == 3 {
             
-            return 6
+            return 7
             
         } else {
             
@@ -507,7 +507,17 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         var footerView = UIView()
         var explanationLabel = UILabel()
         footerView = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: 20))
-        explanationLabel = UILabel(frame: CGRect(x: 20, y: 5, width: view.frame.size.width - 40, height: 40))
+        
+        if section == 3 {
+            
+           explanationLabel = UILabel(frame: CGRect(x: 20, y: 5, width: view.frame.size.width - 40, height: 100))
+            
+        } else {
+            
+            explanationLabel = UILabel(frame: CGRect(x: 20, y: 5, width: view.frame.size.width - 40, height: 40))
+            
+        }
+        
         explanationLabel.textColor = UIColor.darkGray
         explanationLabel.numberOfLines = 0
         explanationLabel.backgroundColor = UIColor.clear
@@ -528,7 +538,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
         } else if section == 3 {
             
-            explanationLabel.text = "Custom settings for importing keys.\n\n\n"
+            explanationLabel.text = "Custom settings for importing keys. If you add a fingerprint then your keys will be derived as <your xpub>/0/0 (compatible with BIP44 and BIP84 xpubs from your Coldcard Wallet Summary File). If you do NOT add a fingerprint then we treat the xpub as a BIP32 extended key and derive the keys as <your xpub>/0. Make sure you test this on testnet first to ensure you derive the expected addresses, to check it just create an invoice in \"Incomings\" and it will give you the address starting at the 0 index.\n\n\n"
             
         }
         
@@ -540,7 +550,15 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         
-        return 50
+        if section == 3 {
+            
+            return 100
+            
+        } else {
+            
+            return 50
+            
+        }
         
     }
     
@@ -727,18 +745,16 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                     
                 }
                 
-            /*} else if indexPath.row == 2 {
-                
-                changeFingerprint()*/
-                
             } else if indexPath.row == 2 {
+                
+                changeFingerprint()
+                
+            } else if indexPath.row == 3 {
                 
                 changeRange()
                 
             }
-            
-            //getSettings()
-            
+                        
         }
         
     }
@@ -775,9 +791,19 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                     
                 } else {
                     
+                    self.userDefaults.set("", forKey: "fingerprint")
+                    
+                    self.getSettings()
+                    
+                    DispatchQueue.main.async {
+                        
+                        self.settingsTable.reloadData()
+                        
+                    }
+                    
                     displayAlert(viewController: self,
                                  isError: true,
-                                 message: "Must input your master key fingerprint")
+                                 message: "Fingerprint removed")
                     
                 }
                 

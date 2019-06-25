@@ -12,6 +12,7 @@ import NMSSH
 class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate {
     
     var isPruned = Bool()
+    var isTestnet = Bool()
     var makeSSHCall:SSHelper!
     var ssh:SSHService!
     var torClient:TorClient!
@@ -226,6 +227,7 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate 
                 vc.makeSSHCall = self.makeSSHCall
                 vc.isPruned = self.isPruned
                 vc.activeNode = self.activeNode
+                vc.isTestnet = self.isTestnet
                 
             }
             

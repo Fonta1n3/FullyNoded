@@ -26,7 +26,7 @@ class ChooseConnectionTypeViewController: UIViewController {
             
         } else {
             
-            displayAlert(viewController: self,
+            displayAlert(viewController: navigationController!,
                          isError: true,
                          message: "You need to either choose Tor or SSH")
             

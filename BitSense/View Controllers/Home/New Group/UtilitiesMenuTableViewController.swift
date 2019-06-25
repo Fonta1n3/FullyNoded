@@ -226,23 +226,23 @@ class UtilitiesMenuTableViewController: UITableViewController, UINavigationContr
         
         if section == 0 {
             
-            explanationLabel.text = "Creates a watch-only wallet with private keys disabled. You will have to import keys into this wallet in order to use it. You can import an xpub in \"Incomings\" and set custom settings for importing keys in \"Settings\"."
+            explanationLabel.text = "Creates a watch-only wallet with private keys disabled. You will have to import keys into this wallet in order to use it. You can import an xpub in \"Incomings\" and set custom settings for importing keys in \"Settings\".\n\n"
             
         } else if section == 1 {
             
-            explanationLabel.text = "Allows you to manually load an existing wallet, if the wallet is already loaded it will return an error."
+            explanationLabel.text = "Allows you to manually load an existing wallet, if the wallet is already loaded it will return an error.\n\n"
             
         } else if section == 2 {
             
-            explanationLabel.text = "Unloads a wallet. It will display a list of your loaded wallets so you can choose one to unload."
+            explanationLabel.text = "Unloads a wallet. It will display a list of your loaded wallets so you can choose one to unload.\n\n"
             
         } else if section == 3 {
             
-            explanationLabel.text = "Rescans the blockchain. If you have loaded a wallet or created one it will only rescan for that specific wallet. You would do this if you have imported keys which have transaction history to see the balances."
+            explanationLabel.text = "Rescans the blockchain. If you have loaded a wallet or created one it will only rescan for that specific wallet. You would do this if you have imported keys which have transaction history to see the balances.\n"
             
         } else if section == 4 {
             
-            explanationLabel.text = "If you loaded or created a wallet in Fully Noded then the app will only check your node for that specific wallet, this button reverts Fully Noded back to checking your nodes default wallet."
+            explanationLabel.text = "If you loaded or created a wallet in Fully Noded then the app will only check your node for that specific wallet, this button reverts Fully Noded back to checking your nodes default wallet.\n"
             
         }
         

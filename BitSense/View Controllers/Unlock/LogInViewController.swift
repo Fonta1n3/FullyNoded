@@ -92,9 +92,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             UIImpactFeedbackGenerator().impactOccurred()
             
         }
-        
-        passwordInput.becomeFirstResponder()
-        
+                
     }
     
     override func viewDidLayoutSubviews() {

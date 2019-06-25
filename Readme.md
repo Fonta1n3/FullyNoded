@@ -5,6 +5,12 @@ A Bitcoin Core GUI for iOS devices. Allows you to connect to and control multipl
 
 [Download the testflight on your iOS device by tapping here](https://testflight.apple.com/join/PuFnSqgi)
 
+## Changes v1.48
+
+- Coldcard wallet compatibility for importing xpubs from your Coldcard wallet into your node.  On your Coldcard wallet you will need to insert an SD card, go to "Advanced" -> "Micro SD" -> "Dump Summary". Then create a QR code with either the BIP44 or BIP84 xpub, in Fully Noded inputting your master key fingerprint from Coldcard into Fully Noded settings. Go to "Incomings" -> "Import a key" and scan the xpub QR code, you will now be able to receive and create PSBTs for your Coldcard.
+- Added a fingerprint cell in settings so you can add a fingerprint for your master public key.
+- If you add a fingerprint the derivation will be <your xpub>/0/0, if you do not add a fingerprint the xpub will be treated as a BIP32 extended key and your derivation will be <your xpub>/0.
+
 ## Changes v1.47
 
 - Bug fix where QR scanner did not self dismiss when scanning a QR while signing an unsigned transaction.
