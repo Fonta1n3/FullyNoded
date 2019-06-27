@@ -230,7 +230,8 @@ class SSHService {
              BTC_CLI_COMMAND.importmulti,
              BTC_CLI_COMMAND.rescanblockchain,
              BTC_CLI_COMMAND.fundrawtransaction,
-             BTC_CLI_COMMAND.listunspent:
+             BTC_CLI_COMMAND.listunspent,
+             BTC_CLI_COMMAND.walletprocesspsbt:
             
             boolToReturn = true
             

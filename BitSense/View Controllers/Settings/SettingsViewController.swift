@@ -821,9 +821,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     func changeRange() {
         
-        let cell = settingsTable.cellForRow(at: IndexPath.init(row: 2, section: 3))
-        let label = cell?.viewWithTag(4) as! UILabel
-        
         DispatchQueue.main.async {
             
             let alert = UIAlertController(title: "Choose a range of keys to import", message: "Only applies for importing xpub's and xprv's", preferredStyle: .actionSheet)
@@ -832,9 +829,9 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 DispatchQueue.main.async {
                     
-                    label.text = "0 to 99"
                     self.range = "0 to 99"
                     self.userDefaults.set(self.range, forKey: "range")
+                    self.settingsTable.reloadData()
                     
                 }
                 
@@ -844,9 +841,9 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 DispatchQueue.main.async {
                     
-                    label.text = "100 to 199"
                     self.range = "100 to 199"
                     self.userDefaults.set(self.range, forKey: "range")
+                    self.settingsTable.reloadData()
                     
                 }
                 
@@ -856,9 +853,9 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 DispatchQueue.main.async {
                     
-                    label.text = "200 to 299"
                     self.range = "200 to 299"
                     self.userDefaults.set(self.range, forKey: "range")
+                    self.settingsTable.reloadData()
                     
                 }
                 
@@ -868,9 +865,9 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 DispatchQueue.main.async {
                     
-                    label.text = "300 to 399"
                     self.range = "300 to 399"
                     self.userDefaults.set(self.range, forKey: "range")
+                    self.settingsTable.reloadData()
                     
                 }
                 
@@ -880,9 +877,9 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 DispatchQueue.main.async {
                     
-                    label.text = "400 to 499"
                     self.range = "400 to 499"
                     self.userDefaults.set(self.range, forKey: "range")
+                    self.settingsTable.reloadData()
                 }
                 
             }))
@@ -900,7 +897,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
         print("switchInternal")
         
-        let cell = self.settingsTable.cellForRow(at: IndexPath(row: 5, section: 3))!
+        let cell = self.settingsTable.cellForRow(at: IndexPath(row: 6, section: 3))!
         let switcher = cell.viewWithTag(3) as! UISwitch
         let label = cell.viewWithTag(1) as! UILabel
         
@@ -1006,7 +1003,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
         print("switchAddToKeypool")
         
-        let cell = self.settingsTable.cellForRow(at: IndexPath(row: 3, section: 3))!
+        let cell = self.settingsTable.cellForRow(at: IndexPath(row: 4, section: 3))!
         let switcher = cell.viewWithTag(3) as! UISwitch
         let label = cell.viewWithTag(1) as! UILabel
         
@@ -1095,7 +1092,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
         print("switchRescan")
         
-        let cell = self.settingsTable.cellForRow(at: IndexPath(row: 4, section: 3))!
+        let cell = self.settingsTable.cellForRow(at: IndexPath(row: 5, section: 3))!
         let label = cell.viewWithTag(1) as! UILabel
         
         if rescan {

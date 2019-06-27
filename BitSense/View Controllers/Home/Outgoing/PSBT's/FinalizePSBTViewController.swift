@@ -132,7 +132,16 @@ class FinalizePSBTViewController: UIViewController {
                     let dict = makeSSHCall.dictToReturn
                     
                     let isComplete = dict["complete"] as! Bool
-                    self.rawTx = dict["hex"] as! String
+                    
+                    if let check = dict["hex"] as? String {
+                        
+                       self.rawTx = dict["hex"] as! String
+                        
+                    } else {
+                        
+                        self.rawTx = "error"
+                        
+                    }
                     
                     creatingView.removeConnectingView()
                     

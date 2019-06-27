@@ -456,7 +456,7 @@
                                 </connections>
                             </tableView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="  " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2Mz-6n-uDd">
-                                <rect key="frame" x="16" y="95" width="11.5" height="17"/>
+                                <rect key="frame" x="16" y="100" width="11.5" height="17"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="17" id="JeT-UN-35h"/>
                                 </constraints>
@@ -468,7 +468,7 @@
                         <color key="backgroundColor" red="0.078705333041326125" green="0.091041387553378997" blue="0.10316940069174874" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="WFU-Fl-Gfe" firstAttribute="top" secondItem="ioR-4d-qfe" secondAttribute="top" constant="100" id="LMq-nf-267"/>
-                            <constraint firstItem="WFU-Fl-Gfe" firstAttribute="top" secondItem="2Mz-6n-uDd" secondAttribute="bottom" constant="8" id="Mg1-G8-ypx"/>
+                            <constraint firstItem="WFU-Fl-Gfe" firstAttribute="top" secondItem="2Mz-6n-uDd" secondAttribute="bottom" constant="3" id="Mg1-G8-ypx"/>
                             <constraint firstItem="2Mz-6n-uDd" firstAttribute="leading" secondItem="ioR-4d-qfe" secondAttribute="leading" constant="16" id="ags-wf-stE"/>
                             <constraint firstItem="ioR-4d-qfe" firstAttribute="trailing" secondItem="WFU-Fl-Gfe" secondAttribute="trailing" id="bj2-pg-lic"/>
                             <constraint firstItem="ioR-4d-qfe" firstAttribute="bottom" secondItem="WFU-Fl-Gfe" secondAttribute="bottom" constant="93" id="gd4-rE-ZJc"/>
@@ -2884,7 +2884,7 @@
                                 <color key="textColor" red="0.43343858940000002" green="0.43343858940000002" blue="0.43343858940000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Amount to send:" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xUz-Xh-1yx">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Amount to send:" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xUz-Xh-1yx">
                                 <rect key="frame" x="124" y="71" width="127" height="21"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" red="0.43343858940000002" green="0.43343858940000002" blue="0.43343858940000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -2897,6 +2897,7 @@
                         <color key="backgroundColor" red="0.078040815889835358" green="0.090017892420291901" blue="0.1025182381272316" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="Tib-Pz-f8R" firstAttribute="bottom" secondItem="aqa-1j-651" secondAttribute="bottom" id="2aa-X8-zDS"/>
+                            <constraint firstItem="xUz-Xh-1yx" firstAttribute="centerX" secondItem="bAm-L1-o99" secondAttribute="centerX" id="DoN-vS-EnR"/>
                             <constraint firstItem="2Fu-M1-6Bz" firstAttribute="leading" secondItem="aqa-1j-651" secondAttribute="leading" constant="16" id="E05-jX-2aI"/>
                             <constraint firstItem="wlX-dJ-cC4" firstAttribute="leading" secondItem="aqa-1j-651" secondAttribute="leading" id="F53-9G-YD7"/>
                             <constraint firstItem="Zg7-2t-BZH" firstAttribute="trailing" secondItem="aqa-1j-651" secondAttribute="trailing" id="JWu-gD-9K4"/>
