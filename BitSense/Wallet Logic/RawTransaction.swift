@@ -40,7 +40,7 @@ class RawTransaction {
                     
                     switch method {
                         
-                    case BTC_CLI_COMMAND.signrawtransaction:
+                    case BTC_CLI_COMMAND.signrawtransactionwithwallet:
                         
                         let dict = makeSSHCall.dictToReturn
                         signedRawTx = dict["hex"] as! String
@@ -54,7 +54,7 @@ class RawTransaction {
                     case BTC_CLI_COMMAND.createrawtransaction:
                         
                         let unsignedRawTx = makeSSHCall.stringToReturn
-                        executeNodeCommandSsh(method: BTC_CLI_COMMAND.signrawtransaction, param: "\'\(unsignedRawTx)\'")
+                        executeNodeCommandSsh(method: BTC_CLI_COMMAND.signrawtransactionwithwallet, param: "\"\(unsignedRawTx)\"")
                         
                     default:
                         
@@ -97,7 +97,7 @@ class RawTransaction {
                     
                     switch method {
                         
-                    case BTC_CLI_COMMAND.signrawtransaction:
+                    case BTC_CLI_COMMAND.signrawtransactionwithwallet:
                         
                         let dict = torRPC.dictToReturn
                         signedRawTx = dict["hex"] as! String
@@ -111,7 +111,7 @@ class RawTransaction {
                     case BTC_CLI_COMMAND.createrawtransaction:
                         
                         let unsignedRawTx = torRPC.stringToReturn
-                        executeNodeCommandTor(method: BTC_CLI_COMMAND.signrawtransaction, param: "\'\(unsignedRawTx)\'")
+                        executeNodeCommandTor(method: BTC_CLI_COMMAND.signrawtransactionwithwallet, param: "\"\(unsignedRawTx)\"")
                         
                     default:
                         
@@ -147,64 +147,63 @@ class RawTransaction {
         
         func parseUnspent(utxos: NSArray) {
             
-            if !self.sweep {
+            //if !self.sweep {
+            
+            if utxos.count > 0 {
                 
-                if utxos.count > 0 {
+                parseUtxos(resultArray: utxos)
+                
+                var loop = true
+                
+                self.inputArray.removeAll()
+                
+                if self.spendableUtxos.count > 0 {
                     
-                    parseUtxos(resultArray: utxos)
+                    var sumOfUtxo = 0.0
                     
-                    var loop = true
-                    
-                    self.inputArray.removeAll()
-                    
-                    if self.spendableUtxos.count > 0 {
+                    for spendable in self.spendableUtxos {
                         
-                        var sumOfUtxo = 0.0
-                        
-                        for spendable in self.spendableUtxos {
+                        if loop {
                             
-                            if loop {
+                            let amountAvailable = spendable["amount"] as! Double
+                            sumOfUtxo = sumOfUtxo + amountAvailable
+                            
+                            if sumOfUtxo < (self.amount + miningFee) {
                                 
-                                let amountAvailable = spendable["amount"] as! Double
-                                sumOfUtxo = sumOfUtxo + amountAvailable
+                                self.utxoTxId = spendable["txid"] as! String
+                                self.utxoVout = spendable["vout"] as! Int
+                                let input = "{\"txid\":\"\(self.utxoTxId)\",\"vout\": \(self.utxoVout),\"sequence\": 1}"
+                                self.inputArray.append(input)
                                 
-                                if sumOfUtxo < (self.amount + miningFee) {
+                            } else {
+                                
+                                loop = false
+                                self.utxoTxId = spendable["txid"] as! String
+                                self.utxoVout = spendable["vout"] as! Int
+                                let input = "{\"txid\":\"\(self.utxoTxId)\",\"vout\": \(self.utxoVout),\"sequence\": 1}"
+                                self.inputArray.append(input)
+                                self.changeAmount = sumOfUtxo - (self.amount + miningFee)
+                                self.changeAmount = Double(round(100000000*self.changeAmount)/100000000)
+                                processInputs()
+                                
+                                let receiver = "\"\(self.addressToPay)\":\(self.amount)"
+                                let change = "\"\(self.changeAddress)\":\(self.changeAmount)"
+                                var param = "''\(self.inputs)'', ''{\(receiver), \(change)}''"
+                                param = param.replacingOccurrences(of: "\"{", with: "{")
+                                param = param.replacingOccurrences(of: "}\"", with: "}")
+                                
+                                if isUsingSSH {
                                     
-                                    self.utxoTxId = spendable["txid"] as! String
-                                    self.utxoVout = spendable["vout"] as! Int
-                                    let input = "{\"txid\":\"\(self.utxoTxId)\",\"vout\": \(self.utxoVout),\"sequence\": 1}"
-                                    self.inputArray.append(input)
+                                    executeNodeCommandSsh(method: BTC_CLI_COMMAND.createrawtransaction,
+                                                          param: param)
                                     
                                 } else {
                                     
-                                    loop = false
-                                    self.utxoTxId = spendable["txid"] as! String
-                                    self.utxoVout = spendable["vout"] as! Int
-                                    let input = "{\"txid\":\"\(self.utxoTxId)\",\"vout\": \(self.utxoVout),\"sequence\": 1}"
-                                    self.inputArray.append(input)
-                                    self.changeAmount = sumOfUtxo - (self.amount + miningFee)
-                                    self.changeAmount = Double(round(100000000*self.changeAmount)/100000000)
-                                    
-                                    print("miningFee = \(miningFee)")
-                                    
-                                    processInputs()
-                                    
-                                    let param = "\'\(self.inputs)\' \'{\"\(self.addressToPay)\":\(self.amount), \"\(self.changeAddress)\": \(self.changeAmount)}\'"
-                                    
-                                    if isUsingSSH {
-                                        
-                                        executeNodeCommandSsh(method: BTC_CLI_COMMAND.createrawtransaction,
-                                                              param: param)
-                                        
-                                    } else {
-                                     
-                                        executeNodeCommandTor(method: BTC_CLI_COMMAND.createrawtransaction,
-                                                              param: param)
-                                        
-                                    }
-                                    
+                                    executeNodeCommandTor(method: BTC_CLI_COMMAND.createrawtransaction,
+                                                          param: param)
                                     
                                 }
+                                
                                 
                             }
                             
@@ -212,66 +211,13 @@ class RawTransaction {
                         
                     }
                     
-                } else {
-                    
-                    errorBool = true
-                    errorDescription = "No UTXO's"
-                    completion()
-                    
                 }
                 
             } else {
                 
-                //sweeping
-                if utxos.count > 0 {
-                    
-                    parseUtxos(resultArray: utxos)
-                    
-                    self.inputArray.removeAll()
-                    
-                    if self.spendableUtxos.count > 0 {
-                        
-                        var sumOfUtxo = 0.0
-                        
-                        for spendable in self.spendableUtxos {
-                            
-                            let amountAvailable = spendable["amount"] as! Double
-                            sumOfUtxo = sumOfUtxo + amountAvailable
-                            self.utxoTxId = spendable["txid"] as! String
-                            self.utxoVout = spendable["vout"] as! Int
-                            let input = "{\"txid\":\"\(self.utxoTxId)\",\"vout\": \(self.utxoVout),\"sequence\": 1}"
-                            self.inputArray.append(input)
-                            
-                        }
-                        
-                        let array = String(sumOfUtxo).split(separator: ".")
-                        if array[1].count > 8 {
-                            
-                            sumOfUtxo = round(100000000*sumOfUtxo)/100000000
-                            
-                        }
-                        
-                        let total = sumOfUtxo - miningFee - 0.00050000
-                        let totalRounded = round(100000000*total)/100000000
-                        self.amount = totalRounded
-                        processInputs()
-                        
-                        print("miningFee = \(miningFee)")
-                        
-                        let param = "\'\(self.inputs)\' \'{\"\(self.addressToPay)\":\(self.amount), \"\(self.changeAddress)\": \(self.changeAmount)}\'"
-                        
-                        executeNodeCommandSsh(method: BTC_CLI_COMMAND.createrawtransaction,
-                                                   param: param)
-                        
-                    }
-                    
-                } else {
-                    
-                    errorBool = true
-                    errorDescription = "No UTXO's"
-                    completion()
-                    
-                }
+                errorBool = true
+                errorDescription = "No UTXO's"
+                completion()
                 
             }
             
@@ -327,7 +273,7 @@ class RawTransaction {
             executeNodeCommandSsh(method: BTC_CLI_COMMAND.listunspent, param: "")
             
         } else {
-         
+            
             executeNodeCommandTor(method: BTC_CLI_COMMAND.listunspent, param: "")
             
         }

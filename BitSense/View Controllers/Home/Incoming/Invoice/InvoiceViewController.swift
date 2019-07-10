@@ -127,12 +127,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             
         }
         
-        //MARK: For testing purposes only -- Uncomment above and delete below for production
-        
-        /*let address = tests.getAddress()
-        self.addressString = address
-        showAddress(address: address)*/
-        
     }
     
     func showAddress(address: String) {
@@ -247,36 +241,14 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             
         }
         
-        if self.textToShareViaQRCode == "" {
-            
-            self.textToShareViaQRCode = self.addressString
-            
-        }
+        let objectsToShare = [self.qrCode]
         
-        qrGenerator.backColor = UIColor.white
-        qrGenerator.foreColor = UIColor.black
-        qrGenerator.textInput = self.textToShareViaQRCode
-        let qr = qrGenerator.getQRCode()
+        let activityController = UIActivityViewController(activityItems: objectsToShare,
+                                                          applicationActivities: nil)
         
-        if let data = qr.pngData() {
-            
-            let fileName = getDocumentsDirectory().appendingPathComponent("btc.png")
-            try? data.write(to: fileName)
-            let objectsToShare = [fileName]
-            
-            DispatchQueue.main.async {
-                
-                let activityController = UIActivityViewController(activityItems: objectsToShare,
-                                                                  applicationActivities: nil)
-                
-                activityController.popoverPresentationController?.sourceView = self.view
-                activityController.popoverPresentationController?.sourceView = self.view
-                
-                self.present(activityController, animated: true) {}
-                
-            }
-            
-        }
+        activityController.completionWithItemsHandler = { (type,completed,items,error) in}
+        activityController.popoverPresentationController?.sourceView = self.view
+        self.present(activityController, animated: true) {}
         
     }
     

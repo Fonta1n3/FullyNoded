@@ -13,27 +13,17 @@ class SSHService {
     
     var session:NMSSHSession!
     static let sharedInstance = SSHService()
-    var path = "bitcoin-cli"
     let aes = AESService()
+    var activeNode = [String:Any]()
     
     private init() {}
     
-    func connect(activeNode: [String:Any], success: @escaping((success:Bool, error:String?)) -> ()) {
+    func connect(success: @escaping((success:Bool, error:String?)) -> ()) {
         
         var port = ""
         var user = ""
         var host = ""
         var password = ""
-        
-        if let pathCheck = activeNode["path"] as? String {
-            
-            if aes.decryptKey(keyToDecrypt: pathCheck) != "" {
-                
-                path = aes.decryptKey(keyToDecrypt: pathCheck)
-                
-            }
-            
-        }
         
         if let portCheck = activeNode["port"] as? String {
             
@@ -77,7 +67,7 @@ class SSHService {
         
         guard user != "", host != "", password != "" else {
             
-            success((success:false, error:"Incomplete Credentials"))
+            success((success:false, error:"Incomplete SSH Credentials"))
             return
             
         }
@@ -101,19 +91,15 @@ class SSHService {
                     if self.session.isAuthorized {
                         
                         success((success:true, error:nil))
-                        print("success")
                         
                     } else {
                         
                         success((success:false, error:"\(String(describing: self.session.lastError!.localizedDescription))"))
-                        print("fail")
-                        print("\(String(describing: self.session?.lastError))")
                         
                     }
                     
                 } else {
                     
-                    print("Session not connected")
                     success((success:false, error:"Unable to connect to your node with SSH"))
                     
                 }
@@ -132,79 +118,85 @@ class SSHService {
     
     func execute(command: BTC_CLI_COMMAND, params: Any, response: @escaping((dictionary:Any?, error:String?)) -> ()) {
         
-        var commandToExecute = "\(self.path) \(command.rawValue) \(params)"
+        var rpcuser = ""
+        var rpcpassword = ""
+        var rpcport = ""
         
-        if let walletName = UserDefaults.standard.object(forKey: "walletName") as? String {
+        if activeNode["rpcuser"] != nil {
             
-            let b = isWalletRPC(command: command)
+            let enc = activeNode["rpcuser"] as! String
+            rpcuser = aes.decryptKey(keyToDecrypt: enc)
             
-            if b {
+        }
+        
+        if activeNode["rpcpassword"] != nil {
+            
+            let enc = activeNode["rpcpassword"] as! String
+            rpcpassword = aes.decryptKey(keyToDecrypt: enc)
+            
+        }
+        
+        if activeNode["rpcport"] != nil {
+            
+            let enc = activeNode["rpcport"] as! String
+            rpcport = aes.decryptKey(keyToDecrypt: enc)
+            
+        }
+        
+        guard rpcuser != "", rpcpassword != "", rpcport != "" else {
+            
+            response((dictionary:nil, error:"Incomplete RPC Credentials"))
+            return
+            
+        }
+        
+        let userDefaults = UserDefaults.standard
+        
+        var url = "http://\(rpcuser):\(rpcpassword)@127.0.0.1:\(rpcport)/"
+        
+        if userDefaults.object(forKey: "walletName") != nil {
+            
+            if let walletName = userDefaults.object(forKey: "walletName") as? String {
                 
-                commandToExecute = "\(self.path) -rpcwallet=\(walletName) \(command.rawValue) \(params)"
+                let b = isWalletRPC(command: command)
+                
+                if b {
+                    
+                    url += "wallet/" + walletName
+                    
+                }
                 
             }
             
         }
-            
+        
+        let curlCommand = "curl --data-binary '{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"\(command)\", \"params\":[\(params)] }' -H 'content-type: text/plain;' \(url)"
+        
         var error: NSError?
         
         let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
         
         queue.async {
             
-            if let responseString = self.session?.channel.execute(commandToExecute, error: &error) {
+            if let responseString = self.session?.channel.execute(curlCommand, error: &error) {
                 
-                print("responseString = \(String(describing: responseString))")
-                
-                if responseString == "" && command == BTC_CLI_COMMAND.importprivkey || command == BTC_CLI_COMMAND.importaddress {
+                if error != nil {
                     
-                    response((dictionary:"Imported key success", error:nil))
-                    
-                } else if responseString == "" && command == BTC_CLI_COMMAND.unloadwallet {
-                    
-                    response((dictionary:"Wallet unloaded", error:nil))
+                    response((dictionary:nil, error:error!.localizedDescription))
                     
                 } else {
                     
-                    if error != nil {
+                    guard let responseData = responseString.data(using: .utf8) else { return }
+                    
+                    do {
                         
-                        print("error = \(error!.localizedDescription)")
-                        response((dictionary:nil, error:error!.localizedDescription))
+                        let json = try JSONSerialization.jsonObject(with: responseData, options: [.allowFragments]) as Any
                         
-                    } else {
+                        response((dictionary:json, error:nil))
                         
-                        if command == BTC_CLI_COMMAND.getnewaddress || command == BTC_CLI_COMMAND.getrawchangeaddress || command == BTC_CLI_COMMAND.createrawtransaction {
-                            
-                            if responseString.hasSuffix("\n") {
-                                
-                                let address = responseString.replacingOccurrences(of: "\n", with: "")
-                                
-                                response((dictionary: address,error: nil))
-                                
-                            } else {
-                                
-                                response((dictionary:responseString,error:nil))
-                                
-                            }
-                            
-                        } else {
-                            
-                            guard let responseData = responseString.data(using: .utf8) else { return }
-                            
-                            do {
-                                
-                                let json = try JSONSerialization.jsonObject(with: responseData, options: [.allowFragments]) as Any
-                                
-                                response((dictionary:json, error:nil))
-                                
-                            } catch {
-                                
-                                response((dictionary:nil, error:"\(error.localizedDescription)"))
-                                print("error = \(error)")
-                                
-                            }
-                            
-                        }
+                    } catch {
+                        
+                        response((dictionary:nil, error:"\(error.localizedDescription)"))
                         
                     }
                     
@@ -213,8 +205,8 @@ class SSHService {
             }
             
         }
-            
-     }
+        
+    }
     
     func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
         

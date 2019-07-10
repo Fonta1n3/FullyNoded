@@ -44,23 +44,52 @@ class SSHelper {
                 
                 if let dict = result as? NSDictionary {
                     
-                    self.dictToReturn = dict
-                    completion()
-                    
-                } else if let str = result as? String {
-                    
-                    self.stringToReturn = str
-                    completion()
-                    
-                } else if let doub = result as? Double {
-                    
-                    self.doubleToReturn = doub
-                    completion()
-                    
-                } else if let arr = result as? NSArray {
-                    
-                    self.arrayToReturn = arr
-                    completion()
+                    if let err = dict["error"] as? NSDictionary {
+                        
+                        let errorMessage = err["message"] as! String
+                        self.errorBool = true
+                        self.errorDescription = "Bitcoin Core error:" + " " + errorMessage
+                        completion()
+                        
+                    } else {
+                        
+                        if let str = dict["result"] as? String {
+                            
+                            self.stringToReturn = str
+                            completion()
+                            
+                        } else if let doub = dict["result"] as? Double {
+                            
+                            self.doubleToReturn = doub
+                            completion()
+                            
+                        } else if let arr = dict["result"] as? NSArray {
+                            
+                            self.arrayToReturn = arr
+                            completion()
+                            
+                        } else if let dic = dict["result"] as? NSDictionary {
+                            
+                            self.dictToReturn = dic
+                            completion()
+                            
+                        } else {
+                            
+                            if method == BTC_CLI_COMMAND.unloadwallet {
+                                
+                                self.stringToReturn = "Wallet unloaded"
+                                completion()
+                                
+                            } else if method == BTC_CLI_COMMAND.importprivkey {
+                                
+                                self.stringToReturn = "Imported key success"
+                                completion()
+                                
+                            }
+                            
+                        }
+                        
+                    }
                     
                 }
                 

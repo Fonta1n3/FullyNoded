@@ -37,6 +37,7 @@
 		D0452ADB2247417F0013E225 /* ImportPrivKeyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0452ADA2247417F0013E225 /* ImportPrivKeyViewController.swift */; };
 		D0452ADD224743C50013E225 /* LogInViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0452ADC224743C50013E225 /* LogInViewController.swift */; };
 		D0452ADF224833390013E225 /* Commands.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0452ADE224833390013E225 /* Commands.swift */; };
+		D04C79F422C8819D00ECA467 /* LocalRPC.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04C79F322C8819D00ECA467 /* LocalRPC.swift */; };
 		D04DB992226D818F00172C98 /* IncomingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04DB991226D818F00172C98 /* IncomingsTableViewController.swift */; };
 		D05266132271D6D100E2394B /* RawDisplayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05266122271D6D100E2394B /* RawDisplayer.swift */; };
 		D05315FF214639CD005707D6 /* blackClose.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D05315FE214639CD005707D6 /* blackClose.jpg */; };
@@ -137,6 +138,7 @@
 		D0452ADA2247417F0013E225 /* ImportPrivKeyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportPrivKeyViewController.swift; sourceTree = "<group>"; };
 		D0452ADC224743C50013E225 /* LogInViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogInViewController.swift; sourceTree = "<group>"; };
 		D0452ADE224833390013E225 /* Commands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Commands.swift; sourceTree = "<group>"; };
+		D04C79F322C8819D00ECA467 /* LocalRPC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalRPC.swift; sourceTree = "<group>"; };
 		D04DB991226D818F00172C98 /* IncomingsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IncomingsTableViewController.swift; sourceTree = "<group>"; };
 		D05266122271D6D100E2394B /* RawDisplayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RawDisplayer.swift; sourceTree = "<group>"; };
 		D05315FE214639CD005707D6 /* blackClose.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = blackClose.jpg; sourceTree = "<group>"; };
@@ -431,6 +433,7 @@
 			isa = PBXGroup;
 			children = (
 				D0A2918E225114670099A2F3 /* MakeRPCCall.swift */,
+				D04C79F322C8819D00ECA467 /* LocalRPC.swift */,
 			);
 			path = RPC;
 			sourceTree = "<group>";
@@ -747,6 +750,7 @@
 				D0EF29C1216B82B400EB776A /* SettingsViewController.swift in Sources */,
 				D0A7CF73227967F900B683A0 /* AddressParser.swift in Sources */,
 				D00B9A282111427200E8B95A /* AppDelegate.swift in Sources */,
+				D04C79F422C8819D00ECA467 /* LocalRPC.swift in Sources */,
 				D0EC7490227F6977001489B9 /* SignRawViewController.swift in Sources */,
 				D03EC9EB2275485400CF5A88 /* MultiOutputViewController.swift in Sources */,
 				D073E16E22558CDE0012A28C /* CoreDataService.swift in Sources */,

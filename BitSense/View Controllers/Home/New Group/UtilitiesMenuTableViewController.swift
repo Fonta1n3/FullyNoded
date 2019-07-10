@@ -545,7 +545,6 @@ class UtilitiesMenuTableViewController: UITableViewController, UINavigationContr
                 case BTC_CLI_COMMAND.unloadwallet:
                     
                     let response = makeSSHCall.stringToReturn
-                    
                     connectingView.removeConnectingView()
                     
                     displayAlert(viewController: self.navigationController!,

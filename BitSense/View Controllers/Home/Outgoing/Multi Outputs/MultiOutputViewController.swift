@@ -54,7 +54,7 @@ class MultiOutputViewController: UIViewController, UITextFieldDelegate, UITableV
                 
                 if let amount = output["amount"] as? Double {
                     
-                    totalAmount = totalAmount + amount
+                    totalAmount += amount
                     
                     if let address = output["address"] as? String {
                         

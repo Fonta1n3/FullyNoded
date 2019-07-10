@@ -10,6 +10,7 @@ import Foundation
 
 public enum BTC_CLI_COMMAND: String {
     
+    case signrawtransactionwithkey = "signrawtransactionwithkey"
     case listwallets = "listwallets"
     case unloadwallet = "unloadwallet"
     case rescanblockchain = "rescanblockchain"
@@ -30,7 +31,7 @@ public enum BTC_CLI_COMMAND: String {
     case getnewaddress = "getnewaddress"
     case gettransaction = "gettransaction"
     case sendrawtransaction = "sendrawtransaction"
-    case signrawtransaction = "signrawtransactionwithwallet"
+    case signrawtransactionwithwallet = "signrawtransactionwithwallet"
     case createrawtransaction = "createrawtransaction"
     case getrawchangeaddress = "getrawchangeaddress"
     case getaccountaddress = "getaddressesbyaccount"

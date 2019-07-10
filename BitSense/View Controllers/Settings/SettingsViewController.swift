@@ -669,79 +669,47 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
         } else if indexPath.section == 3 {
             
-            let cell = self.settingsTable.cellForRow(at: indexPath)!
-            let label = cell.viewWithTag(1) as! UILabel
-            let check = cell.viewWithTag(2) as! UIImageView
-            
             if indexPath.row == 0 {
-                
-                let bip84cell = self.settingsTable.cellForRow(at: IndexPath.init(row: 1, section: 3))!
-                let bip84Label = bip84cell.viewWithTag(1) as! UILabel
-                let bip84Check = bip84cell.viewWithTag(2) as! UIImageView
                 
                 if bip44 {
                     
                     self.userDefaults.set(false, forKey: "bip44")
                     self.userDefaults.set(true, forKey: "bip84")
                     
-                    DispatchQueue.main.async {
-                        
-                        label.textColor = UIColor.darkGray
-                        check.alpha = 0
-                        bip84Label.textColor = UIColor.white
-                        bip84Check.alpha = 1
-                        
-                    }
-                    
                 } else {
                     
                     self.userDefaults.set(true, forKey: "bip44")
                     self.userDefaults.set(false, forKey: "bip84")
                     
-                    DispatchQueue.main.async {
-                        
-                        label.textColor = UIColor.white
-                        check.alpha = 1
-                        bip84Label.textColor = UIColor.darkGray
-                        bip84Check.alpha = 0
-                        
-                    }
+                }
+                
+                self.getSettings()
+                
+                DispatchQueue.main.async {
+                    
+                    self.settingsTable.reloadData()
                     
                 }
                 
             } else if indexPath.row == 1 {
-                
-                let bip44cell = self.settingsTable.cellForRow(at: IndexPath.init(row: 0, section: 3))!
-                let bip44Label = bip44cell.viewWithTag(1) as! UILabel
-                let bip44Check = bip44cell.viewWithTag(2) as! UIImageView
                 
                 if bip84 {
                     
                     self.userDefaults.set(true, forKey: "bip44")
                     self.userDefaults.set(false, forKey: "bip84")
                     
-                    DispatchQueue.main.async {
-                        
-                        label.textColor = UIColor.darkGray
-                        check.alpha = 0
-                        bip44Label.textColor = UIColor.white
-                        bip44Check.alpha = 1
-                        
-                    }
-                    
                 } else {
                     
                     self.userDefaults.set(false, forKey: "bip44")
                     self.userDefaults.set(true, forKey: "bip84")
                     
-                    DispatchQueue.main.async {
-                        
-                        label.textColor = UIColor.white
-                        check.alpha = 1
-                        bip44Label.textColor = UIColor.darkGray
-                        bip44Check.alpha = 0
-                        
-                    }
+                }
+                
+                self.getSettings()
+                
+                DispatchQueue.main.async {
+                    
+                    self.settingsTable.reloadData()
                     
                 }
                 
@@ -781,31 +749,17 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                     
                     self.userDefaults.set(fp, forKey: "fingerprint")
                     
-                    self.getSettings()
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.settingsTable.reloadData()
-                        
-                    }
-                    
                 } else {
                     
                     self.userDefaults.set("", forKey: "fingerprint")
-                    
-                    self.getSettings()
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.settingsTable.reloadData()
-                        
-                    }
                     
                     displayAlert(viewController: self,
                                  isError: true,
                                  message: "Fingerprint removed")
                     
                 }
+                
+                self.reloadSettings()
                 
             }))
             
@@ -827,60 +781,41 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
             alert.addAction(UIAlertAction(title: NSLocalizedString("0 to 99", comment: ""), style: .default, handler: { (action) in
                 
-                DispatchQueue.main.async {
-                    
-                    self.range = "0 to 99"
-                    self.userDefaults.set(self.range, forKey: "range")
-                    self.settingsTable.reloadData()
-                    
-                }
+                self.range = "0 to 99"
+                self.userDefaults.set(self.range, forKey: "range")
+                self.reloadSettings()
                 
             }))
             
             alert.addAction(UIAlertAction(title: NSLocalizedString("100 to 199", comment: ""), style: .default, handler: { (action) in
                 
-                DispatchQueue.main.async {
-                    
-                    self.range = "100 to 199"
-                    self.userDefaults.set(self.range, forKey: "range")
-                    self.settingsTable.reloadData()
-                    
-                }
+                self.range = "100 to 199"
+                self.userDefaults.set(self.range, forKey: "range")
+                self.reloadSettings()
                 
             }))
             
             alert.addAction(UIAlertAction(title: NSLocalizedString("200 to 299", comment: ""), style: .default, handler: { (action) in
                 
-                DispatchQueue.main.async {
-                    
-                    self.range = "200 to 299"
-                    self.userDefaults.set(self.range, forKey: "range")
-                    self.settingsTable.reloadData()
-                    
-                }
+                self.range = "200 to 299"
+                self.userDefaults.set(self.range, forKey: "range")
+                self.reloadSettings()
                 
             }))
             
             alert.addAction(UIAlertAction(title: NSLocalizedString("300 to 399", comment: ""), style: .default, handler: { (action) in
                 
-                DispatchQueue.main.async {
-                    
-                    self.range = "300 to 399"
-                    self.userDefaults.set(self.range, forKey: "range")
-                    self.settingsTable.reloadData()
-                    
-                }
+                self.range = "300 to 399"
+                self.userDefaults.set(self.range, forKey: "range")
+                self.reloadSettings()
                 
             }))
             
             alert.addAction(UIAlertAction(title: NSLocalizedString("400 to 499", comment: ""), style: .default, handler: { (action) in
                 
-                DispatchQueue.main.async {
-                    
-                    self.range = "400 to 499"
-                    self.userDefaults.set(self.range, forKey: "range")
-                    self.settingsTable.reloadData()
-                }
+                self.range = "400 to 499"
+                self.userDefaults.set(self.range, forKey: "range")
+                self.reloadSettings()
                 
             }))
             
@@ -899,7 +834,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
         let cell = self.settingsTable.cellForRow(at: IndexPath(row: 6, section: 3))!
         let switcher = cell.viewWithTag(3) as! UISwitch
-        let label = cell.viewWithTag(1) as! UILabel
         
         func checkIfPrivKeysEnabled() {
             
@@ -913,15 +847,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                     if privKeysEnabled {
                         
                         isInternal = false
-                        
                         userDefaults.set(false, forKey: "isInternal")
-                        
-                        DispatchQueue.main.async {
-                            
-                            label.textColor = UIColor.darkGray
-                            switcher.isOn = false
-                            
-                        }
                         
                         displayAlert(viewController: self,
                                      isError: true,
@@ -932,41 +858,17 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                         if isInternal {
                             
                             isInternal = false
-                            
                             userDefaults.set(false, forKey: "isInternal")
-                            
-                            DispatchQueue.main.async {
-                                
-                                label.textColor = UIColor.darkGray
-                                
-                            }
                             
                         } else {
                             
                             isInternal = true
-                            
                             userDefaults.set(true, forKey: "isInternal")
-                            
-                            DispatchQueue.main.async {
-                                
-                                label.textColor = UIColor.white
-                                
-                            }
                             
                             if !addToKeypool {
                                 
-                                DispatchQueue.main.async {
-                                    
-                                    let addToKeypoolCell = self.settingsTable.cellForRow(at: IndexPath.init(row: 3, section: 3))!
-                                    let keypoolLabel = addToKeypoolCell.viewWithTag(1) as! UILabel
-                                    let keypoolSwitch = addToKeypoolCell.viewWithTag(3) as! UISwitch
-                                
-                                    keypoolLabel.textColor = UIColor.white
-                                    keypoolSwitch.isOn = true
-                                    self.addToKeypool = true
-                                    self.userDefaults.set(true, forKey: "addToKeypool")
-                                    
-                                }
+                                self.addToKeypool = true
+                                self.userDefaults.set(true, forKey: "addToKeypool")
                                 
                             }
                             
@@ -974,28 +876,54 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                         
                     }
                     
+                    reloadSettings()
+                    
                 }
                 
             }
             
-            if ssh.session.isConnected {
+            if self.ssh != nil {
                 
-                makeSSHCall.executeSSHCommand(ssh: ssh,
-                                              method: BTC_CLI_COMMAND.getwalletinfo,
-                                              param: "",
-                                              completion: getResult)
+                if ssh.session.isConnected {
+                    
+                    makeSSHCall.executeSSHCommand(ssh: ssh,
+                                                  method: BTC_CLI_COMMAND.getwalletinfo,
+                                                  param: "",
+                                                  completion: getResult)
+                    
+                } else {
+                    
+                    switcher.isOn = false
+                    
+                    displayAlert(viewController: self,
+                                 isError: true,
+                                 message: "SSH not connected, we need to check your wallets settings before you can update this setting")
+                    
+                }
                 
             } else {
                 
+                switcher.isOn = false
+                
                 displayAlert(viewController: self,
                              isError: true,
-                             message: "SSH not connected, we need to check your nodes settings before you can update this setting")
+                             message: "SSH not connected, we need to check your wallets settings before you can update this setting")
                 
             }
             
         }
         
-        checkIfPrivKeysEnabled()
+        if !switcher.isOn {
+            
+            isInternal = false
+            userDefaults.set(false, forKey: "isInternal")
+            reloadSettings()
+            
+        } else {
+            
+           checkIfPrivKeysEnabled()
+            
+        }
         
     }
     
@@ -1005,7 +933,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
         let cell = self.settingsTable.cellForRow(at: IndexPath(row: 4, section: 3))!
         let switcher = cell.viewWithTag(3) as! UISwitch
-        let label = cell.viewWithTag(1) as! UILabel
         
         func checkIfPrivKeysEnabled() {
             
@@ -1019,15 +946,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                     if privKeysEnabled {
                         
                         addToKeypool = false
-                        
                         userDefaults.set(false, forKey: "addToKeypool")
-                        
-                        DispatchQueue.main.async {
-                            
-                            label.textColor = UIColor.darkGray
-                            switcher.isOn = false
-                            
-                        }
                         
                         displayAlert(viewController: self,
                                      isError: true,
@@ -1038,53 +957,77 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                         if addToKeypool {
                             
                             addToKeypool = false
-                            
                             userDefaults.set(false, forKey: "addToKeypool")
-                            
-                            DispatchQueue.main.async {
-                                
-                                label.textColor = UIColor.darkGray
-                                
-                            }
                             
                         } else {
                             
                             addToKeypool = true
-                            
                             userDefaults.set(true, forKey: "addToKeypool")
-                            
-                            DispatchQueue.main.async {
-                                
-                                label.textColor = UIColor.white
-                                
-                            }
                             
                         }
                         
                     }
                     
+                    reloadSettings()
+                    
                 }
                 
             }
             
-            if ssh.session.isConnected {
+            if self.ssh != nil {
                 
-                makeSSHCall.executeSSHCommand(ssh: ssh,
-                                              method: BTC_CLI_COMMAND.getwalletinfo,
-                                              param: "",
-                                              completion: getResult)
+                if ssh.session.isConnected {
+                    
+                    makeSSHCall.executeSSHCommand(ssh: ssh,
+                                                  method: BTC_CLI_COMMAND.getwalletinfo,
+                                                  param: "",
+                                                  completion: getResult)
+                    
+                } else {
+                    
+                    switcher.isOn = false
+                    
+                    displayAlert(viewController: self,
+                                 isError: true,
+                                 message: "SSH not connected, we need to check your wallets settings before you can update this setting")
+                    
+                }
                 
             } else {
                 
+                switcher.isOn = false
+                
                 displayAlert(viewController: self,
                              isError: true,
-                             message: "SSH not connected, we need to check your nodes settings before you can update this setting")
+                             message: "SSH not connected, we need to check your wallets settings before you can update this setting")
                 
             }
             
         }
         
-        checkIfPrivKeysEnabled()
+        if !switcher.isOn {
+            
+            addToKeypool = false
+            userDefaults.set(false, forKey: "addToKeypool")
+            reloadSettings()
+            
+        } else {
+            
+            checkIfPrivKeysEnabled()
+            
+        }
+        
+    }
+    
+    func reloadSettings() {
+        
+        getSettings()
+        
+        DispatchQueue.main.async {
+            
+            self.settingsTable.reloadData()
+            
+        }
         
     }
     
@@ -1093,33 +1036,21 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         print("switchRescan")
         
         let cell = self.settingsTable.cellForRow(at: IndexPath(row: 5, section: 3))!
-        let label = cell.viewWithTag(1) as! UILabel
+        let switcher = cell.viewWithTag(3) as! UISwitch
         
-        if rescan {
+        if !switcher.isOn {
             
             self.rescan = false
-            
             userDefaults.set(false, forKey: "reScan")
-            
-            DispatchQueue.main.async {
-                
-                label.textColor = UIColor.darkGray
-                
-            }
             
         } else {
             
             self.rescan = true
-            
             userDefaults.set(true, forKey: "reScan")
             
-            DispatchQueue.main.async {
-                
-                label.textColor = UIColor.white
-                
-            }
-            
         }
+        
+        reloadSettings()
         
     }
     

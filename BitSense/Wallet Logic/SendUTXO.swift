@@ -37,7 +37,7 @@ class SendUTXO {
                     
                     switch method {
                         
-                    case BTC_CLI_COMMAND.signrawtransaction:
+                    case BTC_CLI_COMMAND.signrawtransactionwithwallet:
                         
                         let result = makeSSHCall.dictToReturn
                         let hex = result["hex"] as! String
@@ -47,8 +47,8 @@ class SendUTXO {
                     case BTC_CLI_COMMAND.createrawtransaction:
                         
                         let unsignedRawTx = makeSSHCall.stringToReturn
-                        executeNodeCommandSsh(method: BTC_CLI_COMMAND.signrawtransaction,
-                                                   param: "\'\(unsignedRawTx)\'")
+                        executeNodeCommandSsh(method: BTC_CLI_COMMAND.signrawtransactionwithwallet,
+                                                   param: "\"\(unsignedRawTx)\"")
                         
                     default:
                         
@@ -83,8 +83,13 @@ class SendUTXO {
             
         }
         
+        let receiver = "\"\(self.address)\":\(self.amount)"
+        var param = "''\(self.inputs)'', ''{\(receiver)}''"
+        param = param.replacingOccurrences(of: "\"{", with: "{")
+        param = param.replacingOccurrences(of: "}\"", with: "}")
+        
         executeNodeCommandSsh(method: BTC_CLI_COMMAND.createrawtransaction,
-                              param: "\'\(self.inputs)\' \'{\"\(self.address)\":\(self.amount)}\'")
+                              param: param)
         
     }
     

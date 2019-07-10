@@ -70,94 +70,11 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
             creatingView.addConnectingView(vc: self,
                                            description: "Creating PSBT")
             
-            let aes = AESService()
+            let output = "[{\"\(receivingField.text!)\":\(Double(amountField.text!)!)}]"
+            let param = "[],\(output), 0, {\"includeWatching\": true}, true"
             
-            let param = "[{\"\(receivingField.text!)\":\(Double(amountField.text!)!)}]"
-            
-            var rpcuser = "bitcoin"
-            var rpcpassword = "password"
-            var port = "8332"
-            
-            //delete!!!!
-            //port = "18443"
-            
-            if activeNode["rpcuser"] != nil {
-                
-                let enc = activeNode["rpcuser"] as! String
-                rpcuser = aes.decryptKey(keyToDecrypt: enc)
-                
-            }
-            
-            if activeNode["rpcpassword"] != nil {
-                
-                let enc = activeNode["rpcpassword"] as! String
-                rpcpassword = aes.decryptKey(keyToDecrypt: enc)
-                
-            }
-            
-            if activeNode["rpcport"] != nil {
-                
-                let enc = activeNode["rpcport"] as! String
-                port = aes.decryptKey(keyToDecrypt: enc)
-                
-            }
-            
-            var url = "http://\(rpcuser):\(rpcpassword)@127.0.0.1:\(port)/"
-            
-            if UserDefaults.standard.object(forKey: "walletName") != nil {
-                
-                let walletName = UserDefaults.standard.object(forKey: "walletName") as! String
-                url += "wallet/" + walletName
-                
-            }
-            
-            let command = "curl --data-binary '{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"walletcreatefundedpsbt\", \"params\":[[],\(param), 0, {\"includeWatching\": true}, true] }' -H 'content-type: text/plain;' \(url)"
-            
-            var error: NSError?
-            
-            let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
-            queue.async {
-                
-                if let responseString = self.ssh.session?.channel.execute(command, error: &error) {
-                    
-                    guard let responseData = responseString.data(using: .utf8) else { return }
-                    
-                    do {
-                        
-                        let json = try JSONSerialization.jsonObject(with: responseData, options: [.allowFragments]) as! NSDictionary
-                        
-                        self.creatingView.removeConnectingView()
-                        
-                        if let result = json["result"] as? NSDictionary {
-                            
-                            print("result = \(result)")
-                            let psbt = result["psbt"] as! String
-                            self.displayRaw(raw: psbt)
-                            
-                        } else {
-                            
-                            let error = json["error"] as! NSDictionary
-                            let errorMessage = error["message"] as! String
-                            
-                            displayAlert(viewController: self,
-                                         isError: true,
-                                         message: errorMessage)
-                            
-                        }
-                        
-                    } catch {
-                        
-                        self.creatingView.removeConnectingView()
-                        
-                        displayAlert(viewController: self,
-                                     isError: true,
-                                     message: "Unknown error")
-                        
-                    }
-                    
-                }
-                
-            }
+            executeNodeCommandSSH(method: BTC_CLI_COMMAND.walletcreatefundedpsbt,
+                                  param: param)
             
         } else {
             
@@ -250,6 +167,13 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
                     
                     let decodedTx = makeSSHCall.dictToReturn
                     parseDecodedTx(decodedTx: decodedTx)
+                    
+                case BTC_CLI_COMMAND.walletcreatefundedpsbt:
+                    
+                    self.creatingView.removeConnectingView()
+                    let result = makeSSHCall.dictToReturn
+                    let psbt = result["psbt"] as! String
+                    self.displayRaw(raw: psbt)
                     
                 default:
                     

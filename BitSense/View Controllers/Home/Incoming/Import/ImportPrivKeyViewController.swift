@@ -34,6 +34,8 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
     var convertedRange = [0,99]
     var fingerprint = ""
     
+    var isAddress = false
+    
     func convertRange() -> [Int] {
         
         var arrayToReturn = [Int]()
@@ -266,7 +268,7 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
             DispatchQueue.main.async {
                 
                 let alert = UIAlertController(title: "Alert",
-                                              message: "You have enabled rescanning of the blockchain.\n\nWhen you import a key it will take up to an hour to rescan the entire blockchain.\n\nIf you do not want to rescan the blockchain go to settings and disable rescan.", preferredStyle: UIAlertController.Style.alert)
+                                              message: "You have enabled rescanning of the blockchain in settings.\n\nWhen you import a key it will take up to an hour to rescan the entire blockchain.", preferredStyle: UIAlertController.Style.alert)
                 
                 alert.addAction(UIAlertAction(title: "OK",
                                               style: UIAlertAction.Style.default,
@@ -338,11 +340,11 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                 
                 let label = "\"Fully Noded Hot Storage\""
                 
-                var params = "'[{ \"desc\": \(descriptor), \"timestamp\": \"now\", \"range\": \(convertedRange), \"watchonly\": false, \"label\": \(label), \"keypool\": \(addToKeypool), \"internal\": \(isInternal)}]' '{\"rescan\": \(reScan)}'"
+                var params = "[{ \"desc\": \(descriptor), \"timestamp\": \"now\", \"range\": \(convertedRange), \"watchonly\": false, \"label\": \(label), \"keypool\": \(addToKeypool), \"internal\": \(isInternal)}], ''{\"rescan\": \(reScan)}''"
                 
                 if isInternal {
                     
-                    params = "'[{ \"desc\": \(descriptor), \"timestamp\": \"now\", \"range\": \(convertedRange), \"watchonly\": false, \"keypool\": \(addToKeypool), \"internal\": \(isInternal)}]' '{\"rescan\": \(reScan)}'"
+                    params = "[{ \"desc\": \(descriptor), \"timestamp\": \"now\", \"range\": \(convertedRange), \"watchonly\": false, \"keypool\": \(addToKeypool), \"internal\": \(isInternal)}], ''{\"rescan\": \(reScan)}''"
                     
                 }
                 
@@ -430,11 +432,11 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                 
                 let label = "\"Fully Noded Cold Storage\""
                 
-                var params = "'[{ \"desc\": \(descriptor), \"timestamp\": \"now\", \"range\": \(convertedRange), \"watchonly\": true, \"label\": \(label), \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }]' '{\"rescan\": \(reScan)}'"
+                var params = "[{ \"desc\": \(descriptor), \"timestamp\": \"now\", \"range\": \(convertedRange), \"watchonly\": true, \"label\": \(label), \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }], ''{\"rescan\": \(reScan)}''"
                 
                 if isInternal {
                     
-                    params = "\'[{ \"desc\": \(descriptor), \"timestamp\": \"now\", \"range\": \(convertedRange), \"watchonly\": true, \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }]' '{\"rescan\": \(reScan)}'"
+                    params = "[{ \"desc\": \(descriptor), \"timestamp\": \"now\", \"range\": \(convertedRange), \"watchonly\": true, \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }], ''{\"rescan\": \(reScan)}''"
                     
                 }
                 
@@ -543,7 +545,7 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                 if self.ssh.session.isConnected {
                     
                     self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.importprivkey,
-                                               param: "\"\(key)\" \"Imported Private Key\" \(reScan)")
+                                               param: "\"\(key)\", \"Imported Private Key\", \(reScan)")
                     
                 } else {
                     
@@ -572,8 +574,13 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                 
                 if self.ssh.session.isConnected {
                     
-                    self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.importaddress,
-                                               param: "\"\(key)\" \"Imported Address\" \(reScan)")
+                    isAddress = true
+                    
+                    let label = "\"Imported Address\""
+                    let param = "[{ \"scriptPubKey\": { \"address\": \"\(key)\" }, \"label\": \(label), \"timestamp\": \"now\", \"watchonly\": true, \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }], ''{\"rescan\": \(reScan)}''"
+                    
+                    self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.importmulti,
+                                               param: param)
                     
                 } else {
                     
@@ -680,60 +687,52 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                 case BTC_CLI_COMMAND.importprivkey:
                     
                     self.connectingView.removeConnectingView()
-                    
                     let result = makeSSHCall.stringToReturn
                     
                     if result == "Imported key success" {
                         
                         displayAlert(viewController: self,
                                      isError: false,
-                                     message: "Successesfully imported private key: \(self.importedKey).")
-                        
-                    }
-                    
-                case BTC_CLI_COMMAND.importaddress:
-                    
-                    self.connectingView.removeConnectingView()
-                    
-                    let result = makeSSHCall.stringToReturn
-                    
-                    if result == "Imported key success" {
-                        
-                        displayAlert(viewController: self,
-                                     isError: false,
-                                     message: "Successesfully imported address: \(self.importedKey).")
+                                     message: "Successfully imported private key")
                         
                     }
                     
                 case BTC_CLI_COMMAND.importmulti:
                     
                     let result = makeSSHCall.arrayToReturn
-                    print("result = \(result)")
-                    
                     let success = (result[0] as! NSDictionary)["success"] as! Bool
                     
                     if success {
                         
                         connectingView.removeConnectingView()
                         
-                        if isWatchOnly {
+                        if !isAddress {
+                         
+                            if isWatchOnly {
+                                
+                                displayAlert(viewController: self,
+                                             isError: false,
+                                             message: "\(range) watch only addresses imported!")
+                                
+                            } else {
+                                
+                                displayAlert(viewController: self,
+                                             isError: false,
+                                             message: "\(range) keys imported!")
+                                
+                            }
                             
+                        } else if isAddress {
+                         
                             displayAlert(viewController: self,
                                          isError: false,
-                                         message: "\(range) watch only addresses imported!")
-                            
-                        } else {
-                            
-                            displayAlert(viewController: self,
-                                         isError: false,
-                                         message: "\(range) keys imported!")
+                                         message: "Sucessfully imported the address")
                             
                         }
                         
                     } else {
                         
                         let error = ((result[0] as! NSDictionary)["error"] as! NSDictionary)["message"] as! String
-                        
                         connectingView.removeConnectingView()
                         
                         displayAlert(viewController: self,

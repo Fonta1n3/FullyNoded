@@ -41,13 +41,13 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
     let sweepButtonView = Bundle.main.loadNibNamed("KeyPadButtonView",
                                                    owner: self,
                                                    options: nil)?.first as! UIView?
-    var sweep = Bool()
     var makeSSHCall:SSHelper!
     var creatingView = ConnectingView()
     let qrScanner = QRScanner()
     var isTorchOn = Bool()
     let qrGenerator = QRGenerator()
     var miningFee = Double()
+    var spendableBalance = Double()
     
     @IBOutlet var scannerView: UIImageView!
     
@@ -63,8 +63,34 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func sweepAction(_ sender: Any) {
         
-        self.amountInput.text = String(self.spendable - miningFee - 0.00050000)
-        sweep = true
+        executeNodeCommandSsh(method: BTC_CLI_COMMAND.listunspent,
+                              param: "")
+        
+        //self.amountInput.text = String(self.spendable - miningFee - 0.00050000)
+        
+    }
+    
+    func parseUnpsent(utxos: NSArray) {
+        
+        for utxo in utxos {
+            
+            let dict = utxo as! NSDictionary
+            let spendable = dict["spendable"] as! Bool
+            let amount = dict["amount"] as! Double
+            
+            if spendable {
+                
+                self.spendableBalance += amount
+                
+            }
+            
+        }
+        
+        DispatchQueue.main.async {
+            
+            self.amountInput.text = String(self.spendableBalance - self.miningFee - 0.00050000)
+            
+        }
         
     }
     
@@ -263,7 +289,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
     
     @objc func tryRaw() {
         
-        if (self.amountInput.text?.toDouble())! < self.spendable {
+        //if (self.amountInput.text?.toDouble())! <= self.spendable {
             
             func getChangeAddress() {
                 
@@ -272,11 +298,11 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
                 
             }
             
-            if sweep {
+            /*if sweep {
                 
                 getChangeAddress()
                 
-            } else {
+            } else {*/
                 
                 if self.amountInput.text != "" {
                     
@@ -325,9 +351,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
                     
                 }
                 
-            }
+            //}
             
-        } else {
+        /*} else {
             
             self.amountInput.text = ""
             
@@ -335,7 +361,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
                          isError: true,
                          message: "Not enough funds")
             
-        }
+        }*/
         
     }
     
@@ -442,11 +468,11 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
     }
     
     @objc func sweepButtonClicked() {
-        print("sweep button clicked")
         
-        self.amountInput.text = String(self.spendable - miningFee - 0.00050000)
         self.amountInput.resignFirstResponder()
-        sweep = true
+        
+        executeNodeCommandSsh(method: BTC_CLI_COMMAND.listunspent,
+                              param: "")
         
     }
     
@@ -660,6 +686,12 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
                         
                         self.addressInput.text = self.address
                         
+                        if self.amountInput.text != "" {
+                            
+                            self.tryRaw()
+                            
+                        }
+                        
                     }
                     
                 })
@@ -720,7 +752,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
         rawTransaction.miningFee = self.miningFee
         rawTransaction.amount = Double(self.amount)!
         rawTransaction.ssh = self.ssh
-        rawTransaction.sweep = self.sweep
         rawTransaction.torClient = self.torClient
         rawTransaction.torRPC = self.torRPC
         rawTransaction.isUsingSSH = self.isUsingSSH
@@ -788,15 +819,16 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
                         let decodedTx = makeSSHCall.dictToReturn
                         parseDecodedTx(decodedTx: decodedTx)
                         
-                    case BTC_CLI_COMMAND.getbalance:
-                        
-                        let balanceCheck = makeSSHCall.doubleToReturn
-                        self.spendable = balanceCheck
-                        
                     case BTC_CLI_COMMAND.getrawchangeaddress:
                         
                         let changeAddress = makeSSHCall.stringToReturn
                         self.getRawTx(changeAddress: changeAddress)
+                        
+                    case BTC_CLI_COMMAND.listunspent:
+                        
+                        self.spendableBalance = 0.0
+                        let utxos = makeSSHCall.arrayToReturn
+                        self.parseUnpsent(utxos: utxos)
                         
                     default:
                         
@@ -856,15 +888,16 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
                     let decodedTx = torRPC.dictToReturn
                     parseDecodedTx(decodedTx: decodedTx)
                     
-                case BTC_CLI_COMMAND.getbalance:
-                    
-                    let balanceCheck = torRPC.doubleToReturn
-                    self.spendable = balanceCheck
-                    
                 case BTC_CLI_COMMAND.getrawchangeaddress:
                     
                     let changeAddress = torRPC.stringToReturn
                     self.getRawTx(changeAddress: changeAddress)
+                    
+                case BTC_CLI_COMMAND.listunspent:
+                    
+                    self.spendableBalance = 0.0
+                    let utxos = makeSSHCall.arrayToReturn
+                    self.parseUnpsent(utxos: utxos)
                     
                 default:
                     

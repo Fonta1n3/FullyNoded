@@ -19,7 +19,6 @@ class SSHCredentialsViewController: UIViewController, UITextFieldDelegate, UINav
     @IBOutlet var hostField: UITextField!
     @IBOutlet var passwordField: UITextField!
     @IBOutlet var ipField: UITextField!
-    @IBOutlet var pathField: UITextField!
     @IBOutlet var portField: UITextField!
     
     @IBOutlet var saveButton: UIButton!
@@ -35,20 +34,12 @@ class SSHCredentialsViewController: UIViewController, UITextFieldDelegate, UINav
                 let encIP = aes.encryptKey(keyToEncrypt: ipField.text!)
                 let encPort = aes.encryptKey(keyToEncrypt: portField.text!)
                 let encPassword = aes.encryptKey(keyToEncrypt: passwordField.text!)
-                var encPath = aes.encryptKey(keyToEncrypt: "bitcoin-cli")
-                
-                if pathField.text != "" {
-                    
-                    encPath = aes.encryptKey(keyToEncrypt: pathField.text!)
-                    
-                }
                 
                 newNode["id"] = id
                 newNode["username"] = encHost
                 newNode["ip"] = encIP
                 newNode["port"] = encPort
                 newNode["password"] = encPassword
-                newNode["path"] = encPath
                 
                 let success = cd.saveCredentialsToCoreData(vc: navigationController!,
                                                            credentials: newNode)
@@ -84,19 +75,11 @@ class SSHCredentialsViewController: UIViewController, UITextFieldDelegate, UINav
             let encIP = aes.encryptKey(keyToEncrypt: ipField.text!)
             let encPort = aes.encryptKey(keyToEncrypt: portField.text!)
             let encPassword = aes.encryptKey(keyToEncrypt: passwordField.text!)
-            var encPath = aes.encryptKey(keyToEncrypt: "bitcoin-cli")
-            
-            if pathField.text != "" {
-                
-                encPath = aes.encryptKey(keyToEncrypt: pathField.text!)
-                
-            }
             
             selectedNode["username"] = encHost
             selectedNode["ip"] = encIP
             selectedNode["port"] = encPort
             selectedNode["password"] = encPassword
-            selectedNode["path"] = encPath
             
             var successes = [Bool]()
             
@@ -156,7 +139,6 @@ class SSHCredentialsViewController: UIViewController, UITextFieldDelegate, UINav
         passwordField.delegate = self
         ipField.delegate = self
         portField.delegate = self
-        pathField.delegate = self
         
         passwordField.isSecureTextEntry = true
         
@@ -168,7 +150,6 @@ class SSHCredentialsViewController: UIViewController, UITextFieldDelegate, UINav
         passwordField.resignFirstResponder()
         ipField.resignFirstResponder()
         portField.resignFirstResponder()
-        pathField.resignFirstResponder()
         
     }
     
@@ -194,7 +175,6 @@ class SSHCredentialsViewController: UIViewController, UITextFieldDelegate, UINav
         passwordField.text = ""
         ipField.text = ""
         portField.text = ""
-        pathField.text = ""
         
     }
     
@@ -207,12 +187,6 @@ class SSHCredentialsViewController: UIViewController, UITextFieldDelegate, UINav
             let encPort = selectedNode["port"] as! String
             let encPassword = selectedNode["password"] as! String
             let encHost = selectedNode["username"] as! String
-            
-            if let encPath = selectedNode["path"] as? String {
-                
-                pathField.text = aes.decryptKey(keyToDecrypt: encPath)
-                
-            }
             
             hostField.text = aes.decryptKey(keyToDecrypt: encHost)
             ipField.text = aes.decryptKey(keyToDecrypt: encIP)

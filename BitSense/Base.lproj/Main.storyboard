@@ -1445,13 +1445,6 @@
                                 <fontDescription key="fontDescription" name="HiraginoSans-W3" family="Hiragino Sans" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="numberPad" keyboardAppearance="alert" returnKeyType="done"/>
                             </textField>
-                            <textField opaque="NO" tag="6" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="2mf-LG-pjy">
-                                <rect key="frame" x="147" y="284" width="212" height="30"/>
-                                <color key="backgroundColor" red="0.16919294269999999" green="0.19278580919999999" blue="0.219758807" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <fontDescription key="fontDescription" name="HiraginoSans-W3" family="Hiragino Sans" pointSize="14"/>
-                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
-                            </textField>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="SSH host user:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CK8-2l-HCM">
                                 <rect key="frame" x="16" y="160" width="111.5" height="14"/>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
@@ -1482,17 +1475,8 @@
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="bitcoin-cli path:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tcm-pW-Jot">
-                                <rect key="frame" x="16" y="288" width="116" height="22"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="22" id="5MW-LT-boB"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                             <button opaque="NO" tag="8" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gn1-KB-oAu">
-                                <rect key="frame" x="0.0" y="350" width="375" height="53"/>
+                                <rect key="frame" x="0.0" y="309" width="375" height="53"/>
                                 <color key="backgroundColor" red="0.23328183790000001" green="0.26782475830000002" blue="0.30977542730000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="53" id="BQ6-wB-izu"/>
@@ -1520,18 +1504,14 @@
                             <constraint firstItem="9Bj-Bd-Xek" firstAttribute="centerY" secondItem="v6s-o4-gQf" secondAttribute="centerY" id="0Ta-R9-Vyz"/>
                             <constraint firstItem="4Vo-O6-h6i" firstAttribute="top" secondItem="QSg-p7-nYn" secondAttribute="top" constant="11" id="26S-bi-GN2"/>
                             <constraint firstItem="RQP-il-vOT" firstAttribute="leading" secondItem="CK8-2l-HCM" secondAttribute="leading" id="4uT-jm-15i"/>
-                            <constraint firstItem="2mf-LG-pjy" firstAttribute="centerY" secondItem="Tcm-pW-Jot" secondAttribute="centerY" id="5jS-sS-9N2"/>
-                            <constraint firstItem="gn1-KB-oAu" firstAttribute="top" secondItem="2mf-LG-pjy" secondAttribute="bottom" constant="36" id="6fY-RD-8WW"/>
-                            <constraint firstItem="2mf-LG-pjy" firstAttribute="leading" secondItem="CYJ-sX-CRP" secondAttribute="leading" id="7YT-Oc-6tJ"/>
+                            <constraint firstItem="gn1-KB-oAu" firstAttribute="top" secondItem="CYJ-sX-CRP" secondAttribute="bottom" constant="28" id="6hH-oj-TCE"/>
                             <constraint firstItem="CYJ-sX-CRP" firstAttribute="top" secondItem="DSp-ue-z9I" secondAttribute="bottom" constant="3" id="8RE-Ku-XXT"/>
                             <constraint firstItem="QSg-p7-nYn" firstAttribute="trailing" secondItem="CYJ-sX-CRP" secondAttribute="trailing" constant="16" id="9pH-bP-cWX"/>
                             <constraint firstItem="gGN-t0-adC" firstAttribute="leading" secondItem="CK8-2l-HCM" secondAttribute="leading" id="A9P-xe-Lfo"/>
                             <constraint firstItem="9Bj-Bd-Xek" firstAttribute="top" secondItem="1Qa-uQ-ZtG" secondAttribute="bottom" constant="3" id="Esq-31-PMm"/>
                             <constraint firstItem="4Vo-O6-h6i" firstAttribute="leading" secondItem="QSg-p7-nYn" secondAttribute="leading" constant="16" id="GJe-6C-Cjo"/>
-                            <constraint firstItem="QSg-p7-nYn" firstAttribute="trailing" secondItem="2mf-LG-pjy" secondAttribute="trailing" constant="16" id="J7l-lZ-Ll7"/>
                             <constraint firstItem="DSp-ue-z9I" firstAttribute="top" secondItem="9Bj-Bd-Xek" secondAttribute="bottom" constant="3" id="Kah-JR-rRo"/>
                             <constraint firstItem="QSg-p7-nYn" firstAttribute="trailing" secondItem="4Vo-O6-h6i" secondAttribute="trailing" constant="16" id="Pyq-NP-7nN"/>
-                            <constraint firstItem="Tcm-pW-Jot" firstAttribute="leading" secondItem="CK8-2l-HCM" secondAttribute="leading" id="QOw-ht-dRp"/>
                             <constraint firstItem="DSp-ue-z9I" firstAttribute="leading" secondItem="1Qa-uQ-ZtG" secondAttribute="leading" id="Sl1-tb-uFH"/>
                             <constraint firstItem="CYJ-sX-CRP" firstAttribute="centerY" secondItem="gGN-t0-adC" secondAttribute="centerY" id="TQy-yu-Z1D"/>
                             <constraint firstItem="1Qa-uQ-ZtG" firstAttribute="leading" secondItem="CK8-2l-HCM" secondAttribute="trailing" constant="19.5" id="VJp-wm-FE0"/>
@@ -1541,8 +1521,6 @@
                             <constraint firstItem="DSp-ue-z9I" firstAttribute="centerY" secondItem="RQP-il-vOT" secondAttribute="centerY" id="fds-j0-uLk"/>
                             <constraint firstItem="CK8-2l-HCM" firstAttribute="leading" secondItem="QSg-p7-nYn" secondAttribute="leading" constant="16" id="lIy-bR-4sA"/>
                             <constraint firstItem="QSg-p7-nYn" firstAttribute="trailing" secondItem="DSp-ue-z9I" secondAttribute="trailing" constant="16" id="llr-dd-CMh"/>
-                            <constraint firstItem="2mf-LG-pjy" firstAttribute="leading" secondItem="1Qa-uQ-ZtG" secondAttribute="leading" id="lww-UX-w0I"/>
-                            <constraint firstItem="2mf-LG-pjy" firstAttribute="top" secondItem="CYJ-sX-CRP" secondAttribute="bottom" constant="3" id="pEg-3R-6ir"/>
                             <constraint firstItem="1Qa-uQ-ZtG" firstAttribute="top" secondItem="4Vo-O6-h6i" secondAttribute="bottom" constant="8" id="rdJ-1I-vAy"/>
                             <constraint firstItem="gn1-KB-oAu" firstAttribute="leading" secondItem="QSg-p7-nYn" secondAttribute="leading" id="toc-ar-25Q"/>
                             <constraint firstItem="1Qa-uQ-ZtG" firstAttribute="centerY" secondItem="CK8-2l-HCM" secondAttribute="centerY" id="wDH-1i-mly"/>
@@ -1556,7 +1534,6 @@
                         <outlet property="hostField" destination="1Qa-uQ-ZtG" id="YuI-w2-l7d"/>
                         <outlet property="ipField" destination="DSp-ue-z9I" id="vcK-VQ-hMC"/>
                         <outlet property="passwordField" destination="9Bj-Bd-Xek" id="wZe-5X-vnw"/>
-                        <outlet property="pathField" destination="2mf-LG-pjy" id="D4O-ru-qNS"/>
                         <outlet property="portField" destination="CYJ-sX-CRP" id="TdX-V7-Lin"/>
                         <outlet property="saveButton" destination="gn1-KB-oAu" id="hZq-aU-Blk"/>
                     </connections>

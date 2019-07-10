@@ -15,7 +15,6 @@ class AESService {
     let keychain = KeychainSwift()
     
     func decryptKey(keyToDecrypt:String) -> String {
-        print("decryptKey")
         
         var stringtoReturn = ""
         
@@ -23,7 +22,7 @@ class AESService {
             
             do {
                 
-                let aes = try AES(key: pw, iv: "drowssapdrowssap") // aes128
+                let aes = try AES(key: pw, iv: "drowssapdrowssap")
                 let decrypted = try aes.decrypt(Array<UInt8>(hex: keyToDecrypt))
                 stringtoReturn = String(data: Data(bytes: decrypted), encoding: .utf8)!
                 
@@ -54,12 +53,6 @@ class AESService {
                 let aes = try AES(key: pw, iv: "drowssapdrowssap")
                 let encrypted = try aes.encrypt(Array<UInt8>(keyToEncrypt.utf8))
                 stringtoReturn = encrypted.toHexString()
-                
-                /*let aes = try AES(key: pw, iv: "drowssapdrowssap") // aes128
-                let encrypted = try aes.encrypt(Array(keyToEncrypt.utf8))
-                stringtoReturn = encrypted.toHexString()*/
-                
-                print("encrypted = \(encrypted)")
                 
             } catch {
                 

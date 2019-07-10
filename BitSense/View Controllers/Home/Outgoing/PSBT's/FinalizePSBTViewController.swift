@@ -91,7 +91,7 @@ class FinalizePSBTViewController: UIViewController {
             let processedPsbt = textView.text!
             
             self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.finalizepsbt,
-                                       param: processedPsbt)
+                                       param: "\"\(processedPsbt)\"")
             
         } else {
             

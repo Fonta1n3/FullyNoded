@@ -51,6 +51,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     var existingNodeID = ""
     var initialLoad = Bool()
     var torConnected = Bool()
+    var coldBalanceLabel = UILabel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -748,6 +749,37 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
+    func parseUtxos(utxos: NSArray) {
+        
+        var amount = 0.0
+        
+        for utxo in utxos {
+            
+            let utxoDict = utxo as! NSDictionary
+            let spendable = utxoDict["spendable"] as! Bool
+            
+            if !spendable {
+                
+                let balance = utxoDict["amount"] as! Double
+                amount += balance
+                
+            }
+            
+        }
+        
+        DispatchQueue.main.async {
+            
+            
+            
+            self.coldBalanceLabel.text = "🥶 \(round(100000000*amount)/100000000)"
+            self.addColdBalanceLabel()
+            self.removeSpinner()
+            self.mainMenu.reloadData()
+            
+        }
+        
+    }
+    
     func parseNetworkInfo(networkInfo: NSDictionary) {
         
         self.version = (networkInfo["subversion"] as! String).replacingOccurrences(of: "/", with: "")
@@ -824,7 +856,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         }
         
         self.loadTableDataSsh(method: BTC_CLI_COMMAND.listtransactions,
-                              param: "\"*\" 10 0 true")
+                              param: "\"*\", 50, 0, true")
         
     }
     
@@ -851,15 +883,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
             DispatchQueue.main.async {
                 
-                if !self.isTestnet {
-                    
-                    self.unconfirmedBalanceLabel.text = "\(unconfirmedBalance.avoidNotation) Unconfirmed"
-                    
-                } else {
-                    
-                    self.unconfirmedBalanceLabel.text = "\(unconfirmedBalance.avoidNotation) Unconfirmed"
-                    
-                }
+                self.unconfirmedBalanceLabel.text = "\(unconfirmedBalance.avoidNotation) Unconfirmed"
                 
                 UIView.animate(withDuration: 0.5, animations: {
                     
@@ -877,15 +901,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
             DispatchQueue.main.async {
                 
-                if !self.isTestnet {
-                    
-                    self.unconfirmedBalanceLabel.text = "0 BTC Unconfirmed"
-                    
-                } else {
-                    
-                    self.unconfirmedBalanceLabel.text = "0 tBTC Unconfirmed"
-                    
-                }
+                self.unconfirmedBalanceLabel.text = ""
                 
                 UIView.animate(withDuration: 0.5, animations: {
                     
@@ -909,15 +925,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         DispatchQueue.main.async {
             
-            if !self.isTestnet {
-                
-                self.balancelabel.text = "\(balance.avoidNotation)" + " " + "BTC"
-                
-            } else {
-                
-                self.balancelabel.text = "\(balance.avoidNotation)" + " " + "tBTC"
-                
-            }
+            self.balancelabel.text = "🔥 \(round(100000000*balance)/100000000)"
             
             self.loadTableDataSsh(method: BTC_CLI_COMMAND.getunconfirmedbalance,
                                   param: "")
@@ -933,7 +941,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             if let transaction = item as? NSDictionary {
                 
                 var label = String()
-                var fee = String()
                 var replaced_by_txid = String()
                 var isCold = false
                 
@@ -1012,7 +1019,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         }
         
         self.loadTableDataSsh(method: BTC_CLI_COMMAND.getbalance,
-                              param: "\"*\" 0 true")
+                              param: "\"*\", 0, false")
         
     }
     
@@ -1040,16 +1047,17 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     
                     switch method {
                         
+                    case BTC_CLI_COMMAND.listunspent:
+                        
+                        let utxos = makeSSHCall.arrayToReturn
+                        parseUtxos(utxos: utxos)
+                        
                     case BTC_CLI_COMMAND.uptime:
                         
                         self.uptime = Int(makeSSHCall.doubleToReturn)
                         
-                        DispatchQueue.main.async {
-                            
-                            self.removeSpinner()
-                            self.mainMenu.reloadData()
-                            
-                        }
+                        self.loadTableDataSsh(method: BTC_CLI_COMMAND.listunspent,
+                                              param: "0")
                         
                     case BTC_CLI_COMMAND.getmininginfo:
                         
@@ -1231,6 +1239,21 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
+    func addColdBalanceLabel() {
+        
+        coldBalanceLabel.removeFromSuperview()
+        coldBalanceLabel.frame = CGRect(x: 0,
+                                        y: self.balancelabel.frame.maxY + 10,
+                                        width: self.view.frame.width,
+                                        height: 35)
+        coldBalanceLabel.font = UIFont.init(name: "HiraginoSans-W3", size: 35)
+        coldBalanceLabel.textColor = UIColor.white
+        coldBalanceLabel.textAlignment = .center
+        coldBalanceLabel.adjustsFontSizeToFitWidth = true
+        view.addSubview(coldBalanceLabel)
+        
+    }
+    
     override func viewWillLayoutSubviews() {
         
         let modelName = UIDevice.modelName
@@ -1257,27 +1280,23 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
              "iPhone11,6":
             
             self.balancelabel.frame = CGRect(x: 0,
-                                             y: 50,
+                                             y: 20,
                                              width: self.view.frame.width,
                                              height: 35)
             
-            self.unconfirmedBalanceLabel.frame = CGRect(x: 0,
-                                                        y: balancelabel.frame.maxY,
-                                                        width: self.view.frame.width,
-                                                        height: 15)
             
         default:
             
             
             self.balancelabel.frame = CGRect(x: 0,
-                                             y: 40,
+                                             y: 20,
                                              width: self.view.frame.width,
                                              height: 35)
             
             self.unconfirmedBalanceLabel.frame = CGRect(x: 0,
-                                                        y: balancelabel.frame.maxY,
+                                                        y: mainMenu.frame.minY - 8,
                                                         width: self.view.frame.width,
-                                                        height: 15)
+                                                        height: 8)
             
         }
         
@@ -1403,8 +1422,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                         self.isUsingSSH = true
                         
                         self.ssh = SSHService.sharedInstance
+                        self.ssh.activeNode = self.activeNode
                         
-                        self.ssh.connect(activeNode: self.activeNode) { (success, error) in
+                        self.ssh.connect() { (success, error) in
                             
                             if success {
                                 
@@ -1555,7 +1575,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     childVC.torRPC = self.torRPC
                     childVC.torClient = self.torClient
                     childVC.isUsingSSH = self.isUsingSSH
-                    childVC.balance = self.balance
                     
                 }
                 
@@ -1682,13 +1701,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     print(error as Any)
                     self.removeSpinner()
                     
-                    DispatchQueue.main.async {
-                        
-                        displayAlert(viewController: self,
-                                     isError: true,
-                                     message: "\(String(describing: error!.localizedDescription))")
-                        
-                    }
+                    self.syncStatus = "No internet connection"
                     
                 } else {
                     

@@ -13,7 +13,6 @@ class OutgoingsTableViewController: UITableViewController {
     var ssh:SSHService!
     var torClient:TorClient!
     var torRPC:MakeRPCCall!
-    var balance = Double()
     var makeSSHCall:SSHelper!
     var isTestnet = Bool()
     var activeNode = [String:Any]()
@@ -39,7 +38,6 @@ class OutgoingsTableViewController: UITableViewController {
         }
         
     }
-    
     
     // MARK: - Table view data source
     
@@ -76,30 +74,14 @@ class OutgoingsTableViewController: UITableViewController {
         footerView.backgroundColor = UIColor.clear
         explanationLabel.font = UIFont.init(name: "HiraginoSans-W3", size: 10)
         
-        if section == 0 {
-            
-            explanationLabel.text = "Create and decode a raw transaction. The transaction does NOT get broadcast to the network."
-            
-        } else if section == 1 {
-            
-            explanationLabel.text = "See a table of your UTXOs. Manually select them to sweep them or tap the consolidate button to consolidate them. The transaction does NOT get broadcast to the network."
-            
-        } else if section == 2 {
-            
-            explanationLabel.text = "Add a custom amount of recipients and a specific amount for each recipient in one transaction. The transaction does NOT get broadcast to the network."
-            
-        } else if section == 3 {
-            
-            explanationLabel.text = "Create an unsigned transaction with a specified address."
-            
-        } else if section == 4 {
-            
-            explanationLabel.text = "Sign an unsigned transaction with the nodes wallet or with a private key that resides outside of the node."
-            
-        } else if section == 5 {
-            
-            explanationLabel.text = "Go to PSBT's"
-            
+        switch section {
+        case 0: explanationLabel.text = "Create and decode a raw transaction. The transaction does NOT get broadcast to the network."
+        case 1: explanationLabel.text = "See a table of your UTXOs. Manually select them to sweep them or tap the consolidate button to consolidate them. The transaction does NOT get broadcast to the network."
+        case 2: explanationLabel.text = "Add a custom amount of recipients and a specific amount for each recipient in one transaction. The transaction does NOT get broadcast to the network."
+        case 3: explanationLabel.text = "Create an unsigned transaction with a specified address."
+        case 4: explanationLabel.text = "Sign an unsigned transaction with the nodes wallet or with a private key that resides outside of the node."
+        case 5: explanationLabel.text = "Go to PSBT's"
+        default: break
         }
         
         footerView.addSubview(explanationLabel)
@@ -138,70 +120,45 @@ class OutgoingsTableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        if indexPath.section == 0 {
-            
+        switch indexPath.section {
+        case 0:
             let cell = tableView.dequeueReusableCell(withIdentifier: "rawCell", for: indexPath)
-            
             cell.selectionStyle = .none
             let label = cell.viewWithTag(1) as! UILabel
             label.adjustsFontSizeToFitWidth = true
-            
             return cell
-            
-        } else if indexPath.section == 1 {
-            
+        case 1:
             let cell = tableView.dequeueReusableCell(withIdentifier: "utxoCell", for: indexPath)
-            
             cell.selectionStyle = .none
             let label = cell.viewWithTag(1) as! UILabel
             label.adjustsFontSizeToFitWidth = true
-            
             return cell
-            
-        } else if indexPath.section == 2 {
-            
+        case 2:
             let cell = tableView.dequeueReusableCell(withIdentifier: "multiRecipient", for: indexPath)
-            
             cell.selectionStyle = .none
             let label = cell.viewWithTag(1) as! UILabel
             label.adjustsFontSizeToFitWidth = true
-            
             return cell
-            
-        } else if indexPath.section == 3 {
-            
+        case 3:
             let cell = tableView.dequeueReusableCell(withIdentifier: "unsignedCell", for: indexPath)
-            
             cell.selectionStyle = .none
             let label = cell.viewWithTag(1) as! UILabel
             label.adjustsFontSizeToFitWidth = true
-            
             return cell
-            
-        } else if indexPath.section == 4 {
-            
+        case 4:
             let cell = tableView.dequeueReusableCell(withIdentifier: "signItCell", for: indexPath)
-            
             cell.selectionStyle = .none
             let label = cell.viewWithTag(1) as! UILabel
             label.adjustsFontSizeToFitWidth = true
-            
             return cell
-            
-        } else if indexPath.section == 5 {
-            
+        case 5:
             let cell = tableView.dequeueReusableCell(withIdentifier: "psbtCell", for: indexPath)
-            
             cell.selectionStyle = .none
             let label = cell.viewWithTag(1) as! UILabel
             label.adjustsFontSizeToFitWidth = true
-            
             return cell
-            
-        } else {
-            
+        default:
             let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-            
             return cell
             
         }
@@ -225,21 +182,23 @@ class OutgoingsTableViewController: UITableViewController {
                 
             }, completion: { _ in
                 
-                if indexPath.section == 0 {
+                switch indexPath.section {
+                    
+                case 0:
                     
                     DispatchQueue.main.async {
                         
                         self.performSegue(withIdentifier: "createRawNow", sender: self)
                     }
                     
-                } else if indexPath.section == 1 {
+                case 1:
                     
                     DispatchQueue.main.async {
                         
                         self.performSegue(withIdentifier: "goToUtxos", sender: self)
                     }
                     
-                } else if indexPath.section == 2 {
+                case 2:
                     
                     DispatchQueue.main.async {
                         
@@ -247,7 +206,7 @@ class OutgoingsTableViewController: UITableViewController {
                         
                     }
                     
-                } else if indexPath.section == 3 {
+                case 3:
                     
                     DispatchQueue.main.async {
                         
@@ -255,7 +214,7 @@ class OutgoingsTableViewController: UITableViewController {
                         
                     }
                     
-                } else if indexPath.section == 4 {
+                case 4:
                     
                     DispatchQueue.main.async {
                         
@@ -263,13 +222,17 @@ class OutgoingsTableViewController: UITableViewController {
                         
                     }
                     
-                } else if indexPath.section == 5 {
+                case 5:
                     
                     DispatchQueue.main.async {
                         
                         self.performSegue(withIdentifier: "goToPSBTs", sender: self)
                         
                     }
+                    
+                default:
+                    
+                    break
                     
                 }
                 
@@ -294,7 +257,6 @@ class OutgoingsTableViewController: UITableViewController {
             if let vc = segue.destination as? CreateRawTxViewController {
                 
                 vc.ssh = self.ssh
-                vc.spendable = self.balance
                 vc.makeSSHCall = self.makeSSHCall
                 vc.isUsingSSH = self.isUsingSSH
                 vc.torClient = self.torClient

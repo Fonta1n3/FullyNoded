@@ -36,7 +36,7 @@ class MultiOutputTx {
                     
                     switch method {
                         
-                    case BTC_CLI_COMMAND.signrawtransaction:
+                    case BTC_CLI_COMMAND.signrawtransactionwithwallet:
                         
                         let dict = makeSSHCall.dictToReturn
                         signedRawTx = dict["hex"] as! String
@@ -50,7 +50,7 @@ class MultiOutputTx {
                     case BTC_CLI_COMMAND.createrawtransaction:
                         
                         let unsignedRawTx = makeSSHCall.stringToReturn
-                        executeNodeCommandSsh(method: BTC_CLI_COMMAND.signrawtransaction, param: "\'\(unsignedRawTx)\'")
+                        executeNodeCommandSsh(method: BTC_CLI_COMMAND.signrawtransactionwithwallet, param: "\"\(unsignedRawTx)\"")
                         
                     default:
                         
@@ -121,19 +121,15 @@ class MultiOutputTx {
                                     self.utxoVout = spendable["vout"] as! Int
                                     let input = "{\"txid\":\"\(self.utxoTxId)\",\"vout\": \(self.utxoVout),\"sequence\": 1}"
                                     self.inputArray.append(input)
-                                    //ensure change amount is losing the mining fee
                                     self.changeAmount = sumOfUtxo - (self.amount + miningFee)
-                                    print("sumofutxo = \(sumOfUtxo)")
-                                    print("amount = \(self.amount)")
-                                    print("miningfee = \(miningFee)")
-                                    print("changeamount = \(self.changeAmount)")
                                     self.changeAmount = Double(round(100000000*self.changeAmount)/100000000)
-                                    print("changeamount = \(self.changeAmount)")
                                     
                                     processInputs()
                                     
-                                    //let param = "\'\(self.inputs)\' \'{\"\(self.addressToPay)\":\(self.amount), \"\(self.changeAddress)\": \(self.changeAmount)}\'"
-                                    let param = "\'\(self.inputs)\' \'{\(self.outputs), \"\(self.changeAddress)\": \(self.changeAmount)}\'"
+                                    var param = "''\(self.inputs)'',  ''{\(self.outputs), \"\(self.changeAddress)\": \(self.changeAmount)}''"
+                                    
+                                    param = param.replacingOccurrences(of: "\"{", with: "{")
+                                    param = param.replacingOccurrences(of: "}\"", with: "}")
                                     
                                     executeNodeCommandSsh(method: BTC_CLI_COMMAND.createrawtransaction,
                                                           param: param)

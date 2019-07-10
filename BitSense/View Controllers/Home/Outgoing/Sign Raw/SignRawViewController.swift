@@ -47,8 +47,8 @@ class SignRawViewController: UIViewController, UITextFieldDelegate {
             
         } else if privateKeyField.text == "" && unsignedTextView.text != "" {
             
-            executeNodeCommandSsh(method: BTC_CLI_COMMAND.signrawtransaction,
-                                  param: unsignedTextView.text!)
+            executeNodeCommandSsh(method: BTC_CLI_COMMAND.signrawtransactionwithwallet,
+                                  param: "\"\(unsignedTextView.text!)\"")
             
         } else if unsignedTextView.text == "" {
             
@@ -222,110 +222,10 @@ class SignRawViewController: UIViewController, UITextFieldDelegate {
     
     func signWithKey(key: String, tx: String) {
         
-        let aes = AESService()
-        var rpcuser = "bitcoin"
-        var rpcpassword = "password"
-        var port = "8332"
+        let param = "\"\(tx)\", [\"\(key)\"]"
         
-        if isTestnet {
-            
-            port = "18332"
-            
-        }
-        
-        //delete!!!!
-        //port = "18443"
-        
-        if activeNode["rpcuser"] != nil {
-            
-            let enc = activeNode["rpcuser"] as! String
-            rpcuser = aes.decryptKey(keyToDecrypt: enc)
-            
-        }
-        
-        if activeNode["rpcpassword"] != nil {
-            
-            let enc = activeNode["rpcpassword"] as! String
-            rpcpassword = aes.decryptKey(keyToDecrypt: enc)
-            
-        }
-        
-        if activeNode["rpcport"] != nil {
-            
-            let enc = activeNode["rpcport"] as! String
-            port = aes.decryptKey(keyToDecrypt: enc)
-            
-        }
-        
-        let command = "curl --data-binary '{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"signrawtransactionwithkey\", \"params\":[\"\(tx)\", [\"\(key)\"]] }' -H 'content-type: text/plain;' http://\(rpcuser):\(rpcpassword)@127.0.0.1:\(port)/"
-        
-        var error: NSError?
-        
-        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
-        queue.async {
-            
-            if let responseString = self.ssh.session?.channel.execute(command, error: &error) {
-                
-                guard let responseData = responseString.data(using: .utf8) else { return }
-                
-                do {
-                    
-                    let json = try JSONSerialization.jsonObject(with: responseData, options: [.allowFragments]) as! NSDictionary
-                    
-                    if let result = json["result"] as? NSDictionary {
-                        
-                        print("result = \(result)")
-                        
-                        let completion = result["complete"] as! Bool
-                        
-                        if !completion {
-                            
-                            if let errors = result["errors"] as? NSArray {
-                                
-                                var errorArray = [String]()
-                                
-                                if errors.count > 0 {
-                                    
-                                    for err in errors {
-                                        
-                                        let er = err as! NSDictionary
-                                        let descriptor = er["error"] as! String
-                                        errorArray.append(descriptor)
-                                        
-                                    }
-                                    
-                                    displayAlert(viewController: self,
-                                                 isError: true,
-                                                 message: errorArray.description)
-                                    
-                                    
-                                }
-                                
-                            } else {
-                                
-                                displayAlert(viewController: self,
-                                             isError: true,
-                                             message: "Error")
-                                
-                            }
-                            
-                        } else {
-                            
-                            let hex = result["hex"] as! String
-                            self.showRaw(raw: hex)
-                            
-                        }
-                        
-                    }
-                    
-                } catch {
-                    
-                    
-                }
-                
-            }
-            
-        }
+        executeNodeCommandSsh(method: BTC_CLI_COMMAND.signrawtransactionwithkey,
+                              param: param)
         
     }
     
@@ -430,7 +330,25 @@ class SignRawViewController: UIViewController, UITextFieldDelegate {
                     let decodedTx = makeSSHCall.dictToReturn
                     parseDecodedTx(decodedTx: decodedTx)
                     
-                case BTC_CLI_COMMAND.signrawtransaction:
+                case BTC_CLI_COMMAND.signrawtransactionwithwallet:
+                    
+                    let dict = makeSSHCall.dictToReturn
+                    let complete = dict["complete"] as! Bool
+                    
+                    if complete {
+                        
+                        let hex = dict["hex"] as! String
+                        self.showRaw(raw: hex)
+                        
+                    } else {
+                        
+                        displayAlert(viewController: self,
+                                     isError: true,
+                                     message: "Error")
+                        
+                    }
+                    
+                case BTC_CLI_COMMAND.signrawtransactionwithkey:
                     
                     let dict = makeSSHCall.dictToReturn
                     let complete = dict["complete"] as! Bool

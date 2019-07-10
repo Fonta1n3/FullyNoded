@@ -8,7 +8,6 @@
         <attribute name="label" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="onionAddress" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="password" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="path" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="port" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="rpcpassword" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="rpcport" optional="YES" attributeType="String" syncable="YES"/>
@@ -18,6 +17,6 @@
         <attribute name="usingTor" optional="YES" attributeType="Boolean" usesScalarValueType="YES" syncable="YES"/>
     </entity>
     <elements>
-        <element name="Nodes" positionX="-63" positionY="-18" width="128" height="270"/>
+        <element name="Nodes" positionX="-63" positionY="-18" width="128" height="255"/>
     </elements>
 </model>

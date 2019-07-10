@@ -90,7 +90,7 @@ class ProcessPSBTViewController: UIViewController {
             let unprocessedPsbt = textView.text!
             
             self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.walletprocesspsbt,
-                                       param: unprocessedPsbt)
+                                       param: "\"\(unprocessedPsbt)\"")
             
         } else {
             

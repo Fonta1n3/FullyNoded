@@ -59,7 +59,7 @@ class CreateUnsigned {
                             unsignedRawTx = makeSSHCall.stringToReturn
                             
                             executeNodeCommandSsh(method: BTC_CLI_COMMAND.fundrawtransaction,
-                                                  param: "\"\(unsignedRawTx)\" true")
+                                                  param: "\"\(unsignedRawTx)\", true")
                             
                         } else {
                             
@@ -103,7 +103,7 @@ class CreateUnsigned {
         
         func parseUnspent(utxos: NSArray) {
             
-            if !self.sweep {
+            //if !self.sweep {
                 
                 if utxos.count > 0 {
                     
@@ -143,7 +143,13 @@ class CreateUnsigned {
                                     
                                     processInputs()
                                     
-                                    let param = "\'\(self.inputs)\' \'{\"\(self.addressToPay)\":\(self.amount), \"\(self.changeAddress)\": \(self.changeAmount)}\'"
+                                    /*let param = "\'\(self.inputs)\' \'{\"\(self.addressToPay)\":\(self.amount), \"\(self.changeAddress)\": \(self.changeAmount)}\'"*/
+                                    
+                                    let receiver = "\"\(self.addressToPay)\":\(self.amount)"
+                                    let change = "\"\(self.changeAddress)\":\(self.changeAmount)"
+                                    var param = "''\(self.inputs)'', ''{\(receiver), \(change)}''"
+                                    param = param.replacingOccurrences(of: "\"{", with: "{")
+                                    param = param.replacingOccurrences(of: "}\"", with: "}")
                                     
                                     executeNodeCommandSsh(method: BTC_CLI_COMMAND.createrawtransaction,
                                                           param: param)
@@ -164,7 +170,7 @@ class CreateUnsigned {
                     
                 }
                 
-            } else {
+            /*} else {
                 
                 //sweeping
                 if utxos.count > 0 {
@@ -215,7 +221,7 @@ class CreateUnsigned {
                     
                 }
                 
-            }
+            }*/
             
         }
         
@@ -276,7 +282,12 @@ class CreateUnsigned {
         
         if noInputs {
             
-            let param = "\'[]' \'{\"\(self.addressToPay)\":\(self.amount)}\'"
+            //let param = "\'[]' \'{\"\(self.addressToPay)\":\(self.amount)}\'"
+            
+            let receiver = "\"\(self.addressToPay)\":\(self.amount)"
+            var param = "''[]'', ''{\(receiver)}''"
+            param = param.replacingOccurrences(of: "\"{", with: "{")
+            param = param.replacingOccurrences(of: "}\"", with: "}")
             
             executeNodeCommandSsh(method: BTC_CLI_COMMAND.createrawtransaction,
                                   param: param)
@@ -284,7 +295,7 @@ class CreateUnsigned {
         } else {
             
             executeNodeCommandSsh(method: BTC_CLI_COMMAND.listunspent,
-                                  param: "1 9999999 \"[\\\"\(self.spendingAddress)\\\"]\"")
+                                  param: "1, 9999999, [\"\(self.spendingAddress)\"]")
             
         }
         

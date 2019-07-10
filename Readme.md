@@ -144,6 +144,19 @@ Please feel free to build from source in xcode and submit PR's. I need help and 
 - [keychain-swift](https://github.com/evgenyneu/keychain-swift) for storing your nodes credentials decryption key on your iPhones secure enclave.
 - [Tor](https://github.com/iCepa/Tor.framework) for connecting to your node more privately and securely.
 
+## Changes v1.50
+
+-  Fixes buggy responses when changing settings for importing.
+- Fix crash when SSH not connected when toggling importing settings.
+- Now that home screen balance shows cold storage balance we check your utxos for spendable balance when sweeping during raw transaction creation.
+- Simplify the smart fee alert.
+- Issue all bitcoin-cli commands via curl over ssh instead of raw string in bash, this makes the app simpler and more reliable.
+- Users can now create a local network connection with a computer that has a node on it, connect to that network with their device and control their Bitcoin Core node over the local network with no internet connection.
+- Use importmulti instead of importaddress as importmulti gives better success/fail responses and adds more customization.
+- Displays 🥶 cold storage balance seperately from 🔥 hot wallet balance.
+- Display last 50 transactions instead of 10.
+- Remove need to input bitcoin-cli path as we are using curl now.
+
 ## Changes v1.49
 
 - Harden PSBT's
