@@ -38,16 +38,33 @@ public func randomString(length: Int) -> String {
     
 }
 
+public func rounded(number: Double) -> Double {
+    
+    return Double(round(100000000*number)/100000000)
+    
+}
+
 public func displayAlert(viewController: UIViewController, isError: Bool, message: String) {
     
     DispatchQueue.main.async {
         
         let errorView = ErrorView()
+        
         errorView.isUserInteractionEnabled = true
         
-        errorView.showErrorView(vc: viewController,
-                                text: message,
-                                isError: isError)
+        if !isError {
+            
+            errorView.showErrorView(vc: viewController,
+                                    text: message,
+                                    isError: isError)
+            
+        } else {
+            
+            errorView.showErrorView(vc: viewController,
+                                    text: message,
+                                    isError: isError)
+            
+        }
         
     }
     

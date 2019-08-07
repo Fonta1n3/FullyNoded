@@ -13,14 +13,23 @@ class GetSmartFee {
     
     var makeSSHCall:SSHelper!
     var ssh:SSHService!
+    var isUsingSSH = Bool()
+    var torRPC:MakeRPCCall!
+    var torClient:TorClient!
+    
     var errorBool = Bool()
     var errorDescription = ""
+    
     var dictToReturn = NSDictionary()
     var rawSigned = ""
     var txSize = Int()
     var vc = UIViewController()
+    var blockTarget = UserDefaults.standard.object(forKey: "feeTarget") as! Int
+    var optimalFee = Double()
     
-    func getSmartFee() {
+    var isUnsigned = false
+    
+    func getSmartFee(completion: @escaping () -> Void) {
         
         func getSmartFeeSSH(method: BTC_CLI_COMMAND, param: String) {
             
@@ -33,14 +42,17 @@ class GetSmartFee {
                     case BTC_CLI_COMMAND.estimatesmartfee:
                         
                         let dict = makeSSHCall.dictToReturn
-                        displayFeeAlert(dict: dict, vsize: txSize)
+                        optimalFee = getOptimalFee(dict: dict, vsize: txSize)
+                        print("optimalFee = \(optimalFee.avoidNotation)")
+                        completion()
                         
                     case BTC_CLI_COMMAND.decoderawtransaction:
                         
                         let dict = makeSSHCall.dictToReturn
                         txSize = dict["vsize"] as! Int
+                        
                         getSmartFeeSSH(method: BTC_CLI_COMMAND.estimatesmartfee,
-                                            param: "6")
+                                       param: "\(blockTarget)")
                         
                     default:
                         
@@ -57,12 +69,21 @@ class GetSmartFee {
                 
             }
             
-            if ssh.session.isConnected {
+            if ssh != nil {
                 
-                makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                              method: method,
-                                              param: param,
-                                              completion: getResult)
+                if ssh.session.isConnected {
+                    
+                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
+                                                  method: method,
+                                                  param: param,
+                                                  completion: getResult)
+                    
+                } else {
+                    
+                    errorBool = true
+                    errorDescription = "Not connected"
+                    
+                }
                 
             } else {
                 
@@ -78,10 +99,17 @@ class GetSmartFee {
         
     }
     
-    func displayFeeAlert(dict: NSDictionary, vsize: Int) {
+    func getOptimalFee(dict: NSDictionary, vsize: Int) -> Double {
         
-        let miningFeeString = UserDefaults.standard.object(forKey: "miningFee") as! String
-        let txSize = Double(vsize)
+        var size = vsize
+        
+        if isUnsigned {
+            
+            size += 100
+            
+        }
+        
+        let txSize = Double(size)
         
         var btcPerKbyte = Double()
         
@@ -91,67 +119,14 @@ class GetSmartFee {
             
         } else {
             
+            // Node is likely in regtest mode so fee estimation is weird
             btcPerKbyte = 0.00000100
-            
-            displayAlert(viewController: vc,
-                         isError: true,
-                         message: "There was an issue getting the fee estimate, we have manually set it for you. This may happen when running the node in regtest.")
             
         }
         
         let btcPerByte = btcPerKbyte / 1000
-        let satsPerByte = btcPerByte * 100000000
-        let optimalFeeForSixBlocks = satsPerByte * txSize
-        let nocommas = miningFeeString.replacingOccurrences(of: ",", with: "")
-        let actualFeeInSats = Double(nocommas)!
-        let diff = optimalFeeForSixBlocks - actualFeeInSats
-        
-        if diff < 0 {
-            
-            //overpaying
-            let percentageDifference = Int(((actualFeeInSats / optimalFeeForSixBlocks) * 100)).avoidNotation
-            
-            DispatchQueue.main.async {
-                
-                /*let alert = UIAlertController(title: NSLocalizedString("Fee Alert", comment: ""),
-                                              message: "The optimal fee to get this tx included in the next 6 blocks is \(Int(optimalFeeForSixBlocks)) satoshis.\n\nYou are currently paying a fee of \(Int(actualFeeInSats)) satoshis which is \(percentageDifference)% higher then necessary.\n\nWe suggest going to settings and lowering your mining fee to the suggested amount.", preferredStyle: UIAlertController.Style.alert)
-                
-                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""),
-                                              style: .default,
-                                              handler: { (action) in }))
-                
-                self.vc.present(alert, animated: true)*/
-                
-                displayAlert(viewController: self.vc,
-                             isError: true,
-                             message: "Mining fee is \(percentageDifference)% higher then necessary!")
-                
-            }
-            
-        } else {
-            
-            //underpaying
-            let percentageDifference = Int((((optimalFeeForSixBlocks - actualFeeInSats) / optimalFeeForSixBlocks) * 100)).avoidNotation
-            
-            DispatchQueue.main.async {
-                
-                /*let alert = UIAlertController(title: NSLocalizedString("Fee Alert", comment: ""),
-                                              message: "The optimal fee to get this tx included in the next 6 blocks is \(Int(optimalFeeForSixBlocks)) satoshis.\n\nYou are currently paying a fee of \(Int(actualFeeInSats)) satoshis which is \(percentageDifference)% lower then necessary.\n\nWe suggest going to settings and raising your mining fee to the suggested amount, however RBF is enabled by default, you can always tap an unconfirmed tx in the home screen to bump the fee.",
-                    preferredStyle: UIAlertController.Style.alert)
-                
-                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""),
-                                              style: .default,
-                                              handler: { (action) in }))
-                
-                self.vc.present(alert, animated: true)*/
-                
-                displayAlert(viewController: self.vc,
-                             isError: false,
-                             message: "Mining fee is \(percentageDifference)% lower then necessary, way to go! You can always bump it by tapping the tx in home screen.")
-                
-            }
-            
-        }
+        let optimalFee = btcPerByte * txSize
+        return optimalFee
         
     }
     

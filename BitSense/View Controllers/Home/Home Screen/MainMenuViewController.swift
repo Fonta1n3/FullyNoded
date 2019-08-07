@@ -13,45 +13,48 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     @IBOutlet var activeWallet: UILabel!
     let dateFormatter = DateFormatter()
-    var syncStatus = String()
+    var syncStatus = ""
     var hashrateString = String()
     var version = String()
     var incomingCount = Int()
     var outgoingCount = Int()
     var isPruned = Bool()
-    var isTestnet = Bool()
     var tx = String()
     var currentBlock = Int()
     var newFee = Double()
     var latestBlockHeight = Int()
     var balance = Double()
-    let balancelabel = UILabel()
-    let unconfirmedBalanceLabel = UILabel()
     var transactionArray = [[String: Any]]()
     @IBOutlet var mainMenu: UITableView!
     var refresher: UIRefreshControl!
+    
     var ssh:SSHService!
     var makeSSHCall:SSHelper!
+    var torClient:TorClient!
+    var torRPC:MakeRPCCall!
+    var isUsingSSH = Bool()
+    var torConnected = Bool()
+    
     var connectingView = ConnectingView()
-    let notConnectedView = NoConnectionView()
     let plusImage = UIImageView()
     let minusImage = UIImageView()
     let cd = CoreDataService()
     var nodes = [[String:Any]]()
-    let plusButton = UIButton()
-    let minusButton = UIButton()
-    let utilityImage = UIImageView()
-    let utilityButton = UIButton()
     var uptime = Int()
-    var buttonViews = [UIView()]
     var activeNode = [String:Any]()
-    var torClient:TorClient!
-    var torRPC:MakeRPCCall!
-    var isUsingSSH = Bool()
     var existingNodeID = ""
     var initialLoad = Bool()
-    var torConnected = Bool()
-    var coldBalanceLabel = UILabel()
+    var exisitingWallet = ""
+    var mempoolCount = Int()
+    var walletDisabled = Bool()
+    var torReachable = Bool()
+    var progress = ""
+    var difficulty = ""
+    var size = ""
+    var hotBalance = ""
+    var coldBalance = ""
+    var unconfirmedBalance = ""
+    var network = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -74,20 +77,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         tabBarController!.delegate = self
         configureRefresher()
         mainMenu.tableFooterView = UIView(frame: .zero)
-        addBalanceLabel()
-        //convertCredentials()
-        
-        plusButton.addTarget(self, action: #selector(receive), for: .touchUpInside)
-        minusButton.addTarget(self, action: #selector(createRaw), for: .touchUpInside)
-        utilityButton.addTarget(self, action: #selector(utilities), for: .touchUpInside)
-        
-        plusButton.backgroundColor = UIColor.clear
-        minusButton.backgroundColor = UIColor.clear
-        utilityButton.backgroundColor = UIColor.clear
-        
-        plusImage.image = UIImage(named: "Image-1")
-        minusImage.image = UIImage(named: "Image-2")
-        utilityImage.image = UIImage(named: "Image-4")
         
         //torConnected = false
         //connectWithTor()
@@ -102,68 +91,62 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
         }
         
+        if UserDefaults.standard.object(forKey: "feeTarget") == nil {
+         
+            UserDefaults.standard.set(1008, forKey: "feeTarget")
+            
+        }
+        
     }
     
     override func viewDidAppear(_ animated: Bool) {
         
         //if torConnected {
-         
-            nodes = cd.retrieveCredentials()
+        
+        let ud = UserDefaults.standard
+        var walletName = ""
+        
+        if ud.object(forKey: "walletName") != nil {
             
-            if nodes.count > 0 {
+            walletName = ud.object(forKey: "walletName") as! String
+            
+        }
+        
+        nodes = cd.retrieveCredentials()
+        
+        if nodes.count > 0 {
+            
+            let isActive = isAnyNodeActive(nodes: nodes)
+            
+            if isActive {
                 
-                let ud = UserDefaults.standard
-                
-                let isActive = isAnyNodeActive(nodes: nodes)
-                
-                if isActive {
+                for node in nodes {
                     
-                    for node in nodes {
+                    if (node["isActive"] as! Bool) {
                         
-                        if (node["isActive"] as! Bool) {
+                        self.activeNode = node
+                        
+                        let newId = node["id"] as! String
+                        
+                        if newId != existingNodeID {
                             
-                            self.activeNode = node
-                            
-                            let newId = node["id"] as! String
-                            
-                            if newId != existingNodeID {
+                            if !initialLoad {
                                 
-                                if !initialLoad {
-                                    
-                                    ud.removeObject(forKey: "walletName")
-                                    
-                                }
-                                
-                                self.isUsingSSH = node["usingSSH"] as! Bool
-                                self.refresh()
+                                ud.removeObject(forKey: "walletName")
                                 
                             }
                             
+                            IsUsingSSH.sharedInstance = node["usingSSH"] as! Bool
+                            self.isUsingSSH = IsUsingSSH.sharedInstance
+                            self.refresh()
+                            
+                        } else if walletName != self.exisitingWallet && walletName != "" {
+                            
+                            IsUsingSSH.sharedInstance = node["usingSSH"] as! Bool
+                            self.isUsingSSH = IsUsingSSH.sharedInstance
+                            self.refresh()
+                            
                         }
-                        
-                    }
-                    
-                } else {
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: "No active nodes")
-                    
-                }
-                
-                if ud.object(forKey: "walletName") != nil {
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.activeWallet.text = (ud.object(forKey: "walletName") as! String)
-                        
-                    }
-                    
-                } else {
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.activeWallet.text = ""
                         
                     }
                     
@@ -173,15 +156,25 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 displayAlert(viewController: self,
                              isError: true,
-                             message: "Go to Nodes to add your own node")
+                             message: "No active nodes")
                 
             }
             
-            initialLoad = false
+        } else {
+            
+            displayAlert(viewController: self,
+                         isError: true,
+                         message: "Go to Nodes to add your own node")
+            
+        }
+        
+        initialLoad = false
             
         //}
         
     }
+    
+    
     
     func loadTableDataTor(method: BTC_CLI_COMMAND, param: Any) {
         print("loadTableDataTor")
@@ -297,7 +290,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
 //
 //        Tor only working well on simulator or when device is connected to Xcode - PLEASE HELP
 //
-//        torClient = TorClient()
+//        torClient = TorClient.sharedInstance
 //        
 //        func getData() {
 //            print("getData")
@@ -385,60 +378,11 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
     }*/
     
-    override func viewDidLayoutSubviews() {
-        
-        for view in buttonViews {
-            
-            view.removeFromSuperview()
-            
-        }
-        
-        addBlurView(frame: CGRect(x: 10,
-                                  y: tabBarController!.tabBar.frame.minY - 85,
-                                  width: 75,
-                                  height: 75), image: plusImage)
-        
-        addBlurView(frame: CGRect(x: view.frame.maxX - 85,
-                                  y: tabBarController!.tabBar.frame.minY - 85,
-                                  width: 75,
-                                  height: 75), image: minusImage)
-        
-        addBlurView(frame: CGRect(x: view.frame.midX - 37.5,
-                                  y: tabBarController!.tabBar.frame.minY - 85,
-                                  width: 75,
-                                  height: 75), image: utilityImage)
-        
-        plusButton.frame = CGRect(x: 10,
-                                  y: tabBarController!.tabBar.frame.minY - 80,
-                                  width: 150,
-                                  height: 70)
-        
-        minusButton.frame = CGRect(x: view.frame.maxX - 80,
-                                   y: tabBarController!.tabBar.frame.minY - 80,
-                                   width: 150,
-                                   height: 70)
-        
-        utilityButton.frame = CGRect(x: view.frame.midX - 37.5,
-                                     y: tabBarController!.tabBar.frame.minY - 80,
-                                     width: 100,
-                                     height: 70)
-        
-        plusButton.removeFromSuperview()
-        view.addSubview(plusButton)
-        
-        minusButton.removeFromSuperview()
-        view.addSubview(minusButton)
-        
-        utilityButton.removeFromSuperview()
-        view.addSubview(utilityButton)
-        
-    }
-    
     //MARK: Tableview Methods
     
     func numberOfSections(in tableView: UITableView) -> Int {
         
-        return 2
+        return 3
         
     }
     
@@ -452,6 +396,10 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
         case 1:
             
+            return 1
+            
+        case 2:
+            
             if transactionArray.count > 0 {
                 
                 return transactionArray.count
@@ -461,6 +409,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 return 1
                 
             }
+            
             
         default:
             
@@ -472,7 +421,20 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        if indexPath.section == 0 {
+        switch indexPath.section {
+            
+        case 0:
+            
+            let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
+            let hotBalanceLabel = cell.viewWithTag(1) as! UILabel
+            let coldBalanceLabel = cell.viewWithTag(2) as! UILabel
+            let unconfirmedLabel = cell.viewWithTag(3) as! UILabel
+            hotBalanceLabel.text = self.hotBalance
+            coldBalanceLabel.text = self.coldBalance
+            unconfirmedLabel.text = self.unconfirmedBalance
+            return cell
+            
+        case 1:
             
             let cell = tableView.dequeueReusableCell(withIdentifier: "NodeInfo", for: indexPath)
             cell.selectionStyle = .none
@@ -485,10 +447,39 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             let sync = cell.viewWithTag(6) as! UILabel
             let blockHeight = cell.viewWithTag(7) as! UILabel
             let uptime = cell.viewWithTag(8) as! UILabel
+            let wallet = cell.viewWithTag(9) as! UILabel
+            let mempool = cell.viewWithTag(10) as! UILabel
+            let tor = cell.viewWithTag(11) as! UILabel
+            let difficultyLabel = cell.viewWithTag(12) as! UILabel
+            let sizeLabel = cell.viewWithTag(13) as! UILabel
             
             if self.hashrateString != "" {
                 
-                notConnectedView.removeFromSuperview()
+                sizeLabel.text = self.size
+                difficultyLabel.text = self.difficulty
+                sync.text = self.progress
+                
+                if torReachable {
+                    
+                    tor.text = "Reachable"
+                    
+                } else {
+                    
+                    tor.text = "Not reachable"
+                    
+                }
+                
+                mempool.text = "\(self.mempoolCount)"
+                
+                if UserDefaults.standard.object(forKey: "walletName") != nil {
+                    
+                    wallet.text = (UserDefaults.standard.object(forKey: "walletName") as! String)
+                    
+                } else {
+                    
+                    wallet.text = "Default"
+                    
+                }
                 
                 if self.isPruned {
                     
@@ -499,40 +490,29 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     pruned.text = "False"
                 }
                 
-                if self.isTestnet {
+                if self.network != "" {
                     
-                    network.text = "Testnet"
-                    
-                } else if !self.isTestnet {
-                    
-                    network.text = "Mainnet"
+                    network.text = self.network
                     
                 }
                 
-                blockHeight.text = "\(self.currentBlock)"
+                blockHeight.text = "\(self.currentBlock.withCommas())"
                 connections.text = "\(outgoingCount) outgoing / \(incomingCount) incoming"
                 version.text = self.version
                 hashRate.text = self.hashrateString + " " + "h/s"
-                sync.text = self.syncStatus
                 uptime.text = "\(self.uptime / 86400) days \((self.uptime % 86400) / 3600) hours"
-                
-            } else {
-                
-                //notConnectedView.addNoConnectionView(cell: cell)
                 
             }
             
             return cell
             
-        } else {
+        case 2:
             
             if transactionArray.count == 0 {
                 
-                let cell = tableView.dequeueReusableCell(withIdentifier: "Cell",
-                                                         for: indexPath)
-                cell.selectionStyle = .none
-                mainMenu.separatorColor = UIColor.clear
-                
+                let cell = UITableViewCell()
+                cell.alpha = 0
+                cell.backgroundColor = view.backgroundColor
                 return cell
                 
             } else {
@@ -540,14 +520,16 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 let cell = tableView.dequeueReusableCell(withIdentifier: "MainMenuCell",
                                                          for: indexPath)
                 
-                mainMenu.separatorColor = UIColor.white
                 cell.selectionStyle = .none
+                
                 let addressLabel = cell.viewWithTag(1) as! UILabel
                 let amountLabel = cell.viewWithTag(2) as! UILabel
                 let confirmationsLabel = cell.viewWithTag(3) as! UILabel
                 let labelLabel = cell.viewWithTag(4) as! UILabel
                 let dateLabel = cell.viewWithTag(5) as! UILabel
                 let watchOnlyLabel = cell.viewWithTag(6) as! UILabel
+                
+                mainMenu.separatorColor = UIColor.white
                 let dict = self.transactionArray[indexPath.row]
                 
                 addressLabel.text = dict["address"] as? String
@@ -557,10 +539,12 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 if amount.hasPrefix("-") {
                     
                     amountLabel.text = amount
+                    amountLabel.textColor = UIColor.darkGray
                     
                 } else {
                     
                     amountLabel.text = "+" + amount
+                    amountLabel.textColor = UIColor.white
                     
                 }
                 
@@ -569,11 +553,11 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 if label != "," {
                     
-                   labelLabel.text = label
+                    labelLabel.text = label
                     
                 } else if label == "," {
                     
-                    labelLabel.text = "No label"
+                    labelLabel.text = ""
                     
                 }
                 
@@ -587,13 +571,25 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 if dict["involvesWatchonly"] as? Bool == true {
                     
-                    watchOnlyLabel.text = "👀"
-                                        
+                    watchOnlyLabel.text = "COLD"
+                    
+                } else {
+                    
+                    watchOnlyLabel.text = ""
+                    
                 }
                 
                 return cell
                 
             }
+            
+        default:
+            
+            let cell = UITableViewCell()
+            cell.selectionStyle = .none
+            cell.backgroundColor = view.backgroundColor
+            cell.alpha = 0
+            return cell
             
         }
         
@@ -603,17 +599,15 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         if section == 0 {
             
-            //return "Node info:"
-            return ""
+            return "Balances"
             
         } else if section == 1 {
             
-            //return "Last 10 transactions:"
-            return ""
+            return "Node stats"
             
         } else {
             
-            return ""
+            return "Last 50 transactions"
             
         }
         
@@ -622,9 +616,10 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
         
         (view as! UITableViewHeaderFooterView).backgroundView?.backgroundColor = UIColor.clear
-        (view as! UITableViewHeaderFooterView).textLabel?.textAlignment = .left
-        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.init(name: "HiraginoSans-W6", size: 10)
-        (view as! UITableViewHeaderFooterView).textLabel?.textColor = UIColor.darkGray
+        (view as! UITableViewHeaderFooterView).textLabel?.textAlignment = .right
+        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.init(name: "HiraginoSans-W3", size: 15)
+        (view as! UITableViewHeaderFooterView).textLabel?.textColor = UIColor.green
+        (view as! UITableViewHeaderFooterView).textLabel?.alpha = 1
         
     }
     
@@ -632,11 +627,11 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         if section == 0 {
             
-            return 10
+            return 30
             
         } else {
             
-            return 10
+            return 20
             
         }
         
@@ -646,15 +641,15 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         if indexPath.section == 0 {
             
-            return 159
+            return 142
             
         } else if indexPath.section == 1{
             
-            return 101
+            return 252
             
         } else {
             
-            return 0
+            return 101
             
         }
         
@@ -664,7 +659,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         if transactionArray.count > 0 {
          
-            if indexPath.section == 1 {
+            if indexPath.section == 2 {
                 
                 let cell = tableView.cellForRow(at: indexPath)!
                 
@@ -687,48 +682,14 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 }
                 
                 let selectedTx = self.transactionArray[indexPath.row]
-                let rbf = selectedTx["rbf"] as! String
                 let txID = selectedTx["txID"] as! String
                 self.tx = txID
-                let replacedBy = selectedTx["replacedBy"] as! String
-                let confirmations = selectedTx["confirmations"] as! String
-                let amount = selectedTx["amount"] as! String
                 
                 UIPasteboard.general.string = txID
                 
-                if rbf == "yes" && replacedBy == "" && amount.hasPrefix("-") && !confirmations.hasPrefix("-") {
+                DispatchQueue.main.async {
                     
-                    DispatchQueue.main.async {
-                        let alert = UIAlertController(title: "Bump the fee",
-                                                      message: "This will create a new transaction with an increased fee and will invalidate the original.", preferredStyle: .actionSheet)
-                        
-                        alert.addAction(UIAlertAction(title: NSLocalizedString("Bump the fee", comment: ""),
-                                                      style: .default,
-                                                      handler: { (action) in
-                                                        
-                                                    self.loadTableDataSsh(method: BTC_CLI_COMMAND.bumpfee, param: "\"\(txID)\"")
-                                                        
-                        }))
-                        
-                        alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""),
-                                                      style: .cancel,
-                                                      handler: { (action) in }))
-                        
-                        alert.popoverPresentationController?.sourceView = self.view
-                        
-                        self.present(alert, animated: true) {
-                            
-                        }
-                    }
-                    
-                } else {
-                    
-                    let textToShare = [txID]
-                    let activityViewController = UIActivityViewController(activityItems: textToShare,
-                                                                          applicationActivities: nil)
-                    activityViewController.popoverPresentationController?.sourceView = self.view
-                    
-                    self.present(activityViewController, animated: true) {}
+                    self.performSegue(withIdentifier: "getTransaction", sender: self)
                     
                 }
                 
@@ -743,6 +704,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     func parseMiningInfo(miningInfo: NSDictionary) {
         
         self.hashrateString = (miningInfo["networkhashps"] as! Double).withCommas()
+        self.network = miningInfo["chain"] as! String
         
         loadTableDataSsh(method: BTC_CLI_COMMAND.uptime,
                          param: "")
@@ -769,20 +731,42 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         DispatchQueue.main.async {
             
-            
-            
-            self.coldBalanceLabel.text = "🥶 \(round(100000000*amount)/100000000)"
-            self.addColdBalanceLabel()
-            self.removeSpinner()
-            self.mainMenu.reloadData()
+            if amount == 0.0 {
+                
+                self.coldBalance = "0.00000000"
+                
+            } else {
+                
+                self.coldBalance = "\(round(100000000*amount)/100000000)"
+                
+            }
             
         }
+        
+        loadTableDataSsh(method: BTC_CLI_COMMAND.getmempoolinfo,
+                         param: "")
         
     }
     
     func parseNetworkInfo(networkInfo: NSDictionary) {
         
         self.version = (networkInfo["subversion"] as! String).replacingOccurrences(of: "/", with: "")
+        
+        let networks = networkInfo["networks"] as! NSArray
+        
+        for network in networks {
+            
+            let dict = network as! NSDictionary
+            let name = dict["name"] as! String
+            
+            if name == "onion" {
+                
+                let reachable = dict["reachable"] as! Bool
+                torReachable = reachable
+                
+            }
+            
+        }
         
         self.loadTableDataSsh(method: BTC_CLI_COMMAND.getmininginfo,
                               param: "")
@@ -825,19 +809,27 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
         }
         
+        if let difficultyCheck = blockchainInfo["difficulty"] as? Double {
+            
+            difficulty = "\(difficultyCheck)"
+            
+        }
+        
+        if let sizeCheck = blockchainInfo["size_on_disk"] as? Int {
+            
+            size = "\(sizeCheck/1000000000) gigabytes"
+            
+        }
+        
+        if let progressCheck = blockchainInfo["verificationprogress"] as? Double {
+            
+            progress = "\(Int(progressCheck*100))%"
+            
+        }
+        
         if let chain = blockchainInfo["chain"] as? String {
             
-            if chain == "test" {
-                
-                self.isTestnet = true
-                self.getLatestBlock(isMainnet: false)
-                
-            } else {
-                
-                self.isTestnet = false
-                self.getLatestBlock(isMainnet: true)
-                
-            }
+            self.network = chain
             
         }
         
@@ -883,14 +875,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
             DispatchQueue.main.async {
                 
-                self.unconfirmedBalanceLabel.text = "\(unconfirmedBalance.avoidNotation) Unconfirmed"
-                
-                UIView.animate(withDuration: 0.5, animations: {
-                    
-                    self.balancelabel.alpha = 1
-                    self.unconfirmedBalanceLabel.alpha = 1
-                    
-                })
+                self.unconfirmedBalance = "unconfirmed \(unconfirmedBalance.avoidNotation)"
                 
                 self.loadTableDataSsh(method: BTC_CLI_COMMAND.getpeerinfo,
                                       param: "")
@@ -901,14 +886,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
             DispatchQueue.main.async {
                 
-                self.unconfirmedBalanceLabel.text = ""
-                
-                UIView.animate(withDuration: 0.5, animations: {
-                    
-                    self.balancelabel.alpha = 1
-                    self.unconfirmedBalanceLabel.alpha = 1
-                    
-                })
+                self.unconfirmedBalance = "unconfirmed 0.00000000"
                 
                 self.loadTableDataSsh(method: BTC_CLI_COMMAND.getpeerinfo,
                                       param: "")
@@ -925,7 +903,15 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         DispatchQueue.main.async {
             
-            self.balancelabel.text = "🔥 \(round(100000000*balance)/100000000)"
+            if self.balance == 0.0 {
+                
+                self.hotBalance = "0.00000000"
+                
+            } else {
+                
+                self.hotBalance = "\(round(100000000*balance)/100000000)"
+                
+            }
             
             self.loadTableDataSsh(method: BTC_CLI_COMMAND.getunconfirmedbalance,
                                   param: "")
@@ -961,19 +947,19 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     
                     if labelCheck == "" {
                         
-                        label = "No label"
+                        label = ""
                         
                     }
                     
                     if labelCheck == "," {
                         
-                        label = "No label"
+                        label = ""
                         
                     }
                     
                 } else {
                     
-                    label = "No label"
+                    label = ""
                     
                 }
                 
@@ -1010,12 +996,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             self.transactionArray = self.transactionArray.reversed()
             self.mainMenu.reloadData()
             
-            /*UIView.animate(withDuration: 0.5) {
-                
-                self.mainMenu.alpha = 1
-                
-            }*/
-            
         }
         
         self.loadTableDataSsh(method: BTC_CLI_COMMAND.getbalance,
@@ -1046,6 +1026,18 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     }
                     
                     switch method {
+                        
+                    case BTC_CLI_COMMAND.getmempoolinfo:
+                        
+                        let dict = makeSSHCall.dictToReturn
+                        self.mempoolCount = dict["size"] as! Int
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.removeSpinner()
+                            self.mainMenu.reloadData()
+                            
+                        }
                         
                     case BTC_CLI_COMMAND.listunspent:
                         
@@ -1113,194 +1105,120 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     
                 } else {
                     
-                    self.removeSpinner()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: makeSSHCall.errorDescription + " " + "last command: \(method.rawValue)")
+                    if isWalletRPC(command: method) {
+                        
+                        //its a wallet command skip incase wallet is disabled
+                        print("error with wallet command")
+                        
+                        //walletDisabled = true
+                        
+                        self.removeSpinner()
+                        
+                        displayAlert(viewController: self,
+                                     isError: true,
+                                     message: makeSSHCall.errorDescription + " " + ". Last command: \(method.rawValue)")
+                        
+                        switch method {
+                            
+                        case BTC_CLI_COMMAND.listtransactions:
+                            
+                            parseTransactions(transactions: [])
+                            
+                        case BTC_CLI_COMMAND.getbalance:
+                            
+                            parseBalance(balance: 0.0)
+                            
+                        case BTC_CLI_COMMAND.getunconfirmedbalance:
+                            
+                            parseUncomfirmedBalance(unconfirmedBalance: 0.0)
+                            
+                        case BTC_CLI_COMMAND.listunspent:
+                            
+                            parseUtxos(utxos: [])
+                            
+                        default:
+                            
+                            break
+                            
+                        }
+                        
+                    } else {
+                        
+                        self.removeSpinner()
+                        
+                        displayAlert(viewController: self,
+                                     isError: true,
+                                     message: makeSSHCall.errorDescription + " " + ". Last command: \(method.rawValue)")
+                        
+                    }
                     
                 }
                 
             }
             
-            if self.ssh.session.isAuthorized {
+            if self.ssh != nil {
                 
-                if self.ssh.session.isConnected {
+                if self.ssh.session.isAuthorized {
                     
-                    self.makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                                       method: method,
-                                                       param: param,
-                                                       completion: getResult)
-                    
-                } else {
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: "SSH not connected")
+                    if self.ssh.session.isConnected {
+                        
+                        self.makeSSHCall.executeSSHCommand(ssh: self.ssh,
+                                                           method: method,
+                                                           param: param,
+                                                           completion: getResult)
+                        
+                    } else {
+                        
+                        displayAlert(viewController: self,
+                                     isError: true,
+                                     message: "SSH not connected")
+                        
+                    }
                     
                 }
+                
+            } else {
+                
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: "SSH not connected")
                 
             }
             
         }
+        
+    }
+    
+    func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
+        
+        var boolToReturn = Bool()
+        
+        switch command {
+            
+        case BTC_CLI_COMMAND.listtransactions,
+             BTC_CLI_COMMAND.getbalance,
+             BTC_CLI_COMMAND.getunconfirmedbalance,
+             BTC_CLI_COMMAND.getwalletinfo,
+             BTC_CLI_COMMAND.importmulti,
+             BTC_CLI_COMMAND.rescanblockchain,
+             BTC_CLI_COMMAND.fundrawtransaction,
+             BTC_CLI_COMMAND.listunspent,
+             BTC_CLI_COMMAND.walletprocesspsbt,
+             BTC_CLI_COMMAND.walletcreatefundedpsbt:
+            
+            boolToReturn = true
+            
+        default:
+            
+            boolToReturn = false
+            
+        }
+        
+        return boolToReturn
         
     }
     
     //MARK: User Interface
-    
-    func addBlurView(frame: CGRect, image: UIImageView) {
-        
-        let buttonView = UIView()
-        
-        image.removeFromSuperview()
-        
-        image.frame = CGRect(x: 20,
-                             y: 15,
-                             width: 35,
-                             height: 35)
-        
-        buttonView.frame = frame
-        buttonView.clipsToBounds = true
-        buttonView.layer.cornerRadius = frame.width / 2
-        buttonView.backgroundColor = UIColor.black
-        buttonView.addSubview(image)
-        view.addSubview(buttonView)
-        buttonViews.append(buttonView)
-        
-        if image == plusImage {
-            
-            let incomingsLabel = UILabel()
-            incomingsLabel.textColor = UIColor.white
-            incomingsLabel.font = UIFont.init(name: "HiraginoSans-W6", size: 8)
-            incomingsLabel.textAlignment = .center
-            incomingsLabel.text = "Incomings"
-            
-            incomingsLabel.frame = CGRect(x: image.center.x - 35,
-                                          y: image.frame.maxY,
-                                          width: 70,
-                                          height: 10)
-            
-            incomingsLabel.removeFromSuperview()
-            buttonView.addSubview(incomingsLabel)
-            
-        } else if image == minusImage {
-            
-            let outgoingsLabel = UILabel()
-            outgoingsLabel.textColor = UIColor.white
-            outgoingsLabel.font = UIFont.init(name: "HiraginoSans-W6", size: 8)
-            outgoingsLabel.textAlignment = .center
-            outgoingsLabel.text = "Outgoings"
-            
-            outgoingsLabel.frame = CGRect(x: image.center.x - 35,
-                                          y: image.frame.maxY,
-                                          width: 70,
-                                          height: 10)
-            
-            outgoingsLabel.removeFromSuperview()
-            buttonView.addSubview(outgoingsLabel)
-            
-        } else if image == utilityImage {
-            
-            let utilityLabel = UILabel()
-            utilityLabel.textColor = UIColor.white
-            utilityLabel.font = UIFont.init(name: "HiraginoSans-W6", size: 8)
-            utilityLabel.textAlignment = .center
-            utilityLabel.text = "Utilities"
-            
-            utilityLabel.frame = CGRect(x: image.center.x - 35,
-                                          y: image.frame.maxY,
-                                          width: 70,
-                                          height: 10)
-            
-            utilityLabel.removeFromSuperview()
-            buttonView.addSubview(utilityLabel)
-            
-        }
-        
-    }
-    
-    func addBalanceLabel() {
-        
-        balancelabel.removeFromSuperview()
-        unconfirmedBalanceLabel.removeFromSuperview()
-        balancelabel.font = UIFont.init(name: "HiraginoSans-W3", size: 35)
-        balancelabel.textColor = UIColor.white
-        balancelabel.textAlignment = .center
-        balancelabel.adjustsFontSizeToFitWidth = true
-        balancelabel.alpha = 0
-        view.addSubview(balancelabel)
-        
-        unconfirmedBalanceLabel.font = UIFont.init(name: "HiraginoSans-W3", size: 9)
-        unconfirmedBalanceLabel.textColor = UIColor.white
-        unconfirmedBalanceLabel.textAlignment = .center
-        unconfirmedBalanceLabel.adjustsFontSizeToFitWidth = true
-        unconfirmedBalanceLabel.alpha = 0
-        view.addSubview(unconfirmedBalanceLabel)
-        
-    }
-    
-    func addColdBalanceLabel() {
-        
-        coldBalanceLabel.removeFromSuperview()
-        coldBalanceLabel.frame = CGRect(x: 0,
-                                        y: self.balancelabel.frame.maxY + 10,
-                                        width: self.view.frame.width,
-                                        height: 35)
-        coldBalanceLabel.font = UIFont.init(name: "HiraginoSans-W3", size: 35)
-        coldBalanceLabel.textColor = UIColor.white
-        coldBalanceLabel.textAlignment = .center
-        coldBalanceLabel.adjustsFontSizeToFitWidth = true
-        view.addSubview(coldBalanceLabel)
-        
-    }
-    
-    override func viewWillLayoutSubviews() {
-        
-        let modelName = UIDevice.modelName
-        
-        switch modelName {
-            
-        case "Simulator iPhone X",
-             "iPhone X",
-             "Simulator iPhone XS",
-             "Simulator iPhone XR",
-             "Simulator iPhone XS Max",
-             "iPhone XS",
-             "iPhone XR",
-             "iPhone XS Max",
-             "Simulator iPhone11,8",
-             "iPhone11,8",
-             "Simulator iPhone11,2",
-             "iPhone11,2",
-             "Simulator iPhone11,4",
-             "iPhone11,4",
-             "iPhone10,3",
-             "iPhone10,5",
-             "iPhone10,6",
-             "iPhone11,6":
-            
-            self.balancelabel.frame = CGRect(x: 0,
-                                             y: 20,
-                                             width: self.view.frame.width,
-                                             height: 35)
-            
-            
-        default:
-            
-            
-            self.balancelabel.frame = CGRect(x: 0,
-                                             y: 20,
-                                             width: self.view.frame.width,
-                                             height: 35)
-            
-            self.unconfirmedBalanceLabel.frame = CGRect(x: 0,
-                                                        y: mainMenu.frame.minY - 8,
-                                                        width: self.view.frame.width,
-                                                        height: 8)
-            
-        }
-        
-    }
     
     func removeSpinner() {
         
@@ -1371,9 +1289,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         DispatchQueue.main.async {
             
-            self.notConnectedView.removeFromSuperview()
             self.transactionArray.removeAll()
-            self.addBalanceLabel()
             
             self.nodes.removeAll()
             
@@ -1392,6 +1308,13 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                         
                         self.activeNode = node
                         self.existingNodeID = node["id"] as! String
+                        
+                        if UserDefaults.standard.object(forKey: "walletName") != nil {
+                            
+                            self.exisitingWallet = UserDefaults.standard.object(forKey: "walletName") as! String
+                            
+                        }
+                        
                         dispatchGroup.leave()
                         
                     }
@@ -1419,7 +1342,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     
                     if (self.activeNode["usingSSH"] as! Bool) {
                         
-                        self.isUsingSSH = true
+                        IsUsingSSH.sharedInstance = true
+                        self.isUsingSSH = IsUsingSSH.sharedInstance
                         
                         self.ssh = SSHService.sharedInstance
                         self.ssh.activeNode = self.activeNode
@@ -1431,10 +1355,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                 print("connected succesfully")
                                 self.makeSSHCall = SSHelper.sharedInstance
                                 
-                                var settingsTab = self.tabBarController!.viewControllers![2] as! SettingsViewController
-                                settingsTab.makeSSHCall = self.makeSSHCall
-                                settingsTab.ssh = self.ssh
-                                
                                 self.loadTableDataSsh(method: BTC_CLI_COMMAND.getblockchaininfo,
                                                       param: "")
                                 
@@ -1443,11 +1363,24 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                 print("ssh fail")
                                 self.removeSpinner()
                                 
+                                print("error = \(error)")
+                    
+                                
                                 if error != nil {
                                     
-                                    displayAlert(viewController: self,
-                                                 isError: true,
-                                                 message: String(describing: error!))
+                                    if error == "" {
+                                        
+                                        displayAlert(viewController: self,
+                                                     isError: true,
+                                                     message: String(describing: "Unable to authenticate SSH"))
+                                        
+                                    } else {
+                                        
+                                        displayAlert(viewController: self,
+                                                     isError: true,
+                                                     message: String(describing: error!))
+                                        
+                                    }
                                     
                                 } else {
                                     
@@ -1463,14 +1396,13 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                         
                     } else if (self.activeNode["usingTor"] as! Bool) {
                         
-                        self.isUsingSSH = false
+                        IsUsingSSH.sharedInstance = false
+                        self.isUsingSSH = IsUsingSSH.sharedInstance
                         
                         if self.torClient != nil {
                             
                             self.torClient.resign()
-                            
                             self.torClient = nil
-                            
                             self.removeSpinner()
                             
                             displayAlert(viewController: self,
@@ -1479,7 +1411,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                             
                         } else {
                             
-                            self.torClient = TorClient()
+                            self.torClient = TorClient.sharedInstance
                             
                             func completed() {
                                 
@@ -1562,51 +1494,14 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         switch segue.identifier {
             
-        case "outgoings":
+        case "getTransaction":
             
             if let navController = segue.destination as? UINavigationController {
                 
-                if let childVC = navController.topViewController as? OutgoingsTableViewController {
+                if let childVC = navController.topViewController as? TransactionViewController {
                     
-                    childVC.ssh = self.ssh
-                    childVC.makeSSHCall = self.makeSSHCall
-                    childVC.isTestnet = self.isTestnet
-                    childVC.activeNode = self.activeNode
-                    childVC.torRPC = self.torRPC
-                    childVC.torClient = self.torClient
-                    childVC.isUsingSSH = self.isUsingSSH
-                    
-                }
-                
-            }
-            
-        case "incoming":
-            
-            if let navController = segue.destination as? UINavigationController {
-                
-                if let childVC = navController.topViewController as? IncomingsTableViewController {
-                    
-                    childVC.ssh = self.ssh
-                    childVC.makeSSHCall = self.makeSSHCall
-                    childVC.isPruned = self.isPruned
-                    childVC.torRPC = self.torRPC
-                    childVC.torClient = self.torClient
-                    childVC.activeNode = self.activeNode
-                    childVC.isTestnet = self.isTestnet
-                    
-                }
-                
-            }
-            
-        case "goToUtilities":
-            
-            if let navController = segue.destination as? UINavigationController {
-                
-                if let childVC = navController.topViewController as? UtilitiesMenuTableViewController {
-                    
-                    childVC.ssh = self.ssh
-                    childVC.makeSSHCall = self.makeSSHCall
-                    childVC.activeNode = self.activeNode
+                    //childVC.isUsingSSH = self.isUsingSSH
+                    childVC.txid = self.tx
                     
                 }
                 
@@ -1670,72 +1565,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             converter.convertCredentials(vc: self)
             
         }
-        
-    }
-    
-    func getLatestBlock(isMainnet: Bool) {
-        print("getLatestBlock")
-        
-        var urlToUse:NSURL!
-        
-        if isMainnet {
-            
-            urlToUse = NSURL(string: "https://blockchain.info/latestblock")
-            
-        } else {
-            
-            urlToUse = NSURL(string: "https://testnet.blockchain.info/latestblock")
-            
-        }
-        
-        // Tor only working well on simulator or when device is attached to Xcode - PLEASE HELP
-        
-        //let task = self.torClient.session.dataTask(with: urlToUse as URL) { (data, response, error) -> Void in
-        
-        let task = URLSession.shared.dataTask(with: urlToUse as URL) { (data, response, error) -> Void in
-            
-            do {
-                
-                if error != nil {
-                    
-                    print(error as Any)
-                    self.removeSpinner()
-                    
-                    self.syncStatus = "No internet connection"
-                    
-                } else {
-                    
-                    if let urlContent = data {
-                        
-                        do {
-                            
-                            let jsonAddressResult = try JSONSerialization.jsonObject(with: urlContent,
-                                                                                     options: JSONSerialization.ReadingOptions.mutableLeaves) as! NSDictionary
-                            
-                            if let heightCheck = jsonAddressResult["height"] as? Int {
-                                
-                                self.latestBlockHeight = heightCheck
-                                let percentage = (self.currentBlock * 100) / heightCheck
-                                let percentageString = "\(percentage)%"
-                                self.syncStatus = percentageString
-                                
-                            }
-                            
-                        } catch {
-                            
-                            print("JSon processing failed")
-                            
-                        }
-                        
-                    }
-                    
-                }
-                
-            }
-            
-        }
-        
-        task.resume()
         
     }
 

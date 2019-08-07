@@ -92,6 +92,8 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             UIImpactFeedbackGenerator().impactOccurred()
             
         }
+        
+        authenticationWithTouchID()
                 
     }
     

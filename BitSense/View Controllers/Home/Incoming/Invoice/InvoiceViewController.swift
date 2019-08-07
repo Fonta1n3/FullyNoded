@@ -10,10 +10,12 @@ import UIKit
 
 class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
+    var isUsingSSH = IsUsingSSH.sharedInstance
     var torClient:TorClient!
     var torRPC:MakeRPCCall!
     var makeSSHCall:SSHelper!
     var ssh:SSHService!
+    
     var textToShareViaQRCode = String()
     var addressString = String()
     let label = UILabel()
@@ -49,8 +51,27 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         
         view.addGestureRecognizer(tap)
         getAddressSettings()
-        showAddress()
         addDoneButtonOnKeyboard()
+        
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        
+        isUsingSSH = IsUsingSSH.sharedInstance
+        
+        if isUsingSSH {
+            
+            ssh = SSHService.sharedInstance
+            makeSSHCall = SSHelper.sharedInstance
+            
+        } else {
+            
+            torRPC = MakeRPCCall.sharedInstance
+            torClient = TorClient.sharedInstance
+            
+        }
+        
+        showAddress()
         
     }
     
@@ -241,14 +262,15 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             
         }
         
-        let objectsToShare = [self.qrCode]
+        let activityViewController = UIActivityViewController(activityItems: [self.qrView.image!],
+                                                              applicationActivities: [])
         
-        let activityController = UIActivityViewController(activityItems: objectsToShare,
-                                                          applicationActivities: nil)
+        activityViewController.popoverPresentationController?.sourceView = self.view
+        self.present(activityViewController, animated: true) {}
         
-        activityController.completionWithItemsHandler = { (type,completed,items,error) in}
-        activityController.popoverPresentationController?.sourceView = self.view
-        self.present(activityController, animated: true) {}
+        
+        
+        
         
     }
     
@@ -291,12 +313,24 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             
         }
         
-        if self.ssh.session.isConnected {
+        if self.ssh != nil {
             
-            makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                          method: method,
-                                          param: param,
-                                          completion: getResult)
+            if self.ssh.session.isConnected {
+                
+                makeSSHCall.executeSSHCommand(ssh: self.ssh,
+                                              method: method,
+                                              param: param,
+                                              completion: getResult)
+                
+            } else {
+                
+                self.connectingView.removeConnectingView()
+                
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: "Not connected")
+                
+            }
             
         } else {
             
@@ -326,8 +360,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     func generateQrCode(key: String) -> UIImage {
         
-        qrGenerator.backColor = UIColor.clear
-        qrGenerator.foreColor = UIColor.white
         qrGenerator.textInput = key
         let qr = qrGenerator.getQRCode()
         

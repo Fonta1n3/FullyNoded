@@ -11,6 +11,11 @@ import Foundation
 class CreatePSBT {
     
     var makeSSHCall:SSHelper!
+    var ssh:SSHService!
+    var isUsingSSH = Bool()
+    var torRPC:MakeRPCCall!
+    var torClient:TorClient!
+    
     var amount = Double()
     var addressToPay = ""
     var spendableUtxos = [NSDictionary]()
@@ -18,12 +23,16 @@ class CreatePSBT {
     var utxoTxId = String()
     var utxoVout = Int()
     var inputs = ""
-    var ssh:SSHService!
     var psbt = ""
     var errorBool = Bool()
     var errorDescription = ""
+    var noInputs = Bool()
+    var spendingAddress = ""
+    var changeAddress = ""
+    var changeAmount = Double()
+    var miningFee = Double()
     
-    func createPSBT(completion: @escaping () -> Void) {
+    func createPSBTNow(completion: @escaping () -> Void) {
         
         func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
             
@@ -38,7 +47,7 @@ class CreatePSBT {
                         let resultArray = makeSSHCall.arrayToReturn
                         parseUnspent(utxos: resultArray)
                         
-                    case BTC_CLI_COMMAND.walletcreatefundedpsbt:
+                    case BTC_CLI_COMMAND.createpsbt:
                         
                         psbt = makeSSHCall.stringToReturn
                         completion()
@@ -59,18 +68,22 @@ class CreatePSBT {
                 
             }
             
-            if ssh.session.isConnected {
-                
-                makeSSHCall.executeSSHCommand(ssh: ssh,
-                                              method: method,
-                                              param: param,
-                                              completion: getResult)
-                
-            } else {
-                
-                errorBool = true
-                errorDescription = "Not connected"
-                completion()
+            if ssh != nil {
+             
+                if ssh.session.isConnected {
+                    
+                    makeSSHCall.executeSSHCommand(ssh: ssh,
+                                                  method: method,
+                                                  param: param,
+                                                  completion: getResult)
+                    
+                } else {
+                    
+                    errorBool = true
+                    errorDescription = "Not connected"
+                    completion()
+                    
+                }
                 
             }
             
@@ -80,43 +93,46 @@ class CreatePSBT {
             
             if utxos.count > 0 {
                 
-                //parseUtxos(resultArray: utxos)
-                
                 var loop = true
-                
                 self.inputArray.removeAll()
                 
-                if self.spendableUtxos.count > 0 {
+                //if self.spendableUtxos.count > 0 {
                     
                     var sumOfUtxo = 0.0
                     
-                    for spendable in self.spendableUtxos {
+                    for utxoDict in utxos {
+                        
+                        print("spendable")
+                        
+                        let utxo = utxoDict as! NSDictionary
                         
                         if loop {
                             
-                            let amountAvailable = spendable["amount"] as! Double
+                            let amountAvailable = utxo["amount"] as! Double
                             sumOfUtxo = sumOfUtxo + amountAvailable
                             
                             if sumOfUtxo < self.amount {
                                 
-                                self.utxoTxId = spendable["txid"] as! String
-                                self.utxoVout = spendable["vout"] as! Int
+                                self.utxoTxId = utxo["txid"] as! String
+                                self.utxoVout = utxo["vout"] as! Int
                                 let input = "{\"txid\":\"\(self.utxoTxId)\",\"vout\": \(self.utxoVout),\"sequence\": 1}"
                                 self.inputArray.append(input)
                                 
                             } else {
                                 
                                 loop = false
-                                self.utxoTxId = spendable["txid"] as! String
-                                self.utxoVout = spendable["vout"] as! Int
+                                self.utxoTxId = utxo["txid"] as! String
+                                self.utxoVout = utxo["vout"] as! Int
                                 let input = "{\"txid\":\"\(self.utxoTxId)\",\"vout\": \(self.utxoVout),\"sequence\": 1}"
                                 self.inputArray.append(input)
+                                self.processInputs()
                                 
-                                //processInputs()
+                                self.changeAmount = sumOfUtxo - (self.amount + miningFee)
+                                self.changeAmount = Double(round(100000000*self.changeAmount)/100000000)
                                 
-                                let param = "\"[\"\(self.inputs)\"]\" \"[{\"\(self.addressToPay)\":\(self.amount)}]\""
+                                let param = "''\(self.inputs)'', ''[{\"\(self.addressToPay)\":\(self.amount)}, {\"\(self.changeAddress)\":\(self.changeAmount)}]'', 0, true"
                                 
-                                executeNodeCommandSsh(method: BTC_CLI_COMMAND.walletcreatefundedpsbt,
+                                executeNodeCommandSsh(method: BTC_CLI_COMMAND.createpsbt,
                                                       param: param)
                                 
                             }
@@ -125,7 +141,7 @@ class CreatePSBT {
                         
                     }
                     
-                }
+                //}
                 
             } else {
                 
@@ -137,12 +153,26 @@ class CreatePSBT {
             
         }
         
+        let miningFeeCheck = UserDefaults.standard.object(forKey: "miningFee") as! String
+        var miningFeeString = ""
+        miningFeeString = miningFeeCheck
+        miningFeeString = miningFeeString.replacingOccurrences(of: ",", with: "")
+        let fee = (Double(miningFeeString)!) / 100000000
+        miningFee = fee
         
+        executeNodeCommandSsh(method: BTC_CLI_COMMAND.listunspent,
+                              param: "1, 9999999, [\"\(self.spendingAddress)\"]")
         
-        let param = "\"[]\" \"[{\\\"\(self.addressToPay)\\\":\(self.amount)}]\""
+    }
+    
+    func processInputs() {
         
-        executeNodeCommandSsh(method: BTC_CLI_COMMAND.walletcreatefundedpsbt,
-                              param: param)
+        self.inputs = self.inputArray.description
+        self.inputs = self.inputs.replacingOccurrences(of: "[\"", with: "[")
+        self.inputs = self.inputs.replacingOccurrences(of: "\"]", with: "]")
+        self.inputs = self.inputs.replacingOccurrences(of: "\"{", with: "{")
+        self.inputs = self.inputs.replacingOccurrences(of: "}\"", with: "}")
+        self.inputs = self.inputs.replacingOccurrences(of: "\\", with: "")
         
     }
     

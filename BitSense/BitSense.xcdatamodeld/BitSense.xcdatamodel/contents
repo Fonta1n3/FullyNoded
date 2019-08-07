@@ -9,6 +9,8 @@
         <attribute name="onionAddress" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="password" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="port" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="privateKey" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="publicKey" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="rpcpassword" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="rpcport" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="rpcuser" optional="YES" attributeType="String" syncable="YES"/>
@@ -17,6 +19,6 @@
         <attribute name="usingTor" optional="YES" attributeType="Boolean" usesScalarValueType="YES" syncable="YES"/>
     </entity>
     <elements>
-        <element name="Nodes" positionX="-63" positionY="-18" width="128" height="255"/>
+        <element name="Nodes" positionX="-63" positionY="-18" width="128" height="285"/>
     </elements>
 </model>

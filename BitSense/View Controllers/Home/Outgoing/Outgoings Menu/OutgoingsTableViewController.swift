@@ -8,7 +8,7 @@
 
 import UIKit
 
-class OutgoingsTableViewController: UITableViewController {
+class OutgoingsTableViewController: UITableViewController, UITabBarControllerDelegate {
 
     var ssh:SSHService!
     var torClient:TorClient!
@@ -16,16 +16,87 @@ class OutgoingsTableViewController: UITableViewController {
     var makeSSHCall:SSHelper!
     var isTestnet = Bool()
     var activeNode = [String:Any]()
-    var isUsingSSH = Bool()
+    var isUsingSSH = IsUsingSSH.sharedInstance
+    
+    var decodeRaw = Bool()
+    var decodePSBT = Bool()
+    var process = Bool()
+    var finalize = Bool()
+    var analyze = Bool()
+    var convert = Bool()
+    var txChain = Bool()
+    var combinePSBT = Bool()
+    
+    var amountToSend = String()
+    let amountInput = UITextField()
+    let amountView = UIView()
+    var utxos = NSArray()
+    
+    var firstLink = ""
+    
+    let creatingView = ConnectingView()
+    let blurView2 = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     
     @IBOutlet var outgoingsTable: UITableView!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        tabBarController?.delegate = self
         outgoingsTable.tableFooterView = UIView(frame: .zero)
+        navigationController?.navigationBar.setBackgroundImage(UIImage(), for: UIBarMetrics.default)
+        navigationController?.navigationBar.shadowImage = UIImage()
+        configureAmountView()
         
-        self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: UIBarMetrics.default)
-        self.navigationController?.navigationBar.shadowImage = UIImage()
+   }
+    
+    @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
+        
+        self.amountInput.resignFirstResponder()
+        
+        UIView.animate(withDuration: 0.2, animations: {
+            
+            self.amountView.frame = CGRect(x: 0,
+                                           y: -200,
+                                           width: self.view.frame.width,
+                                           height: -200)
+            self.blurView2.alpha = 0
+            
+        }) { _ in
+            
+            self.blurView2.removeFromSuperview()
+            self.amountView.removeFromSuperview()
+            self.amountInput.removeFromSuperview()
+            
+        }
+        
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        
+        isUsingSSH = IsUsingSSH.sharedInstance
+        
+        if isUsingSSH {
+            
+            ssh = SSHService.sharedInstance
+            makeSSHCall = SSHelper.sharedInstance
+            
+        } else {
+            
+            torRPC = MakeRPCCall.sharedInstance
+            torClient = TorClient.sharedInstance
+            
+        }
+        
+        decodeRaw = false
+        decodePSBT = false
+        process = false
+        finalize = false
+        analyze = false
+        convert = false
+        txChain = false
+        combinePSBT = false
+        firstLink = ""
         
     }
     
@@ -43,125 +114,115 @@ class OutgoingsTableViewController: UITableViewController {
     
     override func numberOfSections(in tableView: UITableView) -> Int {
         
-        return 6
+        return 2//3
         
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
-        return 1
-        
-    }
-    
-    override func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
-        
-        let footerView = UIView()
-        let explanationLabel = UILabel()
-        
-        footerView.frame = CGRect(x: 0,
-                                  y: 0,
-                                  width: view.frame.size.width,
-                                  height: 20)
-        
-        explanationLabel.frame = CGRect(x: 20,
-                                        y: 5,
-                                        width: view.frame.size.width - 40,
-                                        height: 40)
-        
-        explanationLabel.textColor = UIColor.darkGray
-        explanationLabel.numberOfLines = 0
-        explanationLabel.backgroundColor = UIColor.clear
-        footerView.backgroundColor = UIColor.clear
-        explanationLabel.font = UIFont.init(name: "HiraginoSans-W3", size: 10)
-        
-        switch section {
-        case 0: explanationLabel.text = "Create and decode a raw transaction. The transaction does NOT get broadcast to the network."
-        case 1: explanationLabel.text = "See a table of your UTXOs. Manually select them to sweep them or tap the consolidate button to consolidate them. The transaction does NOT get broadcast to the network."
-        case 2: explanationLabel.text = "Add a custom amount of recipients and a specific amount for each recipient in one transaction. The transaction does NOT get broadcast to the network."
-        case 3: explanationLabel.text = "Create an unsigned transaction with a specified address."
-        case 4: explanationLabel.text = "Sign an unsigned transaction with the nodes wallet or with a private key that resides outside of the node."
-        case 5: explanationLabel.text = "Go to PSBT's"
-        default: break
+        if section == 0 {
+            
+            return 5
+            
+        } else if section == 1 {
+            
+            return 8
+            
+        } else {
+            
+            return 2
+            
         }
         
-        footerView.addSubview(explanationLabel)
-        
-        return footerView
-        
     }
     
-    override func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         
-        return 50
-        
-    }
-    
-    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        
-        let view = UIView()
-        view.backgroundColor = UIColor.clear
-        return view
+        if section == 0 {
+            
+            return "Raw Transactions"
+            
+        } else if section == 1 {
+            
+            return "PSBT's"
+            
+        } else {
+            
+            return "TXChain"
+            
+        }
         
     }
     
     override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         
-        if section == 0 {
-            
-            return 20
-            
-        } else {
-            
-            return 30
-            
-        }
+        return 30
+        
+    }
+    
+    override func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        
+        return 20
+        
+    }
+    
+    override func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        
+        (view as! UITableViewHeaderFooterView).backgroundView?.backgroundColor = UIColor.clear
+        (view as! UITableViewHeaderFooterView).textLabel?.textAlignment = .right
+        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.init(name: "HiraginoSans-W3", size: 15)
+        (view as! UITableViewHeaderFooterView).textLabel?.textColor = UIColor.green
         
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
+        let cell = tableView.dequeueReusableCell(withIdentifier: "transactionsCell", for: indexPath)
+        cell.selectionStyle = .none
+        let label = cell.viewWithTag(1) as! UILabel
+        label.adjustsFontSizeToFitWidth = true
+        
         switch indexPath.section {
+            
         case 0:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "rawCell", for: indexPath)
-            cell.selectionStyle = .none
-            let label = cell.viewWithTag(1) as! UILabel
-            label.adjustsFontSizeToFitWidth = true
-            return cell
+            
+            // Raw Transactions
+            switch indexPath.row {
+            case 0: label.text = "My wallet"
+            case 1: label.text = "External wallet"
+            case 2: label.text = "UTXO's"
+            case 3: label.text = "Sign"
+            case 4: label.text = "Decode"
+            default:break}
+            
         case 1:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "utxoCell", for: indexPath)
-            cell.selectionStyle = .none
-            let label = cell.viewWithTag(1) as! UILabel
-            label.adjustsFontSizeToFitWidth = true
-            return cell
+            
+            // PSBT's
+            switch indexPath.row {
+            case 0: label.text = "Create"
+            case 1: label.text = "Process"
+            case 2: label.text = "Finalize"
+            case 3: label.text = "Join"
+            case 4: label.text = "Analyze"
+            case 5: label.text = "Convert"
+            case 6: label.text = "Decode"
+            case 7: label.text = "Combine"
+            default:break}
+            
         case 2:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "multiRecipient", for: indexPath)
-            cell.selectionStyle = .none
-            let label = cell.viewWithTag(1) as! UILabel
-            label.adjustsFontSizeToFitWidth = true
-            return cell
-        case 3:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "unsignedCell", for: indexPath)
-            cell.selectionStyle = .none
-            let label = cell.viewWithTag(1) as! UILabel
-            label.adjustsFontSizeToFitWidth = true
-            return cell
-        case 4:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "signItCell", for: indexPath)
-            cell.selectionStyle = .none
-            let label = cell.viewWithTag(1) as! UILabel
-            label.adjustsFontSizeToFitWidth = true
-            return cell
-        case 5:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "psbtCell", for: indexPath)
-            cell.selectionStyle = .none
-            let label = cell.viewWithTag(1) as! UILabel
-            label.adjustsFontSizeToFitWidth = true
-            return cell
+            
+            switch indexPath.row {
+            case 0: label.text = "Add a link"
+            case 1: label.text = "Start a chain"
+            default: break}
+            
         default:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-            return cell
+            
+            break
             
         }
+        
+        return cell
         
     }
     
@@ -186,49 +247,155 @@ class OutgoingsTableViewController: UITableViewController {
                     
                 case 0:
                     
-                    DispatchQueue.main.async {
+                    // Raw Transactions
+                    switch indexPath.row {
                         
-                        self.performSegue(withIdentifier: "createRawNow", sender: self)
-                    }
+                    case 0:
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.performSegue(withIdentifier: "createRawNow", sender: self)
+                        }
+                        
+                    case 1:
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.performSegue(withIdentifier: "goToUnsigned", sender: self)
+                            
+                        }
+                    case 2:
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.performSegue(withIdentifier: "goToUtxos", sender: self)
+                        }
+                        
+                    case 3:
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.performSegue(withIdentifier: "goToSignIt", sender: self)
+                            
+                        }
+                        
+                    case 4:
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.decodeRaw = true
+                            self.performSegue(withIdentifier: "goDecode", sender: self)
+                            
+                        }
+                        
+                    default:break}
                     
                 case 1:
                     
-                    DispatchQueue.main.async {
+                    // PSBT's
+                    switch indexPath.row {
                         
-                        self.performSegue(withIdentifier: "goToUtxos", sender: self)
+                    case 0:
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.performSegue(withIdentifier: "createPSBT", sender: self)
+                            
+                        }
+                    case 1:
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.process = true
+                            self.performSegue(withIdentifier: "goDecode", sender: self)
+                            
+                        }
+                        
+                    case 2:
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.finalize = true
+                            self.performSegue(withIdentifier: "goDecode", sender: self)
+                            
+                        }
+                        
+                    case 3:
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.combinePSBT = false
+                            self.performSegue(withIdentifier: "joinPSBT", sender: self)
+                            
+                        }
+                        
+                    case 4:
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.analyze = true
+                            self.performSegue(withIdentifier: "goDecode", sender: self)
+                            
+                        }
+                        
+                    case 5:
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.convert = true
+                            self.performSegue(withIdentifier: "goDecode", sender: self)
+                            
+                        }
+                        
+                    case 6:
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.decodePSBT = true
+                            self.performSegue(withIdentifier: "goDecode", sender: self)
+                            
+                        }
+                        
+                    case 7:
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.combinePSBT = true
+                            self.performSegue(withIdentifier: "joinPSBT", sender: self)
+                            
+                        }
+                        
+                    default:
+                        
+                        break
+                        
                     }
                     
                 case 2:
                     
-                    DispatchQueue.main.async {
+                    //TXChain
+                    switch indexPath.row {
                         
-                        self.performSegue(withIdentifier: "goToMultiOutput", sender: self)
+                    case 0:
                         
-                    }
-                    
-                case 3:
-                    
-                    DispatchQueue.main.async {
+                        DispatchQueue.main.async {
+                            
+                            self.txChain = true
+                            self.performSegue(withIdentifier: "goDecode", sender: self)
+                            
+                        }
                         
-                        self.performSegue(withIdentifier: "goToUnsigned", sender: self)
+                    case 1:
                         
-                    }
-                    
-                case 4:
-                    
-                    DispatchQueue.main.async {
+                        //start a chain - sh
+                        self.getAmount()
                         
-                        self.performSegue(withIdentifier: "goToSignIt", sender: self)
+                    default:
                         
-                    }
-                    
-                case 5:
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.performSegue(withIdentifier: "goToPSBTs", sender: self)
+                        break
                         
                     }
+                    
                     
                 default:
                     
@@ -248,71 +415,253 @@ class OutgoingsTableViewController: UITableViewController {
         
     }
     
+    func configureAmountView() {
+        
+        amountView.backgroundColor = view.backgroundColor
+        
+        amountView.frame = CGRect(x: 0,
+                                  y: -200,
+                                  width: view.frame.width,
+                                  height: -200)
+        
+        amountInput.backgroundColor = view.backgroundColor
+        amountInput.textColor = UIColor.white
+        amountInput.keyboardAppearance = .dark
+        amountInput.textAlignment = .center
+        
+        amountInput.frame = CGRect(x: 0,
+                                   y: amountView.frame.midY,
+                                   width: amountView.frame.width,
+                                   height: 90)
+        
+        amountInput.keyboardType = UIKeyboardType.decimalPad
+        amountInput.font = UIFont.init(name: "HiraginoSans-W3", size: 40)
+        amountInput.tintColor = UIColor.white
+        
+        let tapGesture = UITapGestureRecognizer(target: self,
+                                                action: #selector(self.dismissKeyboard (_:)))
+        
+        tapGesture.numberOfTapsRequired = 1
+        self.blurView2.addGestureRecognizer(tapGesture)
+        
+    }
+    
+    func amountAvailable(amount: Double) -> (Bool, String) {
+        
+        var amountAvailable = Double()
+        
+        for utxoDict in utxos {
+            
+            let utxo = utxoDict as! NSDictionary
+            let amnt = utxo["amount"] as! Double
+            let spendable = utxo["spenadable"] as! Bool
+            
+            if spendable {
+                
+                amountAvailable += amnt
+                
+            }
+            
+        }
+        
+        let string = "\(amountAvailable)"
+        
+        if amountAvailable >= amount {
+            
+            return (true, string)
+            
+        } else {
+            
+            return (false, string)
+            
+        }
+        
+    }
+    
+    @objc func closeAmount() {
+        
+        if self.amountInput.text != "" {
+            
+            self.creatingView.addConnectingView(vc: self, description: "")
+            
+            self.amountToSend = self.amountInput.text!
+            
+            let amount = Double(self.amountToSend)!
+            
+            self.amountInput.resignFirstResponder()
+            
+            UIView.animate(withDuration: 0.2, animations: {
+                
+                self.amountView.frame = CGRect(x: 0,
+                                               y: -200,
+                                               width: self.view.frame.width,
+                                               height: -200)
+                
+            }) { _ in
+                
+                self.amountView.removeFromSuperview()
+                self.amountInput.removeFromSuperview()
+                self.startATxChain(amount: amount)
+                
+            }
+            
+        } else {
+            
+            self.amountInput.resignFirstResponder()
+            
+            UIView.animate(withDuration: 0.2, animations: {
+                
+                self.amountView.frame = CGRect(x: 0,
+                                               y: -200,
+                                               width: self.view.frame.width,
+                                               height: -200)
+                self.blurView2.alpha = 0
+                
+            }) { _ in
+                
+                self.blurView2.removeFromSuperview()
+                self.amountView.removeFromSuperview()
+                self.amountInput.removeFromSuperview()
+                
+            }
+            
+        }
+        
+    }
+    
+    func getAmount() {
+        
+        blurView2.removeFromSuperview()
+        
+        let label = UILabel()
+        
+        label.frame = CGRect(x: 0,
+                             y: 15,
+                             width: amountView.frame.width,
+                             height: 20)
+        
+        label.font = UIFont.init(name: "HiraginoSans-W3", size: 20)
+        label.textColor = UIColor.white
+        label.textAlignment = .center
+        label.text = "Amount to send"
+        
+        let button = UIButton()
+        button.setImage(UIImage(named: "Minus"), for: .normal)
+        button.frame = CGRect(x: 0, y: 140, width: self.view.frame.width, height: 60)
+        button.addTarget(self, action: #selector(closeAmount), for: .touchUpInside)
+        
+        blurView2.alpha = 0
+        
+        blurView2.frame = CGRect(x: 0,
+                                 y: -20,
+                                 width: self.view.frame.width,
+                                 height: self.view.frame.height + 20)
+        
+        self.view.addSubview(self.blurView2)
+        self.view.addSubview(self.amountView)
+        self.amountView.addSubview(self.amountInput)
+        
+        UIView.animate(withDuration: 0.2, animations: {
+            
+            self.amountView.frame = CGRect(x: 0,
+                                           y: 0,
+                                           width: self.view.frame.width,
+                                           height: 200)
+            
+            self.amountInput.frame = CGRect(x: 0,
+                                            y: 40,
+                                            width: self.amountView.frame.width,
+                                            height: 90)
+            
+        }) { _ in
+            
+            self.amountView.addSubview(label)
+            self.amountView.addSubview(button)
+            self.amountInput.becomeFirstResponder()
+            
+            UIView.animate(withDuration: 0.2, animations: {
+                
+                self.blurView2.alpha = 1
+                
+            })
+            
+        }
+        
+    }
+    
+    func startATxChain(amount: Double) {
+        
+        let txChain = TXChain()
+        txChain.torClient = self.torClient
+        txChain.torRPC = self.torRPC
+        txChain.ssh = self.ssh
+        txChain.makeSSHCall = self.makeSSHCall
+        txChain.isUsingSSH = self.isUsingSSH
+        txChain.amount = amount
+        
+        func getResult() {
+            
+            if !txChain.errorBool {
+                
+                DispatchQueue.main.async {
+                    
+                    self.blurView2.removeFromSuperview()
+                    
+                    self.creatingView.removeConnectingView()
+                    
+                    self.firstLink = txChain.processedChain
+                    
+                    self.performSegue(withIdentifier: "goDecode",
+                                      sender: self)
+                    
+                }
+                
+            } else {
+                
+                DispatchQueue.main.async {
+                    
+                    self.blurView2.removeFromSuperview()
+                    
+                    self.creatingView.removeConnectingView()
+                    
+                    displayAlert(viewController: self,
+                                 isError: true,
+                                 message: txChain.errorDescription)
+                    
+                }
+                
+            }
+            
+        }
+        
+        txChain.startAChain(completion: getResult)
+        
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
         switch segue.identifier {
             
-        case "createRawNow":
+        case "goDecode":
             
-            if let vc = segue.destination as? CreateRawTxViewController {
+            if let vc = segue.destination as? ProcessPSBTViewController {
                 
-                vc.ssh = self.ssh
-                vc.makeSSHCall = self.makeSSHCall
-                vc.isUsingSSH = self.isUsingSSH
-                vc.torClient = self.torClient
-                vc.torRPC = self.torRPC
-                
-            }
-            
-        case "goToUtxos":
-            
-            if let vc = segue.destination as? UTXOViewController {
-                
-                vc.ssh = self.ssh
-                vc.makeSSHCall = self.makeSSHCall
+                vc.decodePSBT = self.decodePSBT
+                vc.decodeRaw = self.decodeRaw
+                vc.process = self.process
+                vc.analyze = self.analyze
+                vc.convert = self.convert
+                vc.finalize = self.finalize
+                vc.txChain = self.txChain
+                vc.firstLink = self.firstLink
                 
             }
             
-        case "goToMultiOutput":
+        case "joinPSBT":
             
-            if let vc = segue.destination as? MultiOutputViewController {
+            if let vc = segue.destination as? JoinPSBTViewController {
                 
-                vc.ssh = self.ssh
-                vc.makeSSHCall = self.makeSSHCall
-                
-            }
-            
-        case "goToUnsigned":
-            
-            if let vc = segue.destination as? UnsignedViewController {
-                
-                vc.makeSSHCall = self.makeSSHCall
-                vc.ssh = self.ssh
-                
-            }
-            
-        case "goToSignIt":
-            
-            if let vc = segue.destination as? SignRawViewController {
-                
-                vc.makeSSHCall = self.makeSSHCall
-                vc.ssh = self.ssh
-                vc.isTestnet = self.isTestnet
-                vc.activeNode = self.activeNode
-                
-            }
-            
-        case "goToPSBTs":
-            
-            if let navController = segue.destination as? UINavigationController {
-                
-                if let childVC = navController.topViewController as? PSBTMenuTableViewController {
-                    
-                    childVC.ssh = self.ssh
-                    childVC.makeSSHCall = self.makeSSHCall
-                    childVC.activeNode = self.activeNode
-                    
-                }
+                vc.combinePSBT = self.combinePSBT
                 
             }
             
@@ -324,4 +673,10 @@ class OutgoingsTableViewController: UITableViewController {
         
     }
 
+}
+
+extension OutgoingsTableViewController  {
+    func tabBarController(_ tabBarController: UITabBarController, animationControllerForTransitionFrom fromVC: UIViewController, to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        return MyTransition(viewControllers: tabBarController.viewControllers)
+    }
 }

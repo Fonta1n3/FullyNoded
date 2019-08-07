@@ -8,17 +8,21 @@
 
 import UIKit
 
-class SignRawViewController: UIViewController, UITextFieldDelegate {
+class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDelegate {
     
     var isTorchOn = Bool()
+    
     var rawTxSigned = ""
+    
     var makeSSHCall:SSHelper!
     var ssh:SSHService!
-    var tapQRGesture = UITapGestureRecognizer()
-    var tapTextViewGesture = UITapGestureRecognizer()
-    var activeNode = [String:Any]()
     var torClient:TorClient!
     var torRPC:MakeRPCCall!
+    var isUsingSSH = IsUsingSSH.sharedInstance
+    
+    var tapQRGesture = UITapGestureRecognizer()
+    var tapTextViewGesture = UITapGestureRecognizer()
+    
     var scannerShowing = false
     var isFirstTime = Bool()
     var blurArray = [UIVisualEffectView]()
@@ -30,29 +34,151 @@ class SignRawViewController: UIViewController, UITextFieldDelegate {
     let creatingView = ConnectingView()
     let rawDisplayer = RawDisplayer()
     
-    var isTestnet = Bool()
+    var scanUnsigned = Bool()
+    var scanPrivateKey = Bool()
+    var scanScript = Bool()
+    
+    var vout = Int()
+    var scriptSigHex = ""
+    var prevTxID = ""
+    var isWitness = Bool()
+    var amount = Double()
+    var inputsIndex = 0
+    
+    var outputTotalValue = Double()
+    var inputTotalValue = Double()
     
     @IBOutlet var imageView: UIImageView!
     @IBOutlet var unsignedTextView: UITextView!
     @IBOutlet var privateKeyField: UITextField!
+    @IBOutlet var navBar: UINavigationBar!
+    @IBOutlet var unsignOutlet: UILabel!
+    @IBOutlet var pkeyOutlet: UILabel!
+    @IBOutlet var scanUnsignedOutlet: UIButton!
+    @IBOutlet var scanPrivKeyOutlet: UIButton!
+    @IBOutlet var scanRedeemScriptOutlet: UIButton!
+    @IBOutlet var scriptLabel: UILabel!
+    @IBOutlet var switchOutlet: UISwitch!
+    @IBOutlet var muSigLabel: UILabel!
+    @IBOutlet var scriptTextView: UITextView!
+    
+    @IBAction func switchAction(_ sender: Any) {
+        
+        if switchOutlet.isOn {
+            
+            DispatchQueue.main.async {
+                
+                UIView.animate(withDuration: 0.2) {
+                    
+                    self.scanRedeemScriptOutlet.alpha = 1
+                    self.scriptLabel.alpha = 1
+                    self.scriptTextView.alpha = 1
+                    
+                }
+                
+                self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.decoderawtransaction,
+                                      param: "\"\(self.unsignedTextView.text!)\"")
+                
+            }
+            
+        } else {
+            
+            UIView.animate(withDuration: 0.2) {
+                
+                self.scanRedeemScriptOutlet.alpha = 0
+                self.scriptLabel.alpha = 0
+                self.scriptTextView.alpha = 0
+                
+            }
+            
+        }
+        
+    }
+    
+    
+    @IBAction func scanUnsigned(_ sender: Any) {
+        
+        scanUnsigned = true
+        scanScript = false
+        scanPrivateKey = false
+        scan()
+        
+    }
+    
+    @IBAction func scanPrivKey(_ sender: Any) {
+        
+        scanUnsigned = false
+        scanScript = false
+        scanPrivateKey = true
+        scan()
+        
+    }
+    
+    @IBAction func scanRedeemScript(_ sender: Any) {
+        
+        scanUnsigned = false
+        scanScript = true
+        scanPrivateKey = false
+        scan()
+        
+    }
     
     @IBAction func signNow(_ sender: Any) {
         
         print("signNow")
         
-        if privateKeyField.text != "" && unsignedTextView.text != "" {
+        if !switchOutlet.isOn {
             
-            signWithKey(key: privateKeyField.text!,
-                        tx: unsignedTextView.text!)
+            if privateKeyField.text != "" && unsignedTextView.text != "" {
+                
+                signWithKey(key: privateKeyField.text!,
+                            tx: unsignedTextView.text!)
+                
+            } else if privateKeyField.text == "" && unsignedTextView.text != "" {
+                
+                executeNodeCommandSsh(method: BTC_CLI_COMMAND.signrawtransactionwithwallet,
+                                      param: "\"\(unsignedTextView.text!)\"")
+                
+            } else if unsignedTextView.text == "" {
+                
+                shakeAlert(viewToShake: unsignedTextView)
+                
+            }
             
-        } else if privateKeyField.text == "" && unsignedTextView.text != "" {
+        } else {
             
-            executeNodeCommandSsh(method: BTC_CLI_COMMAND.signrawtransactionwithwallet,
-                                  param: "\"\(unsignedTextView.text!)\"")
+            //sign multisig
             
-        } else if unsignedTextView.text == "" {
-            
-            shakeAlert(viewToShake: unsignedTextView)
+            if privateKeyField.text != "" && unsignedTextView.text != "" && scriptTextView.text != "" {
+                
+                let unsigned = unsignedTextView.text!
+                let redeemScript = scriptTextView.text!
+                let privateKey = privateKeyField.text!
+                
+                var param = ""
+                
+                if !isWitness {
+                    
+                    param = "\"\(unsigned)\", ''[\"\(privateKey)\"]'', ''[{ \"txid\": \"\(self.prevTxID)\", \"vout\": \(vout), \"scriptPubKey\": \"\(scriptSigHex)\", \"redeemScript\": \"\(redeemScript)\", \"amount\": \(amount) }]''"
+                    
+                } else {
+                    
+                    param = "\"\(unsigned)\", ''[\"\(privateKey)\"]'', ''[{ \"txid\": \"\(self.prevTxID)\", \"vout\": \(vout), \"scriptPubKey\": \"\(scriptSigHex)\", \"witnessScript\": \"\(redeemScript)\", \"amount\": \(amount) }]''"
+                    
+                }
+                
+                
+                
+                self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.signrawtransactionwithkey,
+                                           param: param)
+                
+            } else {
+                
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: "🤨 You need to fill out all the info")
+                
+            }
             
         }
         
@@ -68,15 +194,23 @@ class SignRawViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    @IBAction func scanNow(_ sender: Any) {
-        
-        print("scan now")
-        scan()
-        
-    }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        scriptLabel.alpha = 0
+        scanRedeemScriptOutlet.alpha = 0
+        scriptTextView.alpha = 0
+        switchOutlet.alpha = 0
+        muSigLabel.alpha = 0
+        scanPrivKeyOutlet.alpha = 0
+        privateKeyField.alpha = 0
+        pkeyOutlet.alpha = 0
+        
+        scriptTextView.delegate = self
+        privateKeyField.delegate = self
+        unsignedTextView.delegate = self
+        
+        switchOutlet.isOn = false
         
         let tapGesture = UITapGestureRecognizer(target: self,
                                                 action: #selector(self.dismissKeyboard (_:)))
@@ -88,6 +222,31 @@ class SignRawViewController: UIViewController, UITextFieldDelegate {
         imageView.alpha = 0
         
         configureScanner()
+        
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        
+        isUsingSSH = IsUsingSSH.sharedInstance
+        
+        if isUsingSSH {
+            
+            ssh = SSHService.sharedInstance
+            makeSSHCall = SSHelper.sharedInstance
+            
+        } else {
+            
+            torRPC = MakeRPCCall.sharedInstance
+            torClient = TorClient.sharedInstance
+            
+        }
+        
+        if let string = UIPasteboard.general.string {
+            
+            unsignedTextView.text = string
+            showOptionals()
+            
+        }
         
     }
     
@@ -109,6 +268,7 @@ class SignRawViewController: UIViewController, UITextFieldDelegate {
         
         scanner.completion = { self.getQRCode() }
         scanner.didChooseImage = { self.didPickImage() }
+        scanner.downSwipeAction = { self.closeScanner() }
         
         scanner.uploadButton.addTarget(self,
                                          action: #selector(self.chooseQRCodeFromLibrary),
@@ -162,6 +322,7 @@ class SignRawViewController: UIViewController, UITextFieldDelegate {
         
         unsignedTextView.resignFirstResponder()
         privateKeyField.resignFirstResponder()
+        scriptTextView.resignFirstResponder()
         
     }
     
@@ -170,6 +331,7 @@ class SignRawViewController: UIViewController, UITextFieldDelegate {
         scannerShowing = true
         privateKeyField.resignFirstResponder()
         unsignedTextView.resignFirstResponder()
+        scriptTextView.resignFirstResponder()
         
         if isFirstTime {
             
@@ -253,12 +415,7 @@ class SignRawViewController: UIViewController, UITextFieldDelegate {
     
     func parseText(text: String) {
         
-        switch text {
-            
-        case _ where text.hasPrefix("l"),
-             _ where text.hasPrefix("5"),
-             _ where text.hasPrefix("9"),
-             _ where text.hasPrefix("c"):
+        if scanPrivateKey {
             
             DispatchQueue.main.async {
                 
@@ -266,19 +423,23 @@ class SignRawViewController: UIViewController, UITextFieldDelegate {
                 
             }
             
-        case _ where text.hasPrefix(""):
+        } else if scanScript {
+            
+            DispatchQueue.main.async {
+                
+                self.scriptTextView.text = text
+                
+            }
+            
+            
+        } else if scanUnsigned {
             
             DispatchQueue.main.async {
                 
                 self.unsignedTextView.text = text
+                self.showOptionals()
                 
             }
-            
-        default:
-            
-            displayAlert(viewController: self,
-                         isError: true,
-                         message: "That is not an unsigned transaction or a private key")
             
         }
         
@@ -300,23 +461,6 @@ class SignRawViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    func parseDecodedTx(decodedTx: NSDictionary) {
-        
-        DispatchQueue.main.async {
-            
-            self.rawDisplayer.textView.text = "\(decodedTx)"
-            self.rawDisplayer.decodeButton.setTitle("Encode", for: .normal)
-            
-            self.rawDisplayer.decodeButton.removeTarget(self, action: #selector(self.decode),
-                                                        for: .touchUpInside)
-            
-            self.rawDisplayer.decodeButton.addTarget(self, action: #selector(self.encodeText),
-                                                     for: .touchUpInside)
-            
-        }
-        
-    }
-    
     func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
         
         func getResult() {
@@ -324,11 +468,6 @@ class SignRawViewController: UIViewController, UITextFieldDelegate {
             if !makeSSHCall.errorBool {
                 
                 switch method {
-                    
-                case BTC_CLI_COMMAND.decoderawtransaction:
-                    
-                    let decodedTx = makeSSHCall.dictToReturn
-                    parseDecodedTx(decodedTx: decodedTx)
                     
                 case BTC_CLI_COMMAND.signrawtransactionwithwallet:
                     
@@ -342,9 +481,75 @@ class SignRawViewController: UIViewController, UITextFieldDelegate {
                         
                     } else {
                         
+                        let errors = dict["errors"] as! NSArray
+                        var errorStrings = [String]()
+                        
+                        for error in errors {
+                            
+                            let dic = error as! NSDictionary
+                            let str = dic["error"] as! String
+                            errorStrings.append(str)
+                            
+                        }
+                        
+                        var err = errorStrings.description.replacingOccurrences(of: "]", with: "")
+                        err = err.description.replacingOccurrences(of: "[", with: "")
+                        
                         displayAlert(viewController: self,
                                      isError: true,
-                                     message: "Error")
+                                     message: err)
+                        
+                    }
+                    
+                case BTC_CLI_COMMAND.decoderawtransaction:
+                    
+                    let txDict = makeSSHCall.dictToReturn
+                    let vin = txDict["vin"] as! NSArray
+                    let vinDict = vin[0] as! NSDictionary
+                    self.prevTxID = vinDict["txid"] as! String
+                    self.vout = vinDict["vout"] as! Int
+                    
+                    self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.getrawtransaction,
+                                               param: "\"\(prevTxID)\", true")
+                    
+                case BTC_CLI_COMMAND.getrawtransaction:
+                    
+                    let prevTxDict = makeSSHCall.dictToReturn
+                    let outputs = prevTxDict["vout"] as! NSArray
+                    
+                    print("outputs = \(outputs)")
+                    
+                    for outputDict in outputs {
+                        
+                        let output = outputDict as! NSDictionary
+                        let index = output["n"] as! Int
+                        
+                        if index == self.vout {
+                            
+                            let scriptPubKey = output["scriptPubKey"] as! NSDictionary
+                            let addresses = scriptPubKey["addresses"] as! NSArray
+                            let spendingFromAddress = addresses[0] as! String
+                            scriptSigHex = scriptPubKey["hex"] as! String
+                            amount = output["value"] as! Double
+                            
+                            self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.getaddressinfo,
+                                                       param: "\"\(spendingFromAddress)\"")
+                            
+                        }
+                        
+                    }
+                    
+                case BTC_CLI_COMMAND.getaddressinfo:
+                    
+                    let result = makeSSHCall.dictToReturn
+                    print("reult = \(result)")
+                    
+                    let script = result["hex"] as! String
+                    isWitness = result["iswitness"] as! Bool
+                    
+                    DispatchQueue.main.async {
+                        
+                        self.scriptTextView.text = script
                         
                     }
                     
@@ -358,11 +563,55 @@ class SignRawViewController: UIViewController, UITextFieldDelegate {
                         let hex = dict["hex"] as! String
                         self.showRaw(raw: hex)
                         
+                        displayAlert(viewController: self,
+                                     isError: false,
+                                     message: "Transaction Complete")
+                        
                     } else {
                         
-                        displayAlert(viewController: self,
-                                     isError: true,
-                                     message: "Error")
+                        let errors = dict["errors"] as! NSArray
+                        var errorStrings = [String]()
+                        
+                        for error in errors {
+                            
+                            let dic = error as! NSDictionary
+                            let str = dic["error"] as! String
+                            errorStrings.append(str)
+                            
+                        }
+                        
+                        var err = errorStrings.description.replacingOccurrences(of: "]", with: "")
+                        err = err.description.replacingOccurrences(of: "[", with: "")
+                        
+                        DispatchQueue.main.async {
+                            
+                            if self.switchOutlet.isOn {
+                                
+                                if let hex = dict["hex"] as? String {
+                                    
+                                    self.showRaw(raw: hex)
+                                    
+                                    displayAlert(viewController: self,
+                                                 isError: false,
+                                                 message: "MultiSig Transaction still needs more signatures")
+                                    
+                                } else {
+                                    
+                                    displayAlert(viewController: self,
+                                                 isError: true,
+                                                 message: err)
+                                    
+                                }
+                                
+                            } else {
+                                
+                                displayAlert(viewController: self,
+                                             isError: true,
+                                             message: err)
+                                
+                            }
+                            
+                        }
                         
                     }
                     
@@ -388,12 +637,24 @@ class SignRawViewController: UIViewController, UITextFieldDelegate {
             
         }
         
-        if self.ssh.session.isConnected {
+        if self.ssh != nil {
             
-            makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                          method: method,
-                                          param: param,
-                                          completion: getResult)
+            if self.ssh.session.isConnected {
+                
+                makeSSHCall.executeSSHCommand(ssh: self.ssh,
+                                              method: method,
+                                              param: param,
+                                              completion: getResult)
+                
+            } else {
+                
+                creatingView.removeConnectingView()
+                
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: "Not connected")
+                
+            }
             
         } else {
             
@@ -407,15 +668,252 @@ class SignRawViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    
-    func getSmartFee() {
+    func removeViews() {
         
-        let getSmartFee = GetSmartFee()
-        getSmartFee.rawSigned = rawTxSigned
-        getSmartFee.ssh = ssh
-        getSmartFee.makeSSHCall = makeSSHCall
-        getSmartFee.vc = self
-        getSmartFee.getSmartFee()
+        DispatchQueue.main.async {
+            
+            self.navBar.removeFromSuperview()
+            self.unsignOutlet.removeFromSuperview()
+            self.pkeyOutlet.removeFromSuperview()
+            self.unsignedTextView.removeFromSuperview()
+            self.privateKeyField.removeFromSuperview()
+            self.scanUnsignedOutlet.removeFromSuperview()
+            self.scanPrivKeyOutlet.removeFromSuperview()
+            self.scanRedeemScriptOutlet.removeFromSuperview()
+            self.scriptLabel.removeFromSuperview()
+            self.switchOutlet.removeFromSuperview()
+            self.muSigLabel.removeFromSuperview()
+            self.scriptTextView.removeFromSuperview()
+            
+        }
+        
+    }
+    
+    func getSmartFee(raw: String) {
+        
+        var dictToReturn = NSDictionary()
+        
+        func getSmartFeeSSH(method: BTC_CLI_COMMAND, param: String) {
+            
+            func getResult() {
+                
+                if !makeSSHCall.errorBool {
+                    
+                    switch method {
+                        
+                    case BTC_CLI_COMMAND.decoderawtransaction:
+                        
+                        let dict = makeSSHCall.dictToReturn
+                        let txSize = dict["vsize"] as! Int
+                        print("dict = \(dict)")
+                        let outputs = dict["vout"] as! NSArray
+                        let inputs = dict["vin"] as! NSArray
+                        let outputCount = outputs.count
+                        
+                        for (i, outputDict) in outputs.enumerated() {
+                            
+                            let output = outputDict as! NSDictionary
+                            amount = output["value"] as! Double
+                            self.outputTotalValue += amount
+                            
+                            if i == outputCount - 1 {
+                                
+                                self.getInputTotal(inputs: inputs, txSize: txSize)
+                                
+                            }
+                            
+                        }
+                        
+                    default:
+                        
+                        break
+                        
+                    }
+                    
+                } else {
+                    
+                    displayAlert(viewController: self,
+                                 isError: true,
+                                 message: makeSSHCall.errorDescription)
+                    
+                }
+                
+            }
+            
+            if ssh.session.isConnected {
+                
+                makeSSHCall.executeSSHCommand(ssh: self.ssh,
+                                              method: method,
+                                              param: param,
+                                              completion: getResult)
+                
+            } else {
+                
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: "Not Connected")
+                
+            }
+            
+        }
+        
+        getSmartFeeSSH(method: BTC_CLI_COMMAND.decoderawtransaction,
+                       param: "\"\(raw)\"")
+        
+    }
+    
+    func getInputTotal(inputs: NSArray, txSize: Int) {
+        
+        let feeTarget = UserDefaults.standard.object(forKey: "feeTarget") as! Int
+        var inputsCount = inputs.count
+        
+        func getSmartFeeSSH(method: BTC_CLI_COMMAND, param: String, vout: Int) {
+            
+            func getResult() {
+                
+                if !makeSSHCall.errorBool {
+                    
+                    switch method {
+                        
+                    case BTC_CLI_COMMAND.estimatesmartfee:
+                        
+                        let dict = makeSSHCall.dictToReturn
+                        displayFeeAlert(dict: dict, vsize: txSize, feeTarget: feeTarget)
+                        
+                    case BTC_CLI_COMMAND.getrawtransaction:
+                        
+                        let result = makeSSHCall.stringToReturn
+                        getSmartFeeSSH(method: BTC_CLI_COMMAND.decoderawtransaction,
+                                       param: "\"\(result)\"", vout: vout)
+                        
+                    case BTC_CLI_COMMAND.decoderawtransaction:
+                        
+                        let dict = makeSSHCall.dictToReturn
+                        let outputs = dict["vout"] as! NSArray
+                        
+                        for outputDict in outputs {
+                            
+                            let output = outputDict as! NSDictionary
+                            let index = output["n"] as! Int
+                            
+                            if index == vout {
+                                
+                                self.inputTotalValue += output["value"] as! Double
+                                
+                                if inputsIndex < inputsCount - 1 {
+                                    
+                                    inputsIndex += 1
+                                    getInputTotal(inputs: inputs, txSize: txSize)
+                                    
+                                } else if inputsIndex == inputsCount - 1 {
+                                    
+                                    //finished fetching all input values, can compare optimal fee to actual fee now
+                                    getSmartFeeSSH(method: BTC_CLI_COMMAND.estimatesmartfee,
+                                                   param: "\(feeTarget)", vout: vout)
+                                    
+                                }
+                                
+                            }
+                            
+                        }
+                        
+                    default:
+                        
+                        break
+                        
+                    }
+                    
+                } else {
+                    
+                    displayAlert(viewController: self, isError: true, message: makeSSHCall.errorDescription)
+                    
+                }
+                
+            }
+            
+            if ssh.session.isConnected {
+                
+                makeSSHCall.executeSSHCommand(ssh: self.ssh,
+                                              method: method,
+                                              param: param,
+                                              completion: getResult)
+                
+            } else {
+                
+                displayAlert(viewController: self, isError: true, message: "Not Connected")
+                
+            }
+            
+        }
+        
+        let inputDict = inputs[inputsIndex] as! NSDictionary
+        let prevTxID = inputDict["txid"] as! String
+        let vout = inputDict["vout"] as! Int
+        
+        getSmartFeeSSH(method: BTC_CLI_COMMAND.getrawtransaction, param: "\"\(prevTxID)\"", vout: vout)
+            
+    }
+    
+    func displayFeeAlert(dict: NSDictionary, vsize: Int, feeTarget: Int) {
+        
+        let feeInBTC = self.inputTotalValue - self.outputTotalValue
+        let feeInSats = feeInBTC * 100000000
+        let txSize = Double(vsize)
+        var btcPerKbyte = Double()
+        
+        if let btcPerKbyteCheck = dict["feerate"] as? Double {
+            
+            btcPerKbyte = btcPerKbyteCheck
+            
+        } else {
+            
+            // node is in regtest, hard coding the feerate
+            btcPerKbyte = 0.00000100
+            
+        }
+        
+        let btcPerByte = btcPerKbyte / 1000
+        let satsPerByte = btcPerByte * 100000000
+        let optimalFeeForSixBlocks = satsPerByte * txSize
+        let diff = optimalFeeForSixBlocks - feeInSats
+        
+        if diff < 0 {
+            
+            //overpaying
+            let percentageDifference = Int(((feeInSats / optimalFeeForSixBlocks) * 100) - 100).avoidNotation
+            
+            DispatchQueue.main.async {
+                
+                let alert = UIAlertController(title: NSLocalizedString("Fee Alert", comment: ""),
+                                              message: "The optimal fee to get this tx included in the next \(feeTarget) blocks is \(Int(optimalFeeForSixBlocks)) satoshis.\n\nYou are currently paying a fee of \(Int(feeInSats)) satoshis which is \(percentageDifference)% higher then necessary.", preferredStyle: UIAlertController.Style.alert)
+                
+                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""),
+                                              style: .default,
+                                              handler: { (action) in }))
+                
+                self.present(alert, animated: true)
+                
+            }
+            
+        } else {
+            
+            //underpaying
+            let percentageDifference = Int((((optimalFeeForSixBlocks - feeInSats) / optimalFeeForSixBlocks) * 100)).avoidNotation
+            
+            DispatchQueue.main.async {
+                
+                let alert = UIAlertController(title: NSLocalizedString("Fee Alert", comment: ""),
+                                              message: "The optimal fee to get this tx included in the next \(feeTarget) blocks is \(Int(optimalFeeForSixBlocks)) satoshis.\n\nYou are currently paying a fee of \(Int(feeInSats)) satoshis which is \(percentageDifference)% lower then necessary.", preferredStyle: UIAlertController.Style.alert)
+                
+                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""),
+                                              style: .default,
+                                              handler: { (action) in }))
+                
+                self.present(alert, animated: true)
+                
+            }
+            
+        }
         
     }
     
@@ -434,17 +932,10 @@ class SignRawViewController: UIViewController, UITextFieldDelegate {
         
         DispatchQueue.main.async {
             
+            self.removeViews()
             self.rawDisplayer.rawString = raw
             self.rawTxSigned = raw
             self.rawDisplayer.vc = self
-            
-            self.rawDisplayer.decodeButton.addTarget(self,
-                                                     action: #selector(self.decode),
-                                                     for: .touchUpInside)
-            
-            self.rawDisplayer.closeButton.addTarget(self,
-                                                    action: #selector(self.close),
-                                                    for: .touchUpInside)
             
             self.tapQRGesture = UITapGestureRecognizer(target: self,
                                                        action: #selector(self.shareQRCode(_:)))
@@ -463,6 +954,7 @@ class SignRawViewController: UIViewController, UITextFieldDelegate {
             self.scanner.removeFromSuperview()
             self.creatingView.removeConnectingView()
             self.rawDisplayer.addRawDisplay()
+            self.getSmartFee(raw: raw)
             
         }
         
@@ -497,15 +989,12 @@ class SignRawViewController: UIViewController, UITextFieldDelegate {
             }
             
             self.qrGenerator.textInput = self.rawDisplayer.rawString
-            self.qrGenerator.backColor = UIColor.white
-            self.qrGenerator.foreColor = UIColor.black
             let qrImage = self.qrGenerator.getQRCode()
             let objectsToShare = [qrImage]
             
             let activityController = UIActivityViewController(activityItems: objectsToShare,
                                                               applicationActivities: nil)
             
-            activityController.completionWithItemsHandler = { (type,completed,items,error) in }
             activityController.popoverPresentationController?.sourceView = self.view
             self.present(activityController, animated: true) {}
             
@@ -543,19 +1032,19 @@ class SignRawViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    @objc func encodeText() {
-        print("encodeText")
+    func showOptionals() {
         
         DispatchQueue.main.async {
             
-            self.rawDisplayer.textView.text = self.rawTxSigned
-            self.rawDisplayer.decodeButton.setTitle("Decode", for: .normal)
-            
-            self.rawDisplayer.decodeButton.removeTarget(self, action: #selector(self.encodeText),
-                                                        for: .touchUpInside)
-            
-            self.rawDisplayer.decodeButton.addTarget(self, action: #selector(self.decode),
-                                                     for: .touchUpInside)
+            UIView.animate(withDuration: 0.2) {
+                
+                self.switchOutlet.alpha = 1
+                self.muSigLabel.alpha = 1
+                self.scanPrivKeyOutlet.alpha = 1
+                self.privateKeyField.alpha = 1
+                self.pkeyOutlet.alpha = 1
+                
+            }
             
         }
         
@@ -566,6 +1055,68 @@ class SignRawViewController: UIViewController, UITextFieldDelegate {
         textField.resignFirstResponder()
         textField.endEditing(true)
         return true
+        
+    }
+    
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        
+        if textField.text != "" {
+            
+            textField.becomeFirstResponder()
+            
+        } else {
+            
+            if let string = UIPasteboard.general.string {
+                
+                textField.resignFirstResponder()
+                textField.text = string
+                
+            } else {
+                
+                textField.becomeFirstResponder()
+                
+            }
+            
+        }
+        
+    }
+    
+    func textViewDidBeginEditing(_ textView: UITextView) {
+        
+        if textView.text != "" {
+            
+            textView.becomeFirstResponder()
+            
+        } else {
+            
+            if let string = UIPasteboard.general.string {
+                
+                textView.resignFirstResponder()
+                textView.text = string
+                
+                if textView == self.unsignedTextView {
+                    
+                    showOptionals()
+                    
+                }
+                
+            } else {
+                
+                textView.becomeFirstResponder()
+                
+            }
+            
+        }
+        
+    }
+    
+    func textViewDidEndEditing(_ textView: UITextView) {
+        
+        if textView == self.unsignedTextView {
+            
+            showOptionals()
+            
+        }
         
     }
 

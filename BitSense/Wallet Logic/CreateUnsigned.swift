@@ -11,24 +11,28 @@ import Foundation
 
 class CreateUnsigned {
     
-    let makeSSHCall = SSHelper()
-    var miningFee = Double()
+    var ssh:SSHService!
+    var makeSSHCall:SSHelper!
+    var torRPC:MakeRPCCall!
+    var isUsingSSH = Bool()
+    var torClient:TorClient!
+    
     var amount = Double()
     var changeAddress = ""
     var addressToPay = ""
     var spendingAddress = ""
-    var sweep = Bool()
     var spendableUtxos = [NSDictionary]()
     var inputArray = [Any]()
     var utxoTxId = String()
     var utxoVout = Int()
     var changeAmount = Double()
     var inputs = ""
-    var ssh:SSHService!
+    
     var unsignedRawTx = ""
     var errorBool = Bool()
     var errorDescription = ""
-    var noInputs = Bool()
+    
+    var optimized = false
     
     func createRawTransaction(completion: @escaping () -> Void) {
         
@@ -40,26 +44,18 @@ class CreateUnsigned {
                     
                     switch method {
                         
-                    case BTC_CLI_COMMAND.fundrawtransaction:
-                        
-                        let result = makeSSHCall.dictToReturn
-                        unsignedRawTx = result["hex"] as! String
-                        completion()
-                        
                     case BTC_CLI_COMMAND.listunspent:
                         
                         let resultArray = makeSSHCall.arrayToReturn
-                        print("listunspent = \(resultArray)")
                         parseUnspent(utxos: resultArray)
                         
                     case BTC_CLI_COMMAND.createrawtransaction:
                         
-                        if noInputs {
+                        if !optimized {
                             
-                            unsignedRawTx = makeSSHCall.stringToReturn
+                            let originalTx = makeSSHCall.stringToReturn
                             
-                            executeNodeCommandSsh(method: BTC_CLI_COMMAND.fundrawtransaction,
-                                                  param: "\"\(unsignedRawTx)\", true")
+                            optimizeTheFee(raw: originalTx, amount: amount, addressToPay: addressToPay, sweep: false, inputArray: inputArray, changeAddress: changeAddress, changeAmount: changeAmount)
                             
                         } else {
                             
@@ -84,12 +80,22 @@ class CreateUnsigned {
                 
             }
             
-            if ssh.session.isConnected {
+            if ssh != nil {
                 
-                makeSSHCall.executeSSHCommand(ssh: ssh,
-                                              method: method,
-                                              param: param,
-                                              completion: getResult)
+                if ssh.session.isConnected {
+                    
+                    makeSSHCall.executeSSHCommand(ssh: ssh,
+                                                  method: method,
+                                                  param: param,
+                                                  completion: getResult)
+                    
+                } else {
+                    
+                    errorBool = true
+                    errorDescription = "Not connected"
+                    completion()
+                    
+                }
                 
             } else {
                 
@@ -124,7 +130,7 @@ class CreateUnsigned {
                                 let amountAvailable = spendable["amount"] as! Double
                                 sumOfUtxo = sumOfUtxo + amountAvailable
                                 
-                                if sumOfUtxo < (self.amount + miningFee) {
+                                if sumOfUtxo < (self.amount + 0.00050000) {
                                     
                                     self.utxoTxId = spendable["txid"] as! String
                                     self.utxoVout = spendable["vout"] as! Int
@@ -138,16 +144,14 @@ class CreateUnsigned {
                                     self.utxoVout = spendable["vout"] as! Int
                                     let input = "{\"txid\":\"\(self.utxoTxId)\",\"vout\": \(self.utxoVout),\"sequence\": 1}"
                                     self.inputArray.append(input)
-                                    self.changeAmount = sumOfUtxo - (self.amount + miningFee)
+                                    self.changeAmount = sumOfUtxo - (self.amount + 0.00050000)
                                     self.changeAmount = Double(round(100000000*self.changeAmount)/100000000)
                                     
                                     processInputs()
                                     
-                                    /*let param = "\'\(self.inputs)\' \'{\"\(self.addressToPay)\":\(self.amount), \"\(self.changeAddress)\": \(self.changeAmount)}\'"*/
-                                    
                                     let receiver = "\"\(self.addressToPay)\":\(self.amount)"
                                     let change = "\"\(self.changeAddress)\":\(self.changeAmount)"
-                                    var param = "''\(self.inputs)'', ''{\(receiver), \(change)}''"
+                                    var param = "''\(self.inputs)'', ''{\(receiver), \(change)}'', 0, true"
                                     param = param.replacingOccurrences(of: "\"{", with: "{")
                                     param = param.replacingOccurrences(of: "}\"", with: "}")
                                     
@@ -233,33 +237,7 @@ class CreateUnsigned {
                     
                     if let _ = utxoDict["txid"] as? String {
                         
-                        if noInputs {
-                         
-                            //no inputs provided so can only spend spendable utxos that are in the wallet
-                            if let spendableCheck = utxoDict["spendable"] as? Bool {
-                                
-                                if spendableCheck {
-                                    
-                                    if let _ = utxoDict["vout"] as? Int {
-                                        
-                                        if let _ = utxoDict["amount"] as? Double {
-                                            
-                                            self.spendableUtxos.append(utxoDict)
-                                            
-                                        }
-                                        
-                                    }
-                                    
-                                }
-                                
-                            }
-                            
-                        } else {
-                            
-                            //inputs provided so no need to check if they are spendable or not
-                            self.spendableUtxos.append(utxoDict)
-                            
-                        }
+                        self.spendableUtxos.append(utxoDict)
                         
                     }
                     
@@ -280,24 +258,44 @@ class CreateUnsigned {
             
         }
         
-        if noInputs {
+        func optimizeTheFee(raw: String, amount: Double, addressToPay: String, sweep: Bool, inputArray: [Any], changeAddress: String, changeAmount: Double) {
             
-            //let param = "\'[]' \'{\"\(self.addressToPay)\":\(self.amount)}\'"
+            let getSmartFee = GetSmartFee()
+            getSmartFee.rawSigned = raw
+            getSmartFee.ssh = self.ssh
+            getSmartFee.makeSSHCall = self.makeSSHCall
+            getSmartFee.torRPC = self.torRPC
+            getSmartFee.torClient = self.torClient
+            getSmartFee.isUsingSSH = self.isUsingSSH
+            getSmartFee.isUnsigned = true
             
-            let receiver = "\"\(self.addressToPay)\":\(self.amount)"
-            var param = "''[]'', ''{\(receiver)}''"
-            param = param.replacingOccurrences(of: "\"{", with: "{")
-            param = param.replacingOccurrences(of: "}\"", with: "}")
+            func getFeeResult() {
+                
+                let optimalFee = rounded(number: getSmartFee.optimalFee)
+                print("optimalFee = \(optimalFee)")
+                
+                self.changeAmount = (changeAmount + 0.00050000) - optimalFee
+                self.changeAmount = rounded(number: self.changeAmount)
+                self.amount = amount
+                self.optimized = true
+                
+                let receiver = "\"\(self.addressToPay)\":\(self.amount)"
+                let change = "\"\(self.changeAddress)\":\(self.changeAmount)"
+                var param = "''\(self.inputs)'', ''{\(receiver), \(change)}'', 0, true"
+                param = param.replacingOccurrences(of: "\"{", with: "{")
+                param = param.replacingOccurrences(of: "}\"", with: "}")
+                
+                executeNodeCommandSsh(method: BTC_CLI_COMMAND.createrawtransaction,
+                                      param: param)
+                
+            }
             
-            executeNodeCommandSsh(method: BTC_CLI_COMMAND.createrawtransaction,
-                                  param: param)
-            
-        } else {
-            
-            executeNodeCommandSsh(method: BTC_CLI_COMMAND.listunspent,
-                                  param: "1, 9999999, [\"\(self.spendingAddress)\"]")
+            getSmartFee.getSmartFee(completion: getFeeResult)
             
         }
+        
+        executeNodeCommandSsh(method: BTC_CLI_COMMAND.listunspent,
+                              param: "1, 9999999, [\"\(self.spendingAddress)\"]")
         
     }
     

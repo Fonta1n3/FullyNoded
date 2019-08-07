@@ -18,21 +18,23 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
     let createUnsigned = CreateUnsigned()
     
     var torRPC:MakeRPCCall!
+    var ssh:SSHService!
+    var makeSSHCall:SSHelper!
+    var torClient:TorClient!
+    var isUsingSSH = IsUsingSSH.sharedInstance
+    
     var isFirstTime = Bool()
     var isTorchOn = Bool()
     var blurArray = [UIVisualEffectView]()
-    var ssh:SSHService!
-    var makeSSHCall:SSHelper!
+    
     var tapQRGesture = UITapGestureRecognizer()
     var tapTextViewGesture = UITapGestureRecognizer()
     var scannerShowing = false
     var unsignedTx = ""
-    var miningFee = Double()
     var amount = Double()
     var isSpendingFrom = Bool()
     var isReceiving = Bool()
     var isChange = Bool()
-    var torClient:TorClient!
     
     let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
 
@@ -41,6 +43,14 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet var spendingField: UITextField!
     @IBOutlet var receivingField: UITextField!
     @IBOutlet var imageView: UIImageView!
+    @IBOutlet var navBar: UINavigationBar!
+    @IBOutlet var amountOutlet: UILabel!
+    @IBOutlet var recOutlet: UILabel!
+    @IBOutlet var recButtonOutlet: UIButton!
+    @IBOutlet var addressOutlet: UILabel!
+    @IBOutlet var addressButtOutlet: UIButton!
+    @IBOutlet var changeOutlet: UILabel!
+    @IBOutlet var changeButtOutlet: UIButton!
     
     @IBAction func scanChange(_ sender: Any) {
         
@@ -72,51 +82,45 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    @IBAction func goBack(_ sender: Any) {
-        
-        if !scannerShowing {
-            
-            DispatchQueue.main.async {
-                
-                self.dismiss(animated: true, completion: nil)
-                
-            }
-            
-        }
-        
-    }
-    
     @IBAction func createRaw(_ sender: Any) {
         
         print("createRaw")
         
-        if receivingField.text != "" && amountField.text != "" {
-            
-            if changeField.text == "" && spendingField.text == "" {
-                
-                //use fundrawtransaction
-                print("usefundrawtransaction")
-                createUnsigned.noInputs = true
-                
-            } else {
-                
-                createUnsigned.noInputs = false
-                
-            }
+        if receivingField.text != "" && amountField.text != "" && changeField.text != "" && spendingField.text != ""{
             
             self.creatingView.addConnectingView(vc: self,
                                                 description: "Creating Unsigned")
             
             createUnsigned.ssh = self.ssh
-            createUnsigned.miningFee = miningFee
             createUnsigned.amount = Double(amountField.text!)!
             createUnsigned.changeAddress = changeField.text!
             createUnsigned.addressToPay = receivingField.text!
             createUnsigned.spendingAddress = spendingField.text!
+            createUnsigned.makeSSHCall = self.makeSSHCall
+            createUnsigned.torClient = self.torClient
+            createUnsigned.torRPC = self.torRPC
+            createUnsigned.isUsingSSH = self.isUsingSSH
             
             func getResult() {
                 
                 if !createUnsigned.errorBool {
+                    
+                    DispatchQueue.main.async {
+                        
+                        self.receivingField.removeFromSuperview()
+                        self.spendingField.removeFromSuperview()
+                        self.changeField.removeFromSuperview()
+                        self.amountField.removeFromSuperview()
+                        self.navBar.removeFromSuperview()
+                        self.amountOutlet.removeFromSuperview()
+                        self.recOutlet.removeFromSuperview()
+                        self.recButtonOutlet.removeFromSuperview()
+                        self.addressOutlet.removeFromSuperview()
+                        self.addressButtOutlet.removeFromSuperview()
+                        self.changeOutlet.removeFromSuperview()
+                        self.changeButtOutlet.removeFromSuperview()
+                        
+                    }
                     
                     displayRaw(raw: createUnsigned.unsignedRawTx)
                     
@@ -161,14 +165,25 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
         imageView.alpha = 0
         imageView.backgroundColor = UIColor.black
         
-        let miningFeeCheck = UserDefaults.standard.object(forKey: "miningFee") as! String
-        var miningFeeString = ""
-        miningFeeString = miningFeeCheck
-        miningFeeString = miningFeeString.replacingOccurrences(of: ",", with: "")
-        let fee = (Double(miningFeeString)!) / 100000000
-        miningFee = fee
-        
         configureScanner()
+        
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        
+        isUsingSSH = IsUsingSSH.sharedInstance
+        
+        if isUsingSSH {
+            
+            ssh = SSHService.sharedInstance
+            makeSSHCall = SSHelper.sharedInstance
+            
+        } else {
+            
+            torRPC = MakeRPCCall.sharedInstance
+            torClient = TorClient.sharedInstance
+            
+        }
         
     }
     
@@ -188,98 +203,6 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
     func rounded(number: Double) -> Double {
         
         return Double(round(100000000*number)/100000000)
-        
-    }
-    
-    func parseDecodedTx(decodedTx: NSDictionary) {
-        
-        DispatchQueue.main.async {
-            
-            self.rawDisplayer.textView.text = "\(decodedTx)"
-            self.rawDisplayer.decodeButton.setTitle("Encode", for: .normal)
-            
-            self.rawDisplayer.decodeButton.removeTarget(self, action: #selector(self.decode),
-                                                        for: .touchUpInside)
-            
-            self.rawDisplayer.decodeButton.addTarget(self, action: #selector(self.encodeText),
-                                                     for: .touchUpInside)
-            
-        }
-        
-    }
-    
-    @objc func encodeText() {
-        print("encodeText")
-        
-        DispatchQueue.main.async {
-            
-            self.rawDisplayer.textView.text = self.unsignedTx
-            
-            self.rawDisplayer.decodeButton.setTitle("Decode", for: .normal)
-            
-            self.rawDisplayer.decodeButton.removeTarget(self, action: #selector(self.encodeText),
-                                                        for: .touchUpInside)
-            
-            self.rawDisplayer.decodeButton.addTarget(self, action: #selector(self.decode),
-                                                     for: .touchUpInside)
-            
-        }
-        
-    }
-    
-    // MARK: SSH METHODS
-    
-    func executeNodeCommandSSH(method: BTC_CLI_COMMAND, param: String) {
-        
-        func getResult() {
-            
-            if !makeSSHCall.errorBool {
-                
-                switch method {
-                    
-                case BTC_CLI_COMMAND.decoderawtransaction:
-                    
-                    let decodedTx = makeSSHCall.dictToReturn
-                    parseDecodedTx(decodedTx: decodedTx)
-                    
-                default:
-                    
-                    break
-                    
-                }
-                
-            } else {
-                
-                DispatchQueue.main.async {
-                    
-                    self.removeSpinner()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: self.makeSSHCall.errorDescription)
-                    
-                }
-                
-            }
-            
-        }
-        
-        if self.ssh.session.isConnected {
-            
-            makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                          method: method,
-                                          param: param,
-                                          completion: getResult)
-            
-        } else {
-            
-            self.removeSpinner()
-            
-            displayAlert(viewController: self,
-                         isError: true,
-                         message: "Not connected")
-            
-        }
         
     }
     
@@ -355,6 +278,7 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
         
         qrScanner.completion = { self.getQRCode() }
         qrScanner.didChooseImage = { self.didPickImage() }
+        qrScanner.downSwipeAction = { self.back() }
         
         qrScanner.uploadButton.addTarget(self,
                                          action: #selector(self.chooseQRCodeFromLibrary),
@@ -512,13 +436,6 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    @objc func decode() {
-        
-        self.executeNodeCommandSSH(method: BTC_CLI_COMMAND.decoderawtransaction,
-                                   param: "\"\(self.unsignedTx)\"")
-        
-    }
-    
     @objc func shareRawText(_ sender: UITapGestureRecognizer) {
         
         DispatchQueue.main.async {
@@ -568,8 +485,6 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
             }
             
             self.qrGenerator.textInput = self.unsignedTx
-            self.qrGenerator.backColor = UIColor.white
-            self.qrGenerator.foreColor = UIColor.black
             let qrImage = self.qrGenerator.getQRCode()
             let objectsToShare = [qrImage]
             
@@ -592,11 +507,6 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
             self.rawDisplayer.rawString = raw
             self.unsignedTx = raw
             self.rawDisplayer.vc = self
-            
-            self.rawDisplayer.closeButton.addTarget(self, action: #selector(self.close), for: .touchUpInside)
-            
-            self.rawDisplayer.decodeButton.addTarget(self, action: #selector(self.decode),
-                                                for: .touchUpInside)
             
             self.tapQRGesture = UITapGestureRecognizer(target: self,
                                                        action: #selector(self.shareQRCode(_:)))
@@ -656,6 +566,29 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
             
         }
         
+        if textField.text != "" {
+            
+            textField.becomeFirstResponder()
+            
+        } else {
+            
+            if let string = UIPasteboard.general.string {
+                
+                textField.becomeFirstResponder()
+                textField.text = string
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    textField.resignFirstResponder()
+                }
+                
+            } else {
+                
+                textField.becomeFirstResponder()
+                
+            }
+            
+        }
+        
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
@@ -706,6 +639,33 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
         } else {
             
             //shakeAlert(viewToShake: textField)
+            
+        }
+        
+    }
+    
+    func textViewDidBeginEditing(_ textView: UITextView) {
+        
+        if textView.text != "" {
+            
+            textView.becomeFirstResponder()
+            
+        } else {
+            
+            if let string = UIPasteboard.general.string {
+                
+                textView.becomeFirstResponder()
+                textView.text = string
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    textView.resignFirstResponder()
+                }
+                
+            } else {
+                
+                textView.becomeFirstResponder()
+                
+            }
             
         }
         

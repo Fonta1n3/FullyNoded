@@ -25,7 +25,7 @@ final class MakeRPCCall {
     var stringToReturn = String()
     var errorBool = Bool()
     var errorDescription = String()
-    var torClient:TorClient!
+    var torClient = TorClient.sharedInstance
     
     func executeRPCCommand(method: BTC_CLI_COMMAND, param: Any, completion: @escaping () -> Void) {
         print("executeRPCCommand")
@@ -46,21 +46,18 @@ final class MakeRPCCall {
         if activeNode["onionAddress"] != nil {
             
             onionAddress = aes.decryptKey(keyToDecrypt: activeNode["onionAddress"] as! String)
-            print("address = \(onionAddress)")
             
         }
         
         if activeNode["rpcuser"] != nil {
             
             rpcusername = aes.decryptKey(keyToDecrypt: activeNode["rpcuser"] as! String)
-            print("username = \(rpcusername)")
             
         }
         
         if activeNode["rpcpassword"] != nil {
             
             rpcpassword = aes.decryptKey(keyToDecrypt: activeNode["rpcpassword"] as! String)
-            print("password = \(rpcpassword)")
             
         }
         
@@ -85,7 +82,6 @@ final class MakeRPCCall {
                         self.errorBool = true
                         self.errorDescription = error!.localizedDescription
                         completion()
-                        print("error = \(error!.localizedDescription)")
                         
                     }
                     
@@ -104,7 +100,6 @@ final class MakeRPCCall {
                                     if let errorMessage = errorCheck["message"] as? String {
                                         
                                         self.errorDescription = errorMessage
-                                        print("error message = \(errorMessage)")
                                         
                                     } else {
                                         

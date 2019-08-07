@@ -11,6 +11,7 @@ import Tor
 
 class TorClient {
     
+    static let sharedInstance = TorClient()
     private var config: TorConfiguration = TorConfiguration()
     private var thread: TorThread!
     private var controller: TorController!

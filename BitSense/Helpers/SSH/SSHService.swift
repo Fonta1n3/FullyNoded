@@ -24,6 +24,8 @@ class SSHService {
         var user = ""
         var host = ""
         var password = ""
+        var privKey = ""
+        var pubKey = ""
         
         if let portCheck = activeNode["port"] as? String {
             
@@ -65,44 +67,82 @@ class SSHService {
             
         }
         
-        guard user != "", host != "", password != "" else {
+        if let privKeyCheck = activeNode["privateKey"] as? String {
+            
+            if aes.decryptKey(keyToDecrypt: privKeyCheck) != "" {
+                
+                privKey = aes.decryptKey(keyToDecrypt: privKeyCheck)
+                
+            }
+            
+        }
+        
+        if let pubKeyCheck = activeNode["publicKey"] as? String {
+            
+            if aes.decryptKey(keyToDecrypt: pubKeyCheck) != "" {
+                
+                pubKey = aes.decryptKey(keyToDecrypt: pubKeyCheck)
+                
+            }
+            
+        }
+        
+        guard user != "", host != "", port != "" else {
             
             success((success:false, error:"Incomplete SSH Credentials"))
             return
             
         }
         
-        var portInt = Int()
+        var authWithPrivKey = false
         
-        if port != "" {
+        if pubKey != "" || privKey != "" {
             
-            portInt = Int(port)!
+            authWithPrivKey = true
             
-            let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        }
+        
+        var portInt = Int()
+        portInt = Int(port)!
+        
+        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        
+        queue.async {
             
-            queue.async {
+            self.session = NMSSHSession.connect(toHost: host,
+                                                port: portInt,
+                                                withUsername: user)
+            
+            if self.session.isConnected == true {
                 
-                self.session = NMSSHSession.connect(toHost: host, port: portInt, withUsername: user)
-                
-                if self.session.isConnected == true {
+                if !authWithPrivKey {
                     
                     self.session.authenticate(byPassword: password)
                     
-                    if self.session.isAuthorized {
-                        
-                        success((success:true, error:nil))
-                        
-                    } else {
-                        
-                        success((success:false, error:"\(String(describing: self.session.lastError!.localizedDescription))"))
-                        
-                    }
+                } else {
+                    
+                    self.session.authenticateBy(inMemoryPublicKey: pubKey,
+                                                privateKey: privKey,
+                                                andPassword: password)
+                    
+                }
+                
+                if self.session.isAuthorized {
+                    
+                    success((success:true,
+                             error:nil))
                     
                 } else {
                     
-                    success((success:false, error:"Unable to connect to your node with SSH"))
+                    success((success:false,
+                             error:"\(String(describing: self.session.lastError!.localizedDescription))"))
                     
                 }
+                
+            } else {
+                
+                success((success:false,
+                         error:"Unable to connect to your node with SSH"))
                 
             }
             
@@ -145,7 +185,9 @@ class SSHService {
         
         guard rpcuser != "", rpcpassword != "", rpcport != "" else {
             
-            response((dictionary:nil, error:"Incomplete RPC Credentials"))
+            response((dictionary:nil,
+                      error:"Incomplete RPC Credentials"))
+            
             return
             
         }
@@ -182,7 +224,23 @@ class SSHService {
                 
                 if error != nil {
                     
-                    response((dictionary:nil, error:error!.localizedDescription))
+                    if error!.localizedDescription == "Channel allocation error" {
+                        
+                        // connection timed out, reconnect
+                        self.connect(success: { (success, error) in
+                            
+                            if success {
+                                
+                                self.execute(command: command, params: params, response: response)
+                                
+                            }
+                            
+                        })
+                        
+                    }
+                    
+                    response((dictionary:nil,
+                              error:error!.localizedDescription))
                     
                 } else {
                     
@@ -192,11 +250,13 @@ class SSHService {
                         
                         let json = try JSONSerialization.jsonObject(with: responseData, options: [.allowFragments]) as Any
                         
-                        response((dictionary:json, error:nil))
+                        response((dictionary:json,
+                                  error:nil))
                         
                     } catch {
                         
-                        response((dictionary:nil, error:"\(error.localizedDescription)"))
+                        response((dictionary:nil,
+                                  error:"\(error.localizedDescription)"))
                         
                     }
                     
@@ -223,7 +283,17 @@ class SSHService {
              BTC_CLI_COMMAND.rescanblockchain,
              BTC_CLI_COMMAND.fundrawtransaction,
              BTC_CLI_COMMAND.listunspent,
-             BTC_CLI_COMMAND.walletprocesspsbt:
+             BTC_CLI_COMMAND.walletprocesspsbt,
+             BTC_CLI_COMMAND.gettransaction,
+             BTC_CLI_COMMAND.getaddressinfo,
+             BTC_CLI_COMMAND.bumpfee,
+             BTC_CLI_COMMAND.signrawtransactionwithwallet,
+             BTC_CLI_COMMAND.listaddressgroupings,
+             BTC_CLI_COMMAND.listlabels,
+             BTC_CLI_COMMAND.getaddressesbylabel,
+             BTC_CLI_COMMAND.listlockunspent,
+             BTC_CLI_COMMAND.lockunspent,
+             BTC_CLI_COMMAND.walletcreatefundedpsbt:
             
             boolToReturn = true
             

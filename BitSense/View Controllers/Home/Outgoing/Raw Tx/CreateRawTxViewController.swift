@@ -8,21 +8,23 @@
 
 import UIKit
 
-class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
+class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource {
     
     let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     var tapQRGesture = UITapGestureRecognizer()
     var tapTextViewGesture = UITapGestureRecognizer()
     var qrCode = UIImage()
+    
     var ssh:SSHService!
     var torClient:TorClient!
     var torRPC:MakeRPCCall!
+    var isUsingSSH = IsUsingSSH.sharedInstance
+    var makeSSHCall:SSHelper!
+    
     var spendable = Double()
-    var changeAmount = Double()
     var rawTxUnsigned = String()
     var rawTxSigned = String()
     var amountAvailable = Double()
-    var changeAddress = String()
     let qrImageView = UIImageView()
     var stringURL = String()
     var address = String()
@@ -30,43 +32,55 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
     var amount = String()
     var blurArray = [UIVisualEffectView]()
     let rawDisplayer = RawDisplayer()
-    var isUsingSSH = Bool()
     var scannerShowing = false
     var isFirstTime = Bool()
+    var isSweeping = false
+    var outputs = [Any]()
+    var outputsString = ""
     
+    @IBOutlet var navBar: UINavigationBar!
+    @IBOutlet var addOutlet: UIButton!
     @IBOutlet var amountInput: UITextField!
     @IBOutlet var addressInput: UITextField!
-    
+    @IBOutlet var amountLabel: UILabel!
+    @IBOutlet var actionOutlet: UIButton!
+    @IBOutlet var scanOutlet: UIButton!
+    @IBOutlet var receivingLabel: UILabel!
+    @IBOutlet var outputsTable: UITableView!
+    @IBOutlet var scannerView: UIImageView!
     
     let sweepButtonView = Bundle.main.loadNibNamed("KeyPadButtonView",
                                                    owner: self,
                                                    options: nil)?.first as! UIView?
-    var makeSSHCall:SSHelper!
+    
     var creatingView = ConnectingView()
     let qrScanner = QRScanner()
     var isTorchOn = Bool()
     let qrGenerator = QRGenerator()
-    var miningFee = Double()
     var spendableBalance = Double()
     
-    @IBOutlet var scannerView: UIImageView!
+    var outputArray = [[String:String]]()
     
-    @IBAction func back(_ sender: Any) {
-        
-        DispatchQueue.main.async {
-            
-            self.dismiss(animated: true, completion: nil)
-            
-        }
-        
-    }
+    @IBOutlet var coldSwitchOutlet: UISwitch!
+    @IBOutlet var coldLabel: UILabel!
     
-    @IBAction func sweepAction(_ sender: Any) {
+    
+   @IBAction func sweepAction(_ sender: Any) {
+    
+        isSweeping = true
         
         executeNodeCommandSsh(method: BTC_CLI_COMMAND.listunspent,
                               param: "")
         
-        //self.amountInput.text = String(self.spendable - miningFee - 0.00050000)
+    }
+    
+    @IBAction func coldAction(_ sender: Any) {
+        
+        if coldSwitchOutlet.isOn {
+            
+            displayAlert(viewController: self, isError: false, message: "This transaction will also select inputs that are watch-only and create an unsigned transaction")
+            
+        }
         
     }
     
@@ -78,7 +92,15 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
             let spendable = dict["spendable"] as! Bool
             let amount = dict["amount"] as! Double
             
-            if spendable {
+            if !coldSwitchOutlet.isOn {
+                
+                if spendable {
+                    
+                    self.spendableBalance += amount
+                    
+                }
+                
+            } else {
                 
                 self.spendableBalance += amount
                 
@@ -88,7 +110,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
         
         DispatchQueue.main.async {
             
-            self.amountInput.text = String(self.spendableBalance - self.miningFee - 0.00050000)
+            let sweepamount = self.spendableBalance
+            let round = self.rounded(number: sweepamount)
+            self.amountInput.text = "\(round)"
             
         }
         
@@ -111,6 +135,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
         qrScanner.imageView = scannerView
         qrScanner.textField.alpha = 0
         
+        qrScanner.downSwipeAction = { self.back() }
         qrScanner.completion = { self.getQRCode() }
         qrScanner.didChooseImage = { self.didPickImage() }
         
@@ -124,9 +149,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
         
         isTorchOn = false
         
-        
         qrScanner.closeButton.addTarget(self,
-                                        action: #selector(closeScanner),
+                                        action: #selector(back),
                                         for: .touchUpInside)
         
     }
@@ -189,6 +213,96 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
         
     }
     
+    @IBAction func addOutput(_ sender: Any) {
+        
+        if amountInput.text != "" && addressInput.text != "" && amountInput.text != "0.0" {
+            
+            let dict = ["address":addressInput.text!, "amount":amountInput.text!] as [String : String]
+            
+            outputArray.append(dict)
+            
+            DispatchQueue.main.async {
+                
+                self.outputsTable.alpha = 1
+                self.amountInput.text = ""
+                self.addressInput.text = ""
+                self.outputsTable.reloadData()
+                
+            }
+            
+        } else {
+            
+            displayAlert(viewController: self,
+                         isError: true,
+                         message: "You need to fill out a recipient and amount first then tap this button, this button is used for adding multiple recipients aka \"batching\".")
+            
+        }
+        
+    }
+    
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        
+        return "Outputs"
+        
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        
+        return 30
+        
+    }
+    
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        
+        (view as! UITableViewHeaderFooterView).backgroundView?.backgroundColor = UIColor.clear
+        (view as! UITableViewHeaderFooterView).textLabel?.textAlignment = .right
+        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.init(name: "HiraginoSans-W3", size: 15)
+        (view as! UITableViewHeaderFooterView).textLabel?.textColor = UIColor.green
+        
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        
+        return outputArray.count
+        
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        
+        return 85
+        
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
+        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        
+        cell.backgroundColor = view.backgroundColor
+        
+        if outputArray.count > 0 {
+            
+            if outputArray.count > 1 {
+                
+                tableView.separatorColor = UIColor.white
+                tableView.separatorStyle = .singleLine
+                
+            }
+            
+            let address = outputArray[indexPath.row]["address"]!
+            let amount = outputArray[indexPath.row]["amount"]!
+            
+            cell.textLabel?.text = "\n#\(indexPath.row + 1)\n\nSending: \(String(describing: amount))\n\nTo: \(String(describing: address))"
+            
+        } else {
+            
+           cell.textLabel?.text = ""
+            
+        }
+        
+        return cell
+        
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -196,34 +310,55 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
         
         amountInput.delegate = self
         addressInput.delegate = self
-        
-        amountInput.inputAccessoryView = sweepButtonView
-        
+        outputsTable.delegate = self
+        outputsTable.dataSource = self
+        outputsTable.tableFooterView = UIView(frame: .zero)
+        outputsTable.alpha = 0
+        configureRawDisplayer()
         configureScanner()
+        addTapGesture()
+        addNotifcationObservers()
+        amountInput.inputAccessoryView = sweepButtonView
+        coldSwitchOutlet.isOn = false
+        scannerView.alpha = 0
+        scannerView.backgroundColor = UIColor.black
         
-        let tapGesture = UITapGestureRecognizer(target: self,
-                                                action: #selector(self.dismissKeyboard (_:)))
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
         
-        tapGesture.numberOfTapsRequired = 1
-        self.view.addGestureRecognizer(tapGesture)
+        isUsingSSH = IsUsingSSH.sharedInstance
+        
+        if isUsingSSH {
+            
+            ssh = SSHService.sharedInstance
+            makeSSHCall = SSHelper.sharedInstance
+            
+        } else {
+            
+            torRPC = MakeRPCCall.sharedInstance
+            torClient = TorClient.sharedInstance
+            
+        }
+        
+    }
+    
+    func addNotifcationObservers() {
         
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(sweepButtonClicked),
                                                name: NSNotification.Name(rawValue: "buttonClickedNotification"),
                                                object: nil)
         
-        getMiningFee()
-        
     }
     
-    func getMiningFee() {
+    func addTapGesture() {
         
-        let miningFeeCheck = UserDefaults.standard.object(forKey: "miningFee") as! String
-        var miningFeeString = ""
-        miningFeeString = miningFeeCheck
-        miningFeeString = miningFeeString.replacingOccurrences(of: ",", with: "")
-        let fee = (Double(miningFeeString)!) / 100000000
-        miningFee = fee
+        let tapGesture = UITapGestureRecognizer(target: self,
+                                                action: #selector(self.dismissKeyboard (_:)))
+        
+        tapGesture.numberOfTapsRequired = 1
+        self.view.addGestureRecognizer(tapGesture)
         
     }
     
@@ -246,41 +381,74 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
         
     }
     
+    func configureRawDisplayer() {
+        
+        rawDisplayer.vc = self
+        
+        tapQRGesture = UITapGestureRecognizer(target: self,
+                                                   action: #selector(shareQRCode(_:)))
+        
+        rawDisplayer.qrView.addGestureRecognizer(tapQRGesture)
+        
+        tapTextViewGesture = UITapGestureRecognizer(target: self,
+                                                         action: #selector(shareRawText(_:)))
+        
+        rawDisplayer.textView.addGestureRecognizer(tapTextViewGesture)
+        
+    }
+    
+    func removeViews() {
+        
+        DispatchQueue.main.async {
+            
+            self.coldSwitchOutlet.removeFromSuperview()
+            self.coldLabel.removeFromSuperview()
+            self.amountInput.removeFromSuperview()
+            self.addressInput.removeFromSuperview()
+            self.amountLabel.removeFromSuperview()
+            self.receivingLabel.removeFromSuperview()
+            self.scanOutlet.removeFromSuperview()
+            self.outputsTable.removeFromSuperview()
+            self.navBar.removeFromSuperview()
+            
+        }
+        
+    }
+    
     func showRaw(raw: String) {
         
         DispatchQueue.main.async {
             
             self.rawDisplayer.rawString = raw
-            self.rawDisplayer.vc = self
             
-            self.rawDisplayer.closeButton.addTarget(self, action: #selector(self.close),
-                                                    for: .touchUpInside)
+            if self.coldSwitchOutlet.isOn {
+                
+                self.rawDisplayer.titleString = "Unsigned Raw Transaction"
+                
+            }
             
-            self.rawDisplayer.decodeButton.addTarget(self, action: #selector(self.decode),
-                                                for: .touchUpInside)
-            
-            self.tapQRGesture = UITapGestureRecognizer(target: self,
-                                                  action: #selector(self.shareQRCode(_:)))
-            
-            self.rawDisplayer.qrView.addGestureRecognizer(self.tapQRGesture)
-            
-            self.tapTextViewGesture = UITapGestureRecognizer(target: self,
-                                                        action: #selector(self.shareRawText(_:)))
-            
-            self.rawDisplayer.textView.addGestureRecognizer(self.tapTextViewGesture)
-            
-            self.amountInput.removeFromSuperview()
-            self.scannerView.removeFromSuperview()
-            self.creatingView.removeConnectingView()
-            let background = UIView()
-            background.frame = self.view.frame
-            background.backgroundColor = self.view.backgroundColor
-            self.view.addSubview(background)
-            self.rawDisplayer.addRawDisplay()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
+                
+                self.scannerView.removeFromSuperview()
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
+                    
+                    self.rawDisplayer.addRawDisplay()
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
+                        
+                        self.creatingView.removeConnectingView()
+                        
+                    })
+                    
+                })
+                
+            })
             
         }
         
     }
+    
     @IBAction func tryRawNow(_ sender: Any) {
         
         tryRaw()
@@ -289,79 +457,70 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
     
     @objc func tryRaw() {
         
-        //if (self.amountInput.text?.toDouble())! <= self.spendable {
+        creatingView.addConnectingView(vc: self,
+                                       description: "Creating Raw")
+        
+        func convertOutputs() {
             
-            func getChangeAddress() {
+            for output in outputArray {
                 
-                self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.getrawchangeaddress,
-                                           param: "")
-                
-            }
-            
-            /*if sweep {
-                
-                getChangeAddress()
-                
-            } else {*/
-                
-                if self.amountInput.text != "" {
+                if let amount = output["amount"] {
                     
-                    let dbl = self.amountInput.text?.toDouble()
-                    
-                    if dbl != nil && dbl! > 0.0 {
+                    if let address = output["address"] {
                         
-                        self.amount = self.amountInput.text!
-                        
-                        if self.amount.hasPrefix(".") {
+                        if address != "" {
                             
-                            self.amount = "0" + self.amount
-                            
-                        }
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.amountInput.resignFirstResponder()
-                            
-                            self.creatingView.addConnectingView(vc: self,
-                                                                description: "Creating Raw")
-                            
-                        }
-                        
-                        getChangeAddress()
-                        
-                    } else {
-                        
-                        displayAlert(viewController: self,
-                                     isError: true,
-                                     message: "Only valid numbers allowed.")
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.creatingView.removeConnectingView()
-                            
-                            self.amountInput.text = ""
+                            let dbl = Double(amount)!
+                            let out = [address:dbl]
+                            outputs.append(out)
                             
                         }
                         
                     }
                     
-                } else {
-                    
-                    shakeAlert(viewToShake: amountInput)
-                    
                 }
                 
-            //}
+            }
             
-        /*} else {
+            outputsString = outputs.description
+            outputsString = outputsString.replacingOccurrences(of: "[", with: "")
+            outputsString = outputsString.replacingOccurrences(of: "]", with: "")
+            self.getRawTx()
             
-            self.amountInput.text = ""
+        }
+        
+        if outputArray.count == 0 {
+            
+            if self.amountInput.text != "" && self.amountInput.text != "0.0" && self.addressInput.text != "" {
+                
+                let dict = ["address":addressInput.text!, "amount":amountInput.text!] as [String : String]
+                
+                outputArray.append(dict)
+                convertOutputs()
+                
+            } else {
+                
+                creatingView.removeConnectingView()
+                
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: "You need to fill out an amount and a recipient")
+                
+            }
+            
+        } else if outputArray.count > 0 && self.amountInput.text != "" || self.amountInput.text != "0.0" && self.addressInput.text != "" {
+            
+            creatingView.removeConnectingView()
             
             displayAlert(viewController: self,
                          isError: true,
-                         message: "Not enough funds")
+                         message: "If you want to add multiple recipients please tap the \"+\" and add them all first.")
             
-        }*/
+        } else if outputArray.count > 0 {
+            
+            convertOutputs()
+            
+        }
         
     }
     
@@ -415,15 +574,12 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
             }
             
             self.qrGenerator.textInput = self.rawDisplayer.rawString
-            self.qrGenerator.backColor = UIColor.white
-            self.qrGenerator.foreColor = UIColor.black
             let qrImage = self.qrGenerator.getQRCode()
             let objectsToShare = [qrImage]
                 
             let activityController = UIActivityViewController(activityItems: objectsToShare,
                                                               applicationActivities: nil)
             
-            activityController.completionWithItemsHandler = { (type,completed,items,error) in }
             activityController.popoverPresentationController?.sourceView = self.view
             self.present(activityController, animated: true) {}
             
@@ -469,37 +625,12 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
     
     @objc func sweepButtonClicked() {
         
+        isSweeping = true
+        
         self.amountInput.resignFirstResponder()
         
         executeNodeCommandSsh(method: BTC_CLI_COMMAND.listunspent,
                               param: "")
-        
-    }
-    
-    @objc func decode() {
-        
-        print("decode")
-        
-        self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.decoderawtransaction,
-                                   param: "\"\(self.rawTxSigned)\"")
-        
-    }
-    
-    @objc func encodeText() {
-        print("encodeText")
-        
-        DispatchQueue.main.async {
-            
-            self.rawDisplayer.textView.text = self.rawTxSigned
-            self.rawDisplayer.decodeButton.setTitle("Decode", for: .normal)
-            
-            self.rawDisplayer.decodeButton.removeTarget(self, action: #selector(self.encodeText),
-                                           for: .touchUpInside)
-            
-            self.rawDisplayer.decodeButton.addTarget(self, action: #selector(self.decode),
-                                        for: .touchUpInside)
-            
-        }
         
     }
     
@@ -517,23 +648,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
     func generateQrCode(key: String) -> UIImage {
         
         self.qrGenerator.textInput = key
-        self.qrGenerator.backColor = UIColor.clear
-        self.qrGenerator.foreColor = UIColor.white
         let imageToReturn = self.qrGenerator.getQRCode()
         
         return imageToReturn
-        
-    }
-    
-    @objc func closeScanner() {
-        print("back")
-        
-        DispatchQueue.main.async {
-            
-            self.scannerView.alpha = 0
-            self.scannerShowing = false
-            
-        }
         
     }
     
@@ -545,8 +662,18 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
         blur.clipsToBounds = true
         blur.layer.cornerRadius = frame.width / 2
         blur.contentView.addSubview(button)
-        view.addSubview(blur)
-        blurArray.append(blur)
+        self.scannerView.addSubview(blur)
+        
+    }
+    
+    @objc func back() {
+        
+        DispatchQueue.main.async {
+            
+            self.scannerView.alpha = 0
+            self.scannerShowing = false
+            
+        }
         
     }
     
@@ -598,8 +725,10 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        print("textFieldShouldReturn")
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        
+        self.amountInput.resignFirstResponder()
+        self.addressInput.resignFirstResponder()
         
         if textField == addressInput && addressInput.text != "" {
             
@@ -615,6 +744,12 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
             
         }
         
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        print("textFieldShouldReturn")
+        
+        textField.endEditing(true)
         return true
         
     }
@@ -630,6 +765,12 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
     }
     
     //MARK: Helpers
+    
+    func rounded(number: Double) -> Double {
+        
+        return Double(round(100000000*number)/100000000)
+        
+    }
     
     func processBIP21(url: String) {
         
@@ -647,54 +788,19 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
                 self.addressInput.resignFirstResponder()
                 self.amountInput.resignFirstResponder()
                 
-                UIView.animate(withDuration: 0.3, animations: {
+                DispatchQueue.main.async {
                     
-                    for blur in self.blurArray {
+                    if self.amount != "" && self.amount != "0.0" {
                         
-                        blur.alpha = 0
+                        self.amountInput.text = self.amount
                         
                     }
                     
-                    self.blurView.alpha = 0
-                    self.qrImageView.alpha = 0
-                    self.qrScanner.alpha = 0
+                    self.addressInput.text = self.address
+                    
+                }
                 
-                }, completion: { _ in
-                    
-                    for blur in self.blurArray{
-                        
-                        blur.removeFromSuperview()
-                        
-                    }
-                    
-                    self.blurView.removeFromSuperview()
-                    self.qrScanner.removeScanner()
-                    
-                    if self.isTorchOn {
-                        
-                        self.toggleTorch()
-                        
-                    }
-                    
-                    DispatchQueue.main.async {
-                        
-                        if self.amount != "" && self.amount != "0.0" {
-                            
-                            self.amountInput.text = self.amount
-                            
-                        }
-                        
-                        self.addressInput.text = self.address
-                        
-                        if self.amountInput.text != "" {
-                            
-                            self.tryRaw()
-                            
-                        }
-                        
-                    }
-                    
-                })
+                self.back()
                 
             }
             
@@ -721,48 +827,40 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    func convertMiningFeeToDouble(miningFeeCheck: String) -> Double {
-        
-        let miningFeeString = miningFeeCheck.replacingOccurrences(of: ",",
-                                                                  with: "")
-        
-        return (Double(miningFeeString)!) / 100000000
-        
-    }
-    
     //MARK: Result Parsers
     
-    func getSmartFee() {
-        
-        let getSmartFee = GetSmartFee()
-        getSmartFee.rawSigned = rawTxSigned
-        getSmartFee.ssh = ssh
-        getSmartFee.makeSSHCall = makeSSHCall
-        getSmartFee.vc = self
-        getSmartFee.getSmartFee()
-        
-    }
-    
-    func getRawTx(changeAddress: String) {
+    func getRawTx() {
         print("getRawTx")
         
         let rawTransaction = RawTransaction()
-        rawTransaction.addressToPay = self.address
-        rawTransaction.changeAddress = changeAddress
-        rawTransaction.miningFee = self.miningFee
-        rawTransaction.amount = Double(self.amount)!
+        rawTransaction.outputs = self.outputsString
         rawTransaction.ssh = self.ssh
         rawTransaction.torClient = self.torClient
         rawTransaction.torRPC = self.torRPC
         rawTransaction.isUsingSSH = self.isUsingSSH
+        rawTransaction.numberOfBlocks = UserDefaults.standard.object(forKey: "feeTarget") as! Int
         
         func getResult() {
             
             if !rawTransaction.errorBool {
                 
-                rawTxSigned = rawTransaction.signedRawTx
-                showRaw(raw: rawTxSigned)
-                getSmartFee()
+                removeViews()
+                
+                DispatchQueue.main.async {
+                    
+                    if !self.coldSwitchOutlet.isOn {
+                        
+                        self.rawTxSigned = rawTransaction.signedRawTx
+                        
+                    } else {
+                        
+                        self.rawTxSigned = rawTransaction.unsignedRawTx
+                        
+                    }
+                    
+                    self.showRaw(raw: self.rawTxSigned)
+                    
+                }
                 
             } else {
                 
@@ -776,22 +874,17 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
             
         }
         
-        rawTransaction.createRawTransaction(completion: getResult)
-        
-    }
-    
-    func parseDecodedTx(decodedTx: NSDictionary) {
-        
         DispatchQueue.main.async {
             
-            self.rawDisplayer.textView.text = "\(decodedTx)"
-            self.rawDisplayer.decodeButton.setTitle("Encode", for: .normal)
-            
-            self.rawDisplayer.decodeButton.removeTarget(self, action: #selector(self.decode),
-                                           for: .touchUpInside)
-            
-            self.rawDisplayer.decodeButton.addTarget(self, action: #selector(self.encodeText),
-                                        for: .touchUpInside)
+            if !self.coldSwitchOutlet.isOn {
+                
+                rawTransaction.createBatchRawTransactionFromHotWallet(completion: getResult)
+                
+            } else if self.coldSwitchOutlet.isOn {
+                
+                rawTransaction.createBatchRawTransactionFromColdWallet(completion: getResult)
+                
+            }
             
         }
         
@@ -813,16 +906,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
                 if !makeSSHCall.errorBool {
                     
                     switch method {
-                        
-                    case BTC_CLI_COMMAND.decoderawtransaction:
-                        
-                        let decodedTx = makeSSHCall.dictToReturn
-                        parseDecodedTx(decodedTx: decodedTx)
-                        
-                    case BTC_CLI_COMMAND.getrawchangeaddress:
-                        
-                        let changeAddress = makeSSHCall.stringToReturn
-                        self.getRawTx(changeAddress: changeAddress)
                         
                     case BTC_CLI_COMMAND.listunspent:
                         
@@ -852,12 +935,24 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
                 
             }
             
-            if self.ssh.session.isConnected {
+            if self.ssh != nil {
                 
-                makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                              method: method,
-                                              param: param,
-                                              completion: getResult)
+                if self.ssh.session.isConnected {
+                    
+                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
+                                                  method: method,
+                                                  param: param,
+                                                  completion: getResult)
+                    
+                } else {
+                    
+                    creatingView.removeConnectingView()
+                    
+                    displayAlert(viewController: self,
+                                 isError: true,
+                                 message: "Not connected")
+                    
+                }
                 
             } else {
                 
@@ -882,16 +977,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
             if !torRPC.errorBool {
                 
                 switch method {
-                    
-                case BTC_CLI_COMMAND.decoderawtransaction:
-                    
-                    let decodedTx = torRPC.dictToReturn
-                    parseDecodedTx(decodedTx: decodedTx)
-                    
-                case BTC_CLI_COMMAND.getrawchangeaddress:
-                    
-                    let changeAddress = torRPC.stringToReturn
-                    self.getRawTx(changeAddress: changeAddress)
                     
                 case BTC_CLI_COMMAND.listunspent:
                     
@@ -932,6 +1017,39 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate {
             displayAlert(viewController: self,
                          isError: true,
                          message: "Tor not connected")
+            
+        }
+        
+    }
+    
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        
+        if textField == addressInput {
+            
+            if textField.text != "" {
+                
+                textField.becomeFirstResponder()
+                
+            } else {
+                
+                if let string = UIPasteboard.general.string {
+                    
+                    textField.becomeFirstResponder()
+                    textField.text = string
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        textField.resignFirstResponder()
+                        self.processKeys(key: string)
+                    }
+                    
+                    
+                } else {
+                    
+                    textField.becomeFirstResponder()
+                    
+                }
+                
+            }
             
         }
         

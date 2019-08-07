@@ -15,6 +15,7 @@ class SSHelper {
     var doubleToReturn = Double()
     var arrayToReturn = NSArray()
     var stringToReturn = String()
+    var boolToReturn = Bool()
     var errorBool = Bool()
     var errorDescription = String()
     
@@ -28,7 +29,15 @@ class SSHelper {
                 
                 if error != "" {
                     
-                    self.errorDescription = error!
+                    if method == BTC_CLI_COMMAND.getblockchaininfo {
+                        
+                        self.errorDescription = "Looks like your RPC credentials are incorrect"
+                        
+                    } else {
+                        
+                        self.errorDescription = error!
+                        
+                    }
                     
                 } else {
                     
@@ -72,7 +81,7 @@ class SSHelper {
                             
                             self.dictToReturn = dic
                             completion()
-                            
+                        
                         } else {
                             
                             if method == BTC_CLI_COMMAND.unloadwallet {

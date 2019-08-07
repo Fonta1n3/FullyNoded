@@ -11,23 +11,25 @@ import Foundation
 class SendUTXO {
     
     var makeSSHCall:SSHelper!
-    var ssh:SSHService!
-    var inputs = ""
-    var address = ""
     var amount = Double()
+    var changeAddress = ""
+    var addressToPay = ""
+    var sweep = Bool()
+    var spendableUtxos = [NSDictionary]()
+    var inputArray = [Any]()
+    var utxoTxId = String()
+    var utxoVout = Int()
+    var changeAmount = Double()
+    var inputs = ""
+    var ssh:SSHService!
     var signedRawTx = ""
     var errorBool = Bool()
     var errorDescription = ""
-    var inputArray = [Any]()
+    var isUsingSSH = Bool()
+    var torClient:TorClient!
+    var torRPC:MakeRPCCall!
     
     func createRawTransaction(completion: @escaping () -> Void) {
-        
-        self.inputs = self.inputArray.description
-        self.inputs = self.inputs.replacingOccurrences(of: "[\"", with: "[")
-        self.inputs = self.inputs.replacingOccurrences(of: "\"]", with: "]")
-        self.inputs = self.inputs.replacingOccurrences(of: "\"{", with: "{")
-        self.inputs = self.inputs.replacingOccurrences(of: "}\"", with: "}")
-        self.inputs = self.inputs.replacingOccurrences(of: "\\", with: "")
         
         func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
             
@@ -39,16 +41,14 @@ class SendUTXO {
                         
                     case BTC_CLI_COMMAND.signrawtransactionwithwallet:
                         
-                        let result = makeSSHCall.dictToReturn
-                        let hex = result["hex"] as! String
-                        self.signedRawTx = hex
+                        let dict = makeSSHCall.dictToReturn
+                        signedRawTx = dict["hex"] as! String
                         completion()
                         
                     case BTC_CLI_COMMAND.createrawtransaction:
                         
                         let unsignedRawTx = makeSSHCall.stringToReturn
-                        executeNodeCommandSsh(method: BTC_CLI_COMMAND.signrawtransactionwithwallet,
-                                                   param: "\"\(unsignedRawTx)\"")
+                        executeNodeCommandSsh(method: BTC_CLI_COMMAND.signrawtransactionwithwallet, param: "\"\(unsignedRawTx)\"")
                         
                     default:
                         
@@ -57,19 +57,80 @@ class SendUTXO {
                     }
                     
                 } else {
-                   
-                    self.errorBool = self.makeSSHCall.errorBool
-                    self.errorDescription = self.makeSSHCall.errorDescription
+                    
+                    errorBool = true
+                    errorDescription = makeSSHCall.errorDescription
                     completion()
                     
                 }
                 
             }
             
-            if ssh.session.isConnected {
+            if ssh != nil {
                 
-                makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                              method: method,
+                if ssh.session.isConnected {
+                    
+                    makeSSHCall.executeSSHCommand(ssh: ssh,
+                                                  method: method,
+                                                  param: param,
+                                                  completion: getResult)
+                    
+                } else {
+                    
+                    errorBool = true
+                    errorDescription = "Not connected"
+                    completion()
+                    
+                }
+                
+            } else {
+                
+                errorBool = true
+                errorDescription = "Not connected"
+                completion()
+                
+            }
+            
+        }
+        
+        func executeNodeCommandTor(method: BTC_CLI_COMMAND, param: String) {
+            
+            func getResult() {
+                
+                if !torRPC.errorBool {
+                    
+                    switch method {
+                        
+                    case BTC_CLI_COMMAND.signrawtransactionwithwallet:
+                        
+                        let dict = torRPC.dictToReturn
+                        signedRawTx = dict["hex"] as! String
+                        completion()
+                        
+                    case BTC_CLI_COMMAND.createrawtransaction:
+                        
+                        let unsignedRawTx = torRPC.stringToReturn
+                        executeNodeCommandTor(method: BTC_CLI_COMMAND.signrawtransactionwithwallet, param: "\"\(unsignedRawTx)\"")
+                        
+                    default:
+                        
+                        break
+                        
+                    }
+                    
+                } else {
+                    
+                    errorBool = true
+                    errorDescription = torRPC.errorDescription
+                    completion()
+                    
+                }
+                
+            }
+            
+            if self.torClient.isOperational {
+                
+                self.torRPC.executeRPCCommand(method: method,
                                               param: param,
                                               completion: getResult)
                 
@@ -83,13 +144,49 @@ class SendUTXO {
             
         }
         
-        let receiver = "\"\(self.address)\":\(self.amount)"
-        var param = "''\(self.inputs)'', ''{\(receiver)}''"
-        param = param.replacingOccurrences(of: "\"{", with: "{")
-        param = param.replacingOccurrences(of: "}\"", with: "}")
+        func processInputs() {
+            
+            self.inputs = self.inputArray.description
+            self.inputs = self.inputs.replacingOccurrences(of: "[\"", with: "[")
+            self.inputs = self.inputs.replacingOccurrences(of: "\"]", with: "]")
+            self.inputs = self.inputs.replacingOccurrences(of: "\"{", with: "{")
+            self.inputs = self.inputs.replacingOccurrences(of: "}\"", with: "}")
+            self.inputs = self.inputs.replacingOccurrences(of: "\\", with: "")
+            
+        }
         
-        executeNodeCommandSsh(method: BTC_CLI_COMMAND.createrawtransaction,
-                              param: param)
+        processInputs()
+        
+        var param = ""
+        
+        if !sweep {
+            
+            let receiver = "\"\(self.addressToPay)\":\(self.amount)"
+            let change = "\"\(self.changeAddress)\":\(self.changeAmount)"
+            param = "''\(self.inputs)'', ''{\(receiver), \(change)}''"
+            param = param.replacingOccurrences(of: "\"{", with: "{")
+            param = param.replacingOccurrences(of: "}\"", with: "}")
+            
+        } else {
+            
+            let receiver = "\"\(self.addressToPay)\":\(self.amount)"
+            param = "''\(self.inputs)'', ''{\(receiver)}''"
+            param = param.replacingOccurrences(of: "\"{", with: "{")
+            param = param.replacingOccurrences(of: "}\"", with: "}")
+            
+        }
+        
+        if isUsingSSH {
+            
+            executeNodeCommandSsh(method: BTC_CLI_COMMAND.createrawtransaction,
+                                  param: param)
+            
+        } else {
+            
+            executeNodeCommandTor(method: BTC_CLI_COMMAND.createrawtransaction,
+                                  param: param)
+            
+        }
         
     }
     
