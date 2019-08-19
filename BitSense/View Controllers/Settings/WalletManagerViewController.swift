@@ -46,9 +46,8 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
     
     override func viewDidAppear(_ animated: Bool) {
         
-        
-        
         isUsingSSH = IsUsingSSH.sharedInstance
+        print("isUsingSSH = \(isUsingSSH)")
         
         if isUsingSSH {
             
@@ -298,15 +297,144 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
     
     func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
         
+        if !isUsingSSH {
+            
+            executeNodeCommandTor(method: method, param: param)
+            
+        } else {
+            
+            func getResult() {
+                
+                if !makeSSHCall.errorBool {
+                    
+                    switch method {
+                        
+                    case BTC_CLI_COMMAND.loadwallet:
+                        
+                        let result = makeSSHCall.dictToReturn
+                        
+                        let name = result["name"] as! String
+                        let warning = result["warning"] as! String
+                        
+                        UserDefaults.standard.set(name, forKey: "walletName")
+                        
+                        self.connectingView.removeConnectingView()
+                        
+                        if warning == "" {
+                            
+                            displayAlert(viewController: self,
+                                         isError: false,
+                                         message: "Succesfully loaded wallet \"\(name)\"")
+                            
+                        } else {
+                            
+                            displayAlert(viewController: self,
+                                         isError: true,
+                                         message: "Wallet \"\(name)\" loaded with warning: \(warning)")
+                            
+                        }
+                        
+                        refresh()
+                        
+                    case BTC_CLI_COMMAND.listwalletdir:
+                        
+                        let dict =  makeSSHCall.dictToReturn
+                        parseWallets(walletDict: dict)
+                        
+                    case BTC_CLI_COMMAND.listwallets:
+                        
+                        let array = makeSSHCall.arrayToReturn
+                        
+                        if array.count > 0 {
+                            
+                            parseActiveWallets(wallets: array)
+                            
+                        } else {
+                            
+                            connectingView.removeConnectingView()
+                            walletTable.reloadData()
+                            
+                        }
+                        
+                        
+                    case BTC_CLI_COMMAND.unloadwallet:
+                        
+                        let response = makeSSHCall.stringToReturn
+                        connectingView.removeConnectingView()
+                        
+                        displayAlert(viewController: self,
+                                     isError: false,
+                                     message: response)
+                        
+                        refresh()
+                        
+                    default:
+                        
+                        break
+                        
+                    }
+                    
+                } else {
+                    
+                    DispatchQueue.main.async {
+                        
+                        self.connectingView.removeConnectingView()
+                        
+                        displayAlert(viewController: self,
+                                     isError: true,
+                                     message: self.makeSSHCall.errorDescription)
+                        
+                    }
+                    
+                }
+                
+            }
+            
+            if self.ssh != nil {
+                
+                if self.ssh.session.isConnected {
+                    
+                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
+                                                  method: method,
+                                                  param: param,
+                                                  completion: getResult)
+                    
+                } else {
+                    
+                    connectingView.removeConnectingView()
+                    
+                    displayAlert(viewController: self,
+                                 isError: true,
+                                 message: "Not connected")
+                    
+                }
+                
+            } else {
+                
+                connectingView.removeConnectingView()
+                
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: "Not connected")
+                
+            }
+            
+        }
+        
+    }
+    
+    func executeNodeCommandTor(method: BTC_CLI_COMMAND, param: String) {
+        print("executeNodeCommandTor")
+        
         func getResult() {
             
-            if !makeSSHCall.errorBool {
+            if !torRPC.errorBool {
                 
                 switch method {
                     
                 case BTC_CLI_COMMAND.loadwallet:
                     
-                    let result = makeSSHCall.dictToReturn
+                    let result = torRPC.dictToReturn
                     
                     let name = result["name"] as! String
                     let warning = result["warning"] as! String
@@ -333,12 +461,12 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
                     
                 case BTC_CLI_COMMAND.listwalletdir:
                     
-                    let dict =  makeSSHCall.dictToReturn
+                    let dict =  torRPC.dictToReturn
                     parseWallets(walletDict: dict)
                     
                 case BTC_CLI_COMMAND.listwallets:
                     
-                    let array = makeSSHCall.arrayToReturn
+                    let array = torRPC.arrayToReturn
                     
                     if array.count > 0 {
                         
@@ -351,10 +479,9 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
                         
                     }
                     
-                    
                 case BTC_CLI_COMMAND.unloadwallet:
                     
-                    let response = makeSSHCall.stringToReturn
+                    let response = torRPC.stringToReturn
                     connectingView.removeConnectingView()
                     
                     displayAlert(viewController: self,
@@ -377,7 +504,7 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
                     
                     displayAlert(viewController: self,
                                  isError: true,
-                                 message: self.makeSSHCall.errorDescription)
+                                 message: self.torRPC.errorDescription)
                     
                 }
                 
@@ -385,32 +512,17 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
             
         }
         
-        if self.ssh != nil {
+        if self.torClient.isOperational {
             
-            if self.ssh.session.isConnected {
-                
-                makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                              method: method,
-                                              param: param,
-                                              completion: getResult)
-                
-            } else {
-                
-                connectingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "Not connected")
-                
-            }
+            self.torRPC.executeRPCCommand(method: method,
+                                          param: param,
+                                          completion: getResult)
             
         } else {
             
-            connectingView.removeConnectingView()
-            
             displayAlert(viewController: self,
                          isError: true,
-                         message: "Not connected")
+                         message: "Tor not connected")
             
         }
         

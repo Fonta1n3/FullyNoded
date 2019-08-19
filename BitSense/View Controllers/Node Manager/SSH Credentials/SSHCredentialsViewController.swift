@@ -92,7 +92,9 @@ class SSHCredentialsViewController: UIViewController, UITextFieldDelegate, UINav
             
             if privKeyField.text != "" {
                 
-                let encPrivKey = aes.encryptKey(keyToEncrypt: privKeyField.text!)
+                let processedPrivKey = privKeyField.text!.replacingOccurrences(of: " ", with: "")
+                print("processedPrivKey = \(processedPrivKey)")
+                let encPrivKey = aes.encryptKey(keyToEncrypt: processedPrivKey)
                 selectedNode["privateKey"] = encPrivKey
                 
             } else {

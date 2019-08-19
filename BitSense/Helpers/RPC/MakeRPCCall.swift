@@ -45,6 +45,7 @@ final class MakeRPCCall {
         
         if activeNode["onionAddress"] != nil {
             
+            //onion V3 service needs to have similiar port setup in torrc file e.g. `8332 127.0.0.1:8332` not `8332 127.0.0.1:1234`
             onionAddress = aes.decryptKey(keyToDecrypt: activeNode["onionAddress"] as! String)
             
         }
@@ -61,7 +62,30 @@ final class MakeRPCCall {
             
         }
         
-        let url = URL(string: "http://\(rpcusername):\(rpcpassword)@\(onionAddress)")
+        var urlString = "http://\(rpcusername):\(rpcpassword)@\(onionAddress)"
+        
+        
+        
+        let userDefaults = UserDefaults.standard
+        
+        if userDefaults.object(forKey: "walletName") != nil {
+            
+            if let walletName = userDefaults.object(forKey: "walletName") as? String {
+                
+                let b = isWalletRPC(command: method)
+                
+                if b {
+                    
+                    urlString += "wallet/" + walletName
+                    
+                }
+                
+            }
+            
+        }
+        
+        let url = URL(string: urlString)
+        print("TOR URL = \(String(describing: url))")
         var request = URLRequest(url: url!)
         request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
         request.httpMethod = "POST"

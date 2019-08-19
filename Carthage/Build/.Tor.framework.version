@@ -1,9 +1,9 @@
 {
-  "commitish" : "a1150708521c5a8522b844c6731b3f35373730ed",
+  "commitish" : "623e041a4a7d3d5d1c5dde8387dee63428248d2e",
   "iOS" : [
     {
       "name" : "Tor",
-      "hash" : "6e364cf00d15abce3b14c26d38d0b04c2c30a0b8dafe13006cf5746ab728a584"
+      "hash" : "0ed002714f76bc9e03cd605e9697fe7c3cf18d5d06f68634a4d72ba1ddf91f05"
     }
   ]
 }

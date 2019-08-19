@@ -268,43 +268,4 @@ class SSHService {
         
     }
     
-    func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
-        
-        var boolToReturn = Bool()
-        
-        switch command {
-            
-        case BTC_CLI_COMMAND.listtransactions,
-             BTC_CLI_COMMAND.getbalance,
-             BTC_CLI_COMMAND.getunconfirmedbalance,
-             BTC_CLI_COMMAND.getnewaddress,
-             BTC_CLI_COMMAND.getwalletinfo,
-             BTC_CLI_COMMAND.importmulti,
-             BTC_CLI_COMMAND.rescanblockchain,
-             BTC_CLI_COMMAND.fundrawtransaction,
-             BTC_CLI_COMMAND.listunspent,
-             BTC_CLI_COMMAND.walletprocesspsbt,
-             BTC_CLI_COMMAND.gettransaction,
-             BTC_CLI_COMMAND.getaddressinfo,
-             BTC_CLI_COMMAND.bumpfee,
-             BTC_CLI_COMMAND.signrawtransactionwithwallet,
-             BTC_CLI_COMMAND.listaddressgroupings,
-             BTC_CLI_COMMAND.listlabels,
-             BTC_CLI_COMMAND.getaddressesbylabel,
-             BTC_CLI_COMMAND.listlockunspent,
-             BTC_CLI_COMMAND.lockunspent,
-             BTC_CLI_COMMAND.walletcreatefundedpsbt:
-            
-            boolToReturn = true
-            
-        default:
-            
-            boolToReturn = false
-            
-        }
-        
-        return boolToReturn
-        
-    }
-    
 }

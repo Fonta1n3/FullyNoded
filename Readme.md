@@ -104,7 +104,7 @@ You will need Xcode.
 ```
 HiddenServiceDir /Users⁩/yourName/Desktop⁩/tor/FullyNodedV3/
 HiddenServiceVersion 3
-HiddenServicePort 8332 127.0.0.1:123456
+HiddenServicePort 8332 127.0.0.1:8332
 
 ```
 - The `HiddenServiceDir` can be whatever you want, you will need to access it so put it somewhere you will remember.
@@ -112,7 +112,7 @@ HiddenServicePort 8332 127.0.0.1:123456
 - Start Tor by opening a terminal and running `tor`
 - Tor should start and you should be able to open Finder and navigate to your `/Users⁩/yourName/Desktop⁩/tor/FullyNodedV3/` (the directory we added to the torrc file) and see a file called `hostname`, open it and that is the onion address you need for Fully Noded.
 - The `HiddenServicePort` needs to control your nodes rpcport, by default for mainnet that is 8332 or for testnet 18332.
-- Now in Fully Noded go to "Settings" -> "Node Manager" -> and add a new node choosing Tor and inputting your RPC credentials, then copy and paste your onion address with the port at the end `qndoiqnwoiquf713y8731783rg.onion:123456`
+- Now in Fully Noded go to "Settings" -> "Node Manager" -> and add a new node choosing Tor and inputting your RPC credentials, then copy and paste your onion address with the port at the end `qndoiqnwoiquf713y8731783rg.onion:8332`
 - Restart your node and you should be able to connect to your V3 hidden service from anywhere in the world with your node completely behind a firewall and no port forwarding! Pretty private, pretty secure and not that difficult to do.
 
 ## bitcoin.conf settings
@@ -123,9 +123,13 @@ HiddenServicePort 8332 127.0.0.1:123456
 #forces your node to accept rpc commands
 server=1
 
+#To get the most out of Fully Noded you should use it with a fully indexed non pruned node
+txindex=1
+prune=0
+
 #Choose any username or password, make the password very strong
 rpcuser=yourUserName
-rpcpassword=yourPassword
+rpcpassword=aVeryStrongPasswordSuchAs128dnc849vn9n7gSS1v#$&B!12HHH*
 
 #optionally you can add an rpc port, by default it will be 8332 for mainnet and 18332 for testnet, no need to add this unless you want to customize it or for regtest you may need to add it (regtest is 18443)
 rpcport=8332
@@ -218,11 +222,16 @@ Please feel free to build from source in xcode and submit PR's. I need help and 
 - [keychain-swift](https://github.com/evgenyneu/keychain-swift) for storing your nodes credentials decryption key on your iPhones secure enclave.
 - [Tor](https://github.com/iCepa/Tor.framework) for connecting to your node more privately and securely.
 
+## Changes v0.1.4
+- Update Tor functionality to work for Home screen
+- Update Tor compatibility with MultiWallet rpc calls
+
 ## Changes v0.1.3
 - Fix fee alert that showed 101% fee overpayment instead of 1%
 - Fix UI issue when locking or unlocking your only remaining UTXO
 - Improve UI/UX for "Multi Wallet Manager"
-- Move settings for importin and invoices to "Incomings" where they belong
+- Move settings for importing and invoices to "Incomings" where they belong
+- Fixed a bug that would not present importing keys table when importing an xpub whilst "rescan" was toggled on and user selected an image of the xpub QR from photo library
 
 ## Changes v0.1.2
 

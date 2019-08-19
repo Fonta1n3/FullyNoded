@@ -55,6 +55,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     var coldBalance = ""
     var unconfirmedBalance = ""
     var network = ""
+    var nodeLabel = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -125,7 +126,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     if (node["isActive"] as! Bool) {
                         
                         self.activeNode = node
-                        
                         let newId = node["id"] as! String
                         
                         if newId != existingNodeID {
@@ -192,9 +192,10 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 switch method {
                     
-                case BTC_CLI_COMMAND.uptime:
+                case BTC_CLI_COMMAND.getmempoolinfo:
                     
-                    self.uptime = Int(torRPC.doubleToReturn)
+                    let dict = torRPC.dictToReturn
+                    self.mempoolCount = dict["size"] as! Int
                     
                     DispatchQueue.main.async {
                         
@@ -202,6 +203,18 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                         self.mainMenu.reloadData()
                         
                     }
+                    
+                case BTC_CLI_COMMAND.listunspent:
+                    
+                    let utxos = torRPC.arrayToReturn
+                    parseUtxos(utxos: utxos)
+                    
+                case BTC_CLI_COMMAND.uptime:
+                    
+                    self.uptime = Int(torRPC.doubleToReturn)
+                    
+                    self.loadTableDataTor(method: BTC_CLI_COMMAND.listunspent,
+                                          param: "0")
                     
                 case BTC_CLI_COMMAND.getmininginfo:
                     
@@ -257,11 +270,52 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
             } else {
                 
-                self.removeSpinner()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: torRPC.errorDescription + " " + "last command: \(method.rawValue)")
+                if isWalletRPC(command: method) {
+                    
+                    //its a wallet command skip incase wallet is disabled
+                    print("error with wallet command")
+                    
+                    //walletDisabled = true
+                    
+                    self.removeSpinner()
+                    
+                    displayAlert(viewController: self,
+                                 isError: true,
+                                 message: torRPC.errorDescription + " " + ". Last command: \(method.rawValue)")
+                    
+                    switch method {
+                        
+                    case BTC_CLI_COMMAND.listtransactions:
+                        
+                        parseTransactions(transactions: [])
+                        
+                    case BTC_CLI_COMMAND.getbalance:
+                        
+                        parseBalance(balance: 0.0)
+                        
+                    case BTC_CLI_COMMAND.getunconfirmedbalance:
+                        
+                        parseUncomfirmedBalance(unconfirmedBalance: 0.0)
+                        
+                    case BTC_CLI_COMMAND.listunspent:
+                        
+                        parseUtxos(utxos: [])
+                        
+                    default:
+                        
+                        break
+                        
+                    }
+                    
+                } else {
+                    
+                    self.removeSpinner()
+                    
+                    displayAlert(viewController: self,
+                                 isError: true,
+                                 message: torRPC.errorDescription + " " + ". Last command: \(method.rawValue)")
+                    
+                }
                 
             }
             
@@ -452,9 +506,11 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             let tor = cell.viewWithTag(11) as! UILabel
             let difficultyLabel = cell.viewWithTag(12) as! UILabel
             let sizeLabel = cell.viewWithTag(13) as! UILabel
+            let nodeLabel = cell.viewWithTag(14) as! UILabel
             
             if self.hashrateString != "" {
                 
+                nodeLabel.text = self.nodeLabel
                 sizeLabel.text = self.size
                 difficultyLabel.text = self.difficulty
                 sync.text = self.progress
@@ -645,7 +701,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
         } else if indexPath.section == 1{
             
-            return 252
+            return 269
             
         } else {
             
@@ -1336,6 +1392,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     let aes = AESService()
                     let enc = self.activeNode["label"] as! String
                     let dec = aes.decryptKey(keyToDecrypt: enc)
+                    self.nodeLabel = dec
                     
                     self.connectingView.addConnectingView(vc: self,
                                                           description: "Connecting to \(dec)")
@@ -1362,9 +1419,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                 
                                 print("ssh fail")
                                 self.removeSpinner()
-                                
-                                print("error = \(error)")
-                    
                                 
                                 if error != nil {
                                     
@@ -1399,6 +1453,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                         IsUsingSSH.sharedInstance = false
                         self.isUsingSSH = IsUsingSSH.sharedInstance
                         
+                        // do not automatically disconnect tor, put the tor connection in settings so user can manually refresh
                         if self.torClient != nil {
                             
                             self.torClient.resign()

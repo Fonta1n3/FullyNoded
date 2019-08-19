@@ -11,37 +11,84 @@ import KeychainSwift
 
 class FirstTime {
     
+    let aes = AESService()
+    let cd = CoreDataService()
+    let ud = UserDefaults.standard
+    
     func firstTimeHere() {
         print("firstTimeHere")
         
-        if UserDefaults.standard.object(forKey: "firstTime") == nil {
-            
-            UserDefaults.standard.set("bitcoin-cli", forKey: "path")
-            
-            UserDefaults.standard.set("500", forKey: "miningFee")
+        if ud.object(forKey: "firstTime") == nil {
             
             let password = randomString(length: 32)
-            
             let keychain = KeychainSwift()
             
-            if UserDefaults.standard.string(forKey: "UnlockPassword") != nil {
+            if ud.string(forKey: "UnlockPassword") != nil {
                 
-                keychain.set(UserDefaults.standard.string(forKey: "UnlockPassword")!, forKey: "UnlockPassword")
-                UserDefaults.standard.removeObject(forKey: "UnlockPassword")
+                keychain.set(ud.string(forKey: "UnlockPassword")!, forKey: "UnlockPassword")
+                ud.removeObject(forKey: "UnlockPassword")
                 
             }
             
             if keychain.set(password, forKey: "AESPassword") {
                 
                 print("keychain set AESPassword succesfully")
-                UserDefaults.standard.set(true, forKey: "firstTime")
-                UserDefaults.standard.set(true, forKey: "updatedToSwift5")
+                ud.set(true, forKey: "firstTime")
+                ud.set(true, forKey: "updatedToSwift5")
             
             } else {
                 
                 print("error setting AESPassword in keychain")
                 
             }
+            
+        }
+        
+        if ud.object(forKey: "testNodeAdded") == nil {
+            
+            /*var newNode = [String:Any]()
+            let id = randomString(length: 23)
+            let encHost = aes.encryptKey(keyToEncrypt: "xxx")
+            let encIP = aes.encryptKey(keyToEncrypt: "xxx")
+            let encPort = aes.encryptKey(keyToEncrypt: "xxx")
+            let encPassword = aes.encryptKey(keyToEncrypt: "xxx")
+            let encRPCPort = aes.encryptKey(keyToEncrypt: "xxx")
+            let encRPCPass = aes.encryptKey(keyToEncrypt: "xxx")
+            let encRPCUser = aes.encryptKey(keyToEncrypt: "xxx")
+            let encLabel = aes.encryptKey(keyToEncrypt: "Testing Node")
+            
+            newNode["id"] = id
+            newNode["username"] = encHost
+            newNode["ip"] = encIP
+            newNode["port"] = encPort
+            newNode["password"] = encPassword
+            newNode["label"] = encLabel
+            newNode["rpcuser"] = encRPCUser
+            newNode["rpcpassword"] = encRPCPass
+            newNode["rpcport"] = encRPCPort
+            newNode["usingSSH"] = true
+            newNode["isDefault"] = true
+            
+            let nodes = cd.retrieveCredentials()
+            
+            if nodes.count > 0 {
+                
+                newNode["isActive"] = false
+                
+            } else {
+                
+                newNode["isActive"] = true
+                
+            }
+            
+            let vc = MainMenuViewController()
+            let success = cd.saveCredentialsToCoreData(vc: vc, credentials: newNode)
+            
+            if success {
+                
+                ud.set(true, forKey: "testNodeAdded")
+                
+            }*/
             
         }
         

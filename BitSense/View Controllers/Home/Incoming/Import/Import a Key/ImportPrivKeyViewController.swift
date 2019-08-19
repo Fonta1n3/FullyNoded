@@ -260,7 +260,7 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
         
         if reScan {
             
-            DispatchQueue.main.async {
+            /*DispatchQueue.main.async {
                 
                 let alert = UIAlertController(title: "Alert",
                                               message: "You have enabled rescanning of the blockchain in settings.\n\nWhen you import a key it will take up to an hour to rescan the entire blockchain.", preferredStyle: UIAlertController.Style.alert)
@@ -273,7 +273,7 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                              animated: true,
                              completion: nil)
                 
-            }
+            }*/
             
         }
         

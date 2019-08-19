@@ -1,4 +1,1 @@
-github "NMSSH/NMSSH" "2.3.1"
-github "evgenyneu/keychain-swift" "16.0.1"
-github "iCepa/Tor.framework" "a1150708521c5a8522b844c6731b3f35373730ed"
-github "krzyzanowskim/CryptoSwift" "1.0.0"
+github "iCepa/Tor.framework" "623e041a4a7d3d5d1c5dde8387dee63428248d2e"

@@ -56,7 +56,7 @@ Alternatively, you may use the following to use binary-compiled versions of Tor.
 correspond to releases in GitHub:
 
 ```ogdl
-binary "https://icepa.github.io/Tor.framework/Tor.json" == 400.5.1
+binary "https://icepa.github.io/Tor.framework/Tor.json" == 400.5.2
 ```
 
 For available precompiled versions, see [docs/Tor.json](docs/Tor.json). Since Tor 0.3.5.2, 
@@ -128,11 +128,9 @@ TORController *controller = [[TORController alloc] initWithSocketURL:configurati
 
 ## Known Issues
 
-- Nobody takes care having it working on MacOS, currently, so builds will probably break on that platform.
-
 - Carthage warns about the xcconfigs dependency being seemingly unused.
   It isn't. It's only xcconfig files containing build settings, so nothing actually ends up in the build
-  prodcut. Unfortunately Carthage can't be configured to not throw this warning.
+  product. Unfortunately Carthage can't be configured to not throw this warning.
 
 ## License
 

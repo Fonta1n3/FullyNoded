@@ -29,8 +29,6 @@ class NodesTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        //tabBarController!.delegate = self
-        //navigationController?.navigationBar.tintColor = UIColor.green
         nodeTable.tableFooterView = UIView(frame: .zero)
         
     }
