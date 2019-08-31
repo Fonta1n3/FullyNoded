@@ -222,6 +222,10 @@ Please feel free to build from source in xcode and submit PR's. I need help and 
 - [keychain-swift](https://github.com/evgenyneu/keychain-swift) for storing your nodes credentials decryption key on your iPhones secure enclave.
 - [Tor](https://github.com/iCepa/Tor.framework) for connecting to your node more privately and securely.
 
+## Changes v0.1.5
+- General UI/UX improvements and fixes
+- Code refactoring
+
 ## Changes v0.1.4
 - Update Tor functionality to work for Home screen
 - Update Tor compatibility with MultiWallet rpc calls

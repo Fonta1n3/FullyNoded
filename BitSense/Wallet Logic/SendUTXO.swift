@@ -110,7 +110,8 @@ class SendUTXO {
                     case BTC_CLI_COMMAND.createrawtransaction:
                         
                         let unsignedRawTx = torRPC.stringToReturn
-                        executeNodeCommandTor(method: BTC_CLI_COMMAND.signrawtransactionwithwallet, param: "\"\(unsignedRawTx)\"")
+                        executeNodeCommandTor(method: BTC_CLI_COMMAND.signrawtransactionwithwallet,
+                                              param: "\"\(unsignedRawTx)\"")
                         
                     default:
                         

@@ -30,7 +30,6 @@ class ProcessPSBTViewController: UIViewController {
     
     var firstLink = ""
     
-    @IBOutlet var navBar: UINavigationBar!
     @IBOutlet var imageView: UIImageView!
     @IBOutlet var textView: UITextView!
     
@@ -90,6 +89,8 @@ class ProcessPSBTViewController: UIViewController {
     }
     
     func configureView() {
+        
+        print("convert = \(convert)")
         
         if process {
             
@@ -151,7 +152,8 @@ class ProcessPSBTViewController: UIViewController {
         
         DispatchQueue.main.async {
             
-            self.navBar.topItem?.title = self.navBarTitle
+            //self.navBar.topItem?.title = self.navBarTitle
+            self.navigationController?.navigationBar.topItem?.title = self.navBarTitle
             
         }
         
@@ -425,9 +427,7 @@ class ProcessPSBTViewController: UIViewController {
         
         DispatchQueue.main.async {
             
-            self.navBar.removeFromSuperview()
-            
-            self.rawDisplayer.titleString = title
+            self.navigationController?.navigationBar.topItem?.title = title
             self.rawDisplayer.rawString = raw
             self.processedPSBT = raw
             self.rawDisplayer.vc = self

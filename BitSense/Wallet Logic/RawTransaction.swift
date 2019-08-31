@@ -14,13 +14,16 @@ class RawTransaction {
     var amount = Double()
     var addressToPay = ""
     var ssh:SSHService!
+    
     var signedRawTx = ""
     var unsignedRawTx = ""
     var errorBool = Bool()
     var errorDescription = ""
+    
     var isUsingSSH = Bool()
     var torClient:TorClient!
     var torRPC:MakeRPCCall!
+    
     var numberOfBlocks = Int()
     var outputs = ""
     

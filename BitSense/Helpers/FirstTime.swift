@@ -46,15 +46,15 @@ class FirstTime {
         
         if ud.object(forKey: "testNodeAdded") == nil {
             
-            /*var newNode = [String:Any]()
+            var newNode = [String:Any]()
             let id = randomString(length: 23)
-            let encHost = aes.encryptKey(keyToEncrypt: "xxx")
-            let encIP = aes.encryptKey(keyToEncrypt: "xxx")
-            let encPort = aes.encryptKey(keyToEncrypt: "xxx")
-            let encPassword = aes.encryptKey(keyToEncrypt: "xxx")
-            let encRPCPort = aes.encryptKey(keyToEncrypt: "xxx")
-            let encRPCPass = aes.encryptKey(keyToEncrypt: "xxx")
-            let encRPCUser = aes.encryptKey(keyToEncrypt: "xxx")
+            let encHost = aes.encryptKey(keyToEncrypt: "bitcoin")
+            let encIP = aes.encryptKey(keyToEncrypt: "167.71.32.16")
+            let encPort = aes.encryptKey(keyToEncrypt: "6500")
+            let encPassword = aes.encryptKey(keyToEncrypt: "lul1b13s")
+            let encRPCPort = aes.encryptKey(keyToEncrypt: "18332")
+            let encRPCPass = aes.encryptKey(keyToEncrypt: "password")
+            let encRPCUser = aes.encryptKey(keyToEncrypt: "bitcoin")
             let encLabel = aes.encryptKey(keyToEncrypt: "Testing Node")
             
             newNode["id"] = id
@@ -88,7 +88,7 @@ class FirstTime {
                 
                 ud.set(true, forKey: "testNodeAdded")
                 
-            }*/
+            }
             
         }
         

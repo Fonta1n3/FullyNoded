@@ -226,21 +226,30 @@ class SSHService {
                     
                     if error!.localizedDescription == "Channel allocation error" {
                         
-                        // connection timed out, reconnect
-                        self.connect(success: { (success, error) in
+                        // connection timed out, reconnect automatically
+                        self.connect(success: { (success, error2) in
                             
-                            if success {
+                            if error2 != nil {
                                 
-                                self.execute(command: command, params: params, response: response)
+                                response((dictionary:nil,
+                                          error:error2))
+                                
+                            } else if success {
+                                
+                                self.execute(command: command,
+                                             params: params,
+                                             response: response)
                                 
                             }
                             
                         })
                         
+                    } else {
+                        
+                        response((dictionary:nil,
+                                  error:error!.localizedDescription))
+                        
                     }
-                    
-                    response((dictionary:nil,
-                              error:error!.localizedDescription))
                     
                 } else {
                     

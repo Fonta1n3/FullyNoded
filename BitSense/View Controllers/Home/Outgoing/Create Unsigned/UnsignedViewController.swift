@@ -42,8 +42,6 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet var amountField: UITextField!
     @IBOutlet var spendingField: UITextField!
     @IBOutlet var receivingField: UITextField!
-    @IBOutlet var imageView: UIImageView!
-    @IBOutlet var navBar: UINavigationBar!
     @IBOutlet var amountOutlet: UILabel!
     @IBOutlet var recOutlet: UILabel!
     @IBOutlet var recButtonOutlet: UIButton!
@@ -51,6 +49,7 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet var addressButtOutlet: UIButton!
     @IBOutlet var changeOutlet: UILabel!
     @IBOutlet var changeButtOutlet: UIButton!
+    @IBOutlet var imageView: UIImageView!
     
     @IBAction func scanChange(_ sender: Any) {
         
@@ -86,6 +85,8 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
         
         print("createRaw")
         
+        hideKeyboards()
+        
         if receivingField.text != "" && amountField.text != "" && changeField.text != "" && spendingField.text != ""{
             
             self.creatingView.addConnectingView(vc: self,
@@ -111,7 +112,6 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
                         self.spendingField.removeFromSuperview()
                         self.changeField.removeFromSuperview()
                         self.amountField.removeFromSuperview()
-                        self.navBar.removeFromSuperview()
                         self.amountOutlet.removeFromSuperview()
                         self.recOutlet.removeFromSuperview()
                         self.recButtonOutlet.removeFromSuperview()
@@ -503,7 +503,8 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
         
         DispatchQueue.main.async {
             
-            self.rawDisplayer.titleString = "Unsigned Raw Transaction"
+            //self.rawDisplayer.titleString = "Unsigned Raw Transaction"
+            self.navigationController?.navigationBar.topItem?.title = "Unsigned Tx"
             self.rawDisplayer.rawString = raw
             self.unsignedTx = raw
             self.rawDisplayer.vc = self

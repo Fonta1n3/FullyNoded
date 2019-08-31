@@ -38,7 +38,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     var outputs = [Any]()
     var outputsString = ""
     
-    @IBOutlet var navBar: UINavigationBar!
     @IBOutlet var addOutlet: UIButton!
     @IBOutlet var amountInput: UITextField!
     @IBOutlet var addressInput: UITextField!
@@ -242,7 +241,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         
-        return "Outputs"
+        return "Outputs:"
         
     }
     
@@ -255,9 +254,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
         
         (view as! UITableViewHeaderFooterView).backgroundView?.backgroundColor = UIColor.clear
-        (view as! UITableViewHeaderFooterView).textLabel?.textAlignment = .right
-        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.init(name: "HiraginoSans-W3", size: 15)
-        (view as! UITableViewHeaderFooterView).textLabel?.textColor = UIColor.green
+        (view as! UITableViewHeaderFooterView).textLabel?.textAlignment = .left
+        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.init(name: "System", size: 17)
+        (view as! UITableViewHeaderFooterView).textLabel?.textColor = UIColor.darkGray
         
     }
     
@@ -409,7 +408,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             self.receivingLabel.removeFromSuperview()
             self.scanOutlet.removeFromSuperview()
             self.outputsTable.removeFromSuperview()
-            self.navBar.removeFromSuperview()
             
         }
         
@@ -423,7 +421,11 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             
             if self.coldSwitchOutlet.isOn {
                 
-                self.rawDisplayer.titleString = "Unsigned Raw Transaction"
+                self.navigationController?.navigationBar.topItem?.title = "Unsigned Tx"
+                
+            } else {
+                
+                self.navigationController?.navigationBar.topItem?.title = "Signed Tx"
                 
             }
             

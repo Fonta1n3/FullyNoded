@@ -48,7 +48,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     
     
     func scan() {
-        
+    
         scannerShowing = true
         textView.resignFirstResponder()
         
@@ -60,11 +60,14 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
                 self.addScannerButtons()
                 self.imageView.addSubview(self.qrScanner.closeButton)
                 self.isFirstTime = false
-                self.connectingView.removeConnectingView()
                 
                 UIView.animate(withDuration: 0.3, animations: {
                     
                     self.imageView.alpha = 1
+                    
+                }, completion: { _ in
+                    
+                    self.connectingView.removeConnectingView()
                     
                 })
                 
@@ -148,11 +151,12 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     
     func getInfo() {
         
-        connectingView.addConnectingView(vc: self,
-                                         description: "")
         var titleString = ""
         
         if getblock {
+            
+            connectingView.addConnectingView(vc: self,
+                                             description: "")
             
             titleString = "Block Info"
             scan()
@@ -169,12 +173,18 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
         if getTransaction {
             
+            connectingView.addConnectingView(vc: self,
+                                             description: "")
+            
             titleString = "Transaction"
             scan()
             
         }
         
         if getaddressesbylabel {
+            
+            connectingView.addConnectingView(vc: self,
+                                             description: "")
             
             titleString = "Address By Label"
             scan()
@@ -205,6 +215,9 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         }
         
         if decodeScript {
+            
+            connectingView.addConnectingView(vc: self,
+                                             description: "")
             
             titleString = "Decoded Script"
             scan()
@@ -259,13 +272,16 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
         DispatchQueue.main.async {
             
-            self.navBar.topItem?.title = titleString
+            self.navigationController?.navigationBar.topItem?.title = titleString
             
         }
         
     }
     
     func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
+        
+        self.connectingView.addConnectingView(vc: self,
+                                              description: "")
         
         func getResult() {
             
@@ -361,7 +377,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         blurView.isUserInteractionEnabled = true
         
         blurView.frame = CGRect(x: view.frame.minX + 10,
-                                y: 80,
+                                y: 100,
                                 width: view.frame.width - 20,
                                 height: 50)
         

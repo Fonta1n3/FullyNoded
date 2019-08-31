@@ -51,7 +51,6 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
     @IBOutlet var imageView: UIImageView!
     @IBOutlet var unsignedTextView: UITextView!
     @IBOutlet var privateKeyField: UITextField!
-    @IBOutlet var navBar: UINavigationBar!
     @IBOutlet var unsignOutlet: UILabel!
     @IBOutlet var pkeyOutlet: UILabel!
     @IBOutlet var scanUnsignedOutlet: UIButton!
@@ -672,7 +671,6 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
         
         DispatchQueue.main.async {
             
-            self.navBar.removeFromSuperview()
             self.unsignOutlet.removeFromSuperview()
             self.pkeyOutlet.removeFromSuperview()
             self.unsignedTextView.removeFromSuperview()

@@ -28,6 +28,8 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     var legacy = Bool()
     let connectingView = ConnectingView()
     let qrGenerator = QRGenerator()
+    let copiedLabel = UILabel()
+    
     @IBOutlet var amountField: UITextField!
     @IBOutlet var labelField: UITextField!
     @IBOutlet var qrView: UIImageView!
@@ -37,6 +39,8 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         
         amountField.delegate = self
         labelField.delegate = self
+        
+        configureCopiedLabel()
         
         amountField.addTarget(self,
                               action: #selector(textFieldDidChange(_:)),
@@ -52,10 +56,11 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         view.addGestureRecognizer(tap)
         getAddressSettings()
         addDoneButtonOnKeyboard()
+        loadAddress()
         
     }
     
-    override func viewDidAppear(_ animated: Bool) {
+    func loadAddress() {
         
         isUsingSSH = IsUsingSSH.sharedInstance
         
@@ -72,7 +77,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         }
         
         showAddress()
-        
     }
     
     func getAddressSettings() {
@@ -152,6 +156,9 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     func showAddress(address: String) {
         
+        let pasteboard = UIPasteboard.general
+        pasteboard.string = address
+        
         self.qrCode = generateQrCode(key: address)
         
         qrView.image = self.qrCode
@@ -187,7 +194,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         label.font = UIFont.init(name: "HelveticaNeue",
                                  size: 18)
         
-        label.textColor = UIColor.white
+        label.textColor = UIColor.green
         label.alpha = 0
         label.text = address
         label.isUserInteractionEnabled = true
@@ -211,6 +218,44 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             self.label.alpha = 1
             
         }) { _ in
+            
+            self.addCopiedLabel()
+            
+        }
+        
+    }
+    
+    func addCopiedLabel() {
+        
+        view.addSubview(copiedLabel)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            
+            UIView.animate(withDuration: 0.3, animations: {
+                
+                self.copiedLabel.frame = CGRect(x: 0,
+                                                y: self.view.frame.maxY - 97,
+                                                width: self.view.frame.width,
+                                                height: 50)
+                
+            })
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0, execute: {
+                
+                UIView.animate(withDuration: 0.3, animations: {
+                    
+                    self.copiedLabel.frame = CGRect(x: 0,
+                                                    y: self.view.frame.maxY + 100,
+                                                    width: self.view.frame.width,
+                                                    height: 50)
+                    
+                }, completion: { _ in
+                    
+                    self.copiedLabel.removeFromSuperview()
+                    
+                })
+                
+            })
             
         }
         
@@ -455,6 +500,22 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     @objc func dismissKeyboard() {
         
         view.endEditing(true)
+        
+    }
+    
+    func configureCopiedLabel() {
+        
+        copiedLabel.text = "copied to clipboard ✓"
+        
+        copiedLabel.frame = CGRect(x: 0,
+                                   y: view.frame.maxY + 100,
+                                   width: view.frame.width,
+                                   height: 50)
+        
+        copiedLabel.textColor = UIColor.darkGray
+        copiedLabel.font = UIFont.init(name: "HiraginoSans-W3", size: 17)
+        copiedLabel.backgroundColor = UIColor.black
+        copiedLabel.textAlignment = .center
         
     }
 

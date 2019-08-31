@@ -37,7 +37,6 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet var imageView: UIImageView!
     @IBOutlet var receivingField: UITextField!
     @IBOutlet var amountField: UITextField!
-    @IBOutlet var navBar: UINavigationBar!
     @IBOutlet var amountOutlet: UILabel!
     @IBOutlet var receivingOutlet: UILabel!
     @IBOutlet var scanOutlet: UIButton!
@@ -158,7 +157,6 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
         DispatchQueue.main.async {
             
             self.scanOutlet.removeFromSuperview()
-            self.navBar.removeFromSuperview()
             self.amountOutlet.removeFromSuperview()
             self.amountField.removeFromSuperview()
             self.receivingOutlet.removeFromSuperview()
@@ -540,7 +538,8 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
         
         DispatchQueue.main.async {
             
-            self.rawDisplayer.titleString = "PSBT"
+            //self.rawDisplayer.titleString = "PSBT"
+            self.navigationController?.navigationBar.topItem?.title = "PSBT"
             self.rawDisplayer.rawString = raw
             self.psbt = raw
             self.rawDisplayer.vc = self

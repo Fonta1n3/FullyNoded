@@ -39,7 +39,8 @@ class AddressParser {
                      _ where prefix.hasPrefix("bc1"),
                      _ where prefix.hasPrefix("2"),
                      _ where prefix.hasPrefix("bcrt"),
-                     _ where prefix.hasPrefix("m"):
+                     _ where prefix.hasPrefix("m"),
+                     _ where prefix.hasPrefix("n"):
                     
                     boolToReturn = true
                     

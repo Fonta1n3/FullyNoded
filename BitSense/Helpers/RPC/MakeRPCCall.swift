@@ -64,8 +64,6 @@ final class MakeRPCCall {
         
         var urlString = "http://\(rpcusername):\(rpcpassword)@\(onionAddress)"
         
-        
-        
         let userDefaults = UserDefaults.standard
         
         if userDefaults.object(forKey: "walletName") != nil {
@@ -88,14 +86,17 @@ final class MakeRPCCall {
         print("TOR URL = \(String(describing: url))")
         var request = URLRequest(url: url!)
         request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
+        request.httpShouldUsePipelining = true
         request.httpMethod = "POST"
         request.httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method)\",\"params\":[\(param)]}".data(using: .utf8)
         
+        print("command = \(method)")
+        
         let task = torClient.session.dataTask(with: request) { (data, response, error) in
             
-            print("error = \(String(describing: error?.localizedDescription))")
-            print("response = \(String(describing: response))")
-            print("data = \(String(describing: data))")
+//            print("error = \(String(describing: error?.localizedDescription))")
+//            print("response = \(String(describing: response))")
+//            print("data = \(String(describing: data))")
             
             do {
                 

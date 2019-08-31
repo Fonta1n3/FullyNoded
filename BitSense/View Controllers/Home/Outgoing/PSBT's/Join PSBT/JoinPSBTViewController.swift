@@ -34,7 +34,6 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
     
     @IBOutlet var imageView: UIImageView!
     @IBOutlet var joinTable: UITableView!
-    @IBOutlet var navBar: UINavigationBar!
     
     var combinePSBT = Bool()
     
@@ -203,12 +202,6 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
                                                name: UIResponder.keyboardWillHideNotification,
                                                object: nil)
         
-        if combinePSBT {
-            
-            navBar.topItem?.title = "Combine PSBT"
-            
-        }
-        
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -227,13 +220,17 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
             
         }
         
+        if combinePSBT {
+            
+            self.navigationController?.navigationBar.topItem?.title = "Combine PSBT"
+            
+        }
     }
     
     func showRaw(raw: String) {
         
         DispatchQueue.main.async {
             
-            self.navBar.removeFromSuperview()
             self.joinTable.removeFromSuperview()
             
             self.rawDisplayer.rawString = raw
@@ -241,11 +238,13 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
             
             if !self.combinePSBT {
                 
-                self.rawDisplayer.titleString = "Joined PSBT"
+                //self.rawDisplayer.titleString = "Joined PSBT"
+                self.navigationController?.navigationBar.topItem?.title = "Joined PSBT"
                 
             } else {
                 
-                self.rawDisplayer.titleString = "Combined PSBT"
+                //self.rawDisplayer.titleString = "Combined PSBT"
+                self.navigationController?.navigationBar.topItem?.title = "Combined PSBT"
                 
             }
             

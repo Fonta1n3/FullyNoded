@@ -20,6 +20,7 @@ class TransactionViewController: UIViewController {
     
     @IBOutlet var textView: UITextView!
     
+    @IBOutlet var bumpButtonOutlet: UIButton!
     @IBAction func back(_ sender: Any) {
         
         DispatchQueue.main.async {
@@ -42,6 +43,8 @@ class TransactionViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        bumpButtonOutlet.alpha = 0
 
         creatingView.addConnectingView(vc: self,
                                        description: "Getting Transaction")
@@ -98,10 +101,20 @@ class TransactionViewController: UIViewController {
                     
                 case BTC_CLI_COMMAND.gettransaction:
                     
+                    let dict = makeSSHCall.dictToReturn
+                    
                     DispatchQueue.main.async {
                         
                         self.textView.text = "\(self.makeSSHCall.dictToReturn)"
                         self.creatingView.removeConnectingView()
+                        
+                        let replaceable = dict["bip125-replaceable"] as! String
+                        
+                        if replaceable == "yes" {
+                            
+                            self.bumpButtonOutlet.alpha = 1
+                            
+                        }
                         
                     }
                     

@@ -15,9 +15,9 @@ class QRGenerator: UIView {
     
     func getQRCode() -> UIImage {
         
-        var imageToReturn = UIImage()
+        let imageToReturn = UIImage(named: "clear.png")!
         
-        let data = textInput.data(using: String.Encoding.ascii)
+        /*let data = textInput.data(using: String.Encoding.ascii)
         
         if let filter = CIFilter(name: "CIQRCodeGenerator") {
             
@@ -29,6 +29,15 @@ class QRGenerator: UIView {
                 
                 let context = CIContext(options: nil)
                 let cgiImage = context.createCGImage(output, from: output.extent)
+                
+                // Change the color using CIFilter
+                let colorParameters = [
+                    "inputColor0": CIColor(color: UIColor.black), // Foreground
+                    "inputColor1": CIColor(color: UIColor.clear) // Background
+                ]
+                
+                let colored = output.applyingFilter("CIFalseColor", parameters: colorParameters)
+                
                 imageToReturn = UIImage(cgImage: cgiImage!)
                 
             } else {
@@ -37,9 +46,28 @@ class QRGenerator: UIView {
                 
             }
             
-        }
+        }*/
         
-        return imageToReturn
+        let data = textInput.data(using: .ascii)
+        
+        // Generate the code image with CIFilter
+        guard let filter = CIFilter(name: "CIQRCodeGenerator") else { return imageToReturn }
+        filter.setValue(data, forKey: "inputMessage")
+        
+        // Scale it up (because it is generated as a tiny image)
+        //let scale = UIScreen.main.scale
+        let transform = CGAffineTransform(scaleX: 10, y: 10)
+        guard let output = filter.outputImage?.transformed(by: transform) else { return imageToReturn }
+        
+        // Change the color using CIFilter
+        let colorParameters = [
+            "inputColor0": CIColor(color: UIColor.green), // Foreground
+            "inputColor1": CIColor(color: UIColor.clear) // Background
+        ]
+        
+        let colored = output.applyingFilter("CIFalseColor", parameters: colorParameters)
+        
+        return UIImage(ciImage: colored)
         
     }
     

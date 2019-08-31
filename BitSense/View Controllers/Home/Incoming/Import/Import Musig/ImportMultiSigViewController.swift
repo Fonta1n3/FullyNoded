@@ -140,7 +140,7 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
             
             displayAlert(viewController: self,
                          isError: true,
-                         message: "🙄 You need to fill out all the info...")
+                         message: "You need to fill out all the info first...")
             
         }
         
@@ -596,15 +596,11 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
          
             if let vc = segue.destination as? MuSigDisplayerTableViewController {
              
-                //vc.makeSSHCall = self.makeSSHCall
-                //vc.ssh = self.ssh
                 vc.pubkeyArray = self.pubKeyArray
                 vc.p2shP2wsh = self.p2shP2wsh
                 vc.p2sh = self.p2sh
                 vc.p2wsh = self.p2wsh
                 vc.sigsRequired = self.signaturesField.text!
-                //vc.torRPC = self.torRPC
-                //vc.torClient = self.torClient
                 vc.address = self.address
                 vc.script = self.script
                 

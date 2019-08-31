@@ -19,9 +19,9 @@ class RawDisplayer {
     
     var vc = UIViewController()
     var rawString = ""
-    var titleString = "Signed Raw Transaction"
+    //var titleString = ""
     
-    let titleLabel = UILabel()
+    //let titleLabel = UILabel()
     
     let impact = UIImpactFeedbackGenerator()
     
@@ -49,18 +49,18 @@ class RawDisplayer {
             UIView.animate(withDuration: 0.4, animations: {
                 
                 self.qrView.frame = CGRect(x: 10,
-                                      y: 100,
+                                      y: 80,
                                       width: self.vc.view.frame.width - 20,
                                       height:self.vc.view.frame.width - 20)
                 
             }, completion: { _ in
                 
-                self.configureTitleLabel()
+                //self.configureTitleLabel()
                 self.impact.impactOccurred()
                 
                 UIView.animate(withDuration: 0.4, animations: {
                     
-                    self.titleLabel.alpha = 1
+                    //self.titleLabel.alpha = 1
                     
                     self.textView.frame = CGRect(x: 10,
                                                  y: self.qrView.frame.maxY,
@@ -137,25 +137,25 @@ class RawDisplayer {
         
     }
     
-    func configureTitleLabel() {
-        
-        titleLabel.alpha = 0
-        
-        titleLabel.frame = CGRect(x: 0,
-                                  y: 75,
-                                  width: backgroundView.frame.width,
-                                  height: 20)
-        
-        titleLabel.textAlignment = .center
-        titleLabel.textColor = UIColor.white
-        
-        titleLabel.font = UIFont.init(name: "HiraginoSans-W3",
-                                      size: 15)
-        
-        titleLabel.text = titleString
-        backgroundView.addSubview(titleLabel)
-        
-    }
+//    func configureTitleLabel() {
+//
+//        titleLabel.alpha = 0
+//
+//        titleLabel.frame = CGRect(x: 0,
+//                                  y: 75,
+//                                  width: backgroundView.frame.width,
+//                                  height: 20)
+//
+//        titleLabel.textAlignment = .center
+//        titleLabel.textColor = UIColor.white
+//
+//        titleLabel.font = UIFont.init(name: "HiraginoSans-W3",
+//                                      size: 15)
+//
+//        titleLabel.text = titleString
+//        backgroundView.addSubview(titleLabel)
+//
+//    }
     
     func configureQrView() {
         
@@ -170,7 +170,7 @@ class RawDisplayer {
     
     func configureTextView() {
         
-        textView.textColor = UIColor.white
+        textView.textColor = UIColor.green
         textView.backgroundColor = UIColor.clear
         textView.textAlignment = .natural
         textView.font = UIFont.init(name: "HelveticaNeue-Light", size: 14)

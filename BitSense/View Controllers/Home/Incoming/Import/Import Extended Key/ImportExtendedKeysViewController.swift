@@ -184,7 +184,7 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
                         
                         displayAlert(viewController: self,
                                      isError: false,
-                                     message: "🤩 Sucessfully imported the keys!")
+                                     message: "Sucessfully imported the keys!")
                         
                     } else {
                         

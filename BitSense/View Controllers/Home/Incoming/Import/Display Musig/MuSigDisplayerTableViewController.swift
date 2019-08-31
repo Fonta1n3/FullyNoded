@@ -144,6 +144,7 @@ class MuSigDisplayerTableViewController: UITableViewController {
             imageView.image = self.qrGenerator.getQRCode()
             imageView.addGestureRecognizer(shareAddressQR)
             textView.addGestureRecognizer(shareAddressText)
+            textView.textColor = UIColor.green
             textView.text = address
             cell.selectionStyle = .none
             return cell
@@ -157,6 +158,7 @@ class MuSigDisplayerTableViewController: UITableViewController {
             imageView.image = self.qrGenerator.getQRCode()
             imageView.addGestureRecognizer(shareRedScriptQR)
             textView.text = script
+            textView.textColor = UIColor.green
             textView.addGestureRecognizer(shareRedScriptText)
             cell.selectionStyle = .none
             return cell

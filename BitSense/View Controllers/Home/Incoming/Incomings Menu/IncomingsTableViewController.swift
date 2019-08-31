@@ -121,7 +121,7 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
                                                      for: indexPath)
             
             cell.selectionStyle = .none
-            cell.textLabel?.text = "Import a Key"
+            cell.textLabel?.text = "Import"
             return cell
             
         case 2:
@@ -130,7 +130,7 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
                                                      for: indexPath)
             
             cell.selectionStyle = .none
-            cell.textLabel?.text = "Create / Import Multisig"
+            cell.textLabel?.text = "Create / Import Musig"
             return cell
             
         case 3:
@@ -544,11 +544,11 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
         
         if section == 0 {
             
-            return "BIP21 Invoice"
+            return "Get an Address"
             
         } else if section == 1{
             
-            return "Import Key"
+            return "Import"
             
         } else if section == 2 {
             
@@ -560,7 +560,7 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
             
         } else {
             
-            return "Import Settings"
+            return "XPUB/XPRV Import Settings"
             
         }
         
