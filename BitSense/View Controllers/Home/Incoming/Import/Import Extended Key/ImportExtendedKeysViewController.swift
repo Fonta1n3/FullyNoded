@@ -16,6 +16,8 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
     var makeSSHCall:SSHelper!
     var isUsingSSH = IsUsingSSH.sharedInstance
     
+    var dict = [String:Any]()
+    
     var isTestnet = Bool()
     var reScan = Bool()
     var isWatchOnly = Bool()
@@ -30,6 +32,7 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
     var label = ""
     var bip44 = Bool()
     var bip84 = Bool()
+    var timestamp = Int()
     
     @IBOutlet var keyTable: UITableView!
     
@@ -43,6 +46,51 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
         keyTable.delegate = self
         keyTable.dataSource = self
         keyTable.tableFooterView = UIView(frame: .zero)
+        
+        importedKey = dict["key"] as! String
+        descriptor = dict["descriptor"] as! String
+        label = dict["label"] as! String
+        timestamp = dict["rescanDate"] as! Int
+        
+        if importedKey.hasPrefix("t") {
+         
+            isTestnet = true
+            
+        } else {
+         
+            isTestnet = false
+            
+        }
+        
+        if importedKey.hasPrefix("tpub") || importedKey.hasPrefix("xpub") {
+         
+            isWatchOnly = true
+            
+        } else {
+         
+            isWatchOnly = false
+            
+        }
+        
+        let derivation = dict["derivation"] as! String
+        
+        if derivation == "BIP84" {
+         
+            bip84 = true
+            bip44 = false
+            
+        } else {
+         
+            bip84 = false
+            bip44 = true
+            
+        }
+        
+        range = dict["range"] as! String
+        convertedRange = dict["convertedRange"] as! [Int]
+        fingerprint = dict["fingerprint"] as! String
+        addToKeypool = dict["addToKeypool"] as! Bool
+        isInternal = dict["addAsChange"] as! Bool
         
     }
     
@@ -114,13 +162,9 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
     
     func importExtendedKey() {
         
-        var watchOnly = Bool()
-        
-        if label == "\"Fully Noded Cold Storage\"" {
+        if isWatchOnly {
             
             //its an xpub
-            watchOnly = true
-            
             if bip44 {
                 
                 connectingView.addConnectingView(vc: self,
@@ -136,8 +180,6 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
         } else {
             
             //its an xprv
-            watchOnly = false
-            
             if bip44 {
                 
                 connectingView.addConnectingView(vc: self,
@@ -152,11 +194,11 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
             
         }
         
-        var params = "[{ \"desc\": \(descriptor), \"timestamp\": \"now\", \"range\": \(convertedRange), \"watchonly\": \(watchOnly), \"label\": \(label), \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }], ''{\"rescan\": \(reScan)}''"
+        var params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"range\": \(convertedRange), \"watchonly\": \(isWatchOnly), \"label\": \"\(label)\", \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }], ''{\"rescan\": \(reScan)}''"
         
         if isInternal {
             
-            params = "[{ \"desc\": \(descriptor), \"timestamp\": \"now\", \"range\": \(convertedRange), \"watchonly\": \(watchOnly), \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }], ''{\"rescan\": \(reScan)}''"
+            params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"range\": \(convertedRange), \"watchonly\": \(isWatchOnly), \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }], ''{\"rescan\": \(reScan)}''"
             
         }
         

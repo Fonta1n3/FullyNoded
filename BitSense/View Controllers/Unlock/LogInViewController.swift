@@ -168,7 +168,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             
             if self.passwordInput.text != "" {
                 
-                //self.checkPassword(password: self.passwordInput.text!)
+                self.checkPassword(password: self.passwordInput.text!)
                 
             } else {
                 

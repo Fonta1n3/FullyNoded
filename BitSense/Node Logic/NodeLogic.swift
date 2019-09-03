@@ -28,6 +28,9 @@ class NodeLogic {
         print("loadSectionZero")
     
         func loadTableDataSsh(method: BTC_CLI_COMMAND, param: String) {
+            print("loadtabledata")
+            
+            print("isusingssh = \(isUsingSSH)")
             
             if !self.isUsingSSH {
                 
@@ -66,6 +69,7 @@ class NodeLogic {
                             
                         default:
                             
+                            print("break1")
                             break
                             
                         }
@@ -92,6 +96,7 @@ class NodeLogic {
                                 
                             default:
                                 
+                                print("break1")
                                 break
                                 
                             }
@@ -102,6 +107,7 @@ class NodeLogic {
                             
                             errorBool = true
                             errorDescription = helper.errorDescription + " " + ". Last command: \(method.rawValue)"
+                            print("errorDescription = \(errorDescription)")
                             completion()
                             
                         }
@@ -125,9 +131,17 @@ class NodeLogic {
                             
                             errorBool = true
                             errorDescription = "SSH not connected"
+                            print("errorDescription = \(errorDescription)")
                             completion()
                             
                         }
+                        
+                    } else {
+                        
+                        errorBool = true
+                        errorDescription = "SSH not authorized"
+                        print("errorDescription = \(errorDescription)")
+                        completion()
                         
                     }
                     
@@ -135,6 +149,7 @@ class NodeLogic {
                     
                     errorBool = true
                     errorDescription = "SSH not connected"
+                    print("errorDescription = \(errorDescription)")
                     completion()
                 }
                 
@@ -410,7 +425,7 @@ class NodeLogic {
         
         if amount == 0.0 {
             
-            dictToReturn["coldBalance"] = "0.0000000"
+            dictToReturn["coldBalance"] = "0.00000000"
             
         } else {
             

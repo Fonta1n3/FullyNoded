@@ -64,8 +64,6 @@ class SSHCredentialsViewController: UIViewController, UITextFieldDelegate, UINav
                                  isError: false,
                                  message: "Node added")
                     
-                    self.navigationController!.popToRootViewController(animated: true)
-                    
                 } else {
                     
                     displayAlert(viewController: navigationController!,
@@ -149,8 +147,6 @@ class SSHCredentialsViewController: UIViewController, UITextFieldDelegate, UINav
                 displayAlert(viewController: navigationController!,
                              isError: false,
                              message: "Node updated")
-                
-                self.navigationController!.popToRootViewController(animated: true)
                 
             } else {
                 

@@ -22,37 +22,18 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
     var isTorchOn = Bool()
     let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     let connectingView = ConnectingView()
-    
-    var isTestnet = Bool()
-    var reScan = Bool()
-    var isWatchOnly = Bool()
-    var desc = "wpkh"
-    var importedKey = ""
-    var addToKeypool = false
-    var isInternal = false
-    var range = "0 to 99"
-    var convertedRange = [0,99]
-    var fingerprint = ""
-    var descriptor = ""
-    var label = ""
-    var bip44 = Bool()
-    var bip84 = Bool()
-    
-    var keyArray = NSArray()
-    
     var isAddress = false
     
-    func convertRange() -> [Int] {
-        
-        var arrayToReturn = [Int]()
-        let newrange = range.replacingOccurrences(of: " ", with: "")
-        let rangeArray = newrange.components(separatedBy: "to")
-        let zero = Int(rangeArray[0])!
-        let one = Int(rangeArray[1])!
-        arrayToReturn = [zero,one]
-        return arrayToReturn
-        
-    }
+    var addToKeypool = Bool()
+    var isInternal = Bool()
+    var reScan = Bool()
+    var importedKey = ""
+    var label = ""
+    var timestamp = Int()
+    
+    var dict = [String:Any]()
+    
+    var alertMessage = ""
     
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         
@@ -105,6 +86,16 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
         
         isTorchOn = false
         addScanner()
+        getValues()
+        
+    }
+    
+    func getValues() {
+     
+        addToKeypool = dict["addToKeypool"] as? Bool ?? false
+        isInternal = dict["addAsChange"] as? Bool ?? false
+        timestamp = dict["rescanDate"] as? Int ?? 0
+        label = dict["label"] as! String
         
     }
     
@@ -168,115 +159,6 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                                   width: 70,
                                   height: 70), button: qrScanner.torchButton)
         
-        getSettings()
-        
-    }
-    
-    func getSettings() {
-        
-        let userDefaults = UserDefaults.standard
-        
-        if userDefaults.object(forKey: "bip44") != nil {
-            
-            bip44 = userDefaults.bool(forKey: "bip44")
-            
-        } else {
-            
-            bip44 = false
-            
-        }
-        
-        if userDefaults.object(forKey: "bip84") != nil {
-            
-            bip84 = userDefaults.bool(forKey: "bip84")
-            
-        } else {
-            
-            bip84 = true
-            
-        }
-        
-        if bip44 {
-            
-            desc = "pkh"
-            
-        } else {
-            
-            desc = "wpkh"
-            
-        }
-        
-        if bip84 {
-            
-            desc = "wpkh"
-            
-        } else {
-            
-            desc = "pkh"
-            
-        }
-        
-        if userDefaults.object(forKey: "addToKeypool") != nil {
-            
-            addToKeypool = userDefaults.bool(forKey: "addToKeypool")
-            
-        }
-        
-        if userDefaults.object(forKey: "isInternal") != nil {
-            
-            isInternal = userDefaults.bool(forKey: "isInternal")
-            
-        }
-        
-        if userDefaults.object(forKey: "range") != nil {
-            
-            range = userDefaults.object(forKey: "range") as! String
-            
-        }
-        
-        convertedRange = convertRange()
-        
-        if userDefaults.object(forKey: "reScan") != nil {
-            
-            reScan = userDefaults.bool(forKey: "reScan")
-            
-        } else {
-            
-            reScan = false
-            
-        }
-        
-        if isPruned {
-            
-            reScan = false
-            
-        }
-        
-        if userDefaults.object(forKey: "fingerprint") != nil {
-            
-            fingerprint = userDefaults.object(forKey: "fingerprint") as! String
-            
-        }
-        
-        if reScan {
-            
-            /*DispatchQueue.main.async {
-                
-                let alert = UIAlertController(title: "Alert",
-                                              message: "You have enabled rescanning of the blockchain in settings.\n\nWhen you import a key it will take up to an hour to rescan the entire blockchain.", preferredStyle: UIAlertController.Style.alert)
-                
-                alert.addAction(UIAlertAction(title: "OK",
-                                              style: UIAlertAction.Style.default,
-                                              handler: nil))
-                
-                self.present(alert,
-                             animated: true,
-                             completion: nil)
-                
-            }*/
-            
-        }
-        
     }
     
     @objc func toggleTorch() {
@@ -311,176 +193,9 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    func importXprv(xprv: String) {
-
-        func getDescriptor() {
-
-            let result = self.makeSSHCall.dictToReturn
-
-            if makeSSHCall.errorBool {
-
-                connectingView.removeConnectingView()
-
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: makeSSHCall.errorDescription)
-
-            } else {
-
-                descriptor = "\"\(result["descriptor"] as! String)\""
-
-                descriptor = descriptor.replacingOccurrences(of: "4'", with: "4'\"'\"'")
-                descriptor = descriptor.replacingOccurrences(of: "1'", with: "1'\"'\"'")
-                descriptor = descriptor.replacingOccurrences(of: "0'", with: "0'\"'\"'")
-
-                label = "\"Fully Noded Hot Storage\""
-
-                self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.deriveaddresses,
-                                           param: "\(descriptor), ''\(convertedRange)''")
-
-            }
-
-        }
-
-        if fingerprint != "" {
-
-            //compatible with coldcard
-
-            if desc == "pkh" {
-
-                //BIP44
-
-                if isTestnet {
-
-                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                                  method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                                  param: "\"\(desc)([\(fingerprint)/44h/1h/0h]\(xprv)/0/*)\"", completion: getDescriptor)
-
-                } else {
-
-                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                                  method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                                  param: "\"\(desc)([\(fingerprint)/44h/0h/0h]\(xprv)/0/*)\"", completion: getDescriptor)
-
-                }
-
-            } else {
-
-                //BIP84
-
-                if isTestnet {
-
-                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                                  method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                                  param: "\"\(desc)([\(fingerprint)/84h/1h/0h]\(xprv)/0/*)\"", completion: getDescriptor)
-
-                } else {
-
-                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                                  method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                                  param: "\"\(desc)([\(fingerprint)/84h/0h/0h]\(xprv)/0/*)\"", completion: getDescriptor)
-
-                }
-
-            }
-
-        } else {
-
-            //treat the xpub as a BIP32 extended key
-
-            makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                          method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                          param: "\"\(desc)(\(xprv)/*)\"", completion: getDescriptor)
-
-        }
-        
-    }
-    
-    func importXpub(xpub: String) {
-        
-        func getDescriptor() {
-
-            let result = self.makeSSHCall.dictToReturn
-
-            if makeSSHCall.errorBool {
-
-                connectingView.removeConnectingView()
-
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: makeSSHCall.errorDescription)
-
-            } else {
-
-                descriptor = "\"\(result["descriptor"] as! String)\""
-                descriptor = descriptor.replacingOccurrences(of: "4'", with: "4'\"'\"'")
-                descriptor = descriptor.replacingOccurrences(of: "1'", with: "1'\"'\"'")
-                descriptor = descriptor.replacingOccurrences(of: "0'", with: "0'\"'\"'")
-
-                label = "\"Fully Noded Cold Storage\""
-                
-                self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.deriveaddresses,
-                                           param: "\(descriptor), ''\(convertedRange)''")
-
-            }
-
-        }
-
-        if fingerprint != "" {
-
-            //compatible with coldcard
-
-            if desc == "pkh" {
-
-                //BIP44
-
-                if isTestnet {
-
-                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                                  method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                                  param: "\"\(desc)([\(fingerprint)/44h/1h/0h]\(xpub)/0/*)\"", completion: getDescriptor)
-
-                } else {
-
-                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                                  method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                                  param: "\"\(desc)([\(fingerprint)/44h/0h/0h]\(xpub)/0/*)\"", completion: getDescriptor)
-
-                }
-
-            } else {
-
-                //BIP84
-
-                if isTestnet {
-
-                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                                  method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                                  param: "\"\(desc)([\(fingerprint)/84h/1h/0h]\(xpub)/0/*)\"", completion: getDescriptor)
-
-                } else {
-
-                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                                  method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                                  param: "\"\(desc)([\(fingerprint)/84h/0h/0h]\(xpub)/0/*)\"", completion: getDescriptor)
-
-                }
-
-            }
-
-        } else {
-
-            //treat the xpub as a BIP32 extended key
-
-            makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                          method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                          param: "\"\(desc)(\(xpub)/*)\"", completion: getDescriptor)
-
-        }
-        
-     }
-    
     func importPublicKey(pubKey: String) {
+        
+        isAddress = false
      
         func getDescriptor() {
          
@@ -497,13 +212,12 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
             } else {
              
                 let descriptor = "\"\(result["descriptor"] as! String)\""
-                let label = "\"Imported PubKey\""
                 
-                var params = "[{ \"desc\": \(descriptor), \"timestamp\": \"now\", \"watchonly\": true, \"label\": \(label), \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }], ''{\"rescan\": \(reScan)}''"
+                var params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"watchonly\": true, \"label\": \"\(label)\", \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }], ''{\"rescan\": true}''"
                 
                 if isInternal {
                     
-                    params = "[{ \"desc\": \(descriptor), \"timestamp\": \"now\", \"range\": \(convertedRange), \"watchonly\": true, \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }], ''{\"rescan\": \(reScan)}''"
+                    params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"watchonly\": true, \"keypool\": \(addToKeypool), \"internal\": true }], ''{\"rescan\": true}''"
                     
                 }
                 
@@ -564,7 +278,7 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                 if self.ssh.session.isConnected {
                     
                     self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.importprivkey,
-                                               param: "\"\(key)\", \"Imported Private Key\", \(reScan)")
+                                               param: "\"\(key)\", \"\(label)\", false")
                     
                 } else {
                     
@@ -596,8 +310,13 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                     
                     isAddress = true
                     
-                    let label = "\"Imported Address\""
-                    let param = "[{ \"scriptPubKey\": { \"address\": \"\(key)\" }, \"label\": \(label), \"timestamp\": \"now\", \"watchonly\": true, \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }], ''{\"rescan\": \(reScan)}''"
+                    var param = "[{ \"scriptPubKey\": { \"address\": \"\(key)\" }, \"label\": \"\(label)\", \"timestamp\": \(timestamp), \"watchonly\": true, \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }], ''{\"rescan\": true}''"
+                    
+                    if isInternal {
+                        
+                        param = "[{ \"scriptPubKey\": { \"address\": \"\(key)\" }, \"timestamp\": \(timestamp), \"watchonly\": true, \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }], ''{\"rescan\": true}''"
+                        
+                    }
                     
                     self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.importmulti,
                                                param: param)
@@ -612,39 +331,14 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                     
                 }
                 
-            case _ where prefix.hasPrefix("xpub"),
-                 _ where prefix.hasPrefix("tpub"),
-                 _ where prefix.hasPrefix("zpub"),
-                 _ where prefix.hasPrefix("vpub"):
-                
-                isWatchOnly = true
-                
-                DispatchQueue.main.async {
-                    
-                    self.connectingView.addConnectingView(vc: self,
-                                                          description: "Deriving addresses from index \(self.range) with your xpub. This can take a little while, stick around ✌🏼")
-                    
-                }
-                
-                importXpub(xpub: key)
-                
-            case _ where prefix.hasPrefix("xprv"),
-                 _ where prefix.hasPrefix("tprv"),
-                 _ where prefix.hasPrefix("zprv"),
-                 _ where prefix.hasPrefix("vprv"):
-                
-                isWatchOnly = false
-                
-                DispatchQueue.main.async {
-                    
-                    self.connectingView.addConnectingView(vc: self,
-                                                          description: "Importing 100 addresses (index \(self.range)) from your xprv. This can take a little while, stick around ✌🏼")
-                    
-                }
-                
-                importXprv(xprv: key)
-                
             case _ where prefix.hasPrefix("0"):
+                
+                DispatchQueue.main.async {
+                    
+                    self.connectingView.addConnectingView(vc: self,
+                                                          description: "Importing Public Key")
+                    
+                }
                 
                 importPublicKey(pubKey: prefix)
                 
@@ -709,28 +403,20 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                 
                 switch method {
                     
-                case BTC_CLI_COMMAND.deriveaddresses:
-                    
-                    keyArray = makeSSHCall.arrayToReturn
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.connectingView.removeConnectingView()
-                        
-                        self.performSegue(withIdentifier: "importExtendedKey", sender: self)
-                        
-                    }
-                    
                 case BTC_CLI_COMMAND.importprivkey:
                     
                     self.connectingView.removeConnectingView()
                     let result = makeSSHCall.stringToReturn
                     
                     if result == "Imported key success" {
+
+                        alertMessage = "Successfully imported private key"
                         
-                        displayAlert(viewController: self,
-                                     isError: false,
-                                     message: "Successfully imported private key")
+                    }
+                    
+                    DispatchQueue.main.async {
+                        
+                        self.performSegue(withIdentifier: "showKeyDetails", sender: self)
                         
                     }
                     
@@ -743,9 +429,21 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                         
                         connectingView.removeConnectingView()
                         
-                        displayAlert(viewController: self,
-                                     isError: false,
-                                     message: "Sucessfully imported the address")
+                        var messageString = "Sucessfully imported the address"
+                        
+                        if !isAddress {
+                            
+                            messageString = "Sucessfully imported the public key and its three address types"
+                            
+                        }
+                        
+                        alertMessage = messageString
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.performSegue(withIdentifier: "showKeyDetails", sender: self)
+                            
+                        }
                         
                     } else {
                         
@@ -834,35 +532,19 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        
-        if segue.identifier == "importExtendedKey" {
-         
-            if let vc = segue.destination as? ImportExtendedKeysViewController {
-             
-                vc.torClient = self.torClient
-                vc.torRPC = self.torRPC
-                vc.ssh = self.ssh
-                vc.makeSSHCall = self.makeSSHCall
-                vc.isTestnet = self.isTestnet
-                vc.reScan = self.reScan
-                vc.isWatchOnly = self.isWatchOnly
-                vc.desc = self.desc
-                vc.importedKey = self.importedKey
-                vc.addToKeypool = self.addToKeypool
-                vc.isInternal = self.isInternal
-                vc.range = self.range
-                vc.convertedRange = self.convertedRange
-                vc.fingerprint = self.fingerprint
-                vc.keyArray = self.keyArray
-                vc.descriptor = self.descriptor
-                vc.label = self.label
-                vc.bip44 = self.bip44
-                vc.bip84 = self.bip84
-                
+
+        if segue.identifier == "showKeyDetails" {
+
+            if let vc = segue.destination as? GetInfoViewController {
+
+                vc.labelToSearch = label
+                vc.getaddressesbylabel = true
+                vc.alertMessage = alertMessage
+
             }
-            
+
         }
-        
+
     }
 
 }

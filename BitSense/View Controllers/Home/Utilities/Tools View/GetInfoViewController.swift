@@ -46,6 +46,13 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet var textView: UITextView!
     @IBOutlet var navBar: UINavigationBar!
     
+    var labelToSearch = ""
+    
+    var indexToParse = 0
+    var addressArray = NSArray()
+    var infoArray = [NSDictionary]()
+    var alertMessage = ""
+    
     
     func scan() {
     
@@ -151,12 +158,12 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     
     func getInfo() {
         
+        connectingView.addConnectingView(vc: self,
+                                         description: "")
+        
         var titleString = ""
         
         if getblock {
-            
-            connectingView.addConnectingView(vc: self,
-                                             description: "")
             
             titleString = "Block Info"
             scan()
@@ -173,9 +180,6 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
         if getTransaction {
             
-            connectingView.addConnectingView(vc: self,
-                                             description: "")
-            
             titleString = "Transaction"
             scan()
             
@@ -183,11 +187,24 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
         if getaddressesbylabel {
             
-            connectingView.addConnectingView(vc: self,
-                                             description: "")
-            
             titleString = "Address By Label"
-            scan()
+            
+            if labelToSearch != "" {
+                
+                titleString = "Imported key info"
+                
+            }
+            
+            if labelToSearch != "" {
+                
+                executeNodeCommandSsh(method: BTC_CLI_COMMAND.getaddressesbylabel,
+                                      param: "\"\(labelToSearch)\"")
+                
+            } else {
+                
+                scan()
+                
+            }
             
         }
         
@@ -216,8 +233,8 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
         if decodeScript {
             
-            connectingView.addConnectingView(vc: self,
-                                             description: "")
+//            connectingView.addConnectingView(vc: self,
+//                                             description: "")
             
             titleString = "Decoded Script"
             scan()
@@ -280,14 +297,51 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     
     func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
         
-        self.connectingView.addConnectingView(vc: self,
-                                              description: "")
-        
         func getResult() {
             
             if !makeSSHCall.errorBool {
                 
                 switch method {
+                    
+                case BTC_CLI_COMMAND.getaddressesbylabel:
+                    
+                    if labelToSearch != "" {
+                        
+                        addressArray = makeSSHCall.dictToReturn.allKeys as NSArray
+                        parseAddresses(addresses: addressArray, index: 0)
+                        
+                    }
+                    
+                case BTC_CLI_COMMAND.getaddressinfo:
+                    
+                    let result = makeSSHCall.dictToReturn
+                    infoArray.append(result)
+                    
+                    if indexToParse < addressArray.count {
+                        
+                        indexToParse += 1
+                        parseAddresses(addresses: addressArray, index: indexToParse)
+                        
+                    }
+                    
+                    if indexToParse == addressArray.count {
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.textView.text = "\(self.infoArray)"
+                            self.connectingView.removeConnectingView()
+                            
+                            if self.alertMessage != "" {
+                                
+                                displayAlert(viewController: self,
+                                             isError: false,
+                                             message: self.alertMessage)
+                                
+                            }
+                            
+                        }
+                        
+                    }
                     
                 case BTC_CLI_COMMAND.listaddressgroupings,
                      BTC_CLI_COMMAND.getpeerinfo,
@@ -329,7 +383,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
                     
                     self.connectingView.removeConnectingView()
                     
-                    displayAlert(viewController: self,
+                    displayAlert(viewController: self.navigationController!,
                                  isError: true,
                                  message: self.makeSSHCall.errorDescription)
                     
@@ -352,7 +406,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
                 
                 connectingView.removeConnectingView()
                 
-                displayAlert(viewController: self,
+                displayAlert(viewController: self.navigationController!,
                              isError: true,
                              message: "SSH not connected")
                 
@@ -360,7 +414,26 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
             
         } else {
             
-            displayAlert(viewController: self, isError: true, message: "Not connected to a node")
+            displayAlert(viewController: self.navigationController!,
+                         isError: true,
+                         message: "Not connected to a node")
+            
+        }
+        
+    }
+    
+    func parseAddresses(addresses: NSArray, index: Int) {
+        
+        for (i, address) in addresses.enumerated() {
+            
+            if i == index {
+                
+                let addr = address as! String
+                
+                executeNodeCommandSsh(method: BTC_CLI_COMMAND.getaddressinfo,
+                                      param: "\"\(addr)\"")
+                
+            }
             
         }
         

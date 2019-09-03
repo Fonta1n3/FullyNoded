@@ -225,6 +225,9 @@ Please feel free to build from source in xcode and submit PR's. I need help and 
 ## Changes v0.1.5
 - General UI/UX improvements and fixes
 - Code refactoring
+- Fix multiple bugs assocated with the unlock screen
+- Disallow simultaneous node commands when navigating the app
+- Improve ssh reconnection if connection timed out
 
 ## Changes v0.1.4
 - Update Tor functionality to work for Home screen

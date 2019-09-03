@@ -45,6 +45,8 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
     var address = ""
     var script = ""
     
+    var dict = [String:Any]()
+    
     @IBAction func p2shAction(_ sender: Any) {
         
         if p2shSwitchOutlet.isOn {
@@ -112,9 +114,13 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
     
     @IBAction func importNow(_ sender: Any) {
         
+        connectingView.addConnectingView(vc: self, description: "Creating multisig")
+        
         if signaturesField.text != "" && pubKeyArray.count > 1 {
             
             guard p2sh || p2wsh || p2shP2wsh else {
+                
+                connectingView.removeConnectingView()
                 
                 displayAlert(viewController: self,
                              isError: true,
@@ -125,6 +131,8 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
             }
             
             guard pubKeyArray.count >= Int(signaturesField.text!)! else {
+                
+                connectingView.removeConnectingView()
                 
                 displayAlert(viewController: self,
                              isError: true,
@@ -137,6 +145,8 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
             createMultiSig()
             
         } else {
+            
+            connectingView.removeConnectingView()
             
             displayAlert(viewController: self,
                          isError: true,
@@ -227,43 +237,6 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
         p2shp2wshOutlet.isOn = p2shP2wsh
         p2shSwitchOutlet.isOn = p2sh
         p2wshOutlet.isOn = p2wsh
-        
-        let userDefaults = UserDefaults.standard
-        
-        if userDefaults.object(forKey: "addToKeypool") != nil {
-            
-            addToKeypool = userDefaults.bool(forKey: "addToKeypool")
-            
-        }
-        
-        if userDefaults.object(forKey: "reScan") != nil {
-            
-            reScan = userDefaults.bool(forKey: "reScan")
-            
-        } else {
-            
-            reScan = false
-            
-        }
-        
-        if reScan {
-            
-            DispatchQueue.main.async {
-                
-                let alert = UIAlertController(title: "Alert",
-                                              message: "You have enabled rescanning of the blockchain in settings.\n\nWhen you import a key it will take up to an hour to rescan the entire blockchain.", preferredStyle: UIAlertController.Style.alert)
-                
-                alert.addAction(UIAlertAction(title: "OK",
-                                              style: UIAlertAction.Style.default,
-                                              handler: nil))
-                
-                self.present(alert,
-                             animated: true,
-                             completion: nil)
-                
-            }
-            
-        }
         
     }
     
@@ -559,6 +532,8 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
         
         DispatchQueue.main.async {
             
+            self.connectingView.removeConnectingView()
+            
             self.performSegue(withIdentifier: "verifyImport",
                               sender: self)
             
@@ -596,13 +571,14 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
          
             if let vc = segue.destination as? MuSigDisplayerTableViewController {
              
-                vc.pubkeyArray = self.pubKeyArray
-                vc.p2shP2wsh = self.p2shP2wsh
-                vc.p2sh = self.p2sh
-                vc.p2wsh = self.p2wsh
-                vc.sigsRequired = self.signaturesField.text!
-                vc.address = self.address
-                vc.script = self.script
+                vc.pubkeyArray = pubKeyArray
+                vc.p2shP2wsh = p2shP2wsh
+                vc.p2sh = p2sh
+                vc.p2wsh = p2wsh
+                vc.sigsRequired = signaturesField.text!
+                vc.address = address
+                vc.script = script
+                vc.dict = dict
                 
             }
             

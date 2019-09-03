@@ -82,6 +82,7 @@ public func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
          BTC_CLI_COMMAND.getnewaddress,
          BTC_CLI_COMMAND.getwalletinfo,
          BTC_CLI_COMMAND.importmulti,
+         BTC_CLI_COMMAND.importprivkey,
          BTC_CLI_COMMAND.rescanblockchain,
          BTC_CLI_COMMAND.fundrawtransaction,
          BTC_CLI_COMMAND.listunspent,

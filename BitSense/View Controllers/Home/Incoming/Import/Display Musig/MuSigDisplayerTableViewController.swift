@@ -33,8 +33,7 @@ class MuSigDisplayerTableViewController: UITableViewController {
     var address = ""
     var script = ""
     
-    var addToKeypool = false
-    var reScan = Bool()
+    var dict = [String:Any]()
     
     @IBAction func back(_ sender: Any) {
         
@@ -53,8 +52,6 @@ class MuSigDisplayerTableViewController: UITableViewController {
         shareAddressQR = UITapGestureRecognizer(target: self, action: #selector(self.shareAddressQR(_:)))
         shareRedScriptText = UITapGestureRecognizer(target: self, action: #selector(self.shareRedTxt(_:)))
         shareAddressText = UITapGestureRecognizer(target: self, action: #selector(self.shareAddressTxt(_:)))
-        
-        getSettings()
         
      }
     
@@ -76,47 +73,6 @@ class MuSigDisplayerTableViewController: UITableViewController {
         
     }
     
-    func getSettings() {
-        
-        let userDefaults = UserDefaults.standard
-        
-        if userDefaults.object(forKey: "addToKeypool") != nil {
-            
-            addToKeypool = userDefaults.bool(forKey: "addToKeypool")
-            
-        }
-        
-        if userDefaults.object(forKey: "reScan") != nil {
-            
-            reScan = userDefaults.bool(forKey: "reScan")
-            
-        } else {
-            
-            reScan = false
-            
-        }
-        
-        if reScan {
-            
-            DispatchQueue.main.async {
-                
-                let alert = UIAlertController(title: "Alert",
-                                              message: "You have enabled rescanning of the blockchain in settings.\n\nWhen you import a key it will take up to an hour to rescan the entire blockchain.", preferredStyle: UIAlertController.Style.alert)
-                
-                alert.addAction(UIAlertAction(title: "OK",
-                                              style: UIAlertAction.Style.default,
-                                              handler: nil))
-                
-                self.present(alert,
-                             animated: true,
-                             completion: nil)
-                
-            }
-            
-        }
-        
-    }
-
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
@@ -286,6 +242,9 @@ class MuSigDisplayerTableViewController: UITableViewController {
         connectingView.addConnectingView(vc: self,
                                          description: "Importing MultiSig")
         
+        let timestamp = dict["rescanDate"] as! Int
+        let label = dict["label"] as! String
+        
         func importDescriptor() {
             
             let result = self.makeSSHCall.dictToReturn
@@ -302,9 +261,7 @@ class MuSigDisplayerTableViewController: UITableViewController {
                 
                 let descriptor = "\"\(result["descriptor"] as! String)\""
                 
-                let label = "\"Imported MultiSig\""
-                
-                let params = "[{ \"desc\": \(descriptor), \"timestamp\": \"now\", \"watchonly\": true, \"label\": \(label), \"keypool\": \(addToKeypool), \"internal\": false }], ''{\"rescan\": \(reScan)}''"
+                let params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"watchonly\": true, \"label\": \"\(label)\" }], ''{\"rescan\": true}''"
                 
                 self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.importmulti,
                                            param: params)

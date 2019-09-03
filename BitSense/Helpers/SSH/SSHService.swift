@@ -15,6 +15,7 @@ class SSHService {
     static let sharedInstance = SSHService()
     let aes = AESService()
     var activeNode = [String:Any]()
+    var commandExecuting = false
     
     private init() {}
     
@@ -158,120 +159,143 @@ class SSHService {
     
     func execute(command: BTC_CLI_COMMAND, params: Any, response: @escaping((dictionary:Any?, error:String?)) -> ()) {
         
-        var rpcuser = ""
-        var rpcpassword = ""
-        var rpcport = ""
-        
-        if activeNode["rpcuser"] != nil {
+        if !commandExecuting {
             
-            let enc = activeNode["rpcuser"] as! String
-            rpcuser = aes.decryptKey(keyToDecrypt: enc)
+            commandExecuting = true
             
-        }
-        
-        if activeNode["rpcpassword"] != nil {
+            var rpcuser = ""
+            var rpcpassword = ""
+            var rpcport = ""
             
-            let enc = activeNode["rpcpassword"] as! String
-            rpcpassword = aes.decryptKey(keyToDecrypt: enc)
-            
-        }
-        
-        if activeNode["rpcport"] != nil {
-            
-            let enc = activeNode["rpcport"] as! String
-            rpcport = aes.decryptKey(keyToDecrypt: enc)
-            
-        }
-        
-        guard rpcuser != "", rpcpassword != "", rpcport != "" else {
-            
-            response((dictionary:nil,
-                      error:"Incomplete RPC Credentials"))
-            
-            return
-            
-        }
-        
-        let userDefaults = UserDefaults.standard
-        
-        var url = "http://\(rpcuser):\(rpcpassword)@127.0.0.1:\(rpcport)/"
-        
-        if userDefaults.object(forKey: "walletName") != nil {
-            
-            if let walletName = userDefaults.object(forKey: "walletName") as? String {
+            if activeNode["rpcuser"] != nil {
                 
-                let b = isWalletRPC(command: command)
+                let enc = activeNode["rpcuser"] as! String
+                rpcuser = aes.decryptKey(keyToDecrypt: enc)
                 
-                if b {
+            }
+            
+            if activeNode["rpcpassword"] != nil {
+                
+                let enc = activeNode["rpcpassword"] as! String
+                rpcpassword = aes.decryptKey(keyToDecrypt: enc)
+                
+            }
+            
+            if activeNode["rpcport"] != nil {
+                
+                let enc = activeNode["rpcport"] as! String
+                rpcport = aes.decryptKey(keyToDecrypt: enc)
+                
+            }
+            
+            guard rpcuser != "", rpcpassword != "", rpcport != "" else {
+                
+                response((dictionary:nil,
+                          error:"Incomplete RPC Credentials"))
+                
+                commandExecuting = false
+                
+                return
+                
+            }
+            
+            let userDefaults = UserDefaults.standard
+            
+            var url = "http://\(rpcuser):\(rpcpassword)@127.0.0.1:\(rpcport)/"
+            
+            if userDefaults.object(forKey: "walletName") != nil {
+                
+                if let walletName = userDefaults.object(forKey: "walletName") as? String {
                     
-                    url += "wallet/" + walletName
+                    let b = isWalletRPC(command: command)
+                    
+                    if b {
+                        
+                        url += "wallet/" + walletName
+                        
+                    }
                     
                 }
                 
             }
             
-        }
-        
-        let curlCommand = "curl --data-binary '{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"\(command)\", \"params\":[\(params)] }' -H 'content-type: text/plain;' \(url)"
-        
-        var error: NSError?
-        
-        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
-        
-        queue.async {
+            let curlCommand = "curl --data-binary '{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"\(command)\", \"params\":[\(params)] }' -H 'content-type: text/plain;' \(url)"
             
-            if let responseString = self.session?.channel.execute(curlCommand, error: &error) {
+            var error: NSError?
+            
+            let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+            
+            queue.async {
                 
-                if error != nil {
+                if let responseString = self.session?.channel.execute(curlCommand, error: &error) {
                     
-                    if error!.localizedDescription == "Channel allocation error" {
+                    if error != nil {
                         
-                        // connection timed out, reconnect automatically
-                        self.connect(success: { (success, error2) in
+                        if error!.localizedDescription == "Channel allocation error" {
                             
-                            if error2 != nil {
+                            // connection timed out, reconnect automatically
+                            self.connect(success: { (success, error2) in
                                 
-                                response((dictionary:nil,
-                                          error:error2))
+                                if error2 != nil {
+                                    
+                                    self.commandExecuting = false
+                                    
+                                    response((dictionary:nil,
+                                              error:error2))
+                                    
+                                } else if success {
+                                    
+                                    self.commandExecuting = false
+                                    
+                                    self.execute(command: command,
+                                                 params: params,
+                                                 response: response)
+                                    
+                                }
                                 
-                            } else if success {
-                                
-                                self.execute(command: command,
-                                             params: params,
-                                             response: response)
-                                
-                            }
+                            })
                             
-                        })
+                        } else {
+                            
+                            self.commandExecuting = false
+                            
+                            response((dictionary:nil,
+                                      error:error!.localizedDescription))
+                            
+                        }
                         
                     } else {
                         
-                        response((dictionary:nil,
-                                  error:error!.localizedDescription))
+                        guard let responseData = responseString.data(using: .utf8) else { return }
                         
-                    }
-                    
-                } else {
-                    
-                    guard let responseData = responseString.data(using: .utf8) else { return }
-                    
-                    do {
-                        
-                        let json = try JSONSerialization.jsonObject(with: responseData, options: [.allowFragments]) as Any
-                        
-                        response((dictionary:json,
-                                  error:nil))
-                        
-                    } catch {
-                        
-                        response((dictionary:nil,
-                                  error:"\(error.localizedDescription)"))
+                        do {
+                            
+                            let json = try JSONSerialization.jsonObject(with: responseData, options: [.allowFragments]) as Any
+                            
+                            self.commandExecuting = false
+                            
+                            response((dictionary:json,
+                                      error:nil))
+                            
+                        } catch {
+                            
+                            self.commandExecuting = false
+                            
+                            response((dictionary:nil,
+                                      error:"\(error.localizedDescription)"))
+                            
+                        }
                         
                     }
                     
                 }
                 
             }
+            
+        } else {
+            
+            response((dictionary:nil,
+                      error:"Node is busy, try again in a moment"))
             
         }
         

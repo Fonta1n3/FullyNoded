@@ -90,7 +90,7 @@ class UtilitiesMenuTableViewController: UITableViewController, UITabBarControlle
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
         switch section {
-        case 0:return 6
+        case 0:return 7
         case 1:return 6
         case 2:return 2
         case 3:return 1
@@ -113,11 +113,12 @@ class UtilitiesMenuTableViewController: UITableViewController, UITabBarControlle
             //Blockchain
             switch indexPath.row {
             case 0: label.text = "Rescan Blockchain"
-            case 1: label.text = "Get Blockchain Info"
-            case 2: label.text = "Get Mempool Info"
-            case 3: label.text = "Get Transaction"
-            case 4: label.text = "Get Last Block"
-            case 5: label.text = "Get Block"
+            case 1: label.text = "Abort Blockchain Rescan"
+            case 2: label.text = "Get Blockchain Info"
+            case 3: label.text = "Get Mempool Info"
+            case 4: label.text = "Get Transaction"
+            case 5: label.text = "Get Last Block"
+            case 6: label.text = "Get Block"
             default:break}
             
         case 1:
@@ -184,28 +185,34 @@ class UtilitiesMenuTableViewController: UITableViewController, UITabBarControlle
                         
                         self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.rescanblockchain,
                                                        param: "")
+                        
                     case 1:
+                        
+                        self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.abortrescan,
+                                                   param: "")
+                        
+                    case 2:
                         
                         self.getBlockchainInfo = true
                         self.performSegue(withIdentifier: "goGetInfo", sender: self)
                         
-                    case 2:
+                    case 3:
                         
                         self.getMempoolInfo = true
                         self.performSegue(withIdentifier: "goGetInfo", sender: self)
                         
-                    case 3:
+                    case 4:
                         
                         self.getTransaction = true
                         self.performSegue(withIdentifier: "goGetInfo", sender: self)
                         
-                    case 4:
+                    case 5:
                         
                         self.getbestblockhash = true
                         self.performSegue(withIdentifier: "goGetInfo", sender: self)
                         
                         
-                    case 5:
+                    case 6:
                         
                         self.getblock = true
                         self.performSegue(withIdentifier: "goGetInfo", sender: self)
@@ -332,9 +339,15 @@ class UtilitiesMenuTableViewController: UITableViewController, UITabBarControlle
                     
                 case BTC_CLI_COMMAND.rescanblockchain:
                     
-                    displayAlert(viewController: self,
+                    displayAlert(viewController: self.navigationController!,
                                  isError: false,
                                  message: "Rescanning the blockchain, this can take an hour or so.")
+                    
+                case BTC_CLI_COMMAND.abortrescan:
+                    
+                    displayAlert(viewController: self.navigationController!,
+                                 isError: false,
+                                 message: "Rescan aborted")
                     
                 default:
                     

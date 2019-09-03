@@ -10,6 +10,7 @@ import Foundation
 
 public enum BTC_CLI_COMMAND: String {
     
+    case abortrescan = "abortrescan"
     case listlockunspent = "listlockunspent"
     case lockunspent = "lockunspent"
     case getblock = "getblock"

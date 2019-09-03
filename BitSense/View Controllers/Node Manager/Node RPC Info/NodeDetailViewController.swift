@@ -69,7 +69,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     
                     displayAlert(viewController: navigationController!,
                                  isError: true,
-                                 message: "🙄 Fill out all fields first")
+                                 message: "Fill out all fields first")
                     
                 }
                 
@@ -89,7 +89,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     
                     displayAlert(viewController: navigationController!,
                                  isError: true,
-                                 message: "🙄 You need to fill out all fields")
+                                 message: "You need to fill out all fields")
                     
                 }
                 
@@ -107,9 +107,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 selectedNode["label"] = enc
                 
                 let _ = cd.updateNode(viewController: self,
-                                            id: id,
-                                            newValue: enc,
-                                            keyToEdit: "label")
+                                      id: id,
+                                      newValue: enc,
+                                      keyToEdit: "label")
                 
             }
             
@@ -119,9 +119,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 selectedNode["rpcuser"] = enc
                 
                 let _ = cd.updateNode(viewController: self,
-                                            id: id,
-                                            newValue: enc,
-                                            keyToEdit: "rpcuser")
+                                      id: id,
+                                      newValue: enc,
+                                      keyToEdit: "rpcuser")
                 
             }
             
@@ -131,9 +131,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 selectedNode["rpcpassword"] = enc
                 
                 let _ = cd.updateNode(viewController: self,
-                                            id: id,
-                                            newValue: enc,
-                                            keyToEdit: "rpcpassword")
+                                      id: id,
+                                      newValue: enc,
+                                      keyToEdit: "rpcpassword")
                 
             }
             
@@ -143,23 +143,23 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 selectedNode["rpcport"] = enc
                 
                 let _ = cd.updateNode(viewController: self,
-                                            id: id,
-                                            newValue: enc,
-                                            keyToEdit: "rpcport")
+                                      id: id,
+                                      newValue: enc,
+                                      keyToEdit: "rpcport")
                 
             }
             
             if (selectedNode["usingSSH"] as! Bool) {
                 
                 let _ = cd.updateNode(viewController: self,
-                                            id: id,
-                                            newValue: true,
-                                            keyToEdit: "usingSSH")
+                                      id: id,
+                                      newValue: true,
+                                      keyToEdit: "usingSSH")
                 
                 let _ = cd.updateNode(viewController: self,
-                                            id: id,
-                                            newValue: false,
-                                            keyToEdit: "usingTor")
+                                      id: id,
+                                      newValue: false,
+                                      keyToEdit: "usingTor")
                 
                 DispatchQueue.main.async {
                     
@@ -172,14 +172,14 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             if (selectedNode["usingTor"] as! Bool) {
                 
                 let _ = cd.updateNode(viewController: self,
-                                            id: id,
-                                            newValue: false,
-                                            keyToEdit: "usingSSH")
+                                      id: id,
+                                      newValue: false,
+                                      keyToEdit: "usingSSH")
                 
                 let _ = cd.updateNode(viewController: self,
-                                             id: id,
-                                             newValue: true,
-                                             keyToEdit: "usingTor")
+                                      id: id,
+                                      newValue: true,
+                                      keyToEdit: "usingTor")
                 
                 DispatchQueue.main.async {
                     
@@ -195,12 +195,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        let tapGesture = UITapGestureRecognizer(target: self,
-                                                action: #selector(dismissKeyboard (_:)))
         
-        tapGesture.numberOfTapsRequired = 1
-        view.addGestureRecognizer(tapGesture)
+        configureTapGesture()
         
         nodeLabel.delegate = self
         rpcPort.delegate = self
@@ -226,6 +222,16 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         
     }
     
+    func configureTapGesture() {
+        
+        let tapGesture = UITapGestureRecognizer(target: self,
+                                                action: #selector(dismissKeyboard (_:)))
+        
+        tapGesture.numberOfTapsRequired = 1
+        view.addGestureRecognizer(tapGesture)
+        
+    }
+    
     func loadValues() {
         
         if selectedNode["id"] != nil {
@@ -248,7 +254,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             } else {
                 
                 nodeLabel.attributedPlaceholder = NSAttributedString(string: "Give your node a label",
-                                                                 attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
+                                                                     attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
                 
             }
             
@@ -284,7 +290,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                                                                attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
             
             nodeLabel.attributedPlaceholder = NSAttributedString(string: "Give your node a label",
-                                                             attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
+                                                                 attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
             
         }
         
@@ -338,5 +344,5 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         }
         
     }
-
+    
 }

@@ -22,6 +22,8 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
     var activeWallets = [String]()
     var inactiveWallets = [String]()
     
+    let ud = UserDefaults.standard
+    
     @IBAction func addWallet(_ sender: Any) {
         
         DispatchQueue.main.async {
@@ -47,7 +49,6 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
     override func viewDidAppear(_ animated: Bool) {
         
         isUsingSSH = IsUsingSSH.sharedInstance
-        print("isUsingSSH = \(isUsingSSH)")
         
         if isUsingSSH {
             
@@ -67,11 +68,15 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
     
     func refresh() {
         
-        activeWallets.removeAll()
-        inactiveWallets.removeAll()
-        
-        executeNodeCommandSsh(method: BTC_CLI_COMMAND.listwallets,
-                              param: "")
+        DispatchQueue.main.async {
+            
+            self.activeWallets.removeAll()
+            self.inactiveWallets.removeAll()
+            
+            self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.listwallets,
+                                       param: "")
+            
+        }
         
     }
     
@@ -278,8 +283,6 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
         self.connectingView.addConnectingView(vc: self,
                                               description: "Unloading \(walletName)")
         
-        let ud = UserDefaults.standard
-        
         if ud.object(forKey: "walletName") != nil {
             
             if ud.object(forKey: "walletName") as! String == walletName {
@@ -316,19 +319,11 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
                         let name = result["name"] as! String
                         let warning = result["warning"] as! String
                         
-                        UserDefaults.standard.set(name, forKey: "walletName")
+                        ud.set(name, forKey: "walletName")
                         
-                        self.connectingView.removeConnectingView()
-                        
-                        if warning == "" {
+                        if warning != "" {
                             
-                            displayAlert(viewController: self,
-                                         isError: false,
-                                         message: "Succesfully loaded wallet \"\(name)\"")
-                            
-                        } else {
-                            
-                            displayAlert(viewController: self,
+                           displayAlert(viewController: self,
                                          isError: true,
                                          message: "Wallet \"\(name)\" loaded with warning: \(warning)")
                             
@@ -360,7 +355,6 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
                     case BTC_CLI_COMMAND.unloadwallet:
                         
                         let response = makeSSHCall.stringToReturn
-                        connectingView.removeConnectingView()
                         
                         displayAlert(viewController: self,
                                      isError: false,
@@ -424,7 +418,6 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
     }
     
     func executeNodeCommandTor(method: BTC_CLI_COMMAND, param: String) {
-        print("executeNodeCommandTor")
         
         func getResult() {
             
@@ -439,17 +432,9 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
                     let name = result["name"] as! String
                     let warning = result["warning"] as! String
                     
-                    UserDefaults.standard.set(name, forKey: "walletName")
+                    ud.set(name, forKey: "walletName")
                     
-                    self.connectingView.removeConnectingView()
-                    
-                    if warning == "" {
-                        
-                        displayAlert(viewController: self,
-                                     isError: false,
-                                     message: "Succesfully loaded wallet \"\(name)\"")
-                        
-                    } else {
+                    if warning != "" {
                         
                         displayAlert(viewController: self,
                                      isError: true,
@@ -482,7 +467,6 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
                 case BTC_CLI_COMMAND.unloadwallet:
                     
                     let response = torRPC.stringToReturn
-                    connectingView.removeConnectingView()
                     
                     displayAlert(viewController: self,
                                  isError: false,

@@ -35,6 +35,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     var torRPC:MakeRPCCall!
     var isUsingSSH = Bool()
     var torConnected = Bool()
+    var connector:Connector!
     
     var connectingView = ConnectingView()
     let plusImage = UIImageView()
@@ -61,47 +62,22 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     var sectionOneLoaded = Bool()
     
     @IBOutlet var spinner: UIActivityIndicatorView!
+    @IBOutlet var refreshButtonOutlet: UIBarButtonItem!
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        print("main menu")
         
-        initialLoad = true
-        let keychain = KeychainSwift()
-        
-        if ud.object(forKey: "updatedToSwift5") == nil {
-            
-            keychain.delete("UnlockPassword")
-            keychain.delete("AESPassword")
-            deleteAllNodes()
-            ud.removeObject(forKey: "firstTime")
-            
-        }
-        
-        firstTimeHere()
         mainMenu.delegate = self
         tabBarController!.delegate = self
-        configureRefresher()
         mainMenu.tableFooterView = UIView(frame: .zero)
-        
+        initialLoad = true
         sectionOneLoaded = false
-        
-        if keychain.get("UnlockPassword") != nil {
-            
-            DispatchQueue.main.async {
-                
-                self.performSegue(withIdentifier: "lockScreen", sender: self)
-                
-            }
-            
-        }
-        
-        if ud.object(forKey: "feeTarget") == nil {
-         
-            ud.set(1008, forKey: "feeTarget")
-            
-        }
+        checkIfUpdated()
+        firstTimeHere()
+        configureRefresher()
+        setFeeTarget()
+        showUnlockScreen()
         
     }
     
@@ -125,7 +101,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 for node in nodes {
                     
-                    if (node["isActive"] as! Bool) {
+                    let active = node["isActive"] as! Bool
+                    
+                    if active {
                         
                         self.activeNode = node
                         let newId = node["id"] as! String
@@ -176,6 +154,94 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         initialLoad = false
             
+    }
+    
+//    @IBAction func stop(_ sender: Any) {
+//        
+//        // will need to update for Tor
+//        
+//        ssh.disconnect()
+//        
+//        connector.activeNode = self.activeNode
+//        
+//        func completion() {
+//            
+//            if !connector.sshConnected {
+//                
+//                self.removeSpinner()
+//                self.removeLoader()
+//                
+////                displayAlert(viewController: self,
+////                             isError: true,
+////                             message: connector.errorDescription ?? "Unable to connect via SSH")
+//                
+//            } else {
+//                
+//                self.removeSpinner()
+//                self.loadSectionZero(connector: connector)
+//                
+//            }
+//        
+//        }
+//        
+//        connector.connectSSH(completion: completion)
+//        
+//    }
+    
+    @IBAction func refreshData(_ sender: Any) {
+        
+        refreshButtonOutlet.tintColor = UIColor.white.withAlphaComponent(0)
+        spinner.startAnimating()
+        spinner.alpha = 1
+        loadSectionZero(connector: self.connector)
+        
+    }
+    
+    @IBAction func lockButton(_ sender: Any) {
+        
+        showUnlockScreen()
+        
+    }
+    
+    func checkIfUpdated() {
+        
+        let keychain = KeychainSwift()
+        
+        if ud.object(forKey: "updatedToSwift5") == nil {
+            
+            keychain.delete("UnlockPassword")
+            keychain.delete("AESPassword")
+            deleteAllNodes()
+            ud.removeObject(forKey: "firstTime")
+            
+        }
+        
+    }
+    
+    func setFeeTarget() {
+        
+        if ud.object(forKey: "feeTarget") == nil {
+            
+            ud.set(1008, forKey: "feeTarget")
+            
+        }
+        
+    }
+    
+    func showUnlockScreen() {
+        
+        let keychain = KeychainSwift()
+        
+        if keychain.get("UnlockPassword") != nil {
+            
+            DispatchQueue.main.async {
+                
+                self.performSegue(withIdentifier: "lockScreen", sender: self)
+                
+            }
+            
+        }
+        
     }
     
     //MARK: Tableview Methods
@@ -349,6 +415,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
             if transactionArray.count == 0 {
                 
+                loading.text = "No transactions"
                 loading.alpha = 1
                 addressLabel.alpha = 0
                 amountLabel.alpha = 0
@@ -554,6 +621,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     self.removeSpinner()
                     self.mainMenu.reloadSections(IndexSet.init(arrayLiteral: 1),
                                                  with: .fade)
+                    let impact = UIImpactFeedbackGenerator()
+                    impact.impactOccurred()
                     
                     self.loadSectionTwo(connector: connector)
                     
@@ -592,8 +661,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
 
                     self.mainMenu.reloadSections(IndexSet.init(arrayLiteral: 2),
                                                  with: .fade)
-                    self.spinner.stopAnimating()
-                    self.spinner.alpha = 0
+                    let impact = UIImpactFeedbackGenerator()
+                    impact.impactOccurred()
+                    self.removeLoader()
                     
                 }
                 
@@ -664,6 +734,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
             self.spinner.stopAnimating()
             self.spinner.alpha = 0
+            self.refreshButtonOutlet.tintColor = UIColor.white.withAlphaComponent(1)
             
         }
         
@@ -685,7 +756,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         refresher = UIRefreshControl()
         refresher.tintColor = UIColor.white
         
-        refresher.attributedTitle = NSAttributedString(string: "pull to refresh",
+        refresher.attributedTitle = NSAttributedString(string: "pull to reconnect",
                                                        attributes: [NSAttributedString.Key.foregroundColor: UIColor.white])
         
         refresher.addTarget(self, action: #selector(self.refresh), for: UIControl.Event.valueChanged)
@@ -712,6 +783,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         DispatchQueue.main.async {
             
+            self.refreshButtonOutlet.tintColor = UIColor.white.withAlphaComponent(0)
             self.spinner.startAnimating()
             self.spinner.alpha = 1
             
@@ -769,15 +841,16 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     
                     let sshBool = self.activeNode["usingSSH"] as! Bool
                     let torBool = self.activeNode["usingTor"] as! Bool
-                    let connector = Connector()
+                    
+                    self.connector = Connector()
                     
                     if sshBool {
                         
-                        self.connectSSH(connector: connector)
+                        self.connectSSH(connector: self.connector)
                         
                     } else if torBool {
                         
-                        self.connectTor(connector: connector)
+                        self.connectTor(connector: self.connector)
                         
                     }
                     
@@ -815,6 +888,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
             } else {
                 
+                self.removeSpinner()
                 self.loadSectionZero(connector: connector)
                 
             }
@@ -835,6 +909,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         nodeLogic.helper = connector.makeSSHCall
         
         func completion() {
+            print("completion")
             
             if nodeLogic.errorBool {
                 
@@ -848,16 +923,19 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             } else {
                 
                 let dict = nodeLogic.dictToReturn
-                let sectionZeroStruct = HomeStruct(dictionary: dict)
+                let str = HomeStruct(dictionary: dict)
                 
-                self.hotBalance = sectionZeroStruct.hotBalance
-                self.coldBalance = sectionZeroStruct.coldBalance
-                self.unconfirmedBalance = sectionZeroStruct.unconfirmedBalance
+                self.hotBalance = str.hotBalance
+                self.coldBalance = str.coldBalance
+                self.unconfirmedBalance = str.unconfirmedBalance
                 
                 DispatchQueue.main.async {
                     
-                    self.removeSpinner()
-                    self.mainMenu.reloadData()
+                    //self.removeSpinner()
+                    //self.mainMenu.reloadData()
+                    self.mainMenu.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
+                    let impact = UIImpactFeedbackGenerator()
+                    impact.impactOccurred()
                     self.loadSectionOne(connector: connector)
                     
                 }
