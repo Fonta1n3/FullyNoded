@@ -505,7 +505,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         utxoArray.removeAll()
         
         executeNodeCommandSSH(method: BTC_CLI_COMMAND.listunspent,
-                              param: "")
+                              param: "0")
         
     }
     
@@ -589,6 +589,16 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                     }
                     
                 case "confirmations":
+                    
+                    if (value as! Int) == 0 {
+                     
+                        confs.textColor = UIColor.red
+                        
+                    } else {
+                        
+                        confs.textColor = UIColor.green
+                        
+                    }
                     
                     confs.text = "\(value) confs"
                     

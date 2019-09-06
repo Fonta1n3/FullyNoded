@@ -19,6 +19,9 @@ class MuSigDisplayerTableViewController: UITableViewController {
     var p2sh = Bool()
     var p2shP2wsh = Bool()
     var p2wsh = Bool()
+    
+    var isHD = Bool()
+    
     var sigsRequired = ""
     var pubkeyArray = [String]()
     
@@ -68,6 +71,12 @@ class MuSigDisplayerTableViewController: UITableViewController {
             
             torRPC = MakeRPCCall.sharedInstance
             torClient = TorClient.sharedInstance
+            
+        }
+        
+        if isHD {
+            
+            importMulti()
             
         }
         
@@ -139,27 +148,27 @@ class MuSigDisplayerTableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        if indexPath.row == 0 {
+        let cell = tableView.cellForRow(at: indexPath)!
+        
+        let impact = UIImpactFeedbackGenerator()
+        
+        DispatchQueue.main.async {
             
-            let cell = tableView.cellForRow(at: IndexPath.init(row: 0, section: 0))!
+            impact.impactOccurred()
             
-            let impact = UIImpactFeedbackGenerator()
-            
-            DispatchQueue.main.async {
+            UIView.animate(withDuration: 0.2, animations: {
                 
-                impact.impactOccurred()
+                cell.alpha = 0
                 
-                UIView.animate(withDuration: 0.2, animations: {
-                    
-                    cell.alpha = 0
-                    
-                }, completion: { _ in
+            }, completion: { _ in
+                
+                if indexPath.row == 0 {
                     
                     self.importMulti()
                     
-                })
+                }
                 
-            }
+            })
             
         }
         
@@ -263,32 +272,76 @@ class MuSigDisplayerTableViewController: UITableViewController {
                 
                 let params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"watchonly\": true, \"label\": \"\(label)\" }], ''{\"rescan\": true}''"
                 
-                self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.importmulti,
-                                           param: params)
+                if !isHD {
+                    
+                    self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.importmulti,
+                                               param: params)
+                    
+                } else {
+                    
+                    self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.deriveaddresses,
+                                               param: descriptor + ", [0,100]")
+                    
+                }
                 
             }
             
         }
         
         var descriptor = ""
-        var pubkeys = (pubkeyArray.description).replacingOccurrences(of: "[", with: "")
-        pubkeys = pubkeys.replacingOccurrences(of: "]", with: "")
         
-        if p2sh {
-            
-            descriptor = "sh(multi(\(sigsRequired),\(pubkeys)))"
-            
-        }
         
-        if p2wsh {
+        if isHD {
             
-            descriptor = "wsh(multi(\(sigsRequired),\(pubkeys)))"
+            //descriptor = sh(multi(2,XPUB/*,XPUB/*))
+            //process pubkeys
+            var pubkeys = (pubkeyArray.description).replacingOccurrences(of: "[", with: "")
+            pubkeys = pubkeys.replacingOccurrences(of: ",", with: "/*,")
+            pubkeys = pubkeys.replacingOccurrences(of: "]", with: "/*]")
+            pubkeys = pubkeys.replacingOccurrences(of: "]", with: "")
             
-        }
-        
-        if p2shP2wsh {
+            if p2sh {
+                
+                descriptor = "sh(multi(\(sigsRequired),\(pubkeys)))"
+                
+            }
             
-            descriptor = "sh(wsh(multi(\(sigsRequired),\(pubkeys))))"
+            if p2wsh {
+                
+                descriptor = "wsh(multi(\(sigsRequired),\(pubkeys)))"
+                
+                
+            }
+            
+            if p2shP2wsh {
+                
+                descriptor = "sh(wsh(multi(\(sigsRequired),\(pubkeys))))"
+                
+            }
+            
+        } else {
+            
+            var pubkeys = (pubkeyArray.description).replacingOccurrences(of: "[", with: "")
+            pubkeys = pubkeys.replacingOccurrences(of: "]", with: "")
+            
+            if p2sh {
+                
+                descriptor = "sh(multi(\(sigsRequired),\(pubkeys)))"
+                
+            }
+            
+            if p2wsh {
+                
+                descriptor = "wsh(multi(\(sigsRequired),\(pubkeys)))"
+                
+                
+            }
+            
+            if p2shP2wsh {
+                
+                descriptor = "sh(wsh(multi(\(sigsRequired),\(pubkeys))))"
+                
+            }
             
         }
         
@@ -308,6 +361,11 @@ class MuSigDisplayerTableViewController: UITableViewController {
             if !makeSSHCall.errorBool {
                 
                 switch method {
+                    
+                case BTC_CLI_COMMAND.deriveaddresses:
+                    
+                    let result = makeSSHCall.arrayToReturn
+                    print("result = \(result)")
                     
                 case BTC_CLI_COMMAND.importmulti:
                     

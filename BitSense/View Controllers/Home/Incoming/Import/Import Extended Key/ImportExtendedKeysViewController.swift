@@ -39,6 +39,10 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
     var keyArray = NSArray()
     
     let connectingView = ConnectingView()
+    
+    var isHDMusig = Bool()
+    var address = ""
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -47,50 +51,63 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
         keyTable.dataSource = self
         keyTable.tableFooterView = UIView(frame: .zero)
         
-        importedKey = dict["key"] as! String
-        descriptor = dict["descriptor"] as! String
-        label = dict["label"] as! String
-        timestamp = dict["rescanDate"] as! Int
-        
-        if importedKey.hasPrefix("t") {
-         
-            isTestnet = true
+        if !isHDMusig {
+            
+            descriptor = dict["descriptor"] as! String
+            label = dict["label"] as! String
+            timestamp = dict["rescanDate"] as! Int
+            
+            if importedKey.hasPrefix("t") {
+                
+                isTestnet = true
+                
+            } else {
+                
+                isTestnet = false
+                
+            }
+            
+            if importedKey.hasPrefix("tpub") || importedKey.hasPrefix("xpub") {
+                
+                isWatchOnly = true
+                
+            } else {
+                
+                isWatchOnly = false
+                
+            }
+            
+            let derivation = dict["derivation"] as! String
+            
+            if derivation == "BIP84" {
+                
+                bip84 = true
+                bip44 = false
+                
+            } else {
+                
+                bip84 = false
+                bip44 = true
+                
+            }
+            
+            range = dict["range"] as! String
+            convertedRange = dict["convertedRange"] as! [Int]
+            fingerprint = dict["fingerprint"] as! String
+            addToKeypool = dict["addToKeypool"] as! Bool
+            isInternal = dict["addAsChange"] as! Bool
             
         } else {
          
-            isTestnet = false
+            range = dict["range"] as! String
+            convertedRange = dict["convertedRange"] as! [Int]
+            descriptor = dict["descriptor"] as! String
+            label = dict["label"] as! String
+            timestamp = dict["rescanDate"] as! Int
+            addToKeypool = false
+            isInternal = false
             
         }
-        
-        if importedKey.hasPrefix("tpub") || importedKey.hasPrefix("xpub") {
-         
-            isWatchOnly = true
-            
-        } else {
-         
-            isWatchOnly = false
-            
-        }
-        
-        let derivation = dict["derivation"] as! String
-        
-        if derivation == "BIP84" {
-         
-            bip84 = true
-            bip44 = false
-            
-        } else {
-         
-            bip84 = false
-            bip44 = true
-            
-        }
-        
-        range = dict["range"] as! String
-        convertedRange = dict["convertedRange"] as! [Int]
-        fingerprint = dict["fingerprint"] as! String
-        addToKeypool = dict["addToKeypool"] as! Bool
-        isInternal = dict["addAsChange"] as! Bool
         
     }
     
@@ -122,7 +139,15 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
             
         }
         
-        importExtendedKey()
+        if !isHDMusig {
+            
+            importExtendedKey()
+            
+        } else {
+         
+            importHDMusig()
+            
+        }
         
     }
     
@@ -135,6 +160,7 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        cell.selectionStyle = .none
         
         var index = Int()
         
@@ -160,6 +186,43 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
         
     }
     
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
+        let cell = tableView.cellForRow(at: indexPath)!
+        
+        let impact = UIImpactFeedbackGenerator()
+        
+        DispatchQueue.main.async {
+            
+            impact.impactOccurred()
+            
+            UIView.animate(withDuration: 0.2, animations: {
+                
+                cell.alpha = 0
+                
+            }, completion: { _ in
+                
+                self.address = self.keyArray[indexPath.row] as! String
+                self.performSegue(withIdentifier: "displayKey", sender: self)
+                cell.alpha = 1
+                
+            })
+            
+        }
+    }
+    
+    func importHDMusig() {
+     
+        connectingView.addConnectingView(vc: self,
+                                         description: "importing 200 HD multisig addresses and scripts (index \(range)), this can take a little while, sit back and relax 😎")
+        
+        let params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"range\": \(convertedRange), \"watchonly\": true, \"label\": \"\(label)\" }], ''{\"rescan\": true}''"
+        
+        self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.importmulti,
+                                   param: params)
+        
+    }
+    
     func importExtendedKey() {
         
         if isWatchOnly {
@@ -168,12 +231,12 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
             if bip44 {
                 
                 connectingView.addConnectingView(vc: self,
-                                                 description: "Importing 200 BIP44 keys from XPUB (index \(range)), this can take a little while, sit back and relax 😎")
+                                                 description: "importing 200 BIP44 keys from xpub (index \(range)), this can take a little while, sit back and relax 😎")
                 
             } else if bip84 {
                 
                 connectingView.addConnectingView(vc: self,
-                                                 description: "Importing 200 BIP84 keys from XPUB (index \(range)), this can take a little while, sit back and relax 😎")
+                                                 description: "importing 200 BIP84 keys from xpub (index \(range)), this can take a little while, sit back and relax 😎")
                 
             }
             
@@ -183,22 +246,22 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
             if bip44 {
                 
                 connectingView.addConnectingView(vc: self,
-                                                 description: "Importing 200 BIP44 keys from XPRV (index \(range)), this can take a little while, sit back and relax 😎")
+                                                 description: "importing 200 BIP44 keys from xprv (index \(range)), this can take a little while, sit back and relax 😎")
                 
             } else if bip84 {
                 
                 connectingView.addConnectingView(vc: self,
-                                                 description: "Importing 200 BIP84 keys from XPRV (index \(range)), this can take a little while, sit back and relax 😎")
+                                                 description: "importing 200 BIP84 keys from xprv (index \(range)), this can take a little while, sit back and relax 😎")
                 
             }
             
         }
         
-        var params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"range\": \(convertedRange), \"watchonly\": \(isWatchOnly), \"label\": \"\(label)\", \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }], ''{\"rescan\": \(reScan)}''"
+        var params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"range\": \(convertedRange), \"watchonly\": \(isWatchOnly), \"label\": \"\(label)\", \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }], ''{\"rescan\": true}''"
         
         if isInternal {
             
-            params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"range\": \(convertedRange), \"watchonly\": \(isWatchOnly), \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }], ''{\"rescan\": \(reScan)}''"
+            params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"range\": \(convertedRange), \"watchonly\": \(isWatchOnly), \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }], ''{\"rescan\": true}''"
             
         }
         
@@ -318,6 +381,21 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
             displayAlert(viewController: self,
                          isError: true,
                          message: "Not connected")
+            
+        }
+        
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        
+        if segue.identifier == "displayKey" {
+            
+            if let vc = segue.destination as? InvoiceViewController {
+                
+                vc.isHDMusig = true
+                vc.addressString = self.address
+                
+            }
             
         }
         

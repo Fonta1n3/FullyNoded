@@ -31,6 +31,7 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
     var desc = "wpkh"
     var fingerprint = ""
     var isTestnet = Bool()
+    var isWatchOnly = Bool()
     
     var keyArray = NSArray()
     
@@ -194,10 +195,12 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
         
         if key.hasPrefix("xprv") || key.hasPrefix("tprv") {
             
+            isWatchOnly = false
             importXprv(xprv: key)
             
         } else {
             
+            isWatchOnly = true
             importXpub(xpub: key)
             
         }
@@ -518,6 +521,7 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
             
             if let vc = segue.destination as? ImportExtendedKeysViewController  {
                 
+                vc.isWatchOnly = isWatchOnly
                 vc.keyArray = keyArray
                 vc.dict = dict
                 

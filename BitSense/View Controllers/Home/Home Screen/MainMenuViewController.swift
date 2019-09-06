@@ -124,7 +124,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                             
                             IsUsingSSH.sharedInstance = node["usingSSH"] as! Bool
                             self.isUsingSSH = IsUsingSSH.sharedInstance
-                            self.refresh()
+                            self.refreshDataNow()
                             
                         }
                         
@@ -138,7 +138,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 displayAlert(viewController: self,
                              isError: true,
-                             message: "No active nodes")
+                             message: "no active nodes")
                 
             }
             
@@ -148,7 +148,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
             displayAlert(viewController: self,
                          isError: true,
-                         message: "Go to Nodes to add your own node")
+                         message: "go to Nodes to add your own node")
             
         }
         
@@ -189,6 +189,12 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
 //    }
     
     @IBAction func refreshData(_ sender: Any) {
+        
+        refreshDataNow()
+        
+    }
+    
+    func refreshDataNow() {
         
         refreshButtonOutlet.tintColor = UIColor.white.withAlphaComponent(0)
         spinner.startAnimating()
@@ -837,7 +843,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     self.nodeLabel = dec
                     
                     self.connectingView.addConnectingView(vc: self,
-                                                          description: "Connecting to \(dec)")
+                                                          description: "connecting to \(dec)")
                     
                     let sshBool = self.activeNode["usingSSH"] as! Bool
                     let torBool = self.activeNode["usingTor"] as! Bool
@@ -863,7 +869,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 displayAlert(viewController: self,
                              isError: true,
-                             message: "No active nodes")
+                             message: "no active nodes")
                 
             }
             
@@ -884,7 +890,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 displayAlert(viewController: self,
                              isError: true,
-                             message: connector.errorDescription ?? "Unable to connect via SSH")
+                             message: connector.errorDescription ?? "unable to connect via ssh")
                 
             } else {
                 
@@ -959,7 +965,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 displayAlert(viewController: self,
                              isError: true,
-                             message: "Unable to connect to Tor")
+                             message: "unable to connect to tor")
                 
             } else {
                 
@@ -992,7 +998,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 displayAlert(viewController: self,
                              isError: true,
-                             message: "No active nodes")
+                             message: "no active nodes")
                 
             }
             
@@ -1000,7 +1006,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
             displayAlert(viewController: self,
                          isError: true,
-                         message: "Add a node first")
+                         message: "add a node first")
             
         }
         

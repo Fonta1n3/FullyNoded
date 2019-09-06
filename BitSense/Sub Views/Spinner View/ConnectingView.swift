@@ -38,7 +38,7 @@ class ConnectingView: UIView {
                                  width: 250,
                                  height: 60)
             
-            self.label.text = description
+            self.label.text = description.lowercased()
             self.label.textColor = UIColor.white
             self.label.font = UIFont.init(name: "HiraginoSans-W3", size: 12)
             self.label.textAlignment = .center

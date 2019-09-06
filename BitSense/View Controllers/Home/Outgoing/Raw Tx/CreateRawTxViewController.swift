@@ -91,17 +91,21 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             let spendable = dict["spendable"] as! Bool
             let amount = dict["amount"] as! Double
             
-            if !coldSwitchOutlet.isOn {
+            DispatchQueue.main.async {
                 
-                if spendable {
+                if !self.coldSwitchOutlet.isOn {
+                    
+                    if spendable {
+                        
+                        self.spendableBalance += amount
+                        
+                    }
+                    
+                } else {
                     
                     self.spendableBalance += amount
                     
                 }
-                
-            } else {
-                
-                self.spendableBalance += amount
                 
             }
             
@@ -385,12 +389,12 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         rawDisplayer.vc = self
         
         tapQRGesture = UITapGestureRecognizer(target: self,
-                                                   action: #selector(shareQRCode(_:)))
+                                              action: #selector(shareQRCode(_:)))
         
         rawDisplayer.qrView.addGestureRecognizer(tapQRGesture)
         
         tapTextViewGesture = UITapGestureRecognizer(target: self,
-                                                         action: #selector(shareRawText(_:)))
+                                                    action: #selector(shareRawText(_:)))
         
         rawDisplayer.textView.addGestureRecognizer(tapTextViewGesture)
         

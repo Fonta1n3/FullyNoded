@@ -34,7 +34,7 @@ class TransactionViewController: UIViewController {
     @IBAction func bumpFee(_ sender: Any) {
         
         creatingView.addConnectingView(vc: self,
-                                       description: "Bumping")
+                                       description: "bumping")
         
         executeNodeCommandSsh(method: BTC_CLI_COMMAND.bumpfee,
                               param: "\"\(txid)\"")
@@ -47,7 +47,7 @@ class TransactionViewController: UIViewController {
         bumpButtonOutlet.alpha = 0
 
         creatingView.addConnectingView(vc: self,
-                                       description: "Getting Transaction")
+                                       description: "getting transaction")
         
     }
     
@@ -81,7 +81,7 @@ class TransactionViewController: UIViewController {
         
         displayAlert(viewController: self,
                      isError: false,
-                     message: "Fee bumped from \(originalFee.avoidNotation) to \(newFee.avoidNotation)")
+                     message: "fee bumped from \(originalFee.avoidNotation) to \(newFee.avoidNotation)")
         
     }
     
@@ -151,7 +151,7 @@ class TransactionViewController: UIViewController {
                 
                 displayAlert(viewController: self.navigationController!,
                              isError: true,
-                             message: "SSH not connected")
+                             message: "ssh not connected")
                 
             }
             
@@ -161,7 +161,7 @@ class TransactionViewController: UIViewController {
             
             displayAlert(viewController: self.navigationController!,
                          isError: true,
-                         message: "SSH not connected")
+                         message: "ssh not connected")
             
         }
         

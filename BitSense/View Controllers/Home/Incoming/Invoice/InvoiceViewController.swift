@@ -30,12 +30,37 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     let qrGenerator = QRGenerator()
     let copiedLabel = UILabel()
     
+    var isHDMusig = Bool()
+    
+    var isHDInvoice = Bool()
+    
     @IBOutlet var amountField: UITextField!
     @IBOutlet var labelField: UITextField!
     @IBOutlet var qrView: UIImageView!
     
+    @IBOutlet var minusOutlet: UIButton!
+    @IBOutlet var plusOutlet: UIButton!
+    @IBOutlet var indexDisplay: UILabel!
+    @IBOutlet var indexLabel: UILabel!
+    
+    @IBAction func minusAction(_ sender: Any) {
+        
+        
+    }
+    
+    @IBAction func plusAction(_ sender: Any) {
+        
+        
+    }
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        minusOutlet.alpha = 0
+        plusOutlet.alpha = 0
+        indexLabel.alpha = 0
+        indexDisplay.alpha = 0
         
         amountField.delegate = self
         labelField.delegate = self
@@ -59,6 +84,30 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         loadAddress()
         
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        
+        if isHDInvoice {
+            
+            minusOutlet.alpha = 1
+            plusOutlet.alpha = 1
+            indexLabel.alpha = 1
+            indexDisplay.alpha = 1
+            
+        }
+        
+    }
+    
+    @IBAction func getAddressInfo(_ sender: Any) {
+        
+        DispatchQueue.main.async {
+            
+            self.performSegue(withIdentifier: "getAddressInfo", sender: self)
+            
+        }
+        
+    }
+    
     
     func loadAddress() {
         
@@ -128,10 +177,15 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     func showAddress() {
         
-        DispatchQueue.main.async {
+        self.connectingView.addConnectingView(vc: self,
+                                              description: "Getting Address")
+        
+        if isHDMusig {
             
-            self.connectingView.addConnectingView(vc: self,
-                                                  description: "Getting Address")
+            showAddress(address: addressString)
+            connectingView.removeConnectingView()
+            
+        } else {
             
             if self.nativeSegwit {
                 
@@ -312,10 +366,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         
         activityViewController.popoverPresentationController?.sourceView = self.view
         self.present(activityViewController, animated: true) {}
-        
-        
-        
-        
         
     }
     
@@ -516,6 +566,21 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         copiedLabel.font = UIFont.init(name: "HiraginoSans-W3", size: 17)
         copiedLabel.backgroundColor = UIColor.black
         copiedLabel.textAlignment = .center
+        
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        
+        if segue.identifier == "getAddressInfo" {
+            
+            if let vc = segue.destination as? GetInfoViewController {
+                
+                vc.address = addressString
+                vc.getAddressInfo = true
+                
+            }
+            
+        }
         
     }
 

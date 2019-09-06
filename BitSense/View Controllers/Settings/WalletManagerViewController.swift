@@ -39,14 +39,14 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
 
         walletTable.delegate = self
         walletTable.tableFooterView = UIView(frame: .zero)
-        
-        connectingView.addConnectingView(vc: self,
-                                         description: "Getting Wallets")
     
         
     }
     
     override func viewDidAppear(_ animated: Bool) {
+        
+        connectingView.addConnectingView(vc: self,
+                                         description: "getting wallets")
         
         isUsingSSH = IsUsingSSH.sharedInstance
         

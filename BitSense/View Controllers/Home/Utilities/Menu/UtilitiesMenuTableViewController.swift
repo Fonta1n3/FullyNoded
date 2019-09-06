@@ -183,6 +183,10 @@ class UtilitiesMenuTableViewController: UITableViewController, UITabBarControlle
                         
                     case 0:
                         
+                        displayAlert(viewController: self.navigationController!,
+                                     isError: false,
+                                     message: "starting rescan, this can take an hour or so and will affect the apps functionality")
+                        
                         self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.rescanblockchain,
                                                        param: "")
                         
@@ -341,7 +345,7 @@ class UtilitiesMenuTableViewController: UITableViewController, UITabBarControlle
                     
                     displayAlert(viewController: self.navigationController!,
                                  isError: false,
-                                 message: "Rescanning the blockchain, this can take an hour or so.")
+                                 message: "Rescanning completed")
                     
                 case BTC_CLI_COMMAND.abortrescan:
                     

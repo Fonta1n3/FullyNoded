@@ -47,7 +47,7 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
         
         if coldSwitchOutlet.isOn {
          
-            displayAlert(viewController: self, isError: false, message: "This PSBT will include inputs that are watch-only and will still need to be \"updated\" by a wallet that can sign it.")
+            displayAlert(viewController: self, isError: false, message: "this psbt will include inputs that are watch-only and will still need to be \"updated\" by a wallet that can sign it.")
             
         }
         
@@ -84,7 +84,7 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
             let receivingAddress = receivingField.text!
             
             creatingView.addConnectingView(vc: self,
-                                           description: "Creating Wallet Funded PSBT")
+                                           description: "creating wallet funded psbt")
             
             let feeTarget = UserDefaults.standard.object(forKey: "feeTarget") as! Int
             let output = "[{\"\(receivingAddress)\":\(amountToSend)}]"
@@ -97,7 +97,7 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
             
             displayAlert(viewController: self,
                          isError: true,
-                         message: "Ooops, you need to fill out an amount and recipient address")
+                         message: "you need to fill out an amount and recipient address")
             
         }
         
@@ -197,13 +197,13 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
                             
                             displayAlert(viewController: self,
                                          isError: false,
-                                         message: "PSBT is complete")
+                                         message: "psbt is complete")
                             
                         } else {
                             
                             displayAlert(viewController: self,
                                          isError: true,
-                                         message: "PSBT is incomplete")
+                                         message: "psbt is incomplete")
                             
                         }
                         
@@ -254,7 +254,7 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
                 
                 displayAlert(viewController: self,
                              isError: true,
-                             message: "Not connected")
+                             message: "not connected")
                 
             }
             
@@ -264,7 +264,7 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
             
             displayAlert(viewController: self,
                          isError: true,
-                         message: "Not connected")
+                         message: "not connected")
             
         }
         
@@ -607,7 +607,7 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
                 
                 displayAlert(viewController: self,
                              isError: true,
-                             message: "Only valid numbers allowed")
+                             message: "only valid numbers allowed")
                 
             }
             

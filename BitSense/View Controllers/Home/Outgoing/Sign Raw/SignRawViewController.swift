@@ -65,6 +65,9 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
         
         if switchOutlet.isOn {
             
+            creatingView.addConnectingView(vc: self,
+                                           description: "fetching redeem script")
+            
             DispatchQueue.main.async {
                 
                 UIView.animate(withDuration: 0.2) {
@@ -130,10 +133,14 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
             
             if privateKeyField.text != "" && unsignedTextView.text != "" {
                 
+                creatingView.addConnectingView(vc: self, description: "signing")
+                
                 signWithKey(key: privateKeyField.text!,
                             tx: unsignedTextView.text!)
                 
             } else if privateKeyField.text == "" && unsignedTextView.text != "" {
+                
+                creatingView.addConnectingView(vc: self, description: "signing")
                 
                 executeNodeCommandSsh(method: BTC_CLI_COMMAND.signrawtransactionwithwallet,
                                       param: "\"\(unsignedTextView.text!)\"")
@@ -149,6 +156,8 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
             //sign multisig
             
             if privateKeyField.text != "" && unsignedTextView.text != "" && scriptTextView.text != "" {
+                
+                creatingView.addConnectingView(vc: self, description: "signing")
                 
                 let unsigned = unsignedTextView.text!
                 let redeemScript = scriptTextView.text!
@@ -175,7 +184,7 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                 
                 displayAlert(viewController: self,
                              isError: true,
-                             message: "🤨 You need to fill out all the info")
+                             message: "you need to fill out all the info")
                 
             }
             
@@ -476,10 +485,12 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                     if complete {
                         
                         let hex = dict["hex"] as! String
+                        creatingView.removeConnectingView()
                         self.showRaw(raw: hex)
                         
                     } else {
                         
+                        creatingView.removeConnectingView()
                         let errors = dict["errors"] as! NSArray
                         var errorStrings = [String]()
                         
@@ -516,8 +527,6 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                     let prevTxDict = makeSSHCall.dictToReturn
                     let outputs = prevTxDict["vout"] as! NSArray
                     
-                    print("outputs = \(outputs)")
-                    
                     for outputDict in outputs {
                         
                         let output = outputDict as! NSDictionary
@@ -541,7 +550,6 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                 case BTC_CLI_COMMAND.getaddressinfo:
                     
                     let result = makeSSHCall.dictToReturn
-                    print("reult = \(result)")
                     
                     let script = result["hex"] as! String
                     isWitness = result["iswitness"] as! Bool
@@ -549,12 +557,14 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                     DispatchQueue.main.async {
                         
                         self.scriptTextView.text = script
+                        self.creatingView.removeConnectingView()
                         
                     }
                     
                 case BTC_CLI_COMMAND.signrawtransactionwithkey:
                     
                     let dict = makeSSHCall.dictToReturn
+                    print("signrawtransactionwithkey result = \(dict)")
                     let complete = dict["complete"] as! Bool
                     
                     if complete {
@@ -562,28 +572,33 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                         let hex = dict["hex"] as! String
                         self.showRaw(raw: hex)
                         
+                        creatingView.removeConnectingView()
+                        
                         displayAlert(viewController: self,
                                      isError: false,
                                      message: "Transaction Complete")
                         
                     } else {
                         
-                        let errors = dict["errors"] as! NSArray
-                        var errorStrings = [String]()
-                        
-                        for error in errors {
-                            
-                            let dic = error as! NSDictionary
-                            let str = dic["error"] as! String
-                            errorStrings.append(str)
-                            
-                        }
-                        
-                        var err = errorStrings.description.replacingOccurrences(of: "]", with: "")
-                        err = err.description.replacingOccurrences(of: "[", with: "")
-                        
                         DispatchQueue.main.async {
+                        
+                            self.creatingView.removeConnectingView()
                             
+                            let errors = dict["errors"] as! NSArray
+                            var errorStrings = [String]()
+                            
+                            for error in errors {
+                                
+                                let dic = error as! NSDictionary
+                                let str = dic["error"] as! String
+                                errorStrings.append(str)
+                                
+                            }
+                            
+                            var err = errorStrings.description.replacingOccurrences(of: "]", with: "")
+                            err = err.description.replacingOccurrences(of: "[", with: "")
+                            print("err = \(err)")
+                        
                             if self.switchOutlet.isOn {
                                 
                                 if let hex = dict["hex"] as? String {
@@ -591,8 +606,8 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                                     self.showRaw(raw: hex)
                                     
                                     displayAlert(viewController: self,
-                                                 isError: false,
-                                                 message: "MultiSig Transaction still needs more signatures")
+                                                 isError: true,
+                                                 message: err)
                                     
                                 } else {
                                     
@@ -703,7 +718,6 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                         
                         let dict = makeSSHCall.dictToReturn
                         let txSize = dict["vsize"] as! Int
-                        print("dict = \(dict)")
                         let outputs = dict["vout"] as! NSArray
                         let inputs = dict["vin"] as! NSArray
                         let outputCount = outputs.count

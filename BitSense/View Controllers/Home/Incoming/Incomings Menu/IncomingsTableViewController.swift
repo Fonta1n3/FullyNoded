@@ -84,7 +84,7 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
         
         var numberOfRows = 0
         switch section {
-        case 0: numberOfRows = 1
+        case 0: numberOfRows = 2
         case 1: numberOfRows = 6
         case 2: numberOfRows = 1
         case 3: numberOfRows = 3
@@ -106,7 +106,14 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
                                                      for: indexPath)
             
             cell.selectionStyle = .none
-            cell.textLabel?.text = "Invoice"
+            
+            var labelString = ""
+            switch indexPath.row {
+            case 0: labelString = "Invoice"
+            case 1: labelString = "HD Musig Cold Storage"
+            default: break
+            }
+            cell.textLabel?.text = labelString
             return cell
             
         case 1:
@@ -255,9 +262,16 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
                     
                 case 0:
                     
+                    var segueString = ""
+                    switch indexPath.row {
+                    case 0: segueString = "createInvoice"
+                    case 1: segueString = "getHDmusigAddress"
+                    default: break
+                    }
+                    
                     DispatchQueue.main.async {
                         
-                        self.performSegue(withIdentifier: "createInvoice",
+                        self.performSegue(withIdentifier: segueString,
                                           sender: self)
                     }
                     
@@ -408,6 +422,14 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
         switch segue.identifier {
+            
+        case "getHDmusigAddress":
+            
+            if let vc = segue.destination as? InvoiceViewController {
+                
+                vc.isHDInvoice = true
+                
+            }
             
         case "importAKey":
             

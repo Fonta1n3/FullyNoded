@@ -47,6 +47,8 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
     
     var dict = [String:Any]()
     
+    var isHD = false
+    
     @IBAction func p2shAction(_ sender: Any) {
         
         if p2shSwitchOutlet.isOn {
@@ -180,10 +182,18 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
             
         }
         
-        let param = "\(sigsRequired), \(pubKeyArray), \(type)"
-        
-        executeNodeCommandSsh(method: BTC_CLI_COMMAND.createmultisig,
-                              param: param)
+        if !isHD {
+            
+            let param = "\(sigsRequired), \(pubKeyArray), \(type)"
+            
+            executeNodeCommandSsh(method: BTC_CLI_COMMAND.createmultisig,
+                                  param: param)
+            
+        } else {
+            
+            getHDMusigDescriptor()
+            
+        }
         
     }
     
@@ -402,40 +412,36 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
     func getQRCode() {
         
         back()
-        
-        let stringURL = qrScanner.stringToReturn
-        
-        if pubKeyArray[0] == "" {
-                
-                pubKeyArray[0] = stringURL
-                
-        } else {
-                
-            pubKeyArray.append(stringURL)
-                
-        }
-            
-        DispatchQueue.main.async {
-                
-            self.pubKeyTable.reloadData()
-                
-        }
+        processString(string: qrScanner.stringToReturn)
         
     }
     
     func didPickImage() {
         
         back()
+        processString(string: qrScanner.qrString)
         
-        let qrString = qrScanner.qrString
+    }
+    
+    func processString(string: String) {
         
-        if pubKeyArray[0] == "" {
+        if string.hasPrefix("xpub") || string.hasPrefix("tpub") {
             
-            pubKeyArray[0] = qrString
+            isHD = true
             
         } else {
             
-            pubKeyArray.append(qrString)
+            isHD = false
+            
+        }
+        
+        if pubKeyArray[0] == "" {
+            
+            pubKeyArray[0] = string
+            
+        } else {
+            
+            pubKeyArray.append(string)
             
         }
         
@@ -444,12 +450,81 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
             self.pubKeyTable.reloadData()
             
         }
-        
     }
     
     @objc func chooseQRCodeFromLibrary() {
         
         qrScanner.chooseQRCodeFromLibrary()
+        
+    }
+    
+    func getHDMusigDescriptor() {
+        
+        connectingView.addConnectingView(vc: self,
+                                         description: "creating HD multisig descriptor")
+        
+        let sigsRequired = signaturesField.text!
+        
+        func completion() {
+            
+            let result = self.makeSSHCall.dictToReturn
+            
+            if makeSSHCall.errorBool {
+                
+                connectingView.removeConnectingView()
+                
+                displayAlert(viewController: self.navigationController!,
+                             isError: true,
+                             message: makeSSHCall.errorDescription)
+                
+            } else {
+                
+                let descriptor = "\"\(result["descriptor"] as! String)\""
+                dict["descriptor"] = descriptor
+                
+                DispatchQueue.main.async {
+                    
+                    self.performSegue(withIdentifier: "chooseRangeForHDMusig", sender: self)
+                    
+                }
+                
+            }
+            
+        }
+        
+        var descriptor = ""
+        
+        //descriptor = sh(multi(2,XPUB/*,XPUB/*))
+        var pubkeys = (pubKeyArray.description).replacingOccurrences(of: "[", with: "")
+        pubkeys = pubkeys.replacingOccurrences(of: ",", with: "/*,")
+        pubkeys = pubkeys.replacingOccurrences(of: "]", with: "/*]")
+        pubkeys = pubkeys.replacingOccurrences(of: "]", with: "")
+        
+        if p2sh {
+            
+            descriptor = "sh(multi(\(sigsRequired),\(pubkeys)))"
+            
+        }
+        
+        if p2wsh {
+            
+            descriptor = "wsh(multi(\(sigsRequired),\(pubkeys)))"
+            
+            
+        }
+        
+        if p2shP2wsh {
+            
+            descriptor = "sh(wsh(multi(\(sigsRequired),\(pubkeys))))"
+            
+        }
+        
+        descriptor = descriptor.replacingOccurrences(of: "\"", with: "")
+        descriptor = descriptor.replacingOccurrences(of: " ", with: "")
+        
+        makeSSHCall.executeSSHCommand(ssh: self.ssh,
+                                      method: BTC_CLI_COMMAND.getdescriptorinfo,
+                                      param: "\"\(descriptor)\"", completion: completion)
         
     }
     
@@ -579,6 +654,17 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
                 vc.address = address
                 vc.script = script
                 vc.dict = dict
+                
+            }
+            
+        }
+        
+        if segue.identifier == "chooseRangeForHDMusig" {
+            
+            if let vc = segue.destination as? ChooseRangeViewController {
+                
+                vc.dict = dict
+                vc.isHDMusig = true
                 
             }
             

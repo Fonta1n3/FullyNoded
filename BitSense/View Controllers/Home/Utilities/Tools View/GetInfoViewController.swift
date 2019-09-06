@@ -53,6 +53,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     var infoArray = [NSDictionary]()
     var alertMessage = ""
     
+    var address = ""
     
     func scan() {
     
@@ -267,7 +268,16 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         if getAddressInfo {
             
             titleString = "Address Info"
-            scan()
+            
+            if address == "" {
+                
+                scan()
+                
+            } else {
+                
+                getAddressInfo(address: address)
+                
+            }
             
         }
         
@@ -315,27 +325,45 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
                 case BTC_CLI_COMMAND.getaddressinfo:
                     
                     let result = makeSSHCall.dictToReturn
-                    infoArray.append(result)
                     
-                    if indexToParse < addressArray.count {
-                        
-                        indexToParse += 1
-                        parseAddresses(addresses: addressArray, index: indexToParse)
-                        
-                    }
-                    
-                    if indexToParse == addressArray.count {
+                    if address != "" {
                         
                         DispatchQueue.main.async {
                             
-                            self.textView.text = "\(self.infoArray)"
+                            self.textView.text = "\(result)"
                             self.connectingView.removeConnectingView()
                             
-                            if self.alertMessage != "" {
+                        }
+                        
+                    } else {
+                        
+                        infoArray.append(result)
+                        
+                        if addressArray.count > 0 {
+                            
+                            if indexToParse < addressArray.count {
                                 
-                                displayAlert(viewController: self,
-                                             isError: false,
-                                             message: self.alertMessage)
+                                indexToParse += 1
+                                parseAddresses(addresses: addressArray, index: indexToParse)
+                                
+                            }
+                            
+                            if indexToParse == addressArray.count {
+                                
+                                DispatchQueue.main.async {
+                                    
+                                    self.textView.text = "\(self.infoArray)"
+                                    self.connectingView.removeConnectingView()
+                                    
+                                    if self.alertMessage != "" {
+                                        
+                                        displayAlert(viewController: self,
+                                                     isError: false,
+                                                     message: self.alertMessage)
+                                        
+                                    }
+                                    
+                                }
                                 
                             }
                             
@@ -383,7 +411,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
                     
                     self.connectingView.removeConnectingView()
                     
-                    displayAlert(viewController: self.navigationController!,
+                    displayAlert(viewController: self,
                                  isError: true,
                                  message: self.makeSSHCall.errorDescription)
                     
@@ -423,6 +451,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     }
     
     func parseAddresses(addresses: NSArray, index: Int) {
+        print("parseAddresses")
         
         for (i, address) in addresses.enumerated() {
             
@@ -665,6 +694,9 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
                 textField.text = string
                 getAddressInfo(address: string)
                 
+                connectingView.addConnectingView(vc: self,
+                                                 description: "getting info")
+                
             } else {
                 
                 textField.becomeFirstResponder()
@@ -680,6 +712,9 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         if textField.text != "" {
             
             getAddressInfo(address: textField.text!)
+            
+            connectingView.addConnectingView(vc: self,
+                                             description: "getting info")
             
         }
         

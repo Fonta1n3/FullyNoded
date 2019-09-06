@@ -10,10 +10,19 @@ import UIKit
 
 class ChooseRangeViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource {
     
+    var makeSSHCall:SSHelper!
+    var ssh:SSHService!
+    var torClient:TorClient!
+    var torRPC:MakeRPCCall!
+    var isUsingSSH = IsUsingSSH.sharedInstance
+    
     let picker = UIPickerView()
+    let connectingView = ConnectingView()
     
     var range = ""
     var dict = [String:Any]()
+    var isHDMusig = Bool()
+    var keyArray = NSArray()
     
     let ud = UserDefaults.standard
 
@@ -28,13 +37,35 @@ class ChooseRangeViewController: UIViewController, UIPickerViewDelegate, UIPicke
         
         addPicker()
         
+        isUsingSSH = IsUsingSSH.sharedInstance
+        
+        if isUsingSSH {
+            
+            ssh = SSHService.sharedInstance
+            makeSSHCall = SSHelper.sharedInstance
+            
+        } else {
+            
+            torRPC = MakeRPCCall.sharedInstance
+            torClient = TorClient.sharedInstance
+            
+        }
+        
     }
     
     @IBAction func nextAction(_ sender: Any) {
         
-        DispatchQueue.main.async {
+        if isHDMusig {
             
-            self.performSegue(withIdentifier: "addToKeypool", sender: self)
+            getHDMusigAddresses()
+            
+        } else {
+            
+            DispatchQueue.main.async {
+                
+                self.performSegue(withIdentifier: "addToKeypool", sender: self)
+                
+            }
             
         }
         
@@ -86,22 +117,163 @@ class ChooseRangeViewController: UIViewController, UIPickerViewDelegate, UIPicke
         
     }
     
+    func convertRange() -> [Int] {
+        
+        if range == "" {
+            
+            range = "0 to 199"
+            
+        }
+        
+        var arrayToReturn = [Int]()
+        let newrange = range.replacingOccurrences(of: " ", with: "")
+        let rangeArray = newrange.components(separatedBy: "to")
+        let zero = Int(rangeArray[0])!
+        let one = Int(rangeArray[1])!
+        arrayToReturn = [zero,one]
+        dict["convertedRange"] = arrayToReturn
+        return arrayToReturn
+        
+    }
+    
+    func getHDMusigAddresses() {
+        
+        connectingView.addConnectingView(vc: self,
+                                         description: "deriving HD multisig addresses")
+        
+        let convertedRange = convertRange()
+        
+        func importDescriptor() {
+            
+            let result = self.makeSSHCall.dictToReturn
+            
+            if makeSSHCall.errorBool {
+                
+                connectingView.removeConnectingView()
+                
+                displayAlert(viewController: self.navigationController!,
+                             isError: true,
+                             message: makeSSHCall.errorDescription)
+                
+            } else {
+                
+                let descriptor = "\"\(result["descriptor"] as! String)\""
+                
+                self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.deriveaddresses,
+                                           param: "\(descriptor), ''\(convertedRange)''")
+                
+            }
+            
+        }
+        
+        let descriptor = dict["descriptor"] as! String
+        
+        makeSSHCall.executeSSHCommand(ssh: self.ssh,
+                                      method: BTC_CLI_COMMAND.getdescriptorinfo,
+                                      param: "\(descriptor)", completion: importDescriptor)
+        
+    }
+    
+    func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
+        
+        func getResult() {
+            
+            if !makeSSHCall.errorBool {
+                
+                switch method {
+                    
+                case BTC_CLI_COMMAND.deriveaddresses:
+                    
+                    keyArray = makeSSHCall.arrayToReturn
+                    
+                    connectingView.removeConnectingView()
+                    
+                    DispatchQueue.main.async {
+                        
+                        self.performSegue(withIdentifier: "goDisplayHDMusig", sender: self)
+                        
+                    }
+                    
+                default:
+                    
+                    break
+                    
+                }
+                
+            } else {
+                
+                DispatchQueue.main.async {
+                    
+                    self.connectingView.removeConnectingView()
+                    
+                    displayAlert(viewController: self.navigationController!,
+                                 isError: true,
+                                 message: self.makeSSHCall.errorDescription)
+                    
+                }
+                
+            }
+            
+        }
+        
+        if self.ssh != nil {
+            
+            if self.ssh.session.isConnected {
+                
+                makeSSHCall.executeSSHCommand(ssh: self.ssh,
+                                              method: method,
+                                              param: param,
+                                              completion: getResult)
+                
+            } else {
+                
+                connectingView.removeConnectingView()
+                
+                displayAlert(viewController: self.navigationController!,
+                             isError: true,
+                             message: "Not connected")
+                
+            }
+            
+        } else {
+            
+            connectingView.removeConnectingView()
+            
+            displayAlert(viewController: self.navigationController!,
+                         isError: true,
+                         message: "Not connected")
+            
+        }
+        
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        
+        if range == "" {
+            
+            range = "0 to 199"
+            
+        }
+        
+        dict["range"] = range
         
         switch segue.identifier {
             
         case "addToKeypool":
             
             if let vc = segue.destination as? AddToKeypoolViewController  {
-                
-                if range == "" {
-                    
-                    range = "0 to 199"
-                    
-                }
-                
-                dict["range"] = range
+            
                 vc.dict = dict
+                
+            }
+            
+        case "goDisplayHDMusig":
+            
+            if let vc = segue.destination as? ImportExtendedKeysViewController {
+                
+                vc.keyArray = keyArray
+                vc.dict = dict
+                vc.isHDMusig = true
                 
             }
             

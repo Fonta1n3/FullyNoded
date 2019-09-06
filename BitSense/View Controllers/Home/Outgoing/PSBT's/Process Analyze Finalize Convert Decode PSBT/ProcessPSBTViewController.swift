@@ -95,7 +95,7 @@ class ProcessPSBTViewController: UIViewController {
         if process {
             
             method = BTC_CLI_COMMAND.walletprocesspsbt
-            connectingString = "Processing PSBT"
+            connectingString = "processing psbt"
             navBarTitle = "Process PSBT"
             
         }
@@ -103,7 +103,7 @@ class ProcessPSBTViewController: UIViewController {
         if analyze {
             
             method = BTC_CLI_COMMAND.analyzepsbt
-            connectingString = "Analyzing PSBT"
+            connectingString = "analyzing psbt"
             navBarTitle = "Analyze PSBT"
             
         }
@@ -111,7 +111,7 @@ class ProcessPSBTViewController: UIViewController {
         if convert {
             
             method = BTC_CLI_COMMAND.converttopsbt
-            connectingString = "Converting PSBT"
+            connectingString = "converting psbt"
             navBarTitle = "Convert PSBT"
             
         }
@@ -119,7 +119,7 @@ class ProcessPSBTViewController: UIViewController {
         if finalize {
             
             method = BTC_CLI_COMMAND.finalizepsbt
-            connectingString = "Finalizing PSBT"
+            connectingString = "finalizing psbt"
             navBarTitle = "Finalize PSBT"
             
         }
@@ -138,21 +138,20 @@ class ProcessPSBTViewController: UIViewController {
                 
             }
             
-            connectingString = "Decoding"
+            connectingString = "decoding"
             navBarTitle = "Decode"
             
         }
         
         if txChain {
             
-            connectingString = "TXChaining"
+            connectingString = "txchaining"
             navBarTitle = "TXChain"
             
         }
         
         DispatchQueue.main.async {
             
-            //self.navBar.topItem?.title = self.navBarTitle
             self.navigationController?.navigationBar.topItem?.title = self.navBarTitle
             
         }

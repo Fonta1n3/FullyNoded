@@ -95,6 +95,7 @@
                         <segue destination="AU8-j7-403" kind="show" identifier="goImportExtendedKeys" id="Dod-ZU-1Hd"/>
                         <segue destination="AU8-j7-403" kind="show" identifier="importAKey" id="UPV-y1-fid"/>
                         <segue destination="AU8-j7-403" kind="show" identifier="importMultiSig" id="jpE-3c-avg"/>
+                        <segue destination="Xxg-Pp-vvN" kind="show" identifier="getHDmusigAddress" id="d5T-JV-UiW"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="OfF-5r-E8P" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -895,7 +896,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" allowsSelection="NO" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="AHi-sk-wZC">
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="AHi-sk-wZC">
                                 <rect key="frame" x="0.0" y="64" width="375" height="545"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="separatorColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -947,6 +948,7 @@
                     <navigationItem key="navigationItem" title="Keys to Import" id="8RU-Eh-1Ot"/>
                     <connections>
                         <outlet property="keyTable" destination="AHi-sk-wZC" id="yqv-nz-Nxi"/>
+                        <segue destination="Xxg-Pp-vvN" kind="show" identifier="displayKey" id="X76-BN-dSF"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="cQ7-I0-bAA" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -1329,6 +1331,7 @@
                         <outlet property="pubKeyTable" destination="dl6-kT-n5U" id="ZXZ-qb-NjC"/>
                         <outlet property="signaturesField" destination="zzm-jD-RHm" id="iEd-6a-Tmg"/>
                         <segue destination="Kmm-ag-zCc" kind="show" identifier="verifyImport" id="ZRl-fJ-TNX"/>
+                        <segue destination="g4K-ZQ-445" kind="show" identifier="chooseRangeForHDMusig" id="Fot-Mg-W3G"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="nO8-Xl-WIl" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -1365,7 +1368,7 @@
             </objects>
             <point key="canvasLocation" x="-5089" y="4146"/>
         </scene>
-        <!--Invoice View Controller-->
+        <!--Address-->
         <scene sceneID="aU3-2L-A1l">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="Xxg-Pp-vvN" customClass="InvoiceViewController" customModule="BitSense" customModuleProvider="target" sceneMemberID="viewController">
@@ -1405,15 +1408,45 @@
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
                             </textField>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="QZN-cK-kjk">
+                                <rect key="frame" x="335" y="623" width="30" height="30"/>
+                                <state key="normal" title="+"/>
+                                <connections>
+                                    <action selector="plusAction:" destination="Xxg-Pp-vvN" eventType="touchUpInside" id="nPX-oP-yg6"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BH3-G3-G7i">
+                                <rect key="frame" x="10" y="623" width="30" height="30"/>
+                                <state key="normal" title="-"/>
+                                <connections>
+                                    <action selector="minusAction:" destination="Xxg-Pp-vvN" eventType="touchUpInside" id="Fht-i3-rdj"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oGC-bd-C6G">
+                                <rect key="frame" x="182" y="627" width="11" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="index" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Clx-81-9Nn">
+                                <rect key="frame" x="171" y="646" width="33" height="16"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                <color key="textColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" red="0.078431372549019607" green="0.090196078431372548" blue="0.10196078431372549" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="vte-Et-b1F" firstAttribute="leading" secondItem="luY-Vj-OjD" secondAttribute="leading" constant="10" id="04h-oT-pCz"/>
                             <constraint firstItem="vte-Et-b1F" firstAttribute="leading" secondItem="qFH-Vc-Ghn" secondAttribute="leading" id="3FL-jT-fHt"/>
+                            <constraint firstItem="luY-Vj-OjD" firstAttribute="bottom" secondItem="oGC-bd-C6G" secondAttribute="bottom" constant="19" id="6eh-PG-CRY"/>
                             <constraint firstItem="hqF-pF-90p" firstAttribute="top" secondItem="qFH-Vc-Ghn" secondAttribute="bottom" constant="2" id="8Jw-5S-fbS"/>
                             <constraint firstItem="qFH-Vc-Ghn" firstAttribute="top" secondItem="luY-Vj-OjD" secondAttribute="top" constant="13" id="8Sm-qd-Lfs"/>
+                            <constraint firstItem="QZN-cK-kjk" firstAttribute="centerY" secondItem="BH3-G3-G7i" secondAttribute="centerY" id="9aI-l9-NtK"/>
+                            <constraint firstItem="Clx-81-9Nn" firstAttribute="centerX" secondItem="eUN-hK-8St" secondAttribute="centerX" id="Bvm-bq-tod"/>
                             <constraint firstItem="vqa-Nl-Pcv" firstAttribute="trailing" secondItem="vte-Et-b1F" secondAttribute="trailing" id="MWm-ij-iQ2"/>
                             <constraint firstItem="vte-Et-b1F" firstAttribute="centerY" secondItem="eUN-hK-8St" secondAttribute="centerY" constant="-41" id="Nqg-Wr-0Gr"/>
+                            <constraint firstItem="luY-Vj-OjD" firstAttribute="trailing" secondItem="QZN-cK-kjk" secondAttribute="trailing" constant="10" id="O1P-qD-0Ie"/>
                             <constraint firstItem="vte-Et-b1F" firstAttribute="centerX" secondItem="eUN-hK-8St" secondAttribute="centerX" id="PIu-GR-vVA"/>
                             <constraint firstItem="vqa-Nl-Pcv" firstAttribute="leading" secondItem="qFH-Vc-Ghn" secondAttribute="trailing" constant="13" id="R1Y-Bn-qWj"/>
                             <constraint firstItem="vqa-Nl-Pcv" firstAttribute="centerY" secondItem="qFH-Vc-Ghn" secondAttribute="centerY" id="WVD-TU-7bZ"/>
@@ -1421,16 +1454,32 @@
                             <constraint firstItem="dHL-et-rVM" firstAttribute="top" secondItem="vqa-Nl-Pcv" secondAttribute="bottom" constant="2" id="Yoo-IC-fm6"/>
                             <constraint firstItem="vqa-Nl-Pcv" firstAttribute="width" secondItem="qFH-Vc-Ghn" secondAttribute="width" id="bZM-8u-PIy"/>
                             <constraint firstItem="dHL-et-rVM" firstAttribute="centerX" secondItem="vqa-Nl-Pcv" secondAttribute="centerX" id="cqP-SG-Gft"/>
+                            <constraint firstItem="BH3-G3-G7i" firstAttribute="leading" secondItem="luY-Vj-OjD" secondAttribute="leading" constant="10" id="jSe-Ad-cFd"/>
+                            <constraint firstItem="luY-Vj-OjD" firstAttribute="bottom" secondItem="Clx-81-9Nn" secondAttribute="bottom" constant="5" id="jmK-Yr-eqU"/>
                             <constraint firstItem="vqa-Nl-Pcv" firstAttribute="top" secondItem="luY-Vj-OjD" secondAttribute="top" constant="13" id="kw0-r1-DNw"/>
+                            <constraint firstItem="oGC-bd-C6G" firstAttribute="centerX" secondItem="eUN-hK-8St" secondAttribute="centerX" id="uPF-wW-HfT"/>
                             <constraint firstItem="vqa-Nl-Pcv" firstAttribute="leading" secondItem="qFH-Vc-Ghn" secondAttribute="trailing" constant="13" id="vB0-cH-z9z"/>
+                            <constraint firstItem="oGC-bd-C6G" firstAttribute="centerY" secondItem="BH3-G3-G7i" secondAttribute="centerY" id="vti-Tn-0az"/>
                             <constraint firstItem="luY-Vj-OjD" firstAttribute="trailing" secondItem="vte-Et-b1F" secondAttribute="trailing" constant="10" id="zDK-F3-MPw"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="luY-Vj-OjD"/>
                     </view>
+                    <navigationItem key="navigationItem" title="Address" id="fge-ux-yT6">
+                        <barButtonItem key="rightBarButtonItem" image="Image-15" id="6on-Oa-u9D">
+                            <connections>
+                                <action selector="getAddressInfo:" destination="Xxg-Pp-vvN" id="kkl-C4-pxg"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
                         <outlet property="amountField" destination="qFH-Vc-Ghn" id="hTO-DQ-Qnr"/>
+                        <outlet property="indexDisplay" destination="oGC-bd-C6G" id="fbi-ct-RF1"/>
+                        <outlet property="indexLabel" destination="Clx-81-9Nn" id="U7t-GQ-nSe"/>
                         <outlet property="labelField" destination="vqa-Nl-Pcv" id="5Oe-5Q-2WN"/>
+                        <outlet property="minusOutlet" destination="BH3-G3-G7i" id="RXF-se-KYJ"/>
+                        <outlet property="plusOutlet" destination="QZN-cK-kjk" id="8Qy-QL-LlW"/>
                         <outlet property="qrView" destination="vte-Et-b1F" id="eYD-i1-TNK"/>
+                        <segue destination="Hww-Qm-Hos" kind="show" identifier="getAddressInfo" id="j10-wi-hpr"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="e3g-lC-Q3f" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -1671,6 +1720,7 @@ The range represents the index of the derived address</string>
                     </view>
                     <connections>
                         <segue destination="YCs-N7-5az" kind="show" identifier="addToKeypool" id="upA-ZA-3fA"/>
+                        <segue destination="gtC-x0-wli" kind="show" identifier="goDisplayHDMusig" id="6HW-Pq-bwM"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="CB0-Mn-bVs" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -2893,26 +2943,6 @@ Your xpub = &lt;fingerprint&gt;/84'/0'/0' and derives addresses as &lt;yourXpub&
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="mQ4-50-wXU">
-                                <rect key="frame" x="44" y="537" width="51" height="31"/>
-                                <color key="onTintColor" red="0.86794960499999996" green="0.030481636919999999" blue="0.040480430980000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <connections>
-                                    <action selector="hotSwitchAction:" destination="LeO-8H-YRG" eventType="valueChanged" id="4Lc-tr-Px2"/>
-                                </connections>
-                            </switch>
-                            <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="epA-lk-bVu">
-                                <rect key="frame" x="282" y="537" width="51" height="31"/>
-                                <color key="onTintColor" red="0.0" green="0.58980089430000004" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <connections>
-                                    <action selector="coldSwitchAction:" destination="LeO-8H-YRG" eventType="valueChanged" id="33f-Wa-zjb"/>
-                                </connections>
-                            </switch>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="COLD" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JMR-Sy-gib">
-                                <rect key="frame" x="284.5" y="515" width="44" height="14"/>
-                                <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
-                                <color key="textColor" red="0.0" green="0.58980089430000004" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Name your wallet" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="IZF-qG-0un">
                                 <rect key="frame" x="16" y="80" width="343" height="17"/>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W3" family="Hiragino Sans" pointSize="17"/>
@@ -2921,7 +2951,7 @@ Your xpub = &lt;fingerprint&gt;/84'/0'/0' and derives addresses as &lt;yourXpub&
                             </label>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="yr4-Lf-upp">
                                 <rect key="frame" x="16" y="106" width="343" height="60"/>
-                                <color key="backgroundColor" red="0.065796185168055285" green="0.07636474417812554" blue="0.093211262321411636" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="backgroundColor" red="0.090654351784955858" green="0.10521577147687036" blue="0.12842699836202076" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="60" id="3d4-nb-SYq"/>
                                 </constraints>
@@ -2943,8 +2973,28 @@ Your xpub = &lt;fingerprint&gt;/84'/0'/0' and derives addresses as &lt;yourXpub&
                                     <action selector="create:" destination="LeO-8H-YRG" eventType="touchUpInside" id="lAC-5C-SHQ"/>
                                 </connections>
                             </button>
+                            <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="mQ4-50-wXU">
+                                <rect key="frame" x="44" y="230" width="51" height="31"/>
+                                <color key="onTintColor" red="0.86794960499999996" green="0.030481636919999999" blue="0.040480430980000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <connections>
+                                    <action selector="hotSwitchAction:" destination="LeO-8H-YRG" eventType="valueChanged" id="4Lc-tr-Px2"/>
+                                </connections>
+                            </switch>
+                            <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="epA-lk-bVu">
+                                <rect key="frame" x="282" y="230" width="51" height="31"/>
+                                <color key="onTintColor" red="0.0" green="0.58980089430000004" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <connections>
+                                    <action selector="coldSwitchAction:" destination="LeO-8H-YRG" eventType="valueChanged" id="33f-Wa-zjb"/>
+                                </connections>
+                            </switch>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="COLD" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JMR-Sy-gib">
+                                <rect key="frame" x="284.5" y="208" width="44" height="14"/>
+                                <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
+                                <color key="textColor" red="0.0" green="0.58980089430000004" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="HOT" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="f61-yr-Dbh">
-                                <rect key="frame" x="51.5" y="515" width="34" height="14"/>
+                                <rect key="frame" x="51.5" y="208" width="34" height="14"/>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
                                 <color key="textColor" red="0.86794960499999996" green="0.030481636919999999" blue="0.040480430980000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
@@ -2956,17 +3006,17 @@ Your xpub = &lt;fingerprint&gt;/84'/0'/0' and derives addresses as &lt;yourXpub&
                             <constraint firstItem="epA-lk-bVu" firstAttribute="top" secondItem="JMR-Sy-gib" secondAttribute="bottom" constant="8" id="4ge-8i-2fJ"/>
                             <constraint firstItem="Uyl-mh-Ky9" firstAttribute="trailing" secondItem="g16-v1-3f5" secondAttribute="trailing" id="5Ck-s3-xKy"/>
                             <constraint firstItem="epA-lk-bVu" firstAttribute="centerX" secondItem="JMR-Sy-gib" secondAttribute="centerX" id="FD8-sF-xN4"/>
-                            <constraint firstItem="Uyl-mh-Ky9" firstAttribute="top" secondItem="mQ4-50-wXU" secondAttribute="bottom" constant="46" id="Myp-s9-0f0"/>
                             <constraint firstItem="IZF-qG-0un" firstAttribute="top" secondItem="g16-v1-3f5" secondAttribute="top" constant="16" id="Pxm-Ge-RZh"/>
                             <constraint firstItem="mQ4-50-wXU" firstAttribute="top" secondItem="f61-yr-Dbh" secondAttribute="bottom" constant="8" id="RGi-cu-3pC"/>
                             <constraint firstItem="g16-v1-3f5" firstAttribute="trailing" secondItem="epA-lk-bVu" secondAttribute="trailing" constant="44" id="Wak-gR-2OL"/>
                             <constraint firstItem="yr4-Lf-upp" firstAttribute="top" secondItem="IZF-qG-0un" secondAttribute="bottom" constant="9" id="YTr-6k-xqM"/>
-                            <constraint firstItem="Uyl-mh-Ky9" firstAttribute="top" secondItem="epA-lk-bVu" secondAttribute="bottom" constant="46" id="aGe-qK-Egd"/>
+                            <constraint firstItem="JMR-Sy-gib" firstAttribute="top" secondItem="yr4-Lf-upp" secondAttribute="bottom" constant="42" id="hOZ-Pp-tXh"/>
                             <constraint firstItem="IZF-qG-0un" firstAttribute="leading" secondItem="g16-v1-3f5" secondAttribute="leading" constant="16" id="jrw-fR-hoR"/>
                             <constraint firstItem="g16-v1-3f5" firstAttribute="trailing" secondItem="IZF-qG-0un" secondAttribute="trailing" constant="16" id="n7h-1X-gN7"/>
                             <constraint firstItem="g16-v1-3f5" firstAttribute="trailing" secondItem="yr4-Lf-upp" secondAttribute="trailing" constant="16" id="nLt-va-oTY"/>
                             <constraint firstItem="yr4-Lf-upp" firstAttribute="leading" secondItem="g16-v1-3f5" secondAttribute="leading" constant="16" id="odW-Fl-AXA"/>
                             <constraint firstItem="Uyl-mh-Ky9" firstAttribute="bottom" secondItem="g16-v1-3f5" secondAttribute="bottom" id="pWW-dJ-bbW"/>
+                            <constraint firstItem="f61-yr-Dbh" firstAttribute="top" secondItem="yr4-Lf-upp" secondAttribute="bottom" constant="42" id="t7b-mw-hmH"/>
                             <constraint firstItem="mQ4-50-wXU" firstAttribute="leading" secondItem="g16-v1-3f5" secondAttribute="leading" constant="44" id="x30-0B-7qb"/>
                             <constraint firstItem="mQ4-50-wXU" firstAttribute="centerX" secondItem="f61-yr-Dbh" secondAttribute="centerX" id="yLn-Ee-8hQ"/>
                         </constraints>
@@ -3163,7 +3213,7 @@ Your xpub = &lt;fingerprint&gt;/84'/0'/0' and derives addresses as &lt;yourXpub&
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="address" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Y9S-lq-c8o">
-                                                    <rect key="frame" x="314.5" y="141" width="45.5" height="17"/>
+                                                    <rect key="frame" x="15" y="141" width="345" height="17"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="17" id="ubk-Hb-vBn"/>
                                                     </constraints>
@@ -3252,6 +3302,7 @@ Your xpub = &lt;fingerprint&gt;/84'/0'/0' and derives addresses as &lt;yourXpub&
                                                 <constraint firstItem="Mnt-Ze-aJh" firstAttribute="top" secondItem="Q8x-DH-TJf" secondAttribute="bottom" constant="2" id="Ijg-wk-Tto"/>
                                                 <constraint firstItem="Y9S-lq-c8o" firstAttribute="top" secondItem="HNy-qF-B63" secondAttribute="bottom" constant="2" id="Ijw-pR-8nF"/>
                                                 <constraint firstItem="w18-jG-wzu" firstAttribute="centerY" secondItem="vwn-lY-2nZ" secondAttribute="centerY" id="JdC-9Y-kJQ"/>
+                                                <constraint firstItem="Y9S-lq-c8o" firstAttribute="leading" secondItem="vwn-lY-2nZ" secondAttribute="leadingMargin" id="Ocr-3j-qzL"/>
                                                 <constraint firstItem="7qZ-CZ-b3g" firstAttribute="trailing" secondItem="vwn-lY-2nZ" secondAttribute="trailingMargin" id="RSq-K7-sqO"/>
                                                 <constraint firstItem="Q8x-DH-TJf" firstAttribute="top" secondItem="vwn-lY-2nZ" secondAttribute="topMargin" id="UBI-8r-39B"/>
                                                 <constraint firstItem="iGc-8Q-wQO" firstAttribute="trailing" secondItem="vwn-lY-2nZ" secondAttribute="trailingMargin" id="WTI-bG-nej"/>
@@ -3863,7 +3914,7 @@ Your xpub = &lt;fingerprint&gt;/84'/0'/0' and derives addresses as &lt;yourXpub&
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="PBv-v1-qQw">
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="PBv-v1-qQw">
                                 <rect key="frame" x="16" y="64" width="343" height="578"/>
                                 <color key="backgroundColor" red="0.078040815890000004" green="0.090017892419999995" blue="0.10251823810000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <color key="textColor" red="0.0" green="0.97680455450000003" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -4030,6 +4081,7 @@ Your xpub = &lt;fingerprint&gt;/84'/0'/0' and derives addresses as &lt;yourXpub&
         <image name="Home" width="30" height="30"/>
         <image name="Image-1" width="30" height="30"/>
         <image name="Image-14" width="30" height="30"/>
+        <image name="Image-15" width="30" height="30"/>
         <image name="Image-2" width="30" height="30"/>
         <image name="Image-4" width="30" height="30"/>
         <image name="Merge" width="30" height="30"/>
@@ -4042,10 +4094,13 @@ Your xpub = &lt;fingerprint&gt;/84'/0'/0' and derives addresses as &lt;yourXpub&
         <segue reference="xZg-QU-AT7"/>
         <segue reference="j2t-pi-6Lt"/>
         <segue reference="IVc-aG-8QZ"/>
-        <segue reference="cvp-U1-bU5"/>
+        <segue reference="upA-ZA-3fA"/>
+        <segue reference="Fot-Mg-W3G"/>
         <segue reference="jpE-3c-avg"/>
+        <segue reference="d5T-JV-UiW"/>
         <segue reference="HNI-HG-9ZQ"/>
-        <segue reference="XYa-A2-HkD"/>
+        <segue reference="j10-wi-hpr"/>
+        <segue reference="6HW-Pq-bwM"/>
         <segue reference="UCu-Iz-rId"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
