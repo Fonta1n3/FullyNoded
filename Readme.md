@@ -222,6 +222,13 @@ Please feel free to build from source in xcode and submit PR's. I need help and 
 - [keychain-swift](https://github.com/evgenyneu/keychain-swift) for storing your nodes credentials decryption key on your iPhones secure enclave.
 - [Tor](https://github.com/iCepa/Tor.framework) for connecting to your node more privately and securely.
 
+## Changes v0.1.6
+- Enable hd musig functionality
+- Improve wallet manager UX
+- Improve UTXO UX by adding an info button that displays all the info about that particular utxo
+- Now the fee optimizer does not allow a fee less than minrelayfee
+- Fixed a bug where editing the amount in "spend from wallet" would result in poor UX
+
 ## Changes v0.1.5
 - General UI/UX improvements and fixes
 - Code refactoring

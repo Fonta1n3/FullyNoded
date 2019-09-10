@@ -551,15 +551,31 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                     
                     let result = makeSSHCall.dictToReturn
                     
-                    let script = result["hex"] as! String
-                    isWitness = result["iswitness"] as! Bool
-                    
-                    DispatchQueue.main.async {
+                    if let script = result["hex"] as? String {
                         
-                        self.scriptTextView.text = script
-                        self.creatingView.removeConnectingView()
+                        isWitness = result["iswitness"] as! Bool
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.scriptTextView.text = script
+                            self.creatingView.removeConnectingView()
+                            
+                        }
+                        
+                    } else {
+                        
+                        DispatchQueue.main.async {
+                            
+                            displayAlert(viewController: self,
+                                         isError: true,
+                                         message: "unable to fetch the redeem script")
+                            
+                            self.creatingView.removeConnectingView()
+                            
+                        }
                         
                     }
+                    
                     
                 case BTC_CLI_COMMAND.signrawtransactionwithkey:
                     

@@ -42,6 +42,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     var isFirstTime = Bool()
     var isUnsigned = false
     var lockedArray = NSArray()
+    var utxo = NSDictionary()
     
     let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     let blurView2 = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
@@ -64,6 +65,27 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         executeNodeCommandSSH(method: BTC_CLI_COMMAND.listlockunspent, param: "")
         
     }
+    
+    @IBAction func getUtxoInfo(_ sender: Any) {
+        
+        if self.utxoToSpendArray.count == 1 {
+            
+            DispatchQueue.main.async {
+                
+                self.utxo = self.utxoToSpendArray.last as! NSDictionary
+                
+                self.performSegue(withIdentifier: "getUTXOinfo", sender: self)
+                
+            }
+            
+        } else {
+         
+            displayAlert(viewController: self, isError: true, message: "select one utxo to get info for")
+            
+        }
+        
+    }
+    
     
     
     func getAddressSettings() {
@@ -450,7 +472,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
             
         }
         
-        utxoTable.reloadData()
+        //utxoTable.reloadData()
         
     }
     
@@ -458,11 +480,11 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         
         print("view will dissapear")
         
-        for (index, _) in selectedArray.enumerated() {
-            
-            selectedArray[index] = false
-            
-        }
+//        for (index, _) in selectedArray.enumerated() {
+//
+//            selectedArray[index] = false
+//
+//        }
         
     }
     
@@ -759,27 +781,29 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                         cell.alpha = 1
                         cell.backgroundColor = self.view.backgroundColor
                         
+                    }, completion: { _ in
+                        
+                        if self.utxoToSpendArray.count > 0 {
+                            
+                            let txidProcessed = cellTxid?.replacingOccurrences(of: "txid: ", with: "")
+                            let voutProcessed = cellVout?.replacingOccurrences(of: "vout #", with: "")
+                            
+                            for (index, utxo) in (self.utxoToSpendArray as! [[String:Any]]).enumerated() {
+                                
+                                let txid = utxo["txid"] as! String
+                                let vout = "\(utxo["vout"] as! Int)"
+                                
+                                if txid == txidProcessed && vout == voutProcessed {
+                                    
+                                    self.utxoToSpendArray.remove(at: index)
+                                    
+                                }
+                                
+                            }
+                            
+                        }
+                        
                     })
-                    
-                }
-                
-            }
-            
-            if utxoToSpendArray.count > 0 {
-                
-                let txidProcessed = cellTxid?.replacingOccurrences(of: "txid: ", with: "")
-                let voutProcessed = cellVout?.replacingOccurrences(of: "vout #", with: "")
-                
-                for (index, utxo) in (self.utxoToSpendArray as! [[String:Any]]).enumerated() {
-                    
-                    let txid = utxo["txid"] as! String
-                    let vout = "\(utxo["vout"] as! Int)"
-                    
-                    if txid == txidProcessed && vout == voutProcessed {
-                        
-                        self.utxoToSpendArray.remove(at: index)
-                        
-                    }
                     
                 }
                 
@@ -805,6 +829,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                 
                 self.removeSpinner()
                 self.utxoTable.reloadData()
+                self.executeNodeCommandSSH(method: BTC_CLI_COMMAND.getnetworkinfo, param: "")
                 
             }
             
@@ -1722,6 +1747,16 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
         switch segue.identifier {
+            
+        case "getUTXOinfo":
+            
+            if let vc = segue.destination as? GetInfoViewController {
+             
+                vc.utxo = utxo
+                vc.isUtxo = true
+                
+            }
+            
         case "goToLocked":
             
             if let vc = segue.destination as? LockedTableViewController {
@@ -1731,8 +1766,11 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
             }
             
         default:
+            
             break
+            
         }
+        
     }
     
 }

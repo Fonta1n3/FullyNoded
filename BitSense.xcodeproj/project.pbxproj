@@ -44,6 +44,7 @@
 		D0452ADB2247417F0013E225 /* ImportPrivKeyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0452ADA2247417F0013E225 /* ImportPrivKeyViewController.swift */; };
 		D0452ADD224743C50013E225 /* LogInViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0452ADC224743C50013E225 /* LogInViewController.swift */; };
 		D0452ADF224833390013E225 /* Commands.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0452ADE224833390013E225 /* Commands.swift */; };
+		D0465D3F232494A40089870E /* GetHDMusigAddress.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0465D3E232494A40089870E /* GetHDMusigAddress.swift */; };
 		D04DB992226D818F00172C98 /* IncomingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04DB991226D818F00172C98 /* IncomingsTableViewController.swift */; };
 		D05266132271D6D100E2394B /* RawDisplayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05266122271D6D100E2394B /* RawDisplayer.swift */; };
 		D0560EE92277F75900C3E909 /* UTXOViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0560EE82277F75900C3E909 /* UTXOViewController.swift */; };
@@ -98,6 +99,7 @@
 		D0E9B63C211A94C600B416E7 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E9B63B211A94C600B416E7 /* Utilities.swift */; };
 		D0EC748A227DF06E001489B9 /* CreateUnsigned.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EC7489227DF06E001489B9 /* CreateUnsigned.swift */; };
 		D0EC7490227F6977001489B9 /* SignRawViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EC748F227F6977001489B9 /* SignRawViewController.swift */; };
+		D0ED69BC2325D768001F8FBC /* WalletsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0ED69BB2325D768001F8FBC /* WalletsViewController.swift */; };
 		D0EF29C1216B82B400EB776A /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EF29C0216B82B400EB776A /* SettingsViewController.swift */; };
 		D0FA417C213C7CDA0028E4F8 /* whiteLock.png in Resources */ = {isa = PBXBuildFile; fileRef = D0FA417B213C7CDA0028E4F8 /* whiteLock.png */; };
 		D0FA417E213C7CED0028E4F8 /* whiteFingerPrint.png in Resources */ = {isa = PBXBuildFile; fileRef = D0FA417D213C7CED0028E4F8 /* whiteFingerPrint.png */; };
@@ -145,6 +147,7 @@
 		D0452ADA2247417F0013E225 /* ImportPrivKeyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportPrivKeyViewController.swift; sourceTree = "<group>"; };
 		D0452ADC224743C50013E225 /* LogInViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogInViewController.swift; sourceTree = "<group>"; };
 		D0452ADE224833390013E225 /* Commands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Commands.swift; sourceTree = "<group>"; };
+		D0465D3E232494A40089870E /* GetHDMusigAddress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetHDMusigAddress.swift; sourceTree = "<group>"; };
 		D04DB991226D818F00172C98 /* IncomingsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IncomingsTableViewController.swift; sourceTree = "<group>"; };
 		D05266122271D6D100E2394B /* RawDisplayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RawDisplayer.swift; sourceTree = "<group>"; };
 		D0560EE82277F75900C3E909 /* UTXOViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOViewController.swift; sourceTree = "<group>"; };
@@ -200,6 +203,7 @@
 		D0E9B63B211A94C600B416E7 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		D0EC7489227DF06E001489B9 /* CreateUnsigned.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateUnsigned.swift; sourceTree = "<group>"; };
 		D0EC748F227F6977001489B9 /* SignRawViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignRawViewController.swift; sourceTree = "<group>"; };
+		D0ED69BB2325D768001F8FBC /* WalletsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletsViewController.swift; sourceTree = "<group>"; };
 		D0EF29C0216B82B400EB776A /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		D0FA417B213C7CDA0028E4F8 /* whiteLock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteLock.png; sourceTree = "<group>"; };
 		D0FA417D213C7CED0028E4F8 /* whiteFingerPrint.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteFingerPrint.png; sourceTree = "<group>"; };
@@ -687,6 +691,7 @@
 				D0EC7489227DF06E001489B9 /* CreateUnsigned.swift */,
 				D0855FC922B0CEA800DBBFC2 /* CreatePSBT.swift */,
 				D0806B4422EE9FBA002C20A1 /* TXChain.swift */,
+				D0465D3E232494A40089870E /* GetHDMusigAddress.swift */,
 			);
 			path = "Wallet Logic";
 			sourceTree = "<group>";
@@ -720,6 +725,7 @@
 			isa = PBXGroup;
 			children = (
 				D04DB991226D818F00172C98 /* IncomingsTableViewController.swift */,
+				D0ED69BB2325D768001F8FBC /* WalletsViewController.swift */,
 			);
 			path = "Incomings Menu";
 			sourceTree = "<group>";
@@ -902,6 +908,7 @@
 				D02094F3225936D2002E8E7A /* ConnectingView.swift in Sources */,
 				D0196DDB21B5AC5F0081E0AB /* KeyPad.swift in Sources */,
 				D06C59E421BEF5F0009BCB9C /* SSHService.swift in Sources */,
+				D0ED69BC2325D768001F8FBC /* WalletsViewController.swift in Sources */,
 				D037C870231BAFF1006C357D /* RescanViewController.swift in Sources */,
 				D043627A22F40A1F002074E3 /* LockedTableViewController.swift in Sources */,
 				D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */,
@@ -921,6 +928,7 @@
 				D0A015C422E00D330054127B /* UtilitiesMenuTableViewController.swift in Sources */,
 				D0855FC622B08EE000DBBFC2 /* TorClient.swift in Sources */,
 				D02FE431231107EB0048F8C4 /* Connector.swift in Sources */,
+				D0465D3F232494A40089870E /* GetHDMusigAddress.swift in Sources */,
 				D0E51E5B226592C9005D1909 /* NodeDetailViewController.swift in Sources */,
 				D02FE4362313882F0048F8C4 /* HomeTableStruct.swift in Sources */,
 				D073E17022558DF30012A28C /* AESService.swift in Sources */,

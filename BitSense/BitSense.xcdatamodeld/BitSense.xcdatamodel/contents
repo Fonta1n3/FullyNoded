@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14490.99" systemVersion="18F132" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="HDWallets" representedClassName="HDWallets" syncable="YES" codeGenerationType="class">
+        <attribute name="descriptor" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="id" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="index" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="label" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="range" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
     <entity name="Nodes" representedClassName="Nodes" syncable="YES" codeGenerationType="class">
         <attribute name="id" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="ip" optional="YES" attributeType="String" syncable="YES"/>
@@ -19,6 +26,7 @@
         <attribute name="usingTor" optional="YES" attributeType="Boolean" usesScalarValueType="YES" syncable="YES"/>
     </entity>
     <elements>
+        <element name="HDWallets" positionX="-63" positionY="99" width="128" height="120"/>
         <element name="Nodes" positionX="-63" positionY="-18" width="128" height="285"/>
     </elements>
 </model>

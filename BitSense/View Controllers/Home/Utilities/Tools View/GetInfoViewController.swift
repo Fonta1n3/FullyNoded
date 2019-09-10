@@ -55,6 +55,9 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     
     var address = ""
     
+    var utxo = NSDictionary()
+    var isUtxo = Bool()
+    
     func scan() {
     
         scannerShowing = true
@@ -297,6 +300,19 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
             
         }
         
+        if isUtxo {
+            
+            titleString = "UTXO"
+            
+            DispatchQueue.main.async {
+                
+                self.textView.text = "\(self.utxo)"
+                self.connectingView.removeConnectingView()
+                
+            }
+
+        }
+        
         DispatchQueue.main.async {
             
             self.navigationController?.navigationBar.topItem?.title = titleString
@@ -364,6 +380,15 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
                                     }
                                     
                                 }
+                                
+                            }
+                            
+                        } else {
+                            
+                            DispatchQueue.main.async {
+                                
+                                self.textView.text = "\(result)"
+                                self.connectingView.removeConnectingView()
                                 
                             }
                             

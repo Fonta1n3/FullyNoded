@@ -91,7 +91,7 @@ class ErrorView: UIView {
         
         errorLabel.textColor = UIColor.white
         errorLabel.font = UIFont.init(name: "HiraginoSans-W3", size: 15)
-        errorLabel.text = text
+        errorLabel.text = text.lowercased()
         errorLabel.numberOfLines = 0
         errorLabel.textAlignment = .center
         

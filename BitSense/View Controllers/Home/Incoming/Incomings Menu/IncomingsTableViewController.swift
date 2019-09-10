@@ -35,6 +35,9 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
     var isExtendedKey = Bool()
     var isHDMultisig = Bool()
     
+    let cd = CoreDataService()
+    var wallets = [[String:Any]]()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -264,9 +267,25 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
                     
                     var segueString = ""
                     switch indexPath.row {
+                        
                     case 0: segueString = "createInvoice"
-                    case 1: segueString = "getHDmusigAddress"
-                    default: break
+                        
+                    case 1:
+                        
+                        if self.wallets.count > 1 {
+                            
+                            segueString = "showWallets"
+                            
+                        } else {
+                            
+                            segueString = "getHDmusigAddress"
+                            
+                        }
+                        
+                    default:
+                        
+                        break
+                        
                     }
                     
                     DispatchQueue.main.async {
@@ -323,9 +342,9 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
                 case 3:
                     
                     //Address format
-                    for row in 0 ..< tableView.numberOfRows(inSection: 4) {
+                    for row in 0 ..< tableView.numberOfRows(inSection: 3) {
                         
-                        if let cell = tableView.cellForRow(at: IndexPath(row: row, section: 4)) {
+                        if let cell = tableView.cellForRow(at: IndexPath(row: row, section: 3)) {
                             
                             var key = ""
                             
@@ -348,7 +367,7 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
                                 DispatchQueue.main.async {
                                     
                                     self.getSettings()
-                                    tableView.reloadRows(at: [IndexPath(row: row, section: 4)], with: .none)
+                                    tableView.reloadRows(at: [IndexPath(row: row, section: 3)], with: .none)
                                     
                                 }
                                 
@@ -360,7 +379,7 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
                                 DispatchQueue.main.async {
                                     
                                     self.getSettings()
-                                    tableView.reloadRows(at: [IndexPath(row: row, section: 4)], with: .none)
+                                    tableView.reloadRows(at: [IndexPath(row: row, section: 3)], with: .none)
                                     
                                 }
                                 
@@ -422,6 +441,15 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
         switch segue.identifier {
+            
+        case "showWallets":
+            
+            if let vc = segue.destination as? WalletsViewController {
+                
+                vc.wallets = wallets
+                vc.isHDInvoice = true
+                
+            }
             
         case "getHDmusigAddress":
             
@@ -497,6 +525,9 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
             legacy = false
             
         }
+        
+        wallets = cd.getHDWallets()
+        print("wallets = \(wallets)")
         
         DispatchQueue.main.async {
             

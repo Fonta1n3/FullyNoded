@@ -59,6 +59,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     var network = ""
     var nodeLabel = ""
     
+    var sectionZeroLoaded = Bool()
     var sectionOneLoaded = Bool()
     
     @IBOutlet var spinner: UIActivityIndicatorView!
@@ -69,9 +70,10 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         super.viewDidLoad()
         
         mainMenu.delegate = self
-        tabBarController!.delegate = self
         mainMenu.tableFooterView = UIView(frame: .zero)
+        tabBarController!.delegate = self
         initialLoad = true
+        sectionZeroLoaded = false
         sectionOneLoaded = false
         checkIfUpdated()
         firstTimeHere()
@@ -156,41 +158,21 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
     }
     
-//    @IBAction func stop(_ sender: Any) {
-//        
-//        // will need to update for Tor
-//        
-//        ssh.disconnect()
-//        
-//        connector.activeNode = self.activeNode
-//        
-//        func completion() {
-//            
-//            if !connector.sshConnected {
-//                
-//                self.removeSpinner()
-//                self.removeLoader()
-//                
-////                displayAlert(viewController: self,
-////                             isError: true,
-////                             message: connector.errorDescription ?? "Unable to connect via SSH")
-//                
-//            } else {
-//                
-//                self.removeSpinner()
-//                self.loadSectionZero(connector: connector)
-//                
-//            }
-//        
-//        }
-//        
-//        connector.connectSSH(completion: completion)
-//        
-//    }
-    
     @IBAction func refreshData(_ sender: Any) {
         
-        refreshDataNow()
+        if ssh != nil {
+            
+            if ssh.session.isConnected {
+                
+                refreshDataNow()
+                
+            }
+            
+        } else {
+            
+            self.refresh()
+            
+        }
         
     }
     
@@ -297,14 +279,37 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
         case 0:
             
-            let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-            let hotBalanceLabel = cell.viewWithTag(1) as! UILabel
-            let coldBalanceLabel = cell.viewWithTag(2) as! UILabel
-            let unconfirmedLabel = cell.viewWithTag(3) as! UILabel
-            hotBalanceLabel.text = self.hotBalance
-            coldBalanceLabel.text = self.coldBalance
-            unconfirmedLabel.text = self.unconfirmedBalance
-            return cell
+            if sectionZeroLoaded {
+                
+                let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
+                let hotBalanceLabel = cell.viewWithTag(1) as! UILabel
+                let coldBalanceLabel = cell.viewWithTag(2) as! UILabel
+                let unconfirmedLabel = cell.viewWithTag(3) as! UILabel
+                
+                if hotBalance == "" {
+                    
+                    self.hotBalance = "0.00000000"
+                    
+                }
+                
+                if coldBalance == "" {
+                    
+                    self.coldBalance = "0.00000000"
+                    
+                }
+                
+                hotBalanceLabel.text = self.hotBalance
+                coldBalanceLabel.text = self.coldBalance
+                unconfirmedLabel.text = self.unconfirmedBalance
+                return cell
+                
+            } else {
+                
+                let cell = UITableViewCell()
+                cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
+                return cell
+                
+            }
             
         case 1:
             
@@ -421,7 +426,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
             if transactionArray.count == 0 {
                 
-                loading.text = "No transactions"
+                loading.text = ""
                 loading.alpha = 1
                 addressLabel.alpha = 0
                 amountLabel.alpha = 0
@@ -461,7 +466,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     
                 }
                 
-                confirmationsLabel.text = (dict["confirmations"] as! String) + " " + "Confs"
+                confirmationsLabel.text = (dict["confirmations"] as! String) + " " + "confs"
                 let label = dict["label"] as? String
                 
                 if label != "," {
@@ -506,6 +511,10 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
         }
         
+    }
+    
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .lightContent
     }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
@@ -554,7 +563,15 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         if indexPath.section == 0 {
             
-            return 142
+            if sectionZeroLoaded {
+                
+                return 142
+                
+            } else {
+                
+                return 47
+                
+            }
             
         } else if indexPath.section == 1 {
             
@@ -789,6 +806,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         DispatchQueue.main.async {
             
+            let aes = AESService()
             self.refreshButtonOutlet.tintColor = UIColor.white.withAlphaComponent(0)
             self.spinner.startAnimating()
             self.spinner.alpha = 1
@@ -813,6 +831,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                         self.activeNode = node
                         self.existingNodeID = node["id"] as! String
                         
+                        
                         if self.ud.object(forKey: "walletName") != nil {
                             
                             self.exisitingWallet = self.ud.object(forKey: "walletName") as! String
@@ -827,6 +846,14 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 dispatchGroup.notify(queue: DispatchQueue.main) {
                     
+                    let enc = self.activeNode["label"] as! String
+                    let dec = aes.decryptKey(keyToDecrypt: enc)
+                    self.nodeLabel = dec
+                    self.mainMenu.reloadSections(IndexSet.init(arrayLiteral: 1), with: .fade)
+                    
+                    self.connectingView.addConnectingView(vc: self,
+                                                          description: "connecting to \(dec)")
+                    
                     if let isDefault = self.activeNode["isDefault"] as? Bool {
                         
                         if isDefault {
@@ -836,14 +863,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                         }
                         
                     }
-                    
-                    let aes = AESService()
-                    let enc = self.activeNode["label"] as! String
-                    let dec = aes.decryptKey(keyToDecrypt: enc)
-                    self.nodeLabel = dec
-                    
-                    self.connectingView.addConnectingView(vc: self,
-                                                          description: "connecting to \(dec)")
                     
                     let sshBool = self.activeNode["usingSSH"] as! Bool
                     let torBool = self.activeNode["usingTor"] as! Bool
@@ -907,6 +926,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     func loadSectionZero(connector: Connector) {
         
+        // dont show refresh button until a valid connection is made
+        
         self.ssh = connector.ssh
         self.makeSSHCall = connector.makeSSHCall
         
@@ -937,8 +958,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 DispatchQueue.main.async {
                     
-                    //self.removeSpinner()
-                    //self.mainMenu.reloadData()
+                    self.sectionZeroLoaded = true
                     self.mainMenu.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
                     let impact = UIImpactFeedbackGenerator()
                     impact.impactOccurred()

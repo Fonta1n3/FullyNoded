@@ -26,6 +26,7 @@ class GetSmartFee {
     var vc = UIViewController()
     var blockTarget = UserDefaults.standard.object(forKey: "feeTarget") as! Int
     var optimalFee = Double()
+    var minimumFee = Double()
     
     var isUnsigned = false
     
@@ -38,6 +39,21 @@ class GetSmartFee {
                 if !makeSSHCall.errorBool {
                     
                     switch method {
+                        
+                    case BTC_CLI_COMMAND.getnetworkinfo:
+                        
+                        let result = makeSSHCall.dictToReturn
+                        print("reult = \(result)")
+                        
+                        if let minRelayFee = result["relayfee"] as? Double {
+                            
+                            print("minRelayFee = \(minRelayFee)")
+                            minimumFee = minRelayFee
+                            
+                            getSmartFeeSSH(method: BTC_CLI_COMMAND.decoderawtransaction,
+                                           param: "\"\(self.rawSigned)\"")
+                            
+                        }
                         
                     case BTC_CLI_COMMAND.estimatesmartfee:
                         
@@ -94,8 +110,8 @@ class GetSmartFee {
             
         }
         
-        getSmartFeeSSH(method: BTC_CLI_COMMAND.decoderawtransaction,
-                       param: "\"\(self.rawSigned)\"")
+        getSmartFeeSSH(method: BTC_CLI_COMMAND.getnetworkinfo,
+                       param: "")
         
     }
     
@@ -125,7 +141,14 @@ class GetSmartFee {
         }
         
         let btcPerByte = btcPerKbyte / 1000
-        let optimalFee = btcPerByte * txSize
+        var optimalFee = btcPerByte * txSize
+        
+        if optimalFee < minimumFee {
+            
+            optimalFee = minimumFee
+            
+        }
+        
         return optimalFee
         
     }

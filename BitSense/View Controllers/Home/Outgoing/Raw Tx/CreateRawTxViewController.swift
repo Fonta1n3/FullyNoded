@@ -326,6 +326,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         scannerView.alpha = 0
         scannerView.backgroundColor = UIColor.black
         
+        // need to get minrelay fee to ensure tx will be accepted in testnet
+        //executeNodeCommandSsh(method: BTC_CLI_COMMAND.getnetworkinfo, param: "")
+        
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -870,6 +873,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 
             } else {
                 
+                outputs.removeAll()
+                outputArray.removeAll()
+                
                 creatingView.removeConnectingView()
                 
                 displayAlert(viewController: self,
@@ -912,6 +918,15 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 if !makeSSHCall.errorBool {
                     
                     switch method {
+                        
+                    /*case BTC_CLI_COMMAND.getnetworkinfo:
+                        
+                        let result = makeSSHCall.dictToReturn
+                        
+                        if let minRelayFee = result["relayFee"] as? String {
+                            
+                            print("minRelayFee = \(minRelayFee)")
+                        }*/
                         
                     case BTC_CLI_COMMAND.listunspent:
                         

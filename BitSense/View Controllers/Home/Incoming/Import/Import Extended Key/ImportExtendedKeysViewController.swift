@@ -212,6 +212,34 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
     }
     
     func importHDMusig() {
+        
+        // descriptor and range, encrypt save here
+        
+        let aes = AESService()
+        let cd = CoreDataService()
+        let encDesc = aes.encryptKey(keyToEncrypt: descriptor)
+        let encLabel = aes.encryptKey(keyToEncrypt: label)
+        let encIndex = aes.encryptKey(keyToEncrypt: "\(convertedRange[0])")
+        let encRange = aes.encryptKey(keyToEncrypt: range)
+        let id = randomString(length: 10)
+        
+        let dict = ["descriptor":encDesc,
+                    "label":encLabel,
+                    "index":encIndex,
+                    "range":encRange,
+                    "id":id]
+        
+        let walletSaved = cd.saveHDWalletToCoreData(vc: self, walletInfo: dict)
+        
+        if walletSaved {
+            
+            print("wallet saved")
+            
+        } else {
+            
+            print("error saving wallet")
+            
+        }
      
         connectingView.addConnectingView(vc: self,
                                          description: "importing 200 HD multisig addresses and scripts (index \(range)), this can take a little while, sit back and relax 😎")

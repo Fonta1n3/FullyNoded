@@ -18,7 +18,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     var textToShareViaQRCode = String()
     var addressString = String()
-    let label = UILabel()
     var qrCode = UIImage()
     let descriptionLabel = UILabel()
     var tapQRGesture = UITapGestureRecognizer()
@@ -34,9 +33,16 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     var isHDInvoice = Bool()
     
+    let cd = CoreDataService()
+    
+    var descriptor = ""
+    
+    var wallet = [String:Any]()
+    
     @IBOutlet var amountField: UITextField!
     @IBOutlet var labelField: UITextField!
     @IBOutlet var qrView: UIImageView!
+    @IBOutlet var addressOutlet: UILabel!
     
     @IBOutlet var minusOutlet: UIButton!
     @IBOutlet var plusOutlet: UIButton!
@@ -45,18 +51,67 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func minusAction(_ sender: Any) {
         
+        if indexDisplay.text != "" {
+            
+            let index = Int(indexDisplay.text!)!
+            
+            if index != 0 {
+                
+                //fetch new address then save the updated index
+                connectingView.addConnectingView(vc: self, description: "fetching address index \(index - 1)")
+                
+                DispatchQueue.main.async {
+                    
+                    self.indexDisplay.text = "\(index - 1)"
+                    
+                }
+                
+                let param = "\(descriptor), [\(index - 1),\(index - 1)]"
+                
+                self.executeNodeCommandSSH(method: BTC_CLI_COMMAND.deriveaddresses,
+                                           param: param)
+            }
+            
+        }
         
     }
     
     @IBAction func plusAction(_ sender: Any) {
         
+        if indexDisplay.text != "" {
+            
+            let index = Int(indexDisplay.text!)!
+            
+            if index >= 0 {
+                
+                //fetch new address then save the updated index
+                connectingView.addConnectingView(vc: self, description: "fetching address index \(index + 1)")
+                
+                DispatchQueue.main.async {
+                    
+                    self.indexDisplay.text = "\(index + 1)"
+                    
+                }
+                
+                let param = "\(descriptor), [\(index + 1),\(index + 1)]"
+                
+                self.executeNodeCommandSSH(method: BTC_CLI_COMMAND.deriveaddresses,
+                                           param: param)
+            }
+            
+        }
         
     }
-    
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        connectingView.addConnectingView(vc: self,
+                                         description: "")
+        
+        addressOutlet.isUserInteractionEnabled = true
+        
+        addressOutlet.text = ""
         minusOutlet.alpha = 0
         plusOutlet.alpha = 0
         indexLabel.alpha = 0
@@ -81,18 +136,49 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         view.addGestureRecognizer(tap)
         getAddressSettings()
         addDoneButtonOnKeyboard()
-        loadAddress()
         
     }
     
     override func viewDidAppear(_ animated: Bool) {
         
+        addressOutlet.text = ""
+        
+        isUsingSSH = IsUsingSSH.sharedInstance
+        
+        if isUsingSSH {
+            
+            ssh = SSHService.sharedInstance
+            makeSSHCall = SSHelper.sharedInstance
+            
+        } else {
+            
+            torRPC = MakeRPCCall.sharedInstance
+            torClient = TorClient.sharedInstance
+            
+        }
+    
         if isHDInvoice {
             
-            minusOutlet.alpha = 1
-            plusOutlet.alpha = 1
-            indexLabel.alpha = 1
-            indexDisplay.alpha = 1
+            DispatchQueue.main.async {
+                
+                UIView.animate(withDuration: 0.2, animations: {
+                    
+                    self.minusOutlet.alpha = 1
+                    self.plusOutlet.alpha = 1
+                    self.indexLabel.alpha = 1
+                    self.indexDisplay.alpha = 1
+                    
+                }) { _ in
+                    
+                    self.getHDMusigAddress()
+                    
+                }
+                
+            }
+            
+        } else {
+            
+            loadAddress()
             
         }
         
@@ -108,24 +194,45 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    
-    func loadAddress() {
+    func getHDMusigAddress() {
         
-        isUsingSSH = IsUsingSSH.sharedInstance
+        let getAddress = GetHDMusigAddress()
+        getAddress.torClient = torClient
+        getAddress.torRPC = torRPC
+        getAddress.ssh = ssh
+        getAddress.makeSSHCall = makeSSHCall
+        getAddress.wallet = wallet
         
-        if isUsingSSH {
+        func completion() {
             
-            ssh = SSHService.sharedInstance
-            makeSSHCall = SSHelper.sharedInstance
-            
-        } else {
-            
-            torRPC = MakeRPCCall.sharedInstance
-            torClient = TorClient.sharedInstance
+            if !getAddress.errorBool {
+                
+                let address = getAddress.addressToReturn
+                addressString = address
+                showAddress(address: address)
+                descriptor = getAddress.descriptor
+                connectingView.removeConnectingView()
+                
+                DispatchQueue.main.async {
+                    
+                    self.navigationController?.navigationBar.topItem?.title = getAddress.label
+                    self.indexDisplay.text = getAddress.addressIndex
+                    self.addressOutlet.text = address
+                    
+                }
+                
+            }
             
         }
         
+        getAddress.getHDMusigAddress(completion: completion)
+        
+    }
+    
+    func loadAddress() {
+        
         showAddress()
+        
     }
     
     func getAddressSettings() {
@@ -177,32 +284,33 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     func showAddress() {
         
-        self.connectingView.addConnectingView(vc: self,
-                                              description: "Getting Address")
-        
         if isHDMusig {
             
             showAddress(address: addressString)
             connectingView.removeConnectingView()
             
+            DispatchQueue.main.async {
+                
+                self.addressOutlet.text = self.addressString
+                
+            }
+            
         } else {
+            
+            var params = ""
             
             if self.nativeSegwit {
                 
-                self.executeNodeCommandSSH(method: BTC_CLI_COMMAND.getnewaddress,
-                                           param: "\"\", \"bech32\"")
+                params = "\"\", \"bech32\""
                 
             } else if self.legacy {
                 
-                self.executeNodeCommandSSH(method: BTC_CLI_COMMAND.getnewaddress,
-                                           param: "\"\", \"legacy\"")
-                
-            } else if self.p2shSegwit {
-                
-                self.executeNodeCommandSSH(method: BTC_CLI_COMMAND.getnewaddress,
-                                           param: "")
+                params = "\"\", \"legacy\""
                 
             }
+            
+            self.executeNodeCommandSSH(method: BTC_CLI_COMMAND.getnewaddress,
+                                       param: params)
             
         }
         
@@ -210,70 +318,74 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     func showAddress(address: String) {
         
-        let pasteboard = UIPasteboard.general
-        pasteboard.string = address
-        
-        self.qrCode = generateQrCode(key: address)
-        
-        qrView.image = self.qrCode
-        qrView.isUserInteractionEnabled = true
-        qrView.alpha = 0
-        self.view.addSubview(qrView)
-        
-        descriptionLabel.frame = CGRect(x: 10,
-                                        y: view.frame.maxY - 30,
-                                        width: view.frame.width - 20,
-                                        height: 20)
-        
-        descriptionLabel.textAlignment = .center
-        
-        descriptionLabel.font = UIFont.init(name: "HelveticaNeue-Light",
-                                            size: 12)
-        
-        descriptionLabel.textColor = UIColor.white
-        descriptionLabel.text = "Tap the QR Code or text to copy/save/share"
-        descriptionLabel.adjustsFontSizeToFitWidth = true
-        descriptionLabel.alpha = 0
-        view.addSubview(self.descriptionLabel)
-        
-        label.removeFromSuperview()
-        
-        label.frame = CGRect(x: 10,
-                             y: qrView.frame.maxY + 50,
-                             width: view.frame.width - 20,
-                             height: 20)
-        
-        label.textAlignment = .center
-        
-        label.font = UIFont.init(name: "HelveticaNeue",
-                                 size: 18)
-        
-        label.textColor = UIColor.green
-        label.alpha = 0
-        label.text = address
-        label.isUserInteractionEnabled = true
-        label.adjustsFontSizeToFitWidth = true
-        view.addSubview(self.label)
-        
-        tapAddressGesture = UITapGestureRecognizer(target: self,
-                                                   action: #selector(shareAddressText(_:)))
-        
-        label.addGestureRecognizer(tapAddressGesture)
-        
-        tapQRGesture = UITapGestureRecognizer(target: self,
-                                              action: #selector(shareQRCode(_:)))
-        
-        qrView.addGestureRecognizer(tapQRGesture)
-        
-        UIView.animate(withDuration: 0.3, animations: {
+        DispatchQueue.main.async {
             
-            self.descriptionLabel.alpha = 1
-            self.qrView.alpha = 1
-            self.label.alpha = 1
+            let pasteboard = UIPasteboard.general
+            pasteboard.string = address
             
-        }) { _ in
+            self.qrCode = self.generateQrCode(key: address)
             
-            self.addCopiedLabel()
+            self.qrView.image = self.qrCode
+            self.qrView.isUserInteractionEnabled = true
+            self.qrView.alpha = 0
+            self.view.addSubview(self.qrView)
+            
+            self.descriptionLabel.frame = CGRect(x: 10,
+                                            y: self.view.frame.maxY - 30,
+                                            width: self.view.frame.width - 20,
+                                            height: 20)
+            
+            self.descriptionLabel.textAlignment = .center
+            
+            self.descriptionLabel.font = UIFont.init(name: "HelveticaNeue-Light",
+                                                size: 12)
+            
+            self.descriptionLabel.textColor = UIColor.white
+            self.descriptionLabel.text = "Tap the QR Code or text to copy/save/share"
+            self.descriptionLabel.adjustsFontSizeToFitWidth = true
+            self.descriptionLabel.alpha = 0
+            self.view.addSubview(self.descriptionLabel)
+            
+            /*self.label.removeFromSuperview()
+            
+            self.label.frame = CGRect(x: 10,
+                                 y: self.qrView.frame.maxY + 10,
+                                 width: self.view.frame.width - 20,
+                                 height: 20)
+            
+            self.label.textAlignment = .center
+            
+            self.label.font = UIFont.init(name: "HelveticaNeue",
+                                     size: 18)
+            
+            self.label.textColor = UIColor.green
+            self.label.alpha = 0
+            self.label.text = address
+            self.label.isUserInteractionEnabled = true
+            self.label.adjustsFontSizeToFitWidth = true
+            self.view.addSubview(self.label)*/
+            
+            self.tapAddressGesture = UITapGestureRecognizer(target: self,
+                                                       action: #selector(self.shareAddressText(_:)))
+            
+            self.addressOutlet.addGestureRecognizer(self.tapAddressGesture)
+            
+            self.tapQRGesture = UITapGestureRecognizer(target: self,
+                                                  action: #selector(self.shareQRCode(_:)))
+            
+            self.qrView.addGestureRecognizer(self.tapQRGesture)
+            
+            UIView.animate(withDuration: 0.3, animations: {
+                
+                self.descriptionLabel.alpha = 1
+                self.qrView.alpha = 1
+                self.addressOutlet.alpha = 1
+                
+            }) { _ in
+                
+                self.addCopiedLabel()
+                
+            }
             
         }
         
@@ -319,13 +431,13 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         
         UIView.animate(withDuration: 0.2, animations: {
             
-            self.label.alpha = 0
+            self.addressOutlet.alpha = 0
             
         }) { _ in
             
             UIView.animate(withDuration: 0.2, animations: {
                 
-                self.label.alpha = 1
+                self.addressOutlet.alpha = 1
                 
             })
             
@@ -378,6 +490,38 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 
                 switch method {
                     
+                case BTC_CLI_COMMAND.deriveaddresses:
+                    
+                    let addressToReturn = makeSSHCall.arrayToReturn[0] as! String
+                    
+                    DispatchQueue.main.async {
+                        
+                        self.connectingView.removeConnectingView()
+                        self.addressString = addressToReturn
+                        self.addressOutlet.text = addressToReturn
+                        self.showAddress(address: addressToReturn)
+                        
+                        let id = self.wallet["id"] as! String
+                        let aes = AESService()
+                        let encIndex = aes.encryptKey(keyToEncrypt: self.indexDisplay.text!)
+                        
+                        let success = self.cd.updateWallet(viewController: self,
+                                                           id: id,
+                                                           newValue: encIndex,
+                                                           keyToEdit: "index")
+
+                        if success {
+
+                            print("updated index")
+
+                        } else {
+                            
+                            print("index update failed")
+                            
+                        }
+                        
+                    }
+                    
                 case BTC_CLI_COMMAND.getnewaddress:
                     
                     let address = makeSSHCall.stringToReturn
@@ -386,6 +530,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                         
                         self.connectingView.removeConnectingView()
                         self.addressString = address
+                        self.addressOutlet.text = address
                         self.showAddress(address: address)
                         
                     }
