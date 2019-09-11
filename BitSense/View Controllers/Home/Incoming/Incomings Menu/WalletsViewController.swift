@@ -26,6 +26,7 @@ class WalletsViewController: UIViewController, UITableViewDataSource, UITableVie
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
         return wallets.count
+        
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -76,7 +77,30 @@ class WalletsViewController: UIViewController, UITableViewDataSource, UITableVie
         
     }
     
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        
+        if editingStyle == UITableViewCell.EditingStyle.delete {
+            
+            let cd = CoreDataService()
+            
+            let success = cd.deleteWallet(viewController: self, id: wallets[indexPath.row]["id"] as! String)
 
+            if success {
+
+                wallets.remove(at: indexPath.row)
+                walletTable.deleteRows(at: [indexPath], with: .fade)
+                
+            } else {
+
+                displayAlert(viewController: self.navigationController!,
+                             isError: true,
+                             message: "We had an error trying to delete that wallet")
+
+            }
+            
+        }
+        
+    }
     
     // MARK: - Navigation
 

@@ -209,6 +209,27 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
             })
             
         }
+        
+    }
+    
+    func isAnyNodeActive(nodes: [[String:Any]]) -> Bool {
+        
+        var boolToReturn = false
+        
+        for node in nodes {
+            
+            let isActive = node["isActive"] as! Bool
+            
+            if isActive {
+                
+                boolToReturn = true
+                
+            }
+            
+        }
+        
+        return boolToReturn
+        
     }
     
     func importHDMusig() {
@@ -222,18 +243,39 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
         let encIndex = aes.encryptKey(keyToEncrypt: "\(convertedRange[0])")
         let encRange = aes.encryptKey(keyToEncrypt: range)
         let id = randomString(length: 10)
+        let nodes = cd.retrieveCredentials()
+        let isActive = isAnyNodeActive(nodes: nodes)
+        var nodeID = ""
+        
+        if isActive {
+            
+            for node in nodes {
+                
+                let active = node["isActive"] as! Bool
+                
+                if active {
+                    
+                    nodeID = node["id"] as! String
+                    
+                }
+                
+            }
+            
+        }
         
         let dict = ["descriptor":encDesc,
                     "label":encLabel,
                     "index":encIndex,
                     "range":encRange,
-                    "id":id]
+                    "id":id,
+                    "nodeID":nodeID]
         
         let walletSaved = cd.saveHDWalletToCoreData(vc: self, walletInfo: dict)
         
         if walletSaved {
             
             print("wallet saved")
+            print("dict = \(dict)")
             
         } else {
             

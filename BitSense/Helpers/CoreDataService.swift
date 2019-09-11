@@ -368,7 +368,7 @@ class CoreDataService {
         
     }
     
-    func getHDWallets() -> [[String:Any]] {
+    func getHDWallets(nodeID: String) -> [[String:Any]] {
         print("getHDWallets")
         
         var hdWallets = [[String:Any]]()
@@ -393,7 +393,6 @@ class CoreDataService {
         fetchRequest.returnsObjectsAsFaults = false
         fetchRequest.resultType = .dictionaryResultType
         
-        
         do {
             
             if let results = try context.fetch(fetchRequest) as? [[String:Any]] {
@@ -402,7 +401,11 @@ class CoreDataService {
                     
                     for hdWallet in results {
                         
-                        hdWallets.append(hdWallet)
+                        if nodeID == hdWallet["nodeID"] as? String {
+                         
+                            hdWallets.append(hdWallet)
+                            
+                        }
                         
                     }
                     
@@ -534,6 +537,78 @@ class CoreDataService {
                         } catch {
                             
                             print("error editing")
+                            boolToReturn = false
+                            
+                        }
+                        
+                    }
+                    
+                }
+                
+            } else {
+                
+                print("no results")
+                boolToReturn = false
+                
+            }
+            
+        } catch {
+            
+            print("Failed")
+            boolToReturn = false
+            
+        }
+        
+        return boolToReturn
+        
+    }
+    
+    func deleteWallet(viewController: UIViewController, id: String) -> Bool {
+        
+        var boolToReturn = Bool()
+        var appDelegate = AppDelegate()
+        
+        DispatchQueue.main.async {
+            
+            if let appDelegateCheck = UIApplication.shared.delegate as? AppDelegate {
+                
+                appDelegate = appDelegateCheck
+                
+            } else {
+                
+                boolToReturn = false
+                displayAlert(viewController: viewController, isError: true, message: "Something strange has happened and we do not have access to app delegate, please try again.")
+                
+            }
+            
+        }
+        
+        let context = appDelegate.persistentContainer.viewContext
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "HDWallets")
+        fetchRequest.returnsObjectsAsFaults = false
+        
+        do {
+            
+            let results = try context.fetch(fetchRequest) as [NSManagedObject]
+            
+            if results.count > 0 {
+                
+                for (index, data) in results.enumerated() {
+                    
+                    if id == data.value(forKey: "id") as? String {
+                        
+                        context.delete(results[index] as NSManagedObject)
+                        
+                        do {
+                            
+                            try context.save()
+                            print("deleted succesfully")
+                            boolToReturn = true
+                            
+                        } catch {
+                            
+                            print("error deleting")
+                            print("deleted succesfully")
                             boolToReturn = false
                             
                         }

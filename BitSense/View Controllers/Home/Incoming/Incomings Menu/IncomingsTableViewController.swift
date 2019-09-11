@@ -37,6 +37,7 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
     
     let cd = CoreDataService()
     var wallets = [[String:Any]]()
+    var wallet = [String:Any]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -456,6 +457,7 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
             if let vc = segue.destination as? InvoiceViewController {
                 
                 vc.isHDInvoice = true
+                vc.wallet = wallet
                 
             }
             
@@ -526,14 +528,60 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
             
         }
         
-        wallets = cd.getHDWallets()
+        let nodes = cd.retrieveCredentials()
+        let isActive = isAnyNodeActive(nodes: nodes)
+        var nodeID = ""
+        
+        if isActive {
+            
+            for node in nodes {
+                
+                let active = node["isActive"] as! Bool
+                
+                if active {
+                    
+                    nodeID = node["id"] as! String
+                    
+                }
+                
+            }
+            
+        }
+        
+        wallets = cd.getHDWallets(nodeID: nodeID)
         print("wallets = \(wallets)")
+        
+        if wallets.count == 1 {
+            
+            wallet = wallets[0]
+            
+        }
         
         DispatchQueue.main.async {
             
             self.tableView.reloadData()
             
         }
+        
+    }
+    
+    func isAnyNodeActive(nodes: [[String:Any]]) -> Bool {
+        
+        var boolToReturn = false
+        
+        for node in nodes {
+            
+            let isActive = node["isActive"] as! Bool
+            
+            if isActive {
+                
+                boolToReturn = true
+                
+            }
+            
+        }
+        
+        return boolToReturn
         
     }
 

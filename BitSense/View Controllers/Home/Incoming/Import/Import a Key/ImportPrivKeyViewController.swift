@@ -266,7 +266,8 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
             case _ where prefix.hasPrefix("l"),
                  _ where prefix.hasPrefix("5"),
                  _ where prefix.hasPrefix("9"),
-                 _ where prefix.hasPrefix("c"):
+                 _ where prefix.hasPrefix("c"),
+                 _ where prefix.hasPrefix("k"):
                 
                 DispatchQueue.main.async {
                     

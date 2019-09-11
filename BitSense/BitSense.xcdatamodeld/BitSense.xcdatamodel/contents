@@ -5,6 +5,7 @@
         <attribute name="id" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="index" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="label" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="nodeID" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="range" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
     <entity name="Nodes" representedClassName="Nodes" syncable="YES" codeGenerationType="class">
@@ -26,7 +27,7 @@
         <attribute name="usingTor" optional="YES" attributeType="Boolean" usesScalarValueType="YES" syncable="YES"/>
     </entity>
     <elements>
-        <element name="HDWallets" positionX="-63" positionY="99" width="128" height="120"/>
+        <element name="HDWallets" positionX="-63" positionY="99" width="128" height="135"/>
         <element name="Nodes" positionX="-63" positionY="-18" width="128" height="285"/>
     </elements>
 </model>
