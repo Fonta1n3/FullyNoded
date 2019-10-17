@@ -16,17 +16,16 @@ class RawDisplayer {
     let qrGenerator = QRGenerator()
     let backgroundView = UIView()
     let copiedLabel = UILabel()
-    
+    var navigationBar = UINavigationBar()
+    var tabbar = UITabBar()
     var vc = UIViewController()
     var rawString = ""
-    //var titleString = ""
-    
-    //let titleLabel = UILabel()
-    
     let impact = UIImpactFeedbackGenerator()
     
     func addRawDisplay() {
         
+        tabbar = vc.tabBarController!.tabBar
+        navigationBar = vc.navigationController!.navigationBar
         configureBackground()
         configureQrView()
         configureTextView()
@@ -49,23 +48,24 @@ class RawDisplayer {
             UIView.animate(withDuration: 0.4, animations: {
                 
                 self.qrView.frame = CGRect(x: 10,
-                                      y: 80,
-                                      width: self.vc.view.frame.width - 20,
-                                      height:self.vc.view.frame.width - 20)
+                                           y: self.navigationBar.frame.maxY + 20,
+                                           width: self.vc.view.frame.width - 20,
+                                           height:self.vc.view.frame.width - 20)
                 
             }, completion: { _ in
                 
-                //self.configureTitleLabel()
                 self.impact.impactOccurred()
                 
                 UIView.animate(withDuration: 0.4, animations: {
                     
-                    //self.titleLabel.alpha = 1
+                    let qrHeight = self.vc.view.frame.width - 20
+                    let totalViewHeight = self.vc.view.frame.height
+
                     
                     self.textView.frame = CGRect(x: 10,
                                                  y: self.qrView.frame.maxY,
                                                  width: self.vc.view.frame.width - 20,
-                                                 height: 200)
+                                                 height: totalViewHeight - qrHeight)
                     
                 }, completion: { _ in
                     
@@ -94,7 +94,7 @@ class RawDisplayer {
             UIView.animate(withDuration: 0.3, animations: {
                 
                 self.copiedLabel.frame = CGRect(x: 0,
-                                                y: self.vc.view.frame.maxY - 97,
+                                                y: self.tabbar.frame.minY - 50,
                                                 width: self.vc.view.frame.width,
                                                 height: 50)
                 
@@ -137,26 +137,6 @@ class RawDisplayer {
         
     }
     
-//    func configureTitleLabel() {
-//
-//        titleLabel.alpha = 0
-//
-//        titleLabel.frame = CGRect(x: 0,
-//                                  y: 75,
-//                                  width: backgroundView.frame.width,
-//                                  height: 20)
-//
-//        titleLabel.textAlignment = .center
-//        titleLabel.textColor = UIColor.white
-//
-//        titleLabel.font = UIFont.init(name: "HiraginoSans-W3",
-//                                      size: 15)
-//
-//        titleLabel.text = titleString
-//        backgroundView.addSubview(titleLabel)
-//
-//    }
-    
     func configureQrView() {
         
         qrView.isUserInteractionEnabled = true
@@ -178,10 +158,13 @@ class RawDisplayer {
         textView.isUserInteractionEnabled = true
         textView.isEditable = false
         
+        let qrHeight = vc.view.frame.width - 20
+        let totalViewHeight = vc.view.frame.height
+        
         textView.frame = CGRect(x: 10,
                                 y: vc.view.frame.maxY + 170,
                                 width: vc.view.frame.width - 20,
-                                height: 200)
+                                height: totalViewHeight - qrHeight/*200*/)
         
     }
     
@@ -197,7 +180,6 @@ class RawDisplayer {
         
         self.qrGenerator.textInput = key
         let imageToReturn = self.qrGenerator.getQRCode()
-        
         return imageToReturn
         
     }

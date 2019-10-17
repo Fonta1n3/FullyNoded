@@ -11,13 +11,9 @@ import Foundation
 class SSHelper {
     
     static let sharedInstance = SSHelper()
-    var dictToReturn = NSDictionary()
-    var doubleToReturn = Double()
-    var arrayToReturn = NSArray()
-    var stringToReturn = String()
-    var boolToReturn = Bool()
     var errorBool = Bool()
     var errorDescription = String()
+    var objectToReturn:Any!
     
     func executeSSHCommand(ssh: SSHService, method: BTC_CLI_COMMAND, param: Any, completion: @escaping () -> Void) {
         
@@ -62,41 +58,8 @@ class SSHelper {
                         
                     } else {
                         
-                        if let str = dict["result"] as? String {
-                            
-                            self.stringToReturn = str
-                            completion()
-                            
-                        } else if let doub = dict["result"] as? Double {
-                            
-                            self.doubleToReturn = doub
-                            completion()
-                            
-                        } else if let arr = dict["result"] as? NSArray {
-                            
-                            self.arrayToReturn = arr
-                            completion()
-                            
-                        } else if let dic = dict["result"] as? NSDictionary {
-                            
-                            self.dictToReturn = dic
-                            completion()
-                        
-                        } else {
-                            
-                            if method == BTC_CLI_COMMAND.unloadwallet {
-                                
-                                self.stringToReturn = "Wallet unloaded"
-                                completion()
-                                
-                            } else if method == BTC_CLI_COMMAND.importprivkey {
-                                
-                                self.stringToReturn = "Imported key success"
-                                completion()
-                                
-                            }
-                            
-                        }
+                        self.objectToReturn = dict["result"]
+                        completion()
                         
                     }
                     

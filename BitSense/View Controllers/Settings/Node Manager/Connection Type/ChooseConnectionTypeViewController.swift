@@ -26,7 +26,7 @@ class ChooseConnectionTypeViewController: UIViewController {
             
         } else {
             
-            displayAlert(viewController: navigationController!,
+            displayAlert(viewController: self,
                          isError: true,
                          message: "You need to either choose Tor or SSH")
             
@@ -48,12 +48,20 @@ class ChooseConnectionTypeViewController: UIViewController {
         
         if isUpdating {
             
-            let id = selectedNode["id"] as! String
+            let node = NodeStruct(dictionary: selectedNode)
             
-            let success = cd.updateNode(viewController: self,
-                                        id: id,
-                                        newValue: sshSwitchOutlet.isOn,
-                                        keyToEdit: "usingSSH")
+            let id = node.id
+            
+//            let success = cd.updateNode(viewController: self,
+//                                        id: id,
+//                                        newValue: sshSwitchOutlet.isOn,
+//                                        keyToEdit: "usingSSH")
+            
+            let success = cd.updateEntity(viewController: self,
+                                          id: id,
+                                          newValue: sshSwitchOutlet.isOn,
+                                          keyToEdit: "usingSSH",
+                                          entityName: ENTITY.nodes)
             
             successes.append(success)
             
@@ -70,7 +78,7 @@ class ChooseConnectionTypeViewController: UIViewController {
             
             DispatchQueue.main.async {
                 
-                let alert = UIAlertController(title: "Alert", message: "Connecting via Tor hidden service only worked in the simulator for us, please do try it out but do not be suprised if it does not connect. We need help debugging this and are offering a bounty of $200 in BTC to anyone who can solve the issue.\n\nReach out on Twitter @FullyNoded if you want to help.", preferredStyle: .alert)
+                let alert = UIAlertController(title: "Alert", message: "Connecting via Tor hidden service may not work depending on your device, it will work if you build the app from source", preferredStyle: .alert)
                 
                 alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: { (action) in
                     
@@ -90,12 +98,19 @@ class ChooseConnectionTypeViewController: UIViewController {
         
         if isUpdating {
             
-            let id = selectedNode["id"] as! String
+            let node = NodeStruct(dictionary: selectedNode)
+            let id = node.id
             
-            let success = cd.updateNode(viewController: self,
-                                        id: id,
-                                        newValue: torSwitchOutlet.isOn,
-                                        keyToEdit: "usingTor")
+//            let success = cd.updateNode(viewController: self,
+//                                        id: id,
+//                                        newValue: torSwitchOutlet.isOn,
+//                                        keyToEdit: "usingTor")
+            
+            let success = cd.updateEntity(viewController: self,
+                                          id: id,
+                                          newValue: torSwitchOutlet.isOn,
+                                          keyToEdit: "usingTor",
+                                          entityName: ENTITY.nodes)
             
             successes.append(success)
             
@@ -108,8 +123,10 @@ class ChooseConnectionTypeViewController: UIViewController {
 
         if isUpdating {
             
-            sshSwitchOutlet.isOn = selectedNode["usingSSH"] as! Bool
-            torSwitchOutlet.isOn = selectedNode["usingTor"] as! Bool
+            let node = NodeStruct(dictionary: selectedNode)
+            
+            sshSwitchOutlet.isOn = node.usingSSH
+            torSwitchOutlet.isOn = node.usingTor
             
         } else {
             

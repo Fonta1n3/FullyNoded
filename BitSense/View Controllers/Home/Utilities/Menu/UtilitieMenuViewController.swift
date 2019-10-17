@@ -1,23 +1,17 @@
 //
-//  UtilitiesMenuTableViewController.swift
+//  UtilitieMenuViewController.swift
 //  BitSense
 //
-//  Created by Peter on 18/07/19.
+//  Created by Peter on 12/10/19.
 //  Copyright © 2019 Fontaine. All rights reserved.
 //
 
 import UIKit
 
-class UtilitiesMenuTableViewController: UITableViewController, UITabBarControllerDelegate {
+class UtilitieMenuViewController: UIViewController, UITabBarControllerDelegate, UITableViewDelegate, UITableViewDataSource {
 
-    var ssh:SSHService!
-    var makeSSHCall:SSHelper!
     var activeNode = [String:Any]()
     let connectingView = ConnectingView()
-    var torRPC:MakeRPCCall!
-    var torClient:TorClient!
-    var isUsingSSH = IsUsingSSH.sharedInstance
-    
     var getBlockchainInfo = Bool()
     var getAddressInfo = Bool()
     var listAddressGroups = Bool()
@@ -32,16 +26,8 @@ class UtilitiesMenuTableViewController: UITableViewController, UITabBarControlle
     var getTransaction = Bool()
     var getbestblockhash = Bool()
     var getblock = Bool()
-    
-    @IBAction func goBack(_ sender: Any) {
-        
-        DispatchQueue.main.async {
-            
-            self.dismiss(animated: true, completion: nil)
-            
-        }
-        
-    }
+    var goSign = Bool()
+    var goVerify = Bool()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -51,20 +37,6 @@ class UtilitiesMenuTableViewController: UITableViewController, UITabBarControlle
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        
-        isUsingSSH = IsUsingSSH.sharedInstance
-        
-        if isUsingSSH {
-            
-            ssh = SSHService.sharedInstance
-            makeSSHCall = SSHelper.sharedInstance
-            
-        } else {
-            
-            torRPC = MakeRPCCall.sharedInstance
-            torClient = TorClient.sharedInstance
-            
-        }
         
         getaddressesbylabel = false
         getMiningInfo = false
@@ -80,26 +52,29 @@ class UtilitiesMenuTableViewController: UITableViewController, UITabBarControlle
         getTransaction = false
         getbestblockhash = false
         getblock = false
+        goVerify = false
+        goSign = false
         
     }
     
-    override func numberOfSections(in tableView: UITableView) -> Int {
-        return 4
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 5
     }
     
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
         switch section {
-        case 0:return 7
-        case 1:return 6
-        case 2:return 2
-        case 3:return 1
+        case 0: return 2
+        case 1:return 7
+        case 2:return 6
+        case 3:return 2
+        case 4:return 1
         default:return 0}
         
     }
     
     
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "toolsCell", for: indexPath)
         cell.selectionStyle = .none
@@ -109,6 +84,13 @@ class UtilitiesMenuTableViewController: UITableViewController, UITabBarControlle
         switch indexPath.section {
             
         case 0:
+            
+            switch indexPath.row {
+            case 0: label.text = "Sign Message"
+            case 1: label.text = "Verify Message"
+            default: break}
+            
+        case 1:
             
             //Blockchain
             switch indexPath.row {
@@ -121,7 +103,7 @@ class UtilitiesMenuTableViewController: UITableViewController, UITabBarControlle
             case 6: label.text = "Get Block"
             default:break}
             
-        case 1:
+        case 2:
             
             //wallet
             switch indexPath.row {
@@ -133,7 +115,7 @@ class UtilitiesMenuTableViewController: UITableViewController, UITabBarControlle
             case 5: label.text = "Addresses By Label"
             default:break}
             
-        case 2:
+        case 3:
             
             //network
             switch indexPath.row {
@@ -141,7 +123,7 @@ class UtilitiesMenuTableViewController: UITableViewController, UITabBarControlle
             case 1: label.text = "Get Peer Info"
             default:break}
             
-        case 3:
+        case 4:
             
             //mining
             switch indexPath.row {
@@ -158,7 +140,7 @@ class UtilitiesMenuTableViewController: UITableViewController, UITabBarControlle
         
     }
     
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         let cell = tableView.cellForRow(at: IndexPath.init(row: indexPath.row, section: indexPath.section))!
         
@@ -178,17 +160,31 @@ class UtilitiesMenuTableViewController: UITableViewController, UITabBarControlle
                     
                 case 0:
                     
+                    switch indexPath.row {
+                        
+                    case 0: self.goSign = true
+                    case 1: self.goVerify = true
+                    default: break}
+                    
+                    DispatchQueue.main.async {
+                        
+                        self.performSegue(withIdentifier: "goSign", sender: self)
+                        
+                    }
+                    
+                case 1:
+                    
                     //Blockchain
                     switch indexPath.row {
                         
                     case 0:
                         
-                        displayAlert(viewController: self.navigationController!,
+                        displayAlert(viewController: self,
                                      isError: false,
                                      message: "starting rescan, this can take an hour or so and will affect the apps functionality")
                         
                         self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.rescanblockchain,
-                                                       param: "")
+                                                   param: "")
                         
                     case 1:
                         
@@ -227,7 +223,7 @@ class UtilitiesMenuTableViewController: UITableViewController, UITabBarControlle
                         
                     }
                     
-                case 1:
+                case 2:
                     
                     //wallet
                     switch indexPath.row {
@@ -241,7 +237,7 @@ class UtilitiesMenuTableViewController: UITableViewController, UITabBarControlle
                     
                     self.performSegue(withIdentifier: "goGetInfo", sender: self)
                     
-                case 2:
+                case 3:
                     
                     //network
                     switch indexPath.row {
@@ -251,7 +247,7 @@ class UtilitiesMenuTableViewController: UITableViewController, UITabBarControlle
                     
                     self.performSegue(withIdentifier: "goGetInfo", sender: self)
                     
-                case 3:
+                case 4:
                     
                     //mining
                     switch indexPath.row {
@@ -266,7 +262,7 @@ class UtilitiesMenuTableViewController: UITableViewController, UITabBarControlle
                         break
                         
                     }
-                
+                    
                     
                 default:
                     
@@ -286,33 +282,19 @@ class UtilitiesMenuTableViewController: UITableViewController, UITabBarControlle
         
     }
     
-    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         
-        if section == 0 {
-            
-            return "Blockchain"
-            
-        } else if section == 1 {
-            
-            return "Wallet"
-            
-        } else if section == 2 {
-            
-            return "Network"
-            
-        } else if section == 3 {
-            
-            return "Mining"
-            
-        } else {
-            
-            return ""
-            
-        }
+        switch section {
+        case 0: return "Identity"
+        case 1: return "Blockchain"
+        case 2: return "Wallet"
+        case 3: return "Network"
+        case 4: return "Mining"
+        default: return ""}
         
     }
     
-    override func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
         
         (view as! UITableViewHeaderFooterView).backgroundView?.backgroundColor = UIColor.clear
         (view as! UITableViewHeaderFooterView).textLabel?.textAlignment = .right
@@ -321,13 +303,13 @@ class UtilitiesMenuTableViewController: UITableViewController, UITabBarControlle
         
     }
     
-    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         
         return 30
         
     }
     
-    override func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         
         return 20
         
@@ -335,21 +317,23 @@ class UtilitiesMenuTableViewController: UITableViewController, UITabBarControlle
     
     func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
         
+        let reducer = Reducer()
+        
         func getResult() {
             
-            if !makeSSHCall.errorBool {
+            if !reducer.errorBool {
                 
                 switch method {
                     
                 case BTC_CLI_COMMAND.rescanblockchain:
                     
-                    displayAlert(viewController: self.navigationController!,
+                    displayAlert(viewController: self,
                                  isError: false,
                                  message: "Rescanning completed")
                     
                 case BTC_CLI_COMMAND.abortrescan:
                     
-                    displayAlert(viewController: self.navigationController!,
+                    displayAlert(viewController: self,
                                  isError: false,
                                  message: "Rescan aborted")
                     
@@ -367,7 +351,7 @@ class UtilitiesMenuTableViewController: UITableViewController, UITabBarControlle
                     
                     displayAlert(viewController: self,
                                  isError: true,
-                                 message: self.makeSSHCall.errorDescription)
+                                 message: reducer.errorDescription)
                     
                 }
                 
@@ -375,26 +359,9 @@ class UtilitiesMenuTableViewController: UITableViewController, UITabBarControlle
             
         }
         
-        if self.ssh != nil {
-            
-            if self.ssh.session.isConnected {
-                
-                makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                              method: method,
-                                              param: param,
-                                              completion: getResult)
-                
-            } else {
-                
-                connectingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "Not connected")
-                
-            }
-            
-        }
+        reducer.makeCommand(command: method,
+                            param: param,
+                            completion: getResult)
         
     }
     
@@ -423,6 +390,15 @@ class UtilitiesMenuTableViewController: UITableViewController, UITabBarControlle
                 
             }
             
+        case "goSign":
+            
+            if let vc = segue.destination as? IdentityViewController {
+                
+                vc.sign = goSign
+                vc.verify = goVerify
+                
+            }
+            
         default:
             
             break
@@ -433,7 +409,7 @@ class UtilitiesMenuTableViewController: UITableViewController, UITabBarControlle
     
 }
 
-extension UtilitiesMenuTableViewController  {
+extension UtilitieMenuViewController  {
     func tabBarController(_ tabBarController: UITabBarController, animationControllerForTransitionFrom fromVC: UIViewController, to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {
         return MyTransition(viewControllers: tabBarController.viewControllers)
     }

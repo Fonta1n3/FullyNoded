@@ -10,13 +10,6 @@ import UIKit
 
 class GetInfoViewController: UIViewController, UITextFieldDelegate {
     
-    var ssh:SSHService!
-    var makeSSHCall:SSHelper!
-    let connectingView = ConnectingView()
-    var torRPC:MakeRPCCall!
-    var torClient:TorClient!
-    var isUsingSSH = IsUsingSSH.sharedInstance
-    
     var getBlockchainInfo = Bool()
     var getAddressInfo = Bool()
     var listAddressGroups = Bool()
@@ -59,7 +52,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     var isUtxo = Bool()
     
     func scan() {
-    
+        
         scannerShowing = true
         textView.resignFirstResponder()
         
@@ -78,7 +71,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
                     
                 }, completion: { _ in
                     
-                    self.connectingView.removeConnectingView()
+                    self.creatingView.removeConnectingView()
                     
                 })
                 
@@ -105,7 +98,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         configureScanner()
         
         let tapGesture = UITapGestureRecognizer(target: self,
@@ -114,43 +107,11 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
         
-        isUsingSSH = IsUsingSSH.sharedInstance
-        
-        if isUsingSSH {
-            
-            ssh = SSHService.sharedInstance
-            makeSSHCall = SSHelper.sharedInstance
-            
-        } else {
-            
-            torRPC = MakeRPCCall.sharedInstance
-            torClient = TorClient.sharedInstance
-            
-        }
-        
         getInfo()
         
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        
-        isUsingSSH = IsUsingSSH.sharedInstance
-        
-        if isUsingSSH {
-            
-            ssh = SSHService.sharedInstance
-            makeSSHCall = SSHelper.sharedInstance
-            
-        } else {
-            
-            torRPC = MakeRPCCall.sharedInstance
-            torClient = TorClient.sharedInstance
-            
-        }
-        
-    }
-    
-   @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
+    @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
         
         DispatchQueue.main.async {
             
@@ -162,8 +123,8 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     
     func getInfo() {
         
-        connectingView.addConnectingView(vc: self,
-                                         description: "")
+        creatingView.addConnectingView(vc: self,
+                                       description: "")
         
         var titleString = ""
         
@@ -177,8 +138,8 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         if getbestblockhash {
             
             titleString = "Latest Block"
-            executeNodeCommandSsh(method: BTC_CLI_COMMAND.getbestblockhash,
-                                  param: "")
+            executeNodeCommand(method: BTC_CLI_COMMAND.getbestblockhash,
+                               param: "")
             
         }
         
@@ -201,8 +162,8 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
             
             if labelToSearch != "" {
                 
-                executeNodeCommandSsh(method: BTC_CLI_COMMAND.getaddressesbylabel,
-                                      param: "\"\(labelToSearch)\"")
+                executeNodeCommand(method: BTC_CLI_COMMAND.getaddressesbylabel,
+                                   param: "\"\(labelToSearch)\"")
                 
             } else {
                 
@@ -215,30 +176,27 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         if listLabels {
             
             titleString = "Labels"
-            self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.listlabels,
-                                       param: "")
+            self.executeNodeCommand(method: BTC_CLI_COMMAND.listlabels,
+                                    param: "")
             
         }
         
         if getMempoolInfo {
             
             titleString = "Mempool Info"
-            self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.getmempoolinfo,
-                                       param: "")
+            self.executeNodeCommand(method: BTC_CLI_COMMAND.getmempoolinfo,
+                                    param: "")
         }
         
         if getPeerInfo {
             
             titleString = "Peer Info"
-            self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.getpeerinfo,
-                                       param: "")
+            self.executeNodeCommand(method: BTC_CLI_COMMAND.getpeerinfo,
+                                    param: "")
             
         }
         
         if decodeScript {
-            
-//            connectingView.addConnectingView(vc: self,
-//                                             description: "")
             
             titleString = "Decoded Script"
             scan()
@@ -248,23 +206,23 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         if getMiningInfo {
             
             titleString = "Mining Info"
-            self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.getmininginfo,
-                                       param: "")
+            self.executeNodeCommand(method: BTC_CLI_COMMAND.getmininginfo,
+                                    param: "")
         }
         
         if getNetworkInfo {
             
             titleString = "Network Info"
-            self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.getnetworkinfo,
-                                       param: "")
+            self.executeNodeCommand(method: BTC_CLI_COMMAND.getnetworkinfo,
+                                    param: "")
             
         }
         
         if getBlockchainInfo {
             
             titleString = "Blockchain Info"
-            self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.getblockchaininfo,
-                                       param: "")
+            self.executeNodeCommand(method: BTC_CLI_COMMAND.getblockchaininfo,
+                                    param: "")
             
         }
         
@@ -287,16 +245,16 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         if listAddressGroups {
             
             titleString = "Address Groups"
-            self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.listaddressgroupings,
-                                       param: "")
+            self.executeNodeCommand(method: BTC_CLI_COMMAND.listaddressgroupings,
+                                    param: "")
             
         }
         
         if getWalletInfo {
             
             titleString = "Wallet Info"
-            self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.getwalletinfo,
-                                       param: "")
+            self.executeNodeCommand(method: BTC_CLI_COMMAND.getwalletinfo,
+                                    param: "")
             
         }
         
@@ -307,10 +265,10 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
             DispatchQueue.main.async {
                 
                 self.textView.text = "\(self.utxo)"
-                self.connectingView.removeConnectingView()
+                self.creatingView.removeConnectingView()
                 
             }
-
+            
         }
         
         DispatchQueue.main.async {
@@ -321,33 +279,47 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
+    func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
+        
+        let reducer = Reducer()
         
         func getResult() {
             
-            if !makeSSHCall.errorBool {
+            if !reducer.errorBool {
                 
                 switch method {
                     
-                case BTC_CLI_COMMAND.getaddressesbylabel:
+                case .getaddressesbylabel:
+                    
+                    let result = reducer.dictToReturn
                     
                     if labelToSearch != "" {
                         
-                        addressArray = makeSSHCall.dictToReturn.allKeys as NSArray
+                        addressArray = result.allKeys as NSArray
                         parseAddresses(addresses: addressArray, index: 0)
+                        
+                    } else {
+                        
+                        creatingView.removeConnectingView()
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.textView.text = "\(result)"
+                            
+                        }
                         
                     }
                     
-                case BTC_CLI_COMMAND.getaddressinfo:
+                case .getaddressinfo:
                     
-                    let result = makeSSHCall.dictToReturn
+                    let result = reducer.dictToReturn
                     
                     if address != "" {
                         
                         DispatchQueue.main.async {
                             
                             self.textView.text = "\(result)"
-                            self.connectingView.removeConnectingView()
+                            self.creatingView.removeConnectingView()
                             
                         }
                         
@@ -369,7 +341,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
                                 DispatchQueue.main.async {
                                     
                                     self.textView.text = "\(self.infoArray)"
-                                    self.connectingView.removeConnectingView()
+                                    self.creatingView.removeConnectingView()
                                     
                                     if self.alertMessage != "" {
                                         
@@ -388,7 +360,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
                             DispatchQueue.main.async {
                                 
                                 self.textView.text = "\(result)"
-                                self.connectingView.removeConnectingView()
+                                self.creatingView.removeConnectingView()
                                 
                             }
                             
@@ -396,25 +368,25 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
                         
                     }
                     
-                case BTC_CLI_COMMAND.listaddressgroupings,
-                     BTC_CLI_COMMAND.getpeerinfo,
-                     BTC_CLI_COMMAND.listlabels:
+                case .listaddressgroupings,
+                     .getpeerinfo,
+                     .listlabels:
                     
                     DispatchQueue.main.async {
                         
-                        let result = self.makeSSHCall.arrayToReturn
+                        let result = reducer.arrayToReturn
                         self.textView.text = "\(result)"
-                        self.connectingView.removeConnectingView()
+                        self.creatingView.removeConnectingView()
                         
                     }
                     
-                case BTC_CLI_COMMAND.getbestblockhash:
+                case .getbestblockhash:
                     
                     DispatchQueue.main.async {
                         
-                        let result = self.makeSSHCall.stringToReturn
+                        let result = reducer.stringToReturn
                         self.textView.text = result
-                        self.connectingView.removeConnectingView()
+                        self.creatingView.removeConnectingView()
                         
                     }
                     
@@ -422,9 +394,9 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
                     
                     DispatchQueue.main.async {
                         
-                        let result = self.makeSSHCall.dictToReturn
+                        let result = reducer.dictToReturn
                         self.textView.text = "\(result)"
-                        self.connectingView.removeConnectingView()
+                        self.creatingView.removeConnectingView()
                         
                     }
                     
@@ -434,11 +406,11 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
                 
                 DispatchQueue.main.async {
                     
-                    self.connectingView.removeConnectingView()
+                    self.creatingView.removeConnectingView()
                     
                     displayAlert(viewController: self,
                                  isError: true,
-                                 message: self.makeSSHCall.errorDescription)
+                                 message: reducer.errorDescription)
                     
                 }
                 
@@ -446,32 +418,9 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
             
         }
         
-        if self.ssh != nil {
-            
-            if self.ssh.session.isConnected {
-                
-                self.makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                                   method: method,
-                                                   param: param,
-                                                   completion: getResult)
-                
-            } else {
-                
-                connectingView.removeConnectingView()
-                
-                displayAlert(viewController: self.navigationController!,
-                             isError: true,
-                             message: "SSH not connected")
-                
-            }
-            
-        } else {
-            
-            displayAlert(viewController: self.navigationController!,
-                         isError: true,
-                         message: "Not connected to a node")
-            
-        }
+        reducer.makeCommand(command: method,
+                            param: param,
+                            completion: getResult)
         
     }
     
@@ -484,8 +433,8 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
                 
                 let addr = address as! String
                 
-                executeNodeCommandSsh(method: BTC_CLI_COMMAND.getaddressinfo,
-                                      param: "\"\(addr)\"")
+                executeNodeCommand(method: BTC_CLI_COMMAND.getaddressinfo,
+                                   param: "\"\(addr)\"")
                 
             }
             
@@ -670,36 +619,36 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
         if getAddressInfo {
             
-            self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.getaddressinfo,
-                                       param: "\"\(address)\"")
+            self.executeNodeCommand(method: BTC_CLI_COMMAND.getaddressinfo,
+                                    param: "\"\(address)\"")
             
         }
         
         if decodeScript {
             
-            self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.decodescript,
-                                       param: "\"\(address)\"")
+            self.executeNodeCommand(method: BTC_CLI_COMMAND.decodescript,
+                                    param: "\"\(address)\"")
             
         }
         
         if getaddressesbylabel {
             
-            self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.getaddressesbylabel,
-                                       param: "\"\(address)\"")
+            self.executeNodeCommand(method: BTC_CLI_COMMAND.getaddressesbylabel,
+                                    param: "\"\(address)\"")
             
         }
         
         if getTransaction {
             
-            self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.getrawtransaction,
-                                       param: "\"\(address)\", true")
+            self.executeNodeCommand(method: BTC_CLI_COMMAND.getrawtransaction,
+                                    param: "\"\(address)\", true")
             
         }
         
         if getblock {
             
-            self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.getblock,
-                                       param: "\"\(address)\"")
+            self.executeNodeCommand(method: BTC_CLI_COMMAND.getblock,
+                                    param: "\"\(address)\"")
             
         }
         
@@ -719,8 +668,8 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
                 textField.text = string
                 getAddressInfo(address: string)
                 
-                connectingView.addConnectingView(vc: self,
-                                                 description: "getting info")
+                creatingView.addConnectingView(vc: self,
+                                               description: "getting info")
                 
             } else {
                 
@@ -729,7 +678,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
             }
             
         }
-            
+        
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
@@ -738,11 +687,11 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
             
             getAddressInfo(address: textField.text!)
             
-            connectingView.addConnectingView(vc: self,
-                                             description: "getting info")
+            creatingView.addConnectingView(vc: self,
+                                           description: "getting info")
             
         }
         
     }
-
+    
 }

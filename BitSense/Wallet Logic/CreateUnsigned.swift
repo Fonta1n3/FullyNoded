@@ -8,14 +8,7 @@
 
 import Foundation
 
-
 class CreateUnsigned {
-    
-    var ssh:SSHService!
-    var makeSSHCall:SSHelper!
-    var torRPC:MakeRPCCall!
-    var isUsingSSH = Bool()
-    var torClient:TorClient!
     
     var amount = Double()
     var changeAddress = ""
@@ -27,7 +20,6 @@ class CreateUnsigned {
     var utxoVout = Int()
     var changeAmount = Double()
     var inputs = ""
-    
     var unsignedRawTx = ""
     var errorBool = Bool()
     var errorDescription = ""
@@ -36,30 +28,38 @@ class CreateUnsigned {
     
     func createRawTransaction(completion: @escaping () -> Void) {
         
-        func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
+        let reducer = Reducer()
+        
+        func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
             
             func getResult() {
                 
-                if !makeSSHCall.errorBool {
+                if !reducer.errorBool {
                     
                     switch method {
                         
-                    case BTC_CLI_COMMAND.listunspent:
+                    case .listunspent:
                         
-                        let resultArray = makeSSHCall.arrayToReturn
+                        let resultArray = reducer.arrayToReturn
                         parseUnspent(utxos: resultArray)
                         
-                    case BTC_CLI_COMMAND.createrawtransaction:
+                    case .createrawtransaction:
                         
                         if !optimized {
                             
-                            let originalTx = makeSSHCall.stringToReturn
+                            let originalTx = reducer.stringToReturn
                             
-                            optimizeTheFee(raw: originalTx, amount: amount, addressToPay: addressToPay, sweep: false, inputArray: inputArray, changeAddress: changeAddress, changeAmount: changeAmount)
+                            optimizeTheFee(raw: originalTx,
+                                           amount: amount,
+                                           addressToPay: addressToPay,
+                                           sweep: false,
+                                           inputArray: inputArray,
+                                           changeAddress: changeAddress,
+                                           changeAmount: changeAmount)
                             
                         } else {
                             
-                            unsignedRawTx = makeSSHCall.stringToReturn
+                            unsignedRawTx = reducer.stringToReturn
                             completion()
                             
                         }
@@ -73,92 +73,67 @@ class CreateUnsigned {
                 } else {
                     
                     errorBool = true
-                    errorDescription = makeSSHCall.errorDescription
+                    errorDescription = reducer.errorDescription
                     completion()
                     
                 }
                 
             }
             
-            if ssh != nil {
-                
-                if ssh.session.isConnected {
-                    
-                    makeSSHCall.executeSSHCommand(ssh: ssh,
-                                                  method: method,
-                                                  param: param,
-                                                  completion: getResult)
-                    
-                } else {
-                    
-                    errorBool = true
-                    errorDescription = "Not connected"
-                    completion()
-                    
-                }
-                
-            } else {
-                
-                errorBool = true
-                errorDescription = "Not connected"
-                completion()
-                
-            }
+            reducer.makeCommand(command: method,
+                                param: param,
+                                completion: getResult)
             
         }
         
         func parseUnspent(utxos: NSArray) {
             
-            //if !self.sweep {
+            if utxos.count > 0 {
                 
-                if utxos.count > 0 {
+                parseUtxos(resultArray: utxos)
+                
+                var loop = true
+                
+                self.inputArray.removeAll()
+                
+                if self.spendableUtxos.count > 0 {
                     
-                    parseUtxos(resultArray: utxos)
+                    var sumOfUtxo = 0.0
                     
-                    var loop = true
-                    
-                    self.inputArray.removeAll()
-                    
-                    if self.spendableUtxos.count > 0 {
+                    for spendable in self.spendableUtxos {
                         
-                        var sumOfUtxo = 0.0
-                        
-                        for spendable in self.spendableUtxos {
+                        if loop {
                             
-                            if loop {
+                            let amountAvailable = spendable["amount"] as! Double
+                            sumOfUtxo = sumOfUtxo + amountAvailable
+                            
+                            if sumOfUtxo < (self.amount + 0.00050000) {
                                 
-                                let amountAvailable = spendable["amount"] as! Double
-                                sumOfUtxo = sumOfUtxo + amountAvailable
+                                self.utxoTxId = spendable["txid"] as! String
+                                self.utxoVout = spendable["vout"] as! Int
+                                let input = "{\"txid\":\"\(self.utxoTxId)\",\"vout\": \(self.utxoVout),\"sequence\": 1}"
+                                self.inputArray.append(input)
                                 
-                                if sumOfUtxo < (self.amount + 0.00050000) {
-                                    
-                                    self.utxoTxId = spendable["txid"] as! String
-                                    self.utxoVout = spendable["vout"] as! Int
-                                    let input = "{\"txid\":\"\(self.utxoTxId)\",\"vout\": \(self.utxoVout),\"sequence\": 1}"
-                                    self.inputArray.append(input)
-                                    
-                                } else {
-                                    
-                                    loop = false
-                                    self.utxoTxId = spendable["txid"] as! String
-                                    self.utxoVout = spendable["vout"] as! Int
-                                    let input = "{\"txid\":\"\(self.utxoTxId)\",\"vout\": \(self.utxoVout),\"sequence\": 1}"
-                                    self.inputArray.append(input)
-                                    self.changeAmount = sumOfUtxo - (self.amount + 0.00050000)
-                                    self.changeAmount = Double(round(100000000*self.changeAmount)/100000000)
-                                    
-                                    processInputs()
-                                    
-                                    let receiver = "\"\(self.addressToPay)\":\(self.amount)"
-                                    let change = "\"\(self.changeAddress)\":\(self.changeAmount)"
-                                    var param = "''\(self.inputs)'', ''{\(receiver), \(change)}'', 0, true"
-                                    param = param.replacingOccurrences(of: "\"{", with: "{")
-                                    param = param.replacingOccurrences(of: "}\"", with: "}")
-                                    
-                                    executeNodeCommandSsh(method: BTC_CLI_COMMAND.createrawtransaction,
-                                                          param: param)
-                                    
-                                }
+                            } else {
+                                
+                                loop = false
+                                self.utxoTxId = spendable["txid"] as! String
+                                self.utxoVout = spendable["vout"] as! Int
+                                let input = "{\"txid\":\"\(self.utxoTxId)\",\"vout\": \(self.utxoVout),\"sequence\": 1}"
+                                self.inputArray.append(input)
+                                self.changeAmount = sumOfUtxo - (self.amount + 0.00050000)
+                                self.changeAmount = Double(round(100000000*self.changeAmount)/100000000)
+                                
+                                processInputs()
+                                
+                                let receiver = "\"\(self.addressToPay)\":\(self.amount)"
+                                let change = "\"\(self.changeAddress)\":\(self.changeAmount)"
+                                var param = "''\(self.inputs)'', ''{\(receiver), \(change)}'', 0, true"
+                                param = param.replacingOccurrences(of: "\"{", with: "{")
+                                param = param.replacingOccurrences(of: "}\"", with: "}")
+                                
+                                executeNodeCommand(method: BTC_CLI_COMMAND.createrawtransaction,
+                                                      param: param)
                                 
                             }
                             
@@ -166,66 +141,15 @@ class CreateUnsigned {
                         
                     }
                     
-                } else {
-                    
-                    errorBool = true
-                    errorDescription = "No UTXO's"
-                    completion()
-                    
                 }
                 
-            /*} else {
+            } else {
                 
-                //sweeping
-                if utxos.count > 0 {
-                    
-                    parseUtxos(resultArray: utxos)
-                    
-                    self.inputArray.removeAll()
-                    
-                    if self.spendableUtxos.count > 0 {
-                        
-                        var sumOfUtxo = 0.0
-                        
-                        for spendable in self.spendableUtxos {
-                            
-                            let amountAvailable = spendable["amount"] as! Double
-                            sumOfUtxo = sumOfUtxo + amountAvailable
-                            self.utxoTxId = spendable["txid"] as! String
-                            self.utxoVout = spendable["vout"] as! Int
-                            let input = "{\"txid\":\"\(self.utxoTxId)\",\"vout\": \(self.utxoVout),\"sequence\": 1}"
-                            self.inputArray.append(input)
-                            
-                        }
-                        
-                        let array = String(sumOfUtxo).split(separator: ".")
-                        if array[1].count > 8 {
-                            
-                            sumOfUtxo = round(100000000*sumOfUtxo)/100000000
-                            
-                        }
-                        
-                        let total = sumOfUtxo - miningFee - 0.00050000
-                        let totalRounded = round(100000000*total)/100000000
-                        self.amount = totalRounded
-                        processInputs()
-                        
-                        let param = "\'\(self.inputs)\' \'{\"\(self.addressToPay)\":\(self.amount), \"\(self.changeAddress)\": \(self.changeAmount)}\'"
-                        
-                        executeNodeCommandSsh(method: BTC_CLI_COMMAND.createrawtransaction,
-                                              param: param)
-                        
-                    }
-                    
-                } else {
-                    
-                    errorBool = true
-                    errorDescription = "No UTXO's"
-                    completion()
-                    
-                }
+                errorBool = true
+                errorDescription = "No UTXO's"
+                completion()
                 
-            }*/
+            }
             
         }
         
@@ -262,17 +186,11 @@ class CreateUnsigned {
             
             let getSmartFee = GetSmartFee()
             getSmartFee.rawSigned = raw
-            getSmartFee.ssh = self.ssh
-            getSmartFee.makeSSHCall = self.makeSSHCall
-            getSmartFee.torRPC = self.torRPC
-            getSmartFee.torClient = self.torClient
-            getSmartFee.isUsingSSH = self.isUsingSSH
             getSmartFee.isUnsigned = true
             
             func getFeeResult() {
                 
                 let optimalFee = rounded(number: getSmartFee.optimalFee)
-                print("optimalFee = \(optimalFee)")
                 
                 self.changeAmount = (changeAmount + 0.00050000) - optimalFee
                 self.changeAmount = rounded(number: self.changeAmount)
@@ -285,7 +203,7 @@ class CreateUnsigned {
                 param = param.replacingOccurrences(of: "\"{", with: "{")
                 param = param.replacingOccurrences(of: "}\"", with: "}")
                 
-                executeNodeCommandSsh(method: BTC_CLI_COMMAND.createrawtransaction,
+                executeNodeCommand(method: BTC_CLI_COMMAND.createrawtransaction,
                                       param: param)
                 
             }
@@ -294,7 +212,7 @@ class CreateUnsigned {
             
         }
         
-        executeNodeCommandSsh(method: BTC_CLI_COMMAND.listunspent,
+        executeNodeCommand(method: BTC_CLI_COMMAND.listunspent,
                               param: "1, 9999999, [\"\(self.spendingAddress)\"]")
         
     }

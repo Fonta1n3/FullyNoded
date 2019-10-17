@@ -14,7 +14,7 @@ class RescanViewController: UIViewController {
     let dateFormatter = DateFormatter()
     var isSingleKey = Bool()
     var isMultisig = Bool()
-    
+    var isDescriptor = Bool()
     @IBOutlet var datePicker: UIDatePicker!
     
     override func viewDidLoad() {
@@ -33,7 +33,7 @@ class RescanViewController: UIViewController {
         
         var segueString = "addFingerprint"
         
-        if isSingleKey {
+        if isSingleKey || isDescriptor {
             
             segueString = "goScanKey"
             
@@ -44,6 +44,17 @@ class RescanViewController: UIViewController {
             segueString = "importMusig"
             
         }
+        
+        if let derivation = dict["derivation"] as? String {
+            
+            if derivation == "BIP32Legacy" || derivation == "BIP32Segwit" {
+                
+                segueString = "scanBIP32"
+                
+            }
+            
+        }
+        
         
         DispatchQueue.main.async {
             
@@ -68,6 +79,14 @@ class RescanViewController: UIViewController {
         
         switch segue.identifier {
             
+        case "scanBIP32":
+            
+            if let vc = segue.destination as? ScanExtendedKeyViewController {
+                
+                vc.dict = dict
+                
+            }
+            
         case "addFingerprint":
             
             if let vc = segue.destination as? AddFingerprintViewController  {
@@ -81,6 +100,7 @@ class RescanViewController: UIViewController {
             if let vc = segue.destination as? ImportPrivKeyViewController  {
                 
                 vc.dict = dict
+                vc.isDescriptor = isDescriptor
                 
             }
             

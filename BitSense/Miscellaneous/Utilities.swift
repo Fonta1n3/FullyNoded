@@ -23,7 +23,7 @@ public func hexStringToUIColor (hex:String) -> UIColor {
     var rgbValue:UInt32 = 0
     Scanner(string: cString).scanHexInt32(&rgbValue)
     
-    return UIColor(
+    return UIColor (
         red: CGFloat((rgbValue & 0xFF0000) >> 16) / 255.0,
         green: CGFloat((rgbValue & 0x00FF00) >> 8) / 255.0,
         blue: CGFloat(rgbValue & 0x0000FF) / 255.0,
@@ -52,19 +52,23 @@ public func displayAlert(viewController: UIViewController, isError: Bool, messag
         
         errorView.isUserInteractionEnabled = true
         
-        if !isError {
-            
-            errorView.showErrorView(vc: viewController,
-                                    text: message,
-                                    isError: isError)
-            
-        } else {
-            
-            errorView.showErrorView(vc: viewController,
-                                    text: message,
-                                    isError: isError)
-            
-        }
+        errorView.showErrorView(vc: viewController,
+                                text: message,
+                                isError: isError)
+        
+//        if !isError {
+//
+//            errorView.showErrorView(vc: viewController,
+//                                    text: message,
+//                                    isError: isError)
+//
+//        } else {
+//
+//            errorView.showErrorView(vc: viewController,
+//                                    text: message,
+//                                    isError: isError)
+//
+//       }
         
     }
     
@@ -76,28 +80,33 @@ public func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
     
     switch command {
         
-    case BTC_CLI_COMMAND.listtransactions,
-         BTC_CLI_COMMAND.getbalance,
-         BTC_CLI_COMMAND.getunconfirmedbalance,
-         BTC_CLI_COMMAND.getnewaddress,
-         BTC_CLI_COMMAND.getwalletinfo,
-         BTC_CLI_COMMAND.getrawchangeaddress,
-         BTC_CLI_COMMAND.importmulti,
-         BTC_CLI_COMMAND.importprivkey,
-         BTC_CLI_COMMAND.rescanblockchain,
-         BTC_CLI_COMMAND.fundrawtransaction,
-         BTC_CLI_COMMAND.listunspent,
-         BTC_CLI_COMMAND.walletprocesspsbt,
-         BTC_CLI_COMMAND.gettransaction,
-         BTC_CLI_COMMAND.getaddressinfo,
-         BTC_CLI_COMMAND.bumpfee,
-         BTC_CLI_COMMAND.signrawtransactionwithwallet,
-         BTC_CLI_COMMAND.listaddressgroupings,
-         BTC_CLI_COMMAND.listlabels,
-         BTC_CLI_COMMAND.getaddressesbylabel,
-         BTC_CLI_COMMAND.listlockunspent,
-         BTC_CLI_COMMAND.lockunspent,
-         BTC_CLI_COMMAND.walletcreatefundedpsbt:
+    case .listtransactions,
+         .getbalance,
+         .getunconfirmedbalance,
+         .getnewaddress,
+         .getwalletinfo,
+         .getrawchangeaddress,
+         .importmulti,
+         .importprivkey,
+         .rescanblockchain,
+         .fundrawtransaction,
+         .listunspent,
+         .walletprocesspsbt,
+         .gettransaction,
+         .getaddressinfo,
+         .bumpfee,
+         .signrawtransactionwithwallet,
+         .listaddressgroupings,
+         .listlabels,
+         .getaddressesbylabel,
+         .listlockunspent,
+         .lockunspent,
+         .abortrescan,
+         .walletcreatefundedpsbt,
+         .encryptwallet,
+         .walletpassphrase,
+         .walletpassphrasechange,
+         .walletlock:
         
         boolToReturn = true
         

@@ -18,12 +18,6 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
     var isFirstTime = Bool()
     var psbt = ""
     
-    var torRPC:MakeRPCCall!
-    var torClient:TorClient!
-    var makeSSHCall:SSHelper!
-    var ssh:SSHService!
-    var isUsingSSH = IsUsingSSH.sharedInstance
-    
     var tapQRGesture = UITapGestureRecognizer()
     var tapTextViewGesture = UITapGestureRecognizer()
     
@@ -36,7 +30,6 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
     @IBOutlet var joinTable: UITableView!
     
     var combinePSBT = Bool()
-    
     
     @IBAction func add(_ sender: Any) {
         
@@ -66,12 +59,12 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
             
             if !combinePSBT {
                 
-                executeNodeCommandSsh(method: BTC_CLI_COMMAND.joinpsbts,
+                executeNodeCommand(method: BTC_CLI_COMMAND.joinpsbts,
                                       param: psbtArray)
                 
             } else {
                 
-                executeNodeCommandSsh(method: BTC_CLI_COMMAND.combinepsbt,
+                executeNodeCommand(method: BTC_CLI_COMMAND.combinepsbt,
                                       param: psbtArray)
                 
             }
@@ -88,22 +81,24 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
-    func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: Any) {
+    func executeNodeCommand(method: BTC_CLI_COMMAND, param: Any) {
+        
+        let reducer = Reducer()
         
         func getResult() {
             
-            if !makeSSHCall.errorBool {
+            if !reducer.errorBool {
                 
                 switch method {
                     
-                case BTC_CLI_COMMAND.combinepsbt:
+                case .combinepsbt:
                     
-                    psbt = makeSSHCall.stringToReturn
+                    psbt = reducer.stringToReturn
                     showRaw(raw: psbt)
                     
-                case BTC_CLI_COMMAND.joinpsbts:
+                case .joinpsbts:
                     
-                    psbt = makeSSHCall.stringToReturn
+                    psbt = reducer.stringToReturn
                     showRaw(raw: psbt)
                     
                 default:
@@ -120,7 +115,7 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
                     
                     displayAlert(viewController: self,
                                  isError: true,
-                                 message: self.makeSSHCall.errorDescription)
+                                 message: reducer.errorDescription)
                     
                 }
                 
@@ -128,33 +123,9 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
             
         }
         
-        if ssh != nil {
-            
-            if ssh.session.isConnected {
-                
-                makeSSHCall.executeSSHCommand(ssh: ssh,
-                                              method: method,
-                                              param: param,
-                                              completion: getResult)
-                
-            } else {
-                
-                connectingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "SSH not connected")
-                
-            }
-            
-        } else {
-            
-            connectingView.removeConnectingView()
-            
-            displayAlert(viewController: self,
-                         isError: true,
-                         message: "SSH not connected")
-        }
+        reducer.makeCommand(command: method,
+                            param: param,
+                            completion: getResult)
         
     }
     
@@ -206,25 +177,12 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
     
     override func viewDidAppear(_ animated: Bool) {
         
-        isUsingSSH = IsUsingSSH.sharedInstance
-        
-        if isUsingSSH {
-            
-            ssh = SSHService.sharedInstance
-            makeSSHCall = SSHelper.sharedInstance
-            
-        } else {
-            
-            torRPC = MakeRPCCall.sharedInstance
-            torClient = TorClient.sharedInstance
-            
-        }
-        
         if combinePSBT {
             
             self.navigationController?.navigationBar.topItem?.title = "Combine PSBT"
             
         }
+        
     }
     
     func showRaw(raw: String) {
@@ -232,24 +190,17 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
         DispatchQueue.main.async {
             
             self.joinTable.removeFromSuperview()
-            
             self.rawDisplayer.rawString = raw
             self.rawDisplayer.vc = self
+            var titleString = "Joined PSBT"
             
-            if !self.combinePSBT {
+            if self.combinePSBT {
                 
-                //self.rawDisplayer.titleString = "Joined PSBT"
-                self.navigationController?.navigationBar.topItem?.title = "Joined PSBT"
-                
-            } else {
-                
-                //self.rawDisplayer.titleString = "Combined PSBT"
-                self.navigationController?.navigationBar.topItem?.title = "Combined PSBT"
+                titleString = "Combined PSBT"
                 
             }
             
-            
-            
+            self.navigationController?.navigationBar.topItem?.title = titleString
             self.rawDisplayer.qrView.addGestureRecognizer(self.tapQRGesture)
             
             self.tapTextViewGesture = UITapGestureRecognizer(target: self,

@@ -10,14 +10,7 @@ import UIKit
 
 class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
-    var torClient:TorClient!
-    var torRPC:MakeRPCCall!
-    var ssh:SSHService!
-    var makeSSHCall:SSHelper!
-    var isUsingSSH = IsUsingSSH.sharedInstance
-    
     var dict = [String:Any]()
-    
     var isTestnet = Bool()
     var reScan = Bool()
     var isWatchOnly = Bool()
@@ -27,29 +20,30 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
     var isInternal = Bool()
     var range = ""
     var convertedRange = [Int]()
-    var fingerprint = ""
     var descriptor = ""
     var label = ""
     var bip44 = Bool()
     var bip84 = Bool()
+    var bip32 = Bool()
     var timestamp = Int()
-    
     @IBOutlet var keyTable: UITableView!
-    
     var keyArray = NSArray()
-    
     let connectingView = ConnectingView()
-    
     var isHDMusig = Bool()
     var address = ""
     
-
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         keyTable.delegate = self
         keyTable.dataSource = self
         keyTable.tableFooterView = UIView(frame: .zero)
+        
+        if let watchOnlyCheck = dict["isWatchOnly"] as? Bool {
+            
+            isWatchOnly = watchOnlyCheck
+            
+        }
         
         if !isHDMusig {
             
@@ -67,38 +61,47 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
                 
             }
             
-            if importedKey.hasPrefix("tpub") || importedKey.hasPrefix("xpub") {
+            if let derivation = dict["derivation"] as? String {
                 
-                isWatchOnly = true
-                
-            } else {
-                
-                isWatchOnly = false
-                
-            }
-            
-            let derivation = dict["derivation"] as! String
-            
-            if derivation == "BIP84" {
-                
-                bip84 = true
-                bip44 = false
+                switch derivation {
+                case "BIP84": bip84 = true
+                case "BIP44": bip44 = true
+                case "BIP32Segwit": bip32 = true
+                case "BIP32Legacy": bip32 = true
+                default: break
+                }
                 
             } else {
                 
-                bip84 = false
-                bip44 = true
+                if descriptor.contains("/84'") {
+                    
+                    bip84 = true
+                    bip44 = false
+                    bip32 = false
+                    
+                } else if descriptor.contains("/44'") {
+                    
+                    bip44 = true
+                    bip84 = false
+                    bip32 = false
+                    
+                } else {
+                    
+                    bip44 = false
+                    bip84 = false
+                    bip32 = true
+                    
+                }
                 
             }
             
             range = dict["range"] as! String
             convertedRange = dict["convertedRange"] as! [Int]
-            fingerprint = dict["fingerprint"] as! String
             addToKeypool = dict["addToKeypool"] as! Bool
             isInternal = dict["addAsChange"] as! Bool
             
-        } else {
-         
+        } else if isHDMusig {
+            
             range = dict["range"] as! String
             convertedRange = dict["convertedRange"] as! [Int]
             descriptor = dict["descriptor"] as! String
@@ -109,23 +112,6 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
             
         }
         
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        
-        isUsingSSH = IsUsingSSH.sharedInstance
-        
-        if isUsingSSH {
-            
-            ssh = SSHService.sharedInstance
-            makeSSHCall = SSHelper.sharedInstance
-            
-        } else {
-            
-            torRPC = MakeRPCCall.sharedInstance
-            torClient = TorClient.sharedInstance
-            
-        }
         
     }
     
@@ -144,7 +130,7 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
             importExtendedKey()
             
         } else {
-         
+            
             importHDMusig()
             
         }
@@ -234,8 +220,6 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
     
     func importHDMusig() {
         
-        // descriptor and range, encrypt save here
-        
         let aes = AESService()
         let cd = CoreDataService()
         let encDesc = aes.encryptKey(keyToEncrypt: descriptor)
@@ -243,7 +227,7 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
         let encIndex = aes.encryptKey(keyToEncrypt: "\(convertedRange[0])")
         let encRange = aes.encryptKey(keyToEncrypt: range)
         let id = randomString(length: 10)
-        let nodes = cd.retrieveCredentials()
+        let nodes = cd.retrieveEntity(entityName: ENTITY.nodes)
         let isActive = isAnyNodeActive(nodes: nodes)
         var nodeID = ""
         
@@ -270,43 +254,68 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
                     "id":id,
                     "nodeID":nodeID]
         
-        let walletSaved = cd.saveHDWalletToCoreData(vc: self, walletInfo: dict)
+        let walletSaved = cd.saveEntity(vc: self,
+                                        dict: dict,
+                                        entityName: ENTITY.hdWallets)
         
         if walletSaved {
             
-            print("wallet saved")
-            print("dict = \(dict)")
+            let descDict = ["descriptor":encDesc,
+                            "label":encLabel,
+                            "range":encRange,
+                            "id":id,
+                            "nodeID":nodeID]
+            
+            print("descDict = \(descDict)")
+            
+            let descriptorSaved = cd.saveEntity(vc: self,
+                                                dict: descDict,
+                                                entityName: ENTITY.descriptors)
+            
+            if descriptorSaved {
+                
+                print("wallet saved")
+                
+                connectingView.addConnectingView(vc: self,
+                                                 description: "importing 200 BIP32 HD multisig addresses and scripts (index \(range)), this can take a little while, sit back and relax 😎")
+                
+                let params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"range\": \(convertedRange), \"watchonly\": true, \"label\": \"\(label)\" }], ''{\"rescan\": true}''"
+                
+                self.executeNodeCommand(method: BTC_CLI_COMMAND.importmulti,
+                                        param: params)
+                
+            } else {
+                
+                print("error saving wallet")
+                
+            }
             
         } else {
             
             print("error saving wallet")
             
         }
-     
-        connectingView.addConnectingView(vc: self,
-                                         description: "importing 200 HD multisig addresses and scripts (index \(range)), this can take a little while, sit back and relax 😎")
-        
-        let params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"range\": \(convertedRange), \"watchonly\": true, \"label\": \"\(label)\" }], ''{\"rescan\": true}''"
-        
-        self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.importmulti,
-                                   param: params)
         
     }
     
     func importExtendedKey() {
+        
+        var description = ""
         
         if isWatchOnly {
             
             //its an xpub
             if bip44 {
                 
-                connectingView.addConnectingView(vc: self,
-                                                 description: "importing 200 BIP44 keys from xpub (index \(range)), this can take a little while, sit back and relax 😎")
+                description = "importing 200 BIP44 keys from xpub (index \(range)), this can take a little while, sit back and relax 😎"
                 
             } else if bip84 {
                 
-                connectingView.addConnectingView(vc: self,
-                                                 description: "importing 200 BIP84 keys from xpub (index \(range)), this can take a little while, sit back and relax 😎")
+                description = "importing 200 BIP84 keys from xpub (index \(range)), this can take a little while, sit back and relax 😎"
+                
+            } else if bip32 {
+                
+                description = "importing 200 BIP32 keys from xpub (index \(range)), this can take a little while, sit back and relax 😎"
                 
             }
             
@@ -315,17 +324,22 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
             //its an xprv
             if bip44 {
                 
-                connectingView.addConnectingView(vc: self,
-                                                 description: "importing 200 BIP44 keys from xprv (index \(range)), this can take a little while, sit back and relax 😎")
+                description = "importing 200 BIP44 keys from xprv (index \(range)), this can take a little while, sit back and relax 😎"
                 
             } else if bip84 {
                 
-                connectingView.addConnectingView(vc: self,
-                                                 description: "importing 200 BIP84 keys from xprv (index \(range)), this can take a little while, sit back and relax 😎")
+                description = "importing 200 BIP84 keys from xprv (index \(range)), this can take a little while, sit back and relax 😎"
+                
+            } else if bip32 {
+                
+                description = "importing 200 BIP32 keys from xpub (index \(range)), this can take a little while, sit back and relax 😎"
                 
             }
             
         }
+        
+        connectingView.addConnectingView(vc: self,
+                                         description: description)
         
         var params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"range\": \(convertedRange), \"watchonly\": \(isWatchOnly), \"label\": \"\(label)\", \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }], ''{\"rescan\": true}''"
         
@@ -335,22 +349,76 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
             
         }
         
-        self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.importmulti,
-                                   param: params)
+        let aes = AESService()
+        let cd = CoreDataService()
+        let encDesc = aes.encryptKey(keyToEncrypt: descriptor)
+        let encLabel = aes.encryptKey(keyToEncrypt: label)
+        let encRange = aes.encryptKey(keyToEncrypt: range)
+        let id = randomString(length: 10)
+        let nodes = cd.retrieveEntity(entityName: ENTITY.nodes)
+        let isActive = isAnyNodeActive(nodes: nodes)
+        var nodeID = ""
+        
+        if isActive {
+            
+            for node in nodes {
+                
+                let active = node["isActive"] as! Bool
+                
+                if active {
+                    
+                    nodeID = node["id"] as! String
+                    
+                }
+                
+            }
+            
+        }
+        
+        let descDict = ["descriptor":encDesc,
+                        "label":encLabel,
+                        "range":encRange,
+                        "id":id,
+                        "nodeID":nodeID]
+        
+        let descriptorSaved = cd.saveEntity(vc: self,
+                                            dict: descDict,
+                                            entityName: .descriptors)
+        
+        if descriptorSaved {
+            
+            print("descriptor saved")
+            
+            self.executeNodeCommand(method: BTC_CLI_COMMAND.importmulti,
+                                    param: params)
+            
+        } else {
+            
+            print("error saving descriptor")
+            
+            connectingView.removeConnectingView()
+            
+            displayAlert(viewController: self,
+                         isError: true,
+                         message: "error saving your descriptor")
+            
+        }
         
     }
     
-    func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
+    func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
+        
+        let reducer = Reducer()
         
         func getResult() {
             
-            if !makeSSHCall.errorBool {
+            if !reducer.errorBool {
                 
                 switch method {
                     
-                case BTC_CLI_COMMAND.importmulti:
+                case .importmulti:
                     
-                    let result = makeSSHCall.arrayToReturn
+                    let result = reducer.arrayToReturn
                     let success = (result[0] as! NSDictionary)["success"] as! Bool
                     
                     if success {
@@ -417,7 +485,7 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
                     
                     displayAlert(viewController: self,
                                  isError: true,
-                                 message: self.makeSSHCall.errorDescription)
+                                 message: reducer.errorDescription)
                     
                 }
                 
@@ -425,34 +493,9 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
             
         }
         
-        if self.ssh != nil {
-         
-            if self.ssh.session.isConnected {
-                
-                makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                              method: method,
-                                              param: param,
-                                              completion: getResult)
-                
-            } else {
-                
-                connectingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "Not connected")
-                
-            }
-            
-        } else {
-         
-            connectingView.removeConnectingView()
-            
-            displayAlert(viewController: self,
-                         isError: true,
-                         message: "Not connected")
-            
-        }
+        reducer.makeCommand(command: method,
+                            param: param,
+                            completion: getResult)
         
     }
     
@@ -470,5 +513,5 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
         }
         
     }
-
+    
 }

@@ -15,12 +15,13 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     let cd = CoreDataService()
     var createNew = Bool()
     var newNode = [String:Any]()
+    var isInitialLoad = Bool()
     
     @IBOutlet var nodeLabel: UITextField!
     @IBOutlet var rpcUserField: UITextField!
     @IBOutlet var rpcPassword: UITextField!
     @IBOutlet var rpcPort: UITextField!
-    
+    @IBOutlet var rpcLabel: UILabel!
     @IBOutlet var saveButton: UIButton!
     
     @IBAction func save(_ sender: Any) {
@@ -67,7 +68,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     
                 } else {
                     
-                    displayAlert(viewController: navigationController!,
+                    displayAlert(viewController: self,
                                  isError: true,
                                  message: "Fill out all fields first")
                     
@@ -87,7 +88,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     
                 } else {
                     
-                    displayAlert(viewController: navigationController!,
+                    displayAlert(viewController: self,
                                  isError: true,
                                  message: "You need to fill out all fields")
                     
@@ -106,10 +107,16 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 let enc = aes.encryptKey(keyToEncrypt: nodeLabel.text!)
                 selectedNode["label"] = enc
                 
-                let _ = cd.updateNode(viewController: self,
-                                      id: id,
-                                      newValue: enc,
-                                      keyToEdit: "label")
+                let _ = cd.updateEntity(viewController: self,
+                                        id: id,
+                                        newValue: enc,
+                                        keyToEdit: "label",
+                                        entityName: ENTITY.nodes)
+                
+//                let _ = cd.updateNode(viewController: self,
+//                                      id: id,
+//                                      newValue: enc,
+//                                      keyToEdit: "label")
                 
             }
             
@@ -118,10 +125,11 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 let enc = aes.encryptKey(keyToEncrypt: rpcUserField.text!)
                 selectedNode["rpcuser"] = enc
                 
-                let _ = cd.updateNode(viewController: self,
-                                      id: id,
-                                      newValue: enc,
-                                      keyToEdit: "rpcuser")
+                let _ = cd.updateEntity(viewController: self,
+                                        id: id,
+                                        newValue: enc,
+                                        keyToEdit: "rpcuser",
+                                        entityName: ENTITY.nodes)
                 
             }
             
@@ -130,10 +138,11 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 let enc = aes.encryptKey(keyToEncrypt: rpcPassword.text!)
                 selectedNode["rpcpassword"] = enc
                 
-                let _ = cd.updateNode(viewController: self,
-                                      id: id,
-                                      newValue: enc,
-                                      keyToEdit: "rpcpassword")
+                let _ = cd.updateEntity(viewController: self,
+                                        id: id,
+                                        newValue: enc,
+                                        keyToEdit: "rpcpassword",
+                                        entityName: ENTITY.nodes)
                 
             }
             
@@ -142,24 +151,27 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 let enc = aes.encryptKey(keyToEncrypt: rpcPort.text!)
                 selectedNode["rpcport"] = enc
                 
-                let _ = cd.updateNode(viewController: self,
-                                      id: id,
-                                      newValue: enc,
-                                      keyToEdit: "rpcport")
+                let _ = cd.updateEntity(viewController: self,
+                                        id: id,
+                                        newValue: enc,
+                                        keyToEdit: "rpcport",
+                                        entityName: ENTITY.nodes)
                 
             }
             
             if (selectedNode["usingSSH"] as! Bool) {
                 
-                let _ = cd.updateNode(viewController: self,
-                                      id: id,
-                                      newValue: true,
-                                      keyToEdit: "usingSSH")
+                let _ = cd.updateEntity(viewController: self,
+                                        id: id,
+                                        newValue: true,
+                                        keyToEdit: "usingSSH",
+                                        entityName: ENTITY.nodes)
                 
-                let _ = cd.updateNode(viewController: self,
-                                      id: id,
-                                      newValue: false,
-                                      keyToEdit: "usingTor")
+                let _ = cd.updateEntity(viewController: self,
+                                        id: id,
+                                        newValue: false,
+                                        keyToEdit: "usingTor",
+                                        entityName: ENTITY.nodes)
                 
                 DispatchQueue.main.async {
                     
@@ -171,15 +183,17 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             
             if (selectedNode["usingTor"] as! Bool) {
                 
-                let _ = cd.updateNode(viewController: self,
-                                      id: id,
-                                      newValue: false,
-                                      keyToEdit: "usingSSH")
+                let _ = cd.updateEntity(viewController: self,
+                                        id: id,
+                                        newValue: false,
+                                        keyToEdit: "usingSSH",
+                                        entityName: ENTITY.nodes)
                 
-                let _ = cd.updateNode(viewController: self,
-                                      id: id,
-                                      newValue: true,
-                                      keyToEdit: "usingTor")
+                let _ = cd.updateEntity(viewController: self,
+                                        id: id,
+                                        newValue: true,
+                                        keyToEdit: "usingTor",
+                                        entityName: ENTITY.nodes)
                 
                 DispatchQueue.main.async {
                     
@@ -197,13 +211,18 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         super.viewDidLoad()
         
         configureTapGesture()
-        
         nodeLabel.delegate = self
         rpcPort.delegate = self
         rpcPassword.delegate = self
         rpcUserField.delegate = self
-        
         rpcPassword.isSecureTextEntry = true
+        
+        if !(newNode["usingSSH"] as! Bool) || (selectedNode["usingTor"] as! Bool) {
+            
+            self.rpcPort.alpha = 0
+            self.rpcLabel.alpha = 0
+            
+        }
         
     }
     
@@ -214,11 +233,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        
-        nodeLabel.text = ""
-        rpcUserField.text = ""
+
         rpcPassword.text = ""
-        rpcPort.text = ""
         
     }
     
@@ -234,11 +250,13 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     
     func loadValues() {
         
-        if selectedNode["id"] != nil {
+        let node = NodeStruct(dictionary: selectedNode)
+        
+        if node.id != "" {
             
-            if selectedNode["rpcport"] != nil {
+            if node.rpcport != "" {
                 
-                rpcPort.text = aes.decryptKey(keyToDecrypt: (selectedNode["rpcport"] as! String))
+                rpcPort.text = aes.decryptKey(keyToDecrypt: node.rpcport)
                 
             } else {
                 
@@ -247,9 +265,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 
             }
             
-            if selectedNode["label"] != nil {
+            if node.label != "" {
                 
-                nodeLabel.text = aes.decryptKey(keyToDecrypt: (selectedNode["label"] as! String))
+                nodeLabel.text = aes.decryptKey(keyToDecrypt: node.label)
                 
             } else {
                 
@@ -258,9 +276,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 
             }
             
-            if selectedNode["rpcuser"] != nil {
+            if node.rpcuser != "" {
                 
-                rpcUserField.text = aes.decryptKey(keyToDecrypt: (selectedNode["rpcuser"] as! String))
+                rpcUserField.text = aes.decryptKey(keyToDecrypt: node.rpcuser)
                 
             } else {
                 
@@ -269,9 +287,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 
             }
             
-            if selectedNode["rpcpassword"] != nil {
+            if node.rpcpassword != "" {
                 
-                rpcPassword.text = aes.decryptKey(keyToDecrypt: (selectedNode["rpcpassword"] as! String))
+                rpcPassword.text = aes.decryptKey(keyToDecrypt: node.rpcpassword)
                 
             } else {
                 
@@ -308,7 +326,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         
         self.view.endEditing(true)
-        
         return true
         
     }
@@ -324,7 +341,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 vc.selectedNode = self.selectedNode
                 vc.newNode = self.newNode
                 vc.createNew = self.createNew
-                
+                    
             }
             
         case "goToTorDetails":

@@ -10,7 +10,6 @@ import Foundation
 
 class SendUTXO {
     
-    var makeSSHCall:SSHelper!
     var amount = Double()
     var changeAddress = ""
     var addressToPay = ""
@@ -21,97 +20,32 @@ class SendUTXO {
     var utxoVout = Int()
     var changeAmount = Double()
     var inputs = ""
-    var ssh:SSHService!
     var signedRawTx = ""
     var errorBool = Bool()
     var errorDescription = ""
-    var isUsingSSH = Bool()
-    var torClient:TorClient!
-    var torRPC:MakeRPCCall!
     
     func createRawTransaction(completion: @escaping () -> Void) {
         
-        func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
-            
-            func getResult() {
-                
-                if !makeSSHCall.errorBool {
-                    
-                    switch method {
-                        
-                    case BTC_CLI_COMMAND.signrawtransactionwithwallet:
-                        
-                        let dict = makeSSHCall.dictToReturn
-                        signedRawTx = dict["hex"] as! String
-                        completion()
-                        
-                    case BTC_CLI_COMMAND.createrawtransaction:
-                        
-                        let unsignedRawTx = makeSSHCall.stringToReturn
-                        executeNodeCommandSsh(method: BTC_CLI_COMMAND.signrawtransactionwithwallet, param: "\"\(unsignedRawTx)\"")
-                        
-                    default:
-                        
-                        break
-                        
-                    }
-                    
-                } else {
-                    
-                    errorBool = true
-                    errorDescription = makeSSHCall.errorDescription
-                    completion()
-                    
-                }
-                
-            }
-            
-            if ssh != nil {
-                
-                if ssh.session.isConnected {
-                    
-                    makeSSHCall.executeSSHCommand(ssh: ssh,
-                                                  method: method,
-                                                  param: param,
-                                                  completion: getResult)
-                    
-                } else {
-                    
-                    errorBool = true
-                    errorDescription = "Not connected"
-                    completion()
-                    
-                }
-                
-            } else {
-                
-                errorBool = true
-                errorDescription = "Not connected"
-                completion()
-                
-            }
-            
-        }
+        let reducer = Reducer()
         
-        func executeNodeCommandTor(method: BTC_CLI_COMMAND, param: String) {
+        func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
             
             func getResult() {
                 
-                if !torRPC.errorBool {
+                if !reducer.errorBool {
                     
                     switch method {
                         
-                    case BTC_CLI_COMMAND.signrawtransactionwithwallet:
+                    case .signrawtransactionwithwallet:
                         
-                        let dict = torRPC.dictToReturn
+                        let dict = reducer.dictToReturn
                         signedRawTx = dict["hex"] as! String
                         completion()
                         
-                    case BTC_CLI_COMMAND.createrawtransaction:
+                    case .createrawtransaction:
                         
-                        let unsignedRawTx = torRPC.stringToReturn
-                        executeNodeCommandTor(method: BTC_CLI_COMMAND.signrawtransactionwithwallet,
-                                              param: "\"\(unsignedRawTx)\"")
+                        let unsignedRawTx = reducer.stringToReturn
+                        executeNodeCommand(method: BTC_CLI_COMMAND.signrawtransactionwithwallet, param: "\"\(unsignedRawTx)\"")
                         
                     default:
                         
@@ -122,26 +56,16 @@ class SendUTXO {
                 } else {
                     
                     errorBool = true
-                    errorDescription = torRPC.errorDescription
+                    errorDescription = reducer.errorDescription
                     completion()
                     
                 }
                 
             }
             
-            if self.torClient.isOperational {
-                
-                self.torRPC.executeRPCCommand(method: method,
-                                              param: param,
-                                              completion: getResult)
-                
-            } else {
-                
-                errorBool = true
-                errorDescription = "Not connected"
-                completion()
-                
-            }
+            reducer.makeCommand(command: method,
+                                param: param,
+                                completion: getResult)
             
         }
         
@@ -177,17 +101,8 @@ class SendUTXO {
             
         }
         
-        if isUsingSSH {
-            
-            executeNodeCommandSsh(method: BTC_CLI_COMMAND.createrawtransaction,
-                                  param: param)
-            
-        } else {
-            
-            executeNodeCommandTor(method: BTC_CLI_COMMAND.createrawtransaction,
-                                  param: param)
-            
-        }
+        executeNodeCommand(method: BTC_CLI_COMMAND.createrawtransaction,
+                           param: param)
         
     }
     

@@ -10,12 +10,6 @@ import Foundation
 
 class TXChain {
     
-    var makeSSHCall:SSHelper!
-    var ssh:SSHService!
-    var isUsingSSH = Bool()
-    var torRPC:MakeRPCCall!
-    var torClient:TorClient!
-    
     var errorBool = Bool()
     var errorDescription = ""
     
@@ -42,25 +36,26 @@ class TXChain {
     
     func addALink(completion: @escaping () -> Void) {
         
-        func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
+        let reducer = Reducer()
+        
+        func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
             
             func getResult() {
                 
-                if !makeSSHCall.errorBool {
+                if !reducer.errorBool {
                     
                     switch method {
                         
-                    case BTC_CLI_COMMAND.decodepsbt:
+                    case .decodepsbt:
                         
                         // verify its suitable for a TXChain, get total input amount and total output amount
                         // build another psbt with my wallet with same amounts
-                        let psbtDict = makeSSHCall.dictToReturn
-                        print("psbtDict = \(psbtDict)")
+                        let psbtDict = reducer.dictToReturn
                         getInputOutputTotals(psbt: psbtDict)
                         
-                    case BTC_CLI_COMMAND.joinpsbts:
+                    case .joinpsbts:
                         
-                        let result = makeSSHCall.stringToReturn
+                        let result = reducer.stringToReturn
                         chainToReturn = result
                         completion()
                         
@@ -74,37 +69,16 @@ class TXChain {
                 } else {
                     
                     errorBool = true
-                    errorDescription = makeSSHCall.errorDescription
+                    errorDescription = reducer.errorDescription
                     completion()
                     
                 }
                 
             }
             
-            if ssh != nil {
-             
-                if ssh.session.isConnected {
-                    
-                    makeSSHCall.executeSSHCommand(ssh: ssh,
-                                                  method: method,
-                                                  param: param,
-                                                  completion: getResult)
-                    
-                } else {
-                    
-                    errorBool = true
-                    errorDescription = "Not connected"
-                    completion()
-                    
-                }
-                
-            } else {
-             
-                errorBool = true
-                errorDescription = "Not connected"
-                completion()
-                
-            }
+            reducer.makeCommand(command: method,
+                                param: param,
+                                completion: getResult)
             
         }
         
@@ -118,15 +92,15 @@ class TXChain {
             
             func chainLinked() {
                 
-                if !makeSSHCall.errorBool {
+                if !reducer.errorBool {
                     
-                    executeNodeCommandSsh(method: BTC_CLI_COMMAND.joinpsbts,
+                    executeNodeCommand(method: BTC_CLI_COMMAND.joinpsbts,
                                           param: "[\"\(self.tx)\", \"\(processedChain)\"]")
                     
                 } else {
                     
                     errorBool = true
-                    errorDescription = makeSSHCall.errorDescription
+                    errorDescription = reducer.errorDescription
                     completion()
                     
                 }
@@ -254,7 +228,7 @@ class TXChain {
             
         }
         
-        executeNodeCommandSsh(method: BTC_CLI_COMMAND.decodepsbt,
+        executeNodeCommand(method: BTC_CLI_COMMAND.decodepsbt,
                               param: "\"\(tx)\"")
         
     }
@@ -276,25 +250,26 @@ class TXChain {
             
         }
         
-        func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
+        func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
+            
+            let reducer = Reducer()
             
             func getResult() {
                 
-                if !makeSSHCall.errorBool {
+                if !reducer.errorBool {
                     
                     switch method {
                         
-                    case BTC_CLI_COMMAND.getnewaddress:
+                    case .getnewaddress:
                         
                         // send specified amount to oursleves to create needed utxo as input for our new psbt
-                        
                         if !readyForChain {
                             
-                            initialAddress = makeSSHCall.stringToReturn
+                            initialAddress = reducer.stringToReturn
                             
                             let param = "\"\(initialAddress)\", \(amount), \"Create TXChain Input\""
                             
-                            executeNodeCommandSsh(method: BTC_CLI_COMMAND.sendtoaddress,
+                            executeNodeCommand(method: BTC_CLI_COMMAND.sendtoaddress,
                                                   param: param)
                             
                         } else {
@@ -311,29 +286,29 @@ class TXChain {
                                 
                             }
                             
-                            let param = "''\(self.inputs)'', ''[{\"\(makeSSHCall.stringToReturn)\":\(outputAmount)}]'', 0, true"
+                            let param = "''\(self.inputs)'', ''[{\"\(reducer.stringToReturn)\":\(outputAmount)}]'', 0, true"
                             
-                            executeNodeCommandSsh(method: BTC_CLI_COMMAND.createpsbt,
+                            executeNodeCommand(method: BTC_CLI_COMMAND.createpsbt,
                                                   param: param)
                         }
                         
-                    case BTC_CLI_COMMAND.sendtoaddress:
+                    case .sendtoaddress:
                         
-                        txid = makeSSHCall.stringToReturn
+                        txid = reducer.stringToReturn
                         
-                        executeNodeCommandSsh(method: BTC_CLI_COMMAND.getrawtransaction,
+                        executeNodeCommand(method: BTC_CLI_COMMAND.getrawtransaction,
                                               param: "\"\(txid)\"")
                         
-                    case BTC_CLI_COMMAND.getrawtransaction:
+                    case .getrawtransaction:
                         
-                        let raw = makeSSHCall.stringToReturn
+                        let raw = reducer.stringToReturn
                         
-                        executeNodeCommandSsh(method: BTC_CLI_COMMAND.decoderawtransaction,
+                        executeNodeCommand(method: BTC_CLI_COMMAND.decoderawtransaction,
                                               param: "\"\(raw)\"")
                         
-                    case BTC_CLI_COMMAND.decoderawtransaction:
+                    case .decoderawtransaction:
                         
-                        let dict = makeSSHCall.dictToReturn
+                        let dict = reducer.dictToReturn
                         let outputs = dict["vout"] as! NSArray
                         
                         for outputDict in outputs {
@@ -353,24 +328,24 @@ class TXChain {
                                 
                                 readyForChain = true
                                 
-                                executeNodeCommandSsh(method: BTC_CLI_COMMAND.getnewaddress,
+                                executeNodeCommand(method: BTC_CLI_COMMAND.getnewaddress,
                                                       param: "\"\", \"bech32\"")
                                 
                             }
                             
                         }
                         
-                    case BTC_CLI_COMMAND.createpsbt:
+                    case .createpsbt:
                         
-                        let firstChain = makeSSHCall.stringToReturn
+                        let firstChain = reducer.stringToReturn
                         print("firstChain = \(firstChain)")
                         
-                        executeNodeCommandSsh(method: BTC_CLI_COMMAND.utxoupdatepsbt,
+                        executeNodeCommand(method: BTC_CLI_COMMAND.utxoupdatepsbt,
                                               param: "\"\(firstChain)\"")
                         
-                    case BTC_CLI_COMMAND.utxoupdatepsbt:
+                    case .utxoupdatepsbt:
                         
-                        processedChain = makeSSHCall.stringToReturn
+                        processedChain = reducer.stringToReturn
                         completion()
                         
                     default:
@@ -382,41 +357,20 @@ class TXChain {
                 } else {
                     
                     errorBool = true
-                    errorDescription = makeSSHCall.errorDescription
+                    errorDescription = reducer.errorDescription
                     completion()
                     
                 }
                 
             }
             
-            if ssh != nil {
-             
-                if ssh.session.isConnected {
-                    
-                    makeSSHCall.executeSSHCommand(ssh: ssh,
-                                                  method: method,
-                                                  param: param,
-                                                  completion: getResult)
-                    
-                } else {
-                    
-                    errorBool = true
-                    errorDescription = "Not connected"
-                    completion()
-                    
-                }
-                
-            } else {
-             
-                errorBool = true
-                errorDescription = "Not connected"
-                completion()
-                
-            }
+            reducer.makeCommand(command: method,
+                                param: param,
+                                completion: getResult)
             
         }
         
-        executeNodeCommandSsh(method: BTC_CLI_COMMAND.getnewaddress,
+        executeNodeCommand(method: BTC_CLI_COMMAND.getnewaddress,
                                   param: "\"\", \"bech32\"")
                     
     }

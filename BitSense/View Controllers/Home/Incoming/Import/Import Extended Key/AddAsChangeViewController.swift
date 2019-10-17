@@ -15,6 +15,7 @@ class AddAsChangeViewController: UIViewController {
     @IBOutlet var yesLabel: UILabel!
     var isSingleKey = Bool()
     var isMultisig = Bool()
+    var isDescriptor = Bool()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -61,6 +62,7 @@ class AddAsChangeViewController: UIViewController {
                 vc.dict = dict
                 vc.isSingleKey = isSingleKey
                 vc.isMultisig = isMultisig
+                vc.isDescriptor = isDescriptor
                 
             }
             

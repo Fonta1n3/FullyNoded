@@ -52,6 +52,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         passwordInput.returnKeyType = UIReturnKeyType.go
         passwordInput.textAlignment = .center
         passwordInput.keyboardAppearance = UIKeyboardAppearance.dark
+        passwordInput.tintColor = UIColor.black
         
         labelTitle.font = UIFont.init(name: "HelveticaNeue-Light", size: 30)
         labelTitle.textColor = UIColor.white
@@ -82,8 +83,14 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         
         addNextButton(inputView: self.passwordInput)
         
-        touchIDButton.removeFromSuperview()
-        lockView.addSubview(touchIDButton)
+        let ud = UserDefaults.standard
+        
+        if ud.object(forKey: "bioMetricsDisabled") == nil {
+            
+            touchIDButton.removeFromSuperview()
+            lockView.addSubview(touchIDButton)
+            
+        }
         
         showUnlockScreen()
         
@@ -93,8 +100,12 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             
         }
         
-        authenticationWithTouchID()
-                
+        if ud.object(forKey: "bioMetricsDisabled") == nil {
+            
+            authenticationWithTouchID()
+            
+        }
+        
     }
     
     override func viewDidLayoutSubviews() {
@@ -217,32 +228,6 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
                 displayAlert(viewController: self, isError: true, message: "Wrong password")
             }
     
-    }
-    
-    func fallbackToPassword() {
-        
-        /*DispatchQueue.main.async {
-            
-            self.passwordInput.removeFromSuperview()
-            self.lockView.addSubview(self.passwordInput)
-            self.passwordInput.becomeFirstResponder()
-            self.labelTitle.removeFromSuperview()
-            self.lockView.addSubview(self.labelTitle)
-            self.addNextButton(inputView: self.passwordInput)
-            
-            DispatchQueue.main.async {
-                UIImpactFeedbackGenerator().impactOccurred()
-            }
-            
-            self.touchIDButton.removeFromSuperview()
-            
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                self.passwordInput.alpha = 1
-                self.labelTitle.alpha = 1
-            })
-        }*/
-        
     }
     
     func unlock() {
@@ -380,35 +365,27 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             
         case LAError.authenticationFailed.rawValue:
             message = "The user failed to provide valid credentials"
-            //self.fallbackToPassword()
             
         case LAError.appCancel.rawValue:
             message = "Authentication was cancelled by application"
-            //self.fallbackToPassword()
             
         case LAError.invalidContext.rawValue:
             message = "The context is invalid"
-            //self.fallbackToPassword()
             
         case LAError.notInteractive.rawValue:
             message = "Not interactive"
-            //self.fallbackToPassword()
             
         case LAError.passcodeNotSet.rawValue:
             message = "Passcode is not set on the device"
-            //self.fallbackToPassword()
             
         case LAError.systemCancel.rawValue:
             message = "Authentication was cancelled by the system"
-            //self.fallbackToPassword()
             
         case LAError.userCancel.rawValue:
             message = "The user did cancel"
-            //self.fallbackToPassword()
             
         case LAError.userFallback.rawValue:
             message = "The user chose to use the fallback"
-            //self.fallbackToPassword()
             
         default:
             message = evaluatePolicyFailErrorMessageForLA(errorCode: errorCode)
@@ -416,8 +393,6 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         
         return message
     }
-    
-    //override var supportedInterfaceOrientations: UIInterfaceOrientationMask { return UIInterfaceOrientationMask.portrait }
     
 }
 

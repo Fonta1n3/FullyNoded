@@ -10,12 +10,6 @@ import UIKit
 
 class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
-    var isUsingSSH = IsUsingSSH.sharedInstance
-    var torClient:TorClient!
-    var torRPC:MakeRPCCall!
-    var makeSSHCall:SSHelper!
-    var ssh:SSHService!
-    
     var textToShareViaQRCode = String()
     var addressString = String()
     var qrCode = UIImage()
@@ -28,22 +22,16 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     let connectingView = ConnectingView()
     let qrGenerator = QRGenerator()
     let copiedLabel = UILabel()
-    
     var isHDMusig = Bool()
-    
     var isHDInvoice = Bool()
-    
     let cd = CoreDataService()
-    
     var descriptor = ""
-    
     var wallet = [String:Any]()
     
     @IBOutlet var amountField: UITextField!
     @IBOutlet var labelField: UITextField!
     @IBOutlet var qrView: UIImageView!
     @IBOutlet var addressOutlet: UILabel!
-    
     @IBOutlet var minusOutlet: UIButton!
     @IBOutlet var plusOutlet: UIButton!
     @IBOutlet var indexDisplay: UILabel!
@@ -68,7 +56,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 
                 let param = "\(descriptor), [\(index - 1),\(index - 1)]"
                 
-                self.executeNodeCommandSSH(method: BTC_CLI_COMMAND.deriveaddresses,
+                self.executeNodeCommand(method: BTC_CLI_COMMAND.deriveaddresses,
                                            param: param)
             }
             
@@ -95,7 +83,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 
                 let param = "\(descriptor), [\(index + 1),\(index + 1)]"
                 
-                self.executeNodeCommandSSH(method: BTC_CLI_COMMAND.deriveaddresses,
+                self.executeNodeCommand(method: BTC_CLI_COMMAND.deriveaddresses,
                                            param: param)
             }
             
@@ -136,27 +124,14 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         view.addGestureRecognizer(tap)
         getAddressSettings()
         addDoneButtonOnKeyboard()
+        load()
         
     }
     
-    override func viewDidAppear(_ animated: Bool) {
+    func load() {
         
         addressOutlet.text = ""
         
-        isUsingSSH = IsUsingSSH.sharedInstance
-        
-        if isUsingSSH {
-            
-            ssh = SSHService.sharedInstance
-            makeSSHCall = SSHelper.sharedInstance
-            
-        } else {
-            
-            torRPC = MakeRPCCall.sharedInstance
-            torClient = TorClient.sharedInstance
-            
-        }
-    
         if isHDInvoice {
             
             DispatchQueue.main.async {
@@ -178,7 +153,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             
         } else {
             
-            loadAddress()
+            showAddress()
             
         }
         
@@ -196,78 +171,58 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     func getHDMusigAddress() {
         
-        let getAddress = GetHDMusigAddress()
-        getAddress.torClient = torClient
-        getAddress.torRPC = torRPC
-        getAddress.ssh = ssh
-        getAddress.makeSSHCall = makeSSHCall
-        getAddress.wallet = wallet
+        let aes = AESService()
+        let walletStr = Wallet(dictionary: wallet)
+        descriptor = aes.decryptKey(keyToDecrypt: walletStr.descriptor)
+        //let range = aes.decryptKey(keyToDecrypt: walletStr.range)
+        let label = aes.decryptKey(keyToDecrypt: walletStr.label)
+        let addressIndex = aes.decryptKey(keyToDecrypt: walletStr.index)
+        let param = "\(descriptor), [\(addressIndex),\(addressIndex)]"
         
-        func completion() {
+        let reducer = Reducer()
+        
+        func getResult() {
             
-            if !getAddress.errorBool {
+            if !reducer.errorBool {
                 
-                let address = getAddress.addressToReturn
-                addressString = address
-                showAddress(address: address)
-                descriptor = getAddress.descriptor
-                connectingView.removeConnectingView()
+                let result = reducer.arrayToReturn
+                let addressToReturn = result[0] as! String
                 
                 DispatchQueue.main.async {
                     
-                    self.navigationController?.navigationBar.topItem?.title = getAddress.label
-                    self.indexDisplay.text = getAddress.addressIndex
-                    self.addressOutlet.text = address
+                    self.indexDisplay.text = addressIndex
+                    self.addressOutlet.text = addressToReturn
+                    self.navigationController?.navigationBar.topItem?.title = label
+                    self.addressString = addressToReturn
+                    self.isHDMusig = true
+                    self.showAddress()
                     
                 }
+                
+            } else {
+                
+                connectingView.removeConnectingView()
+                
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: reducer.errorDescription)
                 
             }
             
         }
         
-        getAddress.getHDMusigAddress(completion: completion)
-        
-    }
-    
-    func loadAddress() {
-        
-        showAddress()
+        reducer.makeCommand(command: BTC_CLI_COMMAND.deriveaddresses,
+                            param: param,
+                            completion: getResult)
         
     }
     
     func getAddressSettings() {
         
-        let userDefaults = UserDefaults.standard
-        
-        if userDefaults.object(forKey: "nativeSegwit") != nil {
-            
-            nativeSegwit = userDefaults.bool(forKey: "nativeSegwit")
-            
-        } else {
-            
-            nativeSegwit = true
-            
-        }
-        
-        if userDefaults.object(forKey: "p2shSegwit") != nil {
-            
-            p2shSegwit = userDefaults.bool(forKey: "p2shSegwit")
-            
-        } else {
-            
-            p2shSegwit = false
-            
-        }
-        
-        if userDefaults.object(forKey: "legacy") != nil {
-            
-            legacy = userDefaults.bool(forKey: "legacy")
-            
-        } else {
-            
-            legacy = false
-            
-        }
+        let ud = UserDefaults.standard
+        nativeSegwit = ud.object(forKey: "nativeSegwit") as? Bool ?? true
+        p2shSegwit = ud.object(forKey: "p2shSegwit") as? Bool ?? false
+        legacy = ud.object(forKey: "legacy") as? Bool ?? false
         
     }
     
@@ -309,7 +264,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 
             }
             
-            self.executeNodeCommandSSH(method: BTC_CLI_COMMAND.getnewaddress,
+            self.executeNodeCommand(method: BTC_CLI_COMMAND.getnewaddress,
                                        param: params)
             
         }
@@ -346,25 +301,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             self.descriptionLabel.alpha = 0
             self.view.addSubview(self.descriptionLabel)
             
-            /*self.label.removeFromSuperview()
-            
-            self.label.frame = CGRect(x: 10,
-                                 y: self.qrView.frame.maxY + 10,
-                                 width: self.view.frame.width - 20,
-                                 height: 20)
-            
-            self.label.textAlignment = .center
-            
-            self.label.font = UIFont.init(name: "HelveticaNeue",
-                                     size: 18)
-            
-            self.label.textColor = UIColor.green
-            self.label.alpha = 0
-            self.label.text = address
-            self.label.isUserInteractionEnabled = true
-            self.label.adjustsFontSizeToFitWidth = true
-            self.view.addSubview(self.label)*/
-            
             self.tapAddressGesture = UITapGestureRecognizer(target: self,
                                                        action: #selector(self.shareAddressText(_:)))
             
@@ -399,10 +335,14 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             
             UIView.animate(withDuration: 0.3, animations: {
                 
-                self.copiedLabel.frame = CGRect(x: 0,
-                                                y: self.view.frame.maxY - 97,
-                                                width: self.view.frame.width,
-                                                height: 50)
+                if self.tabBarController != nil {
+                    
+                    self.copiedLabel.frame = CGRect(x: 0,
+                                                    y: self.tabBarController!.tabBar.frame.minY - 50,
+                                                    width: self.view.frame.width,
+                                                    height: 50)
+                    
+                }
                 
             })
             
@@ -469,30 +409,34 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 
                 self.qrView.alpha = 1
                 
-            })
+            }) { _ in
+                
+                let activityController = UIActivityViewController(activityItems: [self.qrView.image!],
+                                                                  applicationActivities: nil)
+                
+                activityController.popoverPresentationController?.sourceView = self.view
+                self.present(activityController, animated: true) {}
+                
+            }
             
         }
         
-        let activityViewController = UIActivityViewController(activityItems: [self.qrView.image!],
-                                                              applicationActivities: [])
-        
-        activityViewController.popoverPresentationController?.sourceView = self.view
-        self.present(activityViewController, animated: true) {}
-        
     }
     
-    func executeNodeCommandSSH(method: BTC_CLI_COMMAND, param: String) {
+    func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
         print("executeNodeCommand")
+        
+        let reducer = Reducer()
         
         func getResult() {
             
-            if !makeSSHCall.errorBool {
+            if !reducer.errorBool {
                 
                 switch method {
                     
-                case BTC_CLI_COMMAND.deriveaddresses:
+                case .deriveaddresses:
                     
-                    let addressToReturn = makeSSHCall.arrayToReturn[0] as! String
+                    let addressToReturn = reducer.arrayToReturn[0] as! String
                     
                     DispatchQueue.main.async {
                         
@@ -505,15 +449,16 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                         let aes = AESService()
                         let encIndex = aes.encryptKey(keyToEncrypt: self.indexDisplay.text!)
                         
-                        let success = self.cd.updateWallet(viewController: self,
+                        let success = self.cd.updateEntity(viewController: self,
                                                            id: id,
                                                            newValue: encIndex,
-                                                           keyToEdit: "index")
-
+                                                           keyToEdit: "index",
+                                                           entityName: ENTITY.hdWallets)
+                        
                         if success {
-
+                            
                             print("updated index")
-
+                            
                         } else {
                             
                             print("index update failed")
@@ -522,9 +467,9 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                         
                     }
                     
-                case BTC_CLI_COMMAND.getnewaddress:
+                case .getnewaddress:
                     
-                    let address = makeSSHCall.stringToReturn
+                    let address = reducer.stringToReturn
                     
                     DispatchQueue.main.async {
                         
@@ -543,56 +488,23 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 
             } else {
                 
-                self.connectingView.removeConnectingView()
+                connectingView.removeConnectingView()
                 
                 displayAlert(viewController: self,
                              isError: true,
-                             message: makeSSHCall.errorDescription)
-                
+                             message: reducer.errorDescription)
             }
             
         }
         
-        if self.ssh != nil {
-            
-            if self.ssh.session.isConnected {
-                
-                makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                              method: method,
-                                              param: param,
-                                              completion: getResult)
-                
-            } else {
-                
-                self.connectingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "Not connected")
-                
-            }
-            
-        } else {
-            
-            self.connectingView.removeConnectingView()
-            
-            displayAlert(viewController: self,
-                         isError: true,
-                         message: "Not connected")
-            
-        }
+        reducer.makeCommand(command: method,
+                            param: param,
+                            completion: getResult)
         
     }
     
     @objc func textFieldDidChange(_ textField: UITextField) {
         print("textFieldDidChange")
-        
-        createBIP21Invoice()
-        
-    }
-    
-    func createBIP21Invoice() {
-        print("createBIP21Invoice")
         
         updateQRImage()
         

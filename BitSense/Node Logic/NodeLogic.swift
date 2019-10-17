@@ -11,367 +11,275 @@ import Foundation
 class NodeLogic {
     
     let dateFormatter = DateFormatter()
-    
-    var helper = SSHelper()
-    var ssh:SSHService!
-    var isUsingSSH = IsUsingSSH.sharedInstance
-    var torClient:TorClient!
-    var torRPC:MakeRPCCall!
-    
     var errorBool = Bool()
     var errorDescription = ""
-    
     var dictToReturn = [String:Any]()
     var arrayToReturn = [[String:Any]]()
+    var walletsToReturn = NSArray()
+    var walletDisabled = Bool()
     
-    func loadSectionZero(completion: @escaping () -> Void) {
-        print("loadSectionZero")
-    
-        func loadTableDataSsh(method: BTC_CLI_COMMAND, param: String) {
-            print("loadtabledata")
+    func loadWalletSection(completion: @escaping () -> Void) {
+        
+        let reducer = Reducer()
+        
+        func getResult() {
             
-            print("isusingssh = \(isUsingSSH)")
-            
-            if !self.isUsingSSH {
+            if !reducer.errorBool {
                 
-                //loadTableDataTor(method: method, param: param)
+                walletsToReturn = reducer.arrayToReturn
+                completion()
                 
             } else {
                 
-                func getResult() {
-                    print("get result")
+                if reducer.errorDescription == "Bitcoin Core error: Method not found" {
                     
-                    if !helper.errorBool {
-                        
-                        switch method {
-                            
-                        case BTC_CLI_COMMAND.listunspent:
-                            
-                            let utxos = helper.arrayToReturn
-                            parseUtxos(utxos: utxos)
-                            completion()
-                            
-                        case BTC_CLI_COMMAND.getunconfirmedbalance:
-                            
-                            let unconfirmedBalance = helper.doubleToReturn
-                            parseUncomfirmedBalance(unconfirmedBalance: unconfirmedBalance)
-                            
-                            loadTableDataSsh(method: BTC_CLI_COMMAND.listunspent,
-                                             param: "0")
-                            
-                        case BTC_CLI_COMMAND.getbalance:
-                            
-                            let balanceCheck = helper.doubleToReturn
-                            parseBalance(balance: balanceCheck)
-                            
-                            loadTableDataSsh(method: BTC_CLI_COMMAND.getunconfirmedbalance,
-                                             param: "")
-                            
-                        default:
-                            
-                            print("break1")
-                            break
-                            
-                        }
-                        
-                    } else {
-                        
-                        if isWalletRPC(command: method) {
-                            
-                            print("wallet disabled")
-                            
-                            switch method {
-                                
-                            case BTC_CLI_COMMAND.getbalance:
-                                
-                                dictToReturn["hotBalance"] = 0.0
-                                
-                            case BTC_CLI_COMMAND.getunconfirmedbalance:
-                                
-                                dictToReturn["unconfirmedBalance"] = 0.0
-                                
-                            case BTC_CLI_COMMAND.listunspent:
-                                
-                                dictToReturn["utxos"] = []
-                                
-                            default:
-                                
-                                print("break1")
-                                break
-                                
-                            }
-                            
-                            completion()
-                            
-                        } else {
-                            
-                            errorBool = true
-                            errorDescription = helper.errorDescription + " " + ". Last command: \(method.rawValue)"
-                            print("errorDescription = \(errorDescription)")
-                            completion()
-                            
-                        }
-                        
-                    }
-                    
-                }
-                
-                if self.ssh != nil {
-                    
-                    if self.ssh.session.isAuthorized {
-                        
-                        if self.ssh.session.isConnected {
-                            
-                            self.helper.executeSSHCommand(ssh: self.ssh,
-                                                          method: method,
-                                                          param: param,
-                                                          completion: getResult)
-                            
-                        } else {
-                            
-                            errorBool = true
-                            errorDescription = "SSH not connected"
-                            print("errorDescription = \(errorDescription)")
-                            completion()
-                            
-                        }
-                        
-                    } else {
-                        
-                        errorBool = true
-                        errorDescription = "SSH not authorized"
-                        print("errorDescription = \(errorDescription)")
-                        completion()
-                        
-                    }
+                    errorBool = true
+                    errorDescription = "walletDisabled"
+                    completion()
                     
                 } else {
                     
                     errorBool = true
-                    errorDescription = "SSH not connected"
-                    print("errorDescription = \(errorDescription)")
+                    errorDescription = reducer.errorDescription
                     completion()
+                    
                 }
                 
             }
             
         }
         
-        loadTableDataSsh(method: BTC_CLI_COMMAND.getbalance,
-                         param: "\"*\", 0, false")
+        let method = BTC_CLI_COMMAND.listwallets
+        
+        reducer.makeCommand(command: method,
+                            param: "",
+                            completion: getResult)
+        
+    }
     
+    func loadSectionZero(completion: @escaping () -> Void) {
+        print("loadSectionZero")
+        
+        let reducer = Reducer()
+        
+        func getResult() {
+            
+            if !reducer.errorBool {
+                
+                switch reducer.method {
+                    
+                case BTC_CLI_COMMAND.listunspent.rawValue:
+                    
+                    let utxos = reducer.arrayToReturn
+                    parseUtxos(utxos: utxos)
+                    completion()
+                    
+                case BTC_CLI_COMMAND.getunconfirmedbalance.rawValue:
+                    
+                    let unconfirmedBalance = reducer.doubleToReturn
+                    parseUncomfirmedBalance(unconfirmedBalance: unconfirmedBalance)
+
+                    reducer.makeCommand(command: BTC_CLI_COMMAND.listunspent,
+                                        param: "0",
+                                        completion: getResult)
+                    
+                case BTC_CLI_COMMAND.getbalance.rawValue:
+                    
+                    let balanceCheck = reducer.doubleToReturn
+                    parseBalance(balance: balanceCheck)
+                    
+                    reducer.makeCommand(command: BTC_CLI_COMMAND.getunconfirmedbalance,
+                                        param: "",
+                                        completion: getResult)
+                    
+                default:
+                    
+                    print("break1")
+                    break
+                    
+                }
+                
+            } else {
+                
+                errorBool = true
+                errorDescription = reducer.errorDescription
+                completion()
+                
+            }
+            
+        }
+        
+        if !walletDisabled {
+            
+            reducer.makeCommand(command: BTC_CLI_COMMAND.getbalance,
+                                param: "\"*\", 0, false",
+                                completion: getResult)
+            
+        } else {
+            
+            dictToReturn["coldBalance"] = "disabled"
+            dictToReturn["unconfirmedBalance"] = "disabled"
+            dictToReturn["hotBalance"] = "disabled"
+            completion()
+            
+        }
+        
     }
     
     func loadSectionOne(completion: @escaping () -> Void) {
         print("loadSectionOne")
         
-        func loadTableDataSsh(method: BTC_CLI_COMMAND, param: String) {
+        let reducer = Reducer()
+        
+        func getResult() {
             
-            if !self.isUsingSSH {
+            if !reducer.errorBool {
                 
-                //loadTableDataTor(method: method, param: param)
+                switch reducer.method {
+                    
+                case BTC_CLI_COMMAND.estimatesmartfee.rawValue:
+                    
+                    let result = reducer.dictToReturn
+                    
+                    if let feeRate = result["feerate"] as? Double {
+                        
+                        let btcperbyte = feeRate / 1000
+                        let satsperbyte = (btcperbyte * 100000000).avoidNotation
+                        dictToReturn["feeRate"] = "\(satsperbyte) sats/byte"
+                        
+                    } else {
+                        
+                        if let errors = result["errors"] as? NSArray {
+                            
+                            dictToReturn["feeRate"] = "\(errors[0] as! String)"
+                            
+                        }
+                       
+                    }
+                    
+                    completion()
+                    
+                case BTC_CLI_COMMAND.getmempoolinfo.rawValue:
+                    
+                    let dict = reducer.dictToReturn
+                    dictToReturn["mempoolCount"] = dict["size"] as! Int
+                    let feeRate = UserDefaults.standard.integer(forKey: "feeTarget")
+                    
+                    reducer.makeCommand(command: BTC_CLI_COMMAND.estimatesmartfee,
+                                        param: "\(feeRate)",
+                                        completion: getResult)
+                    
+                case BTC_CLI_COMMAND.uptime.rawValue:
+                    
+                    dictToReturn["uptime"] = Int(reducer.doubleToReturn)
+                    
+                    reducer.makeCommand(command: BTC_CLI_COMMAND.getmempoolinfo,
+                                        param: "",
+                                        completion: getResult)
+                    
+                case BTC_CLI_COMMAND.getmininginfo.rawValue:
+                    
+                    let miningInfo = reducer.dictToReturn
+                    parseMiningInfo(miningInfo: miningInfo)
+                    
+                    reducer.makeCommand(command: BTC_CLI_COMMAND.uptime,
+                                        param: "",
+                                        completion: getResult)
+                    
+                case BTC_CLI_COMMAND.getnetworkinfo.rawValue:
+                    
+                    let networkInfo = reducer.dictToReturn
+                    parseNetworkInfo(networkInfo: networkInfo)
+                    
+                    reducer.makeCommand(command: BTC_CLI_COMMAND.getmininginfo,
+                                        param: "",
+                                        completion: getResult)
+                    
+                case BTC_CLI_COMMAND.getpeerinfo.rawValue:
+                    
+                    let peerInfo = reducer.arrayToReturn
+                    parsePeerInfo(peerInfo: peerInfo)
+                    
+                    reducer.makeCommand(command: BTC_CLI_COMMAND.getnetworkinfo,
+                                        param: "",
+                                        completion: getResult)
+                    
+                case BTC_CLI_COMMAND.getblockchaininfo.rawValue:
+                    
+                    let blockchainInfo = reducer.dictToReturn
+                    parseBlockchainInfo(blockchainInfo: blockchainInfo)
+                    
+                    reducer.makeCommand(command: BTC_CLI_COMMAND.getpeerinfo,
+                                        param: "",
+                                        completion: getResult)
+                    
+                default:
+                    
+                    break
+                    
+                }
                 
             } else {
                 
-                func getResult() {
-                    print("get result")
-                    
-                    if !helper.errorBool {
-                        
-                        switch method {
-                            
-                        case BTC_CLI_COMMAND.getmempoolinfo:
-                            
-                            let dict = helper.dictToReturn
-                            dictToReturn["mempoolCount"] = dict["size"] as! Int
-                            completion()
-                            
-                        case BTC_CLI_COMMAND.uptime:
-                            
-                            dictToReturn["uptime"] = Int(helper.doubleToReturn)
-                            
-                            loadTableDataSsh(method: BTC_CLI_COMMAND.getmempoolinfo,
-                                             param: "")
-                            
-                            
-                        case BTC_CLI_COMMAND.getmininginfo:
-                            
-                            let miningInfo = helper.dictToReturn
-                            parseMiningInfo(miningInfo: miningInfo)
-                            
-                            loadTableDataSsh(method: BTC_CLI_COMMAND.uptime,
-                                             param: "")
-                            
-                        case BTC_CLI_COMMAND.getnetworkinfo:
-                            
-                            let networkInfo = helper.dictToReturn
-                            parseNetworkInfo(networkInfo: networkInfo)
-                            
-                            loadTableDataSsh(method: BTC_CLI_COMMAND.getmininginfo,
-                                             param: "")
-                            
-                        case BTC_CLI_COMMAND.getpeerinfo:
-                            
-                            let peerInfo = helper.arrayToReturn
-                            parsePeerInfo(peerInfo: peerInfo)
-                            
-                            loadTableDataSsh(method: BTC_CLI_COMMAND.getnetworkinfo,
-                                             param: "")
-                            
-                        case BTC_CLI_COMMAND.getblockchaininfo:
-                            
-                            let blockchainInfo = helper.dictToReturn
-                            parseBlockchainInfo(blockchainInfo: blockchainInfo)
-                            
-                            loadTableDataSsh(method: BTC_CLI_COMMAND.getpeerinfo,
-                                             param: "")
-                            
-                        default:
-                            
-                            break
-                            
-                        }
-                        
-                    }
-                    
-                }
-                
-                if self.ssh != nil {
-                    
-                    if self.ssh.session.isAuthorized {
-                        
-                        if self.ssh.session.isConnected {
-                            
-                            self.helper.executeSSHCommand(ssh: self.ssh,
-                                                          method: method,
-                                                          param: param,
-                                                          completion: getResult)
-                            
-                        } else {
-                            
-                            errorBool = true
-                            errorDescription = "SSH not connected"
-                            completion()
-                            
-                        }
-                        
-                    }
-                    
-                } else {
-                    
-                    errorBool = true
-                    errorDescription = "SSH not connected"
-                    completion()
-                    
-                }
+                errorBool = true
+                errorDescription = reducer.errorDescription
+                completion()
                 
             }
-         
+            
         }
         
-        loadTableDataSsh(method: BTC_CLI_COMMAND.getblockchaininfo,
-                         param: "")
+        reducer.makeCommand(command: BTC_CLI_COMMAND.getblockchaininfo,
+                            param: "",
+                            completion: getResult)
         
     }
     
     func loadSectionTwo(completion: @escaping () -> Void) {
         print("loadSectionTwo")
         
-        func loadTableDataSsh(method: BTC_CLI_COMMAND, param: String) {
+        let reducer = Reducer()
+        
+        func getResult() {
             
-            if !self.isUsingSSH {
+            if !reducer.errorBool {
                 
-                //loadTableDataTor(method: method, param: param)
+                switch reducer.method {
+                    
+                case BTC_CLI_COMMAND.listtransactions.rawValue:
+                    
+                    let transactions = reducer.arrayToReturn
+                    parseTransactions(transactions: transactions)
+                    completion()
+                    
+                default:
+                    
+                    break
+                    
+                }
                 
             } else {
                 
-                func getResult() {
-                    print("get result")
-                    
-                    if !helper.errorBool {
-                        
-                        switch method {
-                            
-                        case BTC_CLI_COMMAND.listtransactions:
-                            
-                            let transactions = helper.arrayToReturn
-                            parseTransactions(transactions: transactions)
-                            completion()
-                            
-                            
-                        default:
-                            
-                            break
-                            
-                        }
-                        
-                    } else {
-                        
-                        if isWalletRPC(command: method) {
-                            
-                            //its a wallet command skip incase wallet is disabled
-                            print("wallet disabled")
-                            
-                            switch method {
-                                
-                            case BTC_CLI_COMMAND.listtransactions:
-                                
-                                dictToReturn["transactions"] = []
-                                completion()
-                                
-                            default:
-                                
-                                break
-                                
-                            }
-                            
-                        } else {
-                            
-                            errorBool = true
-                            errorDescription = helper.errorDescription + " " + ". Last command: \(method.rawValue)"
-                            completion()
-                            
-                        }
-                        
-                    }
-                    
-                }
-                
-                if self.ssh != nil {
-                    
-                    if self.ssh.session.isAuthorized {
-                        
-                        if self.ssh.session.isConnected {
-                            
-                            self.helper.executeSSHCommand(ssh: self.ssh,
-                                                          method: method,
-                                                          param: param,
-                                                          completion: getResult)
-                            
-                        } else {
-                            
-                            errorBool = true
-                            errorDescription = "SSH not connected"
-                            completion()
-                            
-                        }
-                        
-                    }
-                    
-                } else {
-                    
-                    errorBool = true
-                    errorDescription = "SSH not connected"
-                    completion()
-                    
-                }
+                errorBool = true
+                errorDescription = reducer.errorDescription
+                completion()
                 
             }
             
         }
         
-        loadTableDataSsh(method: BTC_CLI_COMMAND.listtransactions,
-                         param: "\"*\", 50, 0, true")
+        if !walletDisabled {
+            
+            reducer.makeCommand(command: BTC_CLI_COMMAND.listtransactions,
+                                param: "\"*\", 50, 0, true",
+                                completion: getResult)
+            
+        } else {
+            
+            arrayToReturn = []
+            completion()
+            
+        }
         
     }
     
@@ -439,7 +347,9 @@ class NodeLogic {
     
     func parseMiningInfo(miningInfo: NSDictionary) {
         
-                dictToReturn["networkhashps"] = (miningInfo["networkhashps"] as! Double).withCommas()
+        let hashesPerSecond = miningInfo["networkhashps"] as! Double
+        let exahashesPerSecond = hashesPerSecond / 1000000000000000000
+        dictToReturn["networkhashps"] = exahashesPerSecond.withCommas()
         
     }
     
@@ -453,13 +363,13 @@ class NodeLogic {
         
         if let difficultyCheck = blockchainInfo["difficulty"] as? Double {
             
-            dictToReturn["difficulty"] = "\(difficultyCheck)"
+            dictToReturn["difficulty"] = "\(difficultyCheck.withCommas())"
             
         }
         
         if let sizeCheck = blockchainInfo["size_on_disk"] as? Int {
             
-            dictToReturn["size"] = "\(sizeCheck/1000000000) gigabytes"
+            dictToReturn["size"] = "\(sizeCheck/1000000000) gb"
             
         }
         

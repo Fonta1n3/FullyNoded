@@ -10,14 +10,8 @@ import UIKit
 
 class OutgoingsTableViewController: UITableViewController, UITabBarControllerDelegate {
 
-    var ssh:SSHService!
-    var torClient:TorClient!
-    var torRPC:MakeRPCCall!
-    var makeSSHCall:SSHelper!
     var isTestnet = Bool()
     var activeNode = [String:Any]()
-    var isUsingSSH = IsUsingSSH.sharedInstance
-    
     var decodeRaw = Bool()
     var decodePSBT = Bool()
     var process = Bool()
@@ -25,15 +19,14 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
     var analyze = Bool()
     var convert = Bool()
     var txChain = Bool()
+    var broadcast = Bool()
+    var verify = Bool()
     var combinePSBT = Bool()
-    
     var amountToSend = String()
     let amountInput = UITextField()
     let amountView = UIView()
     var utxos = NSArray()
-    
     var firstLink = ""
-    
     let creatingView = ConnectingView()
     let blurView2 = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     
@@ -74,20 +67,8 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
     
     override func viewDidAppear(_ animated: Bool) {
         
-        isUsingSSH = IsUsingSSH.sharedInstance
-        
-        if isUsingSSH {
-            
-            ssh = SSHService.sharedInstance
-            makeSSHCall = SSHelper.sharedInstance
-            
-        } else {
-            
-            torRPC = MakeRPCCall.sharedInstance
-            torClient = TorClient.sharedInstance
-            
-        }
-        
+        verify = false
+        broadcast = false
         decodeRaw = false
         decodePSBT = false
         process = false
@@ -122,7 +103,7 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
         
         if section == 0 {
             
-            return 5
+            return 7
             
         } else if section == 1 {
             
@@ -193,6 +174,8 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
             case 2: label.text = "UTXO's"
             case 3: label.text = "Sign"
             case 4: label.text = "Decode"
+            case 5: label.text = "Verify"
+            case 6: label.text = "Broadcast"
             default:break}
             
         case 1:
@@ -284,6 +267,24 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
                         DispatchQueue.main.async {
                             
                             self.decodeRaw = true
+                            self.performSegue(withIdentifier: "goDecode", sender: self)
+                            
+                        }
+                        
+                    case 5:
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.verify = true
+                            self.performSegue(withIdentifier: "goDecode", sender: self)
+                            
+                        }
+                        
+                    case 6:
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.broadcast = true
                             self.performSegue(withIdentifier: "goDecode", sender: self)
                             
                         }
@@ -483,11 +484,8 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
         if self.amountInput.text != "" {
             
             self.creatingView.addConnectingView(vc: self, description: "")
-            
             self.amountToSend = self.amountInput.text!
-            
             let amount = Double(self.amountToSend)!
-            
             self.amountInput.resignFirstResponder()
             
             UIView.animate(withDuration: 0.2, animations: {
@@ -544,12 +542,10 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
         label.textColor = UIColor.white
         label.textAlignment = .center
         label.text = "Amount to send"
-        
         let button = UIButton()
         button.setImage(UIImage(named: "Minus"), for: .normal)
         button.frame = CGRect(x: 0, y: 140, width: self.view.frame.width, height: 60)
         button.addTarget(self, action: #selector(closeAmount), for: .touchUpInside)
-        
         blurView2.alpha = 0
         
         blurView2.frame = CGRect(x: 0,
@@ -592,11 +588,6 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
     func startATxChain(amount: Double) {
         
         let txChain = TXChain()
-        txChain.torClient = self.torClient
-        txChain.torRPC = self.torRPC
-        txChain.ssh = self.ssh
-        txChain.makeSSHCall = self.makeSSHCall
-        txChain.isUsingSSH = self.isUsingSSH
         txChain.amount = amount
         
         func getResult() {
@@ -606,9 +597,7 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
                 DispatchQueue.main.async {
                     
                     self.blurView2.removeFromSuperview()
-                    
                     self.creatingView.removeConnectingView()
-                    
                     self.firstLink = txChain.processedChain
                     
                     self.performSegue(withIdentifier: "goDecode",
@@ -621,7 +610,6 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
                 DispatchQueue.main.async {
                     
                     self.blurView2.removeFromSuperview()
-                    
                     self.creatingView.removeConnectingView()
                     
                     displayAlert(viewController: self,
@@ -646,14 +634,16 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
             
             if let vc = segue.destination as? ProcessPSBTViewController {
                 
-                vc.decodePSBT = self.decodePSBT
-                vc.decodeRaw = self.decodeRaw
-                vc.process = self.process
-                vc.analyze = self.analyze
-                vc.convert = self.convert
-                vc.finalize = self.finalize
-                vc.txChain = self.txChain
-                vc.firstLink = self.firstLink
+                vc.decodePSBT = decodePSBT
+                vc.decodeRaw = decodeRaw
+                vc.process = process
+                vc.analyze = analyze
+                vc.convert = convert
+                vc.finalize = finalize
+                vc.txChain = txChain
+                vc.firstLink = firstLink
+                vc.broadcast = broadcast
+                vc.verify = verify
                 
             }
             

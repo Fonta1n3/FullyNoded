@@ -70,7 +70,9 @@ class CredentialConverter {
             credentials["isActive"] = true
             credentials["label"] = "Your node"
             
-            let success = cd.saveCredentialsToCoreData(vc: vc, credentials: credentials)
+            let success = cd.saveEntity(vc: vc,
+                                        dict: credentials,
+                                        entityName: ENTITY.nodes)
             
             if success {
                 
@@ -123,7 +125,9 @@ class CredentialConverter {
                 
             }
             
-            let saveDef = cd.saveCredentialsToCoreData(vc: vc, credentials: defaultNode)
+            let saveDef = cd.saveEntity(vc: vc,
+                                        dict: defaultNode,
+                                        entityName: ENTITY.nodes)
             
             if saveDef {
                 

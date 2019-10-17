@@ -10,12 +10,6 @@ import UIKit
 
 class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource {
     
-    var makeSSHCall:SSHelper!
-    var ssh:SSHService!
-    var torClient:TorClient!
-    var torRPC:MakeRPCCall!
-    var isUsingSSH = IsUsingSSH.sharedInstance
-    
     @IBOutlet var pubKeyTable: UITableView!
     @IBOutlet var signaturesField: UITextField!
     @IBOutlet var p2shSwitchOutlet: UISwitch!
@@ -108,6 +102,7 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
         p2shP2wsh = p2shp2wshOutlet.isOn
         
     }
+    
     @IBAction func scanPubKey(_ sender: Any) {
         
         scanNow()
@@ -220,24 +215,6 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
         
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        
-        isUsingSSH = IsUsingSSH.sharedInstance
-        
-        if isUsingSSH {
-            
-            ssh = SSHService.sharedInstance
-            makeSSHCall = SSHelper.sharedInstance
-            
-        } else {
-            
-            torRPC = MakeRPCCall.sharedInstance
-            torClient = TorClient.sharedInstance
-            
-        }
-        
-    }
-    
     func getSettings() {
         
         p2wsh = true
@@ -331,10 +308,21 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
         qrScanner.uploadButton.addTarget(self, action: #selector(chooseQRCodeFromLibrary),
                                          for: .touchUpInside)
         
+        qrScanner.textField.delegate = self
+        
+        blurView.frame = CGRect(x: view.frame.minX + 10,
+                                y: navigationController!.navigationBar.frame.maxY + 10,
+                                width: view.frame.width - 20,
+                                height: 50)
+        
+        blurView.layer.cornerRadius = 10
+        blurView.clipsToBounds = true
+        
+        qrScanner.textFieldPlaceholder = "scan QR or type/paste here"
+        
         qrScanner.keepRunning = false
         qrScanner.vc = self
         qrScanner.imageView = imageView
-        qrScanner.textField.alpha = 0
         
         qrScanner.completion = { self.getQRCode() }
         qrScanner.didChooseImage = { self.didPickImage() }
@@ -358,6 +346,11 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
     
     func addScannerButtons() {
         
+        qrScanner.textField.removeFromSuperview()
+        blurView.removeFromSuperview()
+        view.addSubview(blurView)
+        blurView.contentView.addSubview(qrScanner.textField)
+        
         self.addBlurView(frame: CGRect(x: self.imageView.frame.maxX - 80,
                                        y: self.imageView.frame.maxY - 80,
                                        width: 70,
@@ -374,6 +367,8 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
         
         DispatchQueue.main.async {
             
+            self.qrScanner.textField.removeFromSuperview()
+            self.blurView.removeFromSuperview()
             self.imageView.alpha = 0
             self.scannerShowing = false
             
@@ -424,6 +419,9 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
     }
     
     func processString(string: String) {
+        print("processString")
+        
+        qrScanner.textField.resignFirstResponder()
         
         if string.hasPrefix("xpub") || string.hasPrefix("tpub") {
             
@@ -460,6 +458,8 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
     
     func getHDMusigDescriptor() {
         
+        let reducer = Reducer()
+        
         connectingView.addConnectingView(vc: self,
                                          description: "creating HD multisig descriptor")
         
@@ -467,15 +467,15 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
         
         func completion() {
             
-            let result = self.makeSSHCall.dictToReturn
+            let result = reducer.dictToReturn
             
-            if makeSSHCall.errorBool {
+            if reducer.errorBool {
                 
                 connectingView.removeConnectingView()
                 
-                displayAlert(viewController: self.navigationController!,
+                displayAlert(viewController: self,
                              isError: true,
-                             message: makeSSHCall.errorDescription)
+                             message: reducer.errorDescription)
                 
             } else {
                 
@@ -522,17 +522,22 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
         descriptor = descriptor.replacingOccurrences(of: "\"", with: "")
         descriptor = descriptor.replacingOccurrences(of: " ", with: "")
         
-        makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                      method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                      param: "\"\(descriptor)\"", completion: completion)
+        let method = BTC_CLI_COMMAND.getdescriptorinfo
+        let param = "\"\(descriptor)\""
+        
+        reducer.makeCommand(command: method,
+                            param: param,
+                            completion: completion)
         
     }
     
     func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
         
+        let reducer = Reducer()
+        
         func getResult() {
             
-            if !makeSSHCall.errorBool {
+            if !reducer.errorBool {
                 
                 DispatchQueue.main.async {
                     
@@ -542,9 +547,9 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
                 
                 switch method {
                     
-                case BTC_CLI_COMMAND.createmultisig:
+                case .createmultisig:
                     
-                    let dict = makeSSHCall.dictToReturn
+                    let dict = reducer.dictToReturn
                     parseResponse(dict: dict)
                     
                 default:
@@ -561,7 +566,7 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
                     
                     displayAlert(viewController: self,
                                  isError: true,
-                                 message: self.makeSSHCall.errorDescription)
+                                 message: reducer.errorDescription)
                     
                 }
                 
@@ -569,34 +574,9 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
             
         }
         
-        if self.ssh != nil {
-            
-            if self.ssh.session.isConnected {
-                
-                makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                              method: method,
-                                              param: param,
-                                              completion: getResult)
-                
-            } else {
-                
-                connectingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "Not connected")
-                
-            }
-            
-        } else {
-            
-            connectingView.removeConnectingView()
-            
-            displayAlert(viewController: self,
-                         isError: true,
-                         message: "Not connected")
-            
-        }
+        reducer.makeCommand(command: method,
+                            param: param,
+                            completion: getResult)
         
     }
     
@@ -638,6 +618,22 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
         
         return cell
         
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        print("textFieldShouldReturn")
+        
+        if qrScanner.textField.text != "" {
+            
+            back()
+            let key = qrScanner.textField.text!
+            qrScanner.textField.text = ""
+            processString(string: key)
+            
+            
+        }
+        
+        return true
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

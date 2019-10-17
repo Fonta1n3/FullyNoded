@@ -10,29 +10,18 @@ import UIKit
 
 class MuSigDisplayerTableViewController: UITableViewController {
     
-    var makeSSHCall:SSHelper!
-    var ssh:SSHService!
-    var torClient:TorClient!
-    var torRPC:MakeRPCCall!
-    var isUsingSSH = IsUsingSSH.sharedInstance
-    
     var p2sh = Bool()
     var p2shP2wsh = Bool()
     var p2wsh = Bool()
-    
     var isHD = Bool()
-    
     var sigsRequired = ""
     var pubkeyArray = [String]()
-    
     let qrGenerator = QRGenerator()
     let connectingView = ConnectingView()
-    
     var shareRedScriptQR = UITapGestureRecognizer()
     var shareAddressQR = UITapGestureRecognizer()
     var shareRedScriptText = UITapGestureRecognizer()
     var shareAddressText = UITapGestureRecognizer()
-    
     var address = ""
     var script = ""
     
@@ -56,23 +45,9 @@ class MuSigDisplayerTableViewController: UITableViewController {
         shareRedScriptText = UITapGestureRecognizer(target: self, action: #selector(self.shareRedTxt(_:)))
         shareAddressText = UITapGestureRecognizer(target: self, action: #selector(self.shareAddressTxt(_:)))
         
-     }
+    }
     
     override func viewDidAppear(_ animated: Bool) {
-        
-        isUsingSSH = IsUsingSSH.sharedInstance
-        
-        if isUsingSSH {
-            
-            ssh = SSHService.sharedInstance
-            makeSSHCall = SSHelper.sharedInstance
-            
-        } else {
-            
-            torRPC = MakeRPCCall.sharedInstance
-            torClient = TorClient.sharedInstance
-            
-        }
         
         if isHD {
             
@@ -85,11 +60,11 @@ class MuSigDisplayerTableViewController: UITableViewController {
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
-
+    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return 3
     }
-
+    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         switch indexPath.row {
@@ -135,11 +110,11 @@ class MuSigDisplayerTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         
         if indexPath.row == 0 {
-         
+            
             return 84
             
         } else {
-         
+            
             return 292
             
         }
@@ -178,17 +153,17 @@ class MuSigDisplayerTableViewController: UITableViewController {
         print("share")
         
         DispatchQueue.main.async {
-
+            
             self.qrGenerator.textInput = self.script
             let qrImage = self.qrGenerator.getQRCode()
             let objectsToShare = [qrImage]
-
+            
             let activityController = UIActivityViewController(activityItems: objectsToShare,
                                                               applicationActivities: nil)
-
+            
             activityController.popoverPresentationController?.sourceView = self.view
             self.present(activityController, animated: true) {}
-
+            
         }
         
     }
@@ -248,6 +223,8 @@ class MuSigDisplayerTableViewController: UITableViewController {
     
     func importMulti() {
         
+        let reducer = Reducer()
+        
         connectingView.addConnectingView(vc: self,
                                          description: "Importing MultiSig")
         
@@ -256,15 +233,15 @@ class MuSigDisplayerTableViewController: UITableViewController {
         
         func importDescriptor() {
             
-            let result = self.makeSSHCall.dictToReturn
+            let result = reducer.dictToReturn
             
-            if makeSSHCall.errorBool {
+            if reducer.errorBool {
                 
                 connectingView.removeConnectingView()
                 
-                displayAlert(viewController: self.navigationController!,
+                displayAlert(viewController: self,
                              isError: true,
-                             message: makeSSHCall.errorDescription)
+                             message: reducer.errorDescription)
                 
             } else {
                 
@@ -272,17 +249,64 @@ class MuSigDisplayerTableViewController: UITableViewController {
                 
                 let params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"watchonly\": true, \"label\": \"\(label)\" }], ''{\"rescan\": true}''"
                 
-                if !isHD {
+                //if !isHD {
+                
+                let aes = AESService()
+                let cd = CoreDataService()
+                let encDesc = aes.encryptKey(keyToEncrypt: descriptor)
+                let encLabel = aes.encryptKey(keyToEncrypt: label)
+                let encRange = aes.encryptKey(keyToEncrypt: "no range")
+                let id = randomString(length: 10)
+                let nodes = cd.retrieveEntity(entityName: ENTITY.nodes)
+                let isActive = isAnyNodeActive(nodes: nodes)
+                var nodeID = ""
+                
+                if isActive {
                     
-                    self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.importmulti,
-                                               param: params)
+                    for node in nodes {
+                        
+                        let active = node["isActive"] as! Bool
+                        
+                        if active {
+                            
+                            nodeID = node["id"] as! String
+                            
+                        }
+                        
+                    }
+                    
+                }
+                
+                let descDict = ["descriptor":encDesc,
+                                "label":encLabel,
+                                "range":encRange,
+                                "id":id,
+                                "nodeID":nodeID]
+                
+                let descriptorSaved = cd.saveEntity(vc: self,
+                                                    dict: descDict,
+                                                    entityName: ENTITY.descriptors)
+                
+                if descriptorSaved {
+                    
+                    self.executeNodeCommand(method: BTC_CLI_COMMAND.importmulti,
+                                            param: params)
                     
                 } else {
                     
-                    self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.deriveaddresses,
-                                               param: descriptor + ", [0,100]")
+                    connectingView.removeConnectingView()
                     
+                    displayAlert(viewController: self,
+                                 isError: true,
+                                 message: "error saving descriptor")
                 }
+                
+                /*} else {
+                 
+                 self.executeNodeCommand(method: BTC_CLI_COMMAND.deriveaddresses,
+                 param: descriptor + ", [0,100]")
+                 
+                 }*/
                 
             }
             
@@ -348,37 +372,61 @@ class MuSigDisplayerTableViewController: UITableViewController {
         descriptor = descriptor.replacingOccurrences(of: "\"", with: "")
         descriptor = descriptor.replacingOccurrences(of: " ", with: "")
         
-        makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                      method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                      param: "\"\(descriptor)\"", completion: importDescriptor)
+        let method = BTC_CLI_COMMAND.getdescriptorinfo
+        let param = "\"\(descriptor)\""
+        
+        reducer.makeCommand(command: method,
+                            param: param,
+                            completion: importDescriptor)
         
     }
     
-    func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
+    func isAnyNodeActive(nodes: [[String:Any]]) -> Bool {
+        
+        var boolToReturn = false
+        
+        for node in nodes {
+            
+            let isActive = node["isActive"] as! Bool
+            
+            if isActive {
+                
+                boolToReturn = true
+                
+            }
+            
+        }
+        
+        return boolToReturn
+        
+    }
+    
+    func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
+        
+        let reducer = Reducer()
         
         func getResult() {
             
-            if !makeSSHCall.errorBool {
+            if !reducer.errorBool {
                 
                 switch method {
                     
-                case BTC_CLI_COMMAND.deriveaddresses:
+                    /*case BTC_CLI_COMMAND.deriveaddresses:
+                     
+                     let result = reducer.arrayToReturn*/
                     
-                    let result = makeSSHCall.arrayToReturn
-                    print("result = \(result)")
-                    
-                case BTC_CLI_COMMAND.importmulti:
+                case .importmulti:
                     
                     self.connectingView.removeConnectingView()
                     
-                    let result = makeSSHCall.arrayToReturn
+                    let result = reducer.arrayToReturn
                     let success = (result[0] as! NSDictionary)["success"] as! Bool
                     
                     if success {
                         
                         connectingView.removeConnectingView()
                         
-                        displayAlert(viewController: self.navigationController!,
+                        displayAlert(viewController: self,
                                      isError: false,
                                      message: "MultiSig imported!")
                         
@@ -387,7 +435,7 @@ class MuSigDisplayerTableViewController: UITableViewController {
                         let error = ((result[0] as! NSDictionary)["error"] as! NSDictionary)["message"] as! String
                         connectingView.removeConnectingView()
                         
-                        displayAlert(viewController: self.navigationController!,
+                        displayAlert(viewController: self,
                                      isError: true,
                                      message: error)
                         
@@ -427,9 +475,9 @@ class MuSigDisplayerTableViewController: UITableViewController {
                     
                     self.connectingView.removeConnectingView()
                     
-                    displayAlert(viewController: self.navigationController!,
+                    displayAlert(viewController: self,
                                  isError: true,
-                                 message: self.makeSSHCall.errorDescription)
+                                 message: reducer.errorDescription)
                     
                 }
                 
@@ -437,35 +485,10 @@ class MuSigDisplayerTableViewController: UITableViewController {
             
         }
         
-        if self.ssh != nil {
-         
-            if self.ssh.session.isConnected {
-                
-                makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                              method: method,
-                                              param: param,
-                                              completion: getResult)
-                
-            } else {
-                
-                connectingView.removeConnectingView()
-                
-                displayAlert(viewController: self.navigationController!,
-                             isError: true,
-                             message: "Not connected")
-                
-            }
-            
-        } else {
-         
-            connectingView.removeConnectingView()
-            
-            displayAlert(viewController: self.navigationController!,
-                         isError: true,
-                         message: "Not connected")
-            
-        }
+        reducer.makeCommand(command: method,
+                            param: param,
+                            completion: getResult)
         
     }
-
+    
 }

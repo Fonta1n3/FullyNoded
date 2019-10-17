@@ -65,6 +65,14 @@ public enum BTC_CLI_COMMAND: String {
     case getnetworkinfo = "getnetworkinfo"
     case getmininginfo = "getmininginfo"
     case estimatesmartfee = "estimatesmartfee"
+    case sendrawtransaction = "sendrawtransaction"
     case importaddress = "importaddress"
+    case signmessagewithprivkey = "signmessagewithprivkey"
+    case verifymessage = "verifymessage"
+    case signmessage = "signmessage"
+    case encryptwallet = "encryptwallet"
+    case walletpassphrase = "walletpassphrase"
+    case walletlock = "walletlock"
+    case walletpassphrasechange = "walletpassphrasechange"
     
 }

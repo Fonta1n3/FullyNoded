@@ -12,8 +12,8 @@ import UIKit
 
 class CoreDataService {
     
-    func saveCredentialsToCoreData(vc: UIViewController, credentials: [String:Any]) -> Bool {
-        print("saveCredentialsToCoreData")
+    func saveEntity(vc: UIViewController, dict: [String:Any], entityName: ENTITY) -> Bool {
+        print("saveEntityToCoreData")
         
         var success = Bool()
         var appDelegate = AppDelegate()
@@ -30,36 +30,36 @@ class CoreDataService {
         }
         
         let context = appDelegate.persistentContainer.viewContext
-        let entity = NSEntityDescription.entity(forEntityName: "Nodes", in: context)
+        let entity = NSEntityDescription.entity(forEntityName: entityName.rawValue, in: context)
         let credential = NSManagedObject(entity: entity!, insertInto: context)
         
-        for (key, value) in credentials {
+        for (key, value) in dict {
             
             credential.setValue(value, forKey: key)
-                
+            
             do {
-                    
+                
                 try context.save()
                 success = true
                 print("Saved credential \(key) = \(value)")
-                    
+                
             } catch {
-                    
+                
                 print("Failed saving credential \(key) = \(value)")
                 success = false
-                    
-            }
                 
-        }
+            }
             
+        }
+        
         return success
         
     }
     
-    func retrieveCredentials() -> [[String:Any]] {
-        print("retrieveCredentials")
+    func retrieveEntity(entityName: ENTITY) -> [[String:Any]] {
+        print("retrieveEntity")
         
-        var credentials = [[String:Any]]()
+        var array = [[String:Any]]()
         var appDelegate = AppDelegate()
         
         DispatchQueue.main.async {
@@ -77,7 +77,7 @@ class CoreDataService {
         }
         
         let context = appDelegate.persistentContainer.viewContext
-        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Nodes")
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName.rawValue)
         fetchRequest.returnsObjectsAsFaults = false
         fetchRequest.resultType = .dictionaryResultType
         
@@ -88,9 +88,9 @@ class CoreDataService {
                 
                 if results.count > 0 {
                     
-                    for credential in results {
+                    for entity in results {
                         
-                        credentials.append(credential)
+                        array.append(entity)
                         
                     }
                     
@@ -104,326 +104,11 @@ class CoreDataService {
             
         }
         
-        return credentials
+        return array
         
     }
     
-    func updateNode(viewController: UIViewController, id: String, newValue: Any, keyToEdit: String) -> Bool {
-        
-        var boolToReturn = Bool()
-        var appDelegate = AppDelegate()
-        
-        DispatchQueue.main.async {
-            
-            if let appDelegateCheck = UIApplication.shared.delegate as? AppDelegate {
-                
-                appDelegate = appDelegateCheck
-                
-            } else {
-                
-                boolToReturn = false
-                displayAlert(viewController: viewController, isError: true, message: "Something strange has happened and we do not have access to app delegate, please try again.")
-                
-            }
-            
-        }
-            
-            let context = appDelegate.persistentContainer.viewContext
-            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "Nodes")
-            fetchRequest.returnsObjectsAsFaults = false
-            
-            do {
-                
-                let results = try context.fetch(fetchRequest) as [NSManagedObject]
-                
-                if results.count > 0 {
-                    
-                    for data in results {
-                        
-                        if id == data.value(forKey: "id") as? String {
-                            
-                            data.setValue(newValue, forKey: keyToEdit)
-                            
-                            do {
-                                
-                                try context.save()
-                                boolToReturn = true
-                                print("updated successfully")
-                                
-                            } catch {
-                                
-                                print("error editing")
-                                boolToReturn = false
-                                
-                            }
-                            
-                        }
-                        
-                    }
-                    
-                } else {
-                    
-                    print("no results")
-                    boolToReturn = false
-                    
-                }
-                
-            } catch {
-                
-                print("Failed")
-                boolToReturn = false
-                
-            }
-            
-        return boolToReturn
-        
-    }
-    
-    func deleteNode(viewController: UIViewController, id: String) -> Bool {
-        
-        var boolToReturn = Bool()
-        var appDelegate = AppDelegate()
-        
-        DispatchQueue.main.async {
-            
-            if let appDelegateCheck = UIApplication.shared.delegate as? AppDelegate {
-                
-                appDelegate = appDelegateCheck
-                
-            } else {
-                
-                boolToReturn = false
-                displayAlert(viewController: viewController, isError: true, message: "Something strange has happened and we do not have access to app delegate, please try again.")
-                
-            }
-            
-        }
-        
-        let context = appDelegate.persistentContainer.viewContext
-        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "Nodes")
-        fetchRequest.returnsObjectsAsFaults = false
-        
-        do {
-            
-            let results = try context.fetch(fetchRequest) as [NSManagedObject]
-            
-            if results.count > 0 {
-                
-                for (index, data) in results.enumerated() {
-                    
-                    if id == data.value(forKey: "id") as? String {
-                        
-                        context.delete(results[index] as NSManagedObject)
-                        
-                        do {
-                            
-                            try context.save()
-                            print("deleted succesfully")
-                            boolToReturn = true
-                            
-                        } catch {
-                            
-                            print("error deleting")
-                            print("deleted succesfully")
-                            boolToReturn = false
-     
-                        }
-                        
-                    }
-                    
-                }
-                
-            } else {
-                
-                print("no results")
-                boolToReturn = false
-                
-            }
-            
-        } catch {
-            
-            print("Failed")
-            boolToReturn = false
-            
-        }
-        
-        return boolToReturn
-        
-    }
-    
-    func deleteAllNodes(vc: UIViewController) -> Bool {
-        
-        var boolToReturn = Bool()
-        var appDelegate = AppDelegate()
-        
-        DispatchQueue.main.async {
-            
-            if let appDelegateCheck = UIApplication.shared.delegate as? AppDelegate {
-                
-                appDelegate = appDelegateCheck
-                
-            } else {
-                
-                boolToReturn = false
-                displayAlert(viewController: vc, isError: true, message: "Something strange has happened and we do not have access to app delegate, please try again.")
-                
-            }
-            
-        }
-        
-        let context = appDelegate.persistentContainer.viewContext
-        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "Nodes")
-        fetchRequest.returnsObjectsAsFaults = false
-        
-        do {
-            
-            let results = try context.fetch(fetchRequest) as [NSManagedObject]
-            
-            if results.count > 0 {
-                
-                for result in results {
-                    
-                    context.delete(result as NSManagedObject)
-                        
-                    do {
-                            
-                        try context.save()
-                        print("deleted succesfully")
-                        boolToReturn = true
-                            
-                    } catch {
-                            
-                        print("error deleting")
-                        print("deleted succesfully")
-                        boolToReturn = false
-                            
-                    }
-                    
-                }
-                
-            } else {
-                
-                print("no results")
-                boolToReturn = false
-                
-            }
-            
-        } catch {
-            
-            print("Failed")
-            boolToReturn = false
-            
-        }
-        
-        return boolToReturn
-        
-    }
-    
-    func saveHDWalletToCoreData(vc: UIViewController, walletInfo: [String:Any]) -> Bool {
-        print("saveHDWalletToCoreData")
-        
-        var success = Bool()
-        
-        DispatchQueue.main.async {
-            
-            var appDelegate = AppDelegate()
-            
-            if let appDelegateCheck = UIApplication.shared.delegate as? AppDelegate {
-                
-                appDelegate = appDelegateCheck
-                
-            } else {
-                
-                displayAlert(viewController: vc, isError: true, message: "Unable to convert credentials to coredata.")
-                success = false
-                
-            }
-            
-            let context = appDelegate.persistentContainer.viewContext
-            let entity = NSEntityDescription.entity(forEntityName: "HDWallets", in: context)
-            let hdWallet = NSManagedObject(entity: entity!, insertInto: context)
-            
-            for (key, value) in walletInfo {
-                
-                hdWallet.setValue(value, forKey: key)
-                
-                do {
-                    
-                    try context.save()
-                    success = true
-                    print("Saved credential \(key) = \(value)")
-                    
-                } catch {
-                    
-                    print("Failed saving credential \(key) = \(value)")
-                    success = false
-                    
-                }
-                
-            }
-            
-        }
-        
-        return success
-        
-    }
-    
-    func getHDWallets(nodeID: String) -> [[String:Any]] {
-        print("getHDWallets")
-        
-        var hdWallets = [[String:Any]]()
-        var appDelegate = AppDelegate()
-        
-        DispatchQueue.main.async {
-            
-            if let appDelegateCheck = UIApplication.shared.delegate as? AppDelegate {
-                
-                appDelegate = appDelegateCheck
-                
-            } else {
-                
-                print("error can't access app delegate")
-                
-            }
-            
-        }
-        
-        let context = appDelegate.persistentContainer.viewContext
-        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "HDWallets")
-        fetchRequest.returnsObjectsAsFaults = false
-        fetchRequest.resultType = .dictionaryResultType
-        
-        do {
-            
-            if let results = try context.fetch(fetchRequest) as? [[String:Any]] {
-                
-                if results.count > 0 {
-                    
-                    for hdWallet in results {
-                        
-                        if nodeID == hdWallet["nodeID"] as? String {
-                         
-                            hdWallets.append(hdWallet)
-                            
-                        }
-                        
-                    }
-                    
-                }
-                
-            }
-            
-        } catch {
-            
-            print("Failed getting HD wallets")
-            
-        }
-        
-        return hdWallets
-        
-    }
-    
-    func deleteAllHDWallets(vc: UIViewController) -> Bool {
+    func updateEntity(viewController: UIViewController, id: String, newValue: Any, keyToEdit: String, entityName: ENTITY) -> Bool {
         
         var boolToReturn = Bool()
         var appDelegate = AppDelegate()
@@ -438,82 +123,16 @@ class CoreDataService {
                 
                 boolToReturn = false
                 
-                displayAlert(viewController: vc, isError: true, message: "Something strange has happened and we do not have access to app delegate, please try again.")
+                displayAlert(viewController: viewController,
+                             isError: true,
+                             message: "Something strange has happened and we do not have access to app delegate, please try again.")
                 
             }
             
         }
         
         let context = appDelegate.persistentContainer.viewContext
-        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "HDWallets")
-        fetchRequest.returnsObjectsAsFaults = false
-        
-        do {
-            
-            let results = try context.fetch(fetchRequest) as [NSManagedObject]
-            
-            if results.count > 0 {
-                
-                for result in results {
-                    
-                    context.delete(result as NSManagedObject)
-                    
-                    do {
-                        
-                        try context.save()
-                        print("deleted succesfully")
-                        boolToReturn = true
-                        
-                    } catch {
-                        
-                        print("error deleting")
-                        print("deleted succesfully")
-                        boolToReturn = false
-                        
-                    }
-                    
-                }
-                
-            } else {
-                
-                print("no results")
-                boolToReturn = false
-                
-            }
-            
-        } catch {
-            
-            print("Failed")
-            boolToReturn = false
-            
-        }
-        
-        return boolToReturn
-        
-    }
-    
-    func updateWallet(viewController: UIViewController, id: String, newValue: Any, keyToEdit: String) -> Bool {
-        
-        var boolToReturn = Bool()
-        var appDelegate = AppDelegate()
-        
-        DispatchQueue.main.async {
-            
-            if let appDelegateCheck = UIApplication.shared.delegate as? AppDelegate {
-                
-                appDelegate = appDelegateCheck
-                
-            } else {
-                
-                boolToReturn = false
-                displayAlert(viewController: viewController, isError: true, message: "Something strange has happened and we do not have access to app delegate, please try again.")
-                
-            }
-            
-        }
-        
-        let context = appDelegate.persistentContainer.viewContext
-        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "HDWallets")
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: entityName.rawValue)
         fetchRequest.returnsObjectsAsFaults = false
         
         do {
@@ -563,7 +182,7 @@ class CoreDataService {
         
     }
     
-    func deleteWallet(viewController: UIViewController, id: String) -> Bool {
+    func deleteEntity(viewController: UIViewController, id: String, entityName: ENTITY) -> Bool {
         
         var boolToReturn = Bool()
         var appDelegate = AppDelegate()
@@ -584,7 +203,7 @@ class CoreDataService {
         }
         
         let context = appDelegate.persistentContainer.viewContext
-        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "HDWallets")
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: entityName.rawValue)
         fetchRequest.returnsObjectsAsFaults = false
         
         do {

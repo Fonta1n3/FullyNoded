@@ -14,18 +14,36 @@ class WalletsViewController: UIViewController, UITableViewDataSource, UITableVie
     var wallet = [String:Any]()
     var isHDInvoice = Bool()
     let aes = AESService()
+    
+    var tableArray = [[String:Any]]()
 
     @IBOutlet var walletTable: UITableView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Do any additional setup after loading the view.
+        loadArray()
+        
+    }
+    
+    func loadArray() {
+        
+        for w in wallets {
+            
+            let wallet = Wallet(dictionary: w)
+            let walletLabel = wallet.label
+            let decLabel = aes.decryptKey(keyToDecrypt: walletLabel)
+            let dict = ["label":decLabel]
+            tableArray.append(dict)
+            walletTable.reloadData()
+            
+        }
+        
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
-        return wallets.count
+        return tableArray.count
         
     }
     
@@ -34,12 +52,9 @@ class WalletsViewController: UIViewController, UITableViewDataSource, UITableVie
         let cell = tableView.dequeueReusableCell(withIdentifier: "walletCell", for: indexPath)
         cell.selectionStyle = .none
         cell.textLabel?.textColor = UIColor.white
-        
-        let encLabel = wallets[indexPath.row]["label"] as! String
-        let decLabel = aes.decryptKey(keyToDecrypt: encLabel)
-        
-        cell.textLabel?.text = decLabel
-        
+        let dict = tableArray[indexPath.row]
+        let label = dict["label"] as! String
+        cell.textLabel?.text = label
         return cell
         
     }
@@ -81,18 +96,23 @@ class WalletsViewController: UIViewController, UITableViewDataSource, UITableVie
         
         if editingStyle == UITableViewCell.EditingStyle.delete {
             
+            let row = indexPath.row
             let cd = CoreDataService()
+            let wallet = Wallet(dictionary: wallets[row])
             
-            let success = cd.deleteWallet(viewController: self, id: wallets[indexPath.row]["id"] as! String)
+            let success = cd.deleteEntity(viewController: self,
+                                          id: wallet.id,
+                                          entityName: ENTITY.hdWallets)
 
             if success {
 
-                wallets.remove(at: indexPath.row)
+                tableArray.remove(at: row)
+                wallets.remove(at: row)
                 walletTable.deleteRows(at: [indexPath], with: .fade)
                 
             } else {
 
-                displayAlert(viewController: self.navigationController!,
+                displayAlert(viewController: self,
                              isError: true,
                              message: "We had an error trying to delete that wallet")
 
@@ -104,10 +124,7 @@ class WalletsViewController: UIViewController, UITableViewDataSource, UITableVie
     
     // MARK: - Navigation
 
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
         
         if segue.identifier == "getColdStorageAddress" {
             

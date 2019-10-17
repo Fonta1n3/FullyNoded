@@ -15,12 +15,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     var tapTextViewGesture = UITapGestureRecognizer()
     var qrCode = UIImage()
     
-    var ssh:SSHService!
-    var torClient:TorClient!
-    var torRPC:MakeRPCCall!
-    var isUsingSSH = IsUsingSSH.sharedInstance
-    var makeSSHCall:SSHelper!
-    
     var spendable = Double()
     var rawTxUnsigned = String()
     var rawTxSigned = String()
@@ -34,7 +28,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     let rawDisplayer = RawDisplayer()
     var scannerShowing = false
     var isFirstTime = Bool()
-    var isSweeping = false
     var outputs = [Any]()
     var outputsString = ""
     
@@ -48,36 +41,22 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     @IBOutlet var outputsTable: UITableView!
     @IBOutlet var scannerView: UIImageView!
     
-    let sweepButtonView = Bundle.main.loadNibNamed("KeyPadButtonView",
-                                                   owner: self,
-                                                   options: nil)?.first as! UIView?
-    
     var creatingView = ConnectingView()
     let qrScanner = QRScanner()
     var isTorchOn = Bool()
     let qrGenerator = QRGenerator()
     var spendableBalance = Double()
-    
     var outputArray = [[String:String]]()
-    
     @IBOutlet var coldSwitchOutlet: UISwitch!
     @IBOutlet var coldLabel: UILabel!
     
-    
-   @IBAction func sweepAction(_ sender: Any) {
-    
-        isSweeping = true
-        
-        executeNodeCommandSsh(method: BTC_CLI_COMMAND.listunspent,
-                              param: "")
-        
-    }
-    
-    @IBAction func coldAction(_ sender: Any) {
+   @IBAction func coldAction(_ sender: Any) {
         
         if coldSwitchOutlet.isOn {
             
-            displayAlert(viewController: self, isError: false, message: "This transaction will also select inputs that are watch-only and create an unsigned transaction")
+            displayAlert(viewController: self,
+                         isError: false,
+                         message: "This transaction will also select inputs that are watch-only and create an unsigned transaction")
             
         }
         
@@ -309,8 +288,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        print("CreateRawTxViewController")
-        
         amountInput.delegate = self
         addressInput.delegate = self
         outputsTable.delegate = self
@@ -320,41 +297,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         configureRawDisplayer()
         configureScanner()
         addTapGesture()
-        addNotifcationObservers()
-        amountInput.inputAccessoryView = sweepButtonView
         coldSwitchOutlet.isOn = false
         scannerView.alpha = 0
         scannerView.backgroundColor = UIColor.black
-        
-        // need to get minrelay fee to ensure tx will be accepted in testnet
-        //executeNodeCommandSsh(method: BTC_CLI_COMMAND.getnetworkinfo, param: "")
-        
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        
-        isUsingSSH = IsUsingSSH.sharedInstance
-        
-        if isUsingSSH {
-            
-            ssh = SSHService.sharedInstance
-            makeSSHCall = SSHelper.sharedInstance
-            
-        } else {
-            
-            torRPC = MakeRPCCall.sharedInstance
-            torClient = TorClient.sharedInstance
-            
-        }
-        
-    }
-    
-    func addNotifcationObservers() {
-        
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(sweepButtonClicked),
-                                               name: NSNotification.Name(rawValue: "buttonClickedNotification"),
-                                               object: nil)
         
     }
     
@@ -376,7 +321,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     // MARK: User Actions
-    
     @objc func close() {
         
         DispatchQueue.main.async {
@@ -632,17 +576,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         
     }
     
-    @objc func sweepButtonClicked() {
-        
-        isSweeping = true
-        
-        self.amountInput.resignFirstResponder()
-        
-        executeNodeCommandSsh(method: BTC_CLI_COMMAND.listunspent,
-                              param: "")
-        
-    }
-    
     //MARK: User Interface
     
     func addShadow(view: UIView) {
@@ -736,16 +669,15 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     func textFieldDidEndEditing(_ textField: UITextField) {
         
-        self.amountInput.resignFirstResponder()
-        self.addressInput.resignFirstResponder()
+        textField.resignFirstResponder()
         
         if textField == addressInput && addressInput.text != "" {
             
             processKeys(key: addressInput.text!)
             
-        } else if textField == self.amountInput && self.amountInput.text != "" {
+        //} else if textField == self.amountInput && self.amountInput.text != "" {
             
-            self.amountInput.resignFirstResponder()
+            //self.amountInput.resignFirstResponder()
             
         } else if textField == addressInput && addressInput.text == "" {
             
@@ -842,12 +774,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         print("getRawTx")
         
         let rawTransaction = RawTransaction()
-        rawTransaction.outputs = self.outputsString
-        rawTransaction.ssh = self.ssh
-        rawTransaction.torClient = self.torClient
-        rawTransaction.torRPC = self.torRPC
-        rawTransaction.isUsingSSH = self.isUsingSSH
-        rawTransaction.numberOfBlocks = UserDefaults.standard.object(forKey: "feeTarget") as! Int
+        rawTransaction.outputs = outputsString
+        let ud = UserDefaults.standard
+        rawTransaction.numberOfBlocks = ud.object(forKey: "feeTarget") as! Int
         
         func getResult() {
             
@@ -902,114 +831,19 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         
     }
     
-    //MARK: SSH Commands
+    //MARK: Node Commands
     
     func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
         
-        if !isUsingSSH {
-            
-            executeNodeCommandTor(method: method,
-                                  param: param)
-            
-        } else {
-            
-            func getResult() {
-                
-                if !makeSSHCall.errorBool {
-                    
-                    switch method {
-                        
-                    /*case BTC_CLI_COMMAND.getnetworkinfo:
-                        
-                        let result = makeSSHCall.dictToReturn
-                        
-                        if let minRelayFee = result["relayFee"] as? String {
-                            
-                            print("minRelayFee = \(minRelayFee)")
-                        }*/
-                        
-                    case BTC_CLI_COMMAND.listunspent:
-                        
-                        self.spendableBalance = 0.0
-                        let utxos = makeSSHCall.arrayToReturn
-                        self.parseUnpsent(utxos: utxos)
-                        
-                    default:
-                        
-                        break
-                        
-                    }
-                    
-                } else {
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.creatingView.removeConnectingView()
-                        
-                        displayAlert(viewController: self,
-                                     isError: true,
-                                     message: self.makeSSHCall.errorDescription)
-                        
-                    }
-                    
-                }
-                
-            }
-            
-            if self.ssh != nil {
-                
-                if self.ssh.session.isConnected {
-                    
-                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                                  method: method,
-                                                  param: param,
-                                                  completion: getResult)
-                    
-                } else {
-                    
-                    creatingView.removeConnectingView()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: "Not connected")
-                    
-                }
-                
-            } else {
-                
-                creatingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "Not connected")
-                
-            }
-            
-        }
-        
-    }
-    
-    // MARK: Tor RPC Commands
-    
-    func executeNodeCommandTor(method: BTC_CLI_COMMAND, param: Any) {
+        let reducer = Reducer()
         
         func getResult() {
             
-            if !torRPC.errorBool {
+            if !reducer.errorBool {
                 
-                switch method {
-                    
-                case BTC_CLI_COMMAND.listunspent:
-                    
-                    self.spendableBalance = 0.0
-                    let utxos = makeSSHCall.arrayToReturn
-                    self.parseUnpsent(utxos: utxos)
-                    
-                default:
-                    
-                    break
-                    
-                }
+                self.spendableBalance = 0.0
+                let utxos = reducer.arrayToReturn
+                self.parseUnpsent(utxos: utxos)
                 
             } else {
                 
@@ -1019,27 +853,17 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                     
                     displayAlert(viewController: self,
                                  isError: true,
-                                 message: self.makeSSHCall.errorDescription)
+                                 message: reducer.errorDescription)
                     
                 }
                 
             }
             
         }
-        
-        if self.torClient.isOperational {
-            
-            self.torRPC.executeRPCCommand(method: method,
-                                          param: param,
-                                          completion: getResult)
-            
-        } else {
-            
-            displayAlert(viewController: self,
-                         isError: true,
-                         message: "Tor not connected")
-            
-        }
+    
+        reducer.makeCommand(command: method,
+                            param: param,
+                            completion: getResult)
         
     }
     

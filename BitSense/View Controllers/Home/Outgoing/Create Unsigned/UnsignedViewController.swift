@@ -17,12 +17,6 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
     let creatingView = ConnectingView()
     let createUnsigned = CreateUnsigned()
     
-    var torRPC:MakeRPCCall!
-    var ssh:SSHService!
-    var makeSSHCall:SSHelper!
-    var torClient:TorClient!
-    var isUsingSSH = IsUsingSSH.sharedInstance
-    
     var isFirstTime = Bool()
     var isTorchOn = Bool()
     var blurArray = [UIVisualEffectView]()
@@ -92,15 +86,10 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
             self.creatingView.addConnectingView(vc: self,
                                                 description: "Creating Unsigned")
             
-            createUnsigned.ssh = self.ssh
             createUnsigned.amount = Double(amountField.text!)!
             createUnsigned.changeAddress = changeField.text!
             createUnsigned.addressToPay = receivingField.text!
             createUnsigned.spendingAddress = spendingField.text!
-            createUnsigned.makeSSHCall = self.makeSSHCall
-            createUnsigned.torClient = self.torClient
-            createUnsigned.torRPC = self.torRPC
-            createUnsigned.isUsingSSH = self.isUsingSSH
             
             func getResult() {
                 
@@ -166,24 +155,6 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
         imageView.backgroundColor = UIColor.black
         
         configureScanner()
-        
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        
-        isUsingSSH = IsUsingSSH.sharedInstance
-        
-        if isUsingSSH {
-            
-            ssh = SSHService.sharedInstance
-            makeSSHCall = SSHelper.sharedInstance
-            
-        } else {
-            
-            torRPC = MakeRPCCall.sharedInstance
-            torClient = TorClient.sharedInstance
-            
-        }
         
     }
     
@@ -503,7 +474,6 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
         
         DispatchQueue.main.async {
             
-            //self.rawDisplayer.titleString = "Unsigned Raw Transaction"
             self.navigationController?.navigationBar.topItem?.title = "Unsigned Tx"
             self.rawDisplayer.rawString = raw
             self.unsignedTx = raw
@@ -521,7 +491,6 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
             
             self.qrScanner.removeFromSuperview()
             self.imageView.removeFromSuperview()
-            
             
             let backView = UIView()
             backView.frame = self.view.frame

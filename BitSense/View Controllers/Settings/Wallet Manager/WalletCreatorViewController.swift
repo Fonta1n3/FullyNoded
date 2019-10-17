@@ -10,27 +10,31 @@ import UIKit
 
 class WalletCreatorViewController: UIViewController, UITextFieldDelegate {
     
-    var ssh:SSHService!
-    var makeSSHCall:SSHelper!
-    var isUsingSSH = IsUsingSSH.sharedInstance
-    var torRPC:MakeRPCCall!
-    var torClient:TorClient!
-    
     let connectingView = ConnectingView()
 
     @IBOutlet var textField: UITextField!
     @IBOutlet var hotSwitchOutlet: UISwitch!
     @IBOutlet var coldSwitchOutlet: UISwitch!
+    @IBOutlet var blankSwitchOutlet: UISwitch!
+    
+    @IBAction func blankSwitchAction(_ sender: Any) {
+        
+        if blankSwitchOutlet.isOn {
+            
+            hotSwitchOutlet.isOn = false
+            coldSwitchOutlet.isOn = false
+            
+        }
+        
+    }
+    
     
     @IBAction func hotSwitchAction(_ sender: Any) {
         
         if hotSwitchOutlet.isOn {
             
             coldSwitchOutlet.isOn = false
-            
-        } else {
-            
-            coldSwitchOutlet.isOn = true
+            blankSwitchOutlet.isOn = false
             
         }
         
@@ -41,10 +45,7 @@ class WalletCreatorViewController: UIViewController, UITextFieldDelegate {
         if coldSwitchOutlet.isOn {
             
             hotSwitchOutlet.isOn = false
-            
-        } else {
-            
-            hotSwitchOutlet.isOn = true
+            blankSwitchOutlet.isOn = false
             
         }
         
@@ -75,7 +76,13 @@ class WalletCreatorViewController: UIViewController, UITextFieldDelegate {
                 
             }
             
-            self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.createwallet,
+            if blankSwitchOutlet.isOn {
+                
+                param = "\"\(nospaces)\", false, true"
+                
+            }
+            
+            self.executeNodeCommand(method: BTC_CLI_COMMAND.createwallet,
                                        param: param)
             
         } else {
@@ -95,29 +102,14 @@ class WalletCreatorViewController: UIViewController, UITextFieldDelegate {
                                                                  action: #selector(dismissKeyboard))
         
         view.addGestureRecognizer(tap)
-
         textField.delegate = self
-        
         coldSwitchOutlet.isOn = true
         hotSwitchOutlet.isOn = false
+        blankSwitchOutlet.isOn = false
         
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        
-        isUsingSSH = IsUsingSSH.sharedInstance
-        
-        if isUsingSSH {
-            
-            ssh = SSHService.sharedInstance
-            makeSSHCall = SSHelper.sharedInstance
-            
-        } else {
-            
-            torRPC = MakeRPCCall.sharedInstance
-            torClient = TorClient.sharedInstance
-            
-        }
         
         textField.becomeFirstResponder()
         
@@ -129,17 +121,19 @@ class WalletCreatorViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
+    func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
+        
+        let reducer = Reducer()
         
         func getResult() {
             
-            if !makeSSHCall.errorBool {
+            if !reducer.errorBool {
                 
                 switch method {
                     
                 case BTC_CLI_COMMAND.createwallet:
                     
-                    let response = makeSSHCall.dictToReturn
+                    let response = reducer.dictToReturn
                     handleWalletCreation(response: response)
                     
                 default:
@@ -156,7 +150,7 @@ class WalletCreatorViewController: UIViewController, UITextFieldDelegate {
                     
                     displayAlert(viewController: self,
                                  isError: true,
-                                 message: self.makeSSHCall.errorDescription)
+                                 message: reducer.errorDescription)
                     
                 }
                 
@@ -164,34 +158,9 @@ class WalletCreatorViewController: UIViewController, UITextFieldDelegate {
             
         }
         
-        if self.ssh != nil {
-            
-            if self.ssh.session.isConnected {
-                
-                makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                              method: method,
-                                              param: param,
-                                              completion: getResult)
-                
-            } else {
-                
-                connectingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "Not connected")
-                
-            }
-            
-        } else {
-            
-            connectingView.removeConnectingView()
-            
-            displayAlert(viewController: self,
-                         isError: true,
-                         message: "Not connected")
-            
-        }
+        reducer.makeCommand(command: method,
+                            param: param,
+                            completion: getResult)
         
     }
     
@@ -199,8 +168,8 @@ class WalletCreatorViewController: UIViewController, UITextFieldDelegate {
         
         let name = response["name"] as! String
         let warning = response["warning"] as! String
-        
-        UserDefaults.standard.set(name, forKey: "walletName")
+        let ud = UserDefaults.standard
+        ud.set(name, forKey: "walletName")
         
         if warning == "" {
             

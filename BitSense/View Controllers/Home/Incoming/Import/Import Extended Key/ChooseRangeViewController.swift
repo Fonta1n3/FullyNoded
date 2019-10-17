@@ -10,12 +10,6 @@ import UIKit
 
 class ChooseRangeViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource {
     
-    var makeSSHCall:SSHelper!
-    var ssh:SSHService!
-    var torClient:TorClient!
-    var torRPC:MakeRPCCall!
-    var isUsingSSH = IsUsingSSH.sharedInstance
-    
     let picker = UIPickerView()
     let connectingView = ConnectingView()
     
@@ -23,6 +17,7 @@ class ChooseRangeViewController: UIViewController, UIPickerViewDelegate, UIPicke
     var dict = [String:Any]()
     var isHDMusig = Bool()
     var keyArray = NSArray()
+    var isDescriptor = Bool()
     
     let ud = UserDefaults.standard
 
@@ -36,20 +31,6 @@ class ChooseRangeViewController: UIViewController, UIPickerViewDelegate, UIPicke
     override func viewDidAppear(_ animated: Bool) {
         
         addPicker()
-        
-        isUsingSSH = IsUsingSSH.sharedInstance
-        
-        if isUsingSSH {
-            
-            ssh = SSHService.sharedInstance
-            makeSSHCall = SSHelper.sharedInstance
-            
-        } else {
-            
-            torRPC = MakeRPCCall.sharedInstance
-            torClient = TorClient.sharedInstance
-            
-        }
         
     }
     
@@ -138,6 +119,8 @@ class ChooseRangeViewController: UIViewController, UIPickerViewDelegate, UIPicke
     
     func getHDMusigAddresses() {
         
+        let reducer = Reducer()
+        
         connectingView.addConnectingView(vc: self,
                                          description: "deriving HD multisig addresses")
         
@@ -145,15 +128,15 @@ class ChooseRangeViewController: UIViewController, UIPickerViewDelegate, UIPicke
         
         func importDescriptor() {
             
-            let result = self.makeSSHCall.dictToReturn
+            let result = reducer.dictToReturn
             
-            if makeSSHCall.errorBool {
+            if reducer.errorBool {
                 
                 connectingView.removeConnectingView()
                 
-                displayAlert(viewController: self.navigationController!,
+                displayAlert(viewController: self,
                              isError: true,
-                             message: makeSSHCall.errorDescription)
+                             message: reducer.errorDescription)
                 
             } else {
                 
@@ -168,29 +151,31 @@ class ChooseRangeViewController: UIViewController, UIPickerViewDelegate, UIPicke
         
         let descriptor = dict["descriptor"] as! String
         
-        makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                      method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                      param: "\(descriptor)", completion: importDescriptor)
+        reducer.makeCommand(command: BTC_CLI_COMMAND.getdescriptorinfo,
+                            param: "\(descriptor)",
+                            completion: importDescriptor)
         
     }
     
     func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
         
+        let reducer = Reducer()
+        
         func getResult() {
             
-            if !makeSSHCall.errorBool {
+            if !reducer.errorBool {
                 
                 switch method {
                     
                 case BTC_CLI_COMMAND.deriveaddresses:
                     
-                    keyArray = makeSSHCall.arrayToReturn
-                    
-                    connectingView.removeConnectingView()
-                    
                     DispatchQueue.main.async {
                         
-                        self.performSegue(withIdentifier: "goDisplayHDMusig", sender: self)
+                        self.keyArray = reducer.arrayToReturn
+                        self.connectingView.removeConnectingView()
+                        
+                        self.performSegue(withIdentifier: "goDisplayHDMusig",
+                                          sender: self)
                         
                     }
                     
@@ -206,9 +191,9 @@ class ChooseRangeViewController: UIViewController, UIPickerViewDelegate, UIPicke
                     
                     self.connectingView.removeConnectingView()
                     
-                    displayAlert(viewController: self.navigationController!,
+                    displayAlert(viewController: self,
                                  isError: true,
-                                 message: self.makeSSHCall.errorDescription)
+                                 message: reducer.errorDescription)
                     
                 }
                 
@@ -216,34 +201,9 @@ class ChooseRangeViewController: UIViewController, UIPickerViewDelegate, UIPicke
             
         }
         
-        if self.ssh != nil {
-            
-            if self.ssh.session.isConnected {
-                
-                makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                              method: method,
-                                              param: param,
-                                              completion: getResult)
-                
-            } else {
-                
-                connectingView.removeConnectingView()
-                
-                displayAlert(viewController: self.navigationController!,
-                             isError: true,
-                             message: "Not connected")
-                
-            }
-            
-        } else {
-            
-            connectingView.removeConnectingView()
-            
-            displayAlert(viewController: self.navigationController!,
-                         isError: true,
-                         message: "Not connected")
-            
-        }
+        reducer.makeCommand(command: method,
+                            param: param,
+                            completion: getResult)
         
     }
     
@@ -264,6 +224,7 @@ class ChooseRangeViewController: UIViewController, UIPickerViewDelegate, UIPicke
             if let vc = segue.destination as? AddToKeypoolViewController  {
             
                 vc.dict = dict
+                vc.isDescriptor = isDescriptor
                 
             }
             

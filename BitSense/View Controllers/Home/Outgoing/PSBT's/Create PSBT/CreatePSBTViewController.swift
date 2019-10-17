@@ -10,12 +10,6 @@ import UIKit
 
 class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
     
-    var ssh:SSHService!
-    var torClient:TorClient!
-    var torRPC:MakeRPCCall!
-    var makeSSHCall:SSHelper!
-    var isUsingSSH = IsUsingSSH.sharedInstance
-    
     let addressParser = AddressParser()
     let qrScanner = QRScanner()
     let qrGenerator = QRGenerator()
@@ -90,7 +84,7 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
             let output = "[{\"\(receivingAddress)\":\(amountToSend)}]"
             let param = "[],\(output), 0, {\"includeWatching\": \(coldSwitchOutlet.isOn), \"replaceable\": true, \"conf_target\": \(feeTarget)}, true"
             
-            executeNodeCommandSSH(method: BTC_CLI_COMMAND.walletcreatefundedpsbt,
+            executeNodeCommand(method: BTC_CLI_COMMAND.walletcreatefundedpsbt,
                                   param: param)
             
         } else {
@@ -123,24 +117,6 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        
-        isUsingSSH = IsUsingSSH.sharedInstance
-        
-        if isUsingSSH {
-            
-            ssh = SSHService.sharedInstance
-            makeSSHCall = SSHelper.sharedInstance
-            
-        } else {
-            
-            torRPC = MakeRPCCall.sharedInstance
-            torClient = TorClient.sharedInstance
-            
-        }
-        
-    }
-    
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
         
         DispatchQueue.main.async {
@@ -168,19 +144,21 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    // MARK: SSH METHODS
+    // MARK: NODE COMMANDS
     
-    func executeNodeCommandSSH(method: BTC_CLI_COMMAND, param: String) {
+    func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
+        
+        let reducer = Reducer()
         
         func getResult() {
             
-            if !makeSSHCall.errorBool {
+            if !reducer.errorBool {
                 
                 switch method {
                     
-                case BTC_CLI_COMMAND.walletprocesspsbt:
+                case .walletprocesspsbt:
                     
-                    let dict = makeSSHCall.dictToReturn
+                    let dict = reducer.dictToReturn
                     
                     let isComplete = dict["complete"] as! Bool
                     let processedPSBT = dict["psbt"] as! String
@@ -190,6 +168,8 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
                     creatingView.removeConnectingView()
                     
                     displayRaw(raw: processedPSBT)
+                    
+                    convertPSBTtoData(string: processedPSBT)
                     
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                         
@@ -209,12 +189,12 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
                         
                     }
                     
-                case BTC_CLI_COMMAND.walletcreatefundedpsbt:
+                case .walletcreatefundedpsbt:
                     
-                    let result = makeSSHCall.dictToReturn
+                    let result = reducer.dictToReturn
                     let psbt = result["psbt"] as! String
                     
-                    self.executeNodeCommandSSH(method: BTC_CLI_COMMAND.walletprocesspsbt,
+                    self.executeNodeCommand(method: BTC_CLI_COMMAND.walletprocesspsbt,
                                                param: "\"\(psbt)\"")
                     
                 default:
@@ -231,7 +211,7 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
                     
                     displayAlert(viewController: self,
                                  isError: true,
-                                 message: self.makeSSHCall.errorDescription)
+                                 message: reducer.errorDescription)
                     
                 }
                 
@@ -239,32 +219,25 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
             
         }
         
-        if self.ssh != nil {
+        reducer.makeCommand(command: method,
+                            param: param,
+                            completion: getResult)
+        
+    }
+    
+    func convertPSBTtoData(string: String) {
+     
+        if let data = Data(base64Encoded: string) {
          
-            if self.ssh.session.isConnected {
+            DispatchQueue.main.async {
                 
-                makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                              method: method,
-                                              param: param,
-                                              completion: getResult)
+                let activityViewController = UIActivityViewController(activityItems: [data],
+                                                                      applicationActivities: nil)
                 
-            } else {
-                
-                self.removeSpinner()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "not connected")
+                activityViewController.popoverPresentationController?.sourceView = self.view
+                self.present(activityViewController, animated: true) {}
                 
             }
-            
-        } else {
-         
-            self.removeSpinner()
-            
-            displayAlert(viewController: self,
-                         isError: true,
-                         message: "not connected")
             
         }
         
@@ -489,13 +462,37 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
                 
             }
             
-            let textToShare = [self.psbt]
+            let alert = UIAlertController(title: "Share as raw data or text?", message: "Sharing as raw data allows you to send the unsigned psbt directly to your Coldcard Wallets SD card for signing", preferredStyle: .actionSheet)
             
-            let activityViewController = UIActivityViewController(activityItems: textToShare,
-                                                                  applicationActivities: nil)
+            alert.addAction(UIAlertAction(title: "Raw Data", style: .default, handler: { action in
+                
+                self.convertPSBTtoData(string: self.psbt)
+                
+            }))
             
-            activityViewController.popoverPresentationController?.sourceView = self.view
-            self.present(activityViewController, animated: true) {}
+            alert.addAction(UIAlertAction(title: "Text", style: .default, handler: { action in
+                
+                DispatchQueue.main.async {
+                    
+                    let textToShare = [self.psbt]
+                    
+                    let activityViewController = UIActivityViewController(activityItems: textToShare,
+                                                                          applicationActivities: nil)
+                    
+                    activityViewController.popoverPresentationController?.sourceView = self.view
+                    self.present(activityViewController, animated: true) {}
+                    
+                }
+                
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in
+                
+            }))
+            
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true) {}
+            
         }
         
     }
@@ -538,7 +535,6 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
         
         DispatchQueue.main.async {
             
-            //self.rawDisplayer.titleString = "PSBT"
             self.navigationController?.navigationBar.topItem?.title = "PSBT"
             self.rawDisplayer.rawString = raw
             self.psbt = raw

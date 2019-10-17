@@ -12,6 +12,14 @@ class ExtendedKeysParentViewController: UIViewController {
     
     @IBOutlet var bip44Switch: UISwitch!
     @IBOutlet var bip84switch: UISwitch!
+    @IBOutlet var bip32LegacySwitch: UISwitch!
+    @IBOutlet var bip32Segwit: UISwitch!
+    @IBOutlet var bip44Label: UILabel!
+    @IBOutlet var bip84Label: UILabel!
+    @IBOutlet var bip32LegacyLabel: UILabel!
+    @IBOutlet var legacyLabel: UILabel!
+    @IBOutlet var bip32SegwitLabel: UILabel!
+    @IBOutlet var segwitLabel: UILabel!
     
     var dict = [String:Any]()
 
@@ -19,7 +27,36 @@ class ExtendedKeysParentViewController: UIViewController {
         super.viewDidLoad()
 
         bip44Switch.isOn = false
-        bip84switch.isOn = true
+        bip84switch.isOn = false
+        bip32LegacySwitch.isOn = false
+        bip32Segwit.isOn = true
+        turnOn(labels: [bip32SegwitLabel, segwitLabel])
+        
+    }
+    
+    func turnOn(labels: [UILabel]) {
+        
+        DispatchQueue.main.async {
+            
+            let allLabels = [self.bip44Label, self.bip84Label, self.bip32LegacyLabel, self.bip32SegwitLabel, self.legacyLabel, self.segwitLabel]
+            
+            let labelsToTurnOn = labels
+            
+            for label in allLabels {
+                
+                if labelsToTurnOn.contains(label!) {
+                    
+                    label?.textColor = UIColor.white
+                    
+                } else {
+                    
+                    label?.textColor = UIColor.darkGray
+                    
+                }
+                
+            }
+            
+        }
         
     }
     
@@ -33,15 +70,40 @@ class ExtendedKeysParentViewController: UIViewController {
         
     }
     
+    @IBAction func bip32LegacyAction(_ sender: Any) {
+        
+        if bip32LegacySwitch.isOn {
+            
+            turnOn(labels: [bip32LegacyLabel, legacyLabel])
+            bip32Segwit.isOn = false
+            bip84switch.isOn = false
+            bip44Switch.isOn = false
+            
+        }
+        
+    }
+    
+    @IBAction func bip32SegwitAction(_ sender: Any) {
+        
+        if bip32Segwit.isOn {
+            
+            turnOn(labels: [bip32SegwitLabel, segwitLabel])
+            bip32LegacySwitch.isOn = false
+            bip44Switch.isOn = false
+            bip84switch.isOn = false
+            
+        }
+        
+    }
+    
     @IBAction func bip44Action(_ sender: Any) {
         
         if bip44Switch.isOn {
             
+            turnOn(labels: [bip44Label])
             bip84switch.isOn = false
-            
-        } else {
-            
-            bip84switch.isOn = true
+            bip32LegacySwitch.isOn = false
+            bip32Segwit.isOn = false
             
         }
         
@@ -51,11 +113,10 @@ class ExtendedKeysParentViewController: UIViewController {
         
         if bip84switch.isOn {
             
+            turnOn(labels: [bip84Label])
             bip44Switch.isOn = false
-            
-        } else {
-            
-            bip44Switch.isOn = true
+            bip32Segwit.isOn = false
+            bip32LegacySwitch.isOn = false
             
         }
         
@@ -82,6 +143,18 @@ class ExtendedKeysParentViewController: UIViewController {
                 if bip44Switch.isOn {
                     
                     dict["derivation"] = "BIP44"
+                    
+                }
+                
+                if bip32Segwit.isOn {
+                    
+                    dict["derivation"] = "BIP32Segwit"
+                    
+                }
+                
+                if bip32LegacySwitch.isOn {
+                    
+                    dict["derivation"] = "BIP32Legacy"
                     
                 }
                 

@@ -1,36 +1,28 @@
 //
-//  LockedTableViewController.swift
+//  LockedViewController.swift
 //  BitSense
 //
-//  Created by Peter on 02/08/19.
+//  Created by Peter on 27/09/19.
 //  Copyright © 2019 Fontaine. All rights reserved.
 //
 
 import UIKit
 
-class LockedTableViewController: UITableViewController {
-    
-    var ssh:SSHService!
-    var makeSSHCall:SSHelper!
-    var torClient:TorClient!
-    var torRPC:MakeRPCCall!
-    var isUsingSSH = IsUsingSSH.sharedInstance
+class LockedViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var lockedArray = NSArray()
     var helperArray = [[String:Any]]()
-    
     let creatingView = ConnectingView()
-    
     var selectedVout = Int()
     var selectedTxid = ""
-    
     var ind = 0
-
+    @IBOutlet var tableView: UITableView!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         tableView.tableFooterView = UIView(frame: .zero)
-
+        
         DispatchQueue.main.async {
             
             self.creatingView.addConnectingView(vc: self,
@@ -41,20 +33,6 @@ class LockedTableViewController: UITableViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        
-        isUsingSSH = IsUsingSSH.sharedInstance
-        
-        if isUsingSSH {
-            
-            ssh = SSHService.sharedInstance
-            makeSSHCall = SSHelper.sharedInstance
-            
-        } else {
-            
-            torRPC = MakeRPCCall.sharedInstance
-            torClient = TorClient.sharedInstance
-            
-        }
         
         getHelperArray()
         
@@ -67,7 +45,7 @@ class LockedTableViewController: UITableViewController {
         ind = 0
         
         if lockedArray.count > 0 {
-         
+            
             for utxo in lockedArray {
                 
                 let dict = utxo as! NSDictionary
@@ -92,7 +70,7 @@ class LockedTableViewController: UITableViewController {
                 
                 self.creatingView.removeConnectingView()
                 
-                displayAlert(viewController: self.navigationController!,
+                displayAlert(viewController: self,
                              isError: true,
                              message: "No locked UTXO's")
                 
@@ -109,27 +87,27 @@ class LockedTableViewController: UITableViewController {
             selectedTxid = helperArray[i]["txid"] as! String
             selectedVout = helperArray[i]["vout"] as! Int
             
-            executeNodeCommandSSH(method: BTC_CLI_COMMAND.getrawtransaction,
-                                  param: "\"\(selectedTxid)\", true")
+            executeNodeCommand(method: BTC_CLI_COMMAND.getrawtransaction,
+                               param: "\"\(selectedTxid)\", true")
             
         }
         
     }
-
+    
     // MARK: - Table view data source
-
-    override func numberOfSections(in tableView: UITableView) -> Int {
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
         return 1
     }
-
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
         return helperArray.count
     }
-
     
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "lockedCell", for: indexPath)
         
@@ -145,18 +123,18 @@ class LockedTableViewController: UITableViewController {
         amountLabel.text = "\(amount)"
         voutLabel.text = "vout #\(vout)"
         txidLabel.text = "txid" + " " + txid
-
+        
         return cell
         
     }
     
-    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         
         return 113
         
     }
     
-    override func tableView(_ tableView: UITableView, editActionsForRowAt: IndexPath) -> [UITableViewRowAction]? {
+    func tableView(_ tableView: UITableView, editActionsForRowAt: IndexPath) -> [UITableViewRowAction]? {
         
         let utxo = helperArray[editActionsForRowAt.row]
         let txid = utxo["txid"] as! String
@@ -178,23 +156,25 @@ class LockedTableViewController: UITableViewController {
         
         let param = "true, ''[{\"txid\":\"\(txid)\",\"vout\":\(vout)}]''"
         
-        executeNodeCommandSSH(method: BTC_CLI_COMMAND.lockunspent,
-                              param: param)
+        executeNodeCommand(method: BTC_CLI_COMMAND.lockunspent,
+                           param: param)
         
     }
     
-
-    func executeNodeCommandSSH(method: BTC_CLI_COMMAND, param: String) {
+    
+    func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
+        
+        let reducer = Reducer()
         
         func getResult() {
             
-            if !makeSSHCall.errorBool {
+            if !reducer.errorBool {
                 
                 switch method {
                     
                 case BTC_CLI_COMMAND.getrawtransaction:
                     
-                    let dict = makeSSHCall.dictToReturn
+                    let dict = reducer.dictToReturn
                     let outputs = dict["vout"] as! NSArray
                     
                     for (i, outputDict) in outputs.enumerated() {
@@ -211,7 +191,7 @@ class LockedTableViewController: UITableViewController {
                         }
                         
                         if i + 1 == outputs.count {
-                         
+                            
                             if ind <= helperArray.count - 1 {
                                 
                                 getAmounts(i: ind)
@@ -233,22 +213,22 @@ class LockedTableViewController: UITableViewController {
                     
                 case BTC_CLI_COMMAND.listlockunspent:
                     
-                    lockedArray = makeSSHCall.arrayToReturn
+                    lockedArray = reducer.arrayToReturn
                     getHelperArray()
                     
                 case BTC_CLI_COMMAND.lockunspent:
                     
-                    let result = makeSSHCall.doubleToReturn
+                    let result = reducer.doubleToReturn
                     
                     if result == 1 {
                         
-                        displayAlert(viewController: self.navigationController!,
+                        displayAlert(viewController: self,
                                      isError: false,
                                      message: "UTXO is unlocked and can be selected for spends")
                         
                     } else {
                         
-                        displayAlert(viewController: self.navigationController!,
+                        displayAlert(viewController: self,
                                      isError: true,
                                      message: "Unable to unlock that UTXO")
                         
@@ -256,8 +236,8 @@ class LockedTableViewController: UITableViewController {
                     
                     helperArray.removeAll()
                     
-                    executeNodeCommandSSH(method: BTC_CLI_COMMAND.listlockunspent,
-                                          param: "")
+                    executeNodeCommand(method: BTC_CLI_COMMAND.listlockunspent,
+                                       param: "")
                     
                     DispatchQueue.main.async {
                         
@@ -278,9 +258,9 @@ class LockedTableViewController: UITableViewController {
                     
                     self.creatingView.removeConnectingView()
                     
-                    displayAlert(viewController: self.navigationController!,
+                    displayAlert(viewController: self,
                                  isError: true,
-                                 message: self.makeSSHCall.errorDescription)
+                                 message: reducer.errorDescription)
                     
                 }
                 
@@ -288,35 +268,10 @@ class LockedTableViewController: UITableViewController {
             
         }
         
-        if self.ssh != nil {
-         
-            if self.ssh.session.isConnected {
-                
-                makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                              method: method,
-                                              param: param,
-                                              completion: getResult)
-                
-            } else {
-                
-                self.creatingView.removeConnectingView()
-                
-                displayAlert(viewController: self.navigationController!,
-                             isError: true,
-                             message: "Not connected")
-                
-            }
-            
-        } else {
-         
-            self.creatingView.removeConnectingView()
-            
-            displayAlert(viewController: self.navigationController!,
-                         isError: true,
-                         message: "Not connected")
-            
-        }
+        reducer.makeCommand(command: method,
+                            param: param,
+                            completion: getResult)
         
     }
-
+    
 }

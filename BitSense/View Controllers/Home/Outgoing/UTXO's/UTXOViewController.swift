@@ -14,19 +14,11 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     var amountToSend = String()
     let amountInput = UITextField()
     let amountView = UIView()
-    
-    var ssh:SSHService!
-    var makeSSHCall:SSHelper!
-    var torClient:TorClient!
-    var torRPC:MakeRPCCall!
-    var isUsingSSH = IsUsingSSH.sharedInstance
-    
     var tapQRGesture = UITapGestureRecognizer()
     var tapTextViewGesture = UITapGestureRecognizer()
     var rawSigned = String()
     var amountTotal = 0.0
     let refresher = UIRefreshControl()
-    
     var utxoArray = [Any]()
     var inputArray = [Any]()
     var inputs = ""
@@ -43,7 +35,6 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     var isUnsigned = false
     var lockedArray = NSArray()
     var utxo = NSDictionary()
-    
     let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     let blurView2 = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     let qrGenerator = QRGenerator()
@@ -60,9 +51,11 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     
     @IBAction func lockAction(_ sender: Any) {
         
-        creatingView.addConnectingView(vc: self, description: "Getting Locked UTXO's")
+        creatingView.addConnectingView(vc: self,
+                                       description: "Getting Locked UTXO's")
         
-        executeNodeCommandSSH(method: BTC_CLI_COMMAND.listlockunspent, param: "")
+        executeNodeCommand(method: BTC_CLI_COMMAND.listlockunspent,
+                           param: "")
         
     }
     
@@ -153,17 +146,17 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
             
             if self.nativeSegwit {
                 
-                self.executeNodeCommandSSH(method: BTC_CLI_COMMAND.getnewaddress,
+                self.executeNodeCommand(method: BTC_CLI_COMMAND.getnewaddress,
                                            param: "\"\", \"bech32\"")
                 
             } else if self.legacy {
                 
-                self.executeNodeCommandSSH(method: BTC_CLI_COMMAND.getnewaddress,
+                self.executeNodeCommand(method: BTC_CLI_COMMAND.getnewaddress,
                                            param: "\"\", \"legacy\"")
                 
             } else if self.p2shSegwit {
                 
-                self.executeNodeCommandSSH(method: BTC_CLI_COMMAND.getnewaddress,
+                self.executeNodeCommand(method: BTC_CLI_COMMAND.getnewaddress,
                                            param: "")
                 
             }
@@ -439,52 +432,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         tapGesture.numberOfTapsRequired = 1
         self.blurView2.addGestureRecognizer(tapGesture)
         
-        if isUsingSSH {
-            
-            ssh = SSHService.sharedInstance
-            makeSSHCall = SSHelper.sharedInstance
-            
-        } else {
-            
-            torRPC = MakeRPCCall.sharedInstance
-            torClient = TorClient.sharedInstance
-            
-        }
-        
         refresh()
-        
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        print("viewDidAppear")
-        
-        isUsingSSH = IsUsingSSH.sharedInstance
-        
-        if isUsingSSH {
-            
-            ssh = SSHService.sharedInstance
-            makeSSHCall = SSHelper.sharedInstance
-            
-        } else {
-            
-            torRPC = MakeRPCCall.sharedInstance
-            torClient = TorClient.sharedInstance
-            
-        }
-        
-        //utxoTable.reloadData()
-        
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        
-        print("view will dissapear")
-        
-//        for (index, _) in selectedArray.enumerated() {
-//
-//            selectedArray[index] = false
-//
-//        }
         
     }
     
@@ -526,8 +474,8 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         addSpinner()
         utxoArray.removeAll()
         
-        executeNodeCommandSSH(method: BTC_CLI_COMMAND.listunspent,
-                              param: "0")
+        executeNodeCommand(method: .listunspent,
+                           param: "0")
         
     }
     
@@ -559,6 +507,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
             let safe = cell.viewWithTag(9) as! UILabel
             let spendable = cell.viewWithTag(10) as! UILabel
             let checkMark = cell.viewWithTag(13) as! UIImageView
+            let label = cell.viewWithTag(11) as! UILabel
             txId.adjustsFontSizeToFitWidth = true
             
             if !(selectedArray[indexPath.row]) {
@@ -652,6 +601,10 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                         
                     }
                     
+                case "label":
+                    
+                    label.text = (value as! String)
+                    
                 default:
                     
                     break
@@ -670,8 +623,8 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         
         let param = "false, ''[{\"txid\":\"\(txid)\",\"vout\":\(vout)}]''"
         
-        executeNodeCommandSSH(method: BTC_CLI_COMMAND.lockunspent,
-                              param: param)
+        executeNodeCommand(method: .lockunspent,
+                           param: param)
         
     }
     
@@ -829,7 +782,8 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                 
                 self.removeSpinner()
                 self.utxoTable.reloadData()
-                self.executeNodeCommandSSH(method: BTC_CLI_COMMAND.getnetworkinfo, param: "")
+                self.executeNodeCommand(method: .getnetworkinfo,
+                                        param: "")
                 
             }
             
@@ -845,176 +799,19 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         
     }
     
-    func executeNodeCommandSSH(method: BTC_CLI_COMMAND, param: String) {
+    func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
         
-        if !isUsingSSH {
-            
-            executeNodeCommandTor(method: method,
-                                  param: param)
-            
-        } else {
-         
-            func getResult() {
-                
-                if !makeSSHCall.errorBool {
-                    
-                    switch method {
-                        
-                    case BTC_CLI_COMMAND.listlockunspent:
-                        
-                        lockedArray = makeSSHCall.arrayToReturn
-                        
-                        creatingView.removeConnectingView()
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.performSegue(withIdentifier: "goToLocked", sender: self)
-                            
-                        }
-                        
-                    case BTC_CLI_COMMAND.lockunspent:
-                        
-                        let result = makeSSHCall.doubleToReturn
-                        removeSpinner()
-                        
-                        if result == 1 {
-                            
-                            displayAlert(viewController: self.navigationController!,
-                                         isError: false,
-                                         message: "UTXO is locked and will not be selected for spends unless your node restarts, tap the lock button to unlock it")
-                            
-                            self.refresh()
-                            
-                        } else {
-                            
-                            displayAlert(viewController: self,
-                                         isError: true,
-                                         message: "Unable to lock that UTXO")
-                            
-                        }
-                        
-                    case BTC_CLI_COMMAND.getnewaddress:
-                        
-                        let address = makeSSHCall.stringToReturn
-                        let roundedAmount = rounded(number: self.amountTotal)
-                        
-                        let spendUtxo = SendUTXO()
-                        spendUtxo.inputArray = self.inputArray
-                        spendUtxo.ssh = self.ssh
-                        spendUtxo.isUsingSSH = self.isUsingSSH
-                        spendUtxo.sweep = true
-                        spendUtxo.addressToPay = address
-                        spendUtxo.amount = roundedAmount
-                        spendUtxo.makeSSHCall = self.makeSSHCall
-                        
-                        func getResult() {
-                            
-                            if !spendUtxo.errorBool {
-                                
-                                let rawTx = spendUtxo.signedRawTx
-                                
-                                optimizeTheFee(raw: rawTx,
-                                               amount: roundedAmount,
-                                               addressToPay: address,
-                                               sweep: true,
-                                               inputArray: self.inputArray,
-                                               changeAddress: "",
-                                               changeAmount: 0.0)
-                                
-                            } else {
-                                
-                                DispatchQueue.main.async {
-                                    
-                                    self.removeSpinner()
-                                    
-                                    displayAlert(viewController: self,
-                                                 isError: true,
-                                                 message: spendUtxo.errorDescription)
-                                    
-                                }
-                                
-                            }
-                            
-                        }
-                        
-                        spendUtxo.createRawTransaction(completion: getResult)
-                        
-                    case BTC_CLI_COMMAND.listunspent:
-                        
-                        let resultArray = makeSSHCall.arrayToReturn
-                        parseUnspent(utxos: resultArray)
-                        
-                    case BTC_CLI_COMMAND.getrawchangeaddress:
-                        
-                        let changeAddress = makeSSHCall.stringToReturn
-                        self.getRawTx(changeAddress: changeAddress)
-                        
-                    default:
-                        
-                        break
-                        
-                    }
-                    
-                } else {
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.removeSpinner()
-                        
-                        displayAlert(viewController: self,
-                                     isError: true,
-                                     message: self.makeSSHCall.errorDescription)
-                        
-                    }
-                    
-                }
-                
-            }
-            
-            if self.ssh != nil {
-                
-                if self.ssh.session.isConnected {
-                    
-                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                                  method: method,
-                                                  param: param,
-                                                  completion: getResult)
-                    
-                } else {
-                    
-                    self.removeSpinner()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: "Not connected")
-                    
-                }
-                
-            } else {
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "Not connected")
-                
-            }
-            
-        }
-        
-        
-        
-    }
-    
-    func executeNodeCommandTor(method: BTC_CLI_COMMAND, param: String) {
+        let reducer = Reducer()
         
         func getResult() {
             
-            if !torRPC.errorBool {
+            if !reducer.errorBool {
                 
                 switch method {
                     
-                case BTC_CLI_COMMAND.listlockunspent:
+                case .listlockunspent:
                     
-                    lockedArray = torRPC.arrayToReturn
+                    lockedArray = reducer.arrayToReturn
                     
                     creatingView.removeConnectingView()
                     
@@ -1024,14 +821,14 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                         
                     }
                     
-                case BTC_CLI_COMMAND.lockunspent:
+                case .lockunspent:
                     
-                    let result = torRPC.doubleToReturn
+                    let result = reducer.doubleToReturn
                     removeSpinner()
                     
                     if result == 1 {
                         
-                        displayAlert(viewController: self.navigationController!,
+                        displayAlert(viewController: self,
                                      isError: false,
                                      message: "UTXO is locked and will not be selected for spends unless your node restarts, tap the lock button to unlock it")
                         
@@ -1045,20 +842,16 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                         
                     }
                     
-                case BTC_CLI_COMMAND.getnewaddress:
+                case .getnewaddress:
                     
-                    let address = torRPC.stringToReturn
+                    let address = reducer.stringToReturn
                     let roundedAmount = rounded(number: self.amountTotal)
                     
                     let spendUtxo = SendUTXO()
                     spendUtxo.inputArray = self.inputArray
-                    spendUtxo.ssh = self.ssh
-                    spendUtxo.isUsingSSH = self.isUsingSSH
                     spendUtxo.sweep = true
                     spendUtxo.addressToPay = address
                     spendUtxo.amount = roundedAmount
-                    spendUtxo.torRPC = self.torRPC
-                    spendUtxo.torClient = self.torClient
                     
                     func getResult() {
                         
@@ -1078,6 +871,11 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                             
                             DispatchQueue.main.async {
                                 
+                                self.amountTotal = 0.0
+                                self.utxoToSpendArray.removeAll()
+                                self.inputArray.removeAll()
+                                self.utxoTable.reloadData()
+                                
                                 self.removeSpinner()
                                 
                                 displayAlert(viewController: self,
@@ -1092,14 +890,14 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                     
                     spendUtxo.createRawTransaction(completion: getResult)
                     
-                case BTC_CLI_COMMAND.listunspent:
+                case .listunspent:
                     
-                    let resultArray = torRPC.arrayToReturn
+                    let resultArray = reducer.arrayToReturn
                     parseUnspent(utxos: resultArray)
                     
-                case BTC_CLI_COMMAND.getrawchangeaddress:
+                case .getrawchangeaddress:
                     
-                    let changeAddress = torRPC.stringToReturn
+                    let changeAddress = reducer.stringToReturn
                     self.getRawTx(changeAddress: changeAddress)
                     
                 default:
@@ -1116,27 +914,17 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                     
                     displayAlert(viewController: self,
                                  isError: true,
-                                 message: self.torRPC.errorDescription)
-                    
+                                 message: reducer.errorDescription)
+                                        
                 }
                 
             }
             
         }
         
-        if self.torClient.isOperational {
-            
-            self.torRPC.executeRPCCommand(method: method,
-                                          param: param,
-                                          completion: getResult)
-            
-        } else {
-            
-            displayAlert(viewController: self,
-                         isError: true,
-                         message: "Tor not connected")
-            
-        }
+        reducer.makeCommand(command: method,
+                            param: param,
+                            completion: getResult)
         
     }
     
@@ -1346,7 +1134,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
             total += amount
             
         }
-        // we set a dummy fee just to get a dummy raw transaction so we know what the size will be in order for fee estimation
+        // we set a dummy fee just to get a dummy raw transaction so we know what the size will be for fee optimisation
         let changeAmount = total - (dbl + 0.00050000)
         
         let rawTransaction = SendUTXO()
@@ -1354,20 +1142,14 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         rawTransaction.changeAddress = changeAddress
         rawTransaction.amount = roundedAmount
         rawTransaction.changeAmount = rounded(number: changeAmount)
-        rawTransaction.ssh = self.ssh
-        rawTransaction.torClient = self.torClient
-        rawTransaction.torRPC = self.torRPC
-        rawTransaction.isUsingSSH = self.isUsingSSH
         rawTransaction.sweep = self.isSweeping
         rawTransaction.inputArray = self.inputArray
-        rawTransaction.makeSSHCall = self.makeSSHCall
         
         func getResult() {
             
             if !rawTransaction.errorBool {
                 
                 let rawTxSigned = rawTransaction.signedRawTx
-                //displayRaw(raw: rawTxSigned)
                 
                 optimizeTheFee(raw: rawTxSigned,
                                amount: roundedAmount,
@@ -1398,7 +1180,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         if !isSweeping {
             
             //not sweeping so need to get change address
-            self.executeNodeCommandSSH(method: BTC_CLI_COMMAND.getrawchangeaddress,
+            self.executeNodeCommand(method: BTC_CLI_COMMAND.getrawchangeaddress,
                                        param: "")
             
         } else {
@@ -1409,11 +1191,6 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
             let rawTransaction = SendUTXO()
             rawTransaction.addressToPay = self.address
             rawTransaction.amount = roundedAmount
-            rawTransaction.ssh = self.ssh
-            rawTransaction.makeSSHCall = self.makeSSHCall
-            rawTransaction.torClient = self.torClient
-            rawTransaction.torRPC = self.torRPC
-            rawTransaction.isUsingSSH = self.isUsingSSH
             rawTransaction.sweep = self.isSweeping
             rawTransaction.inputArray = self.inputArray
             
@@ -1554,12 +1331,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         
         let getSmartFee = GetSmartFee()
         getSmartFee.rawSigned = raw
-        getSmartFee.ssh = self.ssh
-        getSmartFee.makeSSHCall = self.makeSSHCall
         getSmartFee.vc = self
-        getSmartFee.torRPC = self.torRPC
-        getSmartFee.torClient = self.torClient
-        getSmartFee.isUsingSSH = self.isUsingSSH
         
         func getFeeResult() {
             
@@ -1567,15 +1339,8 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
             print("optimalFee = \(optimalFee)")
             
             let spendUtxo = SendUTXO()
-            spendUtxo.ssh = self.ssh
-            spendUtxo.isUsingSSH = self.isUsingSSH
-            spendUtxo.makeSSHCall = self.makeSSHCall
-            spendUtxo.torClient = self.torClient
-            spendUtxo.torRPC = self.torRPC
-            
             spendUtxo.sweep = sweep
             spendUtxo.addressToPay = addressToPay
-            
             spendUtxo.inputArray = inputArray
             spendUtxo.changeAddress = changeAddress
             
@@ -1759,7 +1524,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
             
         case "goToLocked":
             
-            if let vc = segue.destination as? LockedTableViewController {
+            if let vc = segue.destination as? LockedViewController {
                 
                 vc.lockedArray = self.lockedArray
                 

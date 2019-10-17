@@ -11,40 +11,26 @@ import UIKit
 class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDelegate {
     
     var isTorchOn = Bool()
-    
     var rawTxSigned = ""
-    
-    var makeSSHCall:SSHelper!
-    var ssh:SSHService!
-    var torClient:TorClient!
-    var torRPC:MakeRPCCall!
-    var isUsingSSH = IsUsingSSH.sharedInstance
-    
     var tapQRGesture = UITapGestureRecognizer()
     var tapTextViewGesture = UITapGestureRecognizer()
-    
     var scannerShowing = false
     var isFirstTime = Bool()
     var blurArray = [UIVisualEffectView]()
-    
     let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
-    
     let qrGenerator = QRGenerator()
     let scanner = QRScanner()
     let creatingView = ConnectingView()
     let rawDisplayer = RawDisplayer()
-    
     var scanUnsigned = Bool()
     var scanPrivateKey = Bool()
     var scanScript = Bool()
-    
     var vout = Int()
     var scriptSigHex = ""
     var prevTxID = ""
     var isWitness = Bool()
     var amount = Double()
     var inputsIndex = 0
-    
     var outputTotalValue = Double()
     var inputTotalValue = Double()
     
@@ -78,8 +64,8 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                     
                 }
                 
-                self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.decoderawtransaction,
-                                      param: "\"\(self.unsignedTextView.text!)\"")
+                self.executeNodeCommand(method: BTC_CLI_COMMAND.decoderawtransaction,
+                                        param: "\"\(self.unsignedTextView.text!)\"")
                 
             }
             
@@ -142,8 +128,8 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                 
                 creatingView.addConnectingView(vc: self, description: "signing")
                 
-                executeNodeCommandSsh(method: BTC_CLI_COMMAND.signrawtransactionwithwallet,
-                                      param: "\"\(unsignedTextView.text!)\"")
+                executeNodeCommand(method: BTC_CLI_COMMAND.signrawtransactionwithwallet,
+                                   param: "\"\(unsignedTextView.text!)\"")
                 
             } else if unsignedTextView.text == "" {
                 
@@ -177,8 +163,8 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                 
                 
                 
-                self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.signrawtransactionwithkey,
-                                           param: param)
+                self.executeNodeCommand(method: BTC_CLI_COMMAND.signrawtransactionwithkey,
+                                        param: param)
                 
             } else {
                 
@@ -235,20 +221,6 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
     
     override func viewDidAppear(_ animated: Bool) {
         
-        isUsingSSH = IsUsingSSH.sharedInstance
-        
-        if isUsingSSH {
-            
-            ssh = SSHService.sharedInstance
-            makeSSHCall = SSHelper.sharedInstance
-            
-        } else {
-            
-            torRPC = MakeRPCCall.sharedInstance
-            torClient = TorClient.sharedInstance
-            
-        }
-        
         if let string = UIPasteboard.general.string {
             
             unsignedTextView.text = string
@@ -267,7 +239,7 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
         imageView.isUserInteractionEnabled = true
         
         scanner.uploadButton.addTarget(self, action: #selector(chooseQRCodeFromLibrary),
-                                         for: .touchUpInside)
+                                       for: .touchUpInside)
         
         scanner.keepRunning = true
         scanner.vc = self
@@ -279,18 +251,18 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
         scanner.downSwipeAction = { self.closeScanner() }
         
         scanner.uploadButton.addTarget(self,
-                                         action: #selector(self.chooseQRCodeFromLibrary),
-                                         for: .touchUpInside)
+                                       action: #selector(self.chooseQRCodeFromLibrary),
+                                       for: .touchUpInside)
         
         scanner.torchButton.addTarget(self,
-                                        action: #selector(toggleTorch),
-                                        for: .touchUpInside)
+                                      action: #selector(toggleTorch),
+                                      for: .touchUpInside)
         
         isTorchOn = false
         
         scanner.closeButton.addTarget(self,
-                                        action: #selector(closeScanner),
-                                        for: .touchUpInside)
+                                      action: #selector(closeScanner),
+                                      for: .touchUpInside)
         
     }
     
@@ -394,8 +366,8 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
         
         let param = "\"\(tx)\", [\"\(key)\"]"
         
-        executeNodeCommandSsh(method: BTC_CLI_COMMAND.signrawtransactionwithkey,
-                              param: param)
+        executeNodeCommand(method: BTC_CLI_COMMAND.signrawtransactionwithkey,
+                           param: param)
         
     }
     
@@ -469,17 +441,19 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
         
     }
     
-    func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
+    func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
+        
+        let reducer = Reducer()
         
         func getResult() {
             
-            if !makeSSHCall.errorBool {
+            if !reducer.errorBool {
                 
                 switch method {
                     
-                case BTC_CLI_COMMAND.signrawtransactionwithwallet:
+                case .signrawtransactionwithwallet:
                     
-                    let dict = makeSSHCall.dictToReturn
+                    let dict = reducer.dictToReturn
                     let complete = dict["complete"] as! Bool
                     
                     if complete {
@@ -511,20 +485,20 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                         
                     }
                     
-                case BTC_CLI_COMMAND.decoderawtransaction:
+                case .decoderawtransaction:
                     
-                    let txDict = makeSSHCall.dictToReturn
+                    let txDict = reducer.dictToReturn
                     let vin = txDict["vin"] as! NSArray
                     let vinDict = vin[0] as! NSDictionary
                     self.prevTxID = vinDict["txid"] as! String
                     self.vout = vinDict["vout"] as! Int
                     
-                    self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.getrawtransaction,
-                                               param: "\"\(prevTxID)\", true")
+                    self.executeNodeCommand(method: BTC_CLI_COMMAND.getrawtransaction,
+                                            param: "\"\(prevTxID)\", true")
                     
-                case BTC_CLI_COMMAND.getrawtransaction:
+                case .getrawtransaction:
                     
-                    let prevTxDict = makeSSHCall.dictToReturn
+                    let prevTxDict = reducer.dictToReturn
                     let outputs = prevTxDict["vout"] as! NSArray
                     
                     for outputDict in outputs {
@@ -540,16 +514,16 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                             scriptSigHex = scriptPubKey["hex"] as! String
                             amount = output["value"] as! Double
                             
-                            self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.getaddressinfo,
-                                                       param: "\"\(spendingFromAddress)\"")
+                            self.executeNodeCommand(method: BTC_CLI_COMMAND.getaddressinfo,
+                                                    param: "\"\(spendingFromAddress)\"")
                             
                         }
                         
                     }
                     
-                case BTC_CLI_COMMAND.getaddressinfo:
+                case .getaddressinfo:
                     
-                    let result = makeSSHCall.dictToReturn
+                    let result = reducer.dictToReturn
                     
                     if let script = result["hex"] as? String {
                         
@@ -577,10 +551,9 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                     }
                     
                     
-                case BTC_CLI_COMMAND.signrawtransactionwithkey:
+                case .signrawtransactionwithkey:
                     
-                    let dict = makeSSHCall.dictToReturn
-                    print("signrawtransactionwithkey result = \(dict)")
+                    let dict = reducer.dictToReturn
                     let complete = dict["complete"] as! Bool
                     
                     if complete {
@@ -597,7 +570,7 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                     } else {
                         
                         DispatchQueue.main.async {
-                        
+                            
                             self.creatingView.removeConnectingView()
                             
                             let errors = dict["errors"] as! NSArray
@@ -613,8 +586,7 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                             
                             var err = errorStrings.description.replacingOccurrences(of: "]", with: "")
                             err = err.description.replacingOccurrences(of: "[", with: "")
-                            print("err = \(err)")
-                        
+                            
                             if self.switchOutlet.isOn {
                                 
                                 if let hex = dict["hex"] as? String {
@@ -659,7 +631,7 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                     
                     displayAlert(viewController: self,
                                  isError: true,
-                                 message: self.makeSSHCall.errorDescription)
+                                 message: reducer.errorDescription)
                     
                 }
                 
@@ -667,34 +639,9 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
             
         }
         
-        if self.ssh != nil {
-            
-            if self.ssh.session.isConnected {
-                
-                makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                              method: method,
-                                              param: param,
-                                              completion: getResult)
-                
-            } else {
-                
-                creatingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "Not connected")
-                
-            }
-            
-        } else {
-            
-            creatingView.removeConnectingView()
-            
-            displayAlert(viewController: self,
-                         isError: true,
-                         message: "Not connected")
-            
-        }
+        reducer.makeCommand(command: method,
+                            param: param,
+                            completion: getResult)
         
     }
     
@@ -720,19 +667,21 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
     
     func getSmartFee(raw: String) {
         
+        let reducer = Reducer()
+        
         var dictToReturn = NSDictionary()
         
-        func getSmartFeeSSH(method: BTC_CLI_COMMAND, param: String) {
+        func getSmartFee(method: BTC_CLI_COMMAND, param: String) {
             
             func getResult() {
                 
-                if !makeSSHCall.errorBool {
+                if !reducer.errorBool {
                     
                     switch method {
                         
-                    case BTC_CLI_COMMAND.decoderawtransaction:
+                    case .decoderawtransaction:
                         
-                        let dict = makeSSHCall.dictToReturn
+                        let dict = reducer.dictToReturn
                         let txSize = dict["vsize"] as! Int
                         let outputs = dict["vout"] as! NSArray
                         let inputs = dict["vin"] as! NSArray
@@ -762,61 +711,56 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                     
                     displayAlert(viewController: self,
                                  isError: true,
-                                 message: makeSSHCall.errorDescription)
+                                 message: reducer.errorDescription)
                     
                 }
                 
             }
             
-            if ssh.session.isConnected {
-                
-                makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                              method: method,
-                                              param: param,
-                                              completion: getResult)
-                
-            } else {
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "Not Connected")
-                
-            }
+            reducer.makeCommand(command: method,
+                                param: param,
+                                completion: getResult)
             
         }
         
-        getSmartFeeSSH(method: BTC_CLI_COMMAND.decoderawtransaction,
-                       param: "\"\(raw)\"")
+        getSmartFee(method: BTC_CLI_COMMAND.decoderawtransaction,
+                    param: "\"\(raw)\"")
         
     }
     
     func getInputTotal(inputs: NSArray, txSize: Int) {
         
+        let reducer = Reducer()
+        
         let feeTarget = UserDefaults.standard.object(forKey: "feeTarget") as! Int
         var inputsCount = inputs.count
         
-        func getSmartFeeSSH(method: BTC_CLI_COMMAND, param: String, vout: Int) {
+        func getSmartFee(method: BTC_CLI_COMMAND, param: String, vout: Int) {
             
             func getResult() {
                 
-                if !makeSSHCall.errorBool {
+                if !reducer.errorBool {
                     
                     switch method {
                         
-                    case BTC_CLI_COMMAND.estimatesmartfee:
+                    case .estimatesmartfee:
                         
-                        let dict = makeSSHCall.dictToReturn
-                        displayFeeAlert(dict: dict, vsize: txSize, feeTarget: feeTarget)
+                        let dict = reducer.dictToReturn
                         
-                    case BTC_CLI_COMMAND.getrawtransaction:
+                        displayFeeAlert(dict: dict,
+                                        vsize: txSize,
+                                        feeTarget: feeTarget)
                         
-                        let result = makeSSHCall.stringToReturn
-                        getSmartFeeSSH(method: BTC_CLI_COMMAND.decoderawtransaction,
-                                       param: "\"\(result)\"", vout: vout)
+                    case .getrawtransaction:
                         
-                    case BTC_CLI_COMMAND.decoderawtransaction:
+                        let result = reducer.stringToReturn
                         
-                        let dict = makeSSHCall.dictToReturn
+                        getSmartFee(method: BTC_CLI_COMMAND.decoderawtransaction,
+                                    param: "\"\(result)\"", vout: vout)
+                        
+                    case .decoderawtransaction:
+                        
+                        let dict = reducer.dictToReturn
                         let outputs = dict["vout"] as! NSArray
                         
                         for outputDict in outputs {
@@ -836,8 +780,8 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                                 } else if inputsIndex == inputsCount - 1 {
                                     
                                     //finished fetching all input values, can compare optimal fee to actual fee now
-                                    getSmartFeeSSH(method: BTC_CLI_COMMAND.estimatesmartfee,
-                                                   param: "\(feeTarget)", vout: vout)
+                                    getSmartFee(method: BTC_CLI_COMMAND.estimatesmartfee,
+                                                param: "\(feeTarget)", vout: vout)
                                     
                                 }
                                 
@@ -853,24 +797,17 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                     
                 } else {
                     
-                    displayAlert(viewController: self, isError: true, message: makeSSHCall.errorDescription)
+                    displayAlert(viewController: self,
+                                 isError: true,
+                                 message: reducer.errorDescription)
                     
                 }
                 
             }
             
-            if ssh.session.isConnected {
-                
-                makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                              method: method,
-                                              param: param,
-                                              completion: getResult)
-                
-            } else {
-                
-                displayAlert(viewController: self, isError: true, message: "Not Connected")
-                
-            }
+            reducer.makeCommand(command: method,
+                                param: param,
+                                completion: getResult)
             
         }
         
@@ -878,8 +815,9 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
         let prevTxID = inputDict["txid"] as! String
         let vout = inputDict["vout"] as! Int
         
-        getSmartFeeSSH(method: BTC_CLI_COMMAND.getrawtransaction, param: "\"\(prevTxID)\"", vout: vout)
-            
+        getSmartFee(method: BTC_CLI_COMMAND.getrawtransaction,
+                    param: "\"\(prevTxID)\"", vout: vout)
+        
     }
     
     func displayFeeAlert(dict: NSDictionary, vsize: Int, feeTarget: Int) {
@@ -945,17 +883,6 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
         
     }
     
-    @objc func close() {
-        print("close")
-        
-        DispatchQueue.main.async {
-            
-            self.dismiss(animated: true, completion: nil)
-            
-        }
-        
-    }
-    
     func showRaw(raw: String) {
         
         DispatchQueue.main.async {
@@ -985,15 +912,6 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
             self.getSmartFee(raw: raw)
             
         }
-        
-    }
-    
-    @objc func decode() {
-        
-        print("decode")
-        
-        self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.decoderawtransaction,
-                                   param: "\"\(self.rawTxSigned)\"")
         
     }
     
@@ -1147,5 +1065,5 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
         }
         
     }
-
+    
 }

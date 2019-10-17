@@ -12,7 +12,7 @@ import UIKit
 class MyTransition: NSObject, UIViewControllerAnimatedTransitioning {
     
     let viewControllers: [UIViewController]?
-    let transitionDuration: Double = 0.3
+    let transitionDuration: Double = 0.2
     
     init(viewControllers: [UIViewController]?) {
         self.viewControllers = viewControllers

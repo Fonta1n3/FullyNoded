@@ -35,7 +35,6 @@ class Connector {
                     print("Tor connected")
                     
                     self.torRPC = MakeRPCCall.sharedInstance
-                    self.torRPC.torClient = self.torClient
                     self.torConnected = true
                     completion()
                     
@@ -59,6 +58,7 @@ class Connector {
         
         self.ssh = SSHService.sharedInstance
         self.ssh.activeNode = self.activeNode
+        self.ssh.commandExecuting = false
         
         self.ssh.connect() { (success, error) in
             

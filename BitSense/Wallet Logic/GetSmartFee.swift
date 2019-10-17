@@ -11,12 +11,6 @@ import UIKit
 
 class GetSmartFee {
     
-    var makeSSHCall:SSHelper!
-    var ssh:SSHService!
-    var isUsingSSH = Bool()
-    var torRPC:MakeRPCCall!
-    var torClient:TorClient!
-    
     var errorBool = Bool()
     var errorDescription = ""
     
@@ -32,43 +26,29 @@ class GetSmartFee {
     
     func getSmartFee(completion: @escaping () -> Void) {
         
-        func getSmartFeeSSH(method: BTC_CLI_COMMAND, param: String) {
+        let reducer = Reducer()
+        
+        func get(method: BTC_CLI_COMMAND, param: String) {
             
             func getResult() {
                 
-                if !makeSSHCall.errorBool {
+                if !reducer.errorBool {
                     
                     switch method {
                         
-                    case BTC_CLI_COMMAND.getnetworkinfo:
+                    case .estimatesmartfee:
                         
-                        let result = makeSSHCall.dictToReturn
-                        print("reult = \(result)")
-                        
-                        if let minRelayFee = result["relayfee"] as? Double {
-                            
-                            print("minRelayFee = \(minRelayFee)")
-                            minimumFee = minRelayFee
-                            
-                            getSmartFeeSSH(method: BTC_CLI_COMMAND.decoderawtransaction,
-                                           param: "\"\(self.rawSigned)\"")
-                            
-                        }
-                        
-                    case BTC_CLI_COMMAND.estimatesmartfee:
-                        
-                        let dict = makeSSHCall.dictToReturn
+                        let dict = reducer.dictToReturn
                         optimalFee = getOptimalFee(dict: dict, vsize: txSize)
-                        print("optimalFee = \(optimalFee.avoidNotation)")
                         completion()
                         
-                    case BTC_CLI_COMMAND.decoderawtransaction:
+                    case .decoderawtransaction:
                         
-                        let dict = makeSSHCall.dictToReturn
+                        let dict = reducer.dictToReturn
                         txSize = dict["vsize"] as! Int
                         
-                        getSmartFeeSSH(method: BTC_CLI_COMMAND.estimatesmartfee,
-                                       param: "\(blockTarget)")
+                        get(method: BTC_CLI_COMMAND.estimatesmartfee,
+                            param: "\(blockTarget)")
                         
                     default:
                         
@@ -79,39 +59,20 @@ class GetSmartFee {
                 } else {
                     
                     errorBool = true
-                    errorDescription = makeSSHCall.errorDescription
+                    errorDescription = reducer.errorDescription
                     
                 }
                 
             }
             
-            if ssh != nil {
-                
-                if ssh.session.isConnected {
-                    
-                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                                  method: method,
-                                                  param: param,
-                                                  completion: getResult)
-                    
-                } else {
-                    
-                    errorBool = true
-                    errorDescription = "Not connected"
-                    
-                }
-                
-            } else {
-                
-                errorBool = true
-                errorDescription = "Not connected"
-                
-            }
+            reducer.makeCommand(command: method,
+                                param: param,
+                                completion: getResult)
             
         }
         
-        getSmartFeeSSH(method: BTC_CLI_COMMAND.getnetworkinfo,
-                       param: "")
+        get(method: BTC_CLI_COMMAND.decoderawtransaction,
+            param: "\"\(self.rawSigned)\"")
         
     }
     
@@ -126,7 +87,6 @@ class GetSmartFee {
         }
         
         let txSize = Double(size)
-        
         var btcPerKbyte = Double()
         
         if let btcPerKbyteCheck = dict["feerate"] as? Double {
@@ -135,19 +95,13 @@ class GetSmartFee {
             
         } else {
             
-            // Node is likely in regtest mode so fee estimation is weird
+            // Node is likely in regtest mode so fee estimation is wierd
             btcPerKbyte = 0.00000100
             
         }
         
         let btcPerByte = btcPerKbyte / 1000
-        var optimalFee = btcPerByte * txSize
-        
-        if optimalFee < minimumFee {
-            
-            optimalFee = minimumFee
-            
-        }
+        let optimalFee = btcPerByte * txSize
         
         return optimalFee
         

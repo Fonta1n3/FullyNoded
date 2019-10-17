@@ -15,6 +15,7 @@ class AddToKeypoolViewController: UIViewController {
     @IBOutlet var yesSwitch: UISwitch!
     var isSingleKey = Bool()
     var isMultiSig = Bool()
+    var isDescriptor = Bool()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -60,6 +61,7 @@ class AddToKeypoolViewController: UIViewController {
                 vc.dict = dict
                 vc.isSingleKey = isSingleKey
                 vc.isMultisig = isMultiSig
+                vc.isDescriptor = isDescriptor
                 
             }
             

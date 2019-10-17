@@ -10,12 +10,6 @@ import UIKit
 
 class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
     
-    var torClient:TorClient!
-    var torRPC:MakeRPCCall!
-    var ssh:SSHService!
-    var makeSSHCall:SSHelper!
-    var isUsingSSH = IsUsingSSH.sharedInstance
-    
     var isPruned = Bool()
     @IBOutlet var qrView: UIImageView!
     let qrScanner = QRScanner()
@@ -23,17 +17,18 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
     let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     let connectingView = ConnectingView()
     var isAddress = false
-    
+    var isDescriptor = Bool()
     var addToKeypool = Bool()
     var isInternal = Bool()
     var reScan = Bool()
     var importedKey = ""
     var label = ""
     var timestamp = Int()
-    
     var dict = [String:Any]()
-    
     var alertMessage = ""
+    var isWatchOnly = Bool()
+    var keyArray = NSArray()
+    var isScript = Bool()
     
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         
@@ -56,7 +51,7 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         qrScanner.textField.delegate = self
         
         let tapGesture = UITapGestureRecognizer(target: self,
@@ -66,7 +61,7 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
         self.view.addGestureRecognizer(tapGesture)
         
         blurView.frame = CGRect(x: view.frame.minX + 10,
-                                y: 80,
+                                y: navigationController!.navigationBar.frame.maxY + 10,
                                 width: view.frame.width - 20,
                                 height: 50)
         
@@ -77,12 +72,12 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
         qrScanner.keepRunning = false
         
         qrScanner.uploadButton.addTarget(self,
-                               action: #selector(self.chooseQRCodeFromLibrary),
-                               for: .touchUpInside)
+                                         action: #selector(self.chooseQRCodeFromLibrary),
+                                         for: .touchUpInside)
         
         qrScanner.torchButton.addTarget(self,
-                              action: #selector(toggleTorch),
-                              for: .touchUpInside)
+                                        action: #selector(toggleTorch),
+                                        for: .touchUpInside)
         
         isTorchOn = false
         addScanner()
@@ -91,7 +86,8 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
     }
     
     func getValues() {
-     
+        
+        //To do: create struct for import dict
         addToKeypool = dict["addToKeypool"] as? Bool ?? false
         isInternal = dict["addAsChange"] as? Bool ?? false
         timestamp = dict["rescanDate"] as? Int ?? 0
@@ -129,20 +125,6 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        
-        isUsingSSH = IsUsingSSH.sharedInstance
-        
-        if isUsingSSH {
-            
-            ssh = SSHService.sharedInstance
-            makeSSHCall = SSHelper.sharedInstance
-            
-        } else {
-            
-            torRPC = MakeRPCCall.sharedInstance
-            torClient = TorClient.sharedInstance
-            
-        }
         
         qrScanner.textField.removeFromSuperview()
         blurView.removeFromSuperview()
@@ -196,21 +178,23 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
     func importPublicKey(pubKey: String) {
         
         isAddress = false
-     
+        
+        let reducer = Reducer()
+        
         func getDescriptor() {
-         
-            let result = makeSSHCall.dictToReturn
             
-            if makeSSHCall.errorBool {
-             
+            let result = reducer.dictToReturn
+            
+            if reducer.errorBool {
+                
                 connectingView.removeConnectingView()
                 
                 displayAlert(viewController: self,
                              isError: true,
-                             message: makeSSHCall.errorDescription)
+                             message: reducer.errorDescription)
                 
             } else {
-             
+                
                 let descriptor = "\"\(result["descriptor"] as! String)\""
                 
                 var params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"watchonly\": true, \"label\": \"\(label)\", \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }], ''{\"rescan\": true}''"
@@ -221,16 +205,19 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                     
                 }
                 
-                self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.importmulti,
-                                           param: params)
+                self.executeNodeCommand(method: .importmulti,
+                                        param: params)
                 
             }
             
         }
         
-        makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                      method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                      param: "\"combo(\(pubKey))\"", completion: getDescriptor)
+        let method = BTC_CLI_COMMAND.getdescriptorinfo
+        let param = "\"combo(\(pubKey))\""
+        
+        reducer.makeCommand(command: method,
+                            param: param,
+                            completion: getDescriptor)
         
     }
     
@@ -254,62 +241,55 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
             
         }
         
-        if key != "" {
+        if isDescriptor {
             
-            var prefix = key.lowercased()
+            analyzeDescriptor(desc: key)
             
-            prefix = prefix.replacingOccurrences(of: "bitcoin:",
-                                                 with: "")
+        } else {
             
-            switch prefix {
+            if key != "" {
                 
-            case _ where prefix.hasPrefix("l"),
-                 _ where prefix.hasPrefix("5"),
-                 _ where prefix.hasPrefix("9"),
-                 _ where prefix.hasPrefix("c"),
-                 _ where prefix.hasPrefix("k"):
+                var prefix = key.lowercased()
                 
-                DispatchQueue.main.async {
-                    
-                    self.connectingView.addConnectingView(vc: self,
-                                                          description: "Importing Private Key")
-                    
-                }
+                prefix = prefix.replacingOccurrences(of: "bitcoin:",
+                                                     with: "")
                 
-                if self.ssh.session.isConnected {
+                switch prefix {
                     
-                    self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.importprivkey,
-                                               param: "\"\(key)\", \"\(label)\", false")
+                case _ where prefix.hasPrefix("l"),
+                     _ where prefix.hasPrefix("5"),
+                     _ where prefix.hasPrefix("9"),
+                     _ where prefix.hasPrefix("c"),
+                     _ where prefix.hasPrefix("k"):
                     
-                } else {
+                    DispatchQueue.main.async {
+                        
+                        self.connectingView.addConnectingView(vc: self,
+                                                              description: "Importing Private Key")
+                        
+                    }
                     
-                    self.connectingView.removeConnectingView()
+                    let method = BTC_CLI_COMMAND.importprivkey
+                    let param = "\"\(key)\", \"\(label)\", false"
                     
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: "Not connected")
+                    self.executeNodeCommand(method: method,
+                                            param: param)
                     
-                }
-                
-            case _ where prefix.hasPrefix("1"),
-                 _ where prefix.hasPrefix("3"),
-                 _ where prefix.hasPrefix("tb1"),
-                 _ where prefix.hasPrefix("bc1"),
-                 _ where prefix.hasPrefix("2"),
-                 _ where prefix.hasPrefix("n"),
-                 _ where prefix.hasPrefix("bcr"),
-                 _ where prefix.hasPrefix("m"):
-                
-                DispatchQueue.main.async {
+                case _ where prefix.hasPrefix("1"),
+                     _ where prefix.hasPrefix("3"),
+                     _ where prefix.hasPrefix("tb1"),
+                     _ where prefix.hasPrefix("bc1"),
+                     _ where prefix.hasPrefix("2"),
+                     _ where prefix.hasPrefix("n"),
+                     _ where prefix.hasPrefix("bcr"),
+                     _ where prefix.hasPrefix("m"):
                     
-                    self.connectingView.addConnectingView(vc: self,
-                                                          description: "Importing Address")
-                    
-                }
-                
-                if self.ssh.session.isConnected {
-                    
-                    isAddress = true
+                    DispatchQueue.main.async {
+                        
+                        self.connectingView.addConnectingView(vc: self,
+                                                              description: "Importing Address")
+                        
+                    }
                     
                     var param = "[{ \"scriptPubKey\": { \"address\": \"\(key)\" }, \"label\": \"\(label)\", \"timestamp\": \(timestamp), \"watchonly\": true, \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }], ''{\"rescan\": true}''"
                     
@@ -319,42 +299,275 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                         
                     }
                     
-                    self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.importmulti,
-                                               param: param)
+                    let method = BTC_CLI_COMMAND.importmulti
                     
-                } else {
+                    isAddress = true
                     
-                    self.connectingView.removeConnectingView()
+                    self.executeNodeCommand(method: method,
+                                            param: param)
                     
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: "Not connected")
+                case _ where prefix.hasPrefix("0"):
+                    
+                    DispatchQueue.main.async {
+                        
+                        self.connectingView.addConnectingView(vc: self,
+                                                              description: "Importing Public Key")
+                        
+                    }
+                    
+                    importPublicKey(pubKey: prefix)
+                    
+                default:
+                    
+                    showError()
                     
                 }
                 
-            case _ where prefix.hasPrefix("0"):
-                
-                DispatchQueue.main.async {
-                    
-                    self.connectingView.addConnectingView(vc: self,
-                                                          description: "Importing Public Key")
-                    
-                }
-                
-                importPublicKey(pubKey: prefix)
-                
-                
-            default:
+            } else {
                 
                 showError()
                 
             }
             
-        } else {
+        }
+        
+    }
+    
+    func analyzeDescriptor(desc: String) {
+        
+        connectingView.addConnectingView(vc: self,
+                                         description: "analyzing descriptor")
+        
+        let reducer = Reducer()
+        
+        func getDescriptorInfo() {
             
-            showError()
+            if !reducer.errorBool {
+                
+                let result = reducer.dictToReturn
+                let hasprivatekeys = result["hasprivatekeys"] as! Bool
+                let isrange = result["isrange"] as! Bool
+                let descriptor = result["descriptor"] as! String
+                dict["descriptor"] = "\"\(descriptor)\""
+                
+                if !hasprivatekeys {
+                    
+                    isWatchOnly = true
+                    
+                } else {
+                    
+                    isWatchOnly = false
+                    
+                }
+                
+                dict["isWatchOnly"] = isWatchOnly
+                
+                if !isrange {
+                    
+                    importDescriptor(desc: descriptor)
+                    
+                } else {
+                    
+                    displayDescriptorKeys(desc: "\"\(descriptor)\"")
+                    
+                }
+                
+            } else {
+                
+                connectingView.removeConnectingView()
+                
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: reducer.errorDescription)
+                
+            }
             
         }
+        
+        let method = BTC_CLI_COMMAND.getdescriptorinfo
+        let des = desc.replacingOccurrences(of: "'", with: "'\"'\"'")
+        let param = "\"\(des)\""
+        
+        reducer.makeCommand(command: method,
+                            param: param,
+                            completion: getDescriptorInfo)
+        
+        
+    }
+    
+    func displayDescriptorKeys(desc: String) {
+        
+        let reducer = Reducer()
+        
+        func getResult() {
+            
+            if !reducer.errorBool {
+                
+                keyArray = reducer.arrayToReturn
+                
+                getKeyInfo(desc: desc,
+                           address: keyArray[0] as! String)
+                
+                
+            } else {
+                
+                connectingView.removeConnectingView()
+                
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: reducer.errorDescription)
+                
+            }
+            
+        }
+        
+        let range = dict["range"] as! String
+        let convertedRange = convertRange(range: range)
+        let method = BTC_CLI_COMMAND.deriveaddresses
+        let des = desc.replacingOccurrences(of: "'", with: "'\"'\"'")
+        dict["descriptor"] = "\(des)"
+        let param = "\(des), ''\(convertedRange)''"
+        
+        reducer.makeCommand(command: method,
+                            param: param,
+                            completion: getResult)
+        
+    }
+    
+    func getKeyInfo(desc: String, address: String) {
+        
+        let reducer = Reducer()
+        
+        func getResult() {
+            
+            if !reducer.errorBool {
+                
+                let result = reducer.dictToReturn
+                isScript = result["isscript"] as! Bool
+                
+                DispatchQueue.main.async {
+                    
+                    self.performSegue(withIdentifier: "showDescriptorKeys",
+                                      sender: self)
+                    
+                }
+                
+            } else {
+                
+                connectingView.removeConnectingView()
+                
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: reducer.errorDescription)
+                
+            }
+            
+        }
+        
+        let method = BTC_CLI_COMMAND.getaddressinfo
+        let param = "\"\(address)\""
+        
+        reducer.makeCommand(command: method,
+                            param: param,
+                            completion: getResult)
+        
+    }
+    
+    func importDescriptor(desc: String) {
+        
+        let reducer = Reducer()
+        
+        func getResult() {
+            
+            if !reducer.errorBool {
+                
+                let result = reducer.arrayToReturn
+                let success = (result[0] as! NSDictionary)["success"] as! Bool
+                
+                if success {
+                    
+                    connectingView.removeConnectingView()
+                    
+                    displayAlert(viewController: self,
+                                 isError: false,
+                                 message: "Sucessfully imported the key!")
+                    
+                } else {
+                    
+                    let errorDict = (result[0] as! NSDictionary)["error"] as! NSDictionary
+                    let error = errorDict["message"] as! String
+                    connectingView.removeConnectingView()
+                    
+                    displayAlert(viewController: self,
+                                 isError: true,
+                                 message: error)
+                    
+                }
+                
+                if let warnings = (result[0] as! NSDictionary)["warnings"] as? NSArray {
+                    
+                    if warnings.count > 0 {
+                        
+                        for warning in warnings {
+                            
+                            let warn = warning as! String
+                            
+                            DispatchQueue.main.async {
+                                
+                                let alert = UIAlertController(title: "Warning",
+                                                              message: warn,
+                                                              preferredStyle: UIAlertController.Style.alert)
+                                
+                                alert.addAction(UIAlertAction(title: "OK",
+                                                              style: UIAlertAction.Style.default,
+                                                              handler: nil))
+                                
+                                self.present(alert,
+                                             animated: true,
+                                             completion: nil)
+                                
+                            }
+                            
+                        }
+                        
+                    }
+                    
+                }
+                
+            } else {
+                
+                connectingView.removeConnectingView()
+                
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: reducer.errorDescription)
+                
+            }
+            
+        }
+        
+        let des = desc.replacingOccurrences(of: "'", with: "'\"'\"'")
+        
+        isWatchOnly = dict["isWatchOnly"] as! Bool
+        let method = BTC_CLI_COMMAND.importmulti
+        let param = "[{ \"desc\": \"\(des)\", \"label\": \"\(label)\", \"timestamp\": \(timestamp), \"watchonly\": \(isWatchOnly), \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }], ''{\"rescan\": true}''"
+        
+        reducer.makeCommand(command: method,
+                            param: param,
+                            completion: getResult)
+        
+    }
+    
+    func convertRange(range: String) -> [Int] {
+        
+        var arrayToReturn = [Int]()
+        let newrange = range.replacingOccurrences(of: " ", with: "")
+        let rangeArray = newrange.components(separatedBy: "to")
+        let zero = Int(rangeArray[0])!
+        let one = Int(rangeArray[1])!
+        arrayToReturn = [zero,one]
+        dict["convertedRange"] = arrayToReturn
+        return arrayToReturn
         
     }
     
@@ -377,7 +590,7 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
         return true
     }
     
-    @objc func dismissKeyboard (_ sender: UITapGestureRecognizer) {
+    @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
         
         qrScanner.textField.resignFirstResponder()
         
@@ -390,11 +603,13 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
+    func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
+        
+        let reducer = Reducer()
         
         func getResult() {
             
-            if !makeSSHCall.errorBool {
+            if !reducer.errorBool {
                 
                 DispatchQueue.main.async {
                     
@@ -404,13 +619,13 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                 
                 switch method {
                     
-                case BTC_CLI_COMMAND.importprivkey:
+                case .importprivkey:
                     
-                    self.connectingView.removeConnectingView()
-                    let result = makeSSHCall.stringToReturn
+                    connectingView.removeConnectingView()
+                    let result = reducer.stringToReturn
                     
                     if result == "Imported key success" {
-
+                        
                         alertMessage = "Successfully imported private key"
                         
                     }
@@ -421,15 +636,14 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                         
                     }
                     
-                case BTC_CLI_COMMAND.importmulti:
+                case .importmulti:
                     
-                    let result = makeSSHCall.arrayToReturn
+                    let result = reducer.arrayToReturn
                     let success = (result[0] as! NSDictionary)["success"] as! Bool
                     
                     if success {
                         
                         connectingView.removeConnectingView()
-                        
                         var messageString = "Sucessfully imported the address"
                         
                         if !isAddress {
@@ -492,8 +706,8 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                     self.connectingView.removeConnectingView()
                     
                     displayAlert(viewController: self,
-                                     isError: true,
-                                     message: self.makeSSHCall.errorDescription)
+                                 isError: true,
+                                 message: reducer.errorDescription)
                     
                 }
                 
@@ -501,51 +715,38 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
             
         }
         
-        if self.ssh != nil {
-         
-            if self.ssh.session.isConnected {
+        reducer.makeCommand(command: method,
+                            param: param,
+                            completion: getResult)
+        
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        
+        if segue.identifier == "showKeyDetails" {
+            
+            if let vc = segue.destination as? GetInfoViewController {
                 
-                makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                              method: method,
-                                              param: param,
-                                              completion: getResult)
-                
-            } else {
-                
-                connectingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "Not connected")
+                vc.labelToSearch = label
+                vc.getaddressesbylabel = true
+                vc.alertMessage = alertMessage
                 
             }
             
-        } else {
-         
-            connectingView.removeConnectingView()
+        }
+        
+        if segue.identifier == "showDescriptorKeys" {
             
-            displayAlert(viewController: self,
-                         isError: true,
-                         message: "Not connected")
+            if let vc = segue.destination as? ImportExtendedKeysViewController {
+                
+                vc.dict = dict
+                vc.keyArray = keyArray
+                vc.isHDMusig = isScript
+                
+            }
             
         }
         
     }
     
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-
-        if segue.identifier == "showKeyDetails" {
-
-            if let vc = segue.destination as? GetInfoViewController {
-
-                vc.labelToSearch = label
-                vc.getaddressesbylabel = true
-                vc.alertMessage = alertMessage
-
-            }
-
-        }
-
-    }
-
 }

@@ -20,13 +20,25 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
     var isTorchOn = Bool()
     var scannerShowing = false
     let imageView = UIImageView()
+    var scanningAuthKey = Bool()
+    var scanningOnion = Bool()
 
     @IBOutlet var onionAddressField: UITextField!
     @IBOutlet var saveButton: UIButton!
+    @IBOutlet var authKeyField: UITextField!
     
     @IBAction func scanNow(_ sender: Any) {
         
+        scanningOnion = true
+        scanningAuthKey = false
+        scanNow()
+        
+    }
+    
+    func scanNow() {
+        
         onionAddressField.resignFirstResponder()
+        authKeyField.resignFirstResponder()
         
         if isFirstTime {
             
@@ -64,10 +76,19 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
         
     }
     
+    @IBAction func scanAuthKey(_ sender: Any) {
+        
+        scanningAuthKey = true
+        scanningOnion = false
+        scanNow()
+        
+    }
+    
+    
     @IBAction func saveAction(_ sender: Any) {
         
         if createNew {
-            
+    
             if onionAddressField.text != "" {
                 
                 let id = randomString(length: 23)
@@ -75,20 +96,26 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
                 newNode["onionAddress"] = enc
                 newNode["id"] = id
                 
-                let success = cd.saveCredentialsToCoreData(vc: navigationController!,
-                                                           credentials: newNode)
+                if authKeyField.text != "" {
+                    
+                    let enc = aes.encryptKey(keyToEncrypt: authKeyField.text!)
+                    newNode["authKey"] = enc
+                    
+                }
+                
+                let success = cd.saveEntity(vc: self,
+                                            dict: newNode,
+                                            entityName: .nodes)
                 
                 if success {
                     
-                    displayAlert(viewController: navigationController!,
+                    displayAlert(viewController: self,
                                  isError: false,
                                  message: "Tor node saved")
-                    
-                    self.navigationController!.popToRootViewController(animated: true)
-                    
+                                        
                 } else {
                     
-                    displayAlert(viewController: navigationController!,
+                    displayAlert(viewController: self,
                                  isError: true,
                                  message: "Error saving tor node")
                     
@@ -106,25 +133,37 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
             //updating
             if onionAddressField.text != "" {
                 
-                let id = selectedNode["id"] as! String
+                let node = NodeStruct(dictionary: selectedNode)
+                let id = node.id
                 let enc = aes.encryptKey(keyToEncrypt: onionAddressField.text!)
                 
-                let success = cd.updateNode(viewController: self,
+                let success = cd.updateEntity(viewController: self,
+                                              id: id,
+                                              newValue: enc,
+                                              keyToEdit: "onionAddress",
+                                              entityName: .nodes)
+                
+                if authKeyField.text != "" {
+                    
+                    let enc = aes.encryptKey(keyToEncrypt: authKeyField.text!)
+                    
+                    let _ = cd.updateEntity(viewController: self,
                                             id: id,
                                             newValue: enc,
-                                            keyToEdit: "onionAddress")
+                                            keyToEdit: "authKey",
+                                            entityName: .nodes)
+                    
+                }
                 
                 if success {
                     
-                    displayAlert(viewController: navigationController!,
+                    displayAlert(viewController: self,
                                  isError: false,
                                  message: "Tor node updated")
                     
-                    self.navigationController!.popToRootViewController(animated: true)
-                    
                 } else {
                     
-                    displayAlert(viewController: navigationController!,
+                    displayAlert(viewController: self,
                                  isError: true,
                                  message: "Error updating tor node")
                     
@@ -151,6 +190,8 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
         
         onionAddressField.delegate = self
         onionAddressField.isSecureTextEntry = true
+        authKeyField.delegate = self
+        authKeyField.isSecureTextEntry = true
         
         configureScanner()
         
@@ -168,7 +209,7 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
         
     }
     
-    override func viewDidDisappear(_ animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         
         onionAddressField.text = ""
         
@@ -178,8 +219,16 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
         
         if !createNew {
             
-            let enc = selectedNode["onionAddress"] as! String
+            let node = NodeStruct(dictionary: selectedNode)
+            let enc = node.onionAddress
             onionAddressField.text = aes.decryptKey(keyToDecrypt: enc)
+            
+            if node.authKey != "" {
+                
+                let enc = node.authKey
+                authKeyField.text = aes.decryptKey(keyToDecrypt: enc)
+                
+            }
             
         } else {
             
@@ -192,7 +241,6 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         
         self.view.endEditing(true)
-        
         return true
         
     }
@@ -200,6 +248,7 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
     @objc func dismissKeyboard (_ sender: UITapGestureRecognizer) {
         
         onionAddressField.resignFirstResponder()
+        authKeyField.resignFirstResponder()
         
     }
     
@@ -299,7 +348,18 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
         
         let stringURL = qrScanner.stringToReturn
         imageView.alpha = 0
-        onionAddressField.text = stringURL
+        
+        if scanningOnion {
+            
+            onionAddressField.text = stringURL
+            
+        }
+        
+        if scanningAuthKey {
+            
+            authKeyField.text = stringURL
+            
+        }
         
     }
     
@@ -307,7 +367,18 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
         
         let qrString = qrScanner.qrString
         imageView.alpha = 0
-        onionAddressField.text = qrString
+        
+        if scanningOnion {
+            
+           onionAddressField.text = qrString
+            
+        }
+        
+        if scanningAuthKey {
+            
+            authKeyField.text = qrString
+            
+        }
         
     }
     

@@ -10,11 +10,6 @@ import UIKit
 
 class TransactionViewController: UIViewController {
     
-    var ssh:SSHService!
-    var makeSSHCall:SSHelper!
-    var torClient:TorClient!
-    var torRPC:MakeRPCCall!
-    var isUsingSSH = IsUsingSSH.sharedInstance
     var txid = ""
     let creatingView = ConnectingView()
     
@@ -36,7 +31,7 @@ class TransactionViewController: UIViewController {
         creatingView.addConnectingView(vc: self,
                                        description: "bumping")
         
-        executeNodeCommandSsh(method: BTC_CLI_COMMAND.bumpfee,
+        executeNodeCommand(method: BTC_CLI_COMMAND.bumpfee,
                               param: "\"\(txid)\"")
         
     }
@@ -53,21 +48,7 @@ class TransactionViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         
-        isUsingSSH = IsUsingSSH.sharedInstance
-        
-        if isUsingSSH {
-            
-            ssh = SSHService.sharedInstance
-            makeSSHCall = SSHelper.sharedInstance
-            
-        } else {
-            
-            torRPC = MakeRPCCall.sharedInstance
-            torClient = TorClient.sharedInstance
-            
-        }
-        
-        executeNodeCommandSsh(method: BTC_CLI_COMMAND.gettransaction,
+        executeNodeCommand(method: BTC_CLI_COMMAND.gettransaction,
                               param: "\"\(txid)\", true")
         
     }
@@ -86,29 +67,30 @@ class TransactionViewController: UIViewController {
     }
     
 
-    func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
+    func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
+        
+        let reducer = Reducer()
         
         func getResult() {
             
-            if !makeSSHCall.errorBool {
+            if !reducer.errorBool {
                 
                 switch method {
                     
                 case BTC_CLI_COMMAND.bumpfee:
                     
-                    let result = makeSSHCall.dictToReturn
+                    let result = reducer.dictToReturn
                     bumpFee(result: result)
                     
                 case BTC_CLI_COMMAND.gettransaction:
                     
-                    let dict = makeSSHCall.dictToReturn
+                    let dict = reducer.dictToReturn
                     
                     DispatchQueue.main.async {
                         
-                        self.textView.text = "\(self.makeSSHCall.dictToReturn)"
+                        self.textView.text = "\(reducer.dictToReturn)"
                         self.creatingView.removeConnectingView()
-                        
-                        let replaceable = dict["bip125-replaceable"] as! String
+                        let replaceable = dict["bip125-replaceable"] as? String ?? ""
                         
                         if replaceable == "yes" {
                             
@@ -128,42 +110,17 @@ class TransactionViewController: UIViewController {
                 
                 creatingView.removeConnectingView()
                 
-                displayAlert(viewController: self.navigationController!,
+                displayAlert(viewController: self,
                              isError: true,
-                             message: makeSSHCall.errorDescription)
+                             message: reducer.errorDescription)
                 
             }
             
         }
         
-        if ssh != nil {
-            
-            if ssh.session.isConnected {
-                
-                makeSSHCall.executeSSHCommand(ssh: ssh,
-                                              method: method,
-                                              param: param,
-                                              completion: getResult)
-                
-            } else {
-                
-                creatingView.removeConnectingView()
-                
-                displayAlert(viewController: self.navigationController!,
-                             isError: true,
-                             message: "ssh not connected")
-                
-            }
-            
-        } else {
-            
-            creatingView.removeConnectingView()
-            
-            displayAlert(viewController: self.navigationController!,
-                         isError: true,
-                         message: "ssh not connected")
-            
-        }
+        reducer.makeCommand(command: method,
+                            param: param,
+                            completion: getResult)
         
     }
 

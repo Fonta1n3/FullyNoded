@@ -15,6 +15,7 @@ class AddLabelViewController: UIViewController, UITextFieldDelegate {
     var isSingleKey = Bool()
     var isPrivKey = Bool()
     var isMultisig = Bool()
+    var isDescriptor = Bool()
     @IBOutlet var labelOutlet: UILabel!
     
     override func viewDidLoad() {
@@ -69,6 +70,12 @@ class AddLabelViewController: UIViewController, UITextFieldDelegate {
                 
             }
             
+            if isDescriptor {
+                
+                segueString = "skipDerivation"
+                
+            }
+            
             DispatchQueue.main.async {
                 
                 self.performSegue(withIdentifier: segueString, sender: self)
@@ -120,6 +127,15 @@ class AddLabelViewController: UIViewController, UITextFieldDelegate {
             
             if let vc = segue.destination as? ImportPrivKeyViewController {
                 
+                vc.dict = dict
+                
+            }
+            
+        case "skipDerivation":
+            
+            if let vc = segue.destination as? ChooseRangeViewController {
+                
+                vc.isDescriptor = true
                 vc.dict = dict
                 
             }

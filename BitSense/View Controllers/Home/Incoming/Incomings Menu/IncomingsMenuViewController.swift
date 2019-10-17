@@ -1,95 +1,65 @@
 //
-//  IncomingsTableViewController.swift
+//  IncomingsMenuViewController.swift
 //  BitSense
 //
-//  Created by Peter on 22/04/19.
+//  Created by Peter on 29/09/19.
 //  Copyright © 2019 Fontaine. All rights reserved.
 //
 
 import UIKit
-import NMSSH
 
-class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate, UITabBarControllerDelegate {
+class IncomingsMenuViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITabBarControllerDelegate {
     
     var isSingleKey = Bool()
     var isPrivKey = Bool()
-    
     var isPruned = Bool()
     var isTestnet = Bool()
-    
-    var makeSSHCall:SSHelper!
-    var ssh:SSHService!
-    var torClient:TorClient!
-    var torRPC:MakeRPCCall!
-    var isUsingSSH = IsUsingSSH.sharedInstance
-    
-    let userDefaults = UserDefaults.standard
-    
     var nativeSegwit = Bool()
     var p2shSegwit = Bool()
     var legacy = Bool()
-    
-    var activeNode = [String:Any]()
-    @IBOutlet var incomingsTable: UITableView!
-    
+    let ud = UserDefaults.standard
     var isExtendedKey = Bool()
     var isHDMultisig = Bool()
-    
     let cd = CoreDataService()
     var wallets = [[String:Any]]()
     var wallet = [String:Any]()
+    var descriptors = [[String:Any]]()
+    @IBOutlet var incomingsTable: UITableView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        tabBarController?.delegate = self
 
+        tabBarController?.delegate = self
         incomingsTable.tableFooterView = UIView(frame: .zero)
-        
-        navigationController?.navigationBar.setBackgroundImage(UIImage(),
-                                                               for: UIBarMetrics.default)
-        
+        navigationController?.navigationBar.setBackgroundImage(UIImage(), for: UIBarMetrics.default)
         navigationController?.navigationBar.shadowImage = UIImage()
         
     }
     
     override func viewDidAppear(_ animated: Bool) {
         
-        isUsingSSH = IsUsingSSH.sharedInstance
-        
-        if isUsingSSH {
-            
-            ssh = SSHService.sharedInstance
-            makeSSHCall = SSHelper.sharedInstance
-            
-        } else {
-            
-            torRPC = MakeRPCCall.sharedInstance
-            torClient = TorClient.sharedInstance
-            
-        }
-        
+        descriptors.removeAll()
+        wallets.removeAll()
         isPrivKey = false
         isSingleKey = false
-        
         getSettings()
         
     }
     
     // MARK: - Table view data source
-
-    override func numberOfSections(in tableView: UITableView) -> Int {
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
         
-        return 5
+        return 4
         
     }
-
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
         var numberOfRows = 0
         switch section {
         case 0: numberOfRows = 2
-        case 1: numberOfRows = 6
+        case 1: numberOfRows = 7
         case 2: numberOfRows = 1
         case 3: numberOfRows = 3
         default:
@@ -100,33 +70,35 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
         
     }
     
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
+        let cell = tableView.dequeueReusableCell(withIdentifier: "importCell",
+                                                 for: indexPath)
+        
+        cell.selectionStyle = .none
+        let label = cell.viewWithTag(1) as! UILabel
+        let check = cell.viewWithTag(2) as! UIImageView
+        var labelString = ""
         
         switch indexPath.section {
             
         case 0:
             
-            let cell = tableView.dequeueReusableCell(withIdentifier: "importCell",
-                                                     for: indexPath)
+            check.alpha = 0
+            label.textColor = UIColor.white
             
-            cell.selectionStyle = .none
-            
-            var labelString = ""
             switch indexPath.row {
             case 0: labelString = "Invoice"
-            case 1: labelString = "HD Musig Cold Storage"
+            case 1: labelString = "HD Multisig"
             default: break
             }
-            cell.textLabel?.text = labelString
-            return cell
+            
+            label.text = labelString
             
         case 1:
             
-            let cell = tableView.dequeueReusableCell(withIdentifier: "importCell",
-                                                     for: indexPath)
-            
-            cell.selectionStyle = .none
-            var labelString = ""
+            check.alpha = 0
+            label.textColor = UIColor.white
             
             switch indexPath.row {
             case 0:labelString = "Address"
@@ -135,46 +107,27 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
             case 3:labelString = "XPUB"
             case 4:labelString = "XPRV"
             case 5:labelString = "Multisig"
-            //case 6:labelString = "HD multisig"
+            case 6:labelString = "Descriptor"
             default:
                 break
             }
             
-            cell.textLabel?.text = labelString
-            
-            return cell
+            label.text = labelString
             
         case 2:
             
-            let cell = tableView.dequeueReusableCell(withIdentifier: "importCell",
-                                                     for: indexPath)
-            
-            cell.selectionStyle = .none
-            var labelString = ""
+            check.alpha = 0
+            label.textColor = UIColor.white
             
             switch indexPath.row {
-            case 0:labelString = "Create"
-            //case 1:labelString = "HD"
+            case 0:labelString = "Descriptors"
             default:
                 break
             }
             
-            cell.textLabel?.text = labelString
-            
-            return cell
+            label.text = labelString
             
         case 3:
-            
-            let importSettingsCell = tableView.dequeueReusableCell(withIdentifier: "importSettingsCell", for: indexPath)
-            let label = importSettingsCell.viewWithTag(1) as! UILabel
-            let check = importSettingsCell.viewWithTag(2) as! UIImageView
-            let switcher = importSettingsCell.viewWithTag(3) as! UISwitch
-            let rangeLabel = importSettingsCell.viewWithTag(4) as! UILabel
-            switcher.alpha = 0
-            importSettingsCell.selectionStyle = .none
-            
-            //address type
-            rangeLabel.alpha = 0
             
             switch indexPath.row {
                 
@@ -233,19 +186,18 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
                 
             }
             
-            return importSettingsCell
-            
         default:
             
-            let cell = UITableViewCell()
-            return cell
+            break
             
         }
         
+        return cell
+        
     }
     
-
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         let cell = tableView.cellForRow(at: IndexPath.init(row: indexPath.row,
                                                            section: indexPath.section))!
@@ -266,20 +218,44 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
                     
                 case 0:
                     
-                    var segueString = ""
                     switch indexPath.row {
                         
-                    case 0: segueString = "createInvoice"
+                    case 0:
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.performSegue(withIdentifier: "createInvoice",
+                                              sender: self)
+                        }
                         
                     case 1:
                         
-                        if self.wallets.count > 1 {
+                        if self.wallets.count > 0 {
                             
-                            segueString = "showWallets"
+                            if self.wallets.count > 1 {
+                                
+                                DispatchQueue.main.async {
+                                    
+                                    self.performSegue(withIdentifier: "showWallets",
+                                                      sender: self)
+                                    
+                                }
+                                
+                            } else {
+                                
+                                DispatchQueue.main.async {
+                                    
+                                    self.performSegue(withIdentifier: "getHDmusigAddress",
+                                                      sender: self)
+                                }
+                                
+                            }
                             
                         } else {
                             
-                            segueString = "getHDmusigAddress"
+                            displayAlert(viewController: self,
+                                         isError: true,
+                                         message: "no hd musig wallets created yet")
                             
                         }
                         
@@ -289,11 +265,7 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
                         
                     }
                     
-                    DispatchQueue.main.async {
-                        
-                        self.performSegue(withIdentifier: segueString,
-                                          sender: self)
-                    }
+                    
                     
                 case 1:
                     
@@ -317,9 +289,9 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
                             
                             segueString = "importMultiSig"
                             
-//                        case 6:
-//
-//                            segueString = "importHDMultisig"
+                        case 6:
+                            
+                            segueString = "importDescriptor"
                             
                         default:
                             
@@ -334,10 +306,25 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
                     
                 case 2:
                     
-                    DispatchQueue.main.async {
+                    print("show descriptor")
+                    
+                    self.descriptors = self.cd.retrieveEntity(entityName: ENTITY.descriptors)
+                    
+                    if self.descriptors.count > 0 {
                         
-                        self.performSegue(withIdentifier: "importMultiSig",
-                                          sender: self)
+                        DispatchQueue.main.async {
+                            
+                            self.performSegue(withIdentifier: "showDescriptors",
+                                              sender: self)
+                            
+                        }
+                        
+                    } else {
+                        
+                        displayAlert(viewController: self,
+                                     isError: true,
+                                     message: "no xpubs, xprvs or multisig wallets imported yet")
+                        
                     }
                     
                 case 3:
@@ -350,12 +337,9 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
                             var key = ""
                             
                             switch row {
-                            case 0:
-                                key = "nativeSegwit"
-                            case 1:
-                                key = "p2shSegwit"
-                            case 2:
-                                key = "legacy"
+                            case 0: key = "nativeSegwit"
+                            case 1: key = "p2shSegwit"
+                            case 2: key = "legacy"
                             default:
                                 break
                             }
@@ -363,7 +347,7 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
                             if indexPath.row == row && cell.isSelected {
                                 
                                 cell.isSelected = true
-                                self.userDefaults.set(true, forKey: key)
+                                self.ud.set(true, forKey: key)
                                 
                                 DispatchQueue.main.async {
                                     
@@ -375,7 +359,7 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
                             } else {
                                 
                                 cell.isSelected = false
-                                self.userDefaults.set(false, forKey: key)
+                                self.ud.set(false, forKey: key)
                                 
                                 DispatchQueue.main.async {
                                     
@@ -405,16 +389,16 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
             })
             
         }
-    
+        
     }
     
-    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         
         var string = ""
         switch section {
         case 0: string = "Get an address"
         case 1: string = "Import"
-        case 2: string = "Create multisig"
+        case 2: string = "Export"
         case 3: string = "Invoice address format"
         default:
             break
@@ -424,13 +408,13 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
         
     }
     
-    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         
         return 30
         
     }
     
-    override func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
         
         (view as! UITableViewHeaderFooterView).backgroundView?.backgroundColor = UIColor.clear
         (view as! UITableViewHeaderFooterView).textLabel?.textAlignment = .right
@@ -464,12 +448,10 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
         case "importAKey":
             
             if let vc = segue.destination as? AddLabelViewController {
-
+                
                 vc.isSingleKey = isSingleKey
                 vc.isPrivKey = isPrivKey
             }
-            
-            print("prepare for segue importAKey")
             
         case "importMultiSig":
             
@@ -480,13 +462,23 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
                 vc.isMultisig = true
             }
             
-        case "goImportExtendedKeys":
+        case "showDescriptors":
             
-            print("prepare for segue goImportExtendedKeys")
+            if let vc = segue.destination as? DescriptorsViewController {
+                
+                vc.descriptors = descriptors
+                
+            }
             
-//        case "importHDMultisig":
-//
-//            print("prepare for segue hdmusig")
+        case "importDescriptor":
+            
+            if let vc = segue.destination as? AddLabelViewController {
+                
+                vc.isDescriptor = true
+                vc.isSingleKey = false
+                vc.isMultisig = false
+                
+            }
             
         default:
             
@@ -498,58 +490,38 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
     
     func getSettings() {
         
-        if userDefaults.object(forKey: "nativeSegwit") != nil {
-            
-            nativeSegwit = userDefaults.bool(forKey: "nativeSegwit")
-            
-        } else {
-            
-            nativeSegwit = true
-            
-        }
+        nativeSegwit = ud.object(forKey: "nativeSegwit") as? Bool ?? true
+        p2shSegwit = ud.object(forKey: "p2shSegwit") as? Bool ?? false
+        legacy = ud.object(forKey: "legacy") as? Bool ?? false
         
-        if userDefaults.object(forKey: "p2shSegwit") != nil {
-            
-            p2shSegwit = userDefaults.bool(forKey: "p2shSegwit")
-            
-        } else {
-            
-            p2shSegwit = false
-            
-        }
+        let nodes = cd.retrieveEntity(entityName: ENTITY.nodes)
         
-        if userDefaults.object(forKey: "legacy") != nil {
+        //only display HDWallets that were imported into this node
+        for nodeDict in nodes {
             
-            legacy = userDefaults.bool(forKey: "legacy")
+            let node = NodeStruct(dictionary: nodeDict)
             
-        } else {
-            
-            legacy = false
-            
-        }
-        
-        let nodes = cd.retrieveCredentials()
-        let isActive = isAnyNodeActive(nodes: nodes)
-        var nodeID = ""
-        
-        if isActive {
-            
-            for node in nodes {
+            if node.isActive {
                 
-                let active = node["isActive"] as! Bool
+                let activeNodeID = node.id
+                let allWallets = cd.retrieveEntity(entityName: ENTITY.hdWallets)
                 
-                if active {
+                for walletDict in allWallets {
                     
-                    nodeID = node["id"] as! String
+                    let wallet = Wallet(dictionary: walletDict)
+                    let walletsNodeID = wallet.nodeID
+                    
+                    if activeNodeID == walletsNodeID {
+                        
+                        wallets.append(walletDict)
+                        
+                    }
                     
                 }
                 
             }
             
         }
-        
-        wallets = cd.getHDWallets(nodeID: nodeID)
-        print("wallets = \(wallets)")
         
         if wallets.count == 1 {
             
@@ -559,35 +531,15 @@ class IncomingsTableViewController: UITableViewController, NMSSHChannelDelegate,
         
         DispatchQueue.main.async {
             
-            self.tableView.reloadData()
+            self.incomingsTable.reloadData()
             
         }
         
     }
     
-    func isAnyNodeActive(nodes: [[String:Any]]) -> Bool {
-        
-        var boolToReturn = false
-        
-        for node in nodes {
-            
-            let isActive = node["isActive"] as! Bool
-            
-            if isActive {
-                
-                boolToReturn = true
-                
-            }
-            
-        }
-        
-        return boolToReturn
-        
-    }
-
 }
 
-extension IncomingsTableViewController  {
+extension IncomingsMenuViewController  {
     func tabBarController(_ tabBarController: UITabBarController, animationControllerForTransitionFrom fromVC: UIViewController, to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {
         return MyTransition(viewControllers: tabBarController.viewControllers)
     }

@@ -15,16 +15,12 @@ class SSHCredentialsViewController: UIViewController, UITextFieldDelegate, UINav
     let aes = AESService()
     let cd = CoreDataService()
     var createNew = Bool()
-    
     @IBOutlet var hostField: UITextField!
     @IBOutlet var passwordField: UITextField!
     @IBOutlet var ipField: UITextField!
     @IBOutlet var portField: UITextField!
-    
     @IBOutlet var privKeyField: UITextField!
     @IBOutlet var pubKeyField: UITextField!
-    
-    
     @IBOutlet var saveButton: UIButton!
     
     @IBAction func saveAction(_ sender: Any) {
@@ -54,19 +50,20 @@ class SSHCredentialsViewController: UIViewController, UITextFieldDelegate, UINav
                 newNode["ip"] = encIP
                 newNode["port"] = encPort
                 newNode["password"] = encPassword
-                
-                let success = cd.saveCredentialsToCoreData(vc: navigationController!,
-                                                           credentials: newNode)
+
+                let success = cd.saveEntity(vc: navigationController!,
+                                            dict: newNode,
+                                            entityName: ENTITY.nodes)
                 
                 if success {
                     
-                    displayAlert(viewController: navigationController!,
+                    displayAlert(viewController: self,
                                  isError: false,
                                  message: "Node added")
                     
                 } else {
                     
-                    displayAlert(viewController: navigationController!,
+                    displayAlert(viewController: self,
                                  isError: true,
                                  message: "Error saving node")
                     
@@ -74,7 +71,7 @@ class SSHCredentialsViewController: UIViewController, UITextFieldDelegate, UINav
                 
             } else {
                 
-                displayAlert(viewController: navigationController!,
+                displayAlert(viewController: self,
                              isError: true,
                              message: "Fill out all required fields")
                 
@@ -91,7 +88,6 @@ class SSHCredentialsViewController: UIViewController, UITextFieldDelegate, UINav
             if privKeyField.text != "" {
                 
                 let processedPrivKey = privKeyField.text!.replacingOccurrences(of: " ", with: "")
-                print("processedPrivKey = \(processedPrivKey)")
                 let encPrivKey = aes.encryptKey(keyToEncrypt: processedPrivKey)
                 selectedNode["privateKey"] = encPrivKey
                 
@@ -121,10 +117,11 @@ class SSHCredentialsViewController: UIViewController, UITextFieldDelegate, UINav
             
             for (key, value) in selectedNode {
                 
-                let success = cd.updateNode(viewController: navigationController!,
-                                            id: id,
-                                            newValue: value,
-                                            keyToEdit: key)
+                let success = cd.updateEntity(viewController: navigationController!,
+                                              id: id,
+                                              newValue: value,
+                                              keyToEdit: key,
+                                              entityName: ENTITY.nodes)
                 
                 successes.append(success)
                 
@@ -144,13 +141,15 @@ class SSHCredentialsViewController: UIViewController, UITextFieldDelegate, UINav
             
             if succeed {
                 
-                displayAlert(viewController: navigationController!,
+                displayAlert(viewController: self,
                              isError: false,
                              message: "Node updated")
                 
+                loadValues()
+                
             } else {
                 
-                displayAlert(viewController: navigationController!,
+                displayAlert(viewController: self,
                              isError: true,
                              message: "Error updating node")
                 
@@ -175,9 +174,16 @@ class SSHCredentialsViewController: UIViewController, UITextFieldDelegate, UINav
         portField.delegate = self
         privKeyField.delegate = self
         pubKeyField.delegate = self
-        
         passwordField.isSecureTextEntry = true
         privKeyField.isSecureTextEntry = true
+        
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        
+        passwordField.text = ""
+        privKeyField.text = ""
+        pubKeyField.text = ""
         
     }
     
@@ -207,45 +213,57 @@ class SSHCredentialsViewController: UIViewController, UITextFieldDelegate, UINav
         }
         
     }
-    
-    override func viewDidDisappear(_ animated: Bool) {
-        
-        hostField.text = ""
-        passwordField.text = ""
-        ipField.text = ""
-        portField.text = ""
-        privKeyField.text = ""
-        pubKeyField.text = ""
-        
-    }
-    
 
     func loadValues() {
         
         if !createNew {
             
-            let encIP = selectedNode["ip"] as! String
-            let encPort = selectedNode["port"] as! String
-            let encPassword = selectedNode["password"] as! String
-            let encHost = selectedNode["username"] as! String
+            let node = NodeStruct(dictionary: selectedNode)
+            let nodeId = node.id
+            let nodes = cd.retrieveEntity(entityName: ENTITY.nodes)
             
-            hostField.text = aes.decryptKey(keyToDecrypt: encHost)
-            ipField.text = aes.decryptKey(keyToDecrypt: encIP)
-            portField.text = aes.decryptKey(keyToDecrypt: encPort)
-            passwordField.text = aes.decryptKey(keyToDecrypt: encPassword)
+            for n in nodes {
             
-            if let encPrivKey = selectedNode["privateKey"] as? String {
+                let str = NodeStruct(dictionary: n)
                 
-                privKeyField.text = aes.decryptKey(keyToDecrypt: encPrivKey)
+                if str.id == nodeId {
+                    
+                    //load this node to prevent showing old selected node values when user navigates back and forth
+                    let encIP = str.ip
+                    let encPort = str.port
+                    let encPassword = str.password
+                    let encHost = str.username
+                    hostField.text = aes.decryptKey(keyToDecrypt: encHost)
+                    ipField.text = aes.decryptKey(keyToDecrypt: encIP)
+                    portField.text = aes.decryptKey(keyToDecrypt: encPort)
+                    passwordField.text = aes.decryptKey(keyToDecrypt: encPassword)
+                    
+                    if str.privateKey != "" {
+                        
+                        privKeyField.text = aes.decryptKey(keyToDecrypt: str.privateKey)
+                        
+                    }
+                    
+                    if str.publicKey != "" {
+                        
+                        pubKeyField.text = aes.decryptKey(keyToDecrypt: str.publicKey)
+                        
+                    }
+                    
+                }
                 
             }
             
-            if let encPubKey = selectedNode["publicKey"] as? String {
-                
-                pubKeyField.text = aes.decryptKey(keyToDecrypt: encPubKey)
-                
-            }
+        }
+        
+    }
+    
+    override func willMove(toParent parent: UIViewController?) {
+        
+        if let vc = parent as? NodeDetailViewController {
             
+            vc.selectedNode = selectedNode
+            vc.createNew = createNew
         }
         
     }

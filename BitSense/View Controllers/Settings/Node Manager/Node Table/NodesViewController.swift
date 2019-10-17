@@ -1,34 +1,24 @@
 //
-//  NodesTableViewController.swift
+//  NodesViewController.swift
 //  BitSense
 //
-//  Created by Peter on 04/04/19.
+//  Created by Peter on 29/09/19.
 //  Copyright © 2019 Fontaine. All rights reserved.
 //
 
 import UIKit
 
-class NodesTableViewController: UITableViewController {
+class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var nodeArray = [[String:Any]]()
     var selectedIndex = Int()
-    @IBOutlet var nodeTable: UITableView!
     let cd = CoreDataService()
-    
-    @IBAction func back(_ sender: Any) {
-        
-        DispatchQueue.main.async {
-            
-            self.dismiss(animated: true,
-                         completion: nil)
-            
-        }
-        
-    }
+    let ud = UserDefaults.standard
+    @IBOutlet var nodeTable: UITableView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         nodeTable.tableFooterView = UIView(frame: .zero)
         
     }
@@ -43,32 +33,32 @@ class NodesTableViewController: UITableViewController {
     
     func getNodes() {
         
-        nodeArray = cd.retrieveCredentials()
+        nodeArray = cd.retrieveEntity(entityName: ENTITY.nodes)
         
         if nodeArray.count == 0 {
             
-            displayAlert(viewController: self.navigationController!,
+            displayAlert(viewController: self,
                          isError: true,
                          message: "No nodes added yet, tap the + sign to add one")
             
         }
         
     }
-
-    override func numberOfSections(in tableView: UITableView) -> Int {
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
         
         return 1
         
     }
-
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
         return nodeArray.count
         
     }
-
     
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "node", for: indexPath)
         let label = cell.viewWithTag(1) as! UILabel
@@ -104,7 +94,7 @@ class NodesTableViewController: UITableViewController {
         
     }
     
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         selectedIndex = indexPath.row
         let cell = nodeTable.cellForRow(at: IndexPath.init(row: indexPath.row, section: 0))!
@@ -136,7 +126,7 @@ class NodesTableViewController: UITableViewController {
                         
                     } else {
                         
-                        displayAlert(viewController: self.navigationController!,
+                        displayAlert(viewController: self,
                                      isError: true,
                                      message: "You can not edit the testing node")
                         
@@ -149,7 +139,7 @@ class NodesTableViewController: UITableViewController {
         }
         
     }
-
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
         if segue.identifier == "updateNode" {
@@ -175,12 +165,17 @@ class NodesTableViewController: UITableViewController {
         
     }
     
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         
         if editingStyle == UITableViewCell.EditingStyle.delete {
             
-            let success = cd.deleteNode(viewController: self, id: nodeArray[indexPath.row]["id"] as! String)
-                
+            let node = NodeStruct(dictionary: nodeArray[indexPath.row])
+            
+            //let success = cd.deleteNode(viewController: self, id: nodeArray[indexPath.row]["id"] as! String)
+            let success = cd.deleteEntity(viewController: self,
+                                          id: node.id,
+                                          entityName: ENTITY.nodes)
+            
             if success {
                 
                 nodeArray.remove(at: indexPath.row)
@@ -188,7 +183,7 @@ class NodesTableViewController: UITableViewController {
                 
             } else {
                 
-                displayAlert(viewController: self.navigationController!,
+                displayAlert(viewController: self,
                              isError: true,
                              message: "We had an error trying to delete that node")
                 
@@ -199,6 +194,17 @@ class NodesTableViewController: UITableViewController {
     }
     
     @objc func setActiveNow(_ sender: UISwitch) {
+        
+        if SSHService.sharedInstance.session != nil {
+            
+            if SSHService.sharedInstance.session.isConnected {
+                
+                SSHService.sharedInstance.disconnect()
+                SSHService.sharedInstance.commandExecuting = false
+                
+            }
+            
+        }
         
         DispatchQueue.main.async {
             
@@ -215,12 +221,17 @@ class NodesTableViewController: UITableViewController {
         if !selectedSwitch.isOn {
             
             //turned off
-            let success = cd.updateNode(viewController: self, id: id, newValue: false, keyToEdit: "isActive")
+            //let success = cd.updateNode(viewController: self, id: id, newValue: false, keyToEdit: "isActive")
+            let success = cd.updateEntity(viewController: self,
+                                          id: id,
+                                          newValue: false,
+                                          keyToEdit: "isActive",
+                                          entityName: ENTITY.nodes)
             
             if success {
                 
-                UserDefaults.standard.removeObject(forKey: "walletName")//removes active wallet name
-                nodeArray = cd.retrieveCredentials()
+                ud.removeObject(forKey: "walletName")//removes active wallet name
+                nodeArray = cd.retrieveEntity(entityName: ENTITY.nodes)
                 nodeTable.reloadData()
                 
             }
@@ -228,12 +239,17 @@ class NodesTableViewController: UITableViewController {
         } else {
             
             //turned on
-            let success = cd.updateNode(viewController: self, id: id, newValue: true, keyToEdit: "isActive")
+            //let success = cd.updateNode(viewController: self, id: id, newValue: true, keyToEdit: "isActive")
+            let success = cd.updateEntity(viewController: self,
+                                          id: id,
+                                          newValue: true,
+                                          keyToEdit: "isActive",
+                                          entityName: ENTITY.nodes)
             
             if success {
                 
-                UserDefaults.standard.removeObject(forKey: "walletName")//removes active wallet name
-                nodeArray = cd.retrieveCredentials()
+                ud.removeObject(forKey: "walletName")//removes active wallet name
+                nodeArray = cd.retrieveEntity(entityName: ENTITY.nodes)
                 nodeTable.reloadData()
                 
             }
@@ -248,11 +264,17 @@ class NodesTableViewController: UITableViewController {
                     
                     let id = node["id"] as! String
                     
-                    let success = cd.updateNode(viewController: self, id: id, newValue: false, keyToEdit: "isActive")
+                    //let success = cd.updateNode(viewController: self, id: id, newValue: false, keyToEdit: "isActive")
+                    
+                    let success = cd.updateEntity(viewController: self,
+                                                  id: id,
+                                                  newValue: false,
+                                                  keyToEdit: "isActive",
+                                                  entityName: ENTITY.nodes)
                     
                     if success {
                         
-                        nodeArray = cd.retrieveCredentials()
+                        nodeArray = cd.retrieveEntity(entityName: ENTITY.nodes)
                         nodeTable.reloadData()
                         
                     }
@@ -265,10 +287,5 @@ class NodesTableViewController: UITableViewController {
         
     }
 
-}
 
-/*extension NodesTableViewController  {
-    func tabBarController(_ tabBarController: UITabBarController, animationControllerForTransitionFrom fromVC: UIViewController, to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-        return MyTransition(viewControllers: tabBarController.viewControllers)
-    }
-}*/
+}

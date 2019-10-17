@@ -28,61 +28,63 @@ class SSHService {
         var privKey = ""
         var pubKey = ""
         
-        if let portCheck = activeNode["port"] as? String {
+        let node = NodeStruct(dictionary: activeNode)
+        
+        if node.port != "" {
             
-            if aes.decryptKey(keyToDecrypt: portCheck) != "" {
+            if aes.decryptKey(keyToDecrypt: node.port) != "" {
                 
-                port = aes.decryptKey(keyToDecrypt: portCheck)
+                port = aes.decryptKey(keyToDecrypt: node.port)
                 
             }
             
         }
         
-        if let userCheck = activeNode["username"] as? String {
+        if node.username != "" {
             
-            if aes.decryptKey(keyToDecrypt: userCheck) != "" {
+            if aes.decryptKey(keyToDecrypt: node.username) != "" {
                 
-                user = aes.decryptKey(keyToDecrypt: userCheck)
-                
-            }
-            
-        }
-        
-        if let hostCheck = activeNode["ip"] as? String {
-            
-            if aes.decryptKey(keyToDecrypt: hostCheck) != "" {
-                
-                host = aes.decryptKey(keyToDecrypt: hostCheck)
+                user = aes.decryptKey(keyToDecrypt: node.username)
                 
             }
             
         }
         
-        if let passwordCheck = activeNode["password"] as? String {
+        if node.ip != "" {
             
-            if aes.decryptKey(keyToDecrypt: passwordCheck) != "" {
+            if aes.decryptKey(keyToDecrypt: node.ip) != "" {
                 
-                password = aes.decryptKey(keyToDecrypt: passwordCheck)
-                
-            }
-            
-        }
-        
-        if let privKeyCheck = activeNode["privateKey"] as? String {
-            
-            if aes.decryptKey(keyToDecrypt: privKeyCheck) != "" {
-                
-                privKey = aes.decryptKey(keyToDecrypt: privKeyCheck)
+                host = aes.decryptKey(keyToDecrypt: node.ip)
                 
             }
             
         }
         
-        if let pubKeyCheck = activeNode["publicKey"] as? String {
+        if node.password != "" {
             
-            if aes.decryptKey(keyToDecrypt: pubKeyCheck) != "" {
+            if aes.decryptKey(keyToDecrypt: node.password) != "" {
                 
-                pubKey = aes.decryptKey(keyToDecrypt: pubKeyCheck)
+                password = aes.decryptKey(keyToDecrypt: node.password)
+                
+            }
+            
+        }
+        
+        if node.privateKey != "" {
+            
+            if aes.decryptKey(keyToDecrypt: node.privateKey) != "" {
+                
+                privKey = aes.decryptKey(keyToDecrypt: node.privateKey)
+                
+            }
+            
+        }
+        
+        if node.publicKey != "" {
+            
+            if aes.decryptKey(keyToDecrypt: node.publicKey) != "" {
+                
+                pubKey = aes.decryptKey(keyToDecrypt: node.publicKey)
                 
             }
             
@@ -90,62 +92,70 @@ class SSHService {
         
         guard user != "", host != "", port != "" else {
             
-            success((success:false, error:"Incomplete SSH Credentials"))
+            success((success:false,
+                     error:"incomplete ssh credentials"))
+            
             return
             
         }
         
         var authWithPrivKey = false
         
-        if pubKey != "" || privKey != "" {
+        if pubKey != "" {
             
             authWithPrivKey = true
             
         }
         
-        var portInt = Int()
-        portInt = Int(port)!
-        
-        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
-        
-        queue.async {
+        if let prt = Int(port) {
             
-            self.session = NMSSHSession.connect(toHost: host,
-                                                port: portInt,
-                                                withUsername: user)
+            let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
             
-            if self.session.isConnected == true {
+            queue.async {
                 
-                if !authWithPrivKey {
-                    
-                    self.session.authenticate(byPassword: password)
-                    
-                } else {
-                    
-                    self.session.authenticateBy(inMemoryPublicKey: pubKey,
-                                                privateKey: privKey,
-                                                andPassword: password)
-                    
-                }
+                self.session = NMSSHSession.connect(toHost: host,
+                                                    port: prt,
+                                                    withUsername: user)
                 
-                if self.session.isAuthorized {
+                if self.session.isConnected == true {
                     
-                    success((success:true,
-                             error:nil))
+                    if !authWithPrivKey {
+                        
+                        self.session.authenticate(byPassword: password)
+                        
+                    } else {
+                        
+                        self.session.authenticateBy(inMemoryPublicKey: pubKey,
+                                                    privateKey: privKey,
+                                                    andPassword: password)
+                        
+                    }
+                    
+                    if self.session.isAuthorized {
+                        
+                        success((success:true,
+                                 error:nil))
+                        
+                    } else {
+                        
+                        success((success:false,
+                                 error:"\(String(describing: self.session.lastError!.localizedDescription))"))
+                        
+                    }
                     
                 } else {
                     
                     success((success:false,
-                             error:"\(String(describing: self.session.lastError!.localizedDescription))"))
+                             error:"Unable to connect to your node with SSH"))
                     
                 }
                 
-            } else {
-                
-                success((success:false,
-                         error:"Unable to connect to your node with SSH"))
-                
             }
+            
+        } else {
+            
+            success((success:false,
+                     error:"invalid ssh port"))
             
         }
         
@@ -167,23 +177,25 @@ class SSHService {
             var rpcpassword = ""
             var rpcport = ""
             
-            if activeNode["rpcuser"] != nil {
+            let node = NodeStruct(dictionary: activeNode)
+            
+            if node.rpcuser != "" {
                 
-                let enc = activeNode["rpcuser"] as! String
+                let enc = node.rpcuser
                 rpcuser = aes.decryptKey(keyToDecrypt: enc)
                 
             }
             
-            if activeNode["rpcpassword"] != nil {
+            if node.rpcpassword != "" {
                 
-                let enc = activeNode["rpcpassword"] as! String
+                let enc = node.rpcpassword
                 rpcpassword = aes.decryptKey(keyToDecrypt: enc)
                 
             }
             
-            if activeNode["rpcport"] != nil {
+            if node.rpcport != "" {
                 
-                let enc = activeNode["rpcport"] as! String
+                let enc = node.rpcport
                 rpcport = aes.decryptKey(keyToDecrypt: enc)
                 
             }
@@ -191,7 +203,7 @@ class SSHService {
             guard rpcuser != "", rpcpassword != "", rpcport != "" else {
                 
                 response((dictionary:nil,
-                          error:"Incomplete RPC Credentials"))
+                          error:"incomplete rpc credentials"))
                 
                 commandExecuting = false
                 
@@ -296,6 +308,46 @@ class SSHService {
             
             response((dictionary:nil,
                       error:"Node is busy, try again in a moment"))
+            
+        }
+        
+    }
+    
+    func clearHistory(response: @escaping (Bool) -> Void) {
+        
+        if !commandExecuting {
+            
+            var error: NSError?
+            let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+            
+            let cmd = "history -c"
+            
+            queue.async {
+                
+                if let _ = self.session?.channel.execute(cmd, error: &error) {
+                    
+                    if error != nil {
+                        
+                        print("error clearing history")
+                        response((false))
+                        
+                    } else {
+                        
+                        response((true))
+                        
+                    }
+                    
+                } else {
+                    
+                    response((false))
+                    
+                }
+                
+            }
+            
+        } else {
+            
+            response((false))
             
         }
         

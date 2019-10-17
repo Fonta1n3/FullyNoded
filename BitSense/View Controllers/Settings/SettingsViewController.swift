@@ -7,33 +7,31 @@
 //
 
 import UIKit
-import KeychainSwift
+//import KeychainSwift
 
-class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, UITabBarControllerDelegate {
+class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITabBarControllerDelegate {
     
-    let keychain = KeychainSwift()
-    let userDefaults = UserDefaults.standard
-    let imageView = UIImageView()
-    let lockView = UIView()
-    let passwordInput = UITextField()
-    let textInput = UITextField()
-    let nextButton = UIButton()
-    let alertView = UIView()
-    let labelTitle = UILabel()
-    var firstPassword = String()
-    var secondPassword = String()
+    //let keychain = KeychainSwift()
+    let ud = UserDefaults.standard
+//    let imageView = UIImageView()
+//    let lockView = UIView()
+//    let passwordInput = UITextField()
+//    let textInput = UITextField()
+//    let nextButton = UIButton()
+//    let alertView = UIView()
+//    let labelTitle = UILabel()
+//    var firstPassword = String()
+//    var secondPassword = String()
     var miningFeeText = ""
     
     @IBOutlet var settingsTable: UITableView!
-    
-    let connectingView = ConnectingView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         tabBarController!.delegate = self
         settingsTable.delegate = self
-        configurePasswordManager()
+        
         
     }
 
@@ -43,61 +41,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
-    func configurePasswordManager() {
-        
-        textInput.delegate = self
-        textInput.backgroundColor = UIColor.white
-        textInput.keyboardType = UIKeyboardType.default
-        textInput.layer.cornerRadius = 10
-        textInput.textColor = UIColor.black
-        textInput.textAlignment = .center
-        textInput.keyboardAppearance = UIKeyboardAppearance.dark
-        textInput.autocorrectionType = .no
-        
-        labelTitle.font = UIFont.init(name: "HiraginoSans-W6", size: 30)
-        labelTitle.textColor = UIColor.white
-        labelTitle.alpha = 0
-        labelTitle.numberOfLines = 0
-        labelTitle.text = "Unlock"
-        labelTitle.textAlignment = .center
-        
-        alertView.frame = view.frame
-        alertView.backgroundColor = UIColor.black
-        alertView.alpha = 0
-        
-        lockView.frame = view.frame
-        lockView.backgroundColor = UIColor.black
-        lockView.alpha = 0
-        
-        imageView.image = UIImage(named: "whiteLock.png")
-        imageView.alpha = 1
-        imageView.frame = CGRect(x: self.view.center.x - 40, y: 40, width: 80, height: 80)
-        
-        passwordInput.frame = CGRect(x: 50, y: imageView.frame.maxY + 80, width: view.frame.width - 100, height: 50)
-        passwordInput.keyboardType = UIKeyboardType.default
-        passwordInput.autocapitalizationType = .none
-        passwordInput.autocorrectionType = .no
-        passwordInput.layer.cornerRadius = 10
-        passwordInput.backgroundColor = UIColor.white
-        passwordInput.alpha = 0
-        passwordInput.textColor = UIColor.black
-        passwordInput.placeholder = "Password"
-        passwordInput.isSecureTextEntry = true
-        passwordInput.returnKeyType = UIReturnKeyType.go
-        passwordInput.textAlignment = .center
-        passwordInput.keyboardAppearance = UIKeyboardAppearance.dark
-        passwordInput.delegate = self
-        
-        labelTitle.frame = CGRect(x: self.view.center.x - ((view.frame.width - 10) / 2), y: passwordInput.frame.minY - 50, width: view.frame.width - 10, height: 50)
-        
-        nextButton.titleLabel?.font = UIFont.init(name: "HiraginoSans-W6", size: 20)
-        nextButton.titleLabel?.textAlignment = .right
-        nextButton.backgroundColor = UIColor.clear
-        nextButton.showsTouchWhenHighlighted = true
-        nextButton.setTitleColor(UIColor.white, for: .normal)
-        nextButton.alpha = 0
-        
-    }
+    
     
     func updateFeeLabel(label: UILabel, numberOfBlocks: Int) {
         
@@ -105,7 +49,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
         func updateFeeSetting() {
             
-            userDefaults.set(numberOfBlocks, forKey: "feeTarget")
+            ud.set(numberOfBlocks, forKey: "feeTarget")
             
         }
         
@@ -168,47 +112,27 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
         let settingsCell = tableView.dequeueReusableCell(withIdentifier: "settingsCell", for: indexPath)
         let label = settingsCell.viewWithTag(1) as! UILabel
-        let check = settingsCell.viewWithTag(2) as! UIImageView
-        let switcher = settingsCell.viewWithTag(3) as! UISwitch
-        let rangeLabel = settingsCell.viewWithTag(4) as! UILabel
-        switcher.alpha = 0
+        label.textColor = UIColor.white
         settingsCell.selectionStyle = .none
         
         switch indexPath.section {
             
         case 0:
             
-            let cell = tableView.dequeueReusableCell(withIdentifier: "nodeCell", for: indexPath)
-            cell.selectionStyle = .none
-            return cell
+            label.text = "Node Manager"
+            return settingsCell
             
         case 1:
             
-            check.alpha = 0
-            rangeLabel.alpha = 0
-            label.textColor = UIColor.white
-            
-            //wallet manager
-            switch indexPath.row {
-                
-            case 0: label.text = "Wallet Manager"
-                
-            default:
-                
-                let cell = UITableViewCell()
-                cell.backgroundColor = UIColor.clear
-                return cell
-                
-            }
-            
+            label.text = "Wallet Manager"
             return settingsCell
             
         case 2:
             
-            rangeLabel.alpha = 0
-            label.textColor = UIColor.white
+            label.text = "Security Center"
+            return settingsCell
             
-            if keychain.get("UnlockPassword") != nil {
+            /*if keychain.get("UnlockPassword") != nil {
                 
                 label.text = "Reset Password"
                 
@@ -218,9 +142,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 
             }
             
-            check.alpha = 0
-            
-            return settingsCell
+            return settingsCell*/
             
         case 3:
             
@@ -229,13 +151,12 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             let slider = cell.viewWithTag(2) as! UISlider
             
             slider.addTarget(self, action: #selector(setFee), for: .allEvents)
-            
             slider.maximumValue = 2 * -1
             slider.minimumValue = 1008 * -1
             
-            if userDefaults.object(forKey: "feeTarget") != nil {
+            if ud.object(forKey: "feeTarget") != nil {
                 
-                let numberOfBlocks = userDefaults.object(forKey: "feeTarget") as! Int
+                let numberOfBlocks = ud.object(forKey: "feeTarget") as! Int
                 slider.value = Float(numberOfBlocks) * -1
                 updateFeeLabel(label: label, numberOfBlocks: numberOfBlocks)
                 
@@ -250,6 +171,27 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
             return cell
             
+        case 4:
+            
+            label.text = "Kill Switch ☠️"
+            return settingsCell
+            
+        /*case 5:
+            
+            if ud.object(forKey: "bioMetricsDisabled") != nil {
+                
+                label.text = "Disabled"
+                label.textColor = UIColor.darkGray
+                
+            } else {
+                
+                label.text = "Enabled"
+                label.textColor = UIColor.white
+                
+            }
+            
+            return settingsCell*/
+            
         default:
             
             let cell = UITableViewCell()
@@ -262,7 +204,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     func numberOfSections(in tableView: UITableView) -> Int {
         
-        return 4
+        return 5
         
     }
     
@@ -274,26 +216,14 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         
-        if section == 0 {
-            
-            return "Node Manager"
-            
-        } else if section == 1 {
-            
-            return "Multi Wallet Manager"
-            
-        } else if section == 2 {
-            
-            return "Password Manager"
-            
-        } else if section == 3 {
-            
-            return "Mining Fee"
-            
-        } else {
-            
-            return ""
-            
+        switch section {
+        case 0: return "Node Manager"
+        case 1: return "Multi Wallet Manager"
+        case 2: return "Security"
+        case 3: return "Mining Fee"
+        case 4: return "Reset App"
+        /*case 5: sectionTitle = "Biometrics"*/
+        default:return ""
         }
         
     }
@@ -357,9 +287,15 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         case 2:
             
             //reset password
+//            DispatchQueue.main.async {
+//
+//                self.showUnlockScreen()
+//
+//            }
+            
             DispatchQueue.main.async {
                 
-                self.showUnlockScreen()
+                self.performSegue(withIdentifier: "goToSecurity", sender: self)
                 
             }
             
@@ -368,11 +304,68 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             //mining fee
             print("do nothing")
             
+        case 4:
+            
+            kill()
+            
+        /*case 5:
+            
+            if ud.object(forKey: "bioMetricsDisabled") != nil {
+                
+                ud.removeObject(forKey: "bioMetricsDisabled")
+                
+            } else {
+                
+                ud.set(true, forKey: "bioMetricsDisabled")
+                
+            }
+            
+            DispatchQueue.main.async {
+                
+                tableView.reloadSections([5], with: .fade)
+                
+            }*/
+            
         default:
             
             break
             
         }
+        
+    }
+    
+    func kill() {
+        
+        let tit = "Danger!"
+        let mess = "This will DELETE all the apps data, are you sure you want to proceed?"
+        let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "Reset", style: .destructive, handler: { action in
+            
+            let killswitch = KillSwitch()
+            let killed = killswitch.resetApp(vc: self.navigationController!)
+            
+            if killed {
+                
+                displayAlert(viewController: self,
+                             isError: false,
+                             message: "app has been reset")
+                
+            } else {
+                
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: "error reseting app")
+                
+            }
+            
+        }))
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in
+            
+        }))
+        
+        self.present(alert, animated: true, completion: nil)
         
     }
     
@@ -386,262 +379,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
-    @objc func setLockPassword() {
-        
-        if self.textInput.text != "" {
-            
-            DispatchQueue.main.async {
-                
-                self.labelTitle.textAlignment = .center
-                self.labelTitle.text = "Please confirm the Password to ensure there were no typos."
-                self.firstPassword = self.textInput.text!
-                self.textInput.text = ""
-                self.nextButton.setTitle("Confirm", for: .normal)
-                self.nextButton.removeTarget(self, action: #selector(self.setLockPassword), for: .touchUpInside)
-                self.nextButton.addTarget(self, action: #selector(self.confirmLockPassword), for: .touchUpInside)
-                
-            }
-            
-        } else {
-            
-            shakeAlert(viewToShake: self.textInput)
-            
-        }
-        
-    }
     
-    @objc func confirmLockPassword() {
-        
-        if self.textInput.text != "" {
-            
-            self.secondPassword = self.textInput.text!
-            
-            if self.firstPassword == self.secondPassword {
-                
-                let keychain = KeychainSwift()
-                keychain.set(self.secondPassword, forKey: "UnlockPassword")
-                
-                    self.nextButton.removeTarget(self, action: #selector(self.confirmLockPassword), for: .touchUpInside)
-                    self.textInput.text = ""
-                    self.textInput.resignFirstResponder()
-                    
-                    DispatchQueue.main.async {
-                        
-                        UIView.animate(withDuration: 0.2, animations: {
-                            
-                            self.labelTitle.alpha = 0
-                            self.nextButton.alpha = 0
-                            self.textInput.alpha = 0
-                            self.lockView.alpha = 0
-                            
-                        }) { _ in
-                            
-                            self.textInput.text = ""
-                            self.passwordInput.text = ""
-                            self.labelTitle.text = "Unlock"
-                            self.labelTitle.font = UIFont.init(name: "HelveticaNeue-Light", size: 30)
-                            self.labelTitle.alpha = 0
-                            self.labelTitle.textAlignment = .center
-                            self.nextButton.removeFromSuperview()
-                            self.textInput.removeFromSuperview()
-                            self.lockView.removeFromSuperview()
-                            displayAlert(viewController: self, isError: false, message: "Password updated")
-                            
-                        }
-                        
-                    }
-                
-            } else {
-                
-                displayAlert(viewController: self, isError: true, message: "Passwords did not match")
-                
-            }
-            
-        } else {
-            
-            shakeAlert(viewToShake: self.textInput)
-            
-        }
-        
-    }
-        
-    func addNextButton(inputView: UITextField) {
-        
-        DispatchQueue.main.async {
-            
-            self.nextButton.removeFromSuperview()
-            self.nextButton.frame = CGRect(x: self.view.center.x - 40, y: inputView.frame.maxY + 10, width: 80, height: 55)
-            self.nextButton.showsTouchWhenHighlighted = true
-            self.nextButton.setTitle("Next", for: .normal)
-            self.nextButton.setTitleColor(UIColor.white, for: .normal)
-            self.nextButton.titleLabel?.font = UIFont.init(name: "HelveticaNeue-Bold", size: 20)
-            self.nextButton.addTarget(self, action: #selector(self.nextButtonAction), for: .touchUpInside)
-            self.lockView.addSubview(self.nextButton)
-            
-        }
-        
-    }
-    
-    func addPassword() {
-        
-        DispatchQueue.main.async {
-            
-            self.textInput.placeholder = "Password"
-            self.textInput.isSecureTextEntry = true
-            self.nextButton.setTitle("Next", for: .normal)
-            self.nextButton.removeTarget(self, action: #selector(self.nextButtonAction), for: .touchUpInside)
-            self.nextButton.addTarget(self, action: #selector(self.setLockPassword), for: .touchUpInside)
-            self.textInput.frame = CGRect(x: 50, y: self.labelTitle.frame.maxY + 10, width: self.view.frame.width - 100, height: 50)
-            self.nextButton.frame = CGRect(x: self.view.center.x - 40, y: self.textInput.frame.maxY + 10, width: 80, height: 50)
-            
-            self.labelTitle.text = "Please create a new password"
-            self.labelTitle.font = UIFont.init(name: "HelveticaNeue-Light", size: 18)
-            
-            self.view.addSubview(self.alertView)
-            self.lockView.addSubview(self.labelTitle)
-            self.lockView.addSubview(self.textInput)
-            self.lockView.addSubview(self.nextButton)
-            
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                self.labelTitle.alpha = 1
-                self.textInput.alpha = 1
-                self.nextButton.alpha = 1
-                
-            }, completion: { _ in
-                
-                self.textInput.becomeFirstResponder()
-                
-            })
-            
-        }
-        
-    }
-    
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        print("textFieldShouldReturn")
-        
-        self.view.endEditing(true)
-        return false
-        
-    }
-    
-    func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason) {
-        print("textFieldDidEndEditing")
-        
-        if textField == self.passwordInput {
-            
-            if self.passwordInput.text != "" {
-                
-                self.checkPassword(password: self.passwordInput.text!)
-                
-            } else {
-                
-                shakeAlert(viewToShake: self.passwordInput)
-            }
-            
-        }
-        
-    }
-    
-    @objc func nextButtonAction() {
-        
-        self.view.endEditing(true)
-        
-    }
-    
-    func showUnlockScreen() {
-        
-        let keychain = KeychainSwift()
-        
-        if keychain.get("UnlockPassword") != nil {
-            
-            DispatchQueue.main.async {
-                
-                self.view.addSubview(self.lockView)
-                self.lockView.addSubview(self.imageView)
-                self.lockView.addSubview(self.passwordInput)
-                self.lockView.addSubview(self.labelTitle)
-                self.addNextButton(inputView: self.passwordInput)
-                UIImpactFeedbackGenerator().impactOccurred()
-                
-            }
-            
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                self.lockView.alpha = 1
-                self.imageView.alpha = 1
-                self.passwordInput.alpha = 1
-                self.labelTitle.alpha = 1
-                self.nextButton.alpha = 1
-                
-            })
-            
-            self.passwordInput.becomeFirstResponder()
-            
-        } else {
-            
-            print("set a password")
-            DispatchQueue.main.async {
-                
-                self.view.addSubview(self.lockView)
-                self.lockView.addSubview(self.imageView)
-                self.lockView.addSubview(self.passwordInput)
-                self.lockView.addSubview(self.labelTitle)
-                self.addNextButton(inputView: self.passwordInput)
-                UIImpactFeedbackGenerator().impactOccurred()
-                
-            }
-            
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                self.lockView.alpha = 1
-                self.imageView.alpha = 1
-                self.passwordInput.alpha = 1
-                self.labelTitle.alpha = 1
-                self.nextButton.alpha = 1
-                
-            })
-            
-            self.passwordInput.becomeFirstResponder()
-            addPassword()
-            
-        }
-        
-        
-    }
-    
-    func checkPassword(password: String) {
-        
-        let keychain = KeychainSwift()
-        let retrievedPassword = keychain.get("UnlockPassword")
-        
-        if self.passwordInput.text! == retrievedPassword {
-            
-            self.nextButton.removeFromSuperview()
-            
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                self.passwordInput.alpha = 0
-                self.labelTitle.alpha = 0
-                self.imageView.alpha = 0
-                
-            }, completion: { _ in
-                
-                self.imageView.removeFromSuperview()
-                self.passwordInput.removeFromSuperview()
-                self.labelTitle.removeFromSuperview()
-                self.addPassword()
-                
-                
-            })
-            
-        } else {
-            
-            displayAlert(viewController: self, isError: true, message: "Wrong password")
-        }
-        
-    }
     
 }
 

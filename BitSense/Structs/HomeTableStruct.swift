@@ -29,27 +29,11 @@ public struct HomeStruct: CustomStringConvertible {
     let mempoolCount:Int
     let transactions:[[String: Any]]
     let uptime:Int
-    
-    /*
-    
-    let departureLat:Double
-    let departureLon:Double
-    let departureTerminal:String
-    let departureDate:String
-    let departureUtcOffset:Double
-    let flightDuration:String
-    let airplaneType:String
-    let flightId:String
-    let flightStatus:String
-    let identifier:String
-    let phoneNumber:String
-    let primaryCarrier:String
-    let publishedArrival:String
-    let publishedDeparture:String
-    let urlArrivalDate:String*/
+    let feeRate:String
     
     init(dictionary: [String: Any]) {
         
+        self.feeRate = dictionary["feeRate"] as? String ?? ""
         self.uptime = dictionary["uptime"] as? Int ?? 0
         self.network = dictionary["chain"] as? String ?? ""
         self.hashrate = dictionary["networkhashps"] as? String ?? ""
@@ -65,28 +49,9 @@ public struct HomeStruct: CustomStringConvertible {
         self.progress = dictionary["progress"] as? String ?? ""
         self.pruned = dictionary["pruned"] as? Bool ?? false
         self.unconfirmedBalance = dictionary["unconfirmedBalance"] as? String ?? "0.00000000"
-        self.hotBalance = dictionary["hotBalance"] as? String ?? ""
+        self.hotBalance = dictionary["hotBalance"] as? String ?? "0.00000000"
         self.mempoolCount = dictionary["mempoolCount"] as? Int ?? 0
         self.transactions = dictionary["transactions"] as? [[String: Any]] ?? []
-        
-        
-        /*self.departureLat = dictionary["departureLat"] as? Double ?? 0
-        self.departureLon = dictionary["departureLon"] as? Double ?? 0
-        self.departureTerminal = dictionary["departureTerminal"] as? String ?? ""
-        self.departureDate = dictionary["departureTime"] as? String ?? ""
-        self.departureUtcOffset = dictionary["departureUtcOffset"] as? Double ?? 0
-        self.flightDuration = dictionary["flightDuration"] as? String ?? ""
-        self.airplaneType = dictionary["flightEquipment"] as? String ?? ""
-        self.flightId = dictionary["flightId"] as? String ?? ""
-        self.flightStatus = dictionary["flightStatus"] as? String ?? ""
-        self.identifier = dictionary["identifier"] as? String ?? ""
-        self.phoneNumber = dictionary["phoneNumber"] as? String ?? ""
-        self.primaryCarrier = dictionary["primaryCarrier"] as? String ?? ""
-        self.publishedArrival = dictionary["publishedArrival"] as? String ?? ""
-        self.publishedDeparture = dictionary["publishedDeparture"] as? String ?? ""
-        self.urlArrivalDate = dictionary["urlArrivalDate"] as? String ?? ""
-        self.lastUpdated = dictionary["lastUpdated"] as? String ?? ""
-        self.sharedFrom = dictionary["sharedFrom"] as? String ?? ""*/
         
     }
     

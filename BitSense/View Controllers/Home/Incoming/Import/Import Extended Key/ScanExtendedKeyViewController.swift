@@ -10,12 +10,6 @@ import UIKit
 
 class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
     
-    var torClient:TorClient!
-    var torRPC:MakeRPCCall!
-    var ssh:SSHService!
-    var makeSSHCall:SSHelper!
-    var isUsingSSH = IsUsingSSH.sharedInstance
-    
     var dict = [String:Any]()
     
     let qrScanner = QRScanner()
@@ -37,7 +31,7 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         qrScanner.textField.delegate = self
         
         let tapGesture = UITapGestureRecognizer(target: self,
@@ -47,7 +41,7 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
         self.view.addGestureRecognizer(tapGesture)
         
         blurView.frame = CGRect(x: view.frame.minX + 10,
-                                y: 80,
+                                y: navigationController!.navigationBar.frame.maxY + 10,
                                 width: view.frame.width - 20,
                                 height: 50)
         
@@ -101,20 +95,6 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
     
     override func viewDidAppear(_ animated: Bool) {
         
-        isUsingSSH = IsUsingSSH.sharedInstance
-        
-        if isUsingSSH {
-            
-            ssh = SSHService.sharedInstance
-            makeSSHCall = SSHelper.sharedInstance
-            
-        } else {
-            
-            torRPC = MakeRPCCall.sharedInstance
-            torClient = TorClient.sharedInstance
-            
-        }
-        
         qrScanner.textField.removeFromSuperview()
         blurView.removeFromSuperview()
         view.addSubview(blurView)
@@ -166,10 +146,11 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
     
     func setValues(key: String) {
         
-        connectingView.addConnectingView(vc: self.navigationController!, description: "deriving keys for confirmation")
+        connectingView.addConnectingView(vc: self.navigationController!,
+                                         description: "deriving keys for confirmation")
         
         dict["key"] = key
-        fingerprint = dict["fingerprint"] as! String
+        fingerprint = dict["fingerprint"] as? String ?? ""
         range = dict["range"] as! String
         convertedRange = convertRange()
         
@@ -185,10 +166,12 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
         
         let derivation = dict["derivation"] as! String
         
-        if derivation == "BIP44" {
-            
-            desc = "pkh"
-            
+        switch derivation {
+        case "BIP44": desc = "pkh"
+        case "BIP84": desc = "wpkh"
+        case "BIP32Segwit": desc = "wpkh"
+        case "BIP32Legacy": desc = "pkh"
+        default:break
         }
         
         label = dict["label"] as! String
@@ -256,17 +239,19 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
     
     func importXprv(xprv: String) {
         
+        let reducer = Reducer()
+        
         func getDescriptor() {
             
-            let result = self.makeSSHCall.dictToReturn
+            let result = reducer.dictToReturn
             
-            if makeSSHCall.errorBool {
+            if reducer.errorBool {
                 
                 connectingView.removeConnectingView()
                 
                 displayAlert(viewController: self,
                              isError: true,
-                             message: makeSSHCall.errorDescription)
+                             message: reducer.errorDescription)
                 
             } else {
                 
@@ -277,50 +262,42 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
                 descriptor = descriptor.replacingOccurrences(of: "0'", with: "0'\"'\"'")
                 dict["descriptor"] = descriptor
                 
-                self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.deriveaddresses,
-                                           param: "\(descriptor), ''\(convertedRange)''")
+                self.executeNodeCommand(method: BTC_CLI_COMMAND.deriveaddresses,
+                                        param: "\(descriptor), ''\(convertedRange)''")
                 
             }
             
         }
         
+        let method = BTC_CLI_COMMAND.getdescriptorinfo
+        var param = ""
+        
         if fingerprint != "" {
             
             //compatible with coldcard
-            
             if desc == "pkh" {
                 
                 //BIP44
-                
                 if isTestnet {
                     
-                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                                  method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                                  param: "\"\(desc)([\(fingerprint)/44h/1h/0h]\(xprv)/0/*)\"", completion: getDescriptor)
+                    param = "\"\(desc)([\(fingerprint)/44h/1h/0h]\(xprv)/0/*)\""
                     
                 } else {
                     
-                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                                  method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                                  param: "\"\(desc)([\(fingerprint)/44h/0h/0h]\(xprv)/0/*)\"", completion: getDescriptor)
+                    param = "\"\(desc)([\(fingerprint)/44h/0h/0h]\(xprv)/0/*)\""
                     
                 }
                 
             } else {
                 
                 //BIP84
-                
                 if isTestnet {
                     
-                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                                  method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                                  param: "\"\(desc)([\(fingerprint)/84h/1h/0h]\(xprv)/0/*)\"", completion: getDescriptor)
+                    param = "\"\(desc)([\(fingerprint)/84h/1h/0h]\(xprv)/0/*)\""
                     
                 } else {
                     
-                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                                  method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                                  param: "\"\(desc)([\(fingerprint)/84h/0h/0h]\(xprv)/0/*)\"", completion: getDescriptor)
+                    param = "\"\(desc)([\(fingerprint)/84h/0h/0h]\(xprv)/0/*)\""
                     
                 }
                 
@@ -329,28 +306,31 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
         } else {
             
             //treat the xpub as a BIP32 extended key
-            
-            makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                          method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                          param: "\"\(desc)(\(xprv)/*)\"", completion: getDescriptor)
+            param = "\"\(desc)(\(xprv)/*)\""
             
         }
+        
+        reducer.makeCommand(command: method,
+                            param: param,
+                            completion: getDescriptor)
         
     }
     
     func importXpub(xpub: String) {
         
+        let reducer = Reducer()
+        
         func getDescriptor() {
             
-            let result = self.makeSSHCall.dictToReturn
+            let result = reducer.dictToReturn
             
-            if makeSSHCall.errorBool {
+            if reducer.errorBool {
                 
                 connectingView.removeConnectingView()
                 
                 displayAlert(viewController: self,
                              isError: true,
-                             message: makeSSHCall.errorDescription)
+                             message: reducer.errorDescription)
                 
             } else {
                 
@@ -360,50 +340,42 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
                 descriptor = descriptor.replacingOccurrences(of: "0'", with: "0'\"'\"'")
                 dict["descriptor"] = descriptor
                 
-                self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.deriveaddresses,
-                                           param: "\(descriptor), ''\(convertedRange)''")
+                self.executeNodeCommand(method: BTC_CLI_COMMAND.deriveaddresses,
+                                        param: "\(descriptor), ''\(convertedRange)''")
                 
             }
             
         }
         
+        let method = BTC_CLI_COMMAND.getdescriptorinfo
+        var param = ""
+        
         if fingerprint != "" {
             
             //compatible with coldcard
-            
             if desc == "pkh" {
                 
                 //BIP44
-                
                 if isTestnet {
                     
-                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                                  method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                                  param: "\"\(desc)([\(fingerprint)/44h/1h/0h]\(xpub)/0/*)\"", completion: getDescriptor)
+                    param = "\"\(desc)([\(fingerprint)/44h/1h/0h]\(xpub)/0/*)\""
                     
                 } else {
                     
-                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                                  method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                                  param: "\"\(desc)([\(fingerprint)/44h/0h/0h]\(xpub)/0/*)\"", completion: getDescriptor)
+                    param = "\"\(desc)([\(fingerprint)/44h/0h/0h]\(xpub)/0/*)\""
                     
                 }
                 
             } else {
                 
                 //BIP84
-                
                 if isTestnet {
                     
-                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                                  method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                                  param: "\"\(desc)([\(fingerprint)/84h/1h/0h]\(xpub)/0/*)\"", completion: getDescriptor)
+                    param = "\"\(desc)([\(fingerprint)/84h/1h/0h]\(xpub)/0/*)\""
                     
                 } else {
                     
-                    makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                                  method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                                  param: "\"\(desc)([\(fingerprint)/84h/0h/0h]\(xpub)/0/*)\"", completion: getDescriptor)
+                    param = "\"\(desc)([\(fingerprint)/84h/0h/0h]\(xpub)/0/*)\""
                     
                 }
                 
@@ -412,20 +384,24 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
         } else {
             
             //treat the xpub as a BIP32 extended key
+            param = "\"\(desc)(\(xpub)/*)\""
             
-            makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                          method: BTC_CLI_COMMAND.getdescriptorinfo,
-                                          param: "\"\(desc)(\(xpub)/*)\"", completion: getDescriptor)
             
         }
         
+        reducer.makeCommand(command: method,
+                            param: param,
+                            completion: getDescriptor)
+        
     }
     
-    func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
+    func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
+        
+        let reducer = Reducer()
         
         func getResult() {
             
-            if !makeSSHCall.errorBool {
+            if !reducer.errorBool {
                 
                 DispatchQueue.main.async {
                     
@@ -437,13 +413,13 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
                     
                 case BTC_CLI_COMMAND.deriveaddresses:
                     
-                    keyArray = makeSSHCall.arrayToReturn
-                    
                     DispatchQueue.main.async {
                         
+                        self.keyArray = reducer.arrayToReturn
                         self.connectingView.removeConnectingView()
                         
-                        self.performSegue(withIdentifier: "goDisplayKeys", sender: self)
+                        self.performSegue(withIdentifier: "goDisplayKeys",
+                                          sender: self)
                         
                     }
                     
@@ -461,7 +437,7 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
                     
                     displayAlert(viewController: self,
                                  isError: true,
-                                 message: self.makeSSHCall.errorDescription)
+                                 message: reducer.errorDescription)
                     
                 }
                 
@@ -469,34 +445,9 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
             
         }
         
-        if self.ssh != nil {
-            
-            if self.ssh.session.isConnected {
-                
-                makeSSHCall.executeSSHCommand(ssh: self.ssh,
-                                              method: method,
-                                              param: param,
-                                              completion: getResult)
-                
-            } else {
-                
-                connectingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "Not connected")
-                
-            }
-            
-        } else {
-            
-            connectingView.removeConnectingView()
-            
-            displayAlert(viewController: self,
-                         isError: true,
-                         message: "Not connected")
-            
-        }
+        reducer.makeCommand(command: method,
+                            param: param,
+                            completion: getResult)
         
     }
     
@@ -512,7 +463,7 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
         return arrayToReturn
         
     }
-
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
         switch segue.identifier {
@@ -533,5 +484,5 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
             
         }
     }
-
+    
 }
