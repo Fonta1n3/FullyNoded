@@ -120,6 +120,11 @@
 /* Begin PBXFileReference section */
 		148F32FE035A543266233D86 /* Pods-BitSense.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BitSense.debug.xcconfig"; path = "Pods/Target Support Files/Pods-BitSense/Pods-BitSense.debug.xcconfig"; sourceTree = "<group>"; };
 		87C0705F3E655BAB496A1F4E /* libPods-BitSense.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-BitSense.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A084FD702359E9D500DA63CF /* Podfile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Podfile; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		A084FD712359E9D500DA63CF /* Cartfile.resolved */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Cartfile.resolved; sourceTree = "<group>"; };
+		A084FD722359E9D500DA63CF /* Podfile.lock */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Podfile.lock; sourceTree = "<group>"; };
+		A084FD732359E9D500DA63CF /* Cartfile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Cartfile; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		A084FD782359F7B700DA63CF /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		D00B9A242111427200E8B95A /* BitSense.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BitSense.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D00B9A272111427200E8B95A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D00B9A2C2111427200E8B95A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -260,6 +265,18 @@
 			name = Pods;
 			sourceTree = "<group>";
 		};
+		A084FD6F2359E9C900DA63CF /* Build */ = {
+			isa = PBXGroup;
+			children = (
+				A084FD782359F7B700DA63CF /* .gitignore */,
+				A084FD732359E9D500DA63CF /* Cartfile */,
+				A084FD712359E9D500DA63CF /* Cartfile.resolved */,
+				A084FD702359E9D500DA63CF /* Podfile */,
+				A084FD722359E9D500DA63CF /* Podfile.lock */,
+			);
+			name = Build;
+			sourceTree = "<group>";
+		};
 		D0048C70225F38A90057E21B /* Home */ = {
 			isa = PBXGroup;
 			children = (
@@ -330,6 +347,7 @@
 		D00B9A1B2111427200E8B95A = {
 			isa = PBXGroup;
 			children = (
+				A084FD6F2359E9C900DA63CF /* Build */,
 				D084960522EC0A94003FE8EB /* LICENSE.md */,
 				D0DE292A22BCFE9900D9EBCF /* Readme.md */,
 				D00B9A262111427200E8B95A /* BitSense */,

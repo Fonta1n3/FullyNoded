@@ -1,3 +1,0 @@
-
-noinst_HEADERS += \
-	src/lib/arch/bytes.h
