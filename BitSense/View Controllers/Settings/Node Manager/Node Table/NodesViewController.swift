@@ -76,7 +76,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
         }
         
-        isActive.isOn = nodeArray[indexPath.row]["isActive"] as! Bool
+        isActive.isOn = nodeArray[indexPath.row]["isActive"] as? Bool ?? false
         isActive.restorationIdentifier = "\(indexPath.row)"
         isActive.addTarget(self, action: #selector(setActiveNow(_:)), for: .touchUpInside)
         
