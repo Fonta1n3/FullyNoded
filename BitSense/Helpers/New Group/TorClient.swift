@@ -24,13 +24,11 @@ class TorClient {
     
     // The tor url session configuration.
     // Start with default config as fallback.
-    private var sessionConfiguration: URLSessionConfiguration = .default
-    
+    private lazy var sessionConfiguration: URLSessionConfiguration = .default
+
     // The tor client url session including the tor configuration.
-    var session: URLSession {
-        return URLSession(configuration: sessionConfiguration)
-    }
-    
+    lazy var session = URLSession(configuration: sessionConfiguration)
+
     // Start the tor client.
     func start(completion: @escaping () -> Void) {
         
@@ -111,6 +109,7 @@ class TorClient {
         self.isOperational = false
         self.thread = nil
         self.sessionConfiguration = .default
+        self.session = URLSession(configuration: sessionConfiguration)
         
     }
     
@@ -156,6 +155,7 @@ class TorClient {
                 
                 self.controller?.getSessionConfiguration() { sessionConfig in
                     self.sessionConfiguration = sessionConfig!
+                    self.session = URLSession(configuration: self.sessionConfiguration)
                     
                     self.isOperational = true
                     completion()
