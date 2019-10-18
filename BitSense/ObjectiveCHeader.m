@@ -6,4 +6,4 @@
 //  Copyright © 2018 Fontaine. All rights reserved.
 //
 
-#import <Tor/TOR.h>
+#import <Tor/Tor.h>
