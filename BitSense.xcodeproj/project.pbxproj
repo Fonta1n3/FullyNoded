@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		24AF6B3CFA03888DD5E3C4C6 /* libPods-BitSense.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 87C0705F3E655BAB496A1F4E /* libPods-BitSense.a */; };
 		D00B9A282111427200E8B95A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00B9A272111427200E8B95A /* AppDelegate.swift */; };
 		D00B9A2D2111427200E8B95A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D00B9A2B2111427200E8B95A /* Main.storyboard */; };
 		D00B9A302111427200E8B95A /* BitSense.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = D00B9A2E2111427200E8B95A /* BitSense.xcdatamodeld */; };
@@ -119,13 +118,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		87C0705F3E655BAB496A1F4E /* libPods-BitSense.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-BitSense.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A084FD702359E9D500DA63CF /* Podfile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Podfile; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		A084FD712359E9D500DA63CF /* Cartfile.resolved */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Cartfile.resolved; sourceTree = "<group>"; };
 		A084FD722359E9D500DA63CF /* Podfile.lock */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Podfile.lock; sourceTree = "<group>"; };
 		A084FD732359E9D500DA63CF /* Cartfile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Cartfile; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		A084FD782359F7B700DA63CF /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
-		C94400A4ED9FF5CA9D402D5E /* Pods-BitSense.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BitSense.debug.xcconfig"; path = "Target Support Files/Pods-BitSense/Pods-BitSense.debug.xcconfig"; sourceTree = "<group>"; };
 		D00B9A242111427200E8B95A /* BitSense.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BitSense.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D00B9A272111427200E8B95A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D00B9A2C2111427200E8B95A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -239,7 +236,6 @@
 		D0EF29C0216B82B400EB776A /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		D0FA417B213C7CDA0028E4F8 /* whiteLock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteLock.png; sourceTree = "<group>"; };
 		D0FA417D213C7CED0028E4F8 /* whiteFingerPrint.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteFingerPrint.png; sourceTree = "<group>"; };
-		D30D465F8F63631AA3BDB19B /* Pods-BitSense.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BitSense.release.xcconfig"; path = "Target Support Files/Pods-BitSense/Pods-BitSense.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -250,7 +246,6 @@
 				D0196DDF21BEF3FF0081E0AB /* NMSSH.framework in Frameworks */,
 				D0855FBD22AE1B3000DBBFC2 /* CryptoSwift.framework in Frameworks */,
 				D0855FBB22AE1B2B00DBBFC2 /* KeychainSwift.framework in Frameworks */,
-				24AF6B3CFA03888DD5E3C4C6 /* libPods-BitSense.a in Frameworks */,
 				D0855FB922ACB7D100DBBFC2 /* Tor.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -346,7 +341,6 @@
 				D00B9A262111427200E8B95A /* BitSense */,
 				D00B9A252111427200E8B95A /* Products */,
 				D08C1FBB211147F600B7CA79 /* Frameworks */,
-				F144FC21A6A8B8E3D986E08F /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -752,7 +746,6 @@
 				D0855FB822ACB7D100DBBFC2 /* Tor.framework */,
 				D0196DDE21BEF3FF0081E0AB /* NMSSH.framework */,
 				D0DA7CE82172F7D800A96F7E /* StoreKit.framework */,
-				87C0705F3E655BAB496A1F4E /* libPods-BitSense.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -828,15 +821,6 @@
 			path = Images;
 			sourceTree = "<group>";
 		};
-		F144FC21A6A8B8E3D986E08F /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				C94400A4ED9FF5CA9D402D5E /* Pods-BitSense.debug.xcconfig */,
-				D30D465F8F63631AA3BDB19B /* Pods-BitSense.release.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -844,7 +828,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = D00B9A392111427200E8B95A /* Build configuration list for PBXNativeTarget "BitSense" */;
 			buildPhases = (
-				9458109A08208F60ADEF92D4 /* [CP] Check Pods Manifest.lock */,
 				D00B9A202111427200E8B95A /* Sources */,
 				D00B9A212111427200E8B95A /* Frameworks */,
 				D00B9A222111427200E8B95A /* Resources */,
@@ -944,24 +927,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		9458109A08208F60ADEF92D4 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-BitSense-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
 		D08C1FBE2111480100B7CA79 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1208,7 +1173,6 @@
 		};
 		D00B9A3A2111427200E8B95A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C94400A4ED9FF5CA9D402D5E /* Pods-BitSense.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -1236,7 +1200,6 @@
 		};
 		D00B9A3B2111427200E8B95A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = D30D465F8F63631AA3BDB19B /* Pods-BitSense.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;

@@ -3,6 +3,9 @@ A feature rich Bitcoin app which is 100% powered by your own Full Node. Allows y
 
 There may be bugs, always decode your transaction and study it before broadcasting, ideally get comfortable with it on testnet first, I am not responsible for loss of funds. It is not even possible to broadcast transactions in the app.
 
+## Connect your Nodl
+Go to nodl browser based UI, tap the Fully Noded link and Fully Noded will open, add and connect to your nodl over Tor, it is optional for users to add a V3 auth key. This enables worldwide access to your nodl from your iPhone with a native integrated Tor thread running in the app. 
+
 ## What can Fully Noded do?
 
 Its easier to list what it can't do, right now it does not include functionality for creating custom scripts or time locked transactions. Other then that it can do everything Bitcoin Core can do with the additon of some HD multisig functionality that is not really possible using only Bitcoin Core.
@@ -31,11 +34,11 @@ These may be outdated but will give you the general idea, please contribute by m
 
 ## Simple Install Using iTunes or XCode
 
-[You can download the IPA file here](https://drive.google.com/open?id=1SuKSxUmDZ-ucaujtRjWKZOvTCspmnOk4) then you can install it directly to your device using either [iTunes](https://imazing.com/guides/how-to-install-apps-itunes-12-7) or [XCode](https://docs.monaca.io/en/products_guide/monaca_ide/deploy/non_market_deploy/#install-using-xcode) (you can also just drag and drop the ipa file onto a simulator in xcode).
+[You can download the IPA file here](https://drive.google.com/open?id=1SuKSxUmDZ-ucaujtRjWKZOvTCspmnOk4)  [iTunes](https://imazing.com/guides/how-to-install-apps-itunes-12-7) or [XCode](https://docs.monaca.io/en/products_guide/monaca_ide/deploy/non_market_deploy/#install-using-xcode) (you can also just drag and drop the ipa file onto a simulator in xcode).
 
 ## Build From Source - Mac
 
-First things first see if you have brew installed by opening a terminal and running `brew help`, if you get a valid response you have brew installed already. If not in your terminal run:
+See if you have brew installed by opening a terminal and running `brew --version`, if you get a valid response you have brew installed already. If not in your terminal run:
 
 `cd /usr/local`
 
@@ -47,34 +50,13 @@ Wait for bew to finish.
 
 Next we will need to install carthage:  [Follow these simple instructions for installing carthage on mac](https://brewinstall.org/install-carthage-on-mac-with-brew/)
 
-If you want to use Tor first you will need to use brew to install the dependencies for Tor.framework (if not you can skip to the next steps):
-
-`brew install automake autoconf libtool gettext`
-
-then
-
-```
-git clone git@github.com:iCepa/Tor.framework
-
-cd Tor.framework
-
-git submodule init
-git submodule update
-
-carthage build --no-skip-current --platform iOS
-
-```
-
-You will need Xcode.
-
 - Install [Xcode](https://itunes.apple.com/id/app/xcode/id497799835?mt=12)
 - You will need a free Apple developer account [create one here](https://developer.apple.com/programs/enroll/)
 - In XCode, click "XCode" -> "preferences" -> "Accounts" -> add your github account
-- Go to [Fully Noded in GitHub](https://github.com/FontaineDenton/FullyNoded) click "Clone and Download" -> "Open in XCode"
+- Go to [Fully Noded in GitHub](https://github.com/Fonta1n3/FullyNoded) click "Clone and Download" -> "Open in XCode"
 - Open Terminal
 - `cd Documents FullyNoded` (or wherever it downloaded to)
-- run `carthage update --platform iOS` and let carthage do its thing
-- When Carthage frameworks are installed (it takes awhile and its normal to get an error about xconfig something something) run the app in Simulator.
+- run `carthage bootstrap --platform iOS` and let carthage do its thing
 
 
 ## Connect to your Nodl's node
@@ -225,6 +207,10 @@ Please feel free to build from source in xcode and submit PR's. I need help and 
 - [CryptoSwift](https://github.com/krzyzanowskim/CryptoSwift) for encrypting your nodes credentials.
 - [keychain-swift](https://github.com/evgenyneu/keychain-swift) for storing your nodes credentials decryption key on your iPhones secure enclave.
 - [Tor](https://github.com/iCepa/Tor.framework) for connecting to your node more privately and securely.
+
+## Changes v0.1.8
+- Nodl deeplink
+- Removed cocoapods
 
 ## Changes v0.1.7
 - Clarifies whether user is importing BIP32 extended key or BIP44/BIP84
