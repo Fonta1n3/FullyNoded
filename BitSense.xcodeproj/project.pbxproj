@@ -43,6 +43,7 @@
 		D039D4082333AF7300D1ED18 /* Entities.swift in Sources */ = {isa = PBXBuildFile; fileRef = D039D4072333AF7300D1ED18 /* Entities.swift */; };
 		D0410617224ED189004AC0D0 /* ObjectiveCHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = D0410616224ED189004AC0D0 /* ObjectiveCHeader.m */; };
 		D043627822F36CA7002074E3 /* IsUsingSSH.swift in Sources */ = {isa = PBXBuildFile; fileRef = D043627722F36CA7002074E3 /* IsUsingSSH.swift */; };
+		D044ED78235AF42D00300D62 /* ImportStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D044ED77235AF42D00300D62 /* ImportStruct.swift */; };
 		D0452AD42246C7830013E225 /* clear.png in Resources */ = {isa = PBXBuildFile; fileRef = D0452AD32246C7820013E225 /* clear.png */; };
 		D0452AD62246E0370013E225 /* whiteBroom.png in Resources */ = {isa = PBXBuildFile; fileRef = D0452AD52246E0370013E225 /* whiteBroom.png */; };
 		D0452ADB2247417F0013E225 /* ImportPrivKeyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0452ADA2247417F0013E225 /* ImportPrivKeyViewController.swift */; };
@@ -118,13 +119,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		148F32FE035A543266233D86 /* Pods-BitSense.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BitSense.debug.xcconfig"; path = "Pods/Target Support Files/Pods-BitSense/Pods-BitSense.debug.xcconfig"; sourceTree = "<group>"; };
 		87C0705F3E655BAB496A1F4E /* libPods-BitSense.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-BitSense.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A084FD702359E9D500DA63CF /* Podfile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Podfile; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		A084FD712359E9D500DA63CF /* Cartfile.resolved */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Cartfile.resolved; sourceTree = "<group>"; };
 		A084FD722359E9D500DA63CF /* Podfile.lock */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Podfile.lock; sourceTree = "<group>"; };
 		A084FD732359E9D500DA63CF /* Cartfile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Cartfile; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		A084FD782359F7B700DA63CF /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		C94400A4ED9FF5CA9D402D5E /* Pods-BitSense.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BitSense.debug.xcconfig"; path = "Target Support Files/Pods-BitSense/Pods-BitSense.debug.xcconfig"; sourceTree = "<group>"; };
 		D00B9A242111427200E8B95A /* BitSense.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BitSense.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D00B9A272111427200E8B95A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D00B9A2C2111427200E8B95A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -163,6 +164,7 @@
 		D0410615224ED188004AC0D0 /* BitSense-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BitSense-Bridging-Header.h"; sourceTree = "<group>"; };
 		D0410616224ED189004AC0D0 /* ObjectiveCHeader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ObjectiveCHeader.m; sourceTree = "<group>"; };
 		D043627722F36CA7002074E3 /* IsUsingSSH.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = IsUsingSSH.swift; path = ../IsUsingSSH.swift; sourceTree = "<group>"; };
+		D044ED77235AF42D00300D62 /* ImportStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportStruct.swift; sourceTree = "<group>"; };
 		D0452AD32246C7820013E225 /* clear.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = clear.png; sourceTree = "<group>"; };
 		D0452AD52246E0370013E225 /* whiteBroom.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteBroom.png; sourceTree = "<group>"; };
 		D0452ADA2247417F0013E225 /* ImportPrivKeyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportPrivKeyViewController.swift; sourceTree = "<group>"; };
@@ -237,7 +239,7 @@
 		D0EF29C0216B82B400EB776A /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		D0FA417B213C7CDA0028E4F8 /* whiteLock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteLock.png; sourceTree = "<group>"; };
 		D0FA417D213C7CED0028E4F8 /* whiteFingerPrint.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteFingerPrint.png; sourceTree = "<group>"; };
-		DDF5C52D26F270D526B8F5D8 /* Pods-BitSense.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BitSense.release.xcconfig"; path = "Pods/Target Support Files/Pods-BitSense/Pods-BitSense.release.xcconfig"; sourceTree = "<group>"; };
+		D30D465F8F63631AA3BDB19B /* Pods-BitSense.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BitSense.release.xcconfig"; path = "Target Support Files/Pods-BitSense/Pods-BitSense.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -256,15 +258,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		73F1C4BA4F3F713612700A01 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				148F32FE035A543266233D86 /* Pods-BitSense.debug.xcconfig */,
-				DDF5C52D26F270D526B8F5D8 /* Pods-BitSense.release.xcconfig */,
-			);
-			name = Pods;
-			sourceTree = "<group>";
-		};
 		A084FD6F2359E9C900DA63CF /* Build */ = {
 			isa = PBXGroup;
 			children = (
@@ -353,7 +346,7 @@
 				D00B9A262111427200E8B95A /* BitSense */,
 				D00B9A252111427200E8B95A /* Products */,
 				D08C1FBB211147F600B7CA79 /* Frameworks */,
-				73F1C4BA4F3F713612700A01 /* Pods */,
+				F144FC21A6A8B8E3D986E08F /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -476,6 +469,7 @@
 				D039D3C723322F1300D1ED18 /* NodeStruct.swift */,
 				D039D3C92332440D00D1ED18 /* HDMusigStruct.swift */,
 				D08A92AC2337A63000409D6E /* DescriptorStruct.swift */,
+				D044ED77235AF42D00300D62 /* ImportStruct.swift */,
 			);
 			path = Structs;
 			sourceTree = "<group>";
@@ -834,6 +828,15 @@
 			path = Images;
 			sourceTree = "<group>";
 		};
+		F144FC21A6A8B8E3D986E08F /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				C94400A4ED9FF5CA9D402D5E /* Pods-BitSense.debug.xcconfig */,
+				D30D465F8F63631AA3BDB19B /* Pods-BitSense.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -878,6 +881,9 @@
 								enabled = 0;
 							};
 							com.apple.NetworkExtensions.iOS = {
+								enabled = 0;
+							};
+							com.apple.SafariKeychain = {
 								enabled = 0;
 							};
 							com.apple.VPNLite = {
@@ -1039,6 +1045,7 @@
 				D0B6936E22B2412D00A2C3E6 /* ChooseConnectionTypeViewController.swift in Sources */,
 				D07E0DE622F9168F00A81FA8 /* WalletManagerViewController.swift in Sources */,
 				D037C874231BB04B006C357D /* ScanExtendedKeyViewController.swift in Sources */,
+				D044ED78235AF42D00300D62 /* ImportStruct.swift in Sources */,
 				D08A92A62334F66900409D6E /* Reducer.swift in Sources */,
 				D0806B4522EE9FBA002C20A1 /* TXChain.swift in Sources */,
 				D08A92B923403DB200409D6E /* NodesViewController.swift in Sources */,
@@ -1201,7 +1208,7 @@
 		};
 		D00B9A3A2111427200E8B95A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 148F32FE035A543266233D86 /* Pods-BitSense.debug.xcconfig */;
+			baseConfigurationReference = C94400A4ED9FF5CA9D402D5E /* Pods-BitSense.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -1219,7 +1226,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
-				PROVISIONING_PROFILE_SPECIFIER = FullyNoded_Development_Profile_March_2019;
+				PROVISIONING_PROFILE_SPECIFIER = FullyNoded_Oct_2019_Development;
 				SWIFT_OBJC_BRIDGING_HEADER = "BitSense/BitSense-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -1229,12 +1236,12 @@
 		};
 		D00B9A3B2111427200E8B95A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = DDF5C52D26F270D526B8F5D8 /* Pods-BitSense.release.xcconfig */;
+			baseConfigurationReference = D30D465F8F63631AA3BDB19B /* Pods-BitSense.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 69FR345CDA;
@@ -1249,7 +1256,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
-				PROVISIONING_PROFILE_SPECIFIER = FullyNoded_Development_Profile_March_2019;
+				PROVISIONING_PROFILE_SPECIFIER = FullyNoded_Oct_2019_Distribution;
 				SWIFT_OBJC_BRIDGING_HEADER = "BitSense/BitSense-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

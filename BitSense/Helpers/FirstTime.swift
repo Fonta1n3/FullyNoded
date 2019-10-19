@@ -83,7 +83,7 @@ class FirstTime {
             
             var torNode = [String:Any]()
             let torNodeId = randomString(length: 23)
-            let torNodeHost = aes.encryptKey(keyToEncrypt: "vpcslgyyrlx2ioch7anyhgrwewbzfl2zi5pw3b274rid4nsydbmtxmyd.onion:18332")
+            let torNodeHost = aes.encryptKey(keyToEncrypt: "47phoezetmjp3jzynlg6vskfs3vv3n67ihcyoe4qn5wnjjdgtsltpsid.onion:18332")
             let torAuthKey = aes.encryptKey(keyToEncrypt: "NQ2IJRNRZWPKVJNGWV7N6KJFUS235N27IP5NZ7UAXMXWUMILNLJA")
             let torNodeRPCPass = aes.encryptKey(keyToEncrypt: "password")
             let torNodeRPCUser = aes.encryptKey(keyToEncrypt: "user")

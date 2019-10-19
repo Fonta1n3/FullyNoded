@@ -4,6 +4,7 @@
 //
 //  Created by Peter on 12/06/19.
 //  Copyright © 2019 Fontaine. All rights reserved.
+//  Copyright © 2018 Verge Currency.
 //
 
 import Foundation
@@ -41,24 +42,25 @@ class TorClient {
                 return completion()
             }
             
+            //add V3 auth keys to ClientOnionAuthDir if any exist
+            let torDir = self.createTorDirectory()
+            let authPath = self.createAuthDirectory()
+            self.addAuthKeysToAuthDirectory()
+            
             // Make sure we don't have a thread already.
             if self.thread == nil {
                 
-                self.config.options = ["DNSPort": "12345", "AutomapHostsOnResolve": "1", "SocksPort": "9050", "AvoidDiskWrites": "1"]
+                self.config.options = ["DNSPort": "12345", "AutomapHostsOnResolve": "1", "SocksPort": "9050", "AvoidDiskWrites": "0", "ClientOnionAuthDir": "\(authPath)"]
                 self.config.cookieAuthentication = true
-                self.config.dataDirectory = URL(fileURLWithPath: self.createTorDirectory())
+                self.config.dataDirectory = URL(fileURLWithPath: torDir)
                 self.config.controlSocket = self.config.dataDirectory?.appendingPathComponent("cp")
                 self.config.arguments = [
-                    "--ignore-missing-torrc",
-                    "--ClientOnionAuthDir", self.createAuthDirectory()
+                    "--ignore-missing-torrc"
                     ]
                 
                 self.thread = TorThread(configuration: self.config)
                 
             }
-            
-            //add V3 auth keys to ClientOnionAuthDir if any exist
-            self.addAuthKeysToAuthDirectory()
             
             // Initiate the controller.
             self.controller = TorController(socketURL: self.config.controlSocket!)
@@ -209,7 +211,7 @@ class TorClient {
     private func createAuthDirectory() -> String {
         
         // Create tor v3 auth directory if it does not yet exist
-        let authPath = URL(fileURLWithPath: getTorPath(), isDirectory: true).appendingPathComponent("auth", isDirectory: true).path
+        let authPath = URL(fileURLWithPath: getTorPath(), isDirectory: true).appendingPathComponent("onion_auth", isDirectory: true).path
         
         do {
             
@@ -230,7 +232,7 @@ class TorClient {
     private func addAuthKeysToAuthDirectory() {
         
         clearAuthKeys()
-        let authPath = createTorDirectory()
+        let authPath = createAuthDirectory()
         let cd = CoreDataService()
         let nodes = cd.retrieveEntity(entityName: .nodes)
         let aes = AESService()
@@ -242,7 +244,6 @@ class TorClient {
             
             if str.authKey != "" {
                 
-                //y34f3abl2bou6subajlosasumupsli2oq7chfo3oqfqznuedqhzfr5yd:descriptor:x25519:NQ2IJRNRZWPKVJNGWV7N6KJFUS235N27IP5NZ7UAXMXWUMILNLJA
                 let authorizedKey = aes.decryptKey(keyToDecrypt: str.authKey)
                 let onionAddress = aes.decryptKey(keyToDecrypt: str.onionAddress)
                 let onionAddressArray = onionAddress.components(separatedBy: ".onion:")
@@ -255,7 +256,6 @@ class TorClient {
                     try authString.write(to: file, atomically: true, encoding: .utf8)
                     
                     print("successfully wrote authkey to file")
-                    print("key = \(authString)")
                     
                 } catch {
                     
@@ -272,7 +272,7 @@ class TorClient {
         
         //removes all authkeys
         let fileManager = FileManager.default
-        let authPath = createTorDirectory()
+        let authPath = createAuthDirectory()
         
         do {
             

@@ -131,7 +131,7 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
         } else {
             
             //updating
-            if onionAddressField.text != "" {
+            if onionAddressField.text != "" && authKeyField.text != "" {
                 
                 let node = NodeStruct(dictionary: selectedNode)
                 let id = node.id
@@ -143,17 +143,50 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
                                               keyToEdit: "onionAddress",
                                               entityName: .nodes)
                 
-                if authKeyField.text != "" {
+                if success {
                     
                     let enc = aes.encryptKey(keyToEncrypt: authKeyField.text!)
                     
-                    let _ = cd.updateEntity(viewController: self,
+                    let success2 = cd.updateEntity(viewController: self,
                                             id: id,
                                             newValue: enc,
                                             keyToEdit: "authKey",
                                             entityName: .nodes)
                     
+                    if success2 {
+                        
+                        displayAlert(viewController: self,
+                                     isError: false,
+                                     message: "Tor node updated")
+                        
+                    } else {
+                        
+                        displayAlert(viewController: self,
+                                     isError: true,
+                                     message: "Error updating tor node")
+                        
+                    }
+                    
+                } else {
+                    
+                    displayAlert(viewController: self,
+                                 isError: true,
+                                 message: "Error updating tor node")
+                    
                 }
+                
+            } else if onionAddressField.text != "" {
+             
+                //only onion address updated
+                let node = NodeStruct(dictionary: selectedNode)
+                let id = node.id
+                let enc = aes.encryptKey(keyToEncrypt: onionAddressField.text!)
+                
+                let success = cd.updateEntity(viewController: self,
+                                              id: id,
+                                              newValue: enc,
+                                              keyToEdit: "onionAddress",
+                                              entityName: .nodes)
                 
                 if success {
                     
@@ -168,6 +201,13 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
                                  message: "Error updating tor node")
                     
                 }
+                
+            } else {
+                
+                //fields empty
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: "text fields are empty")
                 
             }
             

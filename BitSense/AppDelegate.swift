@@ -35,6 +35,100 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         
     }
+    
+    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+        
+        addNodl(url: "\(url)")
+        return true
+        
+    }
+    
+    func addNodl(url: String) {
+        
+        let aes = AESService()
+        let cd = CoreDataService()
+        let nodes = cd.retrieveEntity(entityName: .nodes)
+        
+        let arr1 = url.components(separatedBy: "?")
+        let onion = arr1[0].replacingOccurrences(of: "btcrpc://", with: "")
+        let arr2 = arr1[1].components(separatedBy: "&")
+        let rpcuser = arr2[0].replacingOccurrences(of: "user=", with: "")
+        let rpcpassword = arr2[1].replacingOccurrences(of: "password=", with: "")
+        
+        var nodl = [String:Any]()
+        let torNodeId = randomString(length: 23)
+        let torNodeHost = aes.encryptKey(keyToEncrypt: onion)
+        let torNodeRPCPass = aes.encryptKey(keyToEncrypt: rpcpassword)
+        let torNodeRPCUser = aes.encryptKey(keyToEncrypt: rpcuser)
+        let torNodeLabel = aes.encryptKey(keyToEncrypt: "Nodl - Tor")
+        
+        nodl["id"] = torNodeId
+        nodl["onionAddress"] = torNodeHost
+        nodl["label"] = torNodeLabel
+        nodl["rpcuser"] = torNodeRPCUser
+        nodl["rpcpassword"] = torNodeRPCPass
+        nodl["usingSSH"] = false
+        nodl["isDefault"] = false
+        nodl["usingTor"] = true
+        nodl["isActive"] = true
+        
+        let vc = MainMenuViewController()
+        
+        let success = cd.saveEntity(vc: vc,
+                                    dict: nodl,
+                                    entityName: .nodes)
+        
+        if success {
+            
+            print("nodl node added")
+            deActivateOtherNodes(nodes: nodes, nodlID: torNodeId, cd: cd, vc: vc)
+            
+        } else {
+            
+            print("error adding nodl node")
+            
+        }
+        
+    }
+    
+    func deActivateOtherNodes(nodes: [[String:Any]], nodlID: String, cd: CoreDataService, vc: UIViewController) {
+        
+        if SSHService.sharedInstance.session != nil {
+            
+            if SSHService.sharedInstance.session.isConnected {
+                
+                SSHService.sharedInstance.disconnect()
+                SSHService.sharedInstance.commandExecuting = false
+                
+            }
+            
+        }
+        
+        for node in nodes {
+            
+            let str = NodeStruct(dictionary: node)
+            let id = str.id
+            let isActive = str.isActive
+            
+            if id != nodlID && isActive {
+                
+                let success = cd.updateEntity(viewController: vc,
+                                              id: id,
+                                              newValue: false,
+                                              keyToEdit: "isActive",
+                                              entityName: .nodes)
+                
+                if success {
+                    
+                    print("nodes deactivated")
+                    
+                }
+                
+            }
+            
+        }
+        
+    }
 
     func applicationWillEnterForeground(_ application: UIApplication) {
         // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.

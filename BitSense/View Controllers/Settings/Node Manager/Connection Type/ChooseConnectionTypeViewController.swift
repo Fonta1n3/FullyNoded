@@ -76,20 +76,6 @@ class ChooseConnectionTypeViewController: UIViewController {
             
             sshSwitchOutlet.isOn = false
             
-            DispatchQueue.main.async {
-                
-                let alert = UIAlertController(title: "Alert", message: "Connecting via Tor hidden service may not work depending on your device, it will work if you build the app from source", preferredStyle: .alert)
-                
-                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: { (action) in
-                    
-                    
-                    
-                }))
-                
-                self.present(alert, animated: true, completion: nil)
-                
-            }
-            
         } else {
             
             sshSwitchOutlet.isOn = true

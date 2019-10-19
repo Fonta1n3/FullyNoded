@@ -56,28 +56,32 @@ class MakeRPCCall {
             
             rpcpassword = aes.decryptKey(keyToDecrypt: node.rpcpassword)
             
-        }
-        
-        var urlString = "http://\(rpcusername):\(rpcpassword)@\(onionAddress)"
-        
-        let ud = UserDefaults.standard
-        
-        if ud.object(forKey: "walletName") != nil {
-            
-            if let walletName = ud.object(forKey: "walletName") as? String {
-                
-                let b = isWalletRPC(command: method)
-                
-                if b {
-                    
-                    urlString += "wallet/" + walletName
-                    
-                }
-                
-            }
             
         }
         
+        // To do, fix multi wallet rpc for tor
+        
+//        var walletUrl = "http://\(rpcusername):\(rpcpassword)@127.0.0.1:8332"
+//        let ud = UserDefaults.standard
+//
+//        if ud.object(forKey: "walletName") != nil {
+//
+//            if let walletName = ud.object(forKey: "walletName") as? String {
+//
+//                let b = isWalletRPC(command: method)
+//
+//                if b {
+//
+//                    walletUrl += "wallet/" + walletName
+//
+//                }
+//
+//            }
+//
+//        }
+        
+        
+        let urlString = "http://\(rpcusername):\(rpcpassword)@\(onionAddress)"
         var formattedParam = (param as! String).replacingOccurrences(of: "''", with: "")
         formattedParam = formattedParam.replacingOccurrences(of: "'\"'\"'", with: "'")
         let url = URL(string: urlString)

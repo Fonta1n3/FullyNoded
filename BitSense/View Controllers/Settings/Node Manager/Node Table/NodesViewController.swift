@@ -264,17 +264,15 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                     
                     let id = node["id"] as! String
                     
-                    //let success = cd.updateNode(viewController: self, id: id, newValue: false, keyToEdit: "isActive")
-                    
                     let success = cd.updateEntity(viewController: self,
                                                   id: id,
                                                   newValue: false,
                                                   keyToEdit: "isActive",
-                                                  entityName: ENTITY.nodes)
+                                                  entityName: .nodes)
                     
                     if success {
                         
-                        nodeArray = cd.retrieveEntity(entityName: ENTITY.nodes)
+                        nodeArray = cd.retrieveEntity(entityName: .nodes)
                         nodeTable.reloadData()
                         
                     }

@@ -3137,7 +3137,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                                 <nil key="highlightedColor"/>
                             </label>
                             <textField opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="o4M-Vw-QWb">
-                                <rect key="frame" x="16" y="203" width="297" height="30"/>
+                                <rect key="frame" x="16" y="203" width="343" height="30"/>
                                 <color key="backgroundColor" red="0.16919294269999999" green="0.19278580919999999" blue="0.219758807" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W3" family="Hiragino Sans" pointSize="14"/>
@@ -3150,10 +3150,10 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sh8-mN-0fm">
-                                <rect key="frame" x="329" y="203" width="30" height="30"/>
+                                <rect key="frame" x="329" y="168" width="30" height="30"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="30" id="4s8-nJ-noR"/>
-                                    <constraint firstAttribute="height" constant="30" id="Xw0-WF-Jnd"/>
+                                    <constraint firstAttribute="width" constant="30" id="UEB-uw-E0R"/>
+                                    <constraint firstAttribute="height" constant="30" id="X0f-lc-BF3"/>
                                 </constraints>
                                 <state key="normal" image="QR"/>
                                 <connections>
@@ -3161,7 +3161,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                                 </connections>
                             </button>
                             <textField opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="bQf-n1-9HR">
-                                <rect key="frame" x="16" y="302" width="297" height="30"/>
+                                <rect key="frame" x="16" y="302" width="343" height="30"/>
                                 <color key="backgroundColor" red="0.16919294269999999" green="0.19278580919999999" blue="0.219758807" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W3" family="Hiragino Sans" pointSize="14"/>
@@ -3188,10 +3188,10 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Xer-7V-3Vo">
-                                <rect key="frame" x="329" y="302" width="30" height="30"/>
+                                <rect key="frame" x="329" y="267" width="30" height="30"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="30" id="2I3-4K-6fZ"/>
-                                    <constraint firstAttribute="width" constant="30" id="kBA-TW-qdG"/>
+                                    <constraint firstAttribute="height" constant="30" id="Kg3-jE-Onq"/>
+                                    <constraint firstAttribute="width" constant="30" id="lje-U2-NL5"/>
                                 </constraints>
                                 <state key="normal" image="QR"/>
                                 <connections>
@@ -3203,23 +3203,23 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                         <constraints>
                             <constraint firstItem="pwd-9F-qgK" firstAttribute="top" secondItem="o4M-Vw-QWb" secondAttribute="bottom" constant="50" id="29a-Wr-E7d"/>
                             <constraint firstItem="9FZ-os-UZR" firstAttribute="bottom" secondItem="xZf-Ri-ucz" secondAttribute="bottom" id="5OA-Uh-Na2"/>
+                            <constraint firstItem="xZf-Ri-ucz" firstAttribute="trailing" secondItem="o4M-Vw-QWb" secondAttribute="trailing" constant="16" id="8S8-ij-go3"/>
                             <constraint firstItem="rsb-RY-Y0Y" firstAttribute="leading" secondItem="xZf-Ri-ucz" secondAttribute="leading" constant="16" id="BC1-Lm-UwQ"/>
+                            <constraint firstItem="xZf-Ri-ucz" firstAttribute="trailing" secondItem="bQf-n1-9HR" secondAttribute="trailing" constant="16" id="Ba5-xX-zGS"/>
                             <constraint firstItem="9FZ-os-UZR" firstAttribute="leading" secondItem="xZf-Ri-ucz" secondAttribute="leading" id="G6y-2e-5kA"/>
-                            <constraint firstItem="xZf-Ri-ucz" firstAttribute="trailing" secondItem="sh8-mN-0fm" secondAttribute="trailing" constant="16" id="HXd-Gh-pN9"/>
+                            <constraint firstItem="sh8-mN-0fm" firstAttribute="bottom" secondItem="1oS-WI-SUN" secondAttribute="bottom" id="IiY-eX-qWZ"/>
                             <constraint firstItem="bQf-n1-9HR" firstAttribute="top" secondItem="pwd-9F-qgK" secondAttribute="bottom" constant="5" id="Jnj-6Q-Blf"/>
                             <constraint firstItem="9FZ-os-UZR" firstAttribute="trailing" secondItem="xZf-Ri-ucz" secondAttribute="trailing" id="KYa-rR-RWC"/>
-                            <constraint firstItem="xZf-Ri-ucz" firstAttribute="trailing" secondItem="Xer-7V-3Vo" secondAttribute="trailing" constant="16" id="M9W-Nk-aSB"/>
                             <constraint firstItem="1oS-WI-SUN" firstAttribute="leading" secondItem="xZf-Ri-ucz" secondAttribute="leading" constant="16" id="QnJ-oB-4HS"/>
                             <constraint firstItem="o4M-Vw-QWb" firstAttribute="top" secondItem="1oS-WI-SUN" secondAttribute="bottom" constant="5" id="Rvd-Dp-OyU"/>
                             <constraint firstItem="pwd-9F-qgK" firstAttribute="leading" secondItem="xZf-Ri-ucz" secondAttribute="leading" constant="16" id="Tnj-o4-tNe"/>
-                            <constraint firstItem="sh8-mN-0fm" firstAttribute="centerY" secondItem="o4M-Vw-QWb" secondAttribute="centerY" id="ZeK-lF-0Rg"/>
+                            <constraint firstItem="xZf-Ri-ucz" firstAttribute="trailing" secondItem="sh8-mN-0fm" secondAttribute="trailing" constant="16" id="XcA-0S-rBJ"/>
+                            <constraint firstItem="Xer-7V-3Vo" firstAttribute="bottom" secondItem="pwd-9F-qgK" secondAttribute="bottom" id="ZkX-3a-FYL"/>
                             <constraint firstItem="rsb-RY-Y0Y" firstAttribute="top" secondItem="xZf-Ri-ucz" secondAttribute="top" constant="11" id="bfv-Fe-aNT"/>
-                            <constraint firstItem="sh8-mN-0fm" firstAttribute="leading" secondItem="o4M-Vw-QWb" secondAttribute="trailing" constant="16" id="gAj-rJ-Lr8"/>
                             <constraint firstItem="xZf-Ri-ucz" firstAttribute="trailing" secondItem="rsb-RY-Y0Y" secondAttribute="trailing" constant="16" id="j5D-pc-w5e"/>
-                            <constraint firstItem="Xer-7V-3Vo" firstAttribute="centerY" secondItem="bQf-n1-9HR" secondAttribute="centerY" id="jnt-NV-dIa"/>
                             <constraint firstItem="1oS-WI-SUN" firstAttribute="top" secondItem="rsb-RY-Y0Y" secondAttribute="bottom" constant="40" id="khO-11-BEG"/>
                             <constraint firstItem="bQf-n1-9HR" firstAttribute="leading" secondItem="pwd-9F-qgK" secondAttribute="leading" id="mXj-0C-sg7"/>
-                            <constraint firstItem="Xer-7V-3Vo" firstAttribute="leading" secondItem="bQf-n1-9HR" secondAttribute="trailing" constant="16" id="mYs-M5-IwD"/>
+                            <constraint firstItem="xZf-Ri-ucz" firstAttribute="trailing" secondItem="Xer-7V-3Vo" secondAttribute="trailing" constant="16" id="q8G-HH-Bmz"/>
                             <constraint firstItem="o4M-Vw-QWb" firstAttribute="leading" secondItem="1oS-WI-SUN" secondAttribute="leading" id="sbG-x9-0XJ"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="xZf-Ri-ucz"/>
