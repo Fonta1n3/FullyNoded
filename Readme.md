@@ -8,9 +8,24 @@ There may be bugs, always decode your transaction and study it before broadcasti
 
 Go to nodl browser based UI, tap the Fully Noded link and Fully Noded will open, add and connect to your nodl over Tor, it is optional for users to add a V3 auth key. This enables worldwide access to your nodl from your iPhone with a native integrated Tor thread running in the app. 
 
+## Connect something else
+
+Create a hidden service that controls your nodes rpcport. Add the hostname with the port at the end to Fully Noded (njcnewicnweiun.onion:8332), add RPC user and RPC password, thats it.
+
 ## What can Fully Noded do?
 
-Its easier to list what it can't do, right now it does not include functionality for creating custom scripts or time locked transactions. Other then that it can do everything Bitcoin Core can do with the additon of some HD multisig functionality that is not really possible using only Bitcoin Core.
+- Full coin control
+- Full integrated Tor
+- Raw Transaction's
+- PSBT's
+- HWW Paring
+- Easy HD Multisig capability
+- Easy Cold Storage
+- Coldcard wallet compatibilty for building unsigned transactions
+- Most of the Bitcoin Core JSON-RPC API is covered
+- Encrypt your wallet.dat file
+- So much more
+- BIP39 compatiblity for your Node
 
 ## Join the Testflight
 
