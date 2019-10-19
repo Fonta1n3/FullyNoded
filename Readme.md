@@ -1,9 +1,11 @@
 # FullyNoded BETA
-A feature rich Bitcoin app which is 100% powered by your own Full Node. Allows you to connect to and control multiple nodes and multiple wallets via SSH or a Tor hidden service.
+
+A feature rich Bitcoin app which is 100% powered by your own Full Node. Allows you to connect to and control multiple nodes using a client side native Tor thread making calls to your nodes rpcport via a hidden service.
 
 There may be bugs, always decode your transaction and study it before broadcasting, ideally get comfortable with it on testnet first, I am not responsible for loss of funds. It is not even possible to broadcast transactions in the app.
 
 ## Connect your Nodl
+
 Go to nodl browser based UI, tap the Fully Noded link and Fully Noded will open, add and connect to your nodl over Tor, it is optional for users to add a V3 auth key. This enables worldwide access to your nodl from your iPhone with a native integrated Tor thread running in the app. 
 
 ## What can Fully Noded do?
@@ -32,10 +34,6 @@ These may be outdated but will give you the general idea, please contribute by m
 
 - [Import an xpub into your node and spend from it using Fully Noded](https://www.youtube.com/watch?v=bduBVZmZVHY&t=151s)
 
-## Simple Install Using iTunes or XCode
-
-[You can download the IPA file here](https://drive.google.com/open?id=1SuKSxUmDZ-ucaujtRjWKZOvTCspmnOk4)  [iTunes](https://imazing.com/guides/how-to-install-apps-itunes-12-7) or [XCode](https://docs.monaca.io/en/products_guide/monaca_ide/deploy/non_market_deploy/#install-using-xcode) (you can also just drag and drop the ipa file onto a simulator in xcode).
-
 ## Build From Source - Mac
 
 See if you have brew installed by opening a terminal and running `brew --version`, if you get a valid response you have brew installed already. If not in your terminal run:
@@ -57,23 +55,6 @@ Next we will need to install carthage:  [Follow these simple instructions for in
 - Open Terminal
 - `cd Documents FullyNoded` (or wherever it downloaded to)
 - run `carthage bootstrap --platform iOS` and let carthage do its thing
-
-
-## Connect to your Nodl's node
-
-- Gain root access to your Nodl by `ssh root@nodl.local` or `ssh root@<insert your IP>`
-- Create a password for the bitcoin user (if you have not already) `sudo passwd bitcoin`
-- The password you just set is the password you will need to add in Fully Noded as your SSH password
-- Your Fully Noded SSH User will be `bitcoin`
-- The SSH port in Fully Noded will be `22` (unless you customize it which is recommended)
-- The SSH IP in Fully Noded will either be `nodl.local` or your Nodls IP
-- Back to your Nodl
-- Switch user to bitcoin user `su - bitcoin`
-- Open your bitcoin.conf file `nano .bitcoin/bitcoin.conf`
-- Now you can see your RPC credentials that you need for Fully Noded
-- rpcpassword is the RPC password in Fully Noded and rpcuser is the RPC user in Fully Noded, easy right?
-- RPC port in Fully Noded will be 8332 for mainnet, 18332 for testnet or 18443 for regtest.
-- Thats it, you should be connected, if it gets stuck on connecting at home screen just force close the app and open again.
 
 ## Connect to your mac's node
 
@@ -151,49 +132,13 @@ listen=1
 debug=tor
 ```
 
-## Troubleshooting
-
-- If you get an "Unable to connect" error then ensure you input the correct IP, password, port and username into Fully Noded. Try and SSH into the node in terminal and issue a `bitcoin-cli getblockchaininfo` command to ensure rpc commands are working properly, that the node is on, etc... If you have an issue in your server running `bitcoin-cli` commands then it will not work in the app either.
-
-- You will need to ensure your Bitcoin Core node instance is running on a machine that allows SSH log in via password. In order to enable that:
-
-- `sudo nano /etc/ssh/sshd_config`
-
-- Find the line that shows: `PasswordAuthentication no`
-
-- and change it to: `PasswordAuthentication yes`
-
-- Exit nano and ensure you saved the changes.
-
-- Then run: `sudo service sshd restart`
-
-- Back in Fully Noded pull the home screen to refresh it and it should connect.
-
-- I am always keen to help people run nodes and connect to them, if any issues at all just DM me on twitter @FullyNoded or raise an issue here.
-
 ## Security & Privacy
 
 - All network traffic is encrypted by default.
 
-- Fully Noded NEVER uses another server or uploads data or requires any data (KYC/AML) from you whatsoever.
+- Fully Noded NEVER uses another server or uploads data or requires any data (KYC/AML) from you whatsoever, the node is the only back end to the app.
 
 - Any information the app saves onto the device locally is encrypted to AES standards and the encryption key is stored on the secure enclave meaning even if a hacker got your iPhone and jail broke it they would still not be able to access any information that is saved by the app (at least that is the case up until this point, DYOR regarding iPhone security)
-
-- SSH is a secure way of connecting to your node. All traffic between your iPhone and the node are encrypted to a high standard. [You can read more here](https://www.howtogeek.com/118145/vpn-vs.-ssh-tunnel-which-is-more-secure/)
-
-- We highly recommend using a very strong password for SSH log in. SSH can be a target for hackers, if you have a simple password it will greatly increase the chances of the hacker to get access to your computer.
-
-- We highly recommend altering the port for SSH to a custom port, 22 is default. This will go a long way to prevent hackers from obtaining access to your computer. To do this:
-
-- On your nodes machine run: `sudo nano /etc/ssh/sshd_config`
-
-- Find the line that says: `# Port 22`
-
-- And change it to something like: `Port 52120`
-
-- Ensure your firewall allows incoming connections to this port. You can choose any unused port up to 65,535
-
-- Exit nano, ensure you save the changes, then run: `sudo service sshd restart`
 
 ## Contributing
 
