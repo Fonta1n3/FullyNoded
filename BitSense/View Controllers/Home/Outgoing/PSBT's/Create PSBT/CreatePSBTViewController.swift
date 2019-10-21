@@ -84,7 +84,7 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
             let output = "[{\"\(receivingAddress)\":\(amountToSend)}]"
             let param = "[],\(output), 0, {\"includeWatching\": \(coldSwitchOutlet.isOn), \"replaceable\": true, \"conf_target\": \(feeTarget)}, true"
             
-            executeNodeCommand(method: BTC_CLI_COMMAND.walletcreatefundedpsbt,
+            executeNodeCommand(method: .walletcreatefundedpsbt,
                                   param: param)
             
         } else {
@@ -169,7 +169,7 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
                     
                     displayRaw(raw: processedPSBT)
                     
-                    convertPSBTtoData(string: processedPSBT)
+                    //convertPSBTtoData(string: processedPSBT)
                     
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                         

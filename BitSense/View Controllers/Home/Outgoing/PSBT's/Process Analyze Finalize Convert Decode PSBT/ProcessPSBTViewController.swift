@@ -642,13 +642,55 @@ class ProcessPSBTViewController: UIViewController {
                 
             }
             
-            let textToShare = [self.processedPSBT]
+            let alert = UIAlertController(title: "Share as raw data or text?", message: "Sharing as raw data allows you to send the unsigned psbt directly to your Coldcard Wallets SD card for signing", preferredStyle: .actionSheet)
             
-            let activityViewController = UIActivityViewController(activityItems: textToShare,
-                                                                  applicationActivities: nil)
+            alert.addAction(UIAlertAction(title: "Raw Data", style: .default, handler: { action in
+                
+                self.convertPSBTtoData(string: self.processedPSBT)
+                
+            }))
             
-            activityViewController.popoverPresentationController?.sourceView = self.view
-            self.present(activityViewController, animated: true) {}
+            alert.addAction(UIAlertAction(title: "Text", style: .default, handler: { action in
+                
+                DispatchQueue.main.async {
+                    
+                    let textToShare = [self.processedPSBT]
+                    
+                    let activityViewController = UIActivityViewController(activityItems: textToShare,
+                                                                          applicationActivities: nil)
+                    
+                    activityViewController.popoverPresentationController?.sourceView = self.view
+                    self.present(activityViewController, animated: true) {}
+                    
+                }
+                
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in
+                
+            }))
+            
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true) {}
+            
+        }
+        
+    }
+    
+    func convertPSBTtoData(string: String) {
+        
+        if let data = Data(base64Encoded: string) {
+            
+            DispatchQueue.main.async {
+                
+                let activityViewController = UIActivityViewController(activityItems: [data],
+                                                                      applicationActivities: nil)
+                
+                activityViewController.popoverPresentationController?.sourceView = self.view
+                self.present(activityViewController, animated: true) {}
+                
+            }
+            
         }
         
     }

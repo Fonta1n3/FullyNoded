@@ -212,10 +212,21 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         rpcUserField.delegate = self
         rpcPassword.isSecureTextEntry = true
         
-        if !(newNode["usingSSH"] as! Bool) || (selectedNode["usingTor"] as! Bool) {
+        if !(newNode["usingSSH"] as! Bool) {
             
             self.rpcLabel.alpha = 0
             self.rpcPort.alpha = 0
+            
+        }
+        
+        if selectedNode["usingTor"] != nil {
+            
+            if (selectedNode["usingTor"] as! Bool) {
+                
+                self.rpcLabel.alpha = 0
+                self.rpcPort.alpha = 0
+                
+            }
             
         }
         
@@ -295,12 +306,15 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             
         } else {
             
+            let new = NodeStruct(dictionary: newNode)
+            
             rpcPassword.attributedPlaceholder = NSAttributedString(string: "rpcpassword",
                                                                    attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
+            
             rpcUserField.attributedPlaceholder = NSAttributedString(string: "rpcuser",
                                                                     attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
             
-            if node.usingSSH {
+            if new.usingSSH {
                 
                 rpcPort.attributedPlaceholder = NSAttributedString(string: "8332 or 18332 for testnet",
                                                                    attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])

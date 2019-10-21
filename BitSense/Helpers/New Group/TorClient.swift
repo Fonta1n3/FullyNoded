@@ -50,7 +50,7 @@ class TorClient {
             // Make sure we don't have a thread already.
             if self.thread == nil {
                 
-                self.config.options = ["DNSPort": "12345", "AutomapHostsOnResolve": "1", "SocksPort": "9050", "AvoidDiskWrites": "0", "ClientOnionAuthDir": "\(authPath)"]
+                self.config.options = ["DNSPort": "12345", "AutomapHostsOnResolve": "1", "SocksPort": "9050", "AvoidDiskWrites": "1", "ClientOnionAuthDir": "\(authPath)"]
                 self.config.cookieAuthentication = true
                 self.config.dataDirectory = URL(fileURLWithPath: torDir)
                 self.config.controlSocket = self.config.dataDirectory?.appendingPathComponent("cp")
@@ -242,7 +242,8 @@ class TorClient {
             let str = NodeStruct(dictionary: nodeDict)
             let id = str.id
             
-            if str.authKey != "" {
+            if str.isActive && str.authKey != "" {
+                
                 
                 let authorizedKey = aes.decryptKey(keyToDecrypt: str.authKey)
                 let onionAddress = aes.decryptKey(keyToDecrypt: str.onionAddress)
@@ -257,10 +258,13 @@ class TorClient {
                     
                     print("successfully wrote authkey to file")
                     
+                    print("authkey = \(authString)")
+                    
                 } catch {
                     
                     print("failed writing auth key")
                 }
+                
                 
             }
             

@@ -63,6 +63,8 @@
 		D073E16E22558CDE0012A28C /* CoreDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D073E16D22558CDE0012A28C /* CoreDataService.swift */; };
 		D073E17022558DF30012A28C /* AESService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D073E16F22558DF30012A28C /* AESService.swift */; };
 		D073E17222559A6D0012A28C /* CredentialConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D073E17122559A6D0012A28C /* CredentialConverter.swift */; };
+		D07A8237235D4FEE00F7E095 /* ImportMultiSigViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D07A8236235D4FEE00F7E095 /* ImportMultiSigViewController.swift */; };
+		D07A823B235D501A00F7E095 /* MuSigDisplayerTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D07A823A235D501A00F7E095 /* MuSigDisplayerTableViewController.swift */; };
 		D07E0DE622F9168F00A81FA8 /* WalletManagerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D07E0DE522F9168F00A81FA8 /* WalletManagerViewController.swift */; };
 		D07E0DE822F9570A00A81FA8 /* WalletCreatorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D07E0DE722F9570A00A81FA8 /* WalletCreatorViewController.swift */; };
 		D07EC09022DBFB5400F9160D /* JoinPSBTViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D07EC08F22DBFB5400F9160D /* JoinPSBTViewController.swift */; };
@@ -88,8 +90,6 @@
 		D08CED0F22E5089D007E2A8E /* ImportExtendedKeysViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08CED0E22E5089D007E2A8E /* ImportExtendedKeysViewController.swift */; };
 		D08CED1122E54B11007E2A8E /* TransactionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08CED1022E54B11007E2A8E /* TransactionViewController.swift */; };
 		D08CED1522E7F118007E2A8E /* ItunesArtwork@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D08CED1422E7F118007E2A8E /* ItunesArtwork@2x.png */; };
-		D09E6F7122E11D75003AE45C /* ImportMultiSigViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09E6F7022E11D75003AE45C /* ImportMultiSigViewController.swift */; };
-		D0A015C622E032C40054127B /* MuSigDisplayerTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A015C522E032C40054127B /* MuSigDisplayerTableViewController.swift */; };
 		D0A2918F225114670099A2F3 /* MakeRPCCall.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A2918E225114670099A2F3 /* MakeRPCCall.swift */; };
 		D0A291912251743B0099A2F3 /* settings90.png in Resources */ = {isa = PBXBuildFile; fileRef = D0A291902251743B0099A2F3 /* settings90.png */; };
 		D0A519B7226B3DD400860D5C /* RawTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A519B6226B3DD400860D5C /* RawTransaction.swift */; };
@@ -182,6 +182,8 @@
 		D073E16D22558CDE0012A28C /* CoreDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataService.swift; sourceTree = "<group>"; };
 		D073E16F22558DF30012A28C /* AESService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AESService.swift; sourceTree = "<group>"; };
 		D073E17122559A6D0012A28C /* CredentialConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialConverter.swift; sourceTree = "<group>"; };
+		D07A8236235D4FEE00F7E095 /* ImportMultiSigViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImportMultiSigViewController.swift; sourceTree = "<group>"; };
+		D07A823A235D501A00F7E095 /* MuSigDisplayerTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MuSigDisplayerTableViewController.swift; sourceTree = "<group>"; };
 		D07E0DE522F9168F00A81FA8 /* WalletManagerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletManagerViewController.swift; sourceTree = "<group>"; };
 		D07E0DE722F9570A00A81FA8 /* WalletCreatorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletCreatorViewController.swift; sourceTree = "<group>"; };
 		D07EC08F22DBFB5400F9160D /* JoinPSBTViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinPSBTViewController.swift; sourceTree = "<group>"; };
@@ -207,8 +209,6 @@
 		D08CED0E22E5089D007E2A8E /* ImportExtendedKeysViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportExtendedKeysViewController.swift; sourceTree = "<group>"; };
 		D08CED1022E54B11007E2A8E /* TransactionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionViewController.swift; sourceTree = "<group>"; };
 		D08CED1422E7F118007E2A8E /* ItunesArtwork@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "ItunesArtwork@2x.png"; path = "BitSense/Assets.xcassets/AppIcon.appiconset/ItunesArtwork@2x.png"; sourceTree = SOURCE_ROOT; };
-		D09E6F7022E11D75003AE45C /* ImportMultiSigViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportMultiSigViewController.swift; sourceTree = "<group>"; };
-		D0A015C522E032C40054127B /* MuSigDisplayerTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuSigDisplayerTableViewController.swift; sourceTree = "<group>"; };
 		D0A2918E225114670099A2F3 /* MakeRPCCall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MakeRPCCall.swift; sourceTree = "<group>"; };
 		D0A291902251743B0099A2F3 /* settings90.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = settings90.png; sourceTree = "<group>"; };
 		D0A519B6226B3DD400860D5C /* RawTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RawTransaction.swift; sourceTree = "<group>"; };
@@ -582,7 +582,7 @@
 		D08495EE22EBC984003FE8EB /* Import Musig */ = {
 			isa = PBXGroup;
 			children = (
-				D09E6F7022E11D75003AE45C /* ImportMultiSigViewController.swift */,
+				D07A8236235D4FEE00F7E095 /* ImportMultiSigViewController.swift */,
 			);
 			name = "Import Musig";
 			path = "../Import Musig";
@@ -591,7 +591,7 @@
 		D08495EF22EBC99B003FE8EB /* Display Musig */ = {
 			isa = PBXGroup;
 			children = (
-				D0A015C522E032C40054127B /* MuSigDisplayerTableViewController.swift */,
+				D07A823A235D501A00F7E095 /* MuSigDisplayerTableViewController.swift */,
 			);
 			name = "Display Musig";
 			path = "../Display Musig";
@@ -958,6 +958,7 @@
 				D058F3C2226D9DED00CF4BE9 /* OutgoingsTableViewController.swift in Sources */,
 				D0DA954F2340A9C2001B7EB3 /* IncomingsMenuViewController.swift in Sources */,
 				D08A92AF2337AA6200409D6E /* DescriptorDisplayerViewController.swift in Sources */,
+				D07A823B235D501A00F7E095 /* MuSigDisplayerTableViewController.swift in Sources */,
 				D08A92B7233E113B00409D6E /* LockedViewController.swift in Sources */,
 				D039D3C823322F1300D1ED18 /* NodeStruct.swift in Sources */,
 				D039D4082333AF7300D1ED18 /* Entities.swift in Sources */,
@@ -967,6 +968,7 @@
 				D05692E321434452006DF0F4 /* MainMenuViewController.swift in Sources */,
 				D02FE43323136A600048F8C4 /* NodeLogic.swift in Sources */,
 				D073E17222559A6D0012A28C /* CredentialConverter.swift in Sources */,
+				D07A8237235D4FEE00F7E095 /* ImportMultiSigViewController.swift in Sources */,
 				D0855FC822B0C71900DBBFC2 /* CreatePSBTViewController.swift in Sources */,
 				D02DC3B9226204CF00ADFFE9 /* SSHHelper.swift in Sources */,
 				D05D973422647CE60035F1DE /* QRGenerator.swift in Sources */,
@@ -1021,10 +1023,8 @@
 				D05D972C2264104D0035F1DE /* QRScanner.swift in Sources */,
 				D00B9A302111427200E8B95A /* BitSense.xcdatamodeld in Sources */,
 				D0560EE92277F75900C3E909 /* UTXOViewController.swift in Sources */,
-				D0A015C622E032C40054127B /* MuSigDisplayerTableViewController.swift in Sources */,
 				D037C868231B85A0006C357D /* ExtendedKeysParentViewController.swift in Sources */,
 				D0EF29C1216B82B400EB776A /* SettingsViewController.swift in Sources */,
-				D09E6F7122E11D75003AE45C /* ImportMultiSigViewController.swift in Sources */,
 				D037C86A231BAF8B006C357D /* ChooseRangeViewController.swift in Sources */,
 				D0A7CF73227967F900B683A0 /* AddressParser.swift in Sources */,
 				D00B9A282111427200E8B95A /* AppDelegate.swift in Sources */,
@@ -1179,6 +1179,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 70;
 				DEVELOPMENT_TEAM = 69FR345CDA;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1187,6 +1188,7 @@
 				INFOPLIST_FILE = BitSense/Info.plist;
 				INFOPLIST_PREPROCESS = NO;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 1.68;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1206,6 +1208,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 70;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 69FR345CDA;
 				ENABLE_TESTABILITY = NO;
@@ -1216,6 +1219,7 @@
 				INFOPLIST_FILE = BitSense/Info.plist;
 				INFOPLIST_PREPROCESS = NO;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 1.68;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";

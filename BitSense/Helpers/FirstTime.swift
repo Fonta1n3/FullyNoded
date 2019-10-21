@@ -69,7 +69,7 @@ class FirstTime {
             newNode["usingSSH"] = true
             newNode["isDefault"] = true
             
-            let nodes = cd.retrieveEntity(entityName: ENTITY.nodes)
+            let nodes = cd.retrieveEntity(entityName: .nodes)
             
             if nodes.count > 0 {
                 

@@ -174,12 +174,13 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             //let success = cd.deleteNode(viewController: self, id: nodeArray[indexPath.row]["id"] as! String)
             let success = cd.deleteEntity(viewController: self,
                                           id: node.id,
-                                          entityName: ENTITY.nodes)
+                                          entityName: .nodes)
             
             if success {
                 
                 nodeArray.remove(at: indexPath.row)
                 nodeTable.deleteRows(at: [indexPath], with: .fade)
+                nodeTable.reloadData()
                 
             } else {
                 

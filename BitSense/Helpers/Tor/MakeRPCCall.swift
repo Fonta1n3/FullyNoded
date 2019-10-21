@@ -82,6 +82,7 @@ class MakeRPCCall {
         
         
         let urlString = "http://\(rpcusername):\(rpcpassword)@\(onionAddress)"
+        print("url = \(urlString)")
         var formattedParam = (param as! String).replacingOccurrences(of: "''", with: "")
         formattedParam = formattedParam.replacingOccurrences(of: "'\"'\"'", with: "'")
         let url = URL(string: urlString)
@@ -129,6 +130,8 @@ class MakeRPCCall {
                                     
                                 } else {
                                     
+                                    self.errorBool = false
+                                    self.errorDescription = ""
                                     self.objectToReturn = jsonAddressResult["result"]
                                     completion()
                                     
