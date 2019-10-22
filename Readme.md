@@ -12,7 +12,7 @@ Go to nodl browser based UI, tap the Fully Noded link and Fully Noded will open,
 
 - Create a hidden service that controls your nodes rpcport (there is a mac guide below on how to do that). 
 - Go to "settings" -> "node manager" -> "+" and add a Tor node. 
-- Input the your bitcoin.conf rpcuser and rpcpassword and a label. 
+- Find your bitcoin.conf and input your rpcuser and rpcpassword and a label into the app. See "bitcoin.conf settings" below.
 - Input the hidden services hostname with the port at the end (njcnewicnweiun.onion:8332)
 - Go back to "Settings" ->"Node Manager" and make sure the node is switched on
 - Go to home screen and it will automatically connect
@@ -172,6 +172,13 @@ Please feel free to build from source in xcode and submit PR's. I need help and 
 - [CryptoSwift](https://github.com/krzyzanowskim/CryptoSwift) for encrypting your nodes credentials.
 - [keychain-swift](https://github.com/evgenyneu/keychain-swift) for storing your nodes credentials decryption key on your iPhones secure enclave.
 - [Tor](https://github.com/iCepa/Tor.framework) for connecting to your node more privately and securely.
+
+## Changes v0.1.10
+- Clean up TorClient code
+- Fix bug where Tor would not connect on simulator due to multiple auth keys
+- Fix bug where auth keys were not refreshing
+- Fix keyboard should return on wallet creation
+- Fix a crash when refreshing an existing tor thread
 
 ## Changes v0.1.9
 - Remove alert that was in wrong place when creating psbt

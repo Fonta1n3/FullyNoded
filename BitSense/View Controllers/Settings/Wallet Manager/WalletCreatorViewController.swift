@@ -103,6 +103,7 @@ class WalletCreatorViewController: UIViewController, UITextFieldDelegate {
         
         view.addGestureRecognizer(tap)
         textField.delegate = self
+        textField.returnKeyType = .go
         coldSwitchOutlet.isOn = true
         hotSwitchOutlet.isOn = false
         blankSwitchOutlet.isOn = false
@@ -112,6 +113,13 @@ class WalletCreatorViewController: UIViewController, UITextFieldDelegate {
     override func viewDidAppear(_ animated: Bool) {
         
         textField.becomeFirstResponder()
+        
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        
+        textField.resignFirstResponder()
+        return true
         
     }
     

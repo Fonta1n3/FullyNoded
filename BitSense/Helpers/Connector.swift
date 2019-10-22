@@ -50,7 +50,7 @@ class Connector {
             
         }
         
-        self.torClient.start(completion: completed)
+        self.torClient.start(completion: completed)        
         
     }
     

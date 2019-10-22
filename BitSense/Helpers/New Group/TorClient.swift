@@ -16,6 +16,8 @@ class TorClient {
     private var config: TorConfiguration = TorConfiguration()
     private var thread: TorThread!
     private var controller: TorController!
+    private var authDirPath = ""
+    private var torDirPath = ""
     
     // Client status?
     private(set) var isOperational: Bool = false
@@ -44,13 +46,14 @@ class TorClient {
             
             //add V3 auth keys to ClientOnionAuthDir if any exist
             let torDir = self.createTorDirectory()
-            let authPath = self.createAuthDirectory()
-            self.addAuthKeysToAuthDirectory()
+            self.authDirPath = self.createAuthDirectory()
+            self.clearAuthKeys()
             
             // Make sure we don't have a thread already.
             if self.thread == nil {
                 
-                self.config.options = ["DNSPort": "12345", "AutomapHostsOnResolve": "1", "SocksPort": "9050", "AvoidDiskWrites": "1", "ClientOnionAuthDir": "\(authPath)"]
+                self.isOperational = true
+                self.config.options = ["DNSPort": "12345", "AutomapHostsOnResolve": "1", "SocksPort": "9050", "AvoidDiskWrites": "1", "ClientOnionAuthDir": "\(self.authDirPath)"]
                 self.config.cookieAuthentication = true
                 self.config.dataDirectory = URL(fileURLWithPath: torDir)
                 self.config.controlSocket = self.config.dataDirectory?.appendingPathComponent("cp")
@@ -169,12 +172,13 @@ class TorClient {
     }
     
     private func createTorDirectory() -> String {
+        print("createTorDirectory")
         
-        let torPath = self.getTorPath()
+        torDirPath = self.getTorPath()
         
         do {
             
-            try FileManager.default.createDirectory(atPath: torPath, withIntermediateDirectories: true, attributes: [
+            try FileManager.default.createDirectory(atPath: torDirPath, withIntermediateDirectories: true, attributes: [
                 FileAttributeKey.posixPermissions: 0o700
                 ])
             
@@ -184,10 +188,11 @@ class TorClient {
             
         }
         
-        return torPath
+        return torDirPath
     }
     
     private func getTorPath() -> String {
+        print("getTorPath")
         
         var torDirectory = ""
         
@@ -209,9 +214,10 @@ class TorClient {
     }
     
     private func createAuthDirectory() -> String {
+        print("createAuthDirectory")
         
         // Create tor v3 auth directory if it does not yet exist
-        let authPath = URL(fileURLWithPath: getTorPath(), isDirectory: true).appendingPathComponent("onion_auth", isDirectory: true).path
+        let authPath = URL(fileURLWithPath: self.torDirPath, isDirectory: true).appendingPathComponent("onion_auth", isDirectory: true).path
         
         do {
             
@@ -230,9 +236,9 @@ class TorClient {
     }
     
     private func addAuthKeysToAuthDirectory() {
+        print("addAuthKeysToAuthDirectory")
         
-        clearAuthKeys()
-        let authPath = createAuthDirectory()
+        let authPath = self.authDirPath
         let cd = CoreDataService()
         let nodes = cd.retrieveEntity(entityName: .nodes)
         let aes = AESService()
@@ -257,9 +263,7 @@ class TorClient {
                     try authString.write(to: file, atomically: true, encoding: .utf8)
                     
                     print("successfully wrote authkey to file")
-                    
-                    print("authkey = \(authString)")
-                    
+                                        
                 } catch {
                     
                     print("failed writing auth key")
@@ -276,7 +280,7 @@ class TorClient {
         
         //removes all authkeys
         let fileManager = FileManager.default
-        let authPath = createAuthDirectory()
+        let authPath = self.authDirPath
         
         do {
             
@@ -284,7 +288,9 @@ class TorClient {
             
             for filePath in filePaths {
                 
-                try fileManager.removeItem(atPath: authPath + filePath)
+                let url = URL(fileURLWithPath: authPath + "/" + filePath)
+                try fileManager.removeItem(at: url)
+                print("deleted key")
                 
             }
             
@@ -293,6 +299,8 @@ class TorClient {
             print("error deleting existing keys")
             
         }
+        
+        self.addAuthKeysToAuthDirectory()
         
     }
     
