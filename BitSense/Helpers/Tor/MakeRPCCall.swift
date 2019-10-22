@@ -39,25 +39,9 @@ class MakeRPCCall {
         }
         
         let node = NodeStruct(dictionary: activeNode)
-        
-        if node.onionAddress != "" {
-            
-            onionAddress = aes.decryptKey(keyToDecrypt: node.onionAddress)
-            
-        }
-        
-        if node.rpcuser != "" {
-            
-            rpcusername = aes.decryptKey(keyToDecrypt: node.rpcuser)
-            
-        }
-        
-        if node.rpcpassword != "" {
-            
-            rpcpassword = aes.decryptKey(keyToDecrypt: node.rpcpassword)
-            
-            
-        }
+        onionAddress = aes.decryptKey(keyToDecrypt: node.onionAddress)
+        rpcusername = aes.decryptKey(keyToDecrypt: node.rpcuser)
+        rpcpassword = aes.decryptKey(keyToDecrypt: node.rpcpassword)
         
         var walletUrl = "http://\(rpcusername):\(rpcpassword)@\(onionAddress)"
         let ud = UserDefaults.standard
@@ -71,7 +55,6 @@ class MakeRPCCall {
                 if b {
 
                     walletUrl += "/wallet/" + walletName
-                    print("walleturl = \(walletUrl)")
 
                 }
 
@@ -82,7 +65,7 @@ class MakeRPCCall {
         var formattedParam = (param as! String).replacingOccurrences(of: "''", with: "")
         formattedParam = formattedParam.replacingOccurrences(of: "'\"'\"'", with: "'")
         
-        let url = URL(string: walletUrl)        
+        let url = URL(string: walletUrl)
         var request = URLRequest(url: url!)
         request.httpMethod = "POST"
         request.setValue("text/plain", forHTTPHeaderField: "Content-Type")

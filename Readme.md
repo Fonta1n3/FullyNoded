@@ -56,7 +56,7 @@ These may be outdated but will give you a general idea:
 
 ## Build From Source - Mac
 
-See if you have brew installed by opening a terminal and running `brew --version`, if you get a valid response you have brew installed already. If not in your terminal run:
+Run `brew --version` in a terminal, if you get a valid response you have brew installed already. If not:
 
 `cd /usr/local`
 

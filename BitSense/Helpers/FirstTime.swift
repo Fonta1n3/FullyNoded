@@ -46,41 +46,6 @@ class FirstTime {
         
         if ud.object(forKey: "testNodeAdded") == nil {
             
-            var newNode = [String:Any]()
-            let id = randomString(length: 23)
-            let encHost = aes.encryptKey(keyToEncrypt: "bitcoin")
-            let encIP = aes.encryptKey(keyToEncrypt: "167.71.32.16")
-            let encPort = aes.encryptKey(keyToEncrypt: "6500")
-            let encPassword = aes.encryptKey(keyToEncrypt: "lul1b13s")
-            let encRPCPort = aes.encryptKey(keyToEncrypt: "18332")
-            let encRPCPass = aes.encryptKey(keyToEncrypt: "password")
-            let encRPCUser = aes.encryptKey(keyToEncrypt: "bitcoin")
-            let encLabel = aes.encryptKey(keyToEncrypt: "Testing Node")
-            
-            newNode["id"] = id
-            newNode["username"] = encHost
-            newNode["ip"] = encIP
-            newNode["port"] = encPort
-            newNode["password"] = encPassword
-            newNode["label"] = encLabel
-            newNode["rpcuser"] = encRPCUser
-            newNode["rpcpassword"] = encRPCPass
-            newNode["rpcport"] = encRPCPort
-            newNode["usingSSH"] = true
-            newNode["isDefault"] = true
-            
-            let nodes = cd.retrieveEntity(entityName: .nodes)
-            
-            if nodes.count > 0 {
-                
-                newNode["isActive"] = false
-                
-            } else {
-                
-                newNode["isActive"] = true
-                
-            }
-            
             var torNode = [String:Any]()
             let torNodeId = randomString(length: 23)
             let torNodeHost = aes.encryptKey(keyToEncrypt: "47phoezetmjp3jzynlg6vskfs3vv3n67ihcyoe4qn5wnjjdgtsltpsid.onion:18332")
@@ -96,18 +61,26 @@ class FirstTime {
             torNode["rpcuser"] = torNodeRPCUser
             torNode["rpcpassword"] = torNodeRPCPass
             torNode["usingSSH"] = false
-            torNode["isDefault"] = false
+            torNode["isDefault"] = true
             torNode["usingTor"] = true
+            
+            let nodes = cd.retrieveEntity(entityName: .nodes)
+            
+            if nodes.count > 0 {
+                
+                torNode["isActive"] = false
+                
+            } else {
+                
+                torNode["isActive"] = true
+                
+            }
             
             let vc = MainMenuViewController()
             
             let success = cd.saveEntity(vc: vc,
-                                        dict: newNode,
+                                        dict: torNode,
                                         entityName: .nodes)
-            
-            let _ = cd.saveEntity(vc: vc,
-                                  dict: torNode,
-                                  entityName: .nodes)
             
             if success {
                 

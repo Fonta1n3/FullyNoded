@@ -30,67 +30,44 @@ class SSHService {
         
         let node = NodeStruct(dictionary: activeNode)
         
-        if node.port != "" {
+        if aes.decryptKey(keyToDecrypt: node.port) != "" {
             
-            if aes.decryptKey(keyToDecrypt: node.port) != "" {
-                
-                port = aes.decryptKey(keyToDecrypt: node.port)
-                
-            }
+            port = aes.decryptKey(keyToDecrypt: node.port)
             
         }
         
-        if node.username != "" {
+        if aes.decryptKey(keyToDecrypt: node.username) != "" {
             
-            if aes.decryptKey(keyToDecrypt: node.username) != "" {
-                
-                user = aes.decryptKey(keyToDecrypt: node.username)
-                
-            }
+            user = aes.decryptKey(keyToDecrypt: node.username)
             
         }
         
-        if node.ip != "" {
+        if aes.decryptKey(keyToDecrypt: node.ip) != "" {
             
-            if aes.decryptKey(keyToDecrypt: node.ip) != "" {
-                
-                host = aes.decryptKey(keyToDecrypt: node.ip)
-                
-            }
+            host = aes.decryptKey(keyToDecrypt: node.ip)
             
         }
         
-        if node.password != "" {
+        
+        if aes.decryptKey(keyToDecrypt: node.password) != "" {
             
-            if aes.decryptKey(keyToDecrypt: node.password) != "" {
-                
-                password = aes.decryptKey(keyToDecrypt: node.password)
-                
-            }
+            password = aes.decryptKey(keyToDecrypt: node.password)
             
         }
         
-        if node.privateKey != "" {
-            
-            if aes.decryptKey(keyToDecrypt: node.privateKey) != "" {
+        if aes.decryptKey(keyToDecrypt: node.privateKey) != "" {
                 
-                privKey = aes.decryptKey(keyToDecrypt: node.privateKey)
+            privKey = aes.decryptKey(keyToDecrypt: node.privateKey)
                 
-            }
-            
         }
-        
-        if node.publicKey != "" {
             
-            if aes.decryptKey(keyToDecrypt: node.publicKey) != "" {
+        if aes.decryptKey(keyToDecrypt: node.publicKey) != "" {
                 
                 pubKey = aes.decryptKey(keyToDecrypt: node.publicKey)
                 
-            }
-            
         }
-        
-        guard user != "", host != "", port != "" else {
+                    
+        guard user != "", host != "", port != "", password != "" else {
             
             success((success:false,
                      error:"incomplete ssh credentials"))
@@ -178,27 +155,12 @@ class SSHService {
             var rpcport = ""
             
             let node = NodeStruct(dictionary: activeNode)
-            
-            if node.rpcuser != "" {
-                
-                let enc = node.rpcuser
-                rpcuser = aes.decryptKey(keyToDecrypt: enc)
-                
-            }
-            
-            if node.rpcpassword != "" {
-                
-                let enc = node.rpcpassword
-                rpcpassword = aes.decryptKey(keyToDecrypt: enc)
-                
-            }
-            
-            if node.rpcport != "" {
-                
-                let enc = node.rpcport
-                rpcport = aes.decryptKey(keyToDecrypt: enc)
-                
-            }
+            let encuser = node.rpcuser
+            let encpass = node.rpcpassword
+            let encport = node.rpcport
+            rpcuser = aes.decryptKey(keyToDecrypt: encuser)
+            rpcpassword = aes.decryptKey(keyToDecrypt: encpass)
+            rpcport = aes.decryptKey(keyToDecrypt: encport)
             
             guard rpcuser != "", rpcpassword != "", rpcport != "" else {
                 

@@ -88,6 +88,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     override func viewDidAppear(_ animated: Bool) {
         
         let walletName = ud.object(forKey: "walletName") as? String ?? ""
+        print("walletname = \(walletName)")
         let isActive = activeNodeDict().isAnyNodeActive
             
             if nodes.count > 0 {
