@@ -59,39 +59,38 @@ class MakeRPCCall {
             
         }
         
-        // To do, fix multi wallet rpc for tor
+        var walletUrl = "http://\(rpcusername):\(rpcpassword)@\(onionAddress)"
+        let ud = UserDefaults.standard
         
-//        var walletUrl = "http://\(rpcusername):\(rpcpassword)@127.0.0.1:8332"
-//        let ud = UserDefaults.standard
-//
-//        if ud.object(forKey: "walletName") != nil {
-//
-//            if let walletName = ud.object(forKey: "walletName") as? String {
-//
-//                let b = isWalletRPC(command: method)
-//
-//                if b {
-//
-//                    walletUrl += "wallet/" + walletName
-//
-//                }
-//
-//            }
-//
-//        }
+        if ud.object(forKey: "walletName") != nil {
+
+            if let walletName = ud.object(forKey: "walletName") as? String {
+
+                let b = isWalletRPC(command: method)
+
+                if b {
+
+                    walletUrl += "/wallet/" + walletName
+                    print("walleturl = \(walletUrl)")
+
+                }
+
+            }
+
+        }
         
-        
-        let urlString = "http://\(rpcusername):\(rpcpassword)@\(onionAddress)"
-        print("url = \(urlString)")
         var formattedParam = (param as! String).replacingOccurrences(of: "''", with: "")
         formattedParam = formattedParam.replacingOccurrences(of: "'\"'\"'", with: "'")
-        let url = URL(string: urlString)
-        var request = URLRequest(url: url!)
-        request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
-        request.httpMethod = "POST"
-        request.httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method)\",\"params\":[\(formattedParam)]}".data(using: .utf8)
-        let queue = DispatchQueue(label: "com.FullyNoded.torQueue")
         
+        let url = URL(string: walletUrl)
+        print("url = \(String(describing: url))")
+        
+        var request = URLRequest(url: url!)
+        request.httpMethod = "POST"
+        request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
+        request.httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method)\",\"params\":[\(formattedParam)]}".data(using: .utf8)
+        
+        let queue = DispatchQueue(label: "com.FullyNoded.torQueue")
         queue.async {
             
             let task = self.torClient.session.dataTask(with: request as URLRequest) { (data, response, error) in
@@ -154,6 +153,7 @@ class MakeRPCCall {
             }
             
             task.resume()
+            
         }
         
     }

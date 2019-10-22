@@ -206,6 +206,7 @@ PR's welcome.
 - Fix bug where auth keys were not refreshing
 - Fix keyboard should return on wallet creation
 - Fix a crash when refreshing an existing tor thread
+- Fix multiwallet rpc for Tor
 
 ## Changes v0.1.9
 - Remove alert that was in wrong place when creating psbt
