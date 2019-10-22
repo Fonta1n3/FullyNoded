@@ -34,19 +34,19 @@ Go to nodl browser based UI, tap the Fully Noded link and Fully Noded will open,
 
 ## Join the Testflight
 
-[Download the testflight on your iOS device by tapping here](https://testflight.apple.com/join/PuFnSqgi)
+[here](https://testflight.apple.com/join/PuFnSqgi)
 
 ## Download from App Store
 
-[Get the app](https://apps.apple.com/us/app/fully-noded/id1436425586)
+[here](https://apps.apple.com/us/app/fully-noded/id1436425586)
 
 ## Telegram
 
-If you have questions, suggestions, or just want to talk about Full Nodes join the Telegram https://t.me/FullyNoded
+[here](https://t.me/FullyNoded)
 
 ## Tutorials
 
-These may be outdated but will give you the general idea, please contribute by making better tutorials.
+These may be outdated but will give you a general idea:
 
 - [Using Fully Noded for HD Multisig. creating, importing, receiving, spending](https://www.youtube.com/watch?v=zRMZJ4pKQ0Q)
 
@@ -76,33 +76,13 @@ Next we will need to install carthage:  [Follow these simple instructions for in
 - `cd Documents FullyNoded` (or wherever it downloaded to)
 - run `carthage bootstrap --platform iOS` and let carthage do its thing
 
-## Connect to your mac's node
+## Connecting over Tor (mac)
 
-- Click Apple icon in top left of your computer
-- Click "System Preferences"
-- Click "Sharing"
-- Follow below image for instructions:
-
-<img src="BitSense/Images/screenShot.png" width="800">
-
-## Connecting over Tor (mac edition)
-
-- This is only working if you build the app from source so first follow those instructions above.
-- You will need to install Tor on your mac, you will need to install `brew` first if you don't already have it, the instructions are included in the build from source instructions above, once you have brew installed open terminal and run `brew install tor`
+- run `brew install tor` in a terminal
 - Once Tor is installed you will need to create a Hidden Service.
-- First locate your `torrc` file, this is Tor's configuration file. Open Finder and type `shift command h` to navigate to your home folder and  `shift command .` to show hidden files on your mac.
+- First locate your `torrc` file, this is Tor's configuration file. Open Finder and type `shift command h` to navigate to your home folder and  `shift command .` to show hidden files.
 - The torrc file should be located at `‎⁨/usr⁩/local⁩/etc⁩/tor⁩/torrc`, to edit it you can open terminal and run `sudo nano /usr⁩/local⁩/etc⁩/tor⁩/torrc`
-- Find the line that looks like:
-
-```
-#ControlPort 9051
-
-```
-and delete the `#` so it shows
-
-```
-ControlPort 9051
-```
+- Find the line that looks like: `#ControlPort 9051` and delete the `#`
 - Then locate the section that looks like:
 
 ```
@@ -119,15 +99,15 @@ ControlPort 9051
 HiddenServiceDir /Users⁩/yourName/Desktop⁩/tor/FullyNodedV3/
 HiddenServiceVersion 3
 HiddenServicePort 8332 127.0.0.1:8332
-
 ```
+
 - The `HiddenServiceDir` can be whatever you want, you will need to access it so put it somewhere you will remember.
 - Save and close nano with `ctrl x` + `y` + `enter` to save and exit nano (follow the prompts)
 - Start Tor by opening a terminal and running `tor`
 - Tor should start and you should be able to open Finder and navigate to your `/Users⁩/yourName/Desktop⁩/tor/FullyNodedV3/` (the directory we added to the torrc file) and see a file called `hostname`, open it and that is the onion address you need for Fully Noded.
 - The `HiddenServicePort` needs to control your nodes rpcport, by default for mainnet that is 8332 or for testnet 18332.
 - Now in Fully Noded go to "Settings" -> "Node Manager" -> and add a new node choosing Tor and inputting your RPC credentials, then copy and paste your onion address with the port at the end `qndoiqnwoiquf713y8731783rg.onion:8332`
-- Restart your node and you should be able to connect to your V3 hidden service from anywhere in the world with your node completely behind a firewall and no port forwarding! Pretty private, pretty secure and not that difficult to do.
+- Restart your node and you should be able to connect to your V3 hidden service from anywhere in the world with your node completely behind a firewall and no port forwarding
 
 ## bitcoin.conf settings
 
@@ -143,9 +123,9 @@ prune=0
 
 #Choose any username or password, make the password very strong
 rpcuser=yourUserName
-rpcpassword=aVeryStrongPasswordSuchAs128dnc849vn9n7gSS1v#$&B!12HHH*
+rpcpassword=aVeryStrongPasswordSuchAs128dnc849vn9n7gSS
 
-#if you only want to accept connections over tor the following settings are needed (recommended)
+#if you only want to accept connections over tor the following settings are needed
 bind=127.0.0.1
 proxy=127.0.0.1:9050
 listen=1
@@ -158,13 +138,60 @@ debug=tor
 
 - Fully Noded NEVER uses another server or uploads data or requires any data (KYC/AML) from you whatsoever, the node is the only back end to the app.
 
-- Any information the app saves onto the device locally is encrypted to AES standards and the encryption key is stored on the secure enclave meaning even if a hacker got your iPhone and jail broke it they would still not be able to access any information that is saved by the app (at least that is the case up until this point, DYOR regarding iPhone security)
+- Any information the app saves onto the device locally is encrypted to AES standards and the encryption key is stored on the secure enclave. DYOR regarding iPhone security.
+
+## How does it work?
+
+Bitcoin Core includes a ton of functionality that is not shown to the user in the [GUI](https://www.computerhope.com/jargon/g/gui.htm), this functionality must be accessed by using the [command line](https://en.wikipedia.org/wiki/Command-line_interface) aka CLI, doing so can be quite tedious where tiny typos will return errors. Fully Noded does the hard work of issuing the CLI commands to your node in a programmatic and reliable way powered by the taps you make on your iPhone. The purpose of Fully Noded is to allow users a secure and private way to connect to and control their node, unlocking all the powerful features Bitcoin Core has to offer without needing to use CLI.
+
+Fully Noded needs to connect to the computer that your node is running on in order to issue commands to your node. It does this either using [SSH](https://en.wikipedia.org/wiki/Secure_Shell) or [Tor](https://lifehacker.com/what-is-tor-and-should-i-use-it-1527891029).
+
+Connecting to your nodes computer is the first part, once connected Fully Noded then needs to be able to issue [RPC commands](https://en.bitcoin.it/wiki/API_reference_(JSON-RPC)) to your node. It issues these commands to your [local host](https://whatismyipaddress.com/localhost) over [curl](https://curl.haxx.se). In order to be able to do that Fully Noded needs to know your RPC credentials,  `rpcusername` and  `rpcpassword`. 
+
+Once Fully Noded is connected it will start issuing commands one at a time, here are all the commands needed to load the home screen:
+
+```
+curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "listwallets", "params":[] }' -H 'content-type: text/plain;' http://user:password@127.0.0.1:18443/
+
+curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "getbalance", "params":["*", 0, false] }' -H 'content-type: text/plain;' http://user:password@127.0.0.1:18443/
+
+curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "getunconfirmedbalance", "params":[] }' -H 'content-type: text/plain;' http://user:password@127.0.0.1:18443/
+
+curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "listunspent", "params":[0] }' -H 'content-type: text/plain;' http://user:password@127.0.0.1:18443/
+
+curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "getblockchaininfo", "params":[] }' -H 'content-type: text/plain;' http://user:password@127.0.0.1:18443/
+
+curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "getpeerinfo", "params":[] }' -H 'content-type: text/plain;' http://user:password@127.0.0.1:18443/
+
+curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "getnetworkinfo", "params":[] }' -H 'content-type: text/plain;' http://user:password@127.0.0.1:18443/
+
+curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "getmininginfo", "params":[] }' -H 'content-type: text/plain;' http://user:password@127.0.0.1:18443/
+
+curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "uptime", "params":[] }' -H 'content-type: text/plain;' http://user:password@127.0.0.1:18443/
+
+curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "getmempoolinfo", "params":[] }' -H 'content-type: text/plain;' http://user:password@127.0.0.1:18443/
+
+curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "listtransactions", "params":["*", 50, 0, true] }' -H 'content-type: text/plain;' http://user:password@127.0.0.1:18443/
+```
+
+The `method` is a `bitcoin-cli` command and you can use [this great resource](https://chainquery.com/bitcoin-cli) to dive deeper into what they all do.
+
+[This is the code in Fully Noded from the Node Logic class](https://github.com/Fonta1n3/FullyNoded/tree/master/BitSense/Node%20Logic) which issues the above commands, if you look at it you will see a lot of commands that look like this:
+
+```
+reducer.makeCommand(command: .listunspent,
+                    param: "0",
+                    completion: getResult)
+
+```
+
+The `.listunspent` directly represents the `bitcoin-cli` commands we linked to just above and the `params` represent the options you can pass with those commands.  You can get the same functionality copying and pasting these commands into a terminal or using the Bitcoin-Qt console.
 
 ## Contributing
 
-Please let us know if you have issues, the app is designed to work with any node running on any machine and is not tailor made for one specific OS, therefore it is very flexible and different OS will have different nuances. We would like to know about them! Please share your experience.
+Please let us know if you have issues.
 
-Please feel free to build from source in xcode and submit PR's. I need help and my to do list is way too long. If you can not code then simply testing the app and making video tutorials would go a very long way.
+PR's welcome.
 
 ## Built With
 
@@ -348,67 +375,4 @@ Please feel free to build from source in xcode and submit PR's. I need help and 
 - Updated the error reporting, the error will now show up for 5 seconds and not blur out the entire screen, also the error is swipable so you can swipe it up to dismiss it.
 - Add ability to manually rescan the blockchain in "Utilties"
 - Add the 👀 emoji to any transaction that is controlled by watch-only addresses in the home screen.
-- Add a label to display the name of your rpcwallet in home screen (top left) that you either created or manually loaded in utilities.
-
-## How does it work?
-
-Bitcoin Core includes a ton of functionality that is not shown to the user in the [GUI](https://www.computerhope.com/jargon/g/gui.htm), this functionality must be accessed by using the [command line](https://en.wikipedia.org/wiki/Command-line_interface) aka CLI, doing so can be quite tedious where tiny typos will return errors. Fully Noded does the hard work of issuing the CLI commands to your node in a programmatic and reliable way powered by the taps you make on your iPhone or iPad. The purpose of Fully Noded is to allow users a secure and private way to connect to and control their node, unlocking all the powerful features Bitcoin Core has to offer without needing to use CLI.
-
-Fully Noded needs to connect to the computer that your node is running on in order to issue commands to your node. It does this either using [SSH](https://en.wikipedia.org/wiki/Secure_Shell) or [Tor](https://lifehacker.com/what-is-tor-and-should-i-use-it-1527891029) both of which encrypt all the commands going from your iOS device to your nodes computer. That way if a hacker decided to spy on your web traffic they would not know you are talking to a Bitcoin node or be able to decrypt the communications between your iOS device and node. These are widely used technologies and I would urge you to research them before using the app.
-
-Connecting to your nodes computer is the first part, once connected Fully Noded then needs to be able to issue [RPC commands](https://en.bitcoin.it/wiki/API_reference_(JSON-RPC)) to your node. It issues these commands to your [local host](https://whatismyipaddress.com/localhost) over [curl](https://curl.haxx.se). In order ot be able to do that Fully Noded needs to know your RPC credentials which is why you need to fill them out when adding a new node to Fully Noded. Specifically Fully Noded needs your `rpcusername`, `rpcpassword` and `rpcport` (this may change in the future to use `rpcauth` instead). It is important to keep in mind the RPC credentials are only used to issue commands to your local host, there is no need whatsover to do any port forwarding for your nodes ports. You can actually run your node completely behind Tor, only accepting connections to other nodes over Tor and Fully Noded will still be able to connect to your node and issue commands, if you use SSH to connect to your node then of course you need to open your SSH port, if you use a hidden service to connect to your node then your nodes computer can be completely behind a firewall with no ports open at all.
-
-Once Fully Noded is connected it will start issuing commands one at a time, here are all the commands needed to load the home screen:
-
-```
-curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "listwallets", "params":[] }' -H 'content-type: text/plain;' http://user:password@127.0.0.1:18443/
-
-curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "getbalance", "params":["*", 0, false] }' -H 'content-type: text/plain;' http://user:password@127.0.0.1:18443/
-
-curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "getunconfirmedbalance", "params":[] }' -H 'content-type: text/plain;' http://user:password@127.0.0.1:18443/
-
-curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "listunspent", "params":[0] }' -H 'content-type: text/plain;' http://user:password@127.0.0.1:18443/
-
-curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "getblockchaininfo", "params":[] }' -H 'content-type: text/plain;' http://user:password@127.0.0.1:18443/
-
-curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "getpeerinfo", "params":[] }' -H 'content-type: text/plain;' http://user:password@127.0.0.1:18443/
-
-curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "getnetworkinfo", "params":[] }' -H 'content-type: text/plain;' http://user:password@127.0.0.1:18443/
-
-curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "getmininginfo", "params":[] }' -H 'content-type: text/plain;' http://user:password@127.0.0.1:18443/
-
-curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "uptime", "params":[] }' -H 'content-type: text/plain;' http://user:password@127.0.0.1:18443/
-
-curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "getmempoolinfo", "params":[] }' -H 'content-type: text/plain;' http://user:password@127.0.0.1:18443/
-
-curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "listtransactions", "params":["*", 50, 0, true] }' -H 'content-type: text/plain;' http://user:password@127.0.0.1:18443/
-```
-
-The `method` is a `bitcoin-cli` command and you can use [this great resource](https://chainquery.com/bitcoin-cli) to dive deeper into what they all do.
-
-[This is the code in Fully Noded from the Node Logic class](https://github.com/Fonta1n3/FullyNoded/tree/master/BitSense/Node%20Logic) which issues the above commands, if you look at it you will see a lot of commands that look like this:
-
-```
-reducer.makeCommand(command: BTC_CLI_COMMAND.listunspent,
-param: "0",
-completion: getResult)
-
-```
-
-The `BTC_CLI_COMMAND.listunspent` directly represents the `bitcoin-cli` command we linked to just above and the `params` represent the options you can pass with those commands. There is a single [Connector.swift](https://github.com/Fonta1n3/FullyNoded/blob/master/BitSense/Helpers/Connector.swift) class in the app for connecting to your node and also single classes for issuing the commands to your node either over [ssh](https://github.com/Fonta1n3/FullyNoded/blob/master/BitSense/Helpers/SSH/SSHService.swift) or [tor](https://github.com/Fonta1n3/FullyNoded/blob/master/BitSense/Helpers/RPC/MakeRPCCall.swift).
-
-## Why?
-
-Once upon a time I tried using Glacier Protocol and was one day forced into having to move my deep cold storage (which was later lost in a tragic boating accident). I learnt first hand how nerve wracking it was and saw that much of what Glacier Protocol instructs the user to do manually as far as creating transactions is concerned should be automated by software.
-
-That experience in combination with being constantly dissapointed by the lack of quality iOS wallets on the market caused me to make my own. I started out using an outdated library called Core Bitcoin and Blockcyphers API, this was less then ideal as Core Bitcoin was outdated and using Blockcyphers node to broadcast my transactions was not private. Thanks to some inspiration from fellow bitcoiners I came up with the idea of making a wallet that allows you to connect to a node to power it.
-
-## The purpose?
-
-I am not  here to tell you how to use Bitcoin, but for me the best use of Fully Noded is to utilize the import function to manage your HD mutlisig cold storage or as a watch only wallet for your hardware wallet. Not only does it include all the functionality you can possibly have as a watchonly wallet (build unsigned transactions, balance monitoring, and invoices) it also uses Bitcoin Core to help you spend your cold storage if you need to. Just build a transaction with the "spend from cold" switch turned on and then paste the transaction into "sign" and you can scan the appropriate private key and your node will sign the transaction with that private key. It also allows you to spend specific UTXO's, lock them, sweep them etc so you are in 100% full control of your cold storage and what gets spent.
-
-When 0.19.0 is released you will also be able to import xprvs into your node, this means you can have multiple nodes each with one xprv from your HD multisig setup imported into it. Then with Fully Noded you can connect to those nodes to sign the multisig transaction without the need for manually scanning the correct private key as your nodes wallet will do it for you, because it is multisig it is relatively safe to have a minority portion of the private keys online too. 
-
-Fully Noded saves every HD wallet you import into it by saving that wallets [descriptor](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md) which makes it easy for you to recover your wallet. Fully Noded also saves the descriptor so that you can generate HD mutlisig invoices deterministically, this is something that Bitcoin Core (nor any hardware wallet does), it is possible because Fully Noded saves the descriptor and the index of the last invoice you created, the user can simply bump up the index to get the next address (in the app see "incomings" -> "invoice" -> "HD Multisig"). 
-
-When importing into your node your node imports all the scripts necessary to sign the transaction with so you do not need to worry about manually inputting the redeem script every time you need to spend, when it comes to signing it will automatically fetch the correct redeem script for you to sign with. This is all stuff you had to do manually before if using Glacier Protocol, now it is automated. This set up in combination with an offline seed generator (multiple hardware wallets) and recovery backups engraved onto steel make the most secure, private, trust minimized user friendly HD multisig set up available.
+- Add a label to display the name of your rpcwallet in home screen (top left) that you either created or manually loaded in utilities
