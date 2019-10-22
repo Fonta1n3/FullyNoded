@@ -82,9 +82,7 @@ class MakeRPCCall {
         var formattedParam = (param as! String).replacingOccurrences(of: "''", with: "")
         formattedParam = formattedParam.replacingOccurrences(of: "'\"'\"'", with: "'")
         
-        let url = URL(string: walletUrl)
-        print("url = \(String(describing: url))")
-        
+        let url = URL(string: walletUrl)        
         var request = URLRequest(url: url!)
         request.httpMethod = "POST"
         request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
