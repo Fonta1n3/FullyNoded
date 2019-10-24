@@ -88,7 +88,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     override func viewDidAppear(_ animated: Bool) {
         
         let walletName = ud.object(forKey: "walletName") as? String ?? ""
-        print("walletname = \(walletName)")
         let isActive = activeNodeDict().isAnyNodeActive
             
             if nodes.count > 0 {
@@ -742,6 +741,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func loadSectionOne() {
+        print("loadSectionOne")
         
         let nodeLogic = NodeLogic()
         nodeLogic.walletDisabled = walletDisabled
@@ -775,6 +775,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 hashrateString = str.hashrate
                 uptime = str.uptime
                 currentBlock = str.blockheight
+                sectionOneLoaded = true
                 
                 DispatchQueue.main.async {
                     
@@ -1207,7 +1208,16 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     self.mainMenu.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
                     let impact = UIImpactFeedbackGenerator()
                     impact.impactOccurred()
-                    self.loadSectionTwo()
+                    
+                    if !self.sectionOneLoaded {
+                        
+                        self.loadSectionOne()
+                        
+                    } else {
+                        
+                        self.loadSectionTwo()
+                        
+                    }
                     
                 }
                 

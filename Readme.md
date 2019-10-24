@@ -46,13 +46,11 @@ Go to nodl browser based UI, tap the Fully Noded link and Fully Noded will open,
 
 ## Tutorials
 
-These may be outdated but will give you a general idea:
+Some are outdated but will give you a general idea:
+
+- [Airgapped Signing and pairing with Coldcard](https://www.youtube.com/watch?v=WqKEPpSky2g)
 
 - [Using Fully Noded for HD Multisig. creating, importing, receiving, spending](https://www.youtube.com/watch?v=zRMZJ4pKQ0Q)
-
-- [Using Fully Noded with Coldcard Wallet](https://www.youtube.com/watch?v=o1O7x4J0mvA)
-
-- [Import an xpub into your node and spend from it using Fully Noded](https://www.youtube.com/watch?v=bduBVZmZVHY&t=151s)
 
 ## Build From Source - Mac
 
@@ -132,6 +130,82 @@ listen=1
 debug=tor
 ```
 
+## Keypair generation (optional)
+
+Install python3 then run the following commands in a terminal (do this on any machine):
+
+`virtualenv -p python3 ENV`
+`source ENV/bin/activate`
+`pip install pynacl`
+`sudo nano createKeys.py`
+
+- Copy and paste this script into the terminals nano session:
+
+```
+#!/usr/bin/env python3
+import base64
+try:
+    import nacl.public
+except ImportError:
+    print('PyNaCl is required: "pip install pynacl" or similar')
+    exit(1)
+
+
+def key_str(key):
+    # bytes to base 32
+    key_bytes = bytes(key)
+    key_b32 = base64.b32encode(key_bytes)
+    # strip trailing ====
+    assert key_b32[-4:] == b'===='
+    key_b32 = key_b32[:-4]
+    # change from b'ASDF' to ASDF
+    s = key_b32.decode('utf-8')
+    return s
+
+
+def main():
+    priv_key = nacl.public.PrivateKey.generate()
+    pub_key = priv_key.public_key
+    print('public:  %s' % key_str(pub_key))
+    print('private: %s' % key_str(priv_key))
+
+
+if __name__ == '__main__':
+    exit(main())
+```
+use `ctrl-x` to quit, `y` to save and `return` to exit nano
+
+Then simply run:
+
+`python3 createKeys.py`
+
+and it returns your key pair:
+
+```
+public:  PHK2DFSCNNJ75U3GUA3SHCVEGPEJMZAPEKQGL5YLVM2GV6NORB6Q
+private: DARUBG4CIQ4FMPTGUOE36P7DYCKHRBCCNPU5QWCSYBFPWBCA5RCQ
+```
+
+The private key is for Fully Noded (paste it or scan it as a QR code when you add your node). The public key is for your servers `authorized_clients` directory. 
+
+To be saved in a file called `fullynoded.auth`
+
+Go to your hidden services driectory that you added to your torrc:
+
+```
+HiddenServiceDir /var/lib/tor/FullyNodedV3/
+```
+
+as an example:
+
+`sudo nano /var/lib/tor/FullyNodedV3/authorized_clients/fullynoded.auth`
+
+and paste in:
+
+`descriptor:x25519:PHK2DFSCNNJ75U3GUA3SHCVEGPEJMZAPEKQGL5YLVM2GV6NORB6Q`
+
+Save and exit and you have one of the most secure node/light client set ups possible. (assuming your server is firewalled off)
+
 ## Security & Privacy
 
 - All network traffic is encrypted by default.
@@ -199,6 +273,13 @@ PR's welcome.
 - [CryptoSwift](https://github.com/krzyzanowskim/CryptoSwift) for encrypting your nodes credentials.
 - [keychain-swift](https://github.com/evgenyneu/keychain-swift) for storing your nodes credentials decryption key on your iPhones secure enclave.
 - [Tor](https://github.com/iCepa/Tor.framework) for connecting to your node more privately and securely.
+
+## Changes v0.1.12
+- Fix home table cell heights loading with incorrect height
+- Add keypair generation and authkey authentication instructions
+
+## Changes v0.1.11
+- Fix bug where home table would load out of order and not show proper cell heights after choosing which loaded wallet to work with
 
 ## Changes v0.1.10
 - Clean up TorClient code
