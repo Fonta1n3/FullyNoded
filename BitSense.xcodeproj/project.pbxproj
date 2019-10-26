@@ -17,10 +17,14 @@
 		D0126FF82244842000412629 /* bWhite.png in Resources */ = {isa = PBXBuildFile; fileRef = D0126FF72244842000412629 /* bWhite.png */; };
 		D0196DD721B5AB300081E0AB /* KeyPadButtonView.xib in Resources */ = {isa = PBXBuildFile; fileRef = D0196DD621B5AB300081E0AB /* KeyPadButtonView.xib */; };
 		D0196DDB21B5AC5F0081E0AB /* KeyPad.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0196DDA21B5AC5F0081E0AB /* KeyPad.swift */; };
-		D0196DDF21BEF3FF0081E0AB /* NMSSH.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0196DDE21BEF3FF0081E0AB /* NMSSH.framework */; platformFilter = ios; };
 		D02094EE2256B06B002E8E7A /* Transition.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02094ED2256B06B002E8E7A /* Transition.swift */; };
 		D02094F02257FB78002E8E7A /* FirstTime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02094EF2257FB78002E8E7A /* FirstTime.swift */; };
 		D02094F3225936D2002E8E7A /* ConnectingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02094F2225936D2002E8E7A /* ConnectingView.swift */; };
+		D0233F222361E68F0041FFBA /* KeyGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0233F212361E68F0041FFBA /* KeyGen.swift */; };
+		D0233F242361EA090041FFBA /* Base32.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0233F232361EA090041FFBA /* Base32.swift */; };
+		D0233F262361EA380041FFBA /* StringExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0233F252361EA380041FFBA /* StringExtension.swift */; };
+		D0233F282361EA5F0041FFBA /* shim.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0233F272361EA5F0041FFBA /* shim.swift */; };
+		D0233F2B236284200041FFBA /* ShowV3PubKeyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0233F2A236284200041FFBA /* ShowV3PubKeyViewController.swift */; };
 		D02958D3234F82E000ED8F72 /* IdentityViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02958D2234F82E000ED8F72 /* IdentityViewController.swift */; };
 		D02958D5235053B300ED8F72 /* SecurityCenterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02958D4235053B300ED8F72 /* SecurityCenterViewController.swift */; };
 		D02DC3B9226204CF00ADFFE9 /* SSHHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02DC3B8226204CF00ADFFE9 /* SSHHelper.swift */; };
@@ -59,6 +63,10 @@
 		D05D9732226433B60035F1DE /* strobe.png in Resources */ = {isa = PBXBuildFile; fileRef = D05D9731226433B60035F1DE /* strobe.png */; };
 		D05D973422647CE60035F1DE /* QRGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05D973322647CE60035F1DE /* QRGenerator.swift */; };
 		D06C59E421BEF5F0009BCB9C /* SSHService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D06C59E321BEF5F0009BCB9C /* SSHService.swift */; };
+		D06E7C5C23632EB700EF19A3 /* CryptoSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FBC22AE1B3000DBBFC2 /* CryptoSwift.framework */; platformFilter = ios; };
+		D06E7C5F23632EB900EF19A3 /* KeychainSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FBA22AE1B2B00DBBFC2 /* KeychainSwift.framework */; platformFilter = ios; };
+		D06E7C6123632EBB00EF19A3 /* NMSSH.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0196DDE21BEF3FF0081E0AB /* NMSSH.framework */; platformFilter = ios; };
+		D06E7C6323632EBD00EF19A3 /* Tor.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FB822ACB7D100DBBFC2 /* Tor.framework */; platformFilter = ios; };
 		D071A2A0214880F700C4BCB3 /* Search - tripkey.png in Resources */ = {isa = PBXBuildFile; fileRef = D071A29F214880F700C4BCB3 /* Search - tripkey.png */; };
 		D073E16E22558CDE0012A28C /* CoreDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D073E16D22558CDE0012A28C /* CoreDataService.swift */; };
 		D073E17022558DF30012A28C /* AESService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D073E16F22558DF30012A28C /* AESService.swift */; };
@@ -71,9 +79,6 @@
 		D0806B4522EE9FBA002C20A1 /* TXChain.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0806B4422EE9FBA002C20A1 /* TXChain.swift */; };
 		D084960422EBCD3B003FE8EB /* GetInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D084960322EBCD3B003FE8EB /* GetInfoViewController.swift */; };
 		D084960622EC0A94003FE8EB /* LICENSE.md in Resources */ = {isa = PBXBuildFile; fileRef = D084960522EC0A94003FE8EB /* LICENSE.md */; };
-		D0855FB922ACB7D100DBBFC2 /* Tor.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FB822ACB7D100DBBFC2 /* Tor.framework */; platformFilter = ios; };
-		D0855FBB22AE1B2B00DBBFC2 /* KeychainSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FBA22AE1B2B00DBBFC2 /* KeychainSwift.framework */; platformFilter = ios; };
-		D0855FBD22AE1B3000DBBFC2 /* CryptoSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FBC22AE1B3000DBBFC2 /* CryptoSwift.framework */; platformFilter = ios; };
 		D0855FC622B08EE000DBBFC2 /* TorClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0855FC522B08EE000DBBFC2 /* TorClient.swift */; };
 		D0855FC822B0C71900DBBFC2 /* CreatePSBTViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0855FC722B0C71900DBBFC2 /* CreatePSBTViewController.swift */; };
 		D0855FCA22B0CEA800DBBFC2 /* CreatePSBT.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0855FC922B0CEA800DBBFC2 /* CreatePSBT.swift */; };
@@ -139,6 +144,11 @@
 		D02094ED2256B06B002E8E7A /* Transition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transition.swift; sourceTree = "<group>"; };
 		D02094EF2257FB78002E8E7A /* FirstTime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstTime.swift; sourceTree = "<group>"; };
 		D02094F2225936D2002E8E7A /* ConnectingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectingView.swift; sourceTree = "<group>"; };
+		D0233F212361E68F0041FFBA /* KeyGen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyGen.swift; sourceTree = "<group>"; };
+		D0233F232361EA090041FFBA /* Base32.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Base32.swift; sourceTree = "<group>"; };
+		D0233F252361EA380041FFBA /* StringExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtension.swift; sourceTree = "<group>"; };
+		D0233F272361EA5F0041FFBA /* shim.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = shim.swift; sourceTree = "<group>"; };
+		D0233F2A236284200041FFBA /* ShowV3PubKeyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowV3PubKeyViewController.swift; sourceTree = "<group>"; };
 		D02958D2234F82E000ED8F72 /* IdentityViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityViewController.swift; sourceTree = "<group>"; };
 		D02958D4235053B300ED8F72 /* SecurityCenterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityCenterViewController.swift; sourceTree = "<group>"; };
 		D02DC3B8226204CF00ADFFE9 /* SSHHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SSHHelper.swift; sourceTree = "<group>"; };
@@ -243,10 +253,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D0196DDF21BEF3FF0081E0AB /* NMSSH.framework in Frameworks */,
-				D0855FBD22AE1B3000DBBFC2 /* CryptoSwift.framework in Frameworks */,
-				D0855FBB22AE1B2B00DBBFC2 /* KeychainSwift.framework in Frameworks */,
-				D0855FB922ACB7D100DBBFC2 /* Tor.framework in Frameworks */,
+				D06E7C6123632EBB00EF19A3 /* NMSSH.framework in Frameworks */,
+				D06E7C5F23632EB900EF19A3 /* KeychainSwift.framework in Frameworks */,
+				D06E7C6323632EBD00EF19A3 /* Tor.framework in Frameworks */,
+				D06E7C5C23632EB700EF19A3 /* CryptoSwift.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -390,6 +400,17 @@
 			path = "Sub Views";
 			sourceTree = "<group>";
 		};
+		D0233F292361EB8C0041FFBA /* Base32 Key Gen */ = {
+			isa = PBXGroup;
+			children = (
+				D0233F212361E68F0041FFBA /* KeyGen.swift */,
+				D0233F232361EA090041FFBA /* Base32.swift */,
+				D0233F252361EA380041FFBA /* StringExtension.swift */,
+				D0233F272361EA5F0041FFBA /* shim.swift */,
+			);
+			path = "Base32 Key Gen";
+			sourceTree = "<group>";
+		};
 		D0286D6021E2672D00954991 /* SSH */ = {
 			isa = PBXGroup;
 			children = (
@@ -434,6 +455,7 @@
 			children = (
 				D02094ED2256B06B002E8E7A /* Transition.swift */,
 				D0E9B63B211A94C600B416E7 /* Utilities.swift */,
+				D0233F292361EB8C0041FFBA /* Base32 Key Gen */,
 			);
 			path = Miscellaneous;
 			sourceTree = "<group>";
@@ -657,6 +679,7 @@
 			isa = PBXGroup;
 			children = (
 				D0B6937122B32D6300A2C3E6 /* TorCredentialViewController.swift */,
+				D0233F2A236284200041FFBA /* ShowV3PubKeyViewController.swift */,
 			);
 			path = "Tor Credentials";
 			sourceTree = "<group>";
@@ -964,6 +987,7 @@
 				D0B6937022B272B400A2C3E6 /* SSHCredentialsViewController.swift in Sources */,
 				D08A92AD2337A63000409D6E /* DescriptorStruct.swift in Sources */,
 				D037C876231CAFD9006C357D /* AddLabelViewController.swift in Sources */,
+				D0233F282361EA5F0041FFBA /* shim.swift in Sources */,
 				D05692E321434452006DF0F4 /* MainMenuViewController.swift in Sources */,
 				D02FE43323136A600048F8C4 /* NodeLogic.swift in Sources */,
 				D073E17222559A6D0012A28C /* CredentialConverter.swift in Sources */,
@@ -984,6 +1008,7 @@
 				D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */,
 				D0B6937222B32D6300A2C3E6 /* TorCredentialViewController.swift in Sources */,
 				D0E51E592265640F005D1909 /* ErrorView.swift in Sources */,
+				D0233F2B236284200041FFBA /* ShowV3PubKeyViewController.swift in Sources */,
 				D0D71DA32351F835005CCDB9 /* UtilitieMenuViewController.swift in Sources */,
 				D0452ADD224743C50013E225 /* LogInViewController.swift in Sources */,
 				D02958D3234F82E000ED8F72 /* IdentityViewController.swift in Sources */,
@@ -992,7 +1017,9 @@
 				D08CED1122E54B11007E2A8E /* TransactionViewController.swift in Sources */,
 				D08A92B1233B213300409D6E /* ChooseWalletViewController.swift in Sources */,
 				D0A2918F225114670099A2F3 /* MakeRPCCall.swift in Sources */,
+				D0233F262361EA380041FFBA /* StringExtension.swift in Sources */,
 				D07EC09022DBFB5400F9160D /* JoinPSBTViewController.swift in Sources */,
+				D0233F242361EA090041FFBA /* Base32.swift in Sources */,
 				D037C86C231BAFB4006C357D /* AddToKeypoolViewController.swift in Sources */,
 				D0452ADB2247417F0013E225 /* ImportPrivKeyViewController.swift in Sources */,
 				D08CED0F22E5089D007E2A8E /* ImportExtendedKeysViewController.swift in Sources */,
@@ -1004,6 +1031,7 @@
 				D02FE431231107EB0048F8C4 /* Connector.swift in Sources */,
 				D0E51E5B226592C9005D1909 /* NodeDetailViewController.swift in Sources */,
 				D02FE4362313882F0048F8C4 /* HomeTableStruct.swift in Sources */,
+				D0233F222361E68F0041FFBA /* KeyGen.swift in Sources */,
 				D073E17022558DF30012A28C /* AESService.swift in Sources */,
 				D0126FF622446E3800412629 /* InvoiceViewController.swift in Sources */,
 				D0452ADF224833390013E225 /* Commands.swift in Sources */,
@@ -1174,14 +1202,13 @@
 		D00B9A3A2111427200E8B95A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = BitSense/BitSense.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution: Peter Denton (69FR345CDA)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development: Peter Denton (H3TA3EF8PX)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 74;
+				CURRENT_PROJECT_VERSION = 76;
 				DEVELOPMENT_TEAM = 69FR345CDA;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1193,11 +1220,11 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.72;
+				MARKETING_VERSION = 1.74;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
-				PROVISIONING_PROFILE_SPECIFIER = iOS13_Distribution_Oct2019;
+				PROVISIONING_PROFILE_SPECIFIER = FullyNoded_Debug_Oct2019;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "BitSense/BitSense-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -1209,14 +1236,13 @@
 		D00B9A3B2111427200E8B95A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = BitSense/BitSense.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Distribution: Peter Denton (69FR345CDA)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 74;
+				CURRENT_PROJECT_VERSION = 76;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 69FR345CDA;
 				ENABLE_TESTABILITY = NO;
@@ -1230,7 +1256,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.72;
+				MARKETING_VERSION = 1.74;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";

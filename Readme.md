@@ -274,6 +274,10 @@ PR's welcome.
 - [keychain-swift](https://github.com/evgenyneu/keychain-swift) for storing your nodes credentials decryption key on your iPhones secure enclave.
 - [Tor](https://github.com/iCepa/Tor.framework) for connecting to your node more privately and securely.
 
+## Changes v0.1.13
+- Add QR quick connect based on the btcrpc:// uri
+- Add ability to generate and refresh V3 cookie auth keys in the app
+
 ## Changes v0.1.12
 - Fix home table cell heights loading with incorrect height
 - Add keypair generation and authkey authentication instructions

@@ -8,8 +8,9 @@
 
 import UIKit
 
-class TorCredentialViewController: UIViewController, UINavigationControllerDelegate, UITextFieldDelegate {
+class TorCredentialViewController: UIViewController, UINavigationControllerDelegate, UITextFieldDelegate, UITextViewDelegate {
     
+    var tapTextViewGesture = UITapGestureRecognizer()
     var selectedNode = [String:Any]()
     var createNew = Bool()
     var newNode = [String:Any]()
@@ -26,6 +27,57 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
     @IBOutlet var onionAddressField: UITextField!
     @IBOutlet var saveButton: UIButton!
     @IBOutlet var authKeyField: UITextField!
+    @IBOutlet var pubkeyTextView: UITextView!
+    @IBOutlet var pubkeyLabel: UILabel!
+    @IBOutlet var pubkeyDescription: UILabel!
+    @IBOutlet var generateButtonOutlet: UIButton!
+    
+    @IBAction func generateKeyPair(_ sender: Any) {
+        
+        //TO DO: fix local key generation...
+        
+//        let keygen = KeyGen()
+//        keygen.generate()
+//
+//        DispatchQueue.main.async {
+//
+//            self.generateButtonOutlet.alpha = 0
+//            self.pubkeyTextView.text = "descriptor:x25519:" + keygen.pubKey.replacingOccurrences(of: "====", with: "")
+//            self.authKeyField.text = (keygen.privKey).replacingOccurrences(of: "====", with: "")
+//            self.pubkeyDescription.alpha = 1
+//            self.pubkeyLabel.alpha = 1
+//        }
+        
+        let busy = ConnectingView()
+        
+        DispatchQueue.main.async {
+            
+            busy.addConnectingView(vc: self, description: "getting keypair")
+            
+        }
+        
+        SSHService.sharedInstance.getKeys { (response) in
+            
+            print("response = \(response)")
+            let arr = response.components(separatedBy: "\n")
+            let pubkey = arr[0].replacingOccurrences(of: "public:  ", with: "")
+            let privkey = arr[1].replacingOccurrences(of: "private: ", with: "")
+            
+            DispatchQueue.main.async {
+                
+                busy.removeConnectingView()
+                self.generateButtonOutlet.alpha = 0
+                self.pubkeyTextView.text = "descriptor:x25519:" + pubkey
+                self.authKeyField.text = privkey
+                self.pubkeyDescription.alpha = 1
+                self.pubkeyLabel.alpha = 1
+                
+            }
+            
+        }
+        
+    }
+    
     
     @IBAction func scanNow(_ sender: Any) {
         
@@ -103,6 +155,13 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
                     
                 }
                 
+                if pubkeyTextView.text != "" {
+                    
+                    let enc = aes.encryptKey(keyToEncrypt: pubkeyTextView.text!)
+                    newNode["authPubKey"] = enc
+                    
+                }
+                
                 let success = cd.saveEntity(vc: self,
                                             dict: newNode,
                                             entityName: .nodes)
@@ -145,7 +204,8 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
                 
                 if success {
                     
-                    let enc = aes.encryptKey(keyToEncrypt: authKeyField.text!)
+                    let privKey = (authKeyField.text!).replacingOccurrences(of: "====", with: "")
+                    let enc = aes.encryptKey(keyToEncrypt: privKey)
                     
                     let success2 = cd.updateEntity(viewController: self,
                                             id: id,
@@ -158,6 +218,28 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
                         displayAlert(viewController: self,
                                      isError: false,
                                      message: "Tor node updated")
+                        
+                        if pubkeyTextView.text != "" {
+                            
+                            let enc = aes.encryptKey(keyToEncrypt: pubkeyTextView.text!)
+                            
+                            let success = cd.updateEntity(viewController: self,
+                                                          id: id,
+                                                          newValue: enc,
+                                                          keyToEdit: "authPubKey",
+                                                          entityName: .nodes)
+                            
+                            if success {
+                                
+                                print("pubkey updated successfully")
+                                
+                            } else {
+                                
+                                print("error updating pubkey")
+                                
+                            }
+                            
+                        }
                         
                     } else {
                         
@@ -215,9 +297,18 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
         
     }
     
-    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        pubkeyLabel.alpha = 0
+        pubkeyDescription.alpha = 0
+        pubkeyTextView.isUserInteractionEnabled = true
+        pubkeyTextView.isEditable = false
+        pubkeyTextView.isSelectable = true
+        
+        tapTextViewGesture = UITapGestureRecognizer(target: self, action: #selector(shareRawText(_:)))
+        
+        pubkeyTextView.addGestureRecognizer(tapTextViewGesture)
         
         imageView.alpha = 0
         imageView.backgroundColor = UIColor.black
@@ -266,7 +357,25 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
             if node.authKey != "" {
                 
                 let enc = node.authKey
-                authKeyField.text = aes.decryptKey(keyToDecrypt: enc)
+                
+                DispatchQueue.main.async {
+                    
+                    self.authKeyField.text = self.aes.decryptKey(keyToDecrypt: enc)
+                    
+                }
+                
+                if node.authPubKey != "" {
+                    
+                    DispatchQueue.main.async {
+                        
+                        self.generateButtonOutlet.setTitle("refresh V3 auth key pair", for: .normal)
+                        self.pubkeyTextView.text = self.aes.decryptKey(keyToDecrypt: node.authPubKey)
+                        self.pubkeyDescription.alpha = 1
+                        self.pubkeyLabel.alpha = 1
+                        
+                    }
+                    
+                }
                 
             }
             
@@ -296,7 +405,7 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
         
         isFirstTime = true
         
-        imageView.frame = CGRect(x: 0, y: 60, width: view.frame.width, height: view.frame.height - 105)
+        imageView.frame = view.frame
         view.addSubview(imageView)
         imageView.alpha = 0
         imageView.isUserInteractionEnabled = true
@@ -311,6 +420,7 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
         
         qrScanner.completion = { self.getQRCode() }
         qrScanner.didChooseImage = { self.didPickImage() }
+        qrScanner.downSwipeAction = { self.back() }
         
         qrScanner.uploadButton.addTarget(self,
                                          action: #selector(self.chooseQRCodeFromLibrary),
@@ -425,6 +535,56 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
     @objc func chooseQRCodeFromLibrary() {
         
         qrScanner.chooseQRCodeFromLibrary()
+        
+    }
+    
+    //showPubKey
+    
+    @objc func shareRawText(_ sender: UITapGestureRecognizer) {
+        
+        DispatchQueue.main.async {
+            
+            UIView.animate(withDuration: 0.2, animations: {
+                
+                self.pubkeyTextView.alpha = 0
+                
+            }) { _ in
+                
+                UIView.animate(withDuration: 0.2, animations: {
+                    
+                    self.pubkeyTextView.alpha = 1
+                    
+                })
+                
+            }
+            
+            self.performSegue(withIdentifier: "showPubKey", sender: self)
+            
+        }
+        
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        
+        switch segue.identifier {
+            
+        case "showPubKey":
+            
+            if let vc = segue.destination as? ShowV3PubKeyViewController {
+                
+                if self.pubkeyTextView.text != "" {
+                    
+                    vc.pubkey = self.pubkeyTextView.text!
+                    
+                }
+                
+            }
+            
+        default:
+            
+            break
+            
+        }
         
     }
 

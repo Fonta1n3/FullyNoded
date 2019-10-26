@@ -1,42 +1,43 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14490.99" systemVersion="18F132" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="15400" systemVersion="19A603" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="Descriptors" representedClassName="Descriptors" syncable="YES" codeGenerationType="class">
-        <attribute name="descriptor" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="id" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="label" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="nodeID" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="range" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="descriptor" optional="YES" attributeType="String"/>
+        <attribute name="id" optional="YES" attributeType="String"/>
+        <attribute name="label" optional="YES" attributeType="String"/>
+        <attribute name="nodeID" optional="YES" attributeType="String"/>
+        <attribute name="range" optional="YES" attributeType="String"/>
     </entity>
     <entity name="HDWallets" representedClassName="HDWallets" syncable="YES" codeGenerationType="class">
-        <attribute name="descriptor" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="id" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="index" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="label" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="nodeID" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="range" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="descriptor" optional="YES" attributeType="String"/>
+        <attribute name="id" optional="YES" attributeType="String"/>
+        <attribute name="index" optional="YES" attributeType="String"/>
+        <attribute name="label" optional="YES" attributeType="String"/>
+        <attribute name="nodeID" optional="YES" attributeType="String"/>
+        <attribute name="range" optional="YES" attributeType="String"/>
     </entity>
     <entity name="Nodes" representedClassName="Nodes" syncable="YES" codeGenerationType="class">
-        <attribute name="authKey" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="id" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="ip" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="isActive" optional="YES" attributeType="Boolean" usesScalarValueType="YES" syncable="YES"/>
-        <attribute name="isDefault" optional="YES" attributeType="Boolean" usesScalarValueType="YES" syncable="YES"/>
-        <attribute name="label" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="onionAddress" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="password" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="port" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="privateKey" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="publicKey" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="rpcpassword" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="rpcport" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="rpcuser" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="username" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="usingSSH" optional="YES" attributeType="Boolean" usesScalarValueType="YES" syncable="YES"/>
-        <attribute name="usingTor" optional="YES" attributeType="Boolean" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="authKey" optional="YES" attributeType="String"/>
+        <attribute name="authPubKey" optional="YES" attributeType="String"/>
+        <attribute name="id" optional="YES" attributeType="String"/>
+        <attribute name="ip" optional="YES" attributeType="String"/>
+        <attribute name="isActive" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="isDefault" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="label" optional="YES" attributeType="String"/>
+        <attribute name="onionAddress" optional="YES" attributeType="String"/>
+        <attribute name="password" optional="YES" attributeType="String"/>
+        <attribute name="port" optional="YES" attributeType="String"/>
+        <attribute name="privateKey" optional="YES" attributeType="String"/>
+        <attribute name="publicKey" optional="YES" attributeType="String"/>
+        <attribute name="rpcpassword" optional="YES" attributeType="String"/>
+        <attribute name="rpcport" optional="YES" attributeType="String"/>
+        <attribute name="rpcuser" optional="YES" attributeType="String"/>
+        <attribute name="username" optional="YES" attributeType="String"/>
+        <attribute name="usingSSH" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="usingTor" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
     </entity>
     <elements>
         <element name="Descriptors" positionX="-63" positionY="99" width="128" height="120"/>
         <element name="HDWallets" positionX="-63" positionY="99" width="128" height="135"/>
-        <element name="Nodes" positionX="-63" positionY="-18" width="128" height="300"/>
+        <element name="Nodes" positionX="-63" positionY="-18" width="128" height="313"/>
     </elements>
 </model>

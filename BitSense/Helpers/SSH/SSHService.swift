@@ -16,6 +16,7 @@ class SSHService {
     let aes = AESService()
     var activeNode = [String:Any]()
     var commandExecuting = false
+    var isConnected = false
     
     private init() {}
     
@@ -313,6 +314,82 @@ class SSHService {
             
         }
         
+    }
+    
+    
+    
+    func getKeys(response: @escaping(String) -> ()) {
+        
+        var error: NSError?
+        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        let cmd = "python3 createKeys.py"
+        
+        if !isConnected {
+            
+            queue.async {
+                
+                self.session = NMSSHSession.connect(toHost: "redacted",
+                                                    port: 22,
+                                                    withUsername: "redacted")
+                                
+                if self.session.isConnected == true {
+                
+                    self.session.authenticate(byPassword: "redacted")
+                    
+                    if self.session.isAuthorized {
+                        
+                        self.isConnected = true
+                        
+                        if let responseString = self.session?.channel.execute(cmd, error: &error) {
+                            
+                            if error != nil {
+                                
+                                print("error clearing history")
+                                response(("error"))
+                                
+                            } else {
+                                
+                                response((responseString))
+                                print("responsestring = \(responseString)")
+                                
+                            }
+                            
+                        } else {
+                            
+                            response(("error"))
+                            
+                        }
+                        
+                    }
+                    
+                }
+                
+            }
+            
+        } else {
+            
+            if let responseString = self.session?.channel.execute(cmd, error: &error) {
+                
+                if error != nil {
+                    
+                    print("error clearing history")
+                    response(("error"))
+                    
+                } else {
+                    
+                    response((responseString))
+                    print("responsestring = \(responseString)")
+                    
+                }
+                
+            } else {
+                
+                response(("error"))
+                
+            }
+            
+        }
+                
     }
     
 }

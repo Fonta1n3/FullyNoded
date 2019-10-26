@@ -110,7 +110,6 @@ class TorClient {
         }
         
         self.controller.disconnect()
-        
         self.isOperational = false
         self.thread = nil
         self.sessionConfiguration = .default
@@ -263,6 +262,7 @@ class TorClient {
                     try authString.write(to: file, atomically: true, encoding: .utf8)
                     
                     print("successfully wrote authkey to file")
+                    print("key = \(authString)")
                                         
                 } catch {
                     

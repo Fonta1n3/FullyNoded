@@ -411,7 +411,7 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
                 
                 switch method {
                     
-                case BTC_CLI_COMMAND.deriveaddresses:
+                case .deriveaddresses:
                     
                     DispatchQueue.main.async {
                         

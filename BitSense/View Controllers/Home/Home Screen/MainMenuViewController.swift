@@ -73,6 +73,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         showUnlockScreen()
         convertExistingDescriptors()
         
+        let kg = KeyGen()
+        kg.generate()
+        
     }
     
     func addNavBarSpinner() {

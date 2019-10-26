@@ -116,7 +116,9 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                     
                 }, completion: { _ in
                     
-                    if !(self.nodeArray[self.selectedIndex]["isDefault"] as! Bool) {
+                    let str = NodeStruct(dictionary: self.nodeArray[self.selectedIndex])
+                    
+                    if !str.isDefault {
                         
                         DispatchQueue.main.async {
                             
@@ -204,6 +206,12 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 SSHService.sharedInstance.commandExecuting = false
                 
             }
+            
+        }
+        
+        if TorClient.sharedInstance.isOperational {
+            
+            TorClient.sharedInstance.resign()
             
         }
         
