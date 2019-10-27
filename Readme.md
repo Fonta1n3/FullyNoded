@@ -151,7 +151,8 @@ debug=tor
 
 Install python3, pip3, virtualenv and then run the following commands in a terminal (do this on any machine):
 
-```virtualenv -p python3 ENV
+```
+virtualenv -p python3 ENV
 source ENV/bin/activate
 pip install pynacl
 sudo nano createKeys.py
