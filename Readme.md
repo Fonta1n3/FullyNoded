@@ -295,6 +295,8 @@ PR's welcome.
 
 ## Changes v0.1.14
 - Fix bug where tor thread was not fully refreshing. Just pull home table to refresh your tor thread.
+- Add V2 hidden service authentication
+- Add two arguments to the btcrpc uri to allow server side to add a node label and v2 auth password
 
 ## Changes v0.1.13
 - Add QR quick connect based on the btcrpc:// uri
