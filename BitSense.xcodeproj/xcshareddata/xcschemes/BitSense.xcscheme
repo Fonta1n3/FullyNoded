@@ -37,6 +37,16 @@
          </BuildableReference>
       </MacroExpansion>
       <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "D00BD9C72365664600222A37"
+               BuildableName = "BitSenseTests.xctest"
+               BlueprintName = "BitSenseTests"
+               ReferencedContainer = "container:BitSense.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

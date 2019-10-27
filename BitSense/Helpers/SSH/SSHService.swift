@@ -328,13 +328,13 @@ class SSHService {
             
             queue.async {
                 
-                self.session = NMSSHSession.connect(toHost: "redacted",
+                self.session = NMSSHSession.connect(toHost: "35.239.123.188",
                                                     port: 22,
-                                                    withUsername: "redacted")
+                                                    withUsername: "fontainedenton")
                                 
                 if self.session.isConnected == true {
                 
-                    self.session.authenticate(byPassword: "redacted")
+                    self.session.authenticate(byPassword: "V4RM73Q6C3MPTKMAI4VMWNBEVJ6YCOEBPY75HFKSA5CZP2YMB5JQ")
                     
                     if self.session.isAuthorized {
                         

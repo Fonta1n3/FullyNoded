@@ -72,19 +72,16 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         setFeeTarget()
         showUnlockScreen()
         convertExistingDescriptors()
-        
-        let kg = KeyGen()
-        kg.generate()
-        
+                
     }
     
     func addNavBarSpinner() {
         
         spinner.frame = CGRect(x: 0, y: 0, width: 20, height: 20)
         dataRefresher = UIBarButtonItem(customView: spinner)
-        self.navigationItem.setRightBarButton(dataRefresher, animated: true)
-        self.spinner.startAnimating()
-        self.spinner.alpha = 1
+        navigationItem.setRightBarButton(dataRefresher, animated: true)
+        spinner.startAnimating()
+        spinner.alpha = 1
         
     }
     

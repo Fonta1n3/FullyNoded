@@ -12,6 +12,7 @@
 		D00B9A302111427200E8B95A /* BitSense.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = D00B9A2E2111427200E8B95A /* BitSense.xcdatamodeld */; };
 		D00B9A322111427200E8B95A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D00B9A312111427200E8B95A /* Assets.xcassets */; };
 		D00B9A352111427200E8B95A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D00B9A332111427200E8B95A /* LaunchScreen.storyboard */; };
+		D00BD9CB2365664600222A37 /* BitSenseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00BD9CA2365664600222A37 /* BitSenseTests.swift */; };
 		D0126FF022443D1100412629 /* whitePlus.png in Resources */ = {isa = PBXBuildFile; fileRef = D0126FEF22443D1100412629 /* whitePlus.png */; };
 		D0126FF622446E3800412629 /* InvoiceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0126FF522446E3800412629 /* InvoiceViewController.swift */; };
 		D0126FF82244842000412629 /* bWhite.png in Resources */ = {isa = PBXBuildFile; fileRef = D0126FF72244842000412629 /* bWhite.png */; };
@@ -122,6 +123,16 @@
 		D0FA417E213C7CED0028E4F8 /* whiteFingerPrint.png in Resources */ = {isa = PBXBuildFile; fileRef = D0FA417D213C7CED0028E4F8 /* whiteFingerPrint.png */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		D00BD9CD2365664600222A37 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D00B9A1C2111427200E8B95A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D00B9A232111427200E8B95A;
+			remoteInfo = BitSense;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		A084FD702359E9D500DA63CF /* Podfile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Podfile; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		A084FD712359E9D500DA63CF /* Cartfile.resolved */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Cartfile.resolved; sourceTree = "<group>"; };
@@ -135,6 +146,9 @@
 		D00B9A312111427200E8B95A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D00B9A342111427200E8B95A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		D00B9A362111427200E8B95A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D00BD9C82365664600222A37 /* BitSenseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BitSenseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D00BD9CA2365664600222A37 /* BitSenseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BitSenseTests.swift; sourceTree = "<group>"; };
+		D00BD9CC2365664600222A37 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D0126FEF22443D1100412629 /* whitePlus.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whitePlus.png; sourceTree = "<group>"; };
 		D0126FF522446E3800412629 /* InvoiceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceViewController.swift; sourceTree = "<group>"; };
 		D0126FF72244842000412629 /* bWhite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = bWhite.png; sourceTree = "<group>"; };
@@ -260,6 +274,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D00BD9C52365664600222A37 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -349,6 +370,7 @@
 				D084960522EC0A94003FE8EB /* LICENSE.md */,
 				D0DE292A22BCFE9900D9EBCF /* Readme.md */,
 				D00B9A262111427200E8B95A /* BitSense */,
+				D00BD9C92365664600222A37 /* BitSenseTests */,
 				D00B9A252111427200E8B95A /* Products */,
 				D08C1FBB211147F600B7CA79 /* Frameworks */,
 			);
@@ -358,6 +380,7 @@
 			isa = PBXGroup;
 			children = (
 				D00B9A242111427200E8B95A /* BitSense.app */,
+				D00BD9C82365664600222A37 /* BitSenseTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -385,6 +408,15 @@
 				D00B9A2E2111427200E8B95A /* BitSense.xcdatamodeld */,
 			);
 			path = BitSense;
+			sourceTree = "<group>";
+		};
+		D00BD9C92365664600222A37 /* BitSenseTests */ = {
+			isa = PBXGroup;
+			children = (
+				D00BD9CA2365664600222A37 /* BitSenseTests.swift */,
+				D00BD9CC2365664600222A37 /* Info.plist */,
+			);
+			path = BitSenseTests;
 			sourceTree = "<group>";
 		};
 		D02094F122593698002E8E7A /* Sub Views */ = {
@@ -865,13 +897,31 @@
 			productReference = D00B9A242111427200E8B95A /* BitSense.app */;
 			productType = "com.apple.product-type.application";
 		};
+		D00BD9C72365664600222A37 /* BitSenseTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D00BD9D12365664600222A37 /* Build configuration list for PBXNativeTarget "BitSenseTests" */;
+			buildPhases = (
+				D00BD9C42365664600222A37 /* Sources */,
+				D00BD9C52365664600222A37 /* Frameworks */,
+				D00BD9C62365664600222A37 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D00BD9CE2365664600222A37 /* PBXTargetDependency */,
+			);
+			name = BitSenseTests;
+			productName = BitSenseTests;
+			productReference = D00BD9C82365664600222A37 /* BitSenseTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		D00B9A1C2111427200E8B95A /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 0910;
+				LastSwiftUpdateCheck = 1110;
 				LastUpgradeCheck = 1000;
 				ORGANIZATIONNAME = Fontaine;
 				TargetAttributes = {
@@ -896,6 +946,10 @@
 							};
 						};
 					};
+					D00BD9C72365664600222A37 = {
+						CreatedOnToolsVersion = 11.1;
+						TestTargetID = D00B9A232111427200E8B95A;
+					};
 				};
 			};
 			buildConfigurationList = D00B9A1F2111427200E8B95A /* Build configuration list for PBXProject "BitSense" */;
@@ -912,6 +966,7 @@
 			projectRoot = "";
 			targets = (
 				D00B9A232111427200E8B95A /* BitSense */,
+				D00BD9C72365664600222A37 /* BitSenseTests */,
 			);
 		};
 /* End PBXProject section */
@@ -943,6 +998,13 @@
 				D0FA417E213C7CED0028E4F8 /* whiteFingerPrint.png in Resources */,
 				D00B9A2D2111427200E8B95A /* Main.storyboard in Resources */,
 				D0DE293322BCFFAB00D9EBCF /* screenShot.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D00BD9C62365664600222A37 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1063,7 +1125,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D00BD9C42365664600222A37 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D00BD9CB2365664600222A37 /* BitSenseTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		D00BD9CE2365664600222A37 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D00B9A232111427200E8B95A /* BitSense */;
+			targetProxy = D00BD9CD2365664600222A37 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		D00B9A2B2111427200E8B95A /* Main.storyboard */ = {
@@ -1268,6 +1346,53 @@
 			};
 			name = Release;
 		};
+		D00BD9CF2365664600222A37 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 69FR345CDA;
+				INFOPLIST_FILE = BitSenseTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.BitSenseTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BitSense.app/BitSense";
+			};
+			name = Debug;
+		};
+		D00BD9D02365664600222A37 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 69FR345CDA;
+				INFOPLIST_FILE = BitSenseTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.BitSenseTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BitSense.app/BitSense";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1285,6 +1410,15 @@
 			buildConfigurations = (
 				D00B9A3A2111427200E8B95A /* Debug */,
 				D00B9A3B2111427200E8B95A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D00BD9D12365664600222A37 /* Build configuration list for PBXNativeTarget "BitSenseTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D00BD9CF2365664600222A37 /* Debug */,
+				D00BD9D02365664600222A37 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
