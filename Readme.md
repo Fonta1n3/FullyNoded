@@ -67,23 +67,19 @@ Wait for bew to finish.
 Install carthage:  [Follow these instructions](https://brewinstall.org/install-carthage-on-mac-with-brew/)
 
 ### Install Tor.Framework Dependencies
-`brew install automake` \n
-`brew install autoconf`\n
-`brew install libtool`\n
-`brew install gettext`\n
-
-then
 
 ```
+brew install automake
+brew install autoconf
+brew install libtool
+brew install gettext
 git clone git@github.com:iCepa/Tor.framework
-
 cd Tor.framework
-
 git submodule init
 git submodule update
-
 carthage build --no-skip-current --platform iOS
 ```
+then
 
 - Install [Xcode](https://itunes.apple.com/id/app/xcode/id497799835?mt=12)
 - You will need a free Apple developer account [create one here](https://developer.apple.com/programs/enroll/)
@@ -93,7 +89,7 @@ carthage build --no-skip-current --platform iOS
 - `cd Documents FullyNoded` (or wherever it downloaded to)
 - run `carthage update --platform iOS` and let carthage do its thing
 
-That's it.
+That's it, you can now run the app in XCode.
 
 ## Connecting over Tor (mac)
 
@@ -153,12 +149,13 @@ debug=tor
 
 ## Keypair generation (optional)
 
-Install python3 then run the following commands in a terminal (do this on any machine):
+Install python3, pip3, virtualenv and then run the following commands in a terminal (do this on any machine):
 
-`virtualenv -p python3 ENV`\n
-`source ENV/bin/activate`\n
-`pip install pynacl`\n
-`sudo nano createKeys.py`\n
+```virtualenv -p python3 ENV
+source ENV/bin/activate
+pip install pynacl
+sudo nano createKeys.py
+```
 
 - Copy and paste this script into the terminals nano session:
 
