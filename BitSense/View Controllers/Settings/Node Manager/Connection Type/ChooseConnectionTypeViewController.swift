@@ -236,7 +236,6 @@ class ChooseConnectionTypeViewController: UIViewController {
     func getQRCode() {
         
         let stringURL = qrScanner.stringToReturn
-        print("stringUrl = \(stringURL)")
         addBtcRpcQr(url: stringURL)
         
     }
@@ -249,55 +248,98 @@ class ChooseConnectionTypeViewController: UIViewController {
         
         let arr1 = url.components(separatedBy: "?")
         let onion = arr1[0].replacingOccurrences(of: "btcrpc://", with: "")
-        let arr2 = arr1[1].components(separatedBy: "&")
-        let rpcuser = arr2[0].replacingOccurrences(of: "user=", with: "")
-        let rpcpassword = arr2[1].replacingOccurrences(of: "password=", with: "")
         
-        var nodl = [String:Any]()
-        let torNodeId = randomString(length: 23)
-        let torNodeHost = aes.encryptKey(keyToEncrypt: onion)
-        let torNodeRPCPass = aes.encryptKey(keyToEncrypt: rpcpassword)
-        let torNodeRPCUser = aes.encryptKey(keyToEncrypt: rpcuser)
-        let torNodeLabel = aes.encryptKey(keyToEncrypt: "Nodl - Tor")
-        
-        nodl["id"] = torNodeId
-        nodl["onionAddress"] = torNodeHost
-        nodl["label"] = torNodeLabel
-        nodl["rpcuser"] = torNodeRPCUser
-        nodl["rpcpassword"] = torNodeRPCPass
-        nodl["usingSSH"] = false
-        nodl["isDefault"] = false
-        nodl["usingTor"] = true
-        nodl["isActive"] = true
-                
-        let success = cd.saveEntity(vc: self,
-                                    dict: nodl,
-                                    entityName: .nodes)
-        
-        if success {
+        if arr1.count > 1 {
             
-            print("nodl node added")
-            deActivateOtherNodes(nodes: nodes,
-                                 nodlID: torNodeId,
-                                 cd: cd,
-                                 vc: self)
+            let arr2 = arr1[1].components(separatedBy: "&")
+            let rpcuser = arr2[0].replacingOccurrences(of: "user=", with: "")
+            let rpcpassword = arr2[1].replacingOccurrences(of: "password=", with: "")
             
-            DispatchQueue.main.async {
+            var label = "Nodl - Tor"
+            var v2password = ""
+            
+            if arr1.count > 2 {
                 
-                self.back()
-//                self.dismiss(animated: true) {
-//                    self.tabBarController?.selectedIndex = 0
-//                }
-                self.tabBarController?.selectedIndex = 0
+                if arr1[2].contains("label=") {
+                    
+                    label = arr1[2].replacingOccurrences(of: "label=", with: "")
+                    
+                } else {
+                    
+                    v2password = arr1[2].replacingOccurrences(of: "v2password=", with: "")
+                    
+                }
+                
+                
+                if arr1.count > 3 {
+                    
+                    v2password = arr1[3].replacingOccurrences(of: "v2password=", with: "")
+                    
+                }
                 
             }
             
+            var node = [String:Any]()
+            let torNodeId = randomString(length: 23)
+            let torNodeHost = aes.encryptKey(keyToEncrypt: onion)
+            let torNodeRPCPass = aes.encryptKey(keyToEncrypt: rpcpassword)
+            let torNodeRPCUser = aes.encryptKey(keyToEncrypt: rpcuser)
+            var torNodeLabel = aes.encryptKey(keyToEncrypt: label)
+            let torNodeV2Password = aes.encryptKey(keyToEncrypt: v2password)
             
+            if label != "" {
+                
+                torNodeLabel = aes.encryptKey(keyToEncrypt: label)
+                
+            }
+            
+            node["id"] = torNodeId
+            node["onionAddress"] = torNodeHost
+            node["label"] = torNodeLabel
+            node["rpcuser"] = torNodeRPCUser
+            node["rpcpassword"] = torNodeRPCPass
+            node["usingSSH"] = false
+            node["isDefault"] = false
+            node["usingTor"] = true
+            node["isActive"] = true
+            
+            if v2password != "" {
+                
+                node["v2password"] = torNodeV2Password
+                
+            }
+                    
+            let success = cd.saveEntity(vc: self,
+                                        dict: node,
+                                        entityName: .nodes)
+            
+            if success {
+                
+                print("nodl node added")
+                deActivateOtherNodes(nodes: nodes,
+                                     nodlID: torNodeId,
+                                     cd: cd,
+                                     vc: self)
+                
+                DispatchQueue.main.async {
+                    
+                    self.back()
+                    self.tabBarController?.selectedIndex = 0
+                    
+                }
+                
+                
+                
+            } else {
+                
+                print("error adding nodl node")
+                
+            }
             
         } else {
             
-            print("error adding nodl node")
-            
+            back()
+            displayAlert(viewController: self, isError: true, message: "incompatible uri")
         }
         
     }

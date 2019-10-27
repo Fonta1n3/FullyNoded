@@ -18,6 +18,8 @@ class TorClient {
     private var controller: TorController!
     private var authDirPath = ""
     private var torDirPath = ""
+    private var v2Auth = ""
+    var isRefreshing = false
     
     // Client status?
     private(set) var isOperational: Bool = false
@@ -34,6 +36,7 @@ class TorClient {
 
     // Start the tor client.
     func start(completion: @escaping () -> Void) {
+        print("start")
         
         let queue = DispatchQueue(label: "com.FullyNoded.torQueue")
         
@@ -41,6 +44,7 @@ class TorClient {
             
             // If already operational don't start a new client.
             if self.isOperational || self.turnedOff() {
+                print("return completion")
                 return completion()
             }
             
@@ -49,11 +53,15 @@ class TorClient {
             self.authDirPath = self.createAuthDirectory()
             self.clearAuthKeys()
             
+            //check if it is V2 or not
+            //HidServAuth 1234567890abcdefg.onion abcdef01234567890+/K
+            
             // Make sure we don't have a thread already.
             if self.thread == nil {
+                print("thread is nil")
                 
                 self.isOperational = true
-                self.config.options = ["DNSPort": "12345", "AutomapHostsOnResolve": "1", "SocksPort": "9050", "AvoidDiskWrites": "1", "ClientOnionAuthDir": "\(self.authDirPath)"]
+                self.config.options = ["DNSPort": "12345", "AutomapHostsOnResolve": "1", "SocksPort": "9050", "AvoidDiskWrites": "1", "ClientOnionAuthDir": "\(self.authDirPath)", "HidServAuth": "\(self.v2Auth)"]
                 self.config.cookieAuthentication = true
                 self.config.dataDirectory = URL(fileURLWithPath: torDir)
                 self.config.controlSocket = self.config.dataDirectory?.appendingPathComponent("cp")
@@ -63,6 +71,10 @@ class TorClient {
                 
                 self.thread = TorThread(configuration: self.config)
                 
+            } else {
+                
+                print("thread is not nil")
+                
             }
             
             // Initiate the controller.
@@ -71,8 +83,13 @@ class TorClient {
             // Start a tor thread.
             if self.thread.isExecuting == false {
                 
+                print("thread isExecuting false")
                 self.thread.start()
                 print("tor thread started")
+                
+            } else {
+                
+                print("thread isExecuting true")
                 
             }
             
@@ -86,38 +103,32 @@ class TorClient {
     }
     
     // Resign the tor client.
-    func restart() {
-        resign()
+    func restart(completion: @escaping () -> Void) {
+        print("restart")
         
-        if !isOperational {
-            return
-        }
+        resign()
         
         while controller.isConnected {
             print("Disconnecting Tor...")
         }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.start {
-                print("tor controller connected")
-            }
+            self.start(completion: completion)
         }
     }
     
     func resign() {
-        if !isOperational {
-            return
-        }
+        print("resign")
         
+        isRefreshing = true
         self.controller.disconnect()
         self.isOperational = false
         self.thread = nil
-        self.sessionConfiguration = .default
-        self.session = URLSession(configuration: sessionConfiguration)
         
     }
     
     private func connectController(completion: @escaping () -> Void) {
+        print("connectController")
         do {
             if !self.controller.isConnected {
                 try self.controller?.connect()
@@ -129,43 +140,52 @@ class TorClient {
                 //TORInstallEventLogging()
                 //TORInstallTorLogging()
                 //NotificationCenter.default.post(name: .didEstablishTorConnection, object: self)
-                
                 completion()
             }
+            
         } catch {
             print("error connecting tor controller")
-            
             completion()
         }
     }
     
     private func authenticateController(completion: @escaping () -> Void) throws -> Void {
+        print("authenticate COntroller")
         
         let cookie = try Data(
             contentsOf: config.dataDirectory!.appendingPathComponent("control_auth_cookie"),
             options: NSData.ReadingOptions(rawValue: 0)
         )
+        print("getcookie")
         
         self.controller?.authenticate(with: cookie) { success, error in
+            
             if let error = error {
-                return print(error.localizedDescription)
+                
+                return print("error = \(error.localizedDescription)")
+                
             }
             
             var observer: Any? = nil
             observer = self.controller?.addObserver(forCircuitEstablished: { established in
-                guard established else {
-                    return
-                }
                 
+                //                guard established else {
+                //                    print("observer not established")
+                //                    return
+                //                }
+                
+                print("observer added")
                 self.controller?.getSessionConfiguration() { sessionConfig in
+                    print("getsessionconfig")
+                    
                     self.sessionConfiguration = sessionConfig!
                     self.session = URLSession(configuration: self.sessionConfiguration)
-                    
                     self.isOperational = true
                     completion()
                 }
                 
                 self.controller?.removeObserver(observer)
+                
             })
         }
     }
@@ -249,12 +269,10 @@ class TorClient {
             
             if str.isActive && str.authKey != "" {
                 
-                
                 let authorizedKey = aes.decryptKey(keyToDecrypt: str.authKey)
                 let onionAddress = aes.decryptKey(keyToDecrypt: str.onionAddress)
                 let onionAddressArray = onionAddress.components(separatedBy: ".onion:")
                 let authString = onionAddressArray[0] + ":descriptor:x25519:" + authorizedKey
-                
                 let file = URL(fileURLWithPath: authPath, isDirectory: true).appendingPathComponent("\(id).auth_private")
                 
                 do {
@@ -262,13 +280,20 @@ class TorClient {
                     try authString.write(to: file, atomically: true, encoding: .utf8)
                     
                     print("successfully wrote authkey to file")
-                    print("key = \(authString)")
                                         
                 } catch {
                     
                     print("failed writing auth key")
                 }
                 
+                
+            } else if str.isActive && str.v2password != "" {
+                
+                let onionAddress = aes.decryptKey(keyToDecrypt: str.onionAddress)
+                let onionAddressArr = onionAddress.components(separatedBy: ":")
+                let hostname = onionAddressArr[0]
+                let v2pass = aes.decryptKey(keyToDecrypt: str.v2password)
+                self.v2Auth = "\(hostname) \(v2pass)"
                 
             }
             

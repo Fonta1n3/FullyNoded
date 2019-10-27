@@ -29,6 +29,7 @@ public struct NodeStruct: CustomStringConvertible {
     let usingTor:Bool
     let authKey:String
     let authPubKey:String
+    let v2password:String
     
     init(dictionary: [String: Any]) {
         
@@ -50,6 +51,7 @@ public struct NodeStruct: CustomStringConvertible {
         self.usingTor = dictionary["usingTor"] as? Bool ?? false
         self.authKey = dictionary["authKey"] as? String ?? ""
         self.authPubKey = dictionary["authPubKey"] as? String ?? ""
+        self.v2password = dictionary["v2password"] as? String ?? ""
         
     }
     

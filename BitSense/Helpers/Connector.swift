@@ -50,7 +50,15 @@ class Connector {
             
         }
         
-        self.torClient.start(completion: completed)        
+        if self.torClient.isRefreshing {
+            
+            self.torClient.restart(completion: completed)
+            
+        } else {
+            
+            self.torClient.start(completion: completed)
+            
+        }
         
     }
     

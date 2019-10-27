@@ -1060,6 +1060,12 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     @objc func refresh() {
         print("refresh")
         
+        if TorClient.sharedInstance.isOperational {
+            
+            TorClient.sharedInstance.resign()
+            
+        }        
+        
         DispatchQueue.main.async {
             
             if !self.initialLoad {

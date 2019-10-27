@@ -21,8 +21,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
         
         UIApplication.shared.statusBarStyle = .lightContent
-        
+            
         return true
+        
     }
 
     func applicationWillResignActive(_ application: UIApplication) {
@@ -40,60 +41,101 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
         
-        addNodl(url: "\(url)")
+        addNode(url: "\(url)")
         return true
         
     }
     
-    func addNodl(url: String) {
+    func addNode(url: String) {
+        
+        //btcrpc://kjhfefe.onion:8332?user=rpcuser&password=rpcpassword?label=nodeName?v2password=uenfieufnuf4
         
         let aes = AESService()
         let cd = CoreDataService()
         let nodes = cd.retrieveEntity(entityName: .nodes)
-        
         let arr1 = url.components(separatedBy: "?")
         let onion = arr1[0].replacingOccurrences(of: "btcrpc://", with: "")
         let arr2 = arr1[1].components(separatedBy: "&")
         let rpcuser = arr2[0].replacingOccurrences(of: "user=", with: "")
         let rpcpassword = arr2[1].replacingOccurrences(of: "password=", with: "")
         
-        var nodl = [String:Any]()
+        var label = "Nodl - Tor"
+        var v2password = ""
+        
+        if arr1.count > 2 {
+            
+            if arr1[2].contains("label=") {
+                
+                label = arr1[2].replacingOccurrences(of: "label=", with: "")
+                
+            } else {
+                
+                v2password = arr1[2].replacingOccurrences(of: "v2password=", with: "")
+                
+            }
+            
+            
+            if arr1.count > 3 {
+                
+                v2password = arr1[3].replacingOccurrences(of: "v2password=", with: "")
+                
+            }
+            
+        }
+        
+        var node = [String:Any]()
         let torNodeId = randomString(length: 23)
         let torNodeHost = aes.encryptKey(keyToEncrypt: onion)
         let torNodeRPCPass = aes.encryptKey(keyToEncrypt: rpcpassword)
         let torNodeRPCUser = aes.encryptKey(keyToEncrypt: rpcuser)
-        let torNodeLabel = aes.encryptKey(keyToEncrypt: "Nodl - Tor")
+        var torNodeLabel = aes.encryptKey(keyToEncrypt: label)
+        let torNodeV2Password = aes.encryptKey(keyToEncrypt: v2password)
         
-        nodl["id"] = torNodeId
-        nodl["onionAddress"] = torNodeHost
-        nodl["label"] = torNodeLabel
-        nodl["rpcuser"] = torNodeRPCUser
-        nodl["rpcpassword"] = torNodeRPCPass
-        nodl["usingSSH"] = false
-        nodl["isDefault"] = false
-        nodl["usingTor"] = true
-        nodl["isActive"] = true
+        if label != "" {
+            
+            torNodeLabel = aes.encryptKey(keyToEncrypt: label)
+            
+        }
+        
+        node["id"] = torNodeId
+        node["onionAddress"] = torNodeHost
+        node["label"] = torNodeLabel
+        node["rpcuser"] = torNodeRPCUser
+        node["rpcpassword"] = torNodeRPCPass
+        node["usingSSH"] = false
+        node["isDefault"] = false
+        node["usingTor"] = true
+        node["isActive"] = true
+        
+        if v2password != "" {
+            
+            node["v2password"] = torNodeV2Password
+            
+        }
         
         let vc = MainMenuViewController()
         
         let success = cd.saveEntity(vc: vc,
-                                    dict: nodl,
+                                    dict: node,
                                     entityName: .nodes)
         
         if success {
             
-            print("nodl node added")
-            deActivateOtherNodes(nodes: nodes, nodlID: torNodeId, cd: cd, vc: vc)
+            print("btcrpc node added")
+            deActivateOtherNodes(nodes: nodes,
+                                 nodeID: torNodeId,
+                                 cd: cd,
+                                 vc: vc)
             
         } else {
             
-            print("error adding nodl node")
+            print("error adding btcrpc node")
             
         }
         
     }
     
-    func deActivateOtherNodes(nodes: [[String:Any]], nodlID: String, cd: CoreDataService, vc: UIViewController) {
+    func deActivateOtherNodes(nodes: [[String:Any]], nodeID: String, cd: CoreDataService, vc: UIViewController) {
         
         if SSHService.sharedInstance.session != nil {
             
@@ -112,7 +154,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let id = str.id
             let isActive = str.isActive
             
-            if id != nodlID && isActive {
+            if id != nodeID && isActive {
                 
                 let success = cd.updateEntity(viewController: vc,
                                               id: id,

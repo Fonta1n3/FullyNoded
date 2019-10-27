@@ -34,10 +34,11 @@
         <attribute name="username" optional="YES" attributeType="String"/>
         <attribute name="usingSSH" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="usingTor" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="v2password" optional="YES" attributeType="String"/>
     </entity>
     <elements>
         <element name="Descriptors" positionX="-63" positionY="99" width="128" height="120"/>
         <element name="HDWallets" positionX="-63" positionY="99" width="128" height="135"/>
-        <element name="Nodes" positionX="-63" positionY="-18" width="128" height="313"/>
+        <element name="Nodes" positionX="-63" positionY="-18" width="128" height="328"/>
     </elements>
 </model>
