@@ -18,7 +18,7 @@ class QuickConnect {
     
     //old url format: btcrpc://kjhfefe.onion:8332?user=rpcuser&password=rpcpassword?label=nodeName?v2password=uenfieufnuf4
     
-    //new format: btcrpc://rpcuser:rpcpassword@kjhfefe.onion:8332?user=rpcuser&password=rpcpassword&label=nodeName&v2password=uenfieufnuf4
+    //new format: btcrpc://rpcuser:rpcpassword@kjhfefe.onion:8332?label=nodeName&v2password=uenfieufnuf4
     
     func addNode(vc: UIViewController, url: String, completion: @escaping () -> Void) {
         
