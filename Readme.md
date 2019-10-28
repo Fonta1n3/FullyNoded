@@ -66,7 +66,7 @@ Wait for bew to finish.
 
 Install carthage:  [Follow these instructions](https://brewinstall.org/install-carthage-on-mac-with-brew/)
 
-### Install Tor.Framework Dependencies
+Install Tor.Framework Dependencies:
 
 ```
 brew install automake
@@ -147,7 +147,7 @@ listen=1
 debug=tor
 ```
 
-## Keypair generation (optional)
+## V3 Auth Keypair generation (optional)
 
 Install python3, pip3, virtualenv and then run the following commands in a terminal (do this on any machine):
 
@@ -224,6 +224,26 @@ and paste in:
 `descriptor:x25519:PHK2DFSCNNJ75U3GUA3SHCVEGPEJMZAPEKQGL5YLVM2GV6NORB6Q`
 
 Save and exit and you have one of the most secure node/light client set ups possible. (assuming your server is firewalled off)
+
+## QuickConnect URL Scheme
+
+Fully Noded has a deep link registered with the following prefix `btcrpc://`
+
+If you are a node manufacturer you can embed such a link to your web based UI that allows a user who has Fully Noded installed on their device to add and connect to their node with a single tap from the web based UI.
+
+The format of the URL is:
+
+`btcrpc://<rpcuser>:<rpcpassword>@<hidden service hostname>:<hidden service port>?label=<optional node label>&v2password=<optional v2 password>`
+
+Example with label and v2password:
+
+`btcrpc://rpcuser:rpcpassword@kjhfefe.onion:8332?label=nodeName&v2password=uenfieufnuf4`
+
+Example without label and v2password:
+
+`btcrpc://rpcuser:rpcpassword@kjhfefe.onion:8332`
+
+Fully Noded is compatible with either V2 or V3 authenticated hidden services, the user has the option in the app to add a V3 private key for V3 cookie authentication. V2 authentication is only supported in the URL itself (e.g. the user has no option of manually inputting one).
 
 ## Security & Privacy
 
