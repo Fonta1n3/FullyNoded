@@ -48,129 +48,32 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func addNode(url: String) {
         
-        //btcrpc://kjhfefe.onion:8332?user=rpcuser&password=rpcpassword?label=nodeName?v2password=uenfieufnuf4
-        
-        let aes = AESService()
-        let cd = CoreDataService()
-        let nodes = cd.retrieveEntity(entityName: .nodes)
-        let arr1 = url.components(separatedBy: "?")
-        let onion = arr1[0].replacingOccurrences(of: "btcrpc://", with: "")
-        let arr2 = arr1[1].components(separatedBy: "&")
-        let rpcuser = arr2[0].replacingOccurrences(of: "user=", with: "")
-        let rpcpassword = arr2[1].replacingOccurrences(of: "password=", with: "")
-        
-        var label = "Nodl - Tor"
-        var v2password = ""
-        
-        if arr1.count > 2 {
-            
-            if arr1[2].contains("label=") {
-                
-                label = arr1[2].replacingOccurrences(of: "label=", with: "")
-                
-            } else {
-                
-                v2password = arr1[2].replacingOccurrences(of: "v2password=", with: "")
-                
-            }
-            
-            
-            if arr1.count > 3 {
-                
-                v2password = arr1[3].replacingOccurrences(of: "v2password=", with: "")
-                
-            }
-            
-        }
-        
-        var node = [String:Any]()
-        let torNodeId = randomString(length: 23)
-        let torNodeHost = aes.encryptKey(keyToEncrypt: onion)
-        let torNodeRPCPass = aes.encryptKey(keyToEncrypt: rpcpassword)
-        let torNodeRPCUser = aes.encryptKey(keyToEncrypt: rpcuser)
-        var torNodeLabel = aes.encryptKey(keyToEncrypt: label)
-        let torNodeV2Password = aes.encryptKey(keyToEncrypt: v2password)
-        
-        if label != "" {
-            
-            torNodeLabel = aes.encryptKey(keyToEncrypt: label)
-            
-        }
-        
-        node["id"] = torNodeId
-        node["onionAddress"] = torNodeHost
-        node["label"] = torNodeLabel
-        node["rpcuser"] = torNodeRPCUser
-        node["rpcpassword"] = torNodeRPCPass
-        node["usingSSH"] = false
-        node["isDefault"] = false
-        node["usingTor"] = true
-        node["isActive"] = true
-        
-        if v2password != "" {
-            
-            node["v2password"] = torNodeV2Password
-            
-        }
-        
         let vc = MainMenuViewController()
+        let qc = QuickConnect()
         
-        let success = cd.saveEntity(vc: vc,
-                                    dict: node,
-                                    entityName: .nodes)
-        
-        if success {
-            
-            print("btcrpc node added")
-            deActivateOtherNodes(nodes: nodes,
-                                 nodeID: torNodeId,
-                                 cd: cd,
-                                 vc: vc)
-            
-        } else {
-            
-            print("error adding btcrpc node")
-            
-        }
-        
-    }
-    
-    func deActivateOtherNodes(nodes: [[String:Any]], nodeID: String, cd: CoreDataService, vc: UIViewController) {
-        
-        if SSHService.sharedInstance.session != nil {
-            
-            if SSHService.sharedInstance.session.isConnected {
+            func getResult() {
                 
-                SSHService.sharedInstance.disconnect()
-                SSHService.sharedInstance.commandExecuting = false
+                print("result")
                 
-            }
-            
-        }
-        
-        for node in nodes {
-            
-            let str = NodeStruct(dictionary: node)
-            let id = str.id
-            let isActive = str.isActive
-            
-            if id != nodeID && isActive {
-                
-                let success = cd.updateEntity(viewController: vc,
-                                              id: id,
-                                              newValue: false,
-                                              keyToEdit: "isActive",
-                                              entityName: .nodes)
-                
-                if success {
+                if !qc.errorBool {
                     
-                    print("nodes deactivated")
+                    displayAlert(viewController: vc,
+                                 isError: false,
+                                 message: "Node added")
+                    
+                } else {
+                    
+                    displayAlert(viewController: vc,
+                                 isError: true,
+                                 message: qc.errorDescription)
                     
                 }
                 
             }
             
-        }
+            qc.addNode(vc: vc,
+                       url: url,
+                       completion: getResult)
         
     }
 

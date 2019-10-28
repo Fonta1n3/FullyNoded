@@ -242,84 +242,13 @@ class ChooseConnectionTypeViewController: UIViewController {
     
     func addBtcRpcQr(url: String) {
         
-        let aes = AESService()
-        let cd = CoreDataService()
-        let nodes = cd.retrieveEntity(entityName: .nodes)
-        
-        let arr1 = url.components(separatedBy: "?")
-        let onion = arr1[0].replacingOccurrences(of: "btcrpc://", with: "")
-        
-        if arr1.count > 1 {
+        let qc = QuickConnect()
+    
+        func getResult() {
             
-            let arr2 = arr1[1].components(separatedBy: "&")
-            let rpcuser = arr2[0].replacingOccurrences(of: "user=", with: "")
-            let rpcpassword = arr2[1].replacingOccurrences(of: "password=", with: "")
+            print("result")
             
-            var label = "Nodl - Tor"
-            var v2password = ""
-            
-            if arr1.count > 2 {
-                
-                if arr1[2].contains("label=") {
-                    
-                    label = arr1[2].replacingOccurrences(of: "label=", with: "")
-                    
-                } else {
-                    
-                    v2password = arr1[2].replacingOccurrences(of: "v2password=", with: "")
-                    
-                }
-                
-                
-                if arr1.count > 3 {
-                    
-                    v2password = arr1[3].replacingOccurrences(of: "v2password=", with: "")
-                    
-                }
-                
-            }
-            
-            var node = [String:Any]()
-            let torNodeId = randomString(length: 23)
-            let torNodeHost = aes.encryptKey(keyToEncrypt: onion)
-            let torNodeRPCPass = aes.encryptKey(keyToEncrypt: rpcpassword)
-            let torNodeRPCUser = aes.encryptKey(keyToEncrypt: rpcuser)
-            var torNodeLabel = aes.encryptKey(keyToEncrypt: label)
-            let torNodeV2Password = aes.encryptKey(keyToEncrypt: v2password)
-            
-            if label != "" {
-                
-                torNodeLabel = aes.encryptKey(keyToEncrypt: label)
-                
-            }
-            
-            node["id"] = torNodeId
-            node["onionAddress"] = torNodeHost
-            node["label"] = torNodeLabel
-            node["rpcuser"] = torNodeRPCUser
-            node["rpcpassword"] = torNodeRPCPass
-            node["usingSSH"] = false
-            node["isDefault"] = false
-            node["usingTor"] = true
-            node["isActive"] = true
-            
-            if v2password != "" {
-                
-                node["v2password"] = torNodeV2Password
-                
-            }
-                    
-            let success = cd.saveEntity(vc: self,
-                                        dict: node,
-                                        entityName: .nodes)
-            
-            if success {
-                
-                print("nodl node added")
-                deActivateOtherNodes(nodes: nodes,
-                                     nodlID: torNodeId,
-                                     cd: cd,
-                                     vc: self)
+            if !qc.errorBool {
                 
                 DispatchQueue.main.async {
                     
@@ -328,61 +257,21 @@ class ChooseConnectionTypeViewController: UIViewController {
                     
                 }
                 
-                
-                
             } else {
                 
-                print("error adding nodl node")
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: qc.errorDescription)
                 
             }
             
-        } else {
-            
-            back()
-            displayAlert(viewController: self, isError: true, message: "incompatible uri")
         }
+        
+        qc.addNode(vc: self,
+                   url: url,
+                   completion: getResult)
         
     }
-    
-    func deActivateOtherNodes(nodes: [[String:Any]], nodlID: String, cd: CoreDataService, vc: UIViewController) {
-        
-        if SSHService.sharedInstance.session != nil {
-            
-            if SSHService.sharedInstance.session.isConnected {
-                
-                SSHService.sharedInstance.disconnect()
-                SSHService.sharedInstance.commandExecuting = false
-                
-            }
-            
-        }
-        
-        for node in nodes {
-            
-            let str = NodeStruct(dictionary: node)
-            let id = str.id
-            let isActive = str.isActive
-            
-            if id != nodlID && isActive {
-                
-                let success = cd.updateEntity(viewController: vc,
-                                              id: id,
-                                              newValue: false,
-                                              keyToEdit: "isActive",
-                                              entityName: .nodes)
-                
-                if success {
-                    
-                    print("nodes deactivated")
-                    
-                }
-                
-            }
-            
-        }
-        
-    }
-
     
     // MARK: - Navigation
 

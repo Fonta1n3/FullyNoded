@@ -30,9 +30,13 @@ class MakeRPCCall {
         
         for node in nodes {
             
-            if (node["isActive"] as! Bool) {
+            if let b = node["isActive"] as? Bool {
                 
-                activeNode = node
+                if b {
+                    
+                    activeNode = node
+                    
+                }
                 
             }
             

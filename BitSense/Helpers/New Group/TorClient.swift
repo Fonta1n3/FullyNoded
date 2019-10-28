@@ -83,7 +83,6 @@ class TorClient {
             // Start a tor thread.
             if self.thread.isExecuting == false {
                 
-                print("thread isExecuting false")
                 self.thread.start()
                 print("tor thread started")
                 
@@ -115,6 +114,7 @@ class TorClient {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             self.start(completion: completion)
         }
+        
     }
     
     func resign() {
@@ -168,11 +168,6 @@ class TorClient {
             
             var observer: Any? = nil
             observer = self.controller?.addObserver(forCircuitEstablished: { established in
-                
-                //                guard established else {
-                //                    print("observer not established")
-                //                    return
-                //                }
                 
                 print("observer added")
                 self.controller?.getSessionConfiguration() { sessionConfig in

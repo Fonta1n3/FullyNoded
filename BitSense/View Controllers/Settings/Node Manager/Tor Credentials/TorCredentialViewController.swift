@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import NMSSH
 
 class TorCredentialViewController: UIViewController, UINavigationControllerDelegate, UITextFieldDelegate, UITextViewDelegate {
     
@@ -56,7 +57,7 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
             
         }
         
-        SSHService.sharedInstance.getKeys { (response) in
+        self.getKeys { (response) in
             
             print("response = \(response)")
             let arr = response.components(separatedBy: "\n")
@@ -562,6 +563,49 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
             
         }
         
+    }
+    
+    func getKeys(response: @escaping(String) -> ()) {
+        
+        var error: NSError?
+        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
+        let cmd = "python3 createKeys.py"
+        var session:NMSSHSession!
+                    
+            queue.async {
+                
+                session = NMSSHSession.connect(toHost: "35.239.123.188",
+                                                    port: 22,
+                                                    withUsername: "fontainedenton")
+                                
+                if session.isConnected == true {
+                
+                    session.authenticate(byPassword: "V4RM73Q6C3MPTKMAI4VMWNBEVJ6YCOEBPY75HFKSA5CZP2YMB5JQ")
+                    
+                    if session.isAuthorized {
+                                                
+                        if let responseString = session?.channel.execute(cmd, error: &error) {
+                            
+                            if error != nil {
+                                
+                                print("error clearing history")
+                                response(("error"))
+                                
+                            } else {
+                                
+                                response((responseString))
+                                print("responsestring = \(responseString)")
+                                
+                            }
+                            
+                        }
+                        
+                    }
+                    
+                }
+                
+            }
+                
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
