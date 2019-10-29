@@ -74,6 +74,26 @@ public func displayAlert(viewController: UIViewController, isError: Bool, messag
     
 }
 
+public func isAnyNodeActive(nodes: [[String:Any]]) -> Bool {
+    
+    var boolToReturn = false
+    
+    for node in nodes {
+        
+        let isActive = node["isActive"] as! Bool
+        
+        if isActive {
+            
+            boolToReturn = true
+            
+        }
+        
+    }
+    
+    return boolToReturn
+    
+}
+
 public func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
     
     var boolToReturn = Bool()

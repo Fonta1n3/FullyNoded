@@ -45,7 +45,46 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
             
         }
         
-        if !isHDMusig {
+        let str = ImportStruct(dictionary: dict)
+        descriptor = str.descriptor
+        label = str.label
+        timestamp = str.timeStamp
+        isTestnet = str.isTestnet
+        let derivation = str.derivation
+        range = str.range
+        convertedRange = str.convertedRange
+        addToKeypool = str.addToKeyPool
+        isInternal = str.isInternal
+        
+        if descriptor.contains("/84'") {
+            
+            bip84 = true
+            bip44 = false
+            bip32 = false
+            
+        } else if descriptor.contains("/44'") {
+            
+            bip44 = true
+            bip84 = false
+            bip32 = false
+            
+        } else {
+            
+            bip44 = false
+            bip84 = false
+            bip32 = true
+            
+        }
+        
+        switch derivation {
+        case "BIP84": bip84 = true
+        case "BIP44": bip44 = true
+        case "BIP32Segwit": bip32 = true
+        case "BIP32Legacy": bip32 = true
+        default: break
+        }
+        
+        /*if !isHDMusig {
             
             descriptor = dict["descriptor"] as! String
             label = dict["label"] as! String
@@ -110,7 +149,7 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
             addToKeypool = false
             isInternal = false
             
-        }
+        }*/
         
         
     }
@@ -195,26 +234,6 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
             })
             
         }
-        
-    }
-    
-    func isAnyNodeActive(nodes: [[String:Any]]) -> Bool {
-        
-        var boolToReturn = false
-        
-        for node in nodes {
-            
-            let isActive = node["isActive"] as! Bool
-            
-            if isActive {
-                
-                boolToReturn = true
-                
-            }
-            
-        }
-        
-        return boolToReturn
         
     }
     

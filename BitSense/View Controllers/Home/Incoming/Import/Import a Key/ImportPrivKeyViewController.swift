@@ -88,10 +88,11 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
     func getValues() {
         
         //To do: create struct for import dict
-        addToKeypool = dict["addToKeypool"] as? Bool ?? false
-        isInternal = dict["addAsChange"] as? Bool ?? false
-        timestamp = dict["rescanDate"] as? Int ?? 0
-        label = dict["label"] as! String
+        let str = ImportStruct(dictionary: dict)
+        addToKeypool = str.addToKeyPool
+        isInternal = str.isInternal
+        timestamp = str.timeStamp
+        label = str.label
         
     }
     
@@ -269,10 +270,9 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                         
                     }
                     
-                    let method = BTC_CLI_COMMAND.importprivkey
                     let param = "\"\(key)\", \"\(label)\", false"
                     
-                    self.executeNodeCommand(method: method,
+                    self.executeNodeCommand(method: .importprivkey,
                                             param: param)
                     
                 case _ where prefix.hasPrefix("1"),
@@ -298,12 +298,10 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                         param = "[{ \"scriptPubKey\": { \"address\": \"\(key)\" }, \"timestamp\": \(timestamp), \"watchonly\": true, \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }], ''{\"rescan\": true}''"
                         
                     }
-                    
-                    let method = BTC_CLI_COMMAND.importmulti
-                    
+                                        
                     isAddress = true
                     
-                    self.executeNodeCommand(method: method,
+                    self.executeNodeCommand(method: .importmulti,
                                             param: param)
                     
                 case _ where prefix.hasPrefix("0"):
@@ -384,11 +382,10 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
             
         }
         
-        let method = BTC_CLI_COMMAND.getdescriptorinfo
         let des = desc.replacingOccurrences(of: "'", with: "'\"'\"'")
         let param = "\"\(des)\""
         
-        reducer.makeCommand(command: method,
+        reducer.makeCommand(command: .getdescriptorinfo,
                             param: param,
                             completion: getDescriptorInfo)
         
@@ -421,7 +418,8 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
             
         }
         
-        let range = dict["range"] as! String
+        let str = ImportStruct(dictionary: dict)
+        let range = str.range
         let convertedRange = convertRange(range: range)
         let method = BTC_CLI_COMMAND.deriveaddresses
         let des = desc.replacingOccurrences(of: "'", with: "'\"'\"'")
@@ -464,10 +462,9 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
             
         }
         
-        let method = BTC_CLI_COMMAND.getaddressinfo
         let param = "\"\(address)\""
         
-        reducer.makeCommand(command: method,
+        reducer.makeCommand(command: .getaddressinfo,
                             param: param,
                             completion: getResult)
         
@@ -547,12 +544,11 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
         }
         
         let des = desc.replacingOccurrences(of: "'", with: "'\"'\"'")
-        
-        isWatchOnly = dict["isWatchOnly"] as! Bool
-        let method = BTC_CLI_COMMAND.importmulti
+        let str = ImportStruct(dictionary: dict)
+        isWatchOnly = str.isWatchOnly
         let param = "[{ \"desc\": \"\(des)\", \"label\": \"\(label)\", \"timestamp\": \(timestamp), \"watchonly\": \(isWatchOnly), \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }], ''{\"rescan\": true}''"
         
-        reducer.makeCommand(command: method,
+        reducer.makeCommand(command: .importmulti,
                             param: param,
                             completion: getResult)
         

@@ -149,23 +149,16 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
         connectingView.addConnectingView(vc: self.navigationController!,
                                          description: "deriving keys for confirmation")
         
+        let str = ImportStruct(dictionary: dict)
         dict["key"] = key
-        fingerprint = dict["fingerprint"] as? String ?? ""
-        range = dict["range"] as! String
+        fingerprint = str.fingerprint
+        range = str.range
+        isTestnet = str.isTestnet
+        label = str.label
+        isWatchOnly = str.isWatchOnly
+        let derivation = str.derivation
         convertedRange = convertRange()
-        
-        if key.hasPrefix("t") {
-            
-            isTestnet = true
-            
-        } else {
-            
-            isTestnet = false
-            
-        }
-        
-        let derivation = dict["derivation"] as! String
-        
+                
         switch derivation {
         case "BIP44": desc = "pkh"
         case "BIP84": desc = "wpkh"
@@ -173,17 +166,15 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
         case "BIP32Legacy": desc = "pkh"
         default:break
         }
-        
-        label = dict["label"] as! String
-        
-        if key.hasPrefix("xprv") || key.hasPrefix("tprv") {
+                
+        if !isWatchOnly {
             
-            isWatchOnly = false
+            //isWatchOnly = false
             importXprv(xprv: key)
             
         } else {
             
-            isWatchOnly = true
+            //isWatchOnly = true
             importXpub(xpub: key)
             
         }
@@ -262,14 +253,13 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
                 descriptor = descriptor.replacingOccurrences(of: "0'", with: "0'\"'\"'")
                 dict["descriptor"] = descriptor
                 
-                self.executeNodeCommand(method: BTC_CLI_COMMAND.deriveaddresses,
+                self.executeNodeCommand(method: .deriveaddresses,
                                         param: "\(descriptor), ''\(convertedRange)''")
                 
             }
             
         }
         
-        let method = BTC_CLI_COMMAND.getdescriptorinfo
         var param = ""
         
         if fingerprint != "" {
@@ -310,7 +300,7 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
             
         }
         
-        reducer.makeCommand(command: method,
+        reducer.makeCommand(command: .getdescriptorinfo,
                             param: param,
                             completion: getDescriptor)
         
@@ -340,14 +330,13 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
                 descriptor = descriptor.replacingOccurrences(of: "0'", with: "0'\"'\"'")
                 dict["descriptor"] = descriptor
                 
-                self.executeNodeCommand(method: BTC_CLI_COMMAND.deriveaddresses,
+                self.executeNodeCommand(method: .deriveaddresses,
                                         param: "\(descriptor), ''\(convertedRange)''")
                 
             }
             
         }
         
-        let method = BTC_CLI_COMMAND.getdescriptorinfo
         var param = ""
         
         if fingerprint != "" {
@@ -389,7 +378,7 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
             
         }
         
-        reducer.makeCommand(command: method,
+        reducer.makeCommand(command: .getdescriptorinfo,
                             param: param,
                             completion: getDescriptor)
         

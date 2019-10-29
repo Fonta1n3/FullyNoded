@@ -142,7 +142,7 @@ class ChooseRangeViewController: UIViewController, UIPickerViewDelegate, UIPicke
                 
                 let descriptor = "\"\(result["descriptor"] as! String)\""
                 
-                self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.deriveaddresses,
+                self.executeNodeCommandSsh(method: .deriveaddresses,
                                            param: "\(descriptor), ''\(convertedRange)''")
                 
             }
@@ -151,7 +151,7 @@ class ChooseRangeViewController: UIViewController, UIPickerViewDelegate, UIPicke
         
         let descriptor = dict["descriptor"] as! String
         
-        reducer.makeCommand(command: BTC_CLI_COMMAND.getdescriptorinfo,
+        reducer.makeCommand(command: .getdescriptorinfo,
                             param: "\(descriptor)",
                             completion: importDescriptor)
         
@@ -167,7 +167,7 @@ class ChooseRangeViewController: UIViewController, UIPickerViewDelegate, UIPicke
                 
                 switch method {
                     
-                case BTC_CLI_COMMAND.deriveaddresses:
+                case .deriveaddresses:
                     
                     DispatchQueue.main.async {
                         

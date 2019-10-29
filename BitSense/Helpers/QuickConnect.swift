@@ -151,7 +151,10 @@ class QuickConnect {
             
             print("btcrpc node added")
             
-            if nodes.count > 1 {
+            if nodes.count > 0 {
+                
+                let ud = UserDefaults.standard
+                ud.removeObject(forKey: "walletName")
                
                 deActivateOtherNodes(nodes: nodes,
                                      nodeID: torNodeId,

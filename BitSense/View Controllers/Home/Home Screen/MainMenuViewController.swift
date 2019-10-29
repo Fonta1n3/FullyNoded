@@ -54,9 +54,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.connectingView.addConnectingView(vc: self.tabBarController!,
-                                              description: "connecting")
-        
         addCloseButtonToConnectingView()
         mainMenu.delegate = self
         mainMenu.tableFooterView = UIView(frame: .zero)
@@ -72,6 +69,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         setFeeTarget()
         showUnlockScreen()
         convertExistingDescriptors()
+        
+        self.connectingView.addConnectingView(vc: self.tabBarController!,
+                                              description: "connecting")
                 
     }
     

@@ -61,7 +61,7 @@ class TorClient {
                 print("thread is nil")
                 
                 self.isOperational = true
-                self.config.options = ["DNSPort": "12345", "AutomapHostsOnResolve": "1", "SocksPort": "9050", "AvoidDiskWrites": "1", "ClientOnionAuthDir": "\(self.authDirPath)", "HidServAuth": "\(self.v2Auth)"]
+                self.config.options = ["DNSPort": "12345", "AutomapHostsOnResolve": "1", "SocksPort": "19050", "AvoidDiskWrites": "1", "ClientOnionAuthDir": "\(self.authDirPath)", "HidServAuth": "\(self.v2Auth)"]
                 self.config.cookieAuthentication = true
                 self.config.dataDirectory = URL(fileURLWithPath: torDir)
                 self.config.controlSocket = self.config.dataDirectory?.appendingPathComponent("cp")
