@@ -106,12 +106,6 @@ class QuickConnect {
             
         }
         
-        print("label = \(label)")
-        print("host = \(host)")
-        print("rpcuser = \(rpcUser)")
-        print("rpcpassword = \(rpcPassword)")
-        print("v2Password = \(v2password)")
-        
         guard host != "", rpcUser != "", rpcPassword != "" else {
             errorBool = true
             errorDescription = "incomplete node credentials"
