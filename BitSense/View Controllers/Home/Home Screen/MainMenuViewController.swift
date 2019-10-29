@@ -57,7 +57,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         addCloseButtonToConnectingView()
         mainMenu.delegate = self
         mainMenu.tableFooterView = UIView(frame: .zero)
-        tabBarController?.delegate = self
+        tabBarController!.delegate = self
         initialLoad = true
         viewHasLoaded = false
         sectionZeroLoaded = false
@@ -69,13 +69,10 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         setFeeTarget()
         showUnlockScreen()
         convertExistingDescriptors()
-        
-        if self.tabBarController != nil {
             
-            self.connectingView.addConnectingView(vc: self.tabBarController!,
-                                                  description: "connecting")
+        self.connectingView.addConnectingView(vc: self.tabBarController!,
+                                              description: "connecting")
             
-        }
         
     }
     
@@ -1074,14 +1071,12 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
             if !self.initialLoad {
                 
-                if self.tabBarController != nil {
-                    
-                    self.connectingView.addConnectingView(vc: self.tabBarController!,
-                                                          description: "connecting")
-                    
-                    self.addCloseButtonToConnectingView()
-                    
-                }
+                
+                self.connectingView.addConnectingView(vc: self.tabBarController!,
+                                                      description: "connecting")
+                
+                self.addCloseButtonToConnectingView()
+                
                 
             }
             

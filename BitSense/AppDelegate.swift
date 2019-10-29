@@ -50,7 +50,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         if let myTabBar = self.window?.rootViewController as? UITabBarController {
             
-            myTabBar.selectedIndex = 0
+            //myTabBar.selectedIndex = 0
             
             let qc = QuickConnect()
             

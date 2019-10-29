@@ -253,7 +253,7 @@ class ChooseConnectionTypeViewController: UIViewController {
                 DispatchQueue.main.async {
                     
                     self.back()
-                    self.tabBarController?.selectedIndex = 0
+                    //self.tabBarController?.selectedIndex = 0
                     
                 }
                 

@@ -165,6 +165,7 @@ class QuickConnect {
             } else {
                 
                 errorBool = false
+                goHome()
                 completion()
                 
             }
@@ -219,6 +220,25 @@ class QuickConnect {
                     completion()
                     
                 }
+                
+            }
+            
+        }
+        
+        goHome()
+        
+    }
+    
+    private func goHome() {
+        
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        let window = appDelegate.window
+        
+        if let myTabBar = window?.rootViewController as? UITabBarController {
+            
+            DispatchQueue.main.async {
+               
+                myTabBar.selectedIndex = 0
                 
             }
             
