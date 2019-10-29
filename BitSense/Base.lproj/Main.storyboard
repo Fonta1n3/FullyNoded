@@ -156,7 +156,7 @@
         <!--Home-->
         <scene sceneID="erx-5N-Kcy">
             <objects>
-                <viewController extendedLayoutIncludesOpaqueBars="YES" id="XmP-lK-cua" customClass="MainMenuViewController" customModule="BitSense" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="MainMenu" extendedLayoutIncludesOpaqueBars="YES" useStoryboardIdentifierAsRestorationIdentifier="YES" id="XmP-lK-cua" customClass="MainMenuViewController" customModule="BitSense" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Xal-ei-X51">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -2924,7 +2924,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
         <!--Tab Bar Controller-->
         <scene sceneID="T9u-Zb-e9t">
             <objects>
-                <tabBarController extendedLayoutIncludesOpaqueBars="YES" id="nU0-zz-6p3" sceneMemberID="viewController">
+                <tabBarController storyboardIdentifier="TabBarController" extendedLayoutIncludesOpaqueBars="YES" useStoryboardIdentifierAsRestorationIdentifier="YES" id="nU0-zz-6p3" sceneMemberID="viewController">
                     <tabBar key="tabBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" barStyle="black" translucent="NO" id="Wbb-n8-g56">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="49"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -4294,7 +4294,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
             <objects>
                 <viewController storyboardIdentifier="LogIn" extendedLayoutIncludesOpaqueBars="YES" useStoryboardIdentifierAsRestorationIdentifier="YES" id="bKH-sI-MiM" customClass="LogInViewController" customModule="BitSense" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Wt8-Mt-3Mi">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <viewLayoutGuide key="safeArea" id="EbK-Bw-j4E"/>
@@ -4602,7 +4602,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <image name="whiteCheck.png" width="2048" height="2048"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="ckQ-WD-ole"/>
+        <segue reference="UBf-qr-XYG"/>
         <segue reference="0uM-aK-HtC"/>
         <segue reference="XQE-Ek-uZu"/>
         <segue reference="IVc-aG-8QZ"/>

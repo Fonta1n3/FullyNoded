@@ -48,34 +48,39 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func addNode(url: String) {
         
-        let vc = MainMenuViewController()
-        let qc = QuickConnect()
-        
+        if let myTabBar = self.window?.rootViewController as? UITabBarController {
+            
+            myTabBar.selectedIndex = 0
+            
+            let qc = QuickConnect()
+            
             func getResult() {
-                
-                print("result")
                 
                 if !qc.errorBool {
                     
-                    displayAlert(viewController: vc,
-                                 isError: false,
-                                 message: "Node added")
+                    print("success adding quick connect")
                     
                 } else {
                     
-                    displayAlert(viewController: vc,
-                                 isError: true,
-                                 message: qc.errorDescription)
+                    print("error adding quick connect = \(qc.errorDescription)")
                     
                 }
                 
             }
             
-            qc.addNode(vc: vc,
+            qc.addNode(vc: myTabBar,
                        url: url,
                        completion: getResult)
+            
+        } else {
+            
+            print("error adding quick connect no access to tabbar")
+            
+        }
         
     }
+    
+    
 
     func applicationWillEnterForeground(_ application: UIApplication) {
         // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.

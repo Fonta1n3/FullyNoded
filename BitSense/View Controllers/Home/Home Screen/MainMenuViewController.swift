@@ -57,7 +57,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         addCloseButtonToConnectingView()
         mainMenu.delegate = self
         mainMenu.tableFooterView = UIView(frame: .zero)
-        tabBarController!.delegate = self
+        tabBarController?.delegate = self
         initialLoad = true
         viewHasLoaded = false
         sectionZeroLoaded = false
@@ -70,9 +70,13 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         showUnlockScreen()
         convertExistingDescriptors()
         
-        self.connectingView.addConnectingView(vc: self.tabBarController!,
-                                              description: "connecting")
-                
+        if self.tabBarController != nil {
+            
+            self.connectingView.addConnectingView(vc: self.tabBarController!,
+                                                  description: "connecting")
+            
+        }
+        
     }
     
     func addNavBarSpinner() {
@@ -1070,9 +1074,14 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
             if !self.initialLoad {
                 
-                self.connectingView.addConnectingView(vc: self.tabBarController!,
-                                                      description: "connecting")
-                self.addCloseButtonToConnectingView()
+                if self.tabBarController != nil {
+                    
+                    self.connectingView.addConnectingView(vc: self.tabBarController!,
+                                                          description: "connecting")
+                    
+                    self.addCloseButtonToConnectingView()
+                    
+                }
                 
             }
             
