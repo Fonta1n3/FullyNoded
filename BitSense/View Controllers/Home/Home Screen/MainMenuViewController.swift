@@ -152,21 +152,33 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     @objc func refreshData(_ sender: Any) {
         print("refreshData")
         
-        if connector.ssh != nil {
+        if SSHService.sharedInstance.session != nil {
             
-            if connector.ssh.session.isConnected {
+            if connector.ssh != nil {
                 
+                if connector.ssh.session.isConnected {
+                    
+                    refreshDataNow()
+                    
+                }
+                
+            } else if connector.torConnected {
+            
                 refreshDataNow()
                 
+            } else {
+                
+                refresh()
+                
             }
-            
+                
         } else if connector.torConnected {
             
-            refreshDataNow()
+                refreshDataNow()
             
         } else {
             
-            self.refresh()
+            refresh()
             
         }
         
@@ -553,7 +565,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
         case 2:
             
-            if sectionOneLoaded {
+            if sectionZeroLoaded {
                 
                 return 101
                 
@@ -729,7 +741,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     self.mainMenu.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
                     let impact = UIImpactFeedbackGenerator()
                     impact.impactOccurred()
-                    self.loadSectionOne()
+                    //self.loadSectionOne()
+                    self.loadSectionTwo()
                     
                 }
                 
@@ -785,7 +798,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     
                     let impact = UIImpactFeedbackGenerator()
                     impact.impactOccurred()
-                    self.loadSectionTwo()
+                    //self.loadSectionTwo()
+                    self.removeLoader()
                     
                 }
                 
@@ -824,7 +838,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     
                     let impact = UIImpactFeedbackGenerator()
                     impact.impactOccurred()
-                    self.removeLoader()
+                    self.loadSectionOne()
+                    
+                    
                     
                 }
                 
@@ -1209,8 +1225,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 let str = HomeStruct(dictionary: dict)
                 
                 self.hotBalance = str.hotBalance
-                self.coldBalance = str.coldBalance
-                self.unconfirmedBalance = str.unconfirmedBalance
+                self.coldBalance = (str.coldBalance)
+                self.unconfirmedBalance = (str.unconfirmedBalance)
                 
                 DispatchQueue.main.async {
                     

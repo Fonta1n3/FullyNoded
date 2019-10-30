@@ -99,17 +99,34 @@ class ErrorView: UIView {
         
         UIView.animate(withDuration: 0.3, animations: {
             
-            self.backgroundView.alpha = 1
-            
-            self.backgroundView.frame = CGRect(x: 0,
-                                               y: (vc.navigationController?.navigationBar.frame.maxY)!,
+            if vc.navigationController != nil {
+                
+                self.backgroundView.alpha = 1
+                
+                self.backgroundView.frame = CGRect(x: 0,
+                                                   y: (vc.navigationController?.navigationBar.frame.maxY)!,
+                                                   width: width,
+                                                   height: 125)
+                
+                self.errorLabel.frame = CGRect(x: 0,
+                                               y: 0,
                                                width: width,
                                                height: 125)
-            
-            self.errorLabel.frame = CGRect(x: 0,
-                                           y: 0,
-                                           width: width,
-                                           height: 125)
+                
+            } else {
+                
+                self.backgroundView.alpha = 1
+                
+                self.backgroundView.frame = CGRect(x: 0,
+                                                   y: 100,
+                                                   width: width,
+                                                   height: 125)
+                
+                self.errorLabel.frame = CGRect(x: 0,
+                                               y: 0,
+                                               width: width,
+                                               height: 125)
+            }
             
         }) { _ in
             

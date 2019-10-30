@@ -48,10 +48,8 @@ class NodeLogic {
             }
             
         }
-        
-        let method = BTC_CLI_COMMAND.listwallets
-        
-        reducer.makeCommand(command: method,
+                
+        reducer.makeCommand(command: .listwallets,
                             param: "",
                             completion: getResult)
         
@@ -293,7 +291,7 @@ class NodeLogic {
             
         } else {
             
-            dictToReturn["hotBalance"] = "\(round(100000000*balance)/100000000)"
+            dictToReturn["hotBalance"] = "\((round(100000000*balance)/100000000).avoidNotation)"
             
         }
         
@@ -455,10 +453,11 @@ class NodeLogic {
                 var replaced_by_txid = String()
                 var isCold = false
                 
-                let address = transaction["address"] as! String
-                let amount = transaction["amount"] as! Double
+                let address = transaction["address"] as? String ?? ""
+                let amount = transaction["amount"] as? Double ?? 0.0
                 let amountString = amount.avoidNotation
-                let confirmations = String(transaction["confirmations"] as! Int)
+                let confsCheck = transaction["confirmations"] as? Int ?? 0
+                let confirmations = String(confsCheck)
                 
                 if let replaced_by_txid_check = transaction["replaced_by_txid"] as? String {
                     
@@ -488,9 +487,9 @@ class NodeLogic {
                     
                 }
                 
-                let secondsSince = transaction["time"] as! Double
-                let rbf = transaction["bip125-replaceable"] as! String
-                let txID = transaction["txid"] as! String
+                let secondsSince = transaction["time"] as? Double ?? 0.0
+                let rbf = transaction["bip125-replaceable"] as? String ?? ""
+                let txID = transaction["txid"] as? String ?? ""
                 
                 let date = Date(timeIntervalSince1970: secondsSince)
                 dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"

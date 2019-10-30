@@ -317,6 +317,8 @@ PR's welcome.
 - Fix quick connect url so it is an actual url and parse it with URLComponents
 - The updated format is: `btcrpc://rpcuser:rpcpassword@4bahfbimpqb5jolr.onion:8332?label=Node%20Label&v2password=HSHS6LRHJD7tSs/r9lx`
 - Added QuickConnect class to handle deep link and QR code scanning
+- Fix bugs
+- Now balances > transactions > node stats load to make it faster
 
 ## Changes v0.1.14
 - Fix bug where tor thread was not fully refreshing. Just pull home table to refresh your tor thread.
