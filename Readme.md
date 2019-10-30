@@ -313,30 +313,36 @@ PR's welcome.
 - [keychain-swift](https://github.com/evgenyneu/keychain-swift) for storing your nodes credentials decryption key on your iPhones secure enclave.
 - [Tor](https://github.com/iCepa/Tor.framework) for connecting to your node more privately and securely.
 
-## Changes v0.1.15
+## v0.1.15
 - Fix quick connect url so it is an actual url and parse it with URLComponents
 - The updated format is: `btcrpc://rpcuser:rpcpassword@4bahfbimpqb5jolr.onion:8332?label=Node%20Label&v2password=HSHS6LRHJD7tSs/r9lx`
 - Added QuickConnect class to handle deep link and QR code scanning
 - Fix bugs
 - Now balances > transactions > node stats load to make it faster
 
-## Changes v0.1.14
+### Changes
+
+## v0.1.15
+- Avoid scientific notation of hot balance
+- Minor improvements
+
+## v0.1.14
 - Fix bug where tor thread was not fully refreshing. Just pull home table to refresh your tor thread.
 - Add V2 hidden service authentication
 - Add two arguments to the btcrpc uri to allow server side to add a node label and v2 auth password
 
-## Changes v0.1.13
+## v0.1.13
 - Add QR quick connect based on the btcrpc:// uri
 - Add ability to generate and refresh V3 cookie auth keys in the app
 
-## Changes v0.1.12
+## v0.1.12
 - Fix home table cell heights loading with incorrect height
 - Add keypair generation and authkey authentication instructions
 
-## Changes v0.1.11
+## v0.1.11
 - Fix bug where home table would load out of order and not show proper cell heights after choosing which loaded wallet to work with
 
-## Changes v0.1.10
+## v0.1.10
 - Clean up TorClient code
 - Fix bug where Tor would not connect on simulator due to multiple auth keys
 - Fix bug where auth keys were not refreshing
@@ -344,18 +350,18 @@ PR's welcome.
 - Fix a crash when refreshing an existing tor thread
 - Fix multiwallet rpc for Tor
 
-## Changes v0.1.9
+## v0.1.9
 - Remove alert that was in wrong place when creating psbt
 - Clear error bool and description when refreshing tor connection
 - upgrade to swift 5.1 and XCode 11.1
 - Fix bug where adding an ssh node caused a crash
 - Fixed a bug where deleting nodes and then activating one caused a crash
 
-## Changes v0.1.8
+## v0.1.8
 - Nodl deeplink
 - Removed cocoapods
 
-## Changes v0.1.7
+## v0.1.7
 - Clarifies whether user is importing BIP32 extended key or BIP44/BIP84
 - Add ability to create a blank wallet incase users want to import their own private keys
 - Add a "fee rate" label in Node Stats which displays the fee rate in satoshis per byte depending on the fee rate you set in settings (the app by default sets the lowest possible fee rate)
@@ -385,14 +391,14 @@ PR's welcome.
 - Add ability to "clear bash history" which will clear all the Fully Noded related commands from your nodes server bash history
 - Add label to UTXO's
 
-## Changes v0.1.6
+## v0.1.6
 - Enable hd musig functionality
 - Improve wallet manager UX
 - Improve UTXO UX by adding an info button that displays all the info about that particular utxo
 - Now the fee optimizer does not allow a fee less than minrelayfee
 - Fixed a bug where editing the amount in "spend from wallet" would result in poor UX
 
-## Changes v0.1.5
+## v0.1.5
 - General UI/UX improvements and fixes
 - Code refactoring
 - Fix multiple minor bugs assocated with the unlock screen
@@ -400,18 +406,18 @@ PR's welcome.
 - Improve ssh reconnection if connection timed out
 - Major rework to UX flow for importing keys
 
-## Changes v0.1.4
+## v0.1.4
 - Update Tor functionality to work for Home screen
 - Update Tor compatibility with MultiWallet rpc calls
 
-## Changes v0.1.3
+## v0.1.3
 - Fix fee alert that showed 101% fee overpayment instead of 1%
 - Fix UI issue when locking or unlocking your only remaining UTXO
 - Improve UI/UX for "Multi Wallet Manager"
 - Move settings for importing and invoices to "Incomings" where they belong
 - Fixed a bug that would not present importing keys table when importing an xpub whilst "rescan" was toggled on and user selected an image of the xpub QR from photo library
 
-## Changes v0.1.2
+## v0.1.2
 
 - Fix a bug where joinpsbt view did not display due to a missing constraint
 - Add combinepsbt functionality
@@ -425,7 +431,7 @@ PR's welcome.
 - Add ability to import public keys using importmulti descriptor based approach, wil import them as "combo" which imports all three address formats of the pubkey
 - Add ability to lock and unlock specific UTXO's so that they are not selected by Bitcoin Core coin selection algorithm when "spending from wallet", "create psbt" or "process psbt"
 
-## Changes v0.1.1
+## v0.1.1
 
 - Automatically reconnect to your node when using the app if the connection dies for some reason, you should not see "Channel allocation error" again
 - Complete overhall of the UI, minimalist, cypherpunk ultra dark theme
@@ -456,7 +462,7 @@ PR's welcome.
 - When you "Spend from external" all fields are mandatory now.
 - You can now batch outputs from "Spend from wallet", tap the plus sign to add multiple outputs
 
-## Changes v0.1.0
+## v0.1.0
 
 - Fixes buggy responses when changing settings for importing.
 - Fix crash when SSH not connected when toggling importing settings.
@@ -473,24 +479,24 @@ PR's welcome.
 - Error checking improvements.
 - Enable RBF by default when creating a PSBT.
 
-## Changes v1.49
+## v1.49
 
 - Harden PSBT's
 
-## Changes v1.48
+## v1.48
 
 - Coldcard wallet compatibility for importing xpubs from your Coldcard wallet into your node.  On your Coldcard wallet you will need to insert an SD card, go to "Advanced" -> "Micro SD" -> "Dump Summary". Then create a QR code with either the BIP44 or BIP84 xpub, in Fully Noded inputting your master key fingerprint from Coldcard into Fully Noded settings. Go to "Incomings" -> "Import a key" and scan the xpub QR code, you will now be able to receive and create PSBTs for your Coldcard.
 - Added a fingerprint cell in settings so you can add a fingerprint for your master public key.
 - If you add a fingerprint the derivation will be xpub/0/0, if you do not add a fingerprint the xpub will be treated as a BIP32 extended key and your derivation will be xpub/0.
 
-## Changes v1.47
+## v1.47
 
 - Bug fix where QR scanner did not self dismiss when scanning a QR while signing an unsigned transaction.
 - Fixes layout issues for log in screen when switching from landscape to portrait.
 - Add spinner view to PSBT tasks.
 - Bug fix where user could create a node with both SSH and Tor disabled.
 
-## Changes v1.46
+## v1.46
 
 - Update to Swift 5 / Xcode v10.2.1
 - Replaced [AES256CBC](https://github.com/SwiftyBeaver/AES256CBC) with [CryptoSwift](https://github.com/krzyzanowskim/CryptoSwift)
