@@ -584,6 +584,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func loadWalletFirst() {
+        print("loadwalletfirst")
         
         let nodeLogic = NodeLogic()
         
@@ -741,7 +742,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     self.mainMenu.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
                     let impact = UIImpactFeedbackGenerator()
                     impact.impactOccurred()
-                    //self.loadSectionOne()
                     self.loadSectionTwo()
                     
                 }
@@ -798,7 +798,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     
                     let impact = UIImpactFeedbackGenerator()
                     impact.impactOccurred()
-                    //self.loadSectionTwo()
                     self.removeLoader()
                     
                 }
@@ -1077,7 +1076,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     @objc func refresh() {
         print("refresh")
         
-        if TorClient.sharedInstance.isOperational {
+        if TorClient.sharedInstance.isOperational && !initialLoad {
             
             TorClient.sharedInstance.resign()
             
@@ -1167,8 +1166,10 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func connectTor(connector:Connector) {
+        print("connecttor")
         
         func completion() {
+            print("connecttor completion")
             
             if !connector.torConnected {
                 
@@ -1183,7 +1184,10 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 viewHasLoaded = true
                 removeSpinner()
-                loadWalletFirst()
+                
+                //DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                    self.loadWalletFirst()
+                //}
                 
             }
             

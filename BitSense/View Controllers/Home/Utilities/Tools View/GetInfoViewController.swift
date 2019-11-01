@@ -619,35 +619,35 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
         if getAddressInfo {
             
-            self.executeNodeCommand(method: BTC_CLI_COMMAND.getaddressinfo,
+            self.executeNodeCommand(method: .getaddressinfo,
                                     param: "\"\(address)\"")
             
         }
         
         if decodeScript {
             
-            self.executeNodeCommand(method: BTC_CLI_COMMAND.decodescript,
+            self.executeNodeCommand(method: .decodescript,
                                     param: "\"\(address)\"")
             
         }
         
         if getaddressesbylabel {
             
-            self.executeNodeCommand(method: BTC_CLI_COMMAND.getaddressesbylabel,
+            self.executeNodeCommand(method: .getaddressesbylabel,
                                     param: "\"\(address)\"")
             
         }
         
         if getTransaction {
             
-            self.executeNodeCommand(method: BTC_CLI_COMMAND.getrawtransaction,
+            self.executeNodeCommand(method: .getrawtransaction,
                                     param: "\"\(address)\", true")
             
         }
         
         if getblock {
             
-            self.executeNodeCommand(method: BTC_CLI_COMMAND.getblock,
+            self.executeNodeCommand(method: .getblock,
                                     param: "\"\(address)\"")
             
         }

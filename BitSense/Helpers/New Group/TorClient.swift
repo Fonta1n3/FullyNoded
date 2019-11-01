@@ -61,7 +61,23 @@ class TorClient {
                 print("thread is nil")
                 
                 self.isOperational = true
-                self.config.options = ["DNSPort": "12345", "AutomapHostsOnResolve": "1", "SocksPort": "19050", "AvoidDiskWrites": "1", "ClientOnionAuthDir": "\(self.authDirPath)", "HidServAuth": "\(self.v2Auth)"]
+                
+                self.config.options = [
+                    
+                    "DNSPort": "12345",
+                    "AutomapHostsOnResolve": "1",
+                    "SocksPort": "19050",
+                    "AvoidDiskWrites": "1",
+                    "ClientOnionAuthDir": "\(self.authDirPath)",
+                    "HidServAuth": "\(self.v2Auth)",
+                    "HardwareAccel": "1",
+                    "LearnCircuitBuildTimeout": "1",
+                    "NumEntryGuards": "8",
+                    "SafeSocks": "1",
+                    "LongLivedPorts": "80,443",
+                    "NumCPUs": "2"
+                    
+                ]
                 self.config.cookieAuthentication = true
                 self.config.dataDirectory = URL(fileURLWithPath: torDir)
                 self.config.controlSocket = self.config.dataDirectory?.appendingPathComponent("cp")
@@ -136,7 +152,7 @@ class TorClient {
             }
             
             try self.authenticateController {
-                print("Tor tunnel started!")
+                print("authenticateController")
                 //TORInstallEventLogging()
                 //TORInstallTorLogging()
                 //NotificationCenter.default.post(name: .didEstablishTorConnection, object: self)
@@ -150,7 +166,7 @@ class TorClient {
     }
     
     private func authenticateController(completion: @escaping () -> Void) throws -> Void {
-        print("authenticate COntroller")
+        print("authenticateController")
         
         let cookie = try Data(
             contentsOf: config.dataDirectory!.appendingPathComponent("control_auth_cookie"),
@@ -162,27 +178,50 @@ class TorClient {
             
             if let error = error {
                 
-                return print("error = \(error.localizedDescription)")
+                print("error = \(error.localizedDescription)")
+                return
                 
             }
             
             var observer: Any? = nil
             observer = self.controller?.addObserver(forCircuitEstablished: { established in
                 
-                print("observer added")
-                self.controller?.getSessionConfiguration() { sessionConfig in
-                    print("getsessionconfig")
+                if established {
                     
-                    self.sessionConfiguration = sessionConfig!
-                    self.session = URLSession(configuration: self.sessionConfiguration)
-                    self.isOperational = true
-                    completion()
+                    print("observer added")
+                    self.controller?.getSessionConfiguration() { sessionConfig in
+                        print("getsessionconfig")
+                        
+                        self.sessionConfiguration = sessionConfig!
+                        self.session = URLSession(configuration: self.sessionConfiguration)
+                        self.isOperational = true
+                        completion()
+                    }
+                    
+                    self.controller?.removeObserver(observer)
+                    
+                } else if self.isRefreshing {
+
+                    print("observer added")
+                    self.controller?.getSessionConfiguration() { sessionConfig in
+                        print("getsessionconfig")
+                        
+                        print("isestablished = \(established)")
+
+                        self.sessionConfiguration = sessionConfig!
+                        self.session = URLSession(configuration: self.sessionConfiguration)
+                        self.isOperational = true
+                        completion()
+                    }
+
+                    self.controller?.removeObserver(observer)
+
                 }
                 
-                self.controller?.removeObserver(observer)
-                
             })
+            
         }
+        
     }
     
     private func createTorDirectory() -> String {

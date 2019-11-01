@@ -539,7 +539,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                 case "amount":
                     
                     let dbl = rounded(number: value as! Double)
-                    amount.text = "\(dbl)"
+                    amount.text = dbl.avoidNotation
                     
                 case "vout":
                     

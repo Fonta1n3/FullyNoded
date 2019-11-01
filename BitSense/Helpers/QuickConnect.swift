@@ -60,7 +60,7 @@ class QuickConnect {
                 print("old format")
                 
                 if params.count == 2 {
-                   
+                    
                     rpcUser = (params[0].description).replacingOccurrences(of: "user=", with: "")
                     rpcPassword = (params[1].description).replacingOccurrences(of: "password=", with: "")
                     
@@ -72,7 +72,7 @@ class QuickConnect {
                         if arr.count > 1 {
                             
                             label = arr[1]
-                        
+                            
                         }
                         
                     }
@@ -136,7 +136,7 @@ class QuickConnect {
             node["v2password"] = torNodeV2Password
             
         }
-                
+        
         let success = cd.saveEntity(vc: vc,
                                     dict: node,
                                     entityName: .nodes)
@@ -149,7 +149,7 @@ class QuickConnect {
                 
                 let ud = UserDefaults.standard
                 ud.removeObject(forKey: "walletName")
-               
+                
                 deActivateOtherNodes(nodes: nodes,
                                      nodeID: torNodeId,
                                      cd: cd,
@@ -231,7 +231,7 @@ class QuickConnect {
         if let myTabBar = window?.rootViewController as? UITabBarController {
             
             DispatchQueue.main.async {
-               
+                
                 myTabBar.selectedIndex = 0
                 
             }
@@ -243,14 +243,14 @@ class QuickConnect {
 }
 
 extension URL {
-
-  func value(for paramater: String) -> String? {
-
-    let queryItems = URLComponents(string: self.absoluteString)?.queryItems
-    let queryItem = queryItems?.filter({$0.name == paramater}).first
-    let value = queryItem?.value
-
-    return value
-  }
-
+    
+    func value(for paramater: String) -> String? {
+        
+        let queryItems = URLComponents(string: self.absoluteString)?.queryItems
+        let queryItem = queryItems?.filter({$0.name == paramater}).first
+        let value = queryItem?.value
+        
+        return value
+    }
+    
 }

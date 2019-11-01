@@ -253,7 +253,6 @@ class ChooseConnectionTypeViewController: UIViewController {
                 DispatchQueue.main.async {
                     
                     self.back()
-                    //self.tabBarController?.selectedIndex = 0
                     
                 }
                 
@@ -267,10 +266,22 @@ class ChooseConnectionTypeViewController: UIViewController {
             
         }
         
-        qc.addNode(vc: self,
-                   url: url,
-                   completion: getResult)
-        
+        if url.hasPrefix("btcrpc://") {
+            
+            qc.addNode(vc: self,
+                       url: url,
+                       completion: getResult)
+            
+        } else {
+            
+            back()
+            
+            displayAlert(viewController: self,
+                         isError: true,
+                         message: "Thats not a btcrpc url!")
+            
+        }
+                
     }
     
     // MARK: - Navigation
