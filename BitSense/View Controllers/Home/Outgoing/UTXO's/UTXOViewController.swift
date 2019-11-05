@@ -215,7 +215,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
             
         }
         
-        let string = "\(amountAvailable)"
+        let string = amountAvailable.avoidNotation
         
         if amountAvailable >= amount {
             
@@ -244,7 +244,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         
         DispatchQueue.main.async {
             
-            self.amountInput.text = "\(amountToSweep)"
+            self.amountInput.text = amountToSweep.avoidNotation
             
         }
         
@@ -770,7 +770,10 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         
         if utxos.count > 0 {
             
-            self.utxoArray = utxos as! Array
+            //self.utxoArray = utxos as! Array
+            
+            self.utxoArray = (utxos as NSArray).sortedArray(using: [NSSortDescriptor(key: "confirmations", ascending: true)]) as! [[String:AnyObject]]
+
             
             for _ in utxoArray {
                 

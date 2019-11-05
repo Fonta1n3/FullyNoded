@@ -307,12 +307,17 @@ PR's welcome.
 
 ## Changes
 
-### v0.1.16
-- check for scientific notation in utxo amounts
-- more error checking
-- Fix tor refreshing
+### v0.1.8
+- check for scientific notation when sweeping utxo's
+- check for scientific notation in verify transaction
+- sort utxo's by confirmations
 
-### v0.1.15
+### v0.1.17
+- check for scientific notation in utxo amounts
+- more error checking, more guard statements
+- big fixes
+
+### v0.1.16
 - Fix quick connect url so it is an actual url and parse it with URLComponents
 - The updated format is: `btcrpc://rpcuser:rpcpassword@4bahfbimpqb5jolr.onion:8332?label=Node%20Label&v2password=HSHS6LRHJD7tSs/r9lx`
 - Added QuickConnect class to handle deep link and QR code scanning

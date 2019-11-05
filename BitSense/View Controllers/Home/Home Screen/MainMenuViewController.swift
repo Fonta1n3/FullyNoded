@@ -54,10 +54,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        addCloseButtonToConnectingView()
+        tabBarController?.delegate = self
         mainMenu.delegate = self
         mainMenu.tableFooterView = UIView(frame: .zero)
-        tabBarController!.delegate = self
         initialLoad = true
         viewHasLoaded = false
         sectionZeroLoaded = false
@@ -69,10 +68,15 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         setFeeTarget()
         showUnlockScreen()
         convertExistingDescriptors()
+        
+        if let _ = self.tabBarController {
             
-        self.connectingView.addConnectingView(vc: self.tabBarController!,
-                                              description: "connecting")
+            connectingView.addConnectingView(vc: self.tabBarController!,
+                                             description: "connecting")
             
+            addCloseButtonToConnectingView()
+            
+        }
         
     }
     
@@ -873,10 +877,33 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     let btcHot = self.hotBalance
                     let btcCold = self.coldBalance
                     let rate = converter.fxRate
-                    let hotDouble = (Double(self.hotBalance)! * rate).withCommas()
-                    let coldDouble = (Double(self.coldBalance)! * rate).withCommas()
-                    self.hotBalance = "﹩\(hotDouble)"
-                    self.coldBalance = "﹩\(coldDouble)"
+                    
+                    guard let hotDouble = Double(self.hotBalance.replacingOccurrences(of: ",", with: "")) else {
+                        
+                        displayAlert(viewController: self,
+                                     isError: true,
+                                     message: "error converting hot balance to fiat")
+                        
+                        removeLoader()
+                        
+                        return
+                    }
+                    
+                    guard let coldDouble = Double(self.coldBalance.replacingOccurrences(of: ",", with: "")) else {
+                        
+                        displayAlert(viewController: self,
+                                     isError: true,
+                                     message: "error converting hot balance to fiat")
+                        
+                        removeLoader()
+                        
+                        return
+                    }
+                    
+                    let formattedHotDouble = (hotDouble * rate).withCommas()
+                    let formattedColdDouble = (coldDouble * rate).withCommas()
+                    self.hotBalance = "﹩\(formattedHotDouble)"
+                    self.coldBalance = "﹩\(formattedColdDouble)"
                     
                     DispatchQueue.main.async {
                         
@@ -1086,12 +1113,14 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
             if !self.initialLoad {
                 
-                
-                self.connectingView.addConnectingView(vc: self.tabBarController!,
-                                                      description: "connecting")
-                
-                self.addCloseButtonToConnectingView()
-                
+                if let _ = self.tabBarController {
+                    
+                    self.connectingView.addConnectingView(vc: self.tabBarController!,
+                                                          description: "connecting")
+                    
+                    self.addCloseButtonToConnectingView()
+                    
+                }
                 
             }
             

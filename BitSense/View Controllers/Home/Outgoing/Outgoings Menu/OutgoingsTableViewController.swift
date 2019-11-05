@@ -231,144 +231,55 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
                 case 0:
                     
                     // Raw Transactions
+                    
+                    var segueString = ""
                     switch indexPath.row {
-                        
-                    case 0:
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.performSegue(withIdentifier: "createRawNow", sender: self)
-                        }
-                        
-                    case 1:
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.performSegue(withIdentifier: "goToUnsigned", sender: self)
-                            
-                        }
-                    case 2:
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.performSegue(withIdentifier: "goToUtxos", sender: self)
-                        }
-                        
-                    case 3:
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.performSegue(withIdentifier: "goToSignIt", sender: self)
-                            
-                        }
-                        
-                    case 4:
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.decodeRaw = true
-                            self.performSegue(withIdentifier: "goDecode", sender: self)
-                            
-                        }
-                        
-                    case 5:
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.verify = true
-                            self.performSegue(withIdentifier: "goDecode", sender: self)
-                            
-                        }
-                        
-                    case 6:
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.broadcast = true
-                            self.performSegue(withIdentifier: "goDecode", sender: self)
-                            
-                        }
-                        
+                    case 0: segueString = "createRawNow"
+                    case 1: segueString = "goToUnsigned"
+                    case 2: segueString = "goToUtxos"
+                    case 3: segueString = "goToSignIt"
+                    case 4:self.decodeRaw = true
+                    segueString = "goDecode"
+                    case 5: self.verify = true
+                    segueString = "goDecode"
+                    case 6: self.broadcast = true
+                    segueString = "goDecode"
                     default:break}
+                    
+                    DispatchQueue.main.async {
+
+                        self.performSegue(withIdentifier: segueString, sender: self)
+
+                    }
+
                     
                 case 1:
                     
                     // PSBT's
+                    
+                    var segueString = ""
                     switch indexPath.row {
                         
-                    case 0:
+                    case 0: segueString = "createPSBT"
+                    case 1: self.process = true
+                    segueString = "goDecode"
+                    case 2: self.finalize = true
+                    segueString = "goDecode"
+                    case 3: self.combinePSBT = false
+                    segueString = "joinPSBT"
+                    case 4: self.analyze = true
+                    segueString = "goDecode"
+                    case 5: self.convert = true
+                    segueString = "goDecode"
+                    case 6: self.decodePSBT = true
+                    segueString = "goDecode"
+                    case 7: self.combinePSBT = true
+                    segueString = "joinPSBT"
+                    default:break}
+                    
+                    DispatchQueue.main.async {
                         
-                        DispatchQueue.main.async {
-                            
-                            self.performSegue(withIdentifier: "createPSBT", sender: self)
-                            
-                        }
-                    case 1:
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.process = true
-                            self.performSegue(withIdentifier: "goDecode", sender: self)
-                            
-                        }
-                        
-                    case 2:
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.finalize = true
-                            self.performSegue(withIdentifier: "goDecode", sender: self)
-                            
-                        }
-                        
-                    case 3:
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.combinePSBT = false
-                            self.performSegue(withIdentifier: "joinPSBT", sender: self)
-                            
-                        }
-                        
-                    case 4:
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.analyze = true
-                            self.performSegue(withIdentifier: "goDecode", sender: self)
-                            
-                        }
-                        
-                    case 5:
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.convert = true
-                            self.performSegue(withIdentifier: "goDecode", sender: self)
-                            
-                        }
-                        
-                    case 6:
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.decodePSBT = true
-                            self.performSegue(withIdentifier: "goDecode", sender: self)
-                            
-                        }
-                        
-                    case 7:
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.combinePSBT = true
-                            self.performSegue(withIdentifier: "joinPSBT", sender: self)
-                            
-                        }
-                        
-                    default:
-                        
-                        break
+                        self.performSegue(withIdentifier: segueString, sender: self)
                         
                     }
                     

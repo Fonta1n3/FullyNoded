@@ -33,7 +33,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func getNodes() {
         
-        nodeArray = cd.retrieveEntity(entityName: ENTITY.nodes)
+        nodeArray = cd.retrieveEntity(entityName: .nodes)
         
         if nodeArray.count == 0 {
             
@@ -97,7 +97,10 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         selectedIndex = indexPath.row
-        let cell = nodeTable.cellForRow(at: IndexPath.init(row: indexPath.row, section: 0))!
+        
+        guard let cell = nodeTable.cellForRow(at: IndexPath.init(row: indexPath.row, section: 0)) else {
+            return
+        }
         
         DispatchQueue.main.async {
             
@@ -116,21 +119,26 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                     
                 }, completion: { _ in
                     
-                    let str = NodeStruct(dictionary: self.nodeArray[self.selectedIndex])
-                    
-                    if !str.isDefault {
+                    if self.selectedIndex < self.nodeArray.count {
                         
-                        DispatchQueue.main.async {
+                        let node = self.nodeArray[self.selectedIndex]
+                        let str = NodeStruct(dictionary: node)
+                        
+                        if !str.isDefault {
                             
-                            self.performSegue(withIdentifier: "updateNode", sender: self)
+                            DispatchQueue.main.async {
+                                
+                                self.performSegue(withIdentifier: "updateNode", sender: self)
+                                
+                            }
+                            
+                        } else {
+                            
+                            displayAlert(viewController: self,
+                                         isError: true,
+                                         message: "You can not edit the testing node")
                             
                         }
-                        
-                    } else {
-                        
-                        displayAlert(viewController: self,
-                                     isError: true,
-                                     message: "You can not edit the testing node")
                         
                     }
                     
@@ -173,7 +181,6 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
             let node = NodeStruct(dictionary: nodeArray[indexPath.row])
             
-            //let success = cd.deleteNode(viewController: self, id: nodeArray[indexPath.row]["id"] as! String)
             let success = cd.deleteEntity(viewController: self,
                                           id: node.id,
                                           entityName: .nodes)
@@ -221,68 +228,72 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
         }
         
-        let index = Int(sender.restorationIdentifier!)!
+        let restId = sender.restorationIdentifier ?? ""
+        let index = Int(restId) ?? 10000
         
-        let selectedCell = nodeTable.cellForRow(at: IndexPath.init(row: index, section: 0))!
-        let selectedSwitch = selectedCell.viewWithTag(2) as! UISwitch
-        let id = nodeArray[index]["id"] as! String
-        
-        if !selectedSwitch.isOn {
-            
-            //turned off
-            //let success = cd.updateNode(viewController: self, id: id, newValue: false, keyToEdit: "isActive")
-            let success = cd.updateEntity(viewController: self,
-                                          id: id,
-                                          newValue: false,
-                                          keyToEdit: "isActive",
-                                          entityName: ENTITY.nodes)
-            
-            if success {
-                
-                ud.removeObject(forKey: "walletName")//removes active wallet name
-                nodeArray = cd.retrieveEntity(entityName: ENTITY.nodes)
-                nodeTable.reloadData()
-                
-            }
-            
-        } else {
-            
-            //turned on
-            //let success = cd.updateNode(viewController: self, id: id, newValue: true, keyToEdit: "isActive")
-            let success = cd.updateEntity(viewController: self,
-                                          id: id,
-                                          newValue: true,
-                                          keyToEdit: "isActive",
-                                          entityName: ENTITY.nodes)
-            
-            if success {
-                
-                ud.removeObject(forKey: "walletName")//removes active wallet name
-                nodeArray = cd.retrieveEntity(entityName: ENTITY.nodes)
-                nodeTable.reloadData()
-                
-            }
-            
+        guard let selectedCell = nodeTable.cellForRow(at: IndexPath.init(row: index, section: 0)) else {
+            return
         }
         
-        if nodeArray.count > 1 {
+        let selectedSwitch = selectedCell.viewWithTag(2) as! UISwitch
+        
+        if index < nodeArray.count {
             
-            for (i, node) in nodeArray.enumerated() {
+            let str = NodeStruct(dictionary: nodeArray[index])
+            
+            if !selectedSwitch.isOn {
                 
-                if i != index {
+                //turned off
+                let success = cd.updateEntity(viewController: self,
+                                              id: str.id,
+                                              newValue: false,
+                                              keyToEdit: "isActive",
+                                              entityName: .nodes)
+                
+                if success {
                     
-                    let id = node["id"] as! String
+                    removeWalletReloadTable()
                     
-                    let success = cd.updateEntity(viewController: self,
-                                                  id: id,
-                                                  newValue: false,
-                                                  keyToEdit: "isActive",
-                                                  entityName: .nodes)
+                }
+                
+                
+            } else {
+                
+                //turned on
+                let success = cd.updateEntity(viewController: self,
+                                              id: str.id,
+                                              newValue: true,
+                                              keyToEdit: "isActive",
+                                              entityName: .nodes)
+                
+                if success {
                     
-                    if success {
+                    removeWalletReloadTable()
+                    
+                }
+                
+            }
+            
+            if nodeArray.count > 1 {
+                
+                for (i, node) in nodeArray.enumerated() {
+                    
+                    if i != index {
                         
-                        nodeArray = cd.retrieveEntity(entityName: .nodes)
-                        nodeTable.reloadData()
+                        let str = NodeStruct(dictionary: node)
+                        
+                        let success = cd.updateEntity(viewController: self,
+                                                      id: str.id,
+                                                      newValue: false,
+                                                      keyToEdit: "isActive",
+                                                      entityName: .nodes)
+                        
+                        if success {
+                            
+                            nodeArray = cd.retrieveEntity(entityName: .nodes)
+                            nodeTable.reloadData()
+                            
+                        }
                         
                     }
                     
@@ -290,9 +301,20 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 
             }
             
+        } else {
+            
+            print("node count is wrong")
+            
         }
         
     }
-
+    
+    func removeWalletReloadTable() {
+        
+        ud.removeObject(forKey: "walletName")
+        nodeArray = cd.retrieveEntity(entityName: .nodes)
+        nodeTable.reloadData()
+        
+    }
 
 }

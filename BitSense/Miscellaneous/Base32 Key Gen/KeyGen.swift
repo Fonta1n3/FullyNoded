@@ -23,15 +23,26 @@ class KeyGen {
             
             pubKey = (base32Encode(pubKeyData.rawRepresentation)).replacingOccurrences(of: "====", with: "")
             privKey = (base32Encode(privKeyData.rawRepresentation)).replacingOccurrences(of: "====", with: "")
+                        
+            if let rawpubkey = pubKey.base32DecodedData, let rawprivKey = privKey.base32DecodedData {
+                
+                print("rawpubkey = \(rawpubkey.count)")
+                
+                print("rawpubkey = \(rawpubkey)")
+                
+                let utf8PubKey = pubKey.utf8//base32Encode(rawpubkey)//String(data: rawpubkey, encoding: String.Encoding.utf8)!
+                let utf8PrivKey = privKey.utf8//base32Encode(rawprivKey)//String(data: rawprivKey, encoding: String.Encoding.utf8)
+                
+                print("utf8Pubkey = \(String(describing: utf8PubKey))")
+                print("utf8PrivKey = \(String(describing: utf8PrivKey))")
+                
+                print("pubKey = \(pubKey)")
+                print("prvKey = \(privKey)")
+                
+            }
             
-            let utf8PubKey = pubKey.base32DecodedString(String.Encoding.utf8)
-            let utf8PrivKey = privKey.base32DecodedString(String.Encoding.utf8)
             
-            print("utf8Pubkey = \(String(describing: utf8PubKey))")
-            print("utf8PrivKey = \(String(describing: utf8PrivKey))")
             
-            print("pubKey = \(pubKey)")
-            print("prvKey = \(privKey)")
             
 //            need to format the keys like so:
             

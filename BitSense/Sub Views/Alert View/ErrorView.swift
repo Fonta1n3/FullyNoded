@@ -101,10 +101,14 @@ class ErrorView: UIView {
             
             if vc.navigationController != nil {
                 
+                guard let y = vc.navigationController?.navigationBar.frame.maxY else {
+                    return
+                }
+                
                 self.backgroundView.alpha = 1
                 
                 self.backgroundView.frame = CGRect(x: 0,
-                                                   y: (vc.navigationController?.navigationBar.frame.maxY)!,
+                                                   y: y,
                                                    width: width,
                                                    height: 125)
                 

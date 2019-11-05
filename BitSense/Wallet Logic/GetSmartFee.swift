@@ -17,7 +17,7 @@ class GetSmartFee {
     var dictToReturn = NSDictionary()
     var rawSigned = ""
     var txSize = Int()
-    var vc = UIViewController()
+    var vc:UIViewController!
     var blockTarget = UserDefaults.standard.object(forKey: "feeTarget") as! Int
     var optimalFee = Double()
     var minimumFee = Double()
@@ -47,7 +47,7 @@ class GetSmartFee {
                         let dict = reducer.dictToReturn
                         txSize = dict["vsize"] as! Int
                         
-                        get(method: BTC_CLI_COMMAND.estimatesmartfee,
+                        get(method: .estimatesmartfee,
                             param: "\(blockTarget)")
                         
                     default:
@@ -71,7 +71,7 @@ class GetSmartFee {
             
         }
         
-        get(method: BTC_CLI_COMMAND.decoderawtransaction,
+        get(method: .decoderawtransaction,
             param: "\"\(self.rawSigned)\"")
         
     }

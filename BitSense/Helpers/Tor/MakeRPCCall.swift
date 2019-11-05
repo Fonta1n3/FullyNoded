@@ -69,8 +69,14 @@ class MakeRPCCall {
         var formattedParam = (param as! String).replacingOccurrences(of: "''", with: "")
         formattedParam = formattedParam.replacingOccurrences(of: "'\"'\"'", with: "'")
         
-        let url = URL(string: walletUrl)
-        var request = URLRequest(url: url!)
+        guard let url = URL(string: walletUrl) else {
+            errorBool = true
+            errorDescription = "url error"
+            completion()
+            return
+        }
+        
+        var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
         request.httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method)\",\"params\":[\(formattedParam)]}".data(using: .utf8)

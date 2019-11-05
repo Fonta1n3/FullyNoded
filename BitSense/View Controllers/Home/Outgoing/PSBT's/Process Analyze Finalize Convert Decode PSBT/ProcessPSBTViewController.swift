@@ -482,7 +482,7 @@ class ProcessPSBTViewController: UIViewController {
                 }
                 
                 inputTotal += amount
-                inputsString += "Input #\(index + 1):\nAmount: \(amount)\nAddress: \(addressString)\n\n"
+                inputsString += "Input #\(index + 1):\nAmount: \(amount.avoidNotation)\nAddress: \(addressString)\n\n"
                 
             }
             
@@ -574,7 +574,7 @@ class ProcessPSBTViewController: UIViewController {
             }
             
             outputTotal += amount
-            outputsString += "Output #\(number):\nAmount: \(amount)\nAddress: \(addressString)\n\n"
+            outputsString += "Output #\(number):\nAmount: \(amount.avoidNotation)\nAddress: \(addressString)\n\n"
             
         }
         
