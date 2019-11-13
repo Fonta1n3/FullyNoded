@@ -50,6 +50,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     var dataRefresher = UIBarButtonItem()
     var wallets = NSArray()
     var viewHasLoaded = Bool()
+    var addingQuickConnect = Bool()
     
     override func viewDidLoad() {
         super.viewDidLoad()

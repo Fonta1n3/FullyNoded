@@ -64,11 +64,11 @@
 		D05D9730226425730035F1DE /* images.png in Resources */ = {isa = PBXBuildFile; fileRef = D05D972F226425730035F1DE /* images.png */; };
 		D05D9732226433B60035F1DE /* strobe.png in Resources */ = {isa = PBXBuildFile; fileRef = D05D9731226433B60035F1DE /* strobe.png */; };
 		D05D973422647CE60035F1DE /* QRGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05D973322647CE60035F1DE /* QRGenerator.swift */; };
+		D060120A23795B1300754DEE /* CryptoSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FBC22AE1B3000DBBFC2 /* CryptoSwift.framework */; platformFilter = ios; };
+		D060120D23795B1500754DEE /* KeychainSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FBA22AE1B2B00DBBFC2 /* KeychainSwift.framework */; platformFilter = ios; };
+		D060120F23795B1700754DEE /* NMSSH.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0196DDE21BEF3FF0081E0AB /* NMSSH.framework */; platformFilter = ios; };
+		D060121123795B1900754DEE /* Tor.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FB822ACB7D100DBBFC2 /* Tor.framework */; platformFilter = ios; };
 		D06C59E421BEF5F0009BCB9C /* SSHService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D06C59E321BEF5F0009BCB9C /* SSHService.swift */; };
-		D06E7C5C23632EB700EF19A3 /* CryptoSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FBC22AE1B3000DBBFC2 /* CryptoSwift.framework */; platformFilter = ios; };
-		D06E7C5F23632EB900EF19A3 /* KeychainSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FBA22AE1B2B00DBBFC2 /* KeychainSwift.framework */; platformFilter = ios; };
-		D06E7C6123632EBB00EF19A3 /* NMSSH.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0196DDE21BEF3FF0081E0AB /* NMSSH.framework */; platformFilter = ios; };
-		D06E7C6323632EBD00EF19A3 /* Tor.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FB822ACB7D100DBBFC2 /* Tor.framework */; platformFilter = ios; };
 		D071A2A0214880F700C4BCB3 /* Search - tripkey.png in Resources */ = {isa = PBXBuildFile; fileRef = D071A29F214880F700C4BCB3 /* Search - tripkey.png */; };
 		D073E16E22558CDE0012A28C /* CoreDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D073E16D22558CDE0012A28C /* CoreDataService.swift */; };
 		D073E17022558DF30012A28C /* AESService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D073E16F22558DF30012A28C /* AESService.swift */; };
@@ -269,10 +269,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D06E7C6123632EBB00EF19A3 /* NMSSH.framework in Frameworks */,
-				D06E7C5F23632EB900EF19A3 /* KeychainSwift.framework in Frameworks */,
-				D06E7C6323632EBD00EF19A3 /* Tor.framework in Frameworks */,
-				D06E7C5C23632EB700EF19A3 /* CryptoSwift.framework in Frameworks */,
+				D060120F23795B1700754DEE /* NMSSH.framework in Frameworks */,
+				D060120D23795B1500754DEE /* KeychainSwift.framework in Frameworks */,
+				D060121123795B1900754DEE /* Tor.framework in Frameworks */,
+				D060120A23795B1300754DEE /* CryptoSwift.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1284,13 +1284,14 @@
 		D00B9A3A2111427200E8B95A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = BitSense/BitSense.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development: Peter Denton (H3TA3EF8PX)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 83;
+				CURRENT_PROJECT_VERSION = 85;
 				DEVELOPMENT_TEAM = 69FR345CDA;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1302,7 +1303,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.81;
+				MARKETING_VERSION = 1.83;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1318,13 +1319,14 @@
 		D00B9A3B2111427200E8B95A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = BitSense/BitSense.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Distribution: Peter Denton (69FR345CDA)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 83;
+				CURRENT_PROJECT_VERSION = 85;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 69FR345CDA;
 				ENABLE_TESTABILITY = NO;
@@ -1338,7 +1340,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.81;
+				MARKETING_VERSION = 1.83;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";

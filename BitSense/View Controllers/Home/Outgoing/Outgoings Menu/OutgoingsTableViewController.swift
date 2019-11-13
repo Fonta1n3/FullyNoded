@@ -238,12 +238,9 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
                     case 1: segueString = "goToUnsigned"
                     case 2: segueString = "goToUtxos"
                     case 3: segueString = "goToSignIt"
-                    case 4:self.decodeRaw = true
-                    segueString = "goDecode"
-                    case 5: self.verify = true
-                    segueString = "goDecode"
-                    case 6: self.broadcast = true
-                    segueString = "goDecode"
+                    case 4: self.decodeRaw = true; segueString = "goDecode"
+                    case 5: self.verify = true; segueString = "goDecode"
+                    case 6: self.broadcast = true; segueString = "goDecode"
                     default:break}
                     
                     DispatchQueue.main.async {
@@ -261,20 +258,13 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
                     switch indexPath.row {
                         
                     case 0: segueString = "createPSBT"
-                    case 1: self.process = true
-                    segueString = "goDecode"
-                    case 2: self.finalize = true
-                    segueString = "goDecode"
-                    case 3: self.combinePSBT = false
-                    segueString = "joinPSBT"
-                    case 4: self.analyze = true
-                    segueString = "goDecode"
-                    case 5: self.convert = true
-                    segueString = "goDecode"
-                    case 6: self.decodePSBT = true
-                    segueString = "goDecode"
-                    case 7: self.combinePSBT = true
-                    segueString = "joinPSBT"
+                    case 1: self.process = true; segueString = "goDecode"
+                    case 2: self.finalize = true; segueString = "goDecode"
+                    case 3: self.combinePSBT = false; segueString = "joinPSBT"
+                    case 4: self.analyze = true; segueString = "goDecode"
+                    case 5: self.convert = true; segueString = "goDecode"
+                    case 6: self.decodePSBT = true; segueString = "goDecode"
+                    case 7: self.combinePSBT = true; segueString = "joinPSBT"
                     default:break}
                     
                     DispatchQueue.main.async {
@@ -302,16 +292,11 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
                         //start a chain - sh
                         self.getAmount()
                         
-                    default:
-                        
-                        break
+                    default: break
                         
                     }
                     
-                    
-                default:
-                    
-                    break
+                default: break
                     
                 }
                 

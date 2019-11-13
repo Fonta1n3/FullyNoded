@@ -16,9 +16,10 @@ class QuickConnect {
     var errorBool = Bool()
     var errorDescription = ""
     
-    //old url format: btcrpc://kjhfefe.onion:8332?user=rpcuser&password=rpcpassword?label=nodeName?v2password=uenfieufnuf4
-    
-    //new format: btcrpc://rpcuser:rpcpassword@kjhfefe.onion:8332?label=nodeName&v2password=uenfieufnuf4
+    // MARK: QuickConnect url examples
+    // btcstandup://rpcuser:rpcpassword@uhqefiu873h827h3ufnjecnkajbciw7bui3hbuf233b.onion:8332/?label=Node%20Name
+    // btcstandup://rpcuser:rpcpassword@uhqefiu873h827h3ufnjecnkajbciw7bui3hbuf233b.onion:18332/?
+    // btcstandup://rpcuser:rpcpassword@uhqefiu873h827h3ufnjecnkajbciw7bui3hbuf233b.onion:18443?
     
     func addNode(vc: UIViewController, url: String, completion: @escaping () -> Void) {
         
@@ -57,8 +58,6 @@ class QuickConnect {
             
             if rpcUser == "" && rpcPassword == "" {
                 
-                print("old format")
-                
                 if params.count == 2 {
                     
                     rpcUser = (params[0].description).replacingOccurrences(of: "user=", with: "")
@@ -81,7 +80,6 @@ class QuickConnect {
                 
             } else {
                 
-                print("new format")
                 let url = URL(string: url)
                 
                 if let labelCheck = url?.value(for: "label") {
@@ -143,7 +141,7 @@ class QuickConnect {
         
         if success {
             
-            print("btcrpc node added")
+            print("standup node added")
             
             if nodes.count > 0 {
                 
@@ -249,7 +247,6 @@ extension URL {
         let queryItems = URLComponents(string: self.absoluteString)?.queryItems
         let queryItem = queryItems?.filter({$0.name == paramater}).first
         let value = queryItem?.value
-        
         return value
     }
     

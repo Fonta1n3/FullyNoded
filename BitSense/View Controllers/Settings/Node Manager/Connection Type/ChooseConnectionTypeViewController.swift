@@ -58,18 +58,11 @@ class ChooseConnectionTypeViewController: UIViewController {
             
             let node = NodeStruct(dictionary: selectedNode)
             
-            let id = node.id
-            
-//            let success = cd.updateNode(viewController: self,
-//                                        id: id,
-//                                        newValue: sshSwitchOutlet.isOn,
-//                                        keyToEdit: "usingSSH")
-            
             let success = cd.updateEntity(viewController: self,
-                                          id: id,
+                                          id: node.id,
                                           newValue: sshSwitchOutlet.isOn,
                                           keyToEdit: "usingSSH",
-                                          entityName: ENTITY.nodes)
+                                          entityName: .nodes)
             
             successes.append(success)
             
@@ -94,11 +87,6 @@ class ChooseConnectionTypeViewController: UIViewController {
             
             let node = NodeStruct(dictionary: selectedNode)
             let id = node.id
-            
-//            let success = cd.updateNode(viewController: self,
-//                                        id: id,
-//                                        newValue: torSwitchOutlet.isOn,
-//                                        keyToEdit: "usingTor")
             
             let success = cd.updateEntity(viewController: self,
                                           id: id,
@@ -266,7 +254,7 @@ class ChooseConnectionTypeViewController: UIViewController {
             
         }
         
-        if url.hasPrefix("btcrpc://") {
+        if url.hasPrefix("btcrpc://") || url.hasPrefix("btcstandup://") {
             
             qc.addNode(vc: self,
                        url: url,
@@ -278,7 +266,7 @@ class ChooseConnectionTypeViewController: UIViewController {
             
             displayAlert(viewController: self,
                          isError: true,
-                         message: "Thats not a btcrpc url!")
+                         message: "Thats not a compatible url!")
             
         }
                 

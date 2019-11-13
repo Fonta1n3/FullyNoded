@@ -543,7 +543,7 @@ class ProcessPSBTViewController: UIViewController {
             let input = i as! NSDictionary
             let txid = input["txid"] as! String
             let vout = input["vout"] as! Int
-            let dict = ["inputNumber":index + 1, "txid":txid, "vout":vout] as [String : Any]
+            let dict = ["inputNumber":index + 1, "txid":txid, "vout":vout as Any] as [String : Any]
             inputArray.append(dict)
             
             if index + 1 == inputs.count {
@@ -562,7 +562,7 @@ class ProcessPSBTViewController: UIViewController {
             
             let output = o as! NSDictionary
             let scriptpubkey = output["scriptPubKey"] as! NSDictionary
-            let addresses = scriptpubkey["addresses"] as! NSArray
+            let addresses = scriptpubkey["addresses"] as? NSArray ?? []
             let amount = output["value"] as! Double
             let number = i + 1
             var addressString = ""

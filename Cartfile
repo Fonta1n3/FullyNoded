@@ -1,4 +1,4 @@
-github "NMSSH/NMSSH"
-github "iCepa/Tor.framework" "master"
+#github "NMSSH/NMSSH"
+#github "iCepa/Tor.framework" "master"
 github "krzyzanowskim/CryptoSwift"
-github "evgenyneu/keychain-swift" ~> 17.0
+#github "evgenyneu/keychain-swift" ~> 17.0

@@ -241,11 +241,15 @@ The url can also be displayed as a QR Code and a user can simply scan it when th
 
 The format of the URL is:
 
-`btcrpc://<rpcuser>:<rpcpassword>@<hidden service hostname>:<hidden service port>?label=<optional node label>`
+`btcstandup://<rpcuser>:<rpcpassword>@<hidden service hostname>:<hidden service port>/?label=<optional node label>`
 
-Example with label:
+Example with node label:
 
-`btcrpc://rpcuser:rpcpassword@kjhfefe.onion:8332?label=Your%20Nodes%20Name`
+`btcstandup://rpcuser:rpcpassword@kjhfefe.onion:8332/?label=Your%20Nodes%20Name`
+
+Example without node label:
+
+`btcstandup://rpcuser:rpcpassword@kjhfefe.onion:8332/?`
 
 Fully Noded is compatible with either V2 or V3 authenticated hidden services, the user has the option in the app to add a V3 private key for V3 cookie authentication. V2 authentication is only supported in the URL itself by adding `&v2password=yourV2Password` (e.g. the user has no option of manually inputting one).
 
@@ -307,7 +311,10 @@ PR's welcome.
 
 ## Changes
 
-### v0.1.8
+### v0.1.19
+- added `btcstandup://` url for deeplink and QuickConnect QR scanning
+
+### v0.1.18
 - check for scientific notation when sweeping utxo's
 - check for scientific notation in verify transaction
 - sort utxo's by confirmations
