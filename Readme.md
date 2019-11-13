@@ -255,7 +255,7 @@ Fully Noded is compatible with either V2 or V3 authenticated hidden services, th
 
 Example with label and V2 password:
 
-`btcrpc://rpcuser:rpcpassword@kjhfefe.onion:8332?label=Your%20Nodes%20Name&v2password=yourV2Password`
+`btcstandup://rpcuser:rpcpassword@kjhfefe.onion:8332/?label=Your%20Nodes%20Name&v2password=yourV2Password`
 
 ## Security & Privacy
 
