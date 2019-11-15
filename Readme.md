@@ -233,7 +233,7 @@ Save and exit and you have one of the most secure node/light client set ups poss
 
 ## QuickConnect URL Scheme
 
-Fully Noded has a deep link registered with the following prefix `btcrpc://`
+Fully Noded has a deep link registered with the following prefix `btcstandup://`
 
 If you are a node manufacturer you can embed such a link to your web based UI that allows a user who has Fully Noded installed on their device to add and connect to their node with a single tap from the web based UI.
 
@@ -310,6 +310,11 @@ PR's welcome.
 - [Tor](https://github.com/iCepa/Tor.framework) for connecting to your node more privately and securely.
 
 ## Changes
+
+### v0.1.20
+- more error checking when scanning a QuickConnect QR code
+- display version number in settings
+- improve tor connecting view
 
 ### v0.1.19
 - added `btcstandup://` url for deeplink and QuickConnect QR scanning

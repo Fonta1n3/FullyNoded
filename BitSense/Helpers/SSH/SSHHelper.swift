@@ -25,7 +25,7 @@ class SSHelper {
                 
                 if error != "" {
                     
-                    if method == BTC_CLI_COMMAND.getblockchaininfo {
+                    if method == .getblockchaininfo {
                         
                         self.errorDescription = "Looks like your RPC credentials might be incorrect"
                         

@@ -11,6 +11,9 @@ import KeychainSwift
 
 class MainMenuViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITabBarControllerDelegate, UINavigationControllerDelegate {
     
+    var pulseArray = [CAShapeLayer]()
+    var pulseLayers = [CAShapeLayer]()
+    let backView = UIView()
     let aes = AESService()
     let ud = UserDefaults.standard
     var hashrateString = String()
@@ -57,6 +60,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         tabBarController?.delegate = self
         mainMenu.delegate = self
+        mainMenu.alpha = 0
         mainMenu.tableFooterView = UIView(frame: .zero)
         initialLoad = true
         viewHasLoaded = false
@@ -70,14 +74,16 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         showUnlockScreen()
         convertExistingDescriptors()
         
-        if let _ = self.tabBarController {
-            
-            connectingView.addConnectingView(vc: self.tabBarController!,
-                                             description: "connecting")
-            
-            addCloseButtonToConnectingView()
-            
-        }
+//        if let _ = self.tabBarController {
+//
+//            connectingView.addConnectingView(vc: self.tabBarController!,
+//                                             description: "connecting")
+//
+//            addCloseButtonToConnectingView()
+//
+//        }
+        
+        addlaunchScreen()
         
     }
     
@@ -216,21 +222,25 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         if ud.object(forKey: "updatedToSwift5") == nil {
             
-            keychain.delete("UnlockPassword")
-            keychain.delete("AESPassword")
-            let nodes = cd.retrieveEntity(entityName: .nodes)
-            
-            for node in nodes {
+            DispatchQueue.main.async {
                 
-                let n = NodeStruct(dictionary: node)
+                keychain.delete("UnlockPassword")
+                keychain.delete("AESPassword")
+                let nodes = self.cd.retrieveEntity(entityName: .nodes)
                 
-                let _ = cd.deleteEntity(viewController: self,
-                                        id: n.id,
-                                        entityName: .nodes)
+                for node in nodes {
+                    
+                    let n = NodeStruct(dictionary: node)
+                    
+                    let _ = self.cd.deleteEntity(viewController: self,
+                                            id: n.id,
+                                            entityName: .nodes)
+                    
+                }
+                
+                self.ud.removeObject(forKey: "firstTime")
                 
             }
-            
-            ud.removeObject(forKey: "firstTime")
             
         }
         
@@ -982,6 +992,31 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     //MARK: User Interface
     
+    func addlaunchScreen() {
+        
+        if let _ = self.tabBarController {
+            
+            DispatchQueue.main.async {
+                
+                self.backView.alpha = 0
+                self.backView.frame = self.tabBarController!.view.frame
+                self.backView.backgroundColor = .black
+                let imageView = UIImageView()
+                imageView.frame = CGRect(x: self.view.center.x - 100, y: self.view.center.y - 100, width: 200, height: 200)
+                imageView.image = UIImage(named: "ItunesArtwork@2x.png")
+                self.backView.addSubview(imageView)
+                self.view.addSubview(self.backView)
+                
+                UIView.animate(withDuration: 0.8) {
+                    self.backView.alpha = 1
+                }
+                
+            }
+            
+        }
+        
+    }
+    
     func removeLoader() {
         
         DispatchQueue.main.async {
@@ -1009,7 +1044,12 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         DispatchQueue.main.async {
             
             self.refresher.endRefreshing()
-            self.connectingView.removeConnectingView()
+            UIView.animate(withDuration: 0.3, animations: {
+                self.backView.alpha = 0
+                self.mainMenu.alpha = 1
+            }) { (_) in
+                self.backView.removeFromSuperview()
+            }
             
         }
         
@@ -1114,14 +1154,15 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
             if !self.initialLoad {
                 
-                if let _ = self.tabBarController {
-                    
-                    self.connectingView.addConnectingView(vc: self.tabBarController!,
-                                                          description: "connecting")
-                    
-                    self.addCloseButtonToConnectingView()
-                    
-                }
+//                if let _ = self.tabBarController {
+//
+//                    self.connectingView.addConnectingView(vc: self.tabBarController!,
+//                                                          description: "connecting")
+//
+//                    self.addCloseButtonToConnectingView()
+//
+//                }
+                self.addlaunchScreen()
                 
             }
             

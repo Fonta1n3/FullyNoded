@@ -135,9 +135,7 @@ class QuickConnect {
             
         }
         
-        let success = cd.saveEntity(vc: vc,
-                                    dict: node,
-                                    entityName: .nodes)
+        let success = cd.saveEntity(vc: vc, dict: node, entityName: .nodes)
         
         if success {
             
@@ -174,63 +172,63 @@ class QuickConnect {
     
     private func deActivateOtherNodes(nodes: [[String:Any]], nodeID: String, cd: CoreDataService, vc: UIViewController, completion: @escaping () -> Void) {
         
-        if SSHService.sharedInstance.session != nil {
+        if nodes.count > 1 {
             
-            if SSHService.sharedInstance.session.isConnected {
+            for node in nodes {
                 
-                SSHService.sharedInstance.disconnect()
-                SSHService.sharedInstance.commandExecuting = false
+                let str = NodeStruct(dictionary: node)
+                let id = str.id
+                let isActive = str.isActive
                 
-            }
-            
-        }
-        
-        for node in nodes {
-            
-            let str = NodeStruct(dictionary: node)
-            let id = str.id
-            let isActive = str.isActive
-            
-            if id != nodeID && isActive {
-                
-                let success = cd.updateEntity(viewController: vc,
-                                              id: id,
-                                              newValue: false,
-                                              keyToEdit: "isActive",
-                                              entityName: .nodes)
-                
-                if success {
+                if id != nodeID && isActive {
                     
-                    print("nodes deactivated")
-                    errorBool = false
-                    completion()
+                    let success = cd.updateEntity(viewController: vc,
+                                                  id: id,
+                                                  newValue: false,
+                                                  keyToEdit: "isActive",
+                                                  entityName: .nodes)
                     
-                } else {
-                    
-                    errorBool = true
-                    errorDescription = "Node added but there was an error deactiving your other nodes"
-                    completion()
+                    if success {
+                        
+                        print("nodes deactivated")
+                        errorBool = false
+                        completion()
+                        
+                    } else {
+                        
+                        errorBool = true
+                        errorDescription = "Node added but there was an error deactiving your other nodes"
+                        completion()
+                        
+                    }
                     
                 }
                 
             }
             
+            goHome()
+            
+        } else {
+            
+            goHome()
+            
         }
-        
-        goHome()
-        
+                
     }
     
     private func goHome() {
         
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate
-        let window = appDelegate.window
-        
-        if let myTabBar = window?.rootViewController as? UITabBarController {
+        if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
             
-            DispatchQueue.main.async {
+            let window = appDelegate.window
+            
+            if let myTabBar = window?.rootViewController as? UITabBarController {
                 
-                myTabBar.selectedIndex = 0
+                DispatchQueue.main.async {
+                    
+                    myTabBar.selectedIndex = 0
+                    
+                }
                 
             }
             

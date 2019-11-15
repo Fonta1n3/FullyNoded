@@ -21,34 +21,36 @@ class CoreDataService {
         if let appDelegateCheck = UIApplication.shared.delegate as? AppDelegate {
             
             appDelegate = appDelegateCheck
+            let context = appDelegate.persistentContainer.viewContext
+            guard let entity = NSEntityDescription.entity(forEntityName: entityName.rawValue, in: context) else {
+                success = false
+                return success
+            }
+            let credential = NSManagedObject(entity: entity, insertInto: context)
+            
+            for (key, value) in dict {
+                
+                credential.setValue(value, forKey: key)
+                
+                do {
+                    
+                    try context.save()
+                    success = true
+                    print("Saved credential \(key) = \(value)")
+                    
+                } catch {
+                    
+                    print("Failed saving credential \(key) = \(value)")
+                    success = false
+                    
+                }
+                
+            }
             
         } else {
             
             displayAlert(viewController: vc, isError: true, message: "Unable to convert credentials to coredata.")
             success = false
-            
-        }
-        
-        let context = appDelegate.persistentContainer.viewContext
-        let entity = NSEntityDescription.entity(forEntityName: entityName.rawValue, in: context)
-        let credential = NSManagedObject(entity: entity!, insertInto: context)
-        
-        for (key, value) in dict {
-            
-            credential.setValue(value, forKey: key)
-            
-            do {
-                
-                try context.save()
-                success = true
-                print("Saved credential \(key) = \(value)")
-                
-            } catch {
-                
-                print("Failed saving credential \(key) = \(value)")
-                success = false
-                
-            }
             
         }
         
@@ -81,7 +83,6 @@ class CoreDataService {
         fetchRequest.returnsObjectsAsFaults = false
         fetchRequest.resultType = .dictionaryResultType
         
-        
         do {
             
             if let results = try context.fetch(fetchRequest) as? [[String:Any]] {
@@ -103,7 +104,7 @@ class CoreDataService {
             print("Failed")
             
         }
-        
+    
         return array
         
     }
@@ -118,6 +119,52 @@ class CoreDataService {
             if let appDelegateCheck = UIApplication.shared.delegate as? AppDelegate {
                 
                 appDelegate = appDelegateCheck
+                let context = appDelegate.persistentContainer.viewContext
+                let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: entityName.rawValue)
+                fetchRequest.returnsObjectsAsFaults = false
+                
+                do {
+                    
+                    let results = try context.fetch(fetchRequest) as [NSManagedObject]
+                    
+                    if results.count > 0 {
+                        
+                        for data in results {
+                            
+                            if id == data.value(forKey: "id") as? String {
+                                
+                                data.setValue(newValue, forKey: keyToEdit)
+                                
+                                do {
+                                    
+                                    try context.save()
+                                    boolToReturn = true
+                                    print("updated successfully")
+                                    
+                                } catch {
+                                    
+                                    print("error editing")
+                                    boolToReturn = false
+                                    
+                                }
+                                
+                            }
+                            
+                        }
+                        
+                    } else {
+                        
+                        print("no results")
+                        boolToReturn = false
+                        
+                    }
+                    
+                } catch {
+                    
+                    print("Failed")
+                    boolToReturn = false
+                    
+                }
                 
             } else {
                 
@@ -128,53 +175,6 @@ class CoreDataService {
                              message: "Something strange has happened and we do not have access to app delegate, please try again.")
                 
             }
-            
-        }
-        
-        let context = appDelegate.persistentContainer.viewContext
-        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: entityName.rawValue)
-        fetchRequest.returnsObjectsAsFaults = false
-        
-        do {
-            
-            let results = try context.fetch(fetchRequest) as [NSManagedObject]
-            
-            if results.count > 0 {
-                
-                for data in results {
-                    
-                    if id == data.value(forKey: "id") as? String {
-                        
-                        data.setValue(newValue, forKey: keyToEdit)
-                        
-                        do {
-                            
-                            try context.save()
-                            boolToReturn = true
-                            print("updated successfully")
-                            
-                        } catch {
-                            
-                            print("error editing")
-                            boolToReturn = false
-                            
-                        }
-                        
-                    }
-                    
-                }
-                
-            } else {
-                
-                print("no results")
-                boolToReturn = false
-                
-            }
-            
-        } catch {
-            
-            print("Failed")
-            boolToReturn = false
             
         }
         
@@ -192,6 +192,53 @@ class CoreDataService {
             if let appDelegateCheck = UIApplication.shared.delegate as? AppDelegate {
                 
                 appDelegate = appDelegateCheck
+                let context = appDelegate.persistentContainer.viewContext
+                let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: entityName.rawValue)
+                fetchRequest.returnsObjectsAsFaults = false
+                
+                do {
+                    
+                    let results = try context.fetch(fetchRequest) as [NSManagedObject]
+                    
+                    if results.count > 0 {
+                        
+                        for (index, data) in results.enumerated() {
+                            
+                            if id == data.value(forKey: "id") as? String {
+                                
+                                context.delete(results[index] as NSManagedObject)
+                                
+                                do {
+                                    
+                                    try context.save()
+                                    print("deleted succesfully")
+                                    boolToReturn = true
+                                    
+                                } catch {
+                                    
+                                    print("error deleting")
+                                    print("deleted succesfully")
+                                    boolToReturn = false
+                                    
+                                }
+                                
+                            }
+                            
+                        }
+                        
+                    } else {
+                        
+                        print("no results")
+                        boolToReturn = false
+                        
+                    }
+                    
+                } catch {
+                    
+                    print("Failed")
+                    boolToReturn = false
+                    
+                }
                 
             } else {
                 
@@ -199,54 +246,6 @@ class CoreDataService {
                 displayAlert(viewController: viewController, isError: true, message: "Something strange has happened and we do not have access to app delegate, please try again.")
                 
             }
-            
-        }
-        
-        let context = appDelegate.persistentContainer.viewContext
-        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: entityName.rawValue)
-        fetchRequest.returnsObjectsAsFaults = false
-        
-        do {
-            
-            let results = try context.fetch(fetchRequest) as [NSManagedObject]
-            
-            if results.count > 0 {
-                
-                for (index, data) in results.enumerated() {
-                    
-                    if id == data.value(forKey: "id") as? String {
-                        
-                        context.delete(results[index] as NSManagedObject)
-                        
-                        do {
-                            
-                            try context.save()
-                            print("deleted succesfully")
-                            boolToReturn = true
-                            
-                        } catch {
-                            
-                            print("error deleting")
-                            print("deleted succesfully")
-                            boolToReturn = false
-                            
-                        }
-                        
-                    }
-                    
-                }
-                
-            } else {
-                
-                print("no results")
-                boolToReturn = false
-                
-            }
-            
-        } catch {
-            
-            print("Failed")
-            boolToReturn = false
             
         }
         
