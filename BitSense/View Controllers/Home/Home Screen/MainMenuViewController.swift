@@ -11,8 +11,6 @@ import KeychainSwift
 
 class MainMenuViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITabBarControllerDelegate, UINavigationControllerDelegate {
     
-    var pulseArray = [CAShapeLayer]()
-    var pulseLayers = [CAShapeLayer]()
     let backView = UIView()
     let aes = AESService()
     let ud = UserDefaults.standard
@@ -53,7 +51,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     var dataRefresher = UIBarButtonItem()
     var wallets = NSArray()
     var viewHasLoaded = Bool()
-    var addingQuickConnect = Bool()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -66,23 +63,11 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         viewHasLoaded = false
         sectionZeroLoaded = false
         sectionOneLoaded = false
-        checkIfUpdated()
         firstTimeHere()
         addNavBarSpinner()
         configureRefresher()
         setFeeTarget()
         showUnlockScreen()
-        convertExistingDescriptors()
-        
-//        if let _ = self.tabBarController {
-//
-//            connectingView.addConnectingView(vc: self.tabBarController!,
-//                                             description: "connecting")
-//
-//            addCloseButtonToConnectingView()
-//
-//        }
-        
         addlaunchScreen()
         
     }
@@ -99,35 +84,36 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     override func viewDidAppear(_ animated: Bool) {
         
-        let walletName = ud.object(forKey: "walletName") as? String ?? ""
-        let isActive = activeNodeDict().isAnyNodeActive
+        getNodes {
             
-            if nodes.count > 0 {
+            let walletName = self.ud.object(forKey: "walletName") as? String ?? ""
+            let isActive = self.activeNodeDict().isAnyNodeActive
+            if self.nodes.count > 0 {
                 
                 if isActive {
                     
-                    activeNode = activeNodeDict().node
-                    let node = NodeStruct(dictionary: activeNode)
+                    self.activeNode = self.activeNodeDict().node
+                    let node = NodeStruct(dictionary: self.activeNode)
                     let newId = node.id
                     IsUsingSSH.sharedInstance = node.usingSSH
                     
-                    if newId != existingNodeID {
+                    if newId != self.existingNodeID {
                         
-                        if !initialLoad {
+                        if !self.initialLoad {
                             
-                            ud.removeObject(forKey: "walletName")
-                            existingWallet = ""
+                            self.ud.removeObject(forKey: "walletName")
+                            self.existingWallet = ""
                             
                         }
                         
                         self.refresh()
                         
-                    } else if walletName != existingWallet {
+                    } else if walletName != self.existingWallet {
                         
-                        if viewHasLoaded {
+                        if self.viewHasLoaded {
                             
-                            existingWallet = walletName
-                            reloadWalletData()
+                            self.existingWallet = walletName
+                            self.reloadWalletData()
                             
                         }
                         
@@ -155,8 +141,10 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
             }
             
-        
-        initialLoad = false
+            
+            self.initialLoad = false
+            
+        }
         
     }
     
@@ -195,13 +183,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
-    func convertExistingDescriptors() {
-        
-        let addDescriptors = AddDescriptors()
-        addDescriptors.addDescriptorsToCoreData()
-        
-    }
-    
     func refreshDataNow() {
         print("refreshDataNow")
         
@@ -213,36 +194,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     @IBAction func lockButton(_ sender: Any) {
         
         showUnlockScreen()
-        
-    }
-    
-    func checkIfUpdated() {
-        
-        let keychain = KeychainSwift()
-        
-        if ud.object(forKey: "updatedToSwift5") == nil {
-            
-            DispatchQueue.main.async {
-                
-                keychain.delete("UnlockPassword")
-                keychain.delete("AESPassword")
-                let nodes = self.cd.retrieveEntity(entityName: .nodes)
-                
-                for node in nodes {
-                    
-                    let n = NodeStruct(dictionary: node)
-                    
-                    let _ = self.cd.deleteEntity(viewController: self,
-                                            id: n.id,
-                                            entityName: .nodes)
-                    
-                }
-                
-                self.ud.removeObject(forKey: "firstTime")
-                
-            }
-            
-        }
         
     }
     
@@ -1086,14 +1037,33 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
+    func getNodes(completion: @escaping () -> Void) {
+        
+        nodes.removeAll()
+        cd.retrieveEntity(entityName: .nodes) {
+            
+            if !self.cd.errorBool {
+                
+                self.nodes = self.cd.entities
+                completion()
+                
+            } else {
+                
+                displayAlert(viewController: self, isError: true, message: "error getting nodes from coredata")
+                completion()
+                
+            }
+            
+        }
+        
+    }
+    
     func activeNodeDict() -> (isAnyNodeActive: Bool, node: [String:Any]) {
         
         var dictToReturn = [String:Any]()
         var boolToReturn = false
-        nodes.removeAll()
-        nodes = cd.retrieveEntity(entityName: .nodes)
         
-        for nodeDict in nodes {
+        for nodeDict in self.nodes {
             
             let node = NodeStruct(dictionary: nodeDict)
             let nodeActive = node.isActive
@@ -1153,15 +1123,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         DispatchQueue.main.async {
             
             if !self.initialLoad {
-                
-//                if let _ = self.tabBarController {
-//
-//                    self.connectingView.addConnectingView(vc: self.tabBarController!,
-//                                                          description: "connecting")
-//
-//                    self.addCloseButtonToConnectingView()
-//
-//                }
+
                 self.addlaunchScreen()
                 
             }
@@ -1384,17 +1346,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         let firstTime = FirstTime()
         firstTime.firstTimeHere()
-        
-    }
-    
-    func convertCredentials() {
-        
-        if ud.object(forKey: "hasConverted") == nil {
-            
-            let converter = CredentialConverter()
-            converter.convertCredentials(vc: self)
-            
-        }
         
     }
     

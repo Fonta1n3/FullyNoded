@@ -47,7 +47,7 @@ class RescanViewController: UIViewController {
         
         if let derivation = dict["derivation"] as? String {
             
-            if derivation == "BIP32Legacy" || derivation == "BIP32Segwit" {
+            if derivation == "BIP32Legacy" || derivation == "BIP32Segwit" || derivation == "BIP32P2SH" {
                 
                 segueString = "scanBIP32"
                 

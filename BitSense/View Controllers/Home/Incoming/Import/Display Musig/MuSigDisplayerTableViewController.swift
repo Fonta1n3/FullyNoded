@@ -249,71 +249,93 @@ class MuSigDisplayerTableViewController: UITableViewController {
                 
                 let params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"watchonly\": true, \"label\": \"\(label)\" }], ''{\"rescan\": true}''"
                 
-                //if !isHD {
-                
                 let aes = AESService()
                 let cd = CoreDataService()
                 let encDesc = aes.encryptKey(keyToEncrypt: descriptor)
                 let encLabel = aes.encryptKey(keyToEncrypt: label)
                 let encRange = aes.encryptKey(keyToEncrypt: "no range")
                 let id = randomString(length: 10)
-                let nodes = cd.retrieveEntity(entityName: ENTITY.nodes)
-                let isActive = isAnyNodeActive(nodes: nodes)
-                var nodeID = ""
                 
-                if isActive {
+                cd.retrieveEntity(entityName: .nodes) {
                     
-                    for node in nodes {
+                    if !cd.errorBool {
                         
-                        let active = node["isActive"] as! Bool
+                        let nodes = cd.entities
+                        let isActive = isAnyNodeActive(nodes: nodes)
+                        var nodeID = ""
                         
-                        if active {
+                        if isActive {
                             
-                            nodeID = node["id"] as! String
+                            for node in nodes {
+                                
+                                let active = node["isActive"] as! Bool
+                                
+                                if active {
+                                    
+                                    nodeID = node["id"] as! String
+                                    
+                                }
+                                
+                            }
                             
                         }
+                        
+                        let descDict = ["descriptor":encDesc,
+                                        "label":encLabel,
+                                        "range":encRange,
+                                        "id":id,
+                                        "nodeID":nodeID]
+                        
+                        cd.saveEntity(dict: descDict, entityName: .descriptors) {
+                        
+                        if !cd.errorBool {
+                            
+                            let success = cd.boolToReturn
+                            
+                            if success {
+                                
+                                print("descriptor saved")
+                                
+                                self.executeNodeCommand(method: .importmulti,
+                                param: params)
+                                
+                            } else {
+                                
+                                self.connectingView.removeConnectingView()
+                                
+                                displayAlert(viewController: self,
+                                             isError: true,
+                                             message: "error saving descriptor: \(cd.errorDescription)")
+                            }
+                            
+                        } else {
+                            
+                            self.connectingView.removeConnectingView()
+                            
+                            displayAlert(viewController: self,
+                                         isError: true,
+                                         message: "error saving descriptor: \(cd.errorDescription)")
+                            
+                        }
+                            
+                        }
+                        
+                        
+                    } else {
+                        
+                        displayAlert(viewController: self,
+                                     isError: true,
+                                     message: cd.errorDescription)
                         
                     }
                     
                 }
-                
-                let descDict = ["descriptor":encDesc,
-                                "label":encLabel,
-                                "range":encRange,
-                                "id":id,
-                                "nodeID":nodeID]
-                
-                let descriptorSaved = cd.saveEntity(vc: self,
-                                                    dict: descDict,
-                                                    entityName: ENTITY.descriptors)
-                
-                if descriptorSaved {
-                    
-                    self.executeNodeCommand(method: BTC_CLI_COMMAND.importmulti,
-                                            param: params)
-                    
-                } else {
-                    
-                    connectingView.removeConnectingView()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: "error saving descriptor")
-                }
-                
-                /*} else {
-                 
-                 self.executeNodeCommand(method: BTC_CLI_COMMAND.deriveaddresses,
-                 param: descriptor + ", [0,100]")
-                 
-                 }*/
                 
             }
             
         }
         
         var descriptor = ""
-        
         
         if isHD {
             
@@ -371,33 +393,11 @@ class MuSigDisplayerTableViewController: UITableViewController {
         
         descriptor = descriptor.replacingOccurrences(of: "\"", with: "")
         descriptor = descriptor.replacingOccurrences(of: " ", with: "")
-        
-        let method = BTC_CLI_COMMAND.getdescriptorinfo
         let param = "\"\(descriptor)\""
         
-        reducer.makeCommand(command: method,
+        reducer.makeCommand(command: .getdescriptorinfo,
                             param: param,
                             completion: importDescriptor)
-        
-    }
-    
-    func isAnyNodeActive(nodes: [[String:Any]]) -> Bool {
-        
-        var boolToReturn = false
-        
-        for node in nodes {
-            
-            let isActive = node["isActive"] as! Bool
-            
-            if isActive {
-                
-                boolToReturn = true
-                
-            }
-            
-        }
-        
-        return boolToReturn
         
     }
     

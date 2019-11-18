@@ -64,27 +64,51 @@ class FirstTime {
             torNode["isDefault"] = true
             torNode["usingTor"] = true
             
-            let nodes = cd.retrieveEntity(entityName: .nodes)
-            
-            if nodes.count > 0 {
+            cd.retrieveEntity(entityName: .nodes) {
                 
-                torNode["isActive"] = false
-                
-            } else {
-                
-                torNode["isActive"] = true
-                
-            }
-            
-            let vc = MainMenuViewController()
-            
-            let success = cd.saveEntity(vc: vc,
-                                        dict: torNode,
-                                        entityName: .nodes)
-            
-            if success {
-                
-                ud.set(true, forKey: "testNodeAdded")
+                if !self.cd.errorBool {
+                    
+                    let nodes = self.cd.entities
+                    
+                    if nodes.count > 0 {
+                        
+                        torNode["isActive"] = false
+                        
+                    } else {
+                        
+                        torNode["isActive"] = true
+                        
+                    }
+                    
+                    self.cd.saveEntity(dict: torNode, entityName: .nodes) {
+                        
+                        if !self.cd.errorBool {
+                            
+                            let success = self.cd.boolToReturn
+                            
+                            if success {
+                                
+                                self.ud.set(true, forKey: "testNodeAdded")
+                                
+                            } else {
+                                
+                                print("error: \(self.cd.errorDescription)")
+                                
+                            }
+                            
+                        } else {
+                            
+                            print("error: \(self.cd.errorDescription)")
+                            
+                        }
+                        
+                    }
+                    
+                } else {
+                    
+                    print("error: \(self.cd.errorDescription)")
+                    
+                }
                 
             }
             

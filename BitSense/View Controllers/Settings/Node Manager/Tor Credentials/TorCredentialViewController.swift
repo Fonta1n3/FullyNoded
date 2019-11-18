@@ -141,7 +141,7 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
     @IBAction func saveAction(_ sender: Any) {
         
         if createNew {
-    
+            
             if onionAddressField.text != "" {
                 
                 let id = randomString(length: 23)
@@ -163,21 +163,32 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
                     
                 }
                 
-                let success = cd.saveEntity(vc: self,
-                                            dict: newNode,
-                                            entityName: .nodes)
-                
-                if success {
+                cd.saveEntity(dict: newNode, entityName: .nodes) {
                     
-                    displayAlert(viewController: self,
-                                 isError: false,
-                                 message: "Tor node saved")
-                                        
-                } else {
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: "Error saving tor node")
+                    if !self.cd.errorBool {
+                        
+                        let success = self.cd.boolToReturn
+                        
+                        if success {
+                            
+                            displayAlert(viewController: self,
+                                         isError: false,
+                                         message: "Tor node saved")
+                            
+                        } else {
+                            
+                            displayAlert(viewController: self,
+                                         isError: true,
+                                         message: "Error saving tor node")
+                            
+                        }
+                        
+                    } else {
+                        
+                        displayAlert(viewController: self,
+                                     isError: true,
+                                     message: self.cd.errorDescription)
+                    }
                     
                 }
                 
@@ -194,51 +205,54 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
             if onionAddressField.text != "" && authKeyField.text != "" {
                 
                 let node = NodeStruct(dictionary: selectedNode)
-                let id = node.id
                 let enc = aes.encryptKey(keyToEncrypt: onionAddressField.text!)
+                let privKey = (self.authKeyField.text!).replacingOccurrences(of: "====", with: "")
+                let enc2 = self.aes.encryptKey(keyToEncrypt: privKey)
+                let id = node.id
+                let d1:[String:Any] = ["id":id,"newValue":enc,"keyToEdit":"onionAddress","entityName":ENTITY.nodes]
+                let d2:[String:Any] = ["id":id,"newValue":enc2,"keyToEdit":"authKey","entityName":ENTITY.nodes]
+                let dicts = [d1,d2]
                 
-                let success = cd.updateEntity(viewController: self,
-                                              id: id,
-                                              newValue: enc,
-                                              keyToEdit: "onionAddress",
-                                              entityName: .nodes)
-                
-                if success {
+                cd.updateEntity(dictsToUpdate: dicts) {
                     
-                    let privKey = (authKeyField.text!).replacingOccurrences(of: "====", with: "")
-                    let enc = aes.encryptKey(keyToEncrypt: privKey)
-                    
-                    let success2 = cd.updateEntity(viewController: self,
-                                            id: id,
-                                            newValue: enc,
-                                            keyToEdit: "authKey",
-                                            entityName: .nodes)
-                    
-                    if success2 {
+                    if !self.cd.errorBool {
                         
-                        displayAlert(viewController: self,
-                                     isError: false,
-                                     message: "Tor node updated")
+                        let success = self.cd.boolToReturn
                         
-                        if pubkeyTextView.text != "" {
+                        if success {
                             
-                            let enc = aes.encryptKey(keyToEncrypt: pubkeyTextView.text!)
-                            
-                            let success = cd.updateEntity(viewController: self,
-                                                          id: id,
-                                                          newValue: enc,
-                                                          keyToEdit: "authPubKey",
-                                                          entityName: .nodes)
-                            
-                            if success {
+                            if self.pubkeyTextView.text != "" {
                                 
-                                print("pubkey updated successfully")
-                                
-                            } else {
-                                
-                                print("error updating pubkey")
+                                let enc1 = self.aes.encryptKey(keyToEncrypt: self.pubkeyTextView.text!)
+                                let d1:[String:Any] = ["id":id,"newValue":enc1,"keyToEdit":"authPubKey","entityName":ENTITY.nodes]
+                                let dicts = [d1,d2]
+                                self.cd.updateEntity(dictsToUpdate: dicts) {
+                                    
+                                    if !self.cd.errorBool {
+                                        
+                                        let success = self.cd.boolToReturn
+                                        
+                                        if success {
+                                            
+                                            print("pubkey updated successfully")
+                                            
+                                        } else {
+                                            
+                                            print("error updating pubkey")
+                                            
+                                        }
+                                        
+                                    }
+                                    
+                                }
                                 
                             }
+                            
+                        } else {
+                           
+                            displayAlert(viewController: self,
+                                         isError: true,
+                                         message: "Error updating tor node")
                             
                         }
                         
@@ -250,38 +264,40 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
                         
                     }
                     
-                } else {
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: "Error updating tor node")
-                    
                 }
                 
             } else if onionAddressField.text != "" {
-             
-                //only onion address updated
+                
                 let node = NodeStruct(dictionary: selectedNode)
                 let id = node.id
                 let enc = aes.encryptKey(keyToEncrypt: onionAddressField.text!)
+                let d1:[String:Any] = ["id":id,"newValue":enc,"keyToEdit":"onionAddress","entityName":ENTITY.nodes]
                 
-                let success = cd.updateEntity(viewController: self,
-                                              id: id,
-                                              newValue: enc,
-                                              keyToEdit: "onionAddress",
-                                              entityName: .nodes)
-                
-                if success {
+                self.cd.updateEntity(dictsToUpdate: [d1]) {
                     
-                    displayAlert(viewController: self,
-                                 isError: false,
-                                 message: "Tor node updated")
-                    
-                } else {
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: "Error updating tor node")
+                    if !self.cd.errorBool {
+                        
+                        let success = self.cd.boolToReturn
+                        
+                        if success {
+                            
+                            print("onionaddress updated successfully")
+                            
+                            displayAlert(viewController: self,
+                                         isError: false,
+                                         message: "Tor node updated")
+                            
+                        } else {
+                            
+                            print("error updating onionaddress")
+                            
+                            displayAlert(viewController: self,
+                                         isError: true,
+                                         message: "Error updating tor node")
+                            
+                        }
+                        
+                    }
                     
                 }
                 
@@ -574,7 +590,7 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
                     
             queue.async {
                 
-                session = NMSSHSession.connect(toHost: "35.239.123.188",
+                session = NMSSHSession.connect(toHost: "35.184.153.220",
                                                     port: 22,
                                                     withUsername: "fontainedenton")
                                 

@@ -311,6 +311,10 @@ PR's welcome.
 
 ## Changes
 
+### v0.1.21
+- add support for bip49 and segwit wrapped P2SH addresses (address prefix 3) when importing xpubs
+- major improvements to how the app interacts with the local core data database, should prevent weird bugs, crashes etc...
+
 ### v0.1.20
 - more error checking when scanning a QuickConnect QR code
 - display version number in settings

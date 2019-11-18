@@ -23,56 +23,161 @@ class QuickConnect {
     
     func addNode(vc: UIViewController, url: String, completion: @escaping () -> Void) {
         
-        let nodes = cd.retrieveEntity(entityName: .nodes)
-        var host = ""
-        var rpcPassword = ""
-        var rpcUser = ""
-        var label = "Node"
-        var v2password = ""
-        
-        if let params = URLComponents(string: url)?.queryItems {
+        cd.retrieveEntity(entityName: .nodes) {
             
-            if let hostCheck = URLComponents(string: url)?.host {
+            if !self.cd.errorBool {
                 
-                host = hostCheck
+                let nodes = self.cd.entities
+                var host = ""
+                var rpcPassword = ""
+                var rpcUser = ""
+                var label = "Node"
+                var v2password = ""
                 
-            }
-            
-            if let portCheck = URLComponents(string: url)?.port {
-                
-                host += ":" + String(portCheck)
-                
-            }
-            
-            if let rpcPasswordCheck = URLComponents(string: url)?.password {
-                
-                rpcPassword = rpcPasswordCheck
-                
-            }
-            
-            if let rpcUserCheck = URLComponents(string: url)?.user {
-                
-                rpcUser = rpcUserCheck
-                
-            }
-            
-            if rpcUser == "" && rpcPassword == "" {
-                
-                if params.count == 2 {
+                if let params = URLComponents(string: url)?.queryItems {
                     
-                    rpcUser = (params[0].description).replacingOccurrences(of: "user=", with: "")
-                    rpcPassword = (params[1].description).replacingOccurrences(of: "password=", with: "")
+                    if let hostCheck = URLComponents(string: url)?.host {
+                        
+                        host = hostCheck
+                        
+                    }
                     
-                    if rpcPassword.contains("?label=") {
+                    if let portCheck = URLComponents(string: url)?.port {
                         
-                        let arr = rpcPassword.components(separatedBy: "?label=")
-                        rpcPassword = arr[0]
+                        host += ":" + String(portCheck)
                         
-                        if arr.count > 1 {
+                    }
+                    
+                    if let rpcPasswordCheck = URLComponents(string: url)?.password {
+                        
+                        rpcPassword = rpcPasswordCheck
+                        
+                    }
+                    
+                    if let rpcUserCheck = URLComponents(string: url)?.user {
+                        
+                        rpcUser = rpcUserCheck
+                        
+                    }
+                    
+                    if rpcUser == "" && rpcPassword == "" {
+                        
+                        if params.count == 2 {
                             
-                            label = arr[1]
+                            rpcUser = (params[0].description).replacingOccurrences(of: "user=", with: "")
+                            rpcPassword = (params[1].description).replacingOccurrences(of: "password=", with: "")
+                            
+                            if rpcPassword.contains("?label=") {
+                                
+                                let arr = rpcPassword.components(separatedBy: "?label=")
+                                rpcPassword = arr[0]
+                                
+                                if arr.count > 1 {
+                                    
+                                    label = arr[1]
+                                    
+                                }
+                                
+                            }
                             
                         }
+                        
+                    } else {
+                        
+                        let url = URL(string: url)
+                        
+                        if let labelCheck = url?.value(for: "label") {
+                            
+                            label = labelCheck
+                            
+                        }
+                        
+                        if let v2Check = url?.value(for: "v2password") {
+                            
+                            v2password = v2Check
+                            
+                        }
+                        
+                    }
+                    
+                } else {
+                    
+                    self.errorBool = true
+                    completion()
+                    
+                }
+                
+                guard host != "", rpcUser != "", rpcPassword != "" else {
+                    self.errorBool = true
+                    completion()
+                    return
+                }
+                
+                var node = [String:Any]()
+                let torNodeId = randomString(length: 23)
+                let torNodeHost = self.aes.encryptKey(keyToEncrypt: host)
+                let torNodeRPCPass = self.aes.encryptKey(keyToEncrypt: rpcPassword)
+                let torNodeRPCUser = self.aes.encryptKey(keyToEncrypt: rpcUser)
+                let torNodeLabel = self.aes.encryptKey(keyToEncrypt: label)
+                let torNodeV2Password = self.aes.encryptKey(keyToEncrypt: v2password)
+                
+                node["id"] = torNodeId
+                node["onionAddress"] = torNodeHost
+                node["label"] = torNodeLabel
+                node["rpcuser"] = torNodeRPCUser
+                node["rpcpassword"] = torNodeRPCPass
+                node["usingSSH"] = false
+                node["isDefault"] = false
+                node["usingTor"] = true
+                node["isActive"] = true
+                
+                if v2password != "" {
+                    
+                    node["v2password"] = torNodeV2Password
+                    
+                }
+                                
+                self.cd.saveEntity(dict: node, entityName: .nodes) {
+                    
+                    if !self.cd.errorBool {
+                        
+                        let success = self.cd.boolToReturn
+                        
+                        if success {
+                            
+                            print("standup node added")
+                            
+                            if nodes.count > 0 {
+                                
+                                let ud = UserDefaults.standard
+                                ud.removeObject(forKey: "walletName")
+                                
+                                self.deActivateOtherNodes(nodes: nodes,
+                                                          nodeID: torNodeId,
+                                                          cd: self.cd,
+                                                          vc: vc,
+                                                          completion: completion)
+                                
+                            } else {
+                                
+                                self.errorBool = false
+                                completion()
+                                
+                            }
+                            
+                        } else {
+                            
+                            self.errorBool = true
+                            self.errorDescription = "Error adding QuickConnect node"
+                            completion()
+                            
+                        }
+                        
+                    } else {
+                        
+                        self.errorBool = true
+                        self.errorDescription = self.cd.errorDescription
+                        completion()
                         
                     }
                     
@@ -80,91 +185,11 @@ class QuickConnect {
                 
             } else {
                 
-                let url = URL(string: url)
-                
-                if let labelCheck = url?.value(for: "label") {
-                    
-                    label = labelCheck
-                    
-                }
-                
-                if let v2Check = url?.value(for: "v2password") {
-                    
-                    v2password = v2Check
-                    
-                }
-                
-            }
-            
-        } else {
-            
-            errorBool = true
-            errorDescription = "incompatible url"
-            completion()
-            
-        }
-        
-        guard host != "", rpcUser != "", rpcPassword != "" else {
-            errorBool = true
-            errorDescription = "incomplete node credentials"
-            completion()
-            return
-        }
-        
-        var node = [String:Any]()
-        let torNodeId = randomString(length: 23)
-        let torNodeHost = aes.encryptKey(keyToEncrypt: host)
-        let torNodeRPCPass = aes.encryptKey(keyToEncrypt: rpcPassword)
-        let torNodeRPCUser = aes.encryptKey(keyToEncrypt: rpcUser)
-        let torNodeLabel = aes.encryptKey(keyToEncrypt: label)
-        let torNodeV2Password = aes.encryptKey(keyToEncrypt: v2password)
-        
-        node["id"] = torNodeId
-        node["onionAddress"] = torNodeHost
-        node["label"] = torNodeLabel
-        node["rpcuser"] = torNodeRPCUser
-        node["rpcpassword"] = torNodeRPCPass
-        node["usingSSH"] = false
-        node["isDefault"] = false
-        node["usingTor"] = true
-        node["isActive"] = true
-        
-        if v2password != "" {
-            
-            node["v2password"] = torNodeV2Password
-            
-        }
-        
-        let success = cd.saveEntity(vc: vc, dict: node, entityName: .nodes)
-        
-        if success {
-            
-            print("standup node added")
-            
-            if nodes.count > 0 {
-                
-                let ud = UserDefaults.standard
-                ud.removeObject(forKey: "walletName")
-                
-                deActivateOtherNodes(nodes: nodes,
-                                     nodeID: torNodeId,
-                                     cd: cd,
-                                     vc: vc,
-                                     completion: completion)
-                
-            } else {
-                
-                errorBool = false
-                goHome()
+                self.errorBool = true
+                self.errorDescription = "Error adding getting nodes from core data"
                 completion()
                 
             }
-            
-        } else {
-            
-            errorBool = true
-            errorDescription = "Error adding QuickConnect node"
-            completion()
             
         }
         
@@ -182,23 +207,33 @@ class QuickConnect {
                 
                 if id != nodeID && isActive {
                     
-                    let success = cd.updateEntity(viewController: vc,
-                                                  id: id,
-                                                  newValue: false,
-                                                  keyToEdit: "isActive",
-                                                  entityName: .nodes)
+                    let d1:[String:Any] = ["id":id,"newValue":false,"keyToEdit":"isActive","entityName":ENTITY.nodes]
                     
-                    if success {
+                    cd.updateEntity(dictsToUpdate: [d1]) {
                         
-                        print("nodes deactivated")
-                        errorBool = false
-                        completion()
-                        
-                    } else {
-                        
-                        errorBool = true
-                        errorDescription = "Node added but there was an error deactiving your other nodes"
-                        completion()
+                        if !cd.errorBool {
+                            
+                            let success = cd.boolToReturn
+                            
+                            if success {
+                                
+                                self.errorBool = false
+                                
+                            } else {
+                                
+                                self.errorBool = true
+                                self.errorDescription = "Node added but there was an error deactiving your other nodes"
+                                completion()
+                                
+                            }
+                            
+                        } else {
+                            
+                            self.errorBool = true
+                            self.errorDescription = cd.errorDescription
+                            completion()
+                            
+                        }
                         
                     }
                     
@@ -207,7 +242,7 @@ class QuickConnect {
             }
             
             goHome()
-            
+                        
         } else {
             
             goHome()

@@ -36,37 +36,50 @@ class DescriptorsViewController: UIViewController, UITableViewDelegate, UITableV
         
         let aes = AESService()
         let cd = CoreDataService()
-        let nodes = cd.retrieveEntity(entityName: ENTITY.nodes)
         
-        for descriptor in descriptors {
+        cd.retrieveEntity(entityName: .nodes) {
             
-            DispatchQueue.main.async {
+            if !cd.errorBool {
                 
-                let dict = descriptor
-                let str = DescriptorStruct(dictionary: dict)
-                let label = aes.decryptKey(keyToDecrypt: str.label)
-                let range = aes.decryptKey(keyToDecrypt: str.range)
-                var nodeLabel = ""
+                let nodes = cd.entities
                 
-                for n in nodes {
+                for descriptor in self.descriptors {
                     
-                    let node = NodeStruct(dictionary: n)
-                    let nodeID = node.id
-                    
-                    if str.nodeID == nodeID {
+                    DispatchQueue.main.async {
                         
-                        nodeLabel = aes.decryptKey(keyToDecrypt: node.label)
+                        let dict = descriptor
+                        let str = DescriptorStruct(dictionary: dict)
+                        let label = aes.decryptKey(keyToDecrypt: str.label)
+                        let range = aes.decryptKey(keyToDecrypt: str.range)
+                        var nodeLabel = ""
+                        
+                        for n in nodes {
+                            
+                            let node = NodeStruct(dictionary: n)
+                            let nodeID = node.id
+                            
+                            if str.nodeID == nodeID {
+                                
+                                nodeLabel = aes.decryptKey(keyToDecrypt: node.label)
+                                
+                            }
+                            
+                        }
+                        
+                        let d = ["label":label,
+                                 "range":range,
+                                 "nodeID":nodeLabel]
+                        
+                        self.tableArray.append(d)
+                        self.table.reloadData()
                         
                     }
                     
                 }
                 
-                let d = ["label":label,
-                         "range":range,
-                         "nodeID":nodeLabel]
-                
-                self.tableArray.append(d)
-                self.table.reloadData()
+            } else {
+               
+                displayAlert(viewController: self, isError: true, message: "error getting nodes from core data")
                 
             }
             
@@ -139,21 +152,37 @@ class DescriptorsViewController: UIViewController, UITableViewDelegate, UITableV
             let dict = descriptors[indexPath.row]
             let descriptor = DescriptorStruct(dictionary: dict)
             
-            let success = cd.deleteEntity(viewController: self,
-                                          id: descriptor.id,
-                                          entityName: ENTITY.descriptors)
-            
-            if success {
+            cd.deleteEntity(id: descriptor.id, entityName: .descriptors) {
                 
-                descriptors.remove(at: indexPath.row)
-                tableArray.remove(at: indexPath.row)
-                tableView.deleteRows(at: [indexPath], with: .fade)
-                
-            } else {
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "We had an error trying to delete that descriptor")
+                if !cd.errorBool {
+                    
+                    let success = cd.boolToReturn
+                    
+                    if success {
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.descriptors.remove(at: indexPath.row)
+                            self.tableArray.remove(at: indexPath.row)
+                            tableView.deleteRows(at: [indexPath], with: .fade)
+                            
+                        }
+                        
+                    } else {
+                        
+                        displayAlert(viewController: self,
+                                     isError: true,
+                                     message: "We had an error trying to delete that descriptor: \(cd.errorDescription)")
+                        
+                    }
+                    
+                } else {
+                    
+                    displayAlert(viewController: self,
+                                 isError: true,
+                                 message: "We had an error trying to delete that descriptor: \(cd.errorDescription)")
+                    
+                }
                 
             }
             

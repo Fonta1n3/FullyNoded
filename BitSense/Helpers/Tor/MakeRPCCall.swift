@@ -25,125 +25,139 @@ class MakeRPCCall {
     func executeRPCCommand(method: BTC_CLI_COMMAND, param: Any, completion: @escaping () -> Void) {
         print("executeTorRPCCommand")
         
-        let nodes = cd.retrieveEntity(entityName: .nodes)
-        var activeNode = [String:Any]()
-        
-        for node in nodes {
+        cd.retrieveEntity(entityName: .nodes) {
             
-            if let b = node["isActive"] as? Bool {
+            if !self.cd.errorBool {
                 
-                if b {
-                    
-                    activeNode = node
-                    
-                }
+                let nodes = self.cd.entities
+                var activeNode = [String:Any]()
                 
-            }
-            
-        }
-        
-        let node = NodeStruct(dictionary: activeNode)
-        onionAddress = aes.decryptKey(keyToDecrypt: node.onionAddress)
-        rpcusername = aes.decryptKey(keyToDecrypt: node.rpcuser)
-        rpcpassword = aes.decryptKey(keyToDecrypt: node.rpcpassword)
-        
-        var walletUrl = "http://\(rpcusername):\(rpcpassword)@\(onionAddress)"
-        let ud = UserDefaults.standard
-        
-        if ud.object(forKey: "walletName") != nil {
-
-            if let walletName = ud.object(forKey: "walletName") as? String {
-
-                let b = isWalletRPC(command: method)
-
-                if b {
-
-                    walletUrl += "/wallet/" + walletName
-
-                }
-
-            }
-
-        }
-        
-        var formattedParam = (param as! String).replacingOccurrences(of: "''", with: "")
-        formattedParam = formattedParam.replacingOccurrences(of: "'\"'\"'", with: "'")
-        
-        guard let url = URL(string: walletUrl) else {
-            errorBool = true
-            errorDescription = "url error"
-            completion()
-            return
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
-        request.httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method)\",\"params\":[\(formattedParam)]}".data(using: .utf8)
-        
-        let queue = DispatchQueue(label: "com.FullyNoded.torQueue")
-        queue.async {
-            
-            let task = self.torClient.session.dataTask(with: request as URLRequest) { (data, response, error) in
-                
-                do {
+                for node in nodes {
                     
-                    if error != nil {
+                    if let b = node["isActive"] as? Bool {
                         
-                        self.errorBool = true
-                        self.errorDescription = error!.localizedDescription
-                        completion()
-                        
-                    } else {
-                        
-                        if let urlContent = data {
+                        if b {
                             
-                            do {
-                                
-                                let jsonAddressResult = try JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as! NSDictionary
-                                
-                                if let errorCheck = jsonAddressResult["error"] as? NSDictionary {
-                                    
-                                        if let errorMessage = errorCheck["message"] as? String {
-                                            
-                                            self.errorDescription = errorMessage
-                                            
-                                        } else {
-                                            
-                                            self.errorDescription = "Uknown error"
-                                            
-                                        }
-                                        
-                                        self.errorBool = true
-                                        completion()
-                                        
-                                    
-                                } else {
-                                    
-                                    self.errorBool = false
-                                    self.errorDescription = ""
-                                    self.objectToReturn = jsonAddressResult["result"]
-                                    completion()
-                                    
-                                }
-                                
-                            } catch {
-                                
-                                self.errorBool = true
-                                self.errorDescription = "Uknown Error"
-                                completion()
-                                
-                            }
+                            activeNode = node
                             
                         }
                         
                     }
                     
                 }
-            
+                
+                let node = NodeStruct(dictionary: activeNode)
+                self.onionAddress = self.aes.decryptKey(keyToDecrypt: node.onionAddress)
+                self.rpcusername = self.aes.decryptKey(keyToDecrypt: node.rpcuser)
+                self.rpcpassword = self.aes.decryptKey(keyToDecrypt: node.rpcpassword)
+                
+                var walletUrl = "http://\(self.rpcusername):\(self.rpcpassword)@\(self.onionAddress)"
+                let ud = UserDefaults.standard
+                
+                if ud.object(forKey: "walletName") != nil {
+
+                    if let walletName = ud.object(forKey: "walletName") as? String {
+
+                        let b = isWalletRPC(command: method)
+
+                        if b {
+
+                            walletUrl += "/wallet/" + walletName
+
+                        }
+
+                    }
+
+                }
+                
+                var formattedParam = (param as! String).replacingOccurrences(of: "''", with: "")
+                formattedParam = formattedParam.replacingOccurrences(of: "'\"'\"'", with: "'")
+                
+                guard let url = URL(string: walletUrl) else {
+                    self.errorBool = true
+                    self.errorDescription = "url error"
+                    completion()
+                    return
+                }
+                
+                var request = URLRequest(url: url)
+                request.httpMethod = "POST"
+                request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
+                request.httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method)\",\"params\":[\(formattedParam)]}".data(using: .utf8)
+                
+                let queue = DispatchQueue(label: "com.FullyNoded.torQueue")
+                queue.async {
+                    
+                    let task = self.torClient.session.dataTask(with: request as URLRequest) { (data, response, error) in
+                        
+                        do {
+                            
+                            if error != nil {
+                                
+                                self.errorBool = true
+                                self.errorDescription = error!.localizedDescription
+                                completion()
+                                
+                            } else {
+                                
+                                if let urlContent = data {
+                                    
+                                    do {
+                                        
+                                        let jsonAddressResult = try JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as! NSDictionary
+                                        
+                                        if let errorCheck = jsonAddressResult["error"] as? NSDictionary {
+                                            
+                                                if let errorMessage = errorCheck["message"] as? String {
+                                                    
+                                                    self.errorDescription = errorMessage
+                                                    
+                                                } else {
+                                                    
+                                                    self.errorDescription = "Uknown error"
+                                                    
+                                                }
+                                                
+                                                self.errorBool = true
+                                                completion()
+                                                
+                                            
+                                        } else {
+                                            
+                                            self.errorBool = false
+                                            self.errorDescription = ""
+                                            self.objectToReturn = jsonAddressResult["result"]
+                                            completion()
+                                            
+                                        }
+                                        
+                                    } catch {
+                                        
+                                        self.errorBool = true
+                                        self.errorDescription = "Uknown Error"
+                                        completion()
+                                        
+                                    }
+                                    
+                                }
+                                
+                            }
+                            
+                        }
+                    
+                    }
+                    
+                    task.resume()
+                    
+                }
+                
+            } else {
+                
+                self.errorBool = true
+                self.errorDescription = "error getting nodes from core data"
+                completion()
+                
             }
-            
-            task.resume()
             
         }
         

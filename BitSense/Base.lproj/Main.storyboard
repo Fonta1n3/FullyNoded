@@ -1872,68 +1872,77 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="7" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ED9-fa-OLo">
-                                <rect key="frame" x="59" y="99" width="257" height="118"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="7" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ED9-fa-OLo">
+                                <rect key="frame" x="16" y="73" width="343" height="72"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="118" id="GpO-Bi-WLw"/>
-                                    <constraint firstAttribute="width" constant="257" id="Mve-iQ-foC"/>
+                                    <constraint firstAttribute="height" constant="72" id="GpO-Bi-WLw"/>
                                 </constraints>
                                 <string key="text">BIP44 = m/44'/0'/0'/0/*
-
+BIP49 = m/49'/0'/0'/0/*
 BIP84 = m/84'/0'/0'/0/*
-
-BIP32 = yourKey/*
-
+BIP32 = yourXpub/*
 * represents the derived addresses</string>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W3" family="Hiragino Sans" pointSize="13"/>
                                 <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" lineBreakMode="tailTruncation" numberOfLines="7" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4f9-Ha-Ltc">
+                                <rect key="frame" x="16" y="180" width="343" height="20"/>
+                                <string key="text">P2PKH (pay to public key hash)
+address prefix: 1</string>
+                                <fontDescription key="fontDescription" name="HiraginoSans-W3" family="Hiragino Sans" pointSize="10"/>
+                                <color key="textColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="BIP44" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="SZL-a5-K2x">
-                                <rect key="frame" x="58" y="231" width="45" height="14"/>
+                                <rect key="frame" x="93" y="211" width="45" height="14"/>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="BIP32" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YdG-3S-2uf">
-                                <rect key="frame" x="58" y="317" width="45" height="14"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="BIP49" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KW6-Gq-UW2">
+                                <rect key="frame" x="95" y="345" width="45" height="14"/>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Legacy" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NU2-An-8bM">
-                                <rect key="frame" x="53" y="368" width="55" height="19"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="BIP32" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ouj-Ww-Exb">
+                                <rect key="frame" x="237" y="345" width="45" height="14"/>
+                                <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Legacy:" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NU2-An-8bM">
+                                <rect key="frame" x="16" y="161" width="343" height="19"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="19" id="BA3-h1-VA5"/>
+                                    <constraint firstAttribute="height" constant="19" id="O1s-sQ-bda"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="BIP32" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WQO-Qm-Z94">
-                                <rect key="frame" x="272" y="317" width="45" height="14"/>
+                                <rect key="frame" x="236" y="470" width="45" height="14"/>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qse-4H-E6X">
-                                <rect key="frame" x="56" y="249" width="51" height="31"/>
+                                <rect key="frame" x="91" y="229" width="51" height="31"/>
                                 <connections>
                                     <action selector="bip44Action:" destination="cZc-Ap-mkZ" eventType="valueChanged" id="eZG-aO-HHK"/>
-                                    <action selector="sshSwitchAction:" destination="bdZ-xF-GZ9" eventType="valueChanged" id="zkR-kB-BrY"/>
                                 </connections>
                             </switch>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="BIP84" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yGN-Mr-yad">
-                                <rect key="frame" x="272" y="231" width="45" height="14"/>
+                                <rect key="frame" x="94" y="470" width="45" height="14"/>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="aAK-60-l9D">
-                                <rect key="frame" x="270" y="249" width="51" height="31"/>
+                                <rect key="frame" x="92" y="488" width="51" height="31"/>
                                 <connections>
                                     <action selector="bip84Action:" destination="cZc-Ap-mkZ" eventType="valueChanged" id="ex1-9q-cTs"/>
-                                    <action selector="sshSwitchAction:" destination="bdZ-xF-GZ9" eventType="valueChanged" id="vXZ-Zz-Dar"/>
                                 </connections>
                             </switch>
                             <button opaque="NO" tag="8" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Txl-uD-Les">
@@ -1951,7 +1960,7 @@ BIP32 = yourKey/*
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Choose the derivation scheme" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="7" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2kN-0r-8Jh">
-                                <rect key="frame" x="58" y="64" width="259" height="28"/>
+                                <rect key="frame" x="58" y="46" width="259" height="28"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="28" id="Mg6-jP-JzN"/>
                                     <constraint firstAttribute="width" constant="259" id="wmX-3K-E0e"/>
@@ -1960,59 +1969,123 @@ BIP32 = yourKey/*
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="YWY-ot-2Yv">
-                                <rect key="frame" x="56" y="335" width="51" height="31"/>
-                                <connections>
-                                    <action selector="bip32LegacyAction:" destination="cZc-Ap-mkZ" eventType="valueChanged" id="q1r-7Q-WA5"/>
-                                </connections>
-                            </switch>
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qFJ-Kv-e8W">
-                                <rect key="frame" x="270" y="335" width="51" height="31"/>
+                                <rect key="frame" x="234" y="488" width="51" height="31"/>
                                 <connections>
                                     <action selector="bip32SegwitAction:" destination="cZc-Ap-mkZ" eventType="valueChanged" id="6GH-RJ-2QF"/>
                                 </connections>
                             </switch>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Native Segwit" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VjB-df-Skb">
-                                <rect key="frame" x="243" y="368" width="103" height="19"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="19" id="PRM-hV-vhr"/>
-                                </constraints>
+                            <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ZyV-c5-XmE">
+                                <rect key="frame" x="93" y="363" width="51" height="31"/>
+                                <connections>
+                                    <action selector="bip49Action:" destination="cZc-Ap-mkZ" eventType="valueChanged" id="QTU-4b-lC0"/>
+                                </connections>
+                            </switch>
+                            <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="uz3-GO-Wz6">
+                                <rect key="frame" x="235" y="363" width="51" height="31"/>
+                                <connections>
+                                    <action selector="segwitWrappedAction:" destination="cZc-Ap-mkZ" eventType="valueChanged" id="wJR-cE-YMu"/>
+                                </connections>
+                            </switch>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="BIP32" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YdG-3S-2uf">
+                                <rect key="frame" x="237" y="211" width="45" height="14"/>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="YWY-ot-2Yv">
+                                <rect key="frame" x="235" y="229" width="51" height="31"/>
+                                <connections>
+                                    <action selector="bip32LegacyAction:" destination="cZc-Ap-mkZ" eventType="valueChanged" id="q1r-7Q-WA5"/>
+                                </connections>
+                            </switch>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Segwit wrapped:" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VfS-6F-iG4">
+                                <rect key="frame" x="16" y="287" width="343" height="19"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="19" id="xH6-2E-OtH"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
+                                <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Native Segwit:" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="t1T-KI-wMg">
+                                <rect key="frame" x="16" y="421" width="343" height="19"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="19" id="DMk-gb-yWJ"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
+                                <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="7" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Pwi-XC-bCq">
+                                <rect key="frame" x="16" y="306" width="343" height="30"/>
+                                <string key="text">P2SH-P2WSH
+(pay to witness script hash wrapped in pay to script hash)
+address prefix: 3</string>
+                                <fontDescription key="fontDescription" name="HiraginoSans-W3" family="Hiragino Sans" pointSize="10"/>
+                                <color key="textColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="7" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EAu-L8-B8A">
+                                <rect key="frame" x="16" y="439" width="343" height="20"/>
+                                <string key="text">P2WSH (pay to witness script hash)
+address prefix: 1</string>
+                                <fontDescription key="fontDescription" name="HiraginoSans-W3" family="Hiragino Sans" pointSize="10"/>
+                                <color key="textColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                         </subviews>
                         <color key="backgroundColor" red="0.078040815889835358" green="0.090017892420291901" blue="0.1025182381272316" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="WQO-Qm-Z94" firstAttribute="centerX" secondItem="yGN-Mr-yad" secondAttribute="centerX" id="7d5-ei-ejS"/>
+                            <constraint firstItem="yGN-Mr-yad" firstAttribute="leading" secondItem="ICU-Rj-3rT" secondAttribute="leading" constant="94" id="074-bJ-NMj"/>
+                            <constraint firstItem="uz3-GO-Wz6" firstAttribute="centerX" secondItem="Ouj-Ww-Exb" secondAttribute="centerX" id="1SQ-2l-fcw"/>
+                            <constraint firstItem="ICU-Rj-3rT" firstAttribute="trailing" secondItem="YdG-3S-2uf" secondAttribute="trailing" constant="93" id="2tf-nh-naB"/>
+                            <constraint firstItem="ED9-fa-OLo" firstAttribute="leading" secondItem="ICU-Rj-3rT" secondAttribute="leading" constant="16" id="3lQ-dZ-rYL"/>
+                            <constraint firstItem="YWY-ot-2Yv" firstAttribute="centerX" secondItem="YdG-3S-2uf" secondAttribute="centerX" id="499-C0-g40"/>
+                            <constraint firstItem="NU2-An-8bM" firstAttribute="leading" secondItem="ICU-Rj-3rT" secondAttribute="leading" constant="16" id="4Eu-j4-quc"/>
+                            <constraint firstItem="ICU-Rj-3rT" firstAttribute="trailing" secondItem="Ouj-Ww-Exb" secondAttribute="trailing" constant="93" id="7DU-b3-Cpl"/>
                             <constraint firstItem="Txl-uD-Les" firstAttribute="leading" secondItem="ICU-Rj-3rT" secondAttribute="leading" id="7eO-s8-3Yc"/>
-                            <constraint firstItem="yGN-Mr-yad" firstAttribute="trailing" secondItem="2kN-0r-8Jh" secondAttribute="trailing" id="95j-5B-CuW"/>
-                            <constraint firstItem="qse-4H-E6X" firstAttribute="top" secondItem="SZL-a5-K2x" secondAttribute="bottom" constant="4" id="9qH-rG-iS1"/>
-                            <constraint firstItem="qFJ-Kv-e8W" firstAttribute="centerX" secondItem="WQO-Qm-Z94" secondAttribute="centerX" id="M0i-WL-ElF"/>
-                            <constraint firstItem="ED9-fa-OLo" firstAttribute="top" secondItem="2kN-0r-8Jh" secondAttribute="bottom" constant="7" id="OQE-NB-Dhq"/>
+                            <constraint firstItem="YWY-ot-2Yv" firstAttribute="top" secondItem="YdG-3S-2uf" secondAttribute="bottom" constant="4" id="94W-tW-Fm4"/>
+                            <constraint firstItem="NU2-An-8bM" firstAttribute="top" secondItem="ED9-fa-OLo" secondAttribute="bottom" constant="16" id="BH4-Tj-0DD"/>
+                            <constraint firstItem="ICU-Rj-3rT" firstAttribute="trailing" secondItem="NU2-An-8bM" secondAttribute="trailing" constant="16" id="D0H-xk-BBQ"/>
+                            <constraint firstItem="qFJ-Kv-e8W" firstAttribute="centerX" secondItem="WQO-Qm-Z94" secondAttribute="centerX" id="GXd-4b-QFW"/>
+                            <constraint firstItem="ICU-Rj-3rT" firstAttribute="trailing" secondItem="t1T-KI-wMg" secondAttribute="trailing" constant="16" id="H0u-u0-ShI"/>
+                            <constraint firstItem="ZyV-c5-XmE" firstAttribute="centerX" secondItem="KW6-Gq-UW2" secondAttribute="centerX" id="MRD-75-iCx"/>
+                            <constraint firstItem="ED9-fa-OLo" firstAttribute="top" secondItem="2kN-0r-8Jh" secondAttribute="bottom" constant="-1" id="OQE-NB-Dhq"/>
+                            <constraint firstItem="ICU-Rj-3rT" firstAttribute="trailing" secondItem="VfS-6F-iG4" secondAttribute="trailing" constant="16" id="OrQ-c5-ECg"/>
+                            <constraint firstItem="qFJ-Kv-e8W" firstAttribute="top" secondItem="WQO-Qm-Z94" secondAttribute="bottom" constant="4" id="PCJ-2A-zx3"/>
+                            <constraint firstItem="ICU-Rj-3rT" firstAttribute="trailing" secondItem="WQO-Qm-Z94" secondAttribute="trailing" constant="94" id="QHa-0I-B6m"/>
+                            <constraint firstItem="aAK-60-l9D" firstAttribute="top" secondItem="yGN-Mr-yad" secondAttribute="bottom" constant="4" id="Qg2-8u-Kbd"/>
+                            <constraint firstItem="ICU-Rj-3rT" firstAttribute="trailing" secondItem="ED9-fa-OLo" secondAttribute="trailing" constant="16" id="RDF-zF-pHV"/>
+                            <constraint firstItem="4f9-Ha-Ltc" firstAttribute="leading" secondItem="ICU-Rj-3rT" secondAttribute="leading" constant="16" id="Rps-dQ-hgg"/>
+                            <constraint firstItem="yGN-Mr-yad" firstAttribute="top" secondItem="EAu-L8-B8A" secondAttribute="bottom" constant="11" id="TJF-6i-MU5"/>
+                            <constraint firstItem="ICU-Rj-3rT" firstAttribute="trailing" secondItem="EAu-L8-B8A" secondAttribute="trailing" constant="16" id="UIB-T1-TdL"/>
                             <constraint firstItem="2kN-0r-8Jh" firstAttribute="centerX" secondItem="aiL-VL-6Mn" secondAttribute="centerX" id="UPs-ay-lXN"/>
-                            <constraint firstItem="2kN-0r-8Jh" firstAttribute="top" secondItem="ICU-Rj-3rT" secondAttribute="top" constant="20" id="VwP-mh-0Xb"/>
-                            <constraint firstItem="YWY-ot-2Yv" firstAttribute="centerX" secondItem="YdG-3S-2uf" secondAttribute="centerX" id="ZUx-3U-S8v"/>
-                            <constraint firstItem="aAK-60-l9D" firstAttribute="top" secondItem="yGN-Mr-yad" secondAttribute="bottom" constant="4" id="Zbv-Ux-Pql"/>
-                            <constraint firstItem="VjB-df-Skb" firstAttribute="centerX" secondItem="WQO-Qm-Z94" secondAttribute="centerX" id="chY-dL-BLt"/>
+                            <constraint firstItem="KW6-Gq-UW2" firstAttribute="leading" secondItem="ICU-Rj-3rT" secondAttribute="leading" constant="95" id="UQi-vX-cuG"/>
+                            <constraint firstItem="2kN-0r-8Jh" firstAttribute="top" secondItem="ICU-Rj-3rT" secondAttribute="top" constant="2" id="VwP-mh-0Xb"/>
+                            <constraint firstItem="EAu-L8-B8A" firstAttribute="top" secondItem="t1T-KI-wMg" secondAttribute="bottom" constant="-1" id="WWd-Pg-PIg"/>
+                            <constraint firstItem="uz3-GO-Wz6" firstAttribute="top" secondItem="Ouj-Ww-Exb" secondAttribute="bottom" constant="4" id="Zcb-3Q-98d"/>
+                            <constraint firstItem="t1T-KI-wMg" firstAttribute="top" secondItem="ZyV-c5-XmE" secondAttribute="bottom" constant="27" id="Zd9-t6-wcj"/>
+                            <constraint firstItem="VfS-6F-iG4" firstAttribute="top" secondItem="qse-4H-E6X" secondAttribute="bottom" constant="27" id="aOZ-vv-GwV"/>
+                            <constraint firstItem="ICU-Rj-3rT" firstAttribute="trailing" secondItem="Pwi-XC-bCq" secondAttribute="trailing" constant="16" id="c25-Qf-UgE"/>
+                            <constraint firstItem="Pwi-XC-bCq" firstAttribute="top" secondItem="VfS-6F-iG4" secondAttribute="bottom" id="cg5-zd-bN5"/>
+                            <constraint firstItem="WQO-Qm-Z94" firstAttribute="centerY" secondItem="yGN-Mr-yad" secondAttribute="centerY" id="dWu-bu-sx1"/>
                             <constraint firstItem="Txl-uD-Les" firstAttribute="trailing" secondItem="ICU-Rj-3rT" secondAttribute="trailing" id="eJl-Nk-0hu"/>
-                            <constraint firstItem="WQO-Qm-Z94" firstAttribute="top" secondItem="aAK-60-l9D" secondAttribute="bottom" constant="37" id="efM-TF-leD"/>
-                            <constraint firstItem="YdG-3S-2uf" firstAttribute="centerX" secondItem="SZL-a5-K2x" secondAttribute="centerX" id="fTc-aj-L2h"/>
-                            <constraint firstItem="yGN-Mr-yad" firstAttribute="top" secondItem="SZL-a5-K2x" secondAttribute="top" id="jjk-dZ-Avw"/>
-                            <constraint firstItem="qse-4H-E6X" firstAttribute="centerX" secondItem="SZL-a5-K2x" secondAttribute="centerX" id="jq0-Ce-jXM"/>
-                            <constraint firstItem="aAK-60-l9D" firstAttribute="centerX" secondItem="yGN-Mr-yad" secondAttribute="centerX" id="kxt-1e-Pfj"/>
-                            <constraint firstItem="NU2-An-8bM" firstAttribute="top" secondItem="YWY-ot-2Yv" secondAttribute="bottom" constant="2" id="mkk-XQ-5bd"/>
-                            <constraint firstItem="NU2-An-8bM" firstAttribute="centerX" secondItem="YdG-3S-2uf" secondAttribute="centerX" id="n54-cO-idY"/>
-                            <constraint firstItem="SZL-a5-K2x" firstAttribute="top" secondItem="ED9-fa-OLo" secondAttribute="bottom" constant="14" id="pFj-Os-dih"/>
+                            <constraint firstItem="aAK-60-l9D" firstAttribute="centerX" secondItem="yGN-Mr-yad" secondAttribute="centerX" id="fb8-99-MX1"/>
+                            <constraint firstItem="Ouj-Ww-Exb" firstAttribute="centerY" secondItem="KW6-Gq-UW2" secondAttribute="centerY" id="grt-NG-IwW"/>
+                            <constraint firstItem="4f9-Ha-Ltc" firstAttribute="top" secondItem="NU2-An-8bM" secondAttribute="bottom" id="i1a-0I-owO"/>
+                            <constraint firstItem="YdG-3S-2uf" firstAttribute="centerY" secondItem="SZL-a5-K2x" secondAttribute="centerY" id="iBa-C2-d8g"/>
+                            <constraint firstItem="Pwi-XC-bCq" firstAttribute="leading" secondItem="ICU-Rj-3rT" secondAttribute="leading" constant="16" id="jCs-Pq-JSq"/>
+                            <constraint firstItem="SZL-a5-K2x" firstAttribute="top" secondItem="4f9-Ha-Ltc" secondAttribute="bottom" constant="11" id="jPj-GE-UGI"/>
+                            <constraint firstItem="VfS-6F-iG4" firstAttribute="leading" secondItem="ICU-Rj-3rT" secondAttribute="leading" constant="16" id="lfy-lS-LMF"/>
+                            <constraint firstItem="ZyV-c5-XmE" firstAttribute="top" secondItem="KW6-Gq-UW2" secondAttribute="bottom" constant="4" id="oxL-ZI-qnf"/>
+                            <constraint firstItem="qse-4H-E6X" firstAttribute="centerX" secondItem="SZL-a5-K2x" secondAttribute="centerX" id="qAZ-VA-Xeo"/>
+                            <constraint firstItem="qse-4H-E6X" firstAttribute="top" secondItem="SZL-a5-K2x" secondAttribute="bottom" constant="4" id="r9y-IN-Waq"/>
                             <constraint firstItem="Txl-uD-Les" firstAttribute="bottom" secondItem="ICU-Rj-3rT" secondAttribute="bottom" id="sGD-Rn-uGq"/>
-                            <constraint firstItem="qFJ-Kv-e8W" firstAttribute="top" secondItem="WQO-Qm-Z94" secondAttribute="bottom" constant="4" id="sL3-8s-09d"/>
-                            <constraint firstItem="qFJ-Kv-e8W" firstAttribute="centerX" secondItem="WQO-Qm-Z94" secondAttribute="centerX" id="sgf-cQ-XrC"/>
-                            <constraint firstItem="YWY-ot-2Yv" firstAttribute="top" secondItem="YdG-3S-2uf" secondAttribute="bottom" constant="4" id="ufo-23-hfO"/>
-                            <constraint firstItem="SZL-a5-K2x" firstAttribute="leading" secondItem="2kN-0r-8Jh" secondAttribute="leading" id="vp0-lA-xjR"/>
-                            <constraint firstItem="YdG-3S-2uf" firstAttribute="top" secondItem="qse-4H-E6X" secondAttribute="bottom" constant="37" id="w1R-SI-ldC"/>
-                            <constraint firstItem="VjB-df-Skb" firstAttribute="top" secondItem="qFJ-Kv-e8W" secondAttribute="bottom" constant="2" id="ydu-XP-B8K"/>
-                            <constraint firstItem="ED9-fa-OLo" firstAttribute="centerX" secondItem="aiL-VL-6Mn" secondAttribute="centerX" id="yk6-Pe-1nD"/>
-                            <constraint firstItem="VjB-df-Skb" firstAttribute="centerX" secondItem="WQO-Qm-Z94" secondAttribute="centerX" id="zaK-EI-a44"/>
+                            <constraint firstItem="SZL-a5-K2x" firstAttribute="leading" secondItem="ICU-Rj-3rT" secondAttribute="leading" constant="93" id="tCh-lv-dFR"/>
+                            <constraint firstItem="KW6-Gq-UW2" firstAttribute="top" secondItem="Pwi-XC-bCq" secondAttribute="bottom" constant="9" id="uVH-qT-706"/>
+                            <constraint firstItem="t1T-KI-wMg" firstAttribute="leading" secondItem="ICU-Rj-3rT" secondAttribute="leading" constant="16" id="v5m-m8-SCq"/>
+                            <constraint firstItem="EAu-L8-B8A" firstAttribute="leading" secondItem="ICU-Rj-3rT" secondAttribute="leading" constant="16" id="xHp-He-2gu"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="ICU-Rj-3rT"/>
                     </view>
@@ -2021,12 +2094,14 @@ BIP32 = yourKey/*
                         <outlet property="bip32LegacySwitch" destination="YWY-ot-2Yv" id="vDK-MD-bei"/>
                         <outlet property="bip32Segwit" destination="qFJ-Kv-e8W" id="nbX-eD-Qm3"/>
                         <outlet property="bip32SegwitLabel" destination="WQO-Qm-Z94" id="NYB-Kk-QkV"/>
+                        <outlet property="bip32SegwitWrappedSwitch" destination="uz3-GO-Wz6" id="4mM-HV-xPI"/>
+                        <outlet property="bip32WrappedLabel" destination="Ouj-Ww-Exb" id="LF3-Vx-5e3"/>
                         <outlet property="bip44Label" destination="SZL-a5-K2x" id="YzB-vg-bTX"/>
                         <outlet property="bip44Switch" destination="qse-4H-E6X" id="Fxu-FC-kl0"/>
+                        <outlet property="bip49Label" destination="KW6-Gq-UW2" id="PUE-wg-tqG"/>
+                        <outlet property="bip49switch" destination="ZyV-c5-XmE" id="xLM-GY-p2O"/>
                         <outlet property="bip84Label" destination="yGN-Mr-yad" id="XAH-Xq-Kqk"/>
                         <outlet property="bip84switch" destination="aAK-60-l9D" id="AoI-41-kIL"/>
-                        <outlet property="legacyLabel" destination="NU2-An-8bM" id="yjb-ok-Ayj"/>
-                        <outlet property="segwitLabel" destination="VjB-df-Skb" id="PQj-XZ-0gY"/>
                         <segue destination="g4K-ZQ-445" kind="show" identifier="addRange" id="XqS-DL-3qc"/>
                     </connections>
                 </viewController>
@@ -2625,7 +2700,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
             </objects>
             <point key="canvasLocation" x="-2791.1999999999998" y="375.56221889055473"/>
         </scene>
-        <!--Settings v0.1.20-->
+        <!--Settings v0.1.21-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="BitSense" customModuleProvider="target" sceneMemberID="viewController">
@@ -2713,7 +2788,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                         <viewLayoutGuide key="safeArea" id="Cze-jj-bFe"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="Settings v0.1.20" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="Settings v0.1.21" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
@@ -4607,7 +4682,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="XQE-Ek-uZu"/>
         <segue reference="IVc-aG-8QZ"/>
         <segue reference="cvp-U1-bU5"/>
-        <segue reference="AYh-di-V7O"/>
+        <segue reference="XqS-DL-3qc"/>
         <segue reference="YeE-je-QtC"/>
         <segue reference="GsY-cw-4Ut"/>
         <segue reference="HNI-HG-9ZQ"/>

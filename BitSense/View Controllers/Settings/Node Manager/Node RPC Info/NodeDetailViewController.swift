@@ -102,16 +102,20 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             
             let id = selectedNode["id"] as! String
             
+            var arr = [[String:Any]]()
+            
             if nodeLabel.text != "" {
                 
                 let enc = aes.encryptKey(keyToEncrypt: nodeLabel.text!)
                 selectedNode["label"] = enc
+                let d:[String:Any] = ["id":id,"newValue":enc,"keyToEdit":"label","entityName":ENTITY.nodes]
+                arr.append(d)
                 
-                let _ = cd.updateEntity(viewController: self,
-                                        id: id,
-                                        newValue: enc,
-                                        keyToEdit: "label",
-                                        entityName: .nodes)
+//                let _ = cd.updateEntity(viewController: self,
+//                                        id: id,
+//                                        newValue: enc,
+//                                        keyToEdit: "label",
+//                                        entityName: .nodes)
                 
             }
             
@@ -119,12 +123,13 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 
                 let enc = aes.encryptKey(keyToEncrypt: rpcUserField.text!)
                 selectedNode["rpcuser"] = enc
-                
-                let _ = cd.updateEntity(viewController: self,
-                                        id: id,
-                                        newValue: enc,
-                                        keyToEdit: "rpcuser",
-                                        entityName: .nodes)
+                let d:[String:Any] = ["id":id,"newValue":enc,"keyToEdit":"rpcuser","entityName":ENTITY.nodes]
+                arr.append(d)
+//                let _ = cd.updateEntity(viewController: self,
+//                                        id: id,
+//                                        newValue: enc,
+//                                        keyToEdit: "rpcuser",
+//                                        entityName: .nodes)
                 
             }
             
@@ -132,12 +137,13 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 
                 let enc = aes.encryptKey(keyToEncrypt: rpcPassword.text!)
                 selectedNode["rpcpassword"] = enc
-                
-                let _ = cd.updateEntity(viewController: self,
-                                        id: id,
-                                        newValue: enc,
-                                        keyToEdit: "rpcpassword",
-                                        entityName: .nodes)
+                let d:[String:Any] = ["id":id,"newValue":enc,"keyToEdit":"rpcpassword","entityName":ENTITY.nodes]
+                arr.append(d)
+//                let _ = cd.updateEntity(viewController: self,
+//                                        id: id,
+//                                        newValue: enc,
+//                                        keyToEdit: "rpcpassword",
+//                                        entityName: .nodes)
                 
             }
             
@@ -145,54 +151,68 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 
                 let enc = aes.encryptKey(keyToEncrypt: rpcPort.text!)
                 selectedNode["rpcport"] = enc
-                
-                let _ = cd.updateEntity(viewController: self,
-                                        id: id,
-                                        newValue: enc,
-                                        keyToEdit: "rpcport",
-                                        entityName: .nodes)
+                let d:[String:Any] = ["id":id,"newValue":enc,"keyToEdit":"rpcport","entityName":ENTITY.nodes]
+                arr.append(d)
+//                let _ = cd.updateEntity(viewController: self,
+//                                        id: id,
+//                                        newValue: enc,
+//                                        keyToEdit: "rpcport",
+//                                        entityName: .nodes)
                 
             }
             
-            if (selectedNode["usingSSH"] as! Bool) {
-                
-                let _ = cd.updateEntity(viewController: self,
-                                        id: id,
-                                        newValue: true,
-                                        keyToEdit: "usingSSH",
-                                        entityName: .nodes)
-                
-                let _ = cd.updateEntity(viewController: self,
-                                        id: id,
-                                        newValue: false,
-                                        keyToEdit: "usingTor",
-                                        entityName: .nodes)
-                
-                DispatchQueue.main.async {
-                    
-                    self.performSegue(withIdentifier: "sshCredentials", sender: self)
-                    
-                }
-                
-            }
+//            if (selectedNode["usingSSH"] as! Bool) {
+//
+//
+//
+//                let _ = cd.updateEntity(viewController: self,
+//                                        id: id,
+//                                        newValue: true,
+//                                        keyToEdit: "usingSSH",
+//                                        entityName: .nodes)
+//
+//                let _ = cd.updateEntity(viewController: self,
+//                                        id: id,
+//                                        newValue: false,
+//                                        keyToEdit: "usingTor",
+//                                        entityName: .nodes)
+//
+//                DispatchQueue.main.async {
+//
+//                    self.performSegue(withIdentifier: "sshCredentials", sender: self)
+//
+//                }
+//
+//            }
             
             if (selectedNode["usingTor"] as! Bool) {
                 
-                let _ = cd.updateEntity(viewController: self,
-                                        id: id,
-                                        newValue: false,
-                                        keyToEdit: "usingSSH",
-                                        entityName: .nodes)
+                let d1:[String:Any] = ["id":id,"newValue":false,"keyToEdit":"usingSSH","entityName":ENTITY.nodes]
+                let d2:[String:Any] = ["id":id,"newValue":true,"keyToEdit":"usingTor","entityName":ENTITY.nodes]
+                arr.append(d1)
+                arr.append(d2)
                 
-                let _ = cd.updateEntity(viewController: self,
-                                        id: id,
-                                        newValue: true,
-                                        keyToEdit: "usingTor",
-                                        entityName: .nodes)
+            }
+            
+            cd.updateEntity(dictsToUpdate: arr) {
                 
-                DispatchQueue.main.async {
+                if !self.cd.errorBool {
                     
-                    self.performSegue(withIdentifier: "goToTorDetails", sender: self)
+                    let success = self.cd.boolToReturn
+                    
+                    if success {
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.performSegue(withIdentifier: "goToTorDetails", sender: self)
+                            
+                        }
+                        
+                    }
+                    
+                } else {
+                    
+                    displayAlert(viewController: self, isError: true, message: self.cd.errorDescription)
                     
                 }
                 

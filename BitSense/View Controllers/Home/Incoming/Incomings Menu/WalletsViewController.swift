@@ -100,22 +100,39 @@ class WalletsViewController: UIViewController, UITableViewDataSource, UITableVie
             let cd = CoreDataService()
             let wallet = Wallet(dictionary: wallets[row])
             
-            let success = cd.deleteEntity(viewController: self,
-                                          id: wallet.id,
-                                          entityName: ENTITY.hdWallets)
-
-            if success {
-
-                tableArray.remove(at: row)
-                wallets.remove(at: row)
-                walletTable.deleteRows(at: [indexPath], with: .fade)
+            cd.deleteEntity(id: wallet.id, entityName: .hdWallets) {
                 
-            } else {
-
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "We had an error trying to delete that wallet")
-
+                if !cd.errorBool {
+                    
+                    let success = cd.boolToReturn
+                    
+                    if success {
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.tableArray.remove(at: row)
+                            self.wallets.remove(at: row)
+                            self.walletTable.deleteRows(at: [indexPath], with: .fade)
+                            
+                        }
+                        
+                    } else {
+                        
+                        displayAlert(viewController: self,
+                                     isError: true,
+                                     message: "We had an error trying to delete that wallet: \(cd.errorDescription)")
+                        
+                    }
+                    
+                    
+                } else {
+                    
+                    displayAlert(viewController: self,
+                                 isError: true,
+                                 message: "We had an error trying to delete that wallet: \(cd.errorDescription)")
+                    
+                }
+                
             }
             
         }

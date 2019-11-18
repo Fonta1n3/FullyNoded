@@ -12,25 +12,28 @@ class ExtendedKeysParentViewController: UIViewController {
     
     @IBOutlet var bip44Switch: UISwitch!
     @IBOutlet var bip84switch: UISwitch!
+    @IBOutlet var bip49switch: UISwitch!
+    @IBOutlet var bip32SegwitWrappedSwitch: UISwitch!
     @IBOutlet var bip32LegacySwitch: UISwitch!
     @IBOutlet var bip32Segwit: UISwitch!
     @IBOutlet var bip44Label: UILabel!
     @IBOutlet var bip84Label: UILabel!
     @IBOutlet var bip32LegacyLabel: UILabel!
-    @IBOutlet var legacyLabel: UILabel!
     @IBOutlet var bip32SegwitLabel: UILabel!
-    @IBOutlet var segwitLabel: UILabel!
+    @IBOutlet var bip49Label: UILabel!
+    @IBOutlet var bip32WrappedLabel: UILabel!
     
     var dict = [String:Any]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        bip49switch.isOn = false
+        bip32SegwitWrappedSwitch.isOn = false
         bip44Switch.isOn = false
         bip84switch.isOn = false
         bip32LegacySwitch.isOn = false
         bip32Segwit.isOn = true
-        turnOn(labels: [bip32SegwitLabel, segwitLabel])
+        turnOn(labels: [bip32SegwitLabel])
         
     }
     
@@ -38,7 +41,7 @@ class ExtendedKeysParentViewController: UIViewController {
         
         DispatchQueue.main.async {
             
-            let allLabels = [self.bip44Label, self.bip84Label, self.bip32LegacyLabel, self.bip32SegwitLabel, self.legacyLabel, self.segwitLabel]
+            let allLabels = [self.bip44Label, self.bip84Label, self.bip32LegacyLabel, self.bip32SegwitLabel, self.bip32WrappedLabel, self.bip49Label]
             
             let labelsToTurnOn = labels
             
@@ -74,10 +77,12 @@ class ExtendedKeysParentViewController: UIViewController {
         
         if bip32LegacySwitch.isOn {
             
-            turnOn(labels: [bip32LegacyLabel, legacyLabel])
+            turnOn(labels: [bip32LegacyLabel])
             bip32Segwit.isOn = false
             bip84switch.isOn = false
             bip44Switch.isOn = false
+            bip32SegwitWrappedSwitch.isOn = false
+            bip49switch.isOn = false
             
         }
         
@@ -87,10 +92,12 @@ class ExtendedKeysParentViewController: UIViewController {
         
         if bip32Segwit.isOn {
             
-            turnOn(labels: [bip32SegwitLabel, segwitLabel])
+            turnOn(labels: [bip32SegwitLabel])
             bip32LegacySwitch.isOn = false
             bip44Switch.isOn = false
             bip84switch.isOn = false
+            bip32SegwitWrappedSwitch.isOn = false
+            bip49switch.isOn = false
             
         }
         
@@ -104,6 +111,8 @@ class ExtendedKeysParentViewController: UIViewController {
             bip84switch.isOn = false
             bip32LegacySwitch.isOn = false
             bip32Segwit.isOn = false
+            bip32SegwitWrappedSwitch.isOn = false
+            bip49switch.isOn = false
             
         }
         
@@ -117,6 +126,38 @@ class ExtendedKeysParentViewController: UIViewController {
             bip44Switch.isOn = false
             bip32Segwit.isOn = false
             bip32LegacySwitch.isOn = false
+            bip32SegwitWrappedSwitch.isOn = false
+            bip49switch.isOn = false
+            
+        }
+        
+    }
+    
+    @IBAction func bip49Action(_ sender: Any) {
+        
+        if bip49switch.isOn {
+            
+            turnOn(labels: [bip49Label])
+            bip44Switch.isOn = false
+            bip32Segwit.isOn = false
+            bip32LegacySwitch.isOn = false
+            bip32SegwitWrappedSwitch.isOn = false
+            bip84switch.isOn = false
+            
+        }
+        
+    }
+    
+    @IBAction func segwitWrappedAction(_ sender: Any) {
+        
+        if bip32SegwitWrappedSwitch.isOn {
+            
+            turnOn(labels: [bip32WrappedLabel])
+            bip44Switch.isOn = false
+            bip32Segwit.isOn = false
+            bip32LegacySwitch.isOn = false
+            bip49switch.isOn = false
+            bip84switch.isOn = false
             
         }
         
@@ -133,6 +174,17 @@ class ExtendedKeysParentViewController: UIViewController {
         case "addRange":
             
             if let vc = segue.destination as? ChooseRangeViewController  {
+                
+                if bip49switch.isOn {
+                    
+                    dict["derivation"] = "BIP49"
+                    
+                }
+                
+                if bip32SegwitWrappedSwitch.isOn {
+                    
+                    dict["derivation"] = "BIP32P2SH"
+                }
                 
                 if bip84switch.isOn {
                     
@@ -167,7 +219,7 @@ class ExtendedKeysParentViewController: UIViewController {
             break
             
         }
+        
     }
-    
 
 }

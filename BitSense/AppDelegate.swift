@@ -14,8 +14,6 @@ import KeychainSwift
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-    
-    
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
@@ -50,8 +48,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         if let myTabBar = self.window?.rootViewController as? UITabBarController {
             
-            //myTabBar.selectedIndex = 0
-            
             let qc = QuickConnect()
             
             func getResult() {
@@ -79,8 +75,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         
     }
-    
-    
 
     func applicationWillEnterForeground(_ application: UIApplication) {
         // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.

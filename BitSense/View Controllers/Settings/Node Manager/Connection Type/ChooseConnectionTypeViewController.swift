@@ -13,7 +13,6 @@ class ChooseConnectionTypeViewController: UIViewController {
     let cd = CoreDataService()
     var selectedNode = [String:Any]()
     var isUpdating = Bool()
-    var successes = [Bool]()
     var scannerShowing = false
     var isFirstTime = Bool()
     
@@ -44,29 +43,29 @@ class ChooseConnectionTypeViewController: UIViewController {
     
     @IBAction func sshSwitchAction(_ sender: Any) {
         
-        if sshSwitchOutlet.isOn {
-            
-            torSwitchOutlet.isOn = false
-            
-        } else {
-            
-            torSwitchOutlet.isOn = true
-            
-        }
-        
-        if isUpdating {
-            
-            let node = NodeStruct(dictionary: selectedNode)
-            
-            let success = cd.updateEntity(viewController: self,
-                                          id: node.id,
-                                          newValue: sshSwitchOutlet.isOn,
-                                          keyToEdit: "usingSSH",
-                                          entityName: .nodes)
-            
-            successes.append(success)
-            
-        }
+//        if sshSwitchOutlet.isOn {
+//
+//            torSwitchOutlet.isOn = false
+//
+//        } else {
+//
+//            torSwitchOutlet.isOn = true
+//
+//        }
+//
+//        if isUpdating {
+//
+//            let node = NodeStruct(dictionary: selectedNode)
+//
+//            let success = cd.updateEntity(viewController: self,
+//                                          id: node.id,
+//                                          newValue: sshSwitchOutlet.isOn,
+//                                          keyToEdit: "usingSSH",
+//                                          entityName: .nodes)
+//
+//            successes.append(success)
+//
+//        }
         
     }
     
@@ -88,13 +87,31 @@ class ChooseConnectionTypeViewController: UIViewController {
             let node = NodeStruct(dictionary: selectedNode)
             let id = node.id
             
-            let success = cd.updateEntity(viewController: self,
-                                          id: id,
-                                          newValue: torSwitchOutlet.isOn,
-                                          keyToEdit: "usingTor",
-                                          entityName: ENTITY.nodes)
+            let d:[String:Any] = ["id":id,"newValue":torSwitchOutlet.isOn,"keyToEdit":"usingTor","entityName":ENTITY.nodes]
             
-            successes.append(success)
+            cd.updateEntity(dictsToUpdate: [d]) {
+                
+                if !self.cd.errorBool {
+                    
+                    let success = self.cd.boolToReturn
+                    
+                    if success {
+                        
+                        displayAlert(viewController: self, isError: false, message: "updated")
+                        
+                    } else {
+                        
+                        displayAlert(viewController: self, isError: true, message: "error updating node")
+                        
+                    }
+                    
+                } else {
+                    
+                    displayAlert(viewController: self, isError: true, message: self.cd.errorDescription)
+                    
+                }
+                
+            }            
             
         }
         

@@ -308,22 +308,34 @@ class IncomingsMenuViewController: UIViewController, UITableViewDelegate, UITabl
                     
                     print("show descriptor")
                     
-                    self.descriptors = self.cd.retrieveEntity(entityName: ENTITY.descriptors)
-                    
-                    if self.descriptors.count > 0 {
+                    self.cd.retrieveEntity(entityName: .descriptors) {
                         
-                        DispatchQueue.main.async {
+                        if !self.cd.errorBool {
                             
-                            self.performSegue(withIdentifier: "showDescriptors",
-                                              sender: self)
+                            self.descriptors = self.cd.entities
+                            
+                            if self.descriptors.count > 0 {
+                                
+                                DispatchQueue.main.async {
+                                    
+                                    self.performSegue(withIdentifier: "showDescriptors",
+                                                      sender: self)
+                                    
+                                }
+                                
+                            } else {
+                                
+                                displayAlert(viewController: self,
+                                             isError: true,
+                                             message: "no xpubs, xprvs or multisig wallets imported yet")
+                                
+                            }
+                            
+                        } else {
+                            
+                            displayAlert(viewController: self, isError: true, message: "error getting descriptors from core data")
                             
                         }
-                        
-                    } else {
-                        
-                        displayAlert(viewController: self,
-                                     isError: true,
-                                     message: "no xpubs, xprvs or multisig wallets imported yet")
                         
                     }
                     
@@ -494,44 +506,67 @@ class IncomingsMenuViewController: UIViewController, UITableViewDelegate, UITabl
         p2shSegwit = ud.object(forKey: "p2shSegwit") as? Bool ?? false
         legacy = ud.object(forKey: "legacy") as? Bool ?? false
         
-        let nodes = cd.retrieveEntity(entityName: ENTITY.nodes)
-        
-        //only display HDWallets that were imported into this node
-        for nodeDict in nodes {
+        cd.retrieveEntity(entityName: .nodes) {
             
-            let node = NodeStruct(dictionary: nodeDict)
-            
-            if node.isActive {
+            if !self.cd.errorBool {
                 
-                let activeNodeID = node.id
-                let allWallets = cd.retrieveEntity(entityName: ENTITY.hdWallets)
-                
-                for walletDict in allWallets {
+                let nodes = self.cd.entities
+                //only display HDWallets that were imported into this node
+                for nodeDict in nodes {
                     
-                    let wallet = Wallet(dictionary: walletDict)
-                    let walletsNodeID = wallet.nodeID
+                    let node = NodeStruct(dictionary: nodeDict)
                     
-                    if activeNodeID == walletsNodeID {
+                    if node.isActive {
                         
-                        wallets.append(walletDict)
+                        let activeNodeID = node.id
+                        
+                        self.cd.retrieveEntity(entityName: .hdWallets) {
+                            
+                            if !self.cd.errorBool {
+                                
+                                let allWallets = self.cd.entities
+                                for walletDict in allWallets {
+                                    
+                                    let wallet = Wallet(dictionary: walletDict)
+                                    let walletsNodeID = wallet.nodeID
+                                    
+                                    if activeNodeID == walletsNodeID {
+                                        
+                                        self.wallets.append(walletDict)
+                                        
+                                    }
+                                    
+                                }
+                                
+                            } else {
+                                
+                                displayAlert(viewController: self, isError: true, message: "error getting hd wallets from coredata")
+                                
+                            }
+                            
+                        }
                         
                     }
                     
                 }
                 
+                if self.wallets.count == 1 {
+                    
+                    self.wallet = self.wallets[0]
+                    
+                }
+                
+                DispatchQueue.main.async {
+                    
+                    self.incomingsTable.reloadData()
+                    
+                }
+                
+            } else {
+                
+                displayAlert(viewController: self, isError: true, message: "error getting nodes from coredata")
+                
             }
-            
-        }
-        
-        if wallets.count == 1 {
-            
-            wallet = wallets[0]
-            
-        }
-        
-        DispatchQueue.main.async {
-            
-            self.incomingsTable.reloadData()
             
         }
         

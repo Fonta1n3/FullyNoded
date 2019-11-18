@@ -213,10 +213,9 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
             
         }
         
-        let method = BTC_CLI_COMMAND.getdescriptorinfo
         let param = "\"combo(\(pubKey))\""
         
-        reducer.makeCommand(command: method,
+        reducer.makeCommand(command: .getdescriptorinfo,
                             param: param,
                             completion: getDescriptor)
         

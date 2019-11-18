@@ -20,50 +20,118 @@ class KillSwitch {
         let domain = Bundle.main.bundleIdentifier!
         ud.removePersistentDomain(forName: domain)
         ud.synchronize()
-        let remainingDefaults = Array(ud.dictionaryRepresentation().keys).count
-        print("remainingDefaults = \(remainingDefaults)")
         
-        let descriptors = cd.retrieveEntity(entityName: ENTITY.descriptors)
-        let nodes = cd.retrieveEntity(entityName: ENTITY.nodes)
-        let hdwallets = cd.retrieveEntity(entityName: ENTITY.hdWallets)
-        
-        for d in descriptors {
+        cd.retrieveEntity(entityName: .descriptors) {
             
-            let str = DescriptorStruct(dictionary: d)
-            let id = str.id
-            let _ = cd.deleteEntity(viewController: vc, id: id, entityName: ENTITY.descriptors)
-            
-        }
-        
-        for n in nodes {
-            
-            let str = NodeStruct(dictionary: n)
-            let id = str.id
-            let _ = cd.deleteEntity(viewController: vc, id: id, entityName: ENTITY.nodes)
-            
-        }
-        
-        for h in hdwallets {
-            
-            let str = Wallet(dictionary: h)
-            let id = str.id
-            let _ = cd.deleteEntity(viewController: vc, id: id, entityName: ENTITY.hdWallets)
-            
-        }
-        
-        let descriptorCheck = cd.retrieveEntity(entityName: ENTITY.descriptors)
-        let nodeCheck = cd.retrieveEntity(entityName: ENTITY.nodes)
-        let hdwalletCheck = cd.retrieveEntity(entityName: ENTITY.hdWallets)
-        
-        if descriptorCheck.count == 0 && nodeCheck.count == 0 && hdwalletCheck.count == 0 {
-            
-            let keychain = KeychainSwift()
-            
-            if keychain.clear() {
+            if !self.cd.errorBool {
                 
-                boolToReturn = true
+                let descriptors = self.cd.entities
+                for d in descriptors {
+                    
+                    let str = DescriptorStruct(dictionary: d)
+                    let id = str.id
+                    
+                    self.cd.deleteEntity(id: id, entityName: .descriptors) {
+                        
+                        if !self.cd.errorBool {
+                            
+                            let success = self.cd.boolToReturn
+                            
+                            if success {
+                                
+                                boolToReturn = true
+                                
+                            }
+                            
+                        }
+                        
+                    }
+                    
+                }
+                
+            } else {
+                
+                displayAlert(viewController: vc, isError: true, message: "error getting core data")
+            }
+            
+        }
+        
+        cd.retrieveEntity(entityName: .nodes) {
+            
+            if !self.cd.errorBool {
+                
+                let nodes = self.cd.entities
+                for n in nodes {
+                    
+                    let str = NodeStruct(dictionary: n)
+                    let id = str.id
+                    
+                    self.cd.deleteEntity(id: id, entityName: .nodes) {
+                        
+                        if !self.cd.errorBool {
+                            
+                            let success = self.cd.boolToReturn
+                            
+                            if success {
+                                
+                                boolToReturn = true
+                                
+                            }
+                            
+                        }
+                        
+                    }
+                    
+                }
+                
+            } else {
+                
+                displayAlert(viewController: vc, isError: true, message: "error getting core data")
+            }
+            
+        }
+        
+        cd.retrieveEntity(entityName: .hdWallets) {
+            
+            if !self.cd.errorBool {
+                
+                let hdwallets = self.cd.entities
+                for h in hdwallets {
+                    
+                    let str = Wallet(dictionary: h)
+                    let id = str.id
+                    
+                    self.cd.deleteEntity(id: id, entityName: .hdWallets) {
+                        
+                        if !self.cd.errorBool {
+                            
+                            let success = self.cd.boolToReturn
+                            
+                            if success {
+                                
+                                boolToReturn = true
+                                
+                            }
+                            
+                        }
+                        
+                    }
+                    
+                }
+                
+            } else {
+                
+                displayAlert(viewController: vc, isError: true, message: "error getting core data")
                 
             }
+            
+        }
+        
+        let keychain = KeychainSwift()
+        
+        if keychain.clear() {
+            
+            boolToReturn = true
             
         }
         

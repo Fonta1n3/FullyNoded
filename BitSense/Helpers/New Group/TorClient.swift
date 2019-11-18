@@ -9,6 +9,7 @@
 
 import Foundation
 import Tor
+import UIKit
 
 class TorClient {
     
@@ -293,41 +294,53 @@ class TorClient {
         
         let authPath = self.authDirPath
         let cd = CoreDataService()
-        let nodes = cd.retrieveEntity(entityName: .nodes)
-        let aes = AESService()
-        
-        for nodeDict in nodes {
+        cd.retrieveEntity(entityName: .nodes) {
             
-            let str = NodeStruct(dictionary: nodeDict)
-            let id = str.id
-            
-            if str.isActive && str.authKey != "" {
+            if !cd.errorBool {
                 
-                let authorizedKey = aes.decryptKey(keyToDecrypt: str.authKey)
-                let onionAddress = aes.decryptKey(keyToDecrypt: str.onionAddress)
-                let onionAddressArray = onionAddress.components(separatedBy: ".onion:")
-                let authString = onionAddressArray[0] + ":descriptor:x25519:" + authorizedKey
-                let file = URL(fileURLWithPath: authPath, isDirectory: true).appendingPathComponent("\(id).auth_private")
+                let nodes = cd.entities
+                let aes = AESService()
                 
-                do {
+                for nodeDict in nodes {
                     
-                    try authString.write(to: file, atomically: true, encoding: .utf8)
+                    let str = NodeStruct(dictionary: nodeDict)
+                    let id = str.id
                     
-                    print("successfully wrote authkey to file")
-                                        
-                } catch {
+                    if str.isActive && str.authKey != "" {
+                        
+                        let authorizedKey = aes.decryptKey(keyToDecrypt: str.authKey)
+                        let onionAddress = aes.decryptKey(keyToDecrypt: str.onionAddress)
+                        let onionAddressArray = onionAddress.components(separatedBy: ".onion:")
+                        let authString = onionAddressArray[0] + ":descriptor:x25519:" + authorizedKey
+                        let file = URL(fileURLWithPath: authPath, isDirectory: true).appendingPathComponent("\(id).auth_private")
+                        
+                        do {
+                            
+                            try authString.write(to: file, atomically: true, encoding: .utf8)
+                            
+                            print("successfully wrote authkey to file")
+                                                
+                        } catch {
+                            
+                            print("failed writing auth key")
+                        }
+                        
+                        
+                    } else if str.isActive && str.v2password != "" {
+                        
+                        let onionAddress = aes.decryptKey(keyToDecrypt: str.onionAddress)
+                        let onionAddressArr = onionAddress.components(separatedBy: ":")
+                        let hostname = onionAddressArr[0]
+                        let v2pass = aes.decryptKey(keyToDecrypt: str.v2password)
+                        self.v2Auth = "\(hostname) \(v2pass)"
+                        
+                    }
                     
-                    print("failed writing auth key")
                 }
                 
+            } else {
                 
-            } else if str.isActive && str.v2password != "" {
-                
-                let onionAddress = aes.decryptKey(keyToDecrypt: str.onionAddress)
-                let onionAddressArr = onionAddress.components(separatedBy: ":")
-                let hostname = onionAddressArr[0]
-                let v2pass = aes.decryptKey(keyToDecrypt: str.v2password)
-                self.v2Auth = "\(hostname) \(v2pass)"
+                print("error fetching nodes")
                 
             }
             

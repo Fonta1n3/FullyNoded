@@ -448,20 +448,29 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                         let id = self.wallet["id"] as! String
                         let aes = AESService()
                         let encIndex = aes.encryptKey(keyToEncrypt: self.indexDisplay.text!)
+                        let d:[String:Any] = ["id":id,"newValue":encIndex,"keyToEdit":"index","entityName":ENTITY.hdWallets]
                         
-                        let success = self.cd.updateEntity(viewController: self,
-                                                           id: id,
-                                                           newValue: encIndex,
-                                                           keyToEdit: "index",
-                                                           entityName: ENTITY.hdWallets)
-                        
-                        if success {
+                        self.cd.updateEntity(dictsToUpdate: [d]) {
                             
-                            print("updated index")
-                            
-                        } else {
-                            
-                            print("index update failed")
+                            if !self.cd.errorBool {
+                                
+                                let success = self.cd.boolToReturn
+                                
+                                if success {
+                                    
+                                    print("updated index")
+                                    
+                                } else {
+                                    
+                                    print("index update failed")
+                                    
+                                }
+                                
+                            } else {
+                                
+                                print(self.cd.errorDescription)
+                                
+                            }
                             
                         }
                         

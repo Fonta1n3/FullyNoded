@@ -155,7 +155,18 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
         range = str.range
         isTestnet = str.isTestnet
         label = str.label
-        isWatchOnly = str.isWatchOnly
+        
+        if key.hasPrefix("xprv") || key.hasPrefix("tprv") {
+            
+            isWatchOnly = false
+            
+        } else {
+            
+            isWatchOnly = true
+            
+        }
+        
+        dict["isWatchOnly"] = isWatchOnly
         let derivation = str.derivation
         convertedRange = convertRange()
                 
@@ -164,6 +175,8 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
         case "BIP84": desc = "wpkh"
         case "BIP32Segwit": desc = "wpkh"
         case "BIP32Legacy": desc = "pkh"
+        case "BIP32P2SH": desc = "sh"
+        case "BIP49": desc = "sh"
         default:break
         }
                 
@@ -178,6 +191,8 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
             importXpub(xpub: key)
             
         }
+        
+        print("iswatchonly = \(isWatchOnly)")
         
     }
     
@@ -247,7 +262,6 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
             } else {
                 
                 descriptor = "\"\(result["descriptor"] as! String)\""
-                
                 descriptor = descriptor.replacingOccurrences(of: "4'", with: "4'\"'\"'")
                 descriptor = descriptor.replacingOccurrences(of: "1'", with: "1'\"'\"'")
                 descriptor = descriptor.replacingOccurrences(of: "0'", with: "0'\"'\"'")
@@ -278,7 +292,7 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
                     
                 }
                 
-            } else {
+            } else if desc == "wpkh" {
                 
                 //BIP84
                 if isTestnet {
@@ -291,12 +305,35 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
                     
                 }
                 
+            } else if desc == "sh" {
+                
+                //sh(wpkh(03fff97bd5755eeea420453a14355235d382f6472f8568a18b2f057a1460297556))
+                
+                if isTestnet {
+                    
+                    param = "\"\(desc)(wpkh([\(fingerprint)/49h/1h/0h]\(xprv)/0/*))\""
+                    
+                } else {
+                    
+                    param = "\"\(desc)(wpkh([\(fingerprint)/49h/0h/0h]\(xprv)/0/*))\""
+                    
+                }
+                
             }
             
         } else {
             
             //treat the xpub as a BIP32 extended key
-            param = "\"\(desc)(\(xprv)/*)\""
+            
+            if desc != "sh" {
+                
+                param = "\"\(desc)(\(xprv)/*)\""
+                
+            } else {
+                
+                param = "\"\(desc)(wpkh(\(xprv)/*))\""
+                
+            }
             
         }
         
@@ -355,7 +392,7 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
                     
                 }
                 
-            } else {
+            } else if desc == "wpkh" {
                 
                 //BIP84
                 if isTestnet {
@@ -368,12 +405,35 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
                     
                 }
                 
+            } else if desc == "sh" {
+                           
+                //sh(wpkh(03fff97bd5755eeea420453a14355235d382f6472f8568a18b2f057a1460297556))
+                
+                if isTestnet {
+                    
+                    param = "\"\(desc)(wpkh([\(fingerprint)/49h/1h/0h]\(xpub)/0/*))\""
+                    
+                } else {
+                    
+                    param = "\"\(desc)(wpkh([\(fingerprint)/49h/0h/0h]\(xpub)/0/*))\""
+                    
+                }
+                
             }
             
         } else {
             
             //treat the xpub as a BIP32 extended key
-            param = "\"\(desc)(\(xpub)/*)\""
+            
+            if desc != "sh" {
+                
+                param = "\"\(desc)(\(xpub)/*)\""
+                
+            } else {
+                
+                param = "\"\(desc)(wpkh(\(xpub)/*))\""
+                
+            }
             
             
         }

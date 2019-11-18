@@ -12,7 +12,6 @@ class ChooseRangeViewController: UIViewController, UIPickerViewDelegate, UIPicke
     
     let picker = UIPickerView()
     let connectingView = ConnectingView()
-    
     var range = ""
     var dict = [String:Any]()
     var isHDMusig = Bool()

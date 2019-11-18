@@ -72,7 +72,6 @@
 		D071A2A0214880F700C4BCB3 /* Search - tripkey.png in Resources */ = {isa = PBXBuildFile; fileRef = D071A29F214880F700C4BCB3 /* Search - tripkey.png */; };
 		D073E16E22558CDE0012A28C /* CoreDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D073E16D22558CDE0012A28C /* CoreDataService.swift */; };
 		D073E17022558DF30012A28C /* AESService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D073E16F22558DF30012A28C /* AESService.swift */; };
-		D073E17222559A6D0012A28C /* CredentialConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D073E17122559A6D0012A28C /* CredentialConverter.swift */; };
 		D07A8237235D4FEE00F7E095 /* ImportMultiSigViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D07A8236235D4FEE00F7E095 /* ImportMultiSigViewController.swift */; };
 		D07A823B235D501A00F7E095 /* MuSigDisplayerTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D07A823A235D501A00F7E095 /* MuSigDisplayerTableViewController.swift */; };
 		D07E0DE622F9168F00A81FA8 /* WalletManagerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D07E0DE522F9168F00A81FA8 /* WalletManagerViewController.swift */; };
@@ -207,7 +206,6 @@
 		D071A29F214880F700C4BCB3 /* Search - tripkey.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Search - tripkey.png"; sourceTree = "<group>"; };
 		D073E16D22558CDE0012A28C /* CoreDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataService.swift; sourceTree = "<group>"; };
 		D073E16F22558DF30012A28C /* AESService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AESService.swift; sourceTree = "<group>"; };
-		D073E17122559A6D0012A28C /* CredentialConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialConverter.swift; sourceTree = "<group>"; };
 		D07A8236235D4FEE00F7E095 /* ImportMultiSigViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImportMultiSigViewController.swift; sourceTree = "<group>"; };
 		D07A823A235D501A00F7E095 /* MuSigDisplayerTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MuSigDisplayerTableViewController.swift; sourceTree = "<group>"; };
 		D07E0DE522F9168F00A81FA8 /* WalletManagerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletManagerViewController.swift; sourceTree = "<group>"; };
@@ -461,7 +459,6 @@
 				D02094EF2257FB78002E8E7A /* FirstTime.swift */,
 				D073E16D22558CDE0012A28C /* CoreDataService.swift */,
 				D073E16F22558DF30012A28C /* AESService.swift */,
-				D073E17122559A6D0012A28C /* CredentialConverter.swift */,
 				D0286D6021E2672D00954991 /* SSH */,
 				D073E16C225588EF0012A28C /* Tor */,
 				D0A7CF72227967F900B683A0 /* AddressParser.swift */,
@@ -1055,7 +1052,6 @@
 				D0233F282361EA5F0041FFBA /* shim.swift in Sources */,
 				D05692E321434452006DF0F4 /* MainMenuViewController.swift in Sources */,
 				D02FE43323136A600048F8C4 /* NodeLogic.swift in Sources */,
-				D073E17222559A6D0012A28C /* CredentialConverter.swift in Sources */,
 				D07A8237235D4FEE00F7E095 /* ImportMultiSigViewController.swift in Sources */,
 				D0855FC822B0C71900DBBFC2 /* CreatePSBTViewController.swift in Sources */,
 				D02DC3B9226204CF00ADFFE9 /* SSHHelper.swift in Sources */,
@@ -1291,7 +1287,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development: Peter Denton (H3TA3EF8PX)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 87;
+				CURRENT_PROJECT_VERSION = 88;
 				DEVELOPMENT_TEAM = 69FR345CDA;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1303,7 +1299,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.85;
+				MARKETING_VERSION = 1.86;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1326,7 +1322,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Distribution: Peter Denton (69FR345CDA)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 87;
+				CURRENT_PROJECT_VERSION = 88;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 69FR345CDA;
 				ENABLE_TESTABILITY = NO;
@@ -1340,7 +1336,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.85;
+				MARKETING_VERSION = 1.86;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
