@@ -2700,7 +2700,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
             </objects>
             <point key="canvasLocation" x="-2791.1999999999998" y="375.56221889055473"/>
         </scene>
-        <!--Settings v0.1.21-->
+        <!--Settings v0.1.23-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="BitSense" customModuleProvider="target" sceneMemberID="viewController">
@@ -2788,7 +2788,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                         <viewLayoutGuide key="safeArea" id="Cze-jj-bFe"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="Settings v0.1.21" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="Settings v0.1.23" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
@@ -3375,20 +3375,20 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="SSH" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cRY-Ap-4du">
+                            <label opaque="NO" userInteractionEnabled="NO" alpha="0.0" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="SSH" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cRY-Ap-4du">
                                 <rect key="frame" x="62.5" y="163" width="32" height="14"/>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="bJn-g3-5HP">
-                                <rect key="frame" x="272" y="185" width="51" height="31"/>
+                                <rect key="frame" x="163" y="185" width="51" height="31"/>
                                 <color key="onTintColor" red="0.0" green="0.97680455450000003" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <connections>
                                     <action selector="torSwitchAction:" destination="bdZ-xF-GZ9" eventType="valueChanged" id="5jv-p4-C6F"/>
                                 </connections>
                             </switch>
-                            <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="lgw-lE-JTV">
+                            <switch opaque="NO" alpha="0.0" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="lgw-lE-JTV">
                                 <rect key="frame" x="54" y="185" width="51" height="31"/>
                                 <color key="onTintColor" red="0.0" green="0.97680455450000003" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <connections>
@@ -3402,7 +3402,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tor" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xan-Nq-5Zf">
-                                <rect key="frame" x="284" y="163" width="25" height="14"/>
+                                <rect key="frame" x="175" y="163" width="25" height="14"/>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -3427,9 +3427,9 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                                 <state key="normal" title="Button"/>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kR8-sm-Ak0">
-                                <rect key="frame" x="54" y="298" width="267" height="71"/>
+                                <rect key="frame" x="54" y="298" width="267" height="108"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="71" id="CwE-TB-j4A"/>
+                                    <constraint firstAttribute="height" constant="108" id="CwE-TB-j4A"/>
                                     <constraint firstAttribute="width" constant="267" id="dhk-u0-CaY"/>
                                 </constraints>
                                 <state key="normal" image="QR">
@@ -3442,7 +3442,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="scan QR to quick connect" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rPd-gS-EdX">
                                 <rect key="frame" x="89" y="369" width="197" height="21"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="MB0-vL-2TQ">
@@ -3459,16 +3459,17 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                             <constraint firstItem="bJn-g3-5HP" firstAttribute="top" secondItem="xan-Nq-5Zf" secondAttribute="bottom" constant="8" id="CiR-aN-zp2"/>
                             <constraint firstItem="bJn-g3-5HP" firstAttribute="centerX" secondItem="xan-Nq-5Zf" secondAttribute="centerX" id="FSn-J9-O6C"/>
                             <constraint firstItem="MB0-vL-2TQ" firstAttribute="trailing" secondItem="fx6-xT-ZCO" secondAttribute="trailing" id="HC1-11-cVc"/>
-                            <constraint firstItem="kR8-sm-Ak0" firstAttribute="centerY" secondItem="PkC-s8-elz" secondAttribute="centerY" id="OgN-Mb-EAe"/>
+                            <constraint firstItem="kR8-sm-Ak0" firstAttribute="centerY" secondItem="PkC-s8-elz" secondAttribute="centerY" constant="18.5" id="OgN-Mb-EAe"/>
                             <constraint firstItem="0h9-MN-fB3" firstAttribute="trailing" secondItem="fx6-xT-ZCO" secondAttribute="trailing" id="SDl-7f-Q1y"/>
-                            <constraint firstItem="fx6-xT-ZCO" firstAttribute="trailing" secondItem="bJn-g3-5HP" secondAttribute="trailing" constant="54" id="SVw-9b-qo7"/>
                             <constraint firstItem="kR8-sm-Ak0" firstAttribute="centerX" secondItem="PkC-s8-elz" secondAttribute="centerX" id="T2k-q0-ak6"/>
+                            <constraint firstItem="xan-Nq-5Zf" firstAttribute="centerX" secondItem="PkC-s8-elz" secondAttribute="centerX" id="VXw-Ns-Ong"/>
                             <constraint firstItem="lgw-lE-JTV" firstAttribute="top" secondItem="cRY-Ap-4du" secondAttribute="bottom" constant="8" id="X4N-fp-rZu"/>
                             <constraint firstItem="PD7-bM-EXX" firstAttribute="leading" secondItem="fx6-xT-ZCO" secondAttribute="leading" constant="16" id="XsS-9Q-crq"/>
                             <constraint firstItem="lgw-lE-JTV" firstAttribute="leading" secondItem="fx6-xT-ZCO" secondAttribute="leading" constant="54" id="iAp-gJ-5ux"/>
                             <constraint firstItem="MB0-vL-2TQ" firstAttribute="bottom" secondItem="fx6-xT-ZCO" secondAttribute="bottom" id="lNe-Xo-w4L"/>
-                            <constraint firstItem="rPd-gS-EdX" firstAttribute="top" secondItem="kR8-sm-Ak0" secondAttribute="bottom" id="lUN-Go-GHG"/>
+                            <constraint firstItem="rPd-gS-EdX" firstAttribute="top" secondItem="kR8-sm-Ak0" secondAttribute="bottom" constant="-37" id="lUN-Go-GHG"/>
                             <constraint firstItem="cRY-Ap-4du" firstAttribute="top" secondItem="PD7-bM-EXX" secondAttribute="bottom" constant="64" id="lr6-ST-Iaz"/>
+                            <constraint firstItem="bJn-g3-5HP" firstAttribute="centerX" secondItem="PkC-s8-elz" secondAttribute="centerX" id="oSX-E6-kVO"/>
                             <constraint firstItem="rPd-gS-EdX" firstAttribute="centerX" secondItem="PkC-s8-elz" secondAttribute="centerX" id="pgy-yi-2hN"/>
                             <constraint firstItem="lgw-lE-JTV" firstAttribute="centerX" secondItem="cRY-Ap-4du" secondAttribute="centerX" id="rjM-Ms-4Vr"/>
                             <constraint firstItem="MB0-vL-2TQ" firstAttribute="top" secondItem="PkC-s8-elz" secondAttribute="top" id="yVj-W8-qiC"/>
@@ -4684,10 +4685,10 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="cvp-U1-bU5"/>
         <segue reference="XqS-DL-3qc"/>
         <segue reference="YeE-je-QtC"/>
-        <segue reference="GsY-cw-4Ut"/>
+        <segue reference="X76-BN-dSF"/>
         <segue reference="HNI-HG-9ZQ"/>
         <segue reference="um8-sQ-MPL"/>
-        <segue reference="6HW-Pq-bwM"/>
+        <segue reference="G1i-Bv-OSl"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
 </document>

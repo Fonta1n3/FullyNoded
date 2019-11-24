@@ -83,6 +83,7 @@ class MakeRPCCall {
                 var request = URLRequest(url: url)
                 request.httpMethod = "POST"
                 request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
+                print("request: \("{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method)\",\"params\":[\(formattedParam)]}")")
                 request.httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method)\",\"params\":[\(formattedParam)]}".data(using: .utf8)
                 
                 let queue = DispatchQueue(label: "com.FullyNoded.torQueue")

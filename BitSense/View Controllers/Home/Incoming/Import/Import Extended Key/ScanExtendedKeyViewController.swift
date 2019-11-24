@@ -244,7 +244,9 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
     }
     
     func importXprv(xprv: String) {
+        print("importxprv")
         
+        var xprvDescriptor = ""
         let reducer = Reducer()
         
         func getDescriptor() {
@@ -261,14 +263,15 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
                 
             } else {
                 
-                descriptor = "\"\(result["descriptor"] as! String)\""
-                descriptor = descriptor.replacingOccurrences(of: "4'", with: "4'\"'\"'")
-                descriptor = descriptor.replacingOccurrences(of: "1'", with: "1'\"'\"'")
-                descriptor = descriptor.replacingOccurrences(of: "0'", with: "0'\"'\"'")
-                dict["descriptor"] = descriptor
+                let checksum = result["checksum"] as? String ?? ""
+                xprvDescriptor += "#" + checksum
+                xprvDescriptor = xprvDescriptor.replacingOccurrences(of: "4'", with: "4'\"'\"'")
+                xprvDescriptor = xprvDescriptor.replacingOccurrences(of: "1'", with: "1'\"'\"'")
+                xprvDescriptor = xprvDescriptor.replacingOccurrences(of: "0'", with: "0'\"'\"'")
+                dict["descriptor"] = "\"\(xprvDescriptor)\""
                 
                 self.executeNodeCommand(method: .deriveaddresses,
-                                        param: "\(descriptor), ''\(convertedRange)''")
+                                        param: "\"\(xprvDescriptor)\", ''\(convertedRange)''")
                 
             }
             
@@ -328,14 +331,18 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
             if desc != "sh" {
                 
                 param = "\"\(desc)(\(xprv)/*)\""
+                xprvDescriptor = "\(desc)(\(xprv)/*)"
                 
             } else {
                 
                 param = "\"\(desc)(wpkh(\(xprv)/*))\""
+                xprvDescriptor = "\(desc)(wpkh(\(xprv)/*))"
                 
             }
             
         }
+        
+        
         
         reducer.makeCommand(command: .getdescriptorinfo,
                             param: param,
@@ -344,6 +351,7 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
     }
     
     func importXpub(xpub: String) {
+        print("importxpub")
         
         let reducer = Reducer()
         

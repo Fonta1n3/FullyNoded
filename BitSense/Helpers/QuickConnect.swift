@@ -147,7 +147,7 @@ class QuickConnect {
                             
                             print("standup node added")
                             
-                            if nodes.count > 0 {
+                            if nodes.count > 1 {
                                 
                                 let ud = UserDefaults.standard
                                 ud.removeObject(forKey: "walletName")
@@ -241,35 +241,35 @@ class QuickConnect {
                 
             }
             
-            goHome()
+            //goHome()
                         
         } else {
             
-            goHome()
+            //goHome()
             
         }
                 
     }
     
-    private func goHome() {
-        
-        if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
-            
-            let window = appDelegate.window
-            
-            if let myTabBar = window?.rootViewController as? UITabBarController {
-                
-                DispatchQueue.main.async {
-                    
-                    myTabBar.selectedIndex = 0
-                    
-                }
-                
-            }
-            
-        }
-        
-    }
+//    private func goHome() {
+//
+//        if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+//
+//            let window = appDelegate.window
+//
+//            if let myTabBar = window?.rootViewController as? UITabBarController {
+//
+//                DispatchQueue.main.async {
+//
+//                    myTabBar.selectedIndex = 0
+//
+//                }
+//
+//            }
+//
+//        }
+//
+//    }
     
 }
 

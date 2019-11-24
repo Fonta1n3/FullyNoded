@@ -143,7 +143,7 @@ class ChooseConnectionTypeViewController: UIViewController {
         } else {
             
             sshSwitchOutlet.isOn = false
-            torSwitchOutlet.isOn = false
+            torSwitchOutlet.isOn = true
             
         }
         
@@ -249,15 +249,25 @@ class ChooseConnectionTypeViewController: UIViewController {
         
         let qc = QuickConnect()
     
-        func getResult() {
+        func nodeAdded() {
             
             print("result")
             
             if !qc.errorBool {
                 
-                DispatchQueue.main.async {
+                if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
                     
-                    self.back()
+                    let window = appDelegate.window
+                    
+                    if let myTabBar = window?.rootViewController as? UITabBarController {
+                        
+                        DispatchQueue.main.async {
+                            
+                            myTabBar.selectedIndex = 0
+                            
+                        }
+                        
+                    }
                     
                 }
                 
@@ -275,7 +285,7 @@ class ChooseConnectionTypeViewController: UIViewController {
             
             qc.addNode(vc: self,
                        url: url,
-                       completion: getResult)
+                       completion: nodeAdded)
             
         } else {
             

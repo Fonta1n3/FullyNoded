@@ -311,6 +311,11 @@ PR's welcome.
 
 ## Changes
 
+### v0.1.22
+- fix node updating not displaying feedback
+- fix scanning quick connect not automatically navigating to home screen
+- start removing SSH
+
 ### v0.1.21
 - add support for bip49 and segwit wrapped P2SH addresses (address prefix 3) when importing xpubs
 - major improvements to how the app interacts with the local core data database, should prevent weird bugs, crashes etc...

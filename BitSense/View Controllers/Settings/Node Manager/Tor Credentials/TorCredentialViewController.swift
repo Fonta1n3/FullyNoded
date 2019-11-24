@@ -236,9 +236,17 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
                                             
                                             print("pubkey updated successfully")
                                             
+                                            displayAlert(viewController: self,
+                                                         isError: false,
+                                                         message: "Node updated")
+                                            
                                         } else {
                                             
                                             print("error updating pubkey")
+                                            
+                                            displayAlert(viewController: self,
+                                                         isError: true,
+                                                         message: "Error updating node")
                                             
                                         }
                                         

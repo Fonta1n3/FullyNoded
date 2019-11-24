@@ -47,6 +47,7 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
         
         let str = ImportStruct(dictionary: dict)
         descriptor = str.descriptor
+        print("descriptor to import = \(descriptor)")
         label = str.label
         timestamp = str.timeStamp
         isTestnet = str.isTestnet
@@ -55,7 +56,6 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
         convertedRange = str.convertedRange
         addToKeypool = str.addToKeyPool
         isInternal = str.isInternal
-        
         
         if descriptor.contains("/84'") {
             
@@ -84,74 +84,6 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
         case "BIP32Legacy": bip32 = true
         default: break
         }
-        
-        /*if !isHDMusig {
-            
-            descriptor = dict["descriptor"] as! String
-            label = dict["label"] as! String
-            timestamp = dict["rescanDate"] as! Int
-            
-            if importedKey.hasPrefix("t") {
-                
-                isTestnet = true
-                
-            } else {
-                
-                isTestnet = false
-                
-            }
-            
-            if let derivation = dict["derivation"] as? String {
-                
-                switch derivation {
-                case "BIP84": bip84 = true
-                case "BIP44": bip44 = true
-                case "BIP32Segwit": bip32 = true
-                case "BIP32Legacy": bip32 = true
-                default: break
-                }
-                
-            } else {
-                
-                if descriptor.contains("/84'") {
-                    
-                    bip84 = true
-                    bip44 = false
-                    bip32 = false
-                    
-                } else if descriptor.contains("/44'") {
-                    
-                    bip44 = true
-                    bip84 = false
-                    bip32 = false
-                    
-                } else {
-                    
-                    bip44 = false
-                    bip84 = false
-                    bip32 = true
-                    
-                }
-                
-            }
-            
-            range = dict["range"] as! String
-            convertedRange = dict["convertedRange"] as! [Int]
-            addToKeypool = dict["addToKeypool"] as! Bool
-            isInternal = dict["addAsChange"] as! Bool
-            
-        } else if isHDMusig {
-            
-            range = dict["range"] as! String
-            convertedRange = dict["convertedRange"] as! [Int]
-            descriptor = dict["descriptor"] as! String
-            label = dict["label"] as! String
-            timestamp = dict["rescanDate"] as! Int
-            addToKeypool = false
-            isInternal = false
-            
-        }*/
-        
         
     }
     

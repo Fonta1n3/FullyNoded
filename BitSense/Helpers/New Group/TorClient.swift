@@ -82,10 +82,7 @@ class TorClient {
                 self.config.cookieAuthentication = true
                 self.config.dataDirectory = URL(fileURLWithPath: torDir)
                 self.config.controlSocket = self.config.dataDirectory?.appendingPathComponent("cp")
-                self.config.arguments = [
-                    "--ignore-missing-torrc"
-                    ]
-                
+                self.config.arguments = ["--ignore-missing-torrc"]
                 self.thread = TorThread(configuration: self.config)
                 
             } else {
