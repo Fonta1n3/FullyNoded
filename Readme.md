@@ -269,7 +269,7 @@ Example with label and V2 password:
 
 Bitcoin Core includes a ton of functionality that is not shown to the user in the [GUI](https://www.computerhope.com/jargon/g/gui.htm), this functionality must be accessed by using the [command line](https://en.wikipedia.org/wiki/Command-line_interface) aka CLI, doing so can be quite tedious where tiny typos will return errors. Fully Noded does the hard work of issuing the CLI commands to your node in a programmatic and reliable way powered by the taps you make on your iPhone. The purpose of Fully Noded is to allow users a secure and private way to connect to and control their node, unlocking all the powerful features Bitcoin Core has to offer without needing to use CLI.
 
-Fully Noded needs to connect to the computer that your node is running on in order to issue commands to your node. It does this either using [SSH](https://en.wikipedia.org/wiki/Secure_Shell) or [Tor](https://lifehacker.com/what-is-tor-and-should-i-use-it-1527891029).
+Fully Noded needs to connect to the computer that your node is running on in order to issue commands to your node. It does this using [Tor](https://lifehacker.com/what-is-tor-and-should-i-use-it-1527891029).
 
 Connecting to your nodes computer is the first part, once connected Fully Noded then needs to be able to issue [RPC commands](https://en.bitcoin.it/wiki/API_reference_(JSON-RPC)) to your node. It issues these commands to your [local host](https://whatismyipaddress.com/localhost) over [curl](https://curl.haxx.se). In order to be able to do that Fully Noded needs to know your RPC credentials,  `rpcusername` and  `rpcpassword`. 
 
@@ -304,12 +304,15 @@ PR's welcome.
 
 ## Built With
 
-- [NMSSH](https://github.com/NMSSH/NMSSH) for SSH'ing into your node.
 - [CryptoSwift](https://github.com/krzyzanowskim/CryptoSwift) for encrypting your nodes credentials.
 - [keychain-swift](https://github.com/evgenyneu/keychain-swift) for storing your nodes credentials decryption key on your iPhones secure enclave.
 - [Tor](https://github.com/iCepa/Tor.framework) for connecting to your node more privately and securely.
 
 ## Changes
+
+### v0.1.26
+- fix local tor v3 auth key generation
+- remove ssh completely
 
 ### v0.1.25
 - fix a bug that started the tor thread before the v2 authentication password was written to the tor config, preventing myNode from connecting
