@@ -368,16 +368,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         
         switch segue.identifier {
             
-        case "sshCredentials":
-            
-            if let vc = segue.destination as? SSHCredentialsViewController {
-                
-                vc.selectedNode = self.selectedNode
-                vc.newNode = self.newNode
-                vc.createNew = self.createNew
-                    
-            }
-            
         case "goToTorDetails":
             
             if let vc = segue.destination as? TorCredentialViewController {

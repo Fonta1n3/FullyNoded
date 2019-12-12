@@ -91,7 +91,7 @@ class ProcessPSBTViewController: UIViewController {
         
         if verify {
             
-            method = BTC_CLI_COMMAND.decoderawtransaction
+            method = .decoderawtransaction
             connectingString = "verifying"
             navBarTitle = "Verify"
             
@@ -99,7 +99,7 @@ class ProcessPSBTViewController: UIViewController {
         
         if broadcast {
             
-            method = BTC_CLI_COMMAND.sendrawtransaction
+            method = .sendrawtransaction
             connectingString = "broadcasting"
             navBarTitle = "Broadcast"
             
@@ -107,7 +107,7 @@ class ProcessPSBTViewController: UIViewController {
         
         if process {
             
-            method = BTC_CLI_COMMAND.walletprocesspsbt
+            method = .walletprocesspsbt
             connectingString = "processing psbt"
             navBarTitle = "Process PSBT"
             
@@ -115,7 +115,7 @@ class ProcessPSBTViewController: UIViewController {
         
         if analyze {
             
-            method = BTC_CLI_COMMAND.analyzepsbt
+            method = .analyzepsbt
             connectingString = "analyzing psbt"
             navBarTitle = "Analyze PSBT"
             
@@ -123,7 +123,7 @@ class ProcessPSBTViewController: UIViewController {
         
         if convert {
             
-            method = BTC_CLI_COMMAND.converttopsbt
+            method = .converttopsbt
             connectingString = "converting psbt"
             navBarTitle = "Convert PSBT"
             
@@ -131,7 +131,7 @@ class ProcessPSBTViewController: UIViewController {
         
         if finalize {
             
-            method = BTC_CLI_COMMAND.finalizepsbt
+            method = .finalizepsbt
             connectingString = "finalizing psbt"
             navBarTitle = "Finalize PSBT"
             
@@ -141,13 +141,13 @@ class ProcessPSBTViewController: UIViewController {
             
             if decodeRaw {
                 
-                method = BTC_CLI_COMMAND.decoderawtransaction
+                method = .decoderawtransaction
                 
             }
             
             if decodePSBT {
                 
-                method = BTC_CLI_COMMAND.decodepsbt
+                method = .decodepsbt
                 
             }
             
@@ -185,11 +185,11 @@ class ProcessPSBTViewController: UIViewController {
                 
                 if psbt.hasPrefix("0") || psbt.hasPrefix("1") {
                     
-                    method = BTC_CLI_COMMAND.decoderawtransaction
+                    method = .decoderawtransaction
                     
                 } else {
                     
-                    method = BTC_CLI_COMMAND.decodepsbt
+                    method = .decodepsbt
                     
                 }
                 

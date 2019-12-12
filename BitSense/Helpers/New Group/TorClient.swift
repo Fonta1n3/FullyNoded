@@ -52,63 +52,72 @@ class TorClient {
             //add V3 auth keys to ClientOnionAuthDir if any exist
             let torDir = self.createTorDirectory()
             self.authDirPath = self.createAuthDirectory()
-            self.clearAuthKeys()
             
-            //check if it is V2 or not
-            //HidServAuth 1234567890abcdefg.onion abcdef01234567890+/K
-            
-            // Make sure we don't have a thread already.
-            if self.thread == nil {
-                print("thread is nil")
+            self.clearAuthKeys {
                 
-                self.isOperational = true
-                
-                self.config.options = [
+                self.addAuthKeysToAuthDirectory {
                     
-                    "DNSPort": "12345",
-                    "AutomapHostsOnResolve": "1",
-                    "SocksPort": "19050",
-                    "AvoidDiskWrites": "1",
-                    "ClientOnionAuthDir": "\(self.authDirPath)",
-                    "HidServAuth": "\(self.v2Auth)",
-                    "HardwareAccel": "1",
-                    "LearnCircuitBuildTimeout": "1",
-                    "NumEntryGuards": "8",
-                    "SafeSocks": "1",
-                    "LongLivedPorts": "80,443",
-                    "NumCPUs": "2"
+                    //check if it is V2 or not
+                    //HidServAuth 1234567890abcdefg.onion abcdef01234567890+/K
                     
-                ]
-                self.config.cookieAuthentication = true
-                self.config.dataDirectory = URL(fileURLWithPath: torDir)
-                self.config.controlSocket = self.config.dataDirectory?.appendingPathComponent("cp")
-                self.config.arguments = ["--ignore-missing-torrc"]
-                self.thread = TorThread(configuration: self.config)
+                    // Make sure we don't have a thread already.
+                    if self.thread == nil {
+                        
+                        print("thread is nil")
+                        
+                        self.isOperational = true
+                        
+                        self.config.options = [
+                            
+                            "DNSPort": "12345",
+                            "AutomapHostsOnResolve": "1",
+                            "SocksPort": "19050",
+                            "AvoidDiskWrites": "1",
+                            "ClientOnionAuthDir": "\(self.authDirPath)",
+                            "HidServAuth": "\(self.v2Auth)",
+                            "HardwareAccel": "1",
+                            "LearnCircuitBuildTimeout": "1",
+                            "NumEntryGuards": "8",
+                            "SafeSocks": "1",
+                            "LongLivedPorts": "80,443",
+                            "NumCPUs": "2"
+                            
+                        ]
+                        
+                        self.config.cookieAuthentication = true
+                        self.config.dataDirectory = URL(fileURLWithPath: torDir)
+                        self.config.controlSocket = self.config.dataDirectory?.appendingPathComponent("cp")
+                        self.config.arguments = ["--ignore-missing-torrc"]
+                        self.thread = TorThread(configuration: self.config)
+                        
+                    } else {
+                        
+                        print("thread is not nil")
+                        
+                    }
+                    
+                    // Initiate the controller.
+                    self.controller = TorController(socketURL: self.config.controlSocket!)
+                    
+                    // Start a tor thread.
+                    if self.thread.isExecuting == false {
+                        
+                        self.thread.start()
+                        print("tor thread started")
+                        
+                    } else {
+                        
+                        print("thread isExecuting true")
+                        
+                    }
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        // Connect Tor controller.
+                        self.connectController(completion: completion)
+                    }
+                    
+                }
                 
-            } else {
-                
-                print("thread is not nil")
-                
-            }
-            
-            // Initiate the controller.
-            self.controller = TorController(socketURL: self.config.controlSocket!)
-            
-            // Start a tor thread.
-            if self.thread.isExecuting == false {
-                
-                self.thread.start()
-                print("tor thread started")
-                
-            } else {
-                
-                print("thread isExecuting true")
-                
-            }
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                // Connect Tor controller.
-                self.connectController(completion: completion)
             }
             
         }
@@ -286,7 +295,7 @@ class TorClient {
         
     }
     
-    private func addAuthKeysToAuthDirectory() {
+    private func addAuthKeysToAuthDirectory(completion: @escaping () -> Void) {
         print("addAuthKeysToAuthDirectory")
         
         let authPath = self.authDirPath
@@ -316,10 +325,12 @@ class TorClient {
                             try authString.write(to: file, atomically: true, encoding: .utf8)
                             
                             print("successfully wrote authkey to file")
+                            //completion()
                                                 
                         } catch {
                             
                             print("failed writing auth key")
+                            //completion()
                         }
                         
                         
@@ -330,13 +341,18 @@ class TorClient {
                         let hostname = onionAddressArr[0]
                         let v2pass = aes.decryptKey(keyToDecrypt: str.v2password)
                         self.v2Auth = "\(hostname) \(v2pass)"
+                        print("v2auth = \(self.v2Auth)")
+                        //completion()
                         
                     }
                     
                 }
                 
+                completion()
+                
             } else {
                 
+                completion()
                 print("error fetching nodes")
                 
             }
@@ -345,7 +361,7 @@ class TorClient {
         
     }
     
-    private func clearAuthKeys() {
+    private func clearAuthKeys(completion: @escaping () -> Void) {
         
         //removes all authkeys
         let fileManager = FileManager.default
@@ -363,13 +379,14 @@ class TorClient {
                 
             }
             
+            completion()
+            
         } catch {
             
             print("error deleting existing keys")
+            completion()
             
         }
-        
-        self.addAuthKeysToAuthDirectory()
         
     }
     

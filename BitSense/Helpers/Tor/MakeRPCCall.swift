@@ -52,6 +52,7 @@ class MakeRPCCall {
                 self.rpcpassword = self.aes.decryptKey(keyToDecrypt: node.rpcpassword)
                 
                 var walletUrl = "http://\(self.rpcusername):\(self.rpcpassword)@\(self.onionAddress)"
+                //print("walleturl = \(walletUrl)")
                 let ud = UserDefaults.standard
                 
                 if ud.object(forKey: "walletName") != nil {

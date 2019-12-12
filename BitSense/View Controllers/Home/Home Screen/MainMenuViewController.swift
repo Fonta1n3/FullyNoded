@@ -95,7 +95,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     self.activeNode = self.activeNodeDict().node
                     let node = NodeStruct(dictionary: self.activeNode)
                     let newId = node.id
-                    IsUsingSSH.sharedInstance = node.usingSSH
                     
                     if newId != self.existingNodeID {
                         
@@ -151,29 +150,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     @objc func refreshData(_ sender: Any) {
         print("refreshData")
         
-        if SSHService.sharedInstance.session != nil {
+        if connector.torConnected {
             
-            if connector.ssh != nil {
-                
-                if connector.ssh.session.isConnected {
-                    
-                    refreshDataNow()
-                    
-                }
-                
-            } else if connector.torConnected {
-            
-                refreshDataNow()
-                
-            } else {
-                
-                refresh()
-                
-            }
-                
-        } else if connector.torConnected {
-            
-                refreshDataNow()
+            refreshDataNow()
             
         } else {
             
@@ -1143,16 +1122,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 let sshBool = str.usingSSH
                 let torBool = str.usingTor
                 self.connector = Connector()
-                
-                if sshBool {
-                    
-                    self.connectSSH(connector: self.connector)
-                    
-                } else if torBool {
-                    
-                    self.connectTor(connector: self.connector)
-                    
-                }
+                self.connectTor(connector: self.connector)
                 
             } else {
                 
@@ -1166,35 +1136,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             }
             
         }
-        
-    }
-    
-    func connectSSH(connector: Connector) {
-        
-        connector.activeNode = self.activeNode
-        
-        func completion() {
-            
-            if !connector.sshConnected {
-                
-                removeSpinner()
-                removeLoader()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: connector.errorDescription ?? "unable to connect via ssh")
-                
-            } else {
-                
-                viewHasLoaded = true
-                removeSpinner()
-                loadWalletFirst()
-                
-            }
-            
-        }
-        
-        connector.connectSSH(completion: completion)
         
     }
     

@@ -311,6 +311,13 @@ PR's welcome.
 
 ## Changes
 
+### v0.1.25
+- fix a bug that started the tor thread before the v2 authentication password was written to the tor config, preventing myNode from connecting
+
+### v0.1.23 - 0.1.24
+- fix node not navigating back to home screen when scanning a QuickConnect QR (again)
+- enable compatibility with disablewallet=1
+
 ### v0.1.22
 - fix node updating not displaying feedback
 - fix scanning quick connect not automatically navigating to home screen

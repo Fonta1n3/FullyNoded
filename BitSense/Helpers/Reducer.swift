@@ -10,9 +10,6 @@ import Foundation
 
 class Reducer {
     
-    let isUsingSSH = IsUsingSSH.sharedInstance
-    let ssh = SSHService.sharedInstance
-    let makeSSHCall = SSHelper.sharedInstance
     let torRPC = MakeRPCCall.sharedInstance
     var dictToReturn = NSDictionary()
     var doubleToReturn = Double()
@@ -52,27 +49,27 @@ class Reducer {
                 
             } else {
                 
-                if command == BTC_CLI_COMMAND.unloadwallet {
+                if command == .unloadwallet {
                     
                     self.stringToReturn = "Wallet unloaded"
                     completion()
                     
-                } else if command == BTC_CLI_COMMAND.importprivkey {
+                } else if command == .importprivkey {
                     
                     self.stringToReturn = "Imported key success"
                     completion()
                     
-                } else if command == BTC_CLI_COMMAND.walletpassphrase {
+                } else if command == .walletpassphrase {
                     
                     self.stringToReturn = "Wallet decrypted"
                     completion()
                     
-                } else if command == BTC_CLI_COMMAND.walletpassphrasechange {
+                } else if command == .walletpassphrasechange {
                     
                     self.stringToReturn = "Passphrase updated"
                     completion()
                     
-                } else if command == BTC_CLI_COMMAND.encryptwallet || command == BTC_CLI_COMMAND.walletlock {
+                } else if command == .encryptwallet || command == .walletlock {
                     
                     self.stringToReturn = "Wallet encrypted"
                     completion()
@@ -91,7 +88,6 @@ class Reducer {
                 
                 if !torRPC.errorBool {
                     
-                    //let response = torRPC
                     let response = torRPC.objectToReturn
                     parseResponse(response: response as Any)
                     
@@ -120,55 +116,9 @@ class Reducer {
             
         }
         
-        func sshCommand() {
-            
-            print("ssh")
-            
-            func getResult() {
-                
-                if !makeSSHCall.errorBool {
-                    
-                    let response = makeSSHCall.objectToReturn
-                    parseResponse(response: response as Any)
-                    
-                } else {
-                    
-                    errorBool = true
-                    errorDescription = makeSSHCall.errorDescription
-                    completion()
-                    
-                }
-                
-            }
-            
-            if ssh.session != nil && ssh.session.isConnected && ssh.session.isAuthorized {
-                
-                makeSSHCall.executeSSHCommand(ssh: ssh,
-                                              method: command,
-                                              param: param,
-                                              completion: getResult)
-                
-            } else {
-                
-                errorBool = true
-                errorDescription = "ssh is not connected"
-                completion()
-                
-            }
-            
-        }
-        
-        if !isUsingSSH {
-            
-            torRPC.errorBool = false
-            torRPC.errorDescription = ""
-            torCommand()
-            
-        } else {
-            
-            sshCommand()
-            
-        }
+        torRPC.errorBool = false
+        torRPC.errorDescription = ""
+        torCommand()
         
     }
     

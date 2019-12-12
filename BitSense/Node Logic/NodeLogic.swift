@@ -31,16 +31,20 @@ class NodeLogic {
                 
             } else {
                 
-                if reducer.errorDescription == "Bitcoin Core error: Method not found" {
+                print("reducer.errorDescription = \(reducer.errorDescription)")
+                
+                if reducer.errorDescription.contains("Method not found") {
                     
                     errorBool = true
                     errorDescription = "walletDisabled"
+                    walletDisabled = true
                     completion()
                     
                 } else {
                     
                     errorBool = true
                     errorDescription = reducer.errorDescription
+                    walletDisabled = false
                     completion()
                     
                 }
@@ -109,7 +113,7 @@ class NodeLogic {
         
         if !walletDisabled {
             
-            reducer.makeCommand(command: BTC_CLI_COMMAND.getbalance,
+            reducer.makeCommand(command: .getbalance,
                                 param: "\"*\", 0, false",
                                 completion: getResult)
             

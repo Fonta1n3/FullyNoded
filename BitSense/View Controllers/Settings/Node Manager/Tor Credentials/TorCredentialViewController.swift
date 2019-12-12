@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import NMSSH
 
 class TorCredentialViewController: UIViewController, UINavigationControllerDelegate, UITextFieldDelegate, UITextViewDelegate {
     
@@ -35,50 +34,21 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
     
     @IBAction func generateKeyPair(_ sender: Any) {
         
-        //TO DO: fix local key generation...
-        
-//        let keygen = KeyGen()
-//        keygen.generate()
-//
-//        DispatchQueue.main.async {
-//
-//            self.generateButtonOutlet.alpha = 0
-//            self.pubkeyTextView.text = "descriptor:x25519:" + keygen.pubKey.replacingOccurrences(of: "====", with: "")
-//            self.authKeyField.text = (keygen.privKey).replacingOccurrences(of: "====", with: "")
-//            self.pubkeyDescription.alpha = 1
-//            self.pubkeyLabel.alpha = 1
-//        }
-        
-        let busy = ConnectingView()
-        
         DispatchQueue.main.async {
-            
-            busy.addConnectingView(vc: self, description: "getting keypair")
-            
-        }
         
-        self.getKeys { (response) in
-            
-            print("response = \(response)")
-            let arr = response.components(separatedBy: "\n")
-            let pubkey = arr[0].replacingOccurrences(of: "public:  ", with: "")
-            let privkey = arr[1].replacingOccurrences(of: "private: ", with: "")
-            
-            DispatchQueue.main.async {
-                
-                busy.removeConnectingView()
-                self.generateButtonOutlet.alpha = 0
-                self.pubkeyTextView.text = "descriptor:x25519:" + pubkey
-                self.authKeyField.text = privkey
-                self.pubkeyDescription.alpha = 1
-                self.pubkeyLabel.alpha = 1
-                
-            }
+            let keygen = KeyGen()
+            keygen.generate()
+            let pubkey = keygen.pubKey
+            let privkey = keygen.privKey
+            self.generateButtonOutlet.alpha = 0
+            self.pubkeyTextView.text = "descriptor:x25519:" + pubkey
+            self.authKeyField.text = privkey
+            self.pubkeyDescription.alpha = 1
+            self.pubkeyLabel.alpha = 1
             
         }
         
     }
-    
     
     @IBAction func scanNow(_ sender: Any) {
         
@@ -587,49 +557,6 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
             
         }
         
-    }
-    
-    func getKeys(response: @escaping(String) -> ()) {
-        
-        var error: NSError?
-        let queue = DispatchQueue(label: "com.FullyNoded.getInitialNodeConnection")
-        let cmd = "python3 createKeys.py"
-        var session:NMSSHSession!
-                    
-            queue.async {
-                
-                session = NMSSHSession.connect(toHost: "35.184.153.220",
-                                                    port: 22,
-                                                    withUsername: "fontainedenton")
-                                
-                if session.isConnected == true {
-                
-                    session.authenticate(byPassword: "V4RM73Q6C3MPTKMAI4VMWNBEVJ6YCOEBPY75HFKSA5CZP2YMB5JQ")
-                    
-                    if session.isAuthorized {
-                                                
-                        if let responseString = session?.channel.execute(cmd, error: &error) {
-                            
-                            if error != nil {
-                                
-                                print("error clearing history")
-                                response(("error"))
-                                
-                            } else {
-                                
-                                response((responseString))
-                                print("responsestring = \(responseString)")
-                                
-                            }
-                            
-                        }
-                        
-                    }
-                    
-                }
-                
-            }
-                
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

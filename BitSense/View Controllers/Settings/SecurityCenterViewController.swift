@@ -31,7 +31,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
     
     func numberOfSections(in tableView: UITableView) -> Int {
         
-        return 4
+        return 3
         
     }
     
@@ -101,10 +101,8 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             case 2: label.text = "Encrypt"
             case 3: label.text = "Decrypt"
             default: break}
-            
-        case 2: label.text = "Clear Bash History"
-            
-        case 3:
+                        
+        case 2:
             
             if ud.object(forKey: "bioMetricsDisabled") != nil {
                 
@@ -131,8 +129,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
         switch section {
         case 0: return "Password"
         case 1: return "Wallet"
-        case 2: return "History"
-        case 3: return "Biometrics"
+        case 2: return "Biometrics"
         default:return ""
         }
         
@@ -191,60 +188,6 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             }
             
         case 2:
-            
-            print("clear history")
-            
-            let connect = ConnectingView()
-            connect.addConnectingView(vc: self,
-                                      description: "clearing history")
-            
-            if SSHService.sharedInstance.session != nil {
-                
-                if SSHService.sharedInstance.session.isConnected {
-                    
-                    SSHService.sharedInstance.clearHistory { (success) in
-                        
-                        if success {
-                            
-                            connect.removeConnectingView()
-                            
-                            displayAlert(viewController: self,
-                                         isError: false,
-                                         message: "Bash history cleared")
-                            
-                        } else {
-                            
-                            connect.removeConnectingView()
-                            
-                            displayAlert(viewController: self,
-                                         isError: true,
-                                         message: "error clearing history")
-                            
-                        }
-                        
-                    }
-                    
-                } else {
-                    
-                    connect.removeConnectingView()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: "not connected with ssh")
-                    
-                }
-                
-            } else {
-                
-                connect.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "not connected with ssh")
-                
-            }
-            
-        case 3:
             
             //biometrics
             if ud.object(forKey: "bioMetricsDisabled") != nil {

@@ -218,12 +218,13 @@ class QuickConnect {
                             if success {
                                 
                                 self.errorBool = false
+                                //completion()
                                 
                             } else {
                                 
                                 self.errorBool = true
                                 self.errorDescription = "Node added but there was an error deactiving your other nodes"
-                                completion()
+                                //completion()
                                 
                             }
                             
@@ -231,7 +232,7 @@ class QuickConnect {
                             
                             self.errorBool = true
                             self.errorDescription = cd.errorDescription
-                            completion()
+                            //completion()
                             
                         }
                         
@@ -241,35 +242,17 @@ class QuickConnect {
                 
             }
             
+            completion()
             //goHome()
                         
         } else {
             
             //goHome()
+            completion()
             
         }
                 
     }
-    
-//    private func goHome() {
-//
-//        if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
-//
-//            let window = appDelegate.window
-//
-//            if let myTabBar = window?.rootViewController as? UITabBarController {
-//
-//                DispatchQueue.main.async {
-//
-//                    myTabBar.selectedIndex = 0
-//
-//                }
-//
-//            }
-//
-//        }
-//
-//    }
     
 }
 

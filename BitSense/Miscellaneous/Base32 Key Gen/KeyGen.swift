@@ -18,49 +18,20 @@ class KeyGen {
         
         if #available(iOS 13.0, *) {
             
-            let privKeyData = Curve25519.Signing.PrivateKey.init()
-            let pubKeyData = privKeyData.publicKey
+            let privKeyRaw = Curve25519.Signing.PrivateKey.init()
+            let pubKeyRaw = privKeyRaw.publicKey
             
-            pubKey = (base32Encode(pubKeyData.rawRepresentation)).replacingOccurrences(of: "====", with: "")
-            privKey = (base32Encode(privKeyData.rawRepresentation)).replacingOccurrences(of: "====", with: "")
-                        
-            if let rawpubkey = pubKey.base32DecodedData, let rawprivKey = privKey.base32DecodedData {
-                
-                print("rawpubkey = \(rawpubkey.count)")
-                
-                print("rawpubkey = \(rawpubkey)")
-                
-                let utf8PubKey = pubKey.utf8//base32Encode(rawpubkey)//String(data: rawpubkey, encoding: String.Encoding.utf8)!
-                let utf8PrivKey = privKey.utf8//base32Encode(rawprivKey)//String(data: rawprivKey, encoding: String.Encoding.utf8)
-                
-                print("utf8Pubkey = \(String(describing: utf8PubKey))")
-                print("utf8PrivKey = \(String(describing: utf8PrivKey))")
-                
-                print("pubKey = \(pubKey)")
-                print("prvKey = \(privKey)")
-                
-            }
+            let privKeyData = privKeyRaw.rawRepresentation
+            let pubkeyData = pubKeyRaw.rawRepresentation
             
+            let privkeyBase64 = privKeyData.base64EncodedString()
+            let pubkeyBase64 = pubkeyData.base64EncodedString()
             
+            let privkeyBase32 = privkeyBase64.base32EncodedString
+            let pubkeyBase32 = pubkeyBase64.base32EncodedString
             
-            
-//            need to format the keys like so:
-            
-            //already do this
-            
-//            def key_str(key):
-//            # bytes to base 32
-//            key_bytes = bytes(key)
-//            key_b32 = base64.b32encode(key_bytes)
-            
-            // so just do this
-            
-//            # strip trailing ====
-//            assert key_b32[-4:] == b'===='
-//            key_b32 = key_b32[:-4]
-//            # change from b'ASDF' to ASDF
-//            s = key_b32.decode('utf-8')
-//            return s
+            privKey = privkeyBase32.replacingOccurrences(of: "=", with: "")
+            pubKey = pubkeyBase32.replacingOccurrences(of: "=", with: "")
         
         }
         

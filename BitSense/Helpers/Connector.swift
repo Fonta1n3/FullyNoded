@@ -14,10 +14,6 @@ class Connector {
     var torRPC:MakeRPCCall!
     var torConnected:Bool!
     
-    var ssh:SSHService!
-    var makeSSHCall:SSHelper!
-    var sshConnected:Bool!
-    
     var activeNode:[String:Any]!
     
     var errorBool:Bool!
@@ -57,54 +53,6 @@ class Connector {
         } else {
             
             self.torClient.start(completion: completed)
-            
-        }
-        
-    }
-    
-    func connectSSH(completion: @escaping () -> Void) {
-        
-        self.ssh = SSHService.sharedInstance
-        self.ssh.activeNode = self.activeNode
-        self.ssh.commandExecuting = false
-        
-        self.ssh.connect() { (success, error) in
-            
-            if success {
-                
-                print("ssh connected succesfully")
-                self.makeSSHCall = SSHelper.sharedInstance
-                self.sshConnected = true
-                self.errorBool = false
-                completion()
-                
-            } else {
-                
-                print("ssh connection failed")
-                
-                if error != nil {
-                    
-                    if error == "" {
-                        
-                        self.errorDescription = "Unable to authenticate SSH"
-                        
-                    } else {
-                        
-                        self.errorDescription = error!
-                        
-                    }
-                    
-                } else {
-                    
-                    self.errorDescription = "Unable to connect"
-                    
-                }
-                
-                self.errorBool = true
-                self.sshConnected = false
-                completion()
-                
-            }
             
         }
         
