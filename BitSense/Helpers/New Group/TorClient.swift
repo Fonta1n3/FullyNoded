@@ -199,7 +199,21 @@ class TorClient {
                     self.controller?.getSessionConfiguration() { sessionConfig in
                         print("getsessionconfig")
                         
-                        self.sessionConfiguration = sessionConfig!
+//                        /*
+//                         NSInteger socksProxyPort = 12345;
+//
+//                         NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
+//                         config.connectionProxyDictionary = @{
+//                             (NSString *)kCFProxyTypeKey: (NSString *)kCFProxyTypeSOCKS,
+//                             (NSString *)kCFStreamPropertySOCKSProxyHost: @"localhost",
+//                             (NSString *)kCFStreamPropertySOCKSProxyPort: [NSNumber numberWithInteger: socksProxyPort]
+//                         };
+//                         */
+//
+                        self.sessionConfiguration.connectionProxyDictionary = [kCFProxyTypeKey: kCFProxyTypeSOCKS, kCFStreamPropertySOCKSProxyHost: "localhost", kCFStreamPropertySOCKSProxyPort: 19050]
+                        
+                        //self.sessionConfiguration = sessionConfig!
+                        //print("sessionConfig = \(sessionConfig!.connectionProxyDictionary!.description)")
                         self.session = URLSession(configuration: self.sessionConfiguration)
                         self.isOperational = true
                         completion()

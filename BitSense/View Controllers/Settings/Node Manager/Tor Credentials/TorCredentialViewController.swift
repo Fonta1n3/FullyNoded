@@ -37,14 +37,15 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
         DispatchQueue.main.async {
         
             let keygen = KeyGen()
-            keygen.generate()
-            let pubkey = keygen.pubKey
-            let privkey = keygen.privKey
-            self.generateButtonOutlet.alpha = 0
-            self.pubkeyTextView.text = "descriptor:x25519:" + pubkey
-            self.authKeyField.text = privkey
-            self.pubkeyDescription.alpha = 1
-            self.pubkeyLabel.alpha = 1
+            keygen.generate { (pubkey, privkey) in
+                
+                self.generateButtonOutlet.alpha = 0
+                self.pubkeyTextView.text = "descriptor:x25519:" + pubkey
+                self.authKeyField.text = privkey
+                self.pubkeyDescription.alpha = 1
+                self.pubkeyLabel.alpha = 1
+                
+            }
             
         }
         

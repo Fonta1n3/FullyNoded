@@ -310,6 +310,14 @@ PR's welcome.
 
 ## Changes
 
+### v0.1.28
+- Update to Tor v0.4.0.6
+- Various UI improvements
+- Remove remnants of adding a node using SSH in the UI
+
+### v0.1.27
+- fix an error for tor v3 auth key generation
+
 ### v0.1.26
 - fix local tor v3 auth key generation
 - remove ssh completely

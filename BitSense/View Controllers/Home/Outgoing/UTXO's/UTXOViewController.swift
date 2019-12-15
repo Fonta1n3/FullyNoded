@@ -481,13 +481,13 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     
     func numberOfSections(in tableView: UITableView) -> Int {
         
-        return 1
+        return utxoArray.count
         
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
-        return utxoArray.count
+        return 1
         
     }
     
@@ -497,7 +497,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         
         if utxoArray.count > 0 {
             
-            let dict = utxoArray[indexPath.row] as! NSDictionary
+            let dict = utxoArray[indexPath.section] as! NSDictionary
             let address = cell.viewWithTag(1) as! UILabel
             let txId = cell.viewWithTag(2) as! UILabel
             let amount = cell.viewWithTag(4) as! UILabel
@@ -510,7 +510,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
             let label = cell.viewWithTag(11) as! UILabel
             txId.adjustsFontSizeToFitWidth = true
             
-            if !(selectedArray[indexPath.row]) {
+            if !(selectedArray[indexPath.section]) {
                 
                 checkMark.alpha = 0
                 cell.backgroundColor = view.backgroundColor
@@ -631,7 +631,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     func tableView(_ tableView: UITableView, editActionsForRowAt: IndexPath) -> [UITableViewRowAction]? {
         
         let utxos = utxoArray as NSArray
-        let utxo = utxos[editActionsForRowAt.row] as! NSDictionary
+        let utxo = utxos[editActionsForRowAt.section] as! NSDictionary
         let txid = utxo["txid"] as! String
         let vout = utxo["vout"] as! Int
         
@@ -653,7 +653,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         let checkmark = cell?.viewWithTag(13) as! UIImageView
         cell?.isSelected = true
         
-        self.selectedArray[indexPath.row] = true
+        self.selectedArray[indexPath.section] = true
         
         DispatchQueue.main.async {
             
@@ -678,7 +678,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
             
         }
         
-        utxoToSpendArray.append(utxoArray[indexPath.row] as! [String:Any])
+        utxoToSpendArray.append(utxoArray[indexPath.section] as! [String:Any])
         
     }
     
@@ -712,7 +712,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         
         if let cell = utxoTable.cellForRow(at: indexPath) {
             
-            self.selectedArray[indexPath.row] = false
+            self.selectedArray[indexPath.section] = false
             
             let checkmark = cell.viewWithTag(13) as! UIImageView
             let cellTxid = (cell.viewWithTag(2) as! UILabel).text

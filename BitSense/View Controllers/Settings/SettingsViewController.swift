@@ -216,23 +216,24 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         
-        switch section {
-        case 0: return "Node Manager"
-        case 1: return "Multi Wallet Manager"
-        case 2: return "Security"
-        case 3: return "Mining Fee"
-        case 4: return "Reset App"
-        /*case 5: sectionTitle = "Biometrics"*/
-        default:return ""
-        }
+//        switch section {
+//        case 0: return "Node Manager"
+//        case 1: return "Multi Wallet Manager"
+//        case 2: return "Security"
+//        case 3: return "Mining Fee"
+//        case 4: return "Reset App"
+//        /*case 5: sectionTitle = "Biometrics"*/
+//        default:return ""
+//        }
+        return ""
         
     }
     
     func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
         
         (view as! UITableViewHeaderFooterView).backgroundView?.backgroundColor = UIColor.clear
-        (view as! UITableViewHeaderFooterView).textLabel?.textAlignment = .right
-        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.init(name: "HiraginoSans-W3", size: 15)
+        (view as! UITableViewHeaderFooterView).textLabel?.textAlignment = .left
+        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.init(name: "HiraginoSans-W3", size: 12)
         (view as! UITableViewHeaderFooterView).textLabel?.textColor = UIColor.green
         
     }

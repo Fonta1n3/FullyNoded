@@ -24,14 +24,14 @@ class ErrorView: UIView {
         UIView.animate(withDuration: 0.2, animations: {
             
             self.backgroundView.frame = CGRect(x: 0,
-                                          y: -125,
+                                          y: -61,
                                           width: self.backgroundView.frame.width,
-                                          height: 125)
+                                          height: 61)
             
             self.errorLabel.frame = CGRect(x: 0,
-                                           y: -125,
+                                           y: -61,
                                            width: self.backgroundView.frame.width,
-                                           height: 125)
+                                           height: 61)
             
         }) { _ in
             
@@ -60,9 +60,9 @@ class ErrorView: UIView {
         let width = vc.view.frame.width
         
         backgroundView.frame = CGRect(x: 0,
-                                      y: -125,
+                                      y: -61,
                                       width: width,
-                                      height: 125)
+                                      height: 61)
         
         
         backgroundView.alpha = 0
@@ -82,12 +82,12 @@ class ErrorView: UIView {
         }
         
         errorLabel.frame = CGRect(x: 5,
-                                  y: -125,
+                                  y: -61,
                                   width: width - 10,
-                                  height: 125)
+                                  height: 61)
         
         //errorLabel.font = UIFont.init(name: "System-Regular", size: 10)
-        errorLabel.font = UIFont.systemFont(ofSize: 15)
+        errorLabel.font = UIFont.systemFont(ofSize: 12)
         errorLabel.text = text.lowercased()
         errorLabel.numberOfLines = 0
         errorLabel.textAlignment = .center
@@ -110,12 +110,12 @@ class ErrorView: UIView {
                 self.backgroundView.frame = CGRect(x: 0,
                                                    y: y,
                                                    width: width,
-                                                   height: 125)
+                                                   height: 61)
                 
                 self.errorLabel.frame = CGRect(x: 0,
                                                y: 0,
                                                width: width,
-                                               height: 125)
+                                               height: 61)
                 
             } else {
                 
@@ -124,25 +124,25 @@ class ErrorView: UIView {
                 self.backgroundView.frame = CGRect(x: 0,
                                                    y: 100,
                                                    width: width,
-                                                   height: 125)
+                                                   height: 61)
                 
                 self.errorLabel.frame = CGRect(x: 0,
                                                y: 0,
                                                width: width,
-                                               height: 125)
+                                               height: 61)
             }
             
         }) { _ in
             
             DispatchQueue.main.async {
                 
-                imageView.alpha = 0.5
-                imageView.frame = CGRect(x: self.errorLabel.frame.midX - 15,
-                                         y: self.errorLabel.frame.maxY - 18,
-                                         width: 20,
-                                         height: 20)
+                //imageView.alpha = 0.2
+//                imageView.frame = CGRect(x: self.errorLabel.frame.midX - 15,
+//                                         y: self.errorLabel.frame.maxY - 18,
+//                                         width: 20,
+//                                         height: 20)
                 
-                self.errorLabel.addSubview(imageView)
+                //self.errorLabel.addSubview(imageView)
                 
                 self.impact.impactOccurred()
                 
@@ -155,14 +155,14 @@ class ErrorView: UIView {
                 UIView.animate(withDuration: 0.3, animations: {
                     
                     self.backgroundView.frame = CGRect(x: 0,
-                                                       y: -125,
+                                                       y: -61,
                                                        width: width,
-                                                       height: 125)
+                                                       height: 61)
                     
                     self.errorLabel.frame = CGRect(x: 0,
-                                                   y: -125,
+                                                   y: -61,
                                                    width: width,
-                                                   height: 125)
+                                                   height: 61)
                     
                 }) { _ in
                     

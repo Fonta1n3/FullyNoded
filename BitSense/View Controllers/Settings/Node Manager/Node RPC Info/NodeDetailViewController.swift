@@ -20,7 +20,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     @IBOutlet var nodeLabel: UITextField!
     @IBOutlet var rpcUserField: UITextField!
     @IBOutlet var rpcPassword: UITextField!
-    @IBOutlet var rpcPort: UITextField!
     @IBOutlet var rpcLabel: UILabel!
     @IBOutlet var saveButton: UIButton!
     
@@ -56,43 +55,19 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 
             }
             
-            if !(newNode["usingSSH"] as! Bool) {
+            if nodeLabel.text != "" && rpcPassword.text != "" && rpcUserField.text != "" {
                 
-                if nodeLabel.text != "" && rpcPassword.text != "" && rpcUserField.text != "" {
+                DispatchQueue.main.async {
                     
-                    DispatchQueue.main.async {
-                        
-                        self.performSegue(withIdentifier: "goToTorDetails", sender: self)
-                        
-                    }
-                    
-                } else {
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: "Fill out all fields first")
+                    self.performSegue(withIdentifier: "goToTorDetails", sender: self)
                     
                 }
                 
             } else {
                 
-                if nodeLabel.text != "" && rpcPassword.text != "" && rpcUserField.text != "" && rpcPort.text != "" {
-                    
-                    //segue to ssh node
-                    DispatchQueue.main.async {
-                        
-                        self.performSegue(withIdentifier: "sshCredentials",
-                                          sender: self)
-                        
-                    }
-                    
-                } else {
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: "You need to fill out all fields")
-                    
-                }
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: "Fill out all fields first")
                 
             }
             
@@ -111,12 +86,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 let d:[String:Any] = ["id":id,"newValue":enc,"keyToEdit":"label","entityName":ENTITY.nodes]
                 arr.append(d)
                 
-//                let _ = cd.updateEntity(viewController: self,
-//                                        id: id,
-//                                        newValue: enc,
-//                                        keyToEdit: "label",
-//                                        entityName: .nodes)
-                
             }
             
             if rpcUserField.text != "" {
@@ -125,11 +94,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 selectedNode["rpcuser"] = enc
                 let d:[String:Any] = ["id":id,"newValue":enc,"keyToEdit":"rpcuser","entityName":ENTITY.nodes]
                 arr.append(d)
-//                let _ = cd.updateEntity(viewController: self,
-//                                        id: id,
-//                                        newValue: enc,
-//                                        keyToEdit: "rpcuser",
-//                                        entityName: .nodes)
                 
             }
             
@@ -139,51 +103,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 selectedNode["rpcpassword"] = enc
                 let d:[String:Any] = ["id":id,"newValue":enc,"keyToEdit":"rpcpassword","entityName":ENTITY.nodes]
                 arr.append(d)
-//                let _ = cd.updateEntity(viewController: self,
-//                                        id: id,
-//                                        newValue: enc,
-//                                        keyToEdit: "rpcpassword",
-//                                        entityName: .nodes)
                 
             }
-            
-            if rpcPort.text != "" {
-                
-                let enc = aes.encryptKey(keyToEncrypt: rpcPort.text!)
-                selectedNode["rpcport"] = enc
-                let d:[String:Any] = ["id":id,"newValue":enc,"keyToEdit":"rpcport","entityName":ENTITY.nodes]
-                arr.append(d)
-//                let _ = cd.updateEntity(viewController: self,
-//                                        id: id,
-//                                        newValue: enc,
-//                                        keyToEdit: "rpcport",
-//                                        entityName: .nodes)
-                
-            }
-            
-//            if (selectedNode["usingSSH"] as! Bool) {
-//
-//
-//
-//                let _ = cd.updateEntity(viewController: self,
-//                                        id: id,
-//                                        newValue: true,
-//                                        keyToEdit: "usingSSH",
-//                                        entityName: .nodes)
-//
-//                let _ = cd.updateEntity(viewController: self,
-//                                        id: id,
-//                                        newValue: false,
-//                                        keyToEdit: "usingTor",
-//                                        entityName: .nodes)
-//
-//                DispatchQueue.main.async {
-//
-//                    self.performSegue(withIdentifier: "sshCredentials", sender: self)
-//
-//                }
-//
-//            }
             
             if (selectedNode["usingTor"] as! Bool) {
                 
@@ -228,27 +149,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         configureTapGesture()
         nodeLabel.delegate = self
         rpcPassword.delegate = self
-        rpcPort.delegate = self
         rpcUserField.delegate = self
         rpcPassword.isSecureTextEntry = true
-        
-        if !(newNode["usingSSH"] as! Bool) {
-            
-            self.rpcLabel.alpha = 0
-            self.rpcPort.alpha = 0
-            
-        }
-        
-        if selectedNode["usingTor"] != nil {
-            
-            if (selectedNode["usingTor"] as! Bool) {
-                
-                self.rpcLabel.alpha = 0
-                self.rpcPort.alpha = 0
-                
-            }
-            
-        }
         
     }
     
@@ -291,17 +193,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 
             }
             
-            if node.rpcport != "" && node.usingSSH {
-                
-                rpcPort.text = aes.decryptKey(keyToDecrypt: node.rpcport)
-                
-            } else {
-                
-                rpcPort.attributedPlaceholder = NSAttributedString(string: "8332 or 18332 for testnet",
-                                                                   attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
-                
-            }
-            
             if node.rpcuser != "" {
                 
                 rpcUserField.text = aes.decryptKey(keyToDecrypt: node.rpcuser)
@@ -325,21 +216,12 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             }
             
         } else {
-            
-            let new = NodeStruct(dictionary: newNode)
-            
+                        
             rpcPassword.attributedPlaceholder = NSAttributedString(string: "rpcpassword",
                                                                    attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
             
             rpcUserField.attributedPlaceholder = NSAttributedString(string: "rpcuser",
                                                                     attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
-            
-            if new.usingSSH {
-                
-                rpcPort.attributedPlaceholder = NSAttributedString(string: "8332 or 18332 for testnet",
-                                                                   attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
-                
-            }
             
             nodeLabel.attributedPlaceholder = NSAttributedString(string: "Give your node a label",
                                                                  attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
@@ -353,7 +235,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         nodeLabel.resignFirstResponder()
         rpcUserField.resignFirstResponder()
         rpcPassword.resignFirstResponder()
-        rpcPort.resignFirstResponder()
         
     }
     

@@ -11,28 +11,28 @@ import Foundation
 
 class KeyGen {
     
-    var privKey = ""
-    var pubKey = ""
-    
-    func generate() {
+    func generate(completion: @escaping ((pubkey: String, privkey: String)) -> Void) {
         
         if #available(iOS 13.0, *) {
             
-            let privKeyRaw = Curve25519.Signing.PrivateKey.init()
+            let privKeyRaw = Curve25519.KeyAgreement.PrivateKey.init()
             let pubKeyRaw = privKeyRaw.publicKey
             
             let privKeyData = privKeyRaw.rawRepresentation
             let pubkeyData = pubKeyRaw.rawRepresentation
             
-            let privkeyBase64 = privKeyData.base64EncodedString()
-            let pubkeyBase64 = pubkeyData.base64EncodedString()
+            let privkeyBase32 = privKeyData.base32EncodedString
+            let pubkeyBase32 = pubkeyData.base32EncodedString
             
-            let privkeyBase32 = privkeyBase64.base32EncodedString
-            let pubkeyBase32 = pubkeyBase64.base32EncodedString
+            let privKey = privkeyBase32.replacingOccurrences(of: "====", with: "")
+            let pubKey = pubkeyBase32.replacingOccurrences(of: "====", with: "")
             
-            privKey = privkeyBase32.replacingOccurrences(of: "=", with: "")
-            pubKey = pubkeyBase32.replacingOccurrences(of: "=", with: "")
+            completion((pubKey, privKey))
         
+        } else {
+            
+            completion(("",""))
+            
         }
         
     }

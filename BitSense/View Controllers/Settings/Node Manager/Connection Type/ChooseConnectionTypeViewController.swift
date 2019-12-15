@@ -16,104 +16,18 @@ class ChooseConnectionTypeViewController: UIViewController {
     var scannerShowing = false
     var isFirstTime = Bool()
     
-    @IBOutlet var sshSwitchOutlet: UISwitch!
-    @IBOutlet var torSwitchOutlet: UISwitch!
     @IBOutlet var imageView: UIImageView!
     
     let qrScanner = QRScanner()
     var isTorchOn = Bool()
     let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     let connectingView = ConnectingView()
+    @IBOutlet var scanButtonOutlet: UIButton!
+    @IBOutlet var manualButtonOutlet: UIButton!
     
     @IBAction func nextAction(_ sender: Any) {
         
-        if torSwitchOutlet.isOn || sshSwitchOutlet.isOn {
-            
-            self.performSegue(withIdentifier: "goToNodeDetails", sender: self)
-            
-        } else {
-            
-            displayAlert(viewController: self,
-                         isError: true,
-                         message: "You need to either choose Tor or SSH")
-            
-        }
-        
-    }
-    
-    @IBAction func sshSwitchAction(_ sender: Any) {
-        
-//        if sshSwitchOutlet.isOn {
-//
-//            torSwitchOutlet.isOn = false
-//
-//        } else {
-//
-//            torSwitchOutlet.isOn = true
-//
-//        }
-//
-//        if isUpdating {
-//
-//            let node = NodeStruct(dictionary: selectedNode)
-//
-//            let success = cd.updateEntity(viewController: self,
-//                                          id: node.id,
-//                                          newValue: sshSwitchOutlet.isOn,
-//                                          keyToEdit: "usingSSH",
-//                                          entityName: .nodes)
-//
-//            successes.append(success)
-//
-//        }
-        
-    }
-    
-    
-    @IBAction func torSwitchAction(_ sender: Any) {
-        
-        if torSwitchOutlet.isOn {
-            
-            sshSwitchOutlet.isOn = false
-            
-        } else {
-            
-            sshSwitchOutlet.isOn = true
-            
-        }
-        
-        if isUpdating {
-            
-            let node = NodeStruct(dictionary: selectedNode)
-            let id = node.id
-            
-            let d:[String:Any] = ["id":id,"newValue":torSwitchOutlet.isOn,"keyToEdit":"usingTor","entityName":ENTITY.nodes]
-            
-            cd.updateEntity(dictsToUpdate: [d]) {
-                
-                if !self.cd.errorBool {
-                    
-                    let success = self.cd.boolToReturn
-                    
-                    if success {
-                        
-                        displayAlert(viewController: self, isError: false, message: "updated")
-                        
-                    } else {
-                        
-                        displayAlert(viewController: self, isError: true, message: "error updating node")
-                        
-                    }
-                    
-                } else {
-                    
-                    displayAlert(viewController: self, isError: true, message: self.cd.errorDescription)
-                    
-                }
-                
-            }            
-            
-        }
+        self.performSegue(withIdentifier: "goToNodeDetails", sender: self)
         
     }
     
@@ -131,22 +45,10 @@ class ChooseConnectionTypeViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        scanButtonOutlet.layer.cornerRadius = 40
+        manualButtonOutlet.layer.cornerRadius = 40
         configureScanner()
 
-        if isUpdating {
-            
-            let node = NodeStruct(dictionary: selectedNode)
-            
-            sshSwitchOutlet.isOn = node.usingSSH
-            torSwitchOutlet.isOn = node.usingTor
-            
-        } else {
-            
-            sshSwitchOutlet.isOn = false
-            torSwitchOutlet.isOn = true
-            
-        }
-        
     }
     
     func configureScanner() {
@@ -310,8 +212,8 @@ class ChooseConnectionTypeViewController: UIViewController {
             
             if let vc = segue.destination as? NodeDetailViewController  {
                 
-                vc.newNode["usingSSH"] = sshSwitchOutlet.isOn
-                vc.newNode["usingTor"] = torSwitchOutlet.isOn
+                vc.newNode["usingSSH"] = false
+                vc.newNode["usingTor"] = true
                 vc.selectedNode = self.selectedNode
                 
                 if !isUpdating {

@@ -32,8 +32,8 @@ class QRGenerator: UIView {
         let grey = #colorLiteral(red: 0.07804081589, green: 0.09001789242, blue: 0.1025182381, alpha: 1)
         
         let colorParameters = [
-            "inputColor0": CIColor(color: UIColor.green), // Foreground
-            "inputColor1": CIColor(color: grey) // Background
+            "inputColor0": CIColor(color: grey), // Foreground
+            "inputColor1": CIColor(color: UIColor.white) // Background
         ]
         
         let colored = (output.applyingFilter("CIFalseColor", parameters: colorParameters))

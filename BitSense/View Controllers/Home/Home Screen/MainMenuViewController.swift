@@ -376,7 +376,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 dateLabel.alpha = 1
                 watchOnlyLabel.alpha = 1
                 
-                mainMenu.separatorColor = UIColor.white
+                mainMenu.separatorColor = UIColor.darkGray
                 let dict = self.transactionArray[indexPath.row]
                 
                 addressLabel.text = dict["address"] as? String
@@ -446,21 +446,21 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         
-        var sectionString = ""
-        switch section {
-        case 0: sectionString = ud.object(forKey: "walletName") as? String ?? "Default Wallet"
-        case 1: sectionString = "Node stats"
-        case 2: sectionString = "Transactions"
-        default: break
-        }
+        let sectionString = ""
+//        switch section {
+//        case 0: sectionString = ud.object(forKey: "walletName") as? String ?? "Default Wallet"
+//        case 1: sectionString = "Node stats"
+//        case 2: sectionString = "Transactions"
+//        default: break
+//        }
         return sectionString
     }
     
     func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
         
         (view as! UITableViewHeaderFooterView).backgroundView?.backgroundColor = UIColor.clear
-        (view as! UITableViewHeaderFooterView).textLabel?.textAlignment = .right
-        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.init(name: "HiraginoSans-W3", size: 15)
+        (view as! UITableViewHeaderFooterView).textLabel?.textAlignment = .left
+        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.init(name: "HiraginoSans-W3", size: 12)
         (view as! UITableViewHeaderFooterView).textLabel?.textColor = UIColor.green
         (view as! UITableViewHeaderFooterView).textLabel?.alpha = 1
         
@@ -932,7 +932,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 self.backView.frame = self.tabBarController!.view.frame
                 self.backView.backgroundColor = .black
                 let imageView = UIImageView()
-                imageView.frame = CGRect(x: self.view.center.x - 100, y: self.view.center.y - 100, width: 200, height: 200)
+                imageView.frame = CGRect(x: self.view.center.x - 75, y: self.view.center.y - 75, width: 150, height: 150)
                 imageView.image = UIImage(named: "ItunesArtwork@2x.png")
                 self.backView.addSubview(imageView)
                 self.view.addSubview(self.backView)
