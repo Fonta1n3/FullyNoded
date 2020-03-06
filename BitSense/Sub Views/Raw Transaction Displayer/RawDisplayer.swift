@@ -20,7 +20,6 @@ class RawDisplayer {
     var tabbar = UITabBar()
     var vc = UIViewController()
     var rawString = ""
-    let impact = UIImpactFeedbackGenerator()
     
     func addRawDisplay() {
         
@@ -54,7 +53,7 @@ class RawDisplayer {
                 
             }, completion: { _ in
                 
-                self.impact.impactOccurred()
+                impact()
                 
                 UIView.animate(withDuration: 0.4, animations: {
                     
@@ -69,7 +68,7 @@ class RawDisplayer {
                     
                 }, completion: { _ in
                     
-                    self.impact.impactOccurred()
+                    impact()
                     
                     DispatchQueue.main.async {
                         
@@ -154,7 +153,11 @@ class RawDisplayer {
         textView.backgroundColor = UIColor.clear
         textView.textAlignment = .natural
         textView.font = UIFont.init(name: "HelveticaNeue-Light", size: 14)
-        textView.adjustsFontForContentSizeCategory = true
+        if #available(iOS 10.0, *) {
+            textView.adjustsFontForContentSizeCategory = true
+        } else {
+            // Fallback on earlier versions
+        }
         textView.isUserInteractionEnabled = true
         textView.isEditable = false
         

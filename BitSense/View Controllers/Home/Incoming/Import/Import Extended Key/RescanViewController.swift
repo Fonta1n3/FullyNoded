@@ -55,7 +55,6 @@ class RescanViewController: UIViewController {
             
         }
         
-        
         DispatchQueue.main.async {
             
             self.performSegue(withIdentifier: segueString, sender: self)

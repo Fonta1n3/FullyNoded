@@ -83,7 +83,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 
                 let param = "\(descriptor), [\(index + 1),\(index + 1)]"
                 
-                self.executeNodeCommand(method: BTC_CLI_COMMAND.deriveaddresses,
+                self.executeNodeCommand(method: .deriveaddresses,
                                            param: param)
             }
             
@@ -211,7 +211,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             
         }
         
-        reducer.makeCommand(command: BTC_CLI_COMMAND.deriveaddresses,
+        reducer.makeCommand(command: .deriveaddresses,
                             param: param,
                             completion: getResult)
         
@@ -562,8 +562,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                               animations: { self.qrView.image = newImage },
                               completion: nil)
             
-            let impact = UIImpactFeedbackGenerator()
-            impact.impactOccurred()
+            impact()
             
         }
         

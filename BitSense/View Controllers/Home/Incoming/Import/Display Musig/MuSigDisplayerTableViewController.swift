@@ -124,12 +124,10 @@ class MuSigDisplayerTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         let cell = tableView.cellForRow(at: indexPath)!
-        
-        let impact = UIImpactFeedbackGenerator()
-        
+                
         DispatchQueue.main.async {
             
-            impact.impactOccurred()
+            impact()
             
             UIView.animate(withDuration: 0.2, animations: {
                 
@@ -247,7 +245,7 @@ class MuSigDisplayerTableViewController: UITableViewController {
                 
                 let descriptor = "\"\(result["descriptor"] as! String)\""
                 
-                let params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"watchonly\": true, \"label\": \"\(label)\" }], ''{\"rescan\": true}''"
+                let params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"watchonly\": true, \"label\": \"\(label)\" }]"
                 
                 let aes = AESService()
                 let cd = CoreDataService()
@@ -287,17 +285,26 @@ class MuSigDisplayerTableViewController: UITableViewController {
                                         "nodeID":nodeID]
                         
                         cd.saveEntity(dict: descDict, entityName: .descriptors) {
-                        
-                        if !cd.errorBool {
                             
-                            let success = cd.boolToReturn
-                            
-                            if success {
+                            if !cd.errorBool {
                                 
-                                print("descriptor saved")
+                                let success = cd.boolToReturn
                                 
-                                self.executeNodeCommand(method: .importmulti,
-                                param: params)
+                                if success {
+                                    
+                                    print("descriptor saved")
+                                    
+                                    self.executeNodeCommand(method: .importmulti,
+                                                            param: params)
+                                    
+                                } else {
+                                    
+                                    self.connectingView.removeConnectingView()
+                                    
+                                    displayAlert(viewController: self,
+                                                 isError: true,
+                                                 message: "error saving descriptor: \(cd.errorDescription)")
+                                }
                                 
                             } else {
                                 
@@ -306,20 +313,10 @@ class MuSigDisplayerTableViewController: UITableViewController {
                                 displayAlert(viewController: self,
                                              isError: true,
                                              message: "error saving descriptor: \(cd.errorDescription)")
+                                
                             }
                             
-                        } else {
-                            
-                            self.connectingView.removeConnectingView()
-                            
-                            displayAlert(viewController: self,
-                                         isError: true,
-                                         message: "error saving descriptor: \(cd.errorDescription)")
-                            
                         }
-                            
-                        }
-                        
                         
                     } else {
                         
@@ -355,7 +352,6 @@ class MuSigDisplayerTableViewController: UITableViewController {
             if p2wsh {
                 
                 descriptor = "wsh(multi(\(sigsRequired),\(pubkeys)))"
-                
                 
             }
             
@@ -410,10 +406,6 @@ class MuSigDisplayerTableViewController: UITableViewController {
             if !reducer.errorBool {
                 
                 switch method {
-                    
-                    /*case BTC_CLI_COMMAND.deriveaddresses:
-                     
-                     let result = reducer.arrayToReturn*/
                     
                 case .importmulti:
                     

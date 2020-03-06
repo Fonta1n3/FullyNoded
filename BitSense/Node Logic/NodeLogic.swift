@@ -81,7 +81,7 @@ class NodeLogic {
                     let unconfirmedBalance = reducer.doubleToReturn
                     parseUncomfirmedBalance(unconfirmedBalance: unconfirmedBalance)
 
-                    reducer.makeCommand(command: BTC_CLI_COMMAND.listunspent,
+                    reducer.makeCommand(command: .listunspent,
                                         param: "0",
                                         completion: getResult)
                     
@@ -351,7 +351,7 @@ class NodeLogic {
         
         let hashesPerSecond = miningInfo["networkhashps"] as! Double
         let exahashesPerSecond = hashesPerSecond / 1000000000000000000
-        dictToReturn["networkhashps"] = exahashesPerSecond.withCommas()
+        dictToReturn["networkhashps"] = Int(exahashesPerSecond).withCommas()
         
     }
     
@@ -365,25 +365,25 @@ class NodeLogic {
         
         if let difficultyCheck = blockchainInfo["difficulty"] as? Double {
             
-            dictToReturn["difficulty"] = "\(difficultyCheck.withCommas())"
+            dictToReturn["difficulty"] = "\(Int((Float(difficultyCheck) / Float(1000000000000))).withCommas) trillion difficulty"
             
         }
         
         if let sizeCheck = blockchainInfo["size_on_disk"] as? Int {
             
-            dictToReturn["size"] = "\(sizeCheck/1000000000) gb"
+            dictToReturn["size"] = "\(sizeCheck/1000000000)gb blockchain"
             
         }
         
         if let progressCheck = blockchainInfo["verificationprogress"] as? Double {
             
-            dictToReturn["progress"] = "\(Int(progressCheck*100))%"
+            dictToReturn["progress"] = "\(Int(progressCheck*100))% synced"
             
         }
         
         if let chain = blockchainInfo["chain"] as? String {
             
-            dictToReturn["chain"] = chain
+            dictToReturn["chain"] = "\(chain) chain"
             
         }
         

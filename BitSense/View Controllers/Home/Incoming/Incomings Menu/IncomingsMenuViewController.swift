@@ -78,6 +78,7 @@ class IncomingsMenuViewController: UIViewController, UITableViewDelegate, UITabl
         cell.selectionStyle = .none
         let label = cell.viewWithTag(1) as! UILabel
         let check = cell.viewWithTag(2) as! UIImageView
+        let chevron = cell.viewWithTag(3) as! UIImageView
         var labelString = ""
         
         switch indexPath.section {
@@ -128,6 +129,8 @@ class IncomingsMenuViewController: UIViewController, UITableViewDelegate, UITabl
             label.text = labelString
             
         case 3:
+            
+            chevron.alpha = 0
             
             switch indexPath.row {
                 
@@ -525,6 +528,7 @@ class IncomingsMenuViewController: UIViewController, UITableViewDelegate, UITabl
                             if !self.cd.errorBool {
                                 
                                 let allWallets = self.cd.entities
+                                
                                 for walletDict in allWallets {
                                     
                                     let wallet = Wallet(dictionary: walletDict)

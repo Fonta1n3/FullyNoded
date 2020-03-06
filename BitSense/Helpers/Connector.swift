@@ -20,6 +20,7 @@ class Connector {
     var errorDescription:String!
     
     func connectTor(completion: @escaping () -> Void) {
+        print("connect tor")
         
         self.torClient = TorClient.sharedInstance
         
@@ -48,7 +49,7 @@ class Connector {
         
         if self.torClient.isRefreshing {
             
-            self.torClient.restart(completion: completed)
+            //self.torClient.restart(completion: completed)
             
         } else {
             

@@ -198,11 +198,11 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                 
                 let descriptor = "\"\(result["descriptor"] as! String)\""
                 
-                var params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"watchonly\": true, \"label\": \"\(label)\", \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }], ''{\"rescan\": true}''"
+                var params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"watchonly\": true, \"label\": \"\(label)\", \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }]"
                 
                 if isInternal {
                     
-                    params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"watchonly\": true, \"keypool\": \(addToKeypool), \"internal\": true }], ''{\"rescan\": true}''"
+                    params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"watchonly\": true, \"keypool\": \(addToKeypool), \"internal\": true }]"
                     
                 }
                 
@@ -342,18 +342,24 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
             if !reducer.errorBool {
                 
                 let result = reducer.dictToReturn
+                print("result = \(result)")
                 let hasprivatekeys = result["hasprivatekeys"] as! Bool
+                print("hasprivatekeys = \(hasprivatekeys)")
                 let isrange = result["isrange"] as! Bool
                 let descriptor = result["descriptor"] as! String
-                dict["descriptor"] = "\"\(descriptor)\""
                 
                 if !hasprivatekeys {
                     
                     isWatchOnly = true
+                    dict["descriptor"] = "\"\(descriptor)\""
                     
                 } else {
                     
                     isWatchOnly = false
+                    let checksum = result["checksum"] as! String
+                    //let arr = descriptor.split(separator: "#")
+                    let hotDescriptor = desc + "#" + checksum
+                    dict["descriptor"] = hotDescriptor
                     
                 }
                 
@@ -361,11 +367,11 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                 
                 if !isrange {
                     
-                    importDescriptor(desc: descriptor)
+                    importDescriptor(desc: (dict["descriptor"] as! String))
                     
                 } else {
                     
-                    displayDescriptorKeys(desc: "\"\(descriptor)\"")
+                    displayDescriptorKeys(desc: "\"\(dict["descriptor"] as! String)\"")
                     
                 }
                 

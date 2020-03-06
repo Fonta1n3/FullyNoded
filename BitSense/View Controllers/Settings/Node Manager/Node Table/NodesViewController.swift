@@ -121,8 +121,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         DispatchQueue.main.async {
             
-            let impact = UIImpactFeedbackGenerator()
-            impact.impactOccurred()
+            impact()
             
             UIView.animate(withDuration: 0.2, animations: {
                 
@@ -171,10 +170,10 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         if segue.identifier == "updateNode" {
             
-            if let vc = segue.destination as? ChooseConnectionTypeViewController {
+            if let vc = segue.destination as? NodeDetailViewController {
                 
                 vc.selectedNode = self.nodeArray[selectedIndex]
-                vc.isUpdating = true
+                vc.createNew = false
                 
             }
             
@@ -245,11 +244,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
         }
         
-        DispatchQueue.main.async {
-            
-            UIImpactFeedbackGenerator().impactOccurred()
-            
-        }
+        impact()
         
         let restId = sender.restorationIdentifier ?? ""
         let index = Int(restId) ?? 10000
@@ -406,5 +401,76 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
         
     }
+    
+    private func deActivateNodes(nodes: [[String:Any]], completion: @escaping () -> Void) {
+        
+        if nodes.count > 0 {
+            
+            for node in nodes {
+                
+                let str = NodeStruct(dictionary: node)
+                let id = str.id
+                let isActive = str.isActive
+                
+                if isActive {
+                    
+                    let d1:[String:Any] = ["id":id,"newValue":false,"keyToEdit":"isActive","entityName":ENTITY.nodes]
+                    
+                    cd.updateEntity(dictsToUpdate: [d1]) {
+                        
+                        if !self.cd.errorBool {
+                            
+                            let success = self.cd.boolToReturn
+                            
+                            if success {
+                                
+                                //completion()
+                                
+                            } else {
+                                
+                                displayAlert(viewController: self, isError: true, message: "Error deactivating nodes")
+                                //completion()
+                                
+                            }
+                            
+                        } else {
+                            
+                            displayAlert(viewController: self, isError: true, message: self.cd.errorDescription)
+                            //completion()
+                            
+                        }
+                        
+                    }
+                    
+                }
+                
+            }
+            
+            completion()
+                        
+        } else {
+            
+            completion()
+            
+        }
+                
+    }
+    
+    @IBAction func addNode(_ sender: Any) {
+        
+        // Deactivate nodes here when adding a node to simplify QR scanning issues
+        
+        deActivateNodes(nodes: self.nodeArray) {
+            
+            DispatchQueue.main.async {
+                
+                self.performSegue(withIdentifier: "addNewNode", sender: self)
+                
+            }
+            
+        }
+        
+    }
+    
 
 }

@@ -84,37 +84,52 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     override func viewDidAppear(_ animated: Bool) {
         
-        getNodes {
+        getNodes { nodeArray in
             
-            let walletName = self.ud.object(forKey: "walletName") as? String ?? ""
-            let isActive = self.activeNodeDict().isAnyNodeActive
-            if self.nodes.count > 0 {
+            if nodeArray != nil {
                 
-                if isActive {
+                self.nodes = nodeArray!
+                let walletName = self.ud.object(forKey: "walletName") as? String ?? ""
+                let isActive = self.activeNodeDict().isAnyNodeActive
+                
+                if self.nodes.count > 0 {
                     
-                    self.activeNode = self.activeNodeDict().node
-                    let node = NodeStruct(dictionary: self.activeNode)
-                    let newId = node.id
-                    
-                    if newId != self.existingNodeID {
+                    if isActive {
                         
-                        if !self.initialLoad {
+                        self.activeNode = self.activeNodeDict().node
+                        let node = NodeStruct(dictionary: self.activeNode)
+                        let newId = node.id
+                        
+                        if newId != self.existingNodeID {
                             
-                            self.ud.removeObject(forKey: "walletName")
-                            self.existingWallet = ""
+                            if !self.initialLoad {
+                                
+                                self.ud.removeObject(forKey: "walletName")
+                                self.existingWallet = ""
+                                
+                            }
+                            
+                            self.refresh()
+                            
+                        } else if walletName != self.existingWallet {
+                            
+                            if self.viewHasLoaded {
+                                
+                                self.existingWallet = walletName
+                                self.reloadWalletData()
+                                
+                            }
                             
                         }
                         
-                        self.refresh()
+                    } else {
                         
-                    } else if walletName != self.existingWallet {
+                        self.removeLoader()
+                        self.connectingView.removeConnectingView()
                         
-                        if self.viewHasLoaded {
-                            
-                            self.existingWallet = walletName
-                            self.reloadWalletData()
-                            
-                        }
+                        displayAlert(viewController: self,
+                                     isError: true,
+                                     message: "no active nodes")
                         
                     }
                     
@@ -123,25 +138,17 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     self.removeLoader()
                     self.connectingView.removeConnectingView()
                     
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: "no active nodes")
+                    DispatchQueue.main.async {
+                        
+                        self.performSegue(withIdentifier: "addNodeNow", sender: self)
+                        
+                    }
                     
                 }
                 
-            } else {
-                
-                self.removeLoader()
-                self.connectingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "go to Nodes to add your own node")
+                self.initialLoad = false
                 
             }
-            
-            
-            self.initialLoad = false
             
         }
         
@@ -150,15 +157,33 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     @objc func refreshData(_ sender: Any) {
         print("refreshData")
         
-        if connector.torConnected {
+        if TorClient.sharedInstance.isOperational {
             
             refreshDataNow()
             
         } else {
             
-            refresh()
+            print("tor not connected yet")
             
         }
+        
+//        if connector != nil {
+//
+//            if connector.torConnected {
+//
+//                refreshDataNow()
+//
+//            } else {
+//
+//                refresh()
+//
+//            }
+//
+//        } else {
+//
+//            refresh()
+//
+//        }
         
     }
     
@@ -206,31 +231,43 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     func numberOfSections(in tableView: UITableView) -> Int {
         
-        return 3
+        if transactionArray.count > 0 {
+            
+            return 2 + transactionArray.count
+            
+        } else {
+            
+            return 3
+            
+        }
+        
+        //return 3 + transactionArray.count - 1
         
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
-        switch section {
-            
-        case 2:
-            
-            if transactionArray.count > 0 {
-                
-                return transactionArray.count
-                
-            } else {
-                
-                return 1
-                
-            }
-            
-        default:
-            
-            return 1
-            
-        }
+//        switch section {
+//
+//        case 2:
+//
+//            if transactionArray.count > 0 {
+//
+//                return transactionArray.count
+//
+//            } else {
+//
+//                return 1
+//
+//            }
+//
+//        default:
+//
+//            return 1
+//
+//        }
+        
+        return 1
         
     }
     
@@ -301,30 +338,44 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 let sizeLabel = cell.viewWithTag(13) as! UILabel
                 let feeRate = cell.viewWithTag(14) as! UILabel
                 
+                network.layer.cornerRadius = 6
+                pruned.layer.cornerRadius = 6
+                connections.layer.cornerRadius = 6
+                version.layer.cornerRadius = 6
+                hashRate.layer.cornerRadius = 6
+                sync.layer.cornerRadius = 6
+                blockHeight.layer.cornerRadius = 6
+                uptime.layer.cornerRadius = 6
+                mempool.layer.cornerRadius = 6
+                tor.layer.cornerRadius = 6
+                difficultyLabel.layer.cornerRadius = 6
+                sizeLabel.layer.cornerRadius = 6
+                feeRate.layer.cornerRadius = 6
+                
                 sizeLabel.text = self.size
                 difficultyLabel.text = self.difficulty
                 sync.text = self.progress
-                feeRate.text = self.feeRate
+                feeRate.text = self.feeRate + " " + "fee rate"
                 
                 if torReachable {
                     
-                    tor.text = "reachable"
+                    tor.text = "tor hidden service on"
                     
                 } else {
                     
-                    tor.text = "not reachable"
+                    tor.text = "tor hidden service off"
                     
                 }
                 
-                mempool.text = self.mempoolCount.withCommas()
+                mempool.text = "\(self.mempoolCount.withCommas()) mempool"
                 
                 if self.isPruned {
                     
-                    pruned.text = "true"
+                    pruned.text = "pruned"
                     
                 } else if !self.isPruned {
                     
-                    pruned.text = "false"
+                    pruned.text = "not pruned"
                 }
                 
                 if self.network != "" {
@@ -333,11 +384,11 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     
                 }
                 
-                blockHeight.text = "\(self.currentBlock.withCommas())"
-                connections.text = "\(outgoingCount) out / \(incomingCount) in"
-                version.text = self.version
-                hashRate.text = self.hashrateString + " " + "EH/s"
-                uptime.text = "\(self.uptime / 86400) days \((self.uptime % 86400) / 3600) hours"
+                blockHeight.text = "\(self.currentBlock.withCommas()) blocks"
+                connections.text = "\(outgoingCount) ↑ / \(incomingCount) ↓ connections"
+                version.text = "bitcoin core v\(self.version)"
+                hashRate.text = self.hashrateString + " " + "EH/s hashrate"
+                uptime.text = "\(self.uptime / 86400) days \((self.uptime % 86400) / 3600) hours uptime"
                 
                 return cell
                 
@@ -347,7 +398,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
             }
             
-        case 2:
+        default:
+            
+            //return blankCell()
             
             if transactionArray.count == 0 {
                 
@@ -377,7 +430,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 watchOnlyLabel.alpha = 1
                 
                 mainMenu.separatorColor = UIColor.darkGray
-                let dict = self.transactionArray[indexPath.row]
+                let dict = self.transactionArray[indexPath.section - 2]
                 
                 addressLabel.text = dict["address"] as? String
                 
@@ -435,10 +488,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 return cell
                 
             }
-            
-        default:
-            
-            return blankCell()
             
         }
         
@@ -500,7 +549,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
             if sectionOneLoaded {
                 
-                return 253
+                return 203
                 
             } else {
                 
@@ -508,7 +557,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
             }
             
-        case 2:
+        default:
             
             if sectionZeroLoaded {
                 
@@ -519,10 +568,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 return 47
                 
             }
-            
-        default:
-            
-            return 47
             
         }
         
@@ -741,8 +786,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     self.mainMenu.reloadSections(IndexSet.init(arrayLiteral: 1),
                                                  with: .fade)
                     
-                    let impact = UIImpactFeedbackGenerator()
-                    impact.impactOccurred()
+                    impact()
                     self.removeLoader()
                     
                 }
@@ -777,8 +821,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 DispatchQueue.main.async {
                     
-                    self.mainMenu.reloadSections(IndexSet.init(arrayLiteral: 2),
-                                                 with: .fade)
+//                    self.mainMenu.reloadSections(IndexSet.init(arrayLiteral: 2),
+//                                                 with: .fade)
+                    self.mainMenu.reloadData()
                     
                     let impact = UIImpactFeedbackGenerator()
                     impact.impactOccurred()
@@ -798,13 +843,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        let impact = UIImpactFeedbackGenerator()
-        
-        DispatchQueue.main.async {
-            
-            impact.impactOccurred()
-            
-        }
+        impact()
         
         if indexPath.section == 0 {
             
@@ -879,7 +918,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
             if transactionArray.count > 0 {
                 
-                if indexPath.section == 2 {
+                if indexPath.section > 1 {
                     
                     let cell = tableView.cellForRow(at: indexPath)!
                     
@@ -901,7 +940,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                         
                     }
                     
-                    let selectedTx = self.transactionArray[indexPath.row]
+                    let selectedTx = self.transactionArray[indexPath.section - 2]
                     let txID = selectedTx["txID"] as! String
                     self.tx = txID
                     UIPasteboard.general.string = txID
@@ -1016,20 +1055,20 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
-    func getNodes(completion: @escaping () -> Void) {
+    func getNodes(completion: @escaping (([[String:Any]]?)) -> Void) {
         
         nodes.removeAll()
+        
         cd.retrieveEntity(entityName: .nodes) {
             
             if !self.cd.errorBool {
                 
-                self.nodes = self.cd.entities
-                completion()
+                completion(self.cd.entities)
                 
             } else {
                 
                 displayAlert(viewController: self, isError: true, message: "error getting nodes from coredata")
-                completion()
+                completion(nil)
                 
             }
             
@@ -1093,47 +1132,56 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     @objc func refresh() {
         print("refresh")
         
-        if TorClient.sharedInstance.isOperational && !initialLoad {
-            
-            TorClient.sharedInstance.resign()
-            
-        }        
-        
-        DispatchQueue.main.async {
-            
-            if !self.initialLoad {
+        if !self.initialLoad {
 
-                self.addlaunchScreen()
-                
-            }
-            
+            self.addlaunchScreen()
             self.reloadTable()
             self.addNavBarSpinner()
-            let anyNodeActive = self.activeNodeDict().isAnyNodeActive
             
-            if anyNodeActive {
+        }
+        
+        func load() {
+            print("load")
+            
+            DispatchQueue.main.async {
                 
-                self.activeNode = self.activeNodeDict().node
-                let str = NodeStruct(dictionary: self.activeNode)
-                self.existingNodeID = str.id
-                let enc = str.label
-                let dec = self.aes.decryptKey(keyToDecrypt: enc)
-                self.navigationItem.title = dec
-                let sshBool = str.usingSSH
-                let torBool = str.usingTor
-                self.connector = Connector()
-                self.connectTor(connector: self.connector)
+                let anyNodeActive = self.activeNodeDict().isAnyNodeActive
                 
-            } else {
-                
-                self.removeSpinner()
-                self.removeLoader()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "no active nodes")
+                if anyNodeActive {
+                    
+                    self.activeNode = self.activeNodeDict().node
+                    let str = NodeStruct(dictionary: self.activeNode)
+                    self.existingNodeID = str.id
+                    let enc = str.label
+                    let dec = self.aes.decryptKey(keyToDecrypt: enc)
+                    self.navigationItem.title = dec
+                    self.connector = Connector()
+                    self.connectTor(connector: self.connector)
+                    
+                } else {
+                    
+                    self.removeSpinner()
+                    self.removeLoader()
+                    
+                    displayAlert(viewController: self,
+                                 isError: true,
+                                 message: "no active nodes")
+                    
+                }
                 
             }
+            
+        }
+        
+//        if TorClient.sharedInstance.isOperational && !initialLoad {
+//            
+//            TorClient.sharedInstance.resign()
+//            
+//        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            
+            load()
             
         }
         
@@ -1141,6 +1189,37 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     func connectTor(connector:Connector) {
         print("connecttor")
+        
+        if TorClient.sharedInstance.isOperational {
+            
+            if TorClient.sharedInstance.progress == 100 {
+                
+                viewHasLoaded = true
+                removeSpinner()
+                self.loadWalletFirst()
+                
+            } else {
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    
+                    self.connectTor(connector: Connector())
+                    
+                }
+                
+            }
+            
+            
+        } else {
+            
+            print("tor not connected yet")
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                
+                self.connectTor(connector: Connector())
+                
+            }
+            
+        }
         
         func completion() {
             print("connecttor completion")
@@ -1167,7 +1246,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
         }
         
-        connector.connectTor(completion: completion)
+        //connector.connectTor(completion: completion)
         
     }
     
@@ -1181,7 +1260,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         DispatchQueue.main.async {
             
-            self.mainMenu.reloadSections([0, 2], with: .fade)
+            //self.mainMenu.reloadSections([0, 2], with: .fade)
+            self.mainMenu.reloadData()
             
         }
         
@@ -1210,8 +1290,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     
                     self.sectionZeroLoaded = true
                     self.mainMenu.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
-                    let impact = UIImpactFeedbackGenerator()
-                    impact.impactOccurred()
+                    impact()
                     
                     if !self.sectionOneLoaded {
                         
@@ -1250,6 +1329,14 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             if let vc = segue.destination as? ChooseWalletViewController {
                 
                 vc.wallets = wallets
+                
+            }
+            
+        case "addNodeNow":
+            
+            if let vc = segue.destination as? ChooseConnectionTypeViewController {
+                
+                vc.cameFromHome = true
                 
             }
             

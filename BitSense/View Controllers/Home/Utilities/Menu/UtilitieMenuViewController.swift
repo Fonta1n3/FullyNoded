@@ -28,6 +28,7 @@ class UtilitieMenuViewController: UIViewController, UITabBarControllerDelegate, 
     var getblock = Bool()
     var goSign = Bool()
     var goVerify = Bool()
+    var getUtxos = Bool()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -54,6 +55,7 @@ class UtilitieMenuViewController: UIViewController, UITabBarControllerDelegate, 
         getblock = false
         goVerify = false
         goSign = false
+        getUtxos = false
         
     }
     
@@ -65,11 +67,11 @@ class UtilitieMenuViewController: UIViewController, UITabBarControllerDelegate, 
         
         switch section {
         case 0: return 2
-        case 1:return 7
-        case 2:return 6
-        case 3:return 2
-        case 4:return 1
-        default:return 0}
+        case 1: return 7
+        case 2: return 7
+        case 3: return 2
+        case 4: return 1
+        default: return 0}
         
     }
     
@@ -113,6 +115,7 @@ class UtilitieMenuViewController: UIViewController, UITabBarControllerDelegate, 
             case 3: label.text = "Decode Script"
             case 4: label.text = "List Labels"
             case 5: label.text = "Addresses By Label"
+            case 6: label.text = "UTXO's By Address"
             default:break}
             
         case 3:
@@ -233,6 +236,7 @@ class UtilitieMenuViewController: UIViewController, UITabBarControllerDelegate, 
                     case 3: self.decodeScript = true
                     case 4: self.listLabels = true
                     case 5: self.getaddressesbylabel = true
+                    case 6: self.getUtxos = true
                     default:break}
                     
                     self.performSegue(withIdentifier: "goGetInfo", sender: self)
@@ -325,13 +329,13 @@ class UtilitieMenuViewController: UIViewController, UITabBarControllerDelegate, 
                 
                 switch method {
                     
-                case BTC_CLI_COMMAND.rescanblockchain:
+                case .rescanblockchain:
                     
                     displayAlert(viewController: self,
                                  isError: false,
                                  message: "Rescanning completed")
                     
-                case BTC_CLI_COMMAND.abortrescan:
+                case .abortrescan:
                     
                     displayAlert(viewController: self,
                                  isError: false,
@@ -387,6 +391,7 @@ class UtilitieMenuViewController: UIViewController, UITabBarControllerDelegate, 
                 vc.getTransaction = self.getTransaction
                 vc.getbestblockhash = self.getbestblockhash
                 vc.getblock = self.getblock
+                vc.getUtxos = self.getUtxos
                 
             }
             

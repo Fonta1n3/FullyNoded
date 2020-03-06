@@ -28,7 +28,7 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
     var utxos = NSArray()
     var firstLink = ""
     let creatingView = ConnectingView()
-    let blurView2 = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
+    let blurView2 = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
     
     @IBOutlet var outgoingsTable: UITableView!
     
@@ -213,12 +213,10 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         let cell = tableView.cellForRow(at: IndexPath.init(row: indexPath.row, section: indexPath.section))!
-        
-        let impact = UIImpactFeedbackGenerator()
-        
+                
         DispatchQueue.main.async {
             
-            impact.impactOccurred()
+            impact()
             
             UIView.animate(withDuration: 0.2, animations: {
                 

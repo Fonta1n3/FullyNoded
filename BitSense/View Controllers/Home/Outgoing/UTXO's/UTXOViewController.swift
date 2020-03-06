@@ -657,8 +657,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         
         DispatchQueue.main.async {
             
-            let impact = UIImpactFeedbackGenerator()
-            impact.impactOccurred()
+            impact()
             
             UIView.animate(withDuration: 0.2, animations: {
                 
@@ -717,8 +716,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
             let checkmark = cell.viewWithTag(13) as! UIImageView
             let cellTxid = (cell.viewWithTag(2) as! UILabel).text
             let cellVout = (cell.viewWithTag(6) as! UILabel).text
-            let impact = UIImpactFeedbackGenerator()
-            impact.impactOccurred()
+            impact()
             
             DispatchQueue.main.async {
                 
@@ -1453,12 +1451,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                 
             }
             
-            DispatchQueue.main.async {
-                
-                let impact = UIImpactFeedbackGenerator()
-                impact.impactOccurred()
-                
-            }
+            impact()
             
         } else {
             

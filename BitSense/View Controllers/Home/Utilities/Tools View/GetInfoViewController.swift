@@ -24,6 +24,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     var getTransaction = Bool()
     var getbestblockhash = Bool()
     var getblock = Bool()
+    var getUtxos = Bool()
     
     let creatingView = ConnectingView()
     let qrScanner = QRScanner()
@@ -33,7 +34,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     var scannerShowing = false
     var isFirstTime = Bool()
     
-    let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
+    let blurView = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
     
     @IBOutlet var imageView: UIImageView!
     @IBOutlet var textView: UITextView!
@@ -127,10 +128,20 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
                                        description: "")
         
         var titleString = ""
+        var placeholder = ""
+        
+        if getUtxos {
+            
+            titleString = "UTXO's"
+            placeholder = "address"
+            scan()
+            
+        }
         
         if getblock {
             
             titleString = "Block Info"
+            placeholder = "block hash"
             scan()
             
         }
@@ -138,7 +149,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         if getbestblockhash {
             
             titleString = "Latest Block"
-            executeNodeCommand(method: BTC_CLI_COMMAND.getbestblockhash,
+            executeNodeCommand(method: .getbestblockhash,
                                param: "")
             
         }
@@ -146,6 +157,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         if getTransaction {
             
             titleString = "Transaction"
+            placeholder = "transaction ID"
             scan()
             
         }
@@ -153,6 +165,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         if getaddressesbylabel {
             
             titleString = "Address By Label"
+            placeholder = "label"
             
             if labelToSearch != "" {
                 
@@ -162,7 +175,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
             
             if labelToSearch != "" {
                 
-                executeNodeCommand(method: BTC_CLI_COMMAND.getaddressesbylabel,
+                executeNodeCommand(method: .getaddressesbylabel,
                                    param: "\"\(labelToSearch)\"")
                 
             } else {
@@ -176,7 +189,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         if listLabels {
             
             titleString = "Labels"
-            self.executeNodeCommand(method: BTC_CLI_COMMAND.listlabels,
+            self.executeNodeCommand(method: .listlabels,
                                     param: "")
             
         }
@@ -184,20 +197,21 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         if getMempoolInfo {
             
             titleString = "Mempool Info"
-            self.executeNodeCommand(method: BTC_CLI_COMMAND.getmempoolinfo,
+            self.executeNodeCommand(method: .getmempoolinfo,
                                     param: "")
         }
         
         if getPeerInfo {
             
             titleString = "Peer Info"
-            self.executeNodeCommand(method: BTC_CLI_COMMAND.getpeerinfo,
+            self.executeNodeCommand(method: .getpeerinfo,
                                     param: "")
             
         }
         
         if decodeScript {
             
+            placeholder = "script"
             titleString = "Decoded Script"
             scan()
             
@@ -206,14 +220,14 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         if getMiningInfo {
             
             titleString = "Mining Info"
-            self.executeNodeCommand(method: BTC_CLI_COMMAND.getmininginfo,
+            self.executeNodeCommand(method: .getmininginfo,
                                     param: "")
         }
         
         if getNetworkInfo {
             
             titleString = "Network Info"
-            self.executeNodeCommand(method: BTC_CLI_COMMAND.getnetworkinfo,
+            self.executeNodeCommand(method: .getnetworkinfo,
                                     param: "")
             
         }
@@ -221,7 +235,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         if getBlockchainInfo {
             
             titleString = "Blockchain Info"
-            self.executeNodeCommand(method: BTC_CLI_COMMAND.getblockchaininfo,
+            self.executeNodeCommand(method: .getblockchaininfo,
                                     param: "")
             
         }
@@ -229,6 +243,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         if getAddressInfo {
             
             titleString = "Address Info"
+            placeholder = "address"
             
             if address == "" {
                 
@@ -245,7 +260,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         if listAddressGroups {
             
             titleString = "Address Groups"
-            self.executeNodeCommand(method: BTC_CLI_COMMAND.listaddressgroupings,
+            self.executeNodeCommand(method: .listaddressgroupings,
                                     param: "")
             
         }
@@ -253,7 +268,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         if getWalletInfo {
             
             titleString = "Wallet Info"
-            self.executeNodeCommand(method: BTC_CLI_COMMAND.getwalletinfo,
+            self.executeNodeCommand(method: .getwalletinfo,
                                     param: "")
             
         }
@@ -273,6 +288,13 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
         DispatchQueue.main.async {
             
+            if placeholder != "" {
+                
+                self.qrScanner.textField.attributedPlaceholder = NSAttributedString(string: placeholder,
+                                                                                    attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
+                
+            }
+            
             self.navigationController?.navigationBar.topItem?.title = titleString
             
         }
@@ -288,6 +310,18 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
             if !reducer.errorBool {
                 
                 switch method {
+                    
+                case .listunspent:
+                    
+                    let result = reducer.arrayToReturn
+                    
+                    creatingView.removeConnectingView()
+                    
+                    DispatchQueue.main.async {
+                        
+                        self.textView.text = "\(result)"
+                        
+                    }
                     
                 case .getaddressesbylabel:
                     
@@ -433,7 +467,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
                 
                 let addr = address as! String
                 
-                executeNodeCommand(method: BTC_CLI_COMMAND.getaddressinfo,
+                executeNodeCommand(method: .getaddressinfo,
                                    param: "\"\(addr)\"")
                 
             }
@@ -468,7 +502,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         qrScanner.keepRunning = false
         qrScanner.vc = self
         qrScanner.imageView = imageView
-        qrScanner.textFieldPlaceholder = "scan address QR or type/paste here"
+        qrScanner.textFieldPlaceholder = "scan QR or paste here"
         
         qrScanner.completion = { self.getQRCode() }
         qrScanner.didChooseImage = { self.didPickImage() }
@@ -617,6 +651,15 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
             
         }
         
+        if getUtxos {
+            
+            let param = "0, 9999999, [\"\(address)\"]"
+            
+            self.executeNodeCommand(method: .listunspent,
+                                    param: param)
+            
+        }
+        
         if getAddressInfo {
             
             self.executeNodeCommand(method: .getaddressinfo,
@@ -669,7 +712,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
                 getAddressInfo(address: string)
                 
                 creatingView.addConnectingView(vc: self,
-                                               description: "getting info")
+                                               description: "")
                 
             } else {
                 

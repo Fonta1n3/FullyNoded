@@ -21,9 +21,12 @@ class MakeRPCCall {
     var errorDescription = String()
     let torClient = TorClient.sharedInstance
     var objectToReturn:Any!
+    var attempts = 0
     
     func executeRPCCommand(method: BTC_CLI_COMMAND, param: Any, completion: @escaping () -> Void) {
         print("executeTorRPCCommand")
+        
+        attempts += 1
         
         cd.retrieveEntity(entityName: .nodes) {
             
@@ -52,7 +55,6 @@ class MakeRPCCall {
                 self.rpcpassword = self.aes.decryptKey(keyToDecrypt: node.rpcpassword)
                 
                 var walletUrl = "http://\(self.rpcusername):\(self.rpcpassword)@\(self.onionAddress)"
-                print("walleturl = \(walletUrl)")
                 let ud = UserDefaults.standard
                 
                 if ud.object(forKey: "walletName") != nil {
@@ -82,6 +84,7 @@ class MakeRPCCall {
                 }
                 
                 var request = URLRequest(url: url)
+                print("url = \(url)")
                 request.httpMethod = "POST"
                 request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
                 print("request: \("{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method)\",\"params\":[\(formattedParam)]}")")
@@ -96,13 +99,24 @@ class MakeRPCCall {
                             
                             if error != nil {
                                 
-                                self.errorBool = true
-                                self.errorDescription = error!.localizedDescription
-                                completion()
+                                if self.attempts < 20 {
+                                    
+                                    self.executeRPCCommand(method: method, param: param, completion: completion)
+                                    
+                                } else {
+                                    
+                                    self.attempts = 0
+                                    self.errorBool = true
+                                    self.errorDescription = error!.localizedDescription
+                                    completion()
+                                    
+                                }
                                 
                             } else {
                                 
                                 if let urlContent = data {
+                                    
+                                    self.attempts = 0
                                     
                                     do {
                                         

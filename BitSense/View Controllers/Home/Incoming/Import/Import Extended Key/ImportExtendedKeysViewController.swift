@@ -89,13 +89,7 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
     
     @IBAction func importNow(_ sender: Any) {
         
-        let impact = UIImpactFeedbackGenerator()
-        
-        DispatchQueue.main.async {
-            
-            impact.impactOccurred()
-            
-        }
+        impact()
         
         if !isHDMusig {
             

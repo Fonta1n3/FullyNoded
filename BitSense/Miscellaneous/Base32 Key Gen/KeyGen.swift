@@ -6,8 +6,8 @@
 //  Copyright © 2019 Fontaine. All rights reserved.
 //
 
-import CryptoKit
 import Foundation
+import CryptoKit
 
 class KeyGen {
     

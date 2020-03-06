@@ -11,19 +11,8 @@ import UIKit
 
 class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITabBarControllerDelegate {
     
-    //let keychain = KeychainSwift()
     let ud = UserDefaults.standard
-//    let imageView = UIImageView()
-//    let lockView = UIView()
-//    let passwordInput = UITextField()
-//    let textInput = UITextField()
-//    let nextButton = UIButton()
-//    let alertView = UIView()
-//    let labelTitle = UILabel()
-//    var firstPassword = String()
-//    var secondPassword = String()
     var miningFeeText = ""
-    
     @IBOutlet var settingsTable: UITableView!
     
     override func viewDidLoad() {
@@ -32,7 +21,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         tabBarController!.delegate = self
         settingsTable.delegate = self
         
-        
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -40,8 +28,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         settingsTable.reloadData()
         
     }
-    
-    
     
     func updateFeeLabel(label: UILabel, numberOfBlocks: Int) {
         
@@ -101,7 +87,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     @objc func setFee(_ sender: UISlider) {
         
-        let cell = settingsTable.cellForRow(at: IndexPath.init(row: 0, section: 3))
+        let cell = settingsTable.cellForRow(at: IndexPath.init(row: 0, section: 4))
         let label = cell?.viewWithTag(1) as! UILabel
         let numberOfBlocks = Int(sender.value) * -1
         updateFeeLabel(label: label, numberOfBlocks: numberOfBlocks)
@@ -132,19 +118,12 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             label.text = "Security Center"
             return settingsCell
             
-            /*if keychain.get("UnlockPassword") != nil {
-                
-                label.text = "Reset Password"
-                
-            } else {
-                
-                label.text = "Set a password"
-                
-            }
-            
-            return settingsCell*/
-            
         case 3:
+            
+            label.text = "Kill Switch ☠️"
+            return settingsCell
+            
+        case 4:
             
             let cell = tableView.dequeueReusableCell(withIdentifier: "miningFeeCell", for: indexPath)
             let label = cell.viewWithTag(1) as! UILabel
@@ -171,27 +150,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
             return cell
             
-        case 4:
-            
-            label.text = "Kill Switch ☠️"
-            return settingsCell
-            
-        /*case 5:
-            
-            if ud.object(forKey: "bioMetricsDisabled") != nil {
-                
-                label.text = "Disabled"
-                label.textColor = UIColor.darkGray
-                
-            } else {
-                
-                label.text = "Enabled"
-                label.textColor = UIColor.white
-                
-            }
-            
-            return settingsCell*/
-            
         default:
             
             let cell = UITableViewCell()
@@ -214,30 +172,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        
-//        switch section {
-//        case 0: return "Node Manager"
-//        case 1: return "Multi Wallet Manager"
-//        case 2: return "Security"
-//        case 3: return "Mining Fee"
-//        case 4: return "Reset App"
-//        /*case 5: sectionTitle = "Biometrics"*/
-//        default:return ""
-//        }
-        return ""
-        
-    }
-    
-    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
-        
-        (view as! UITableViewHeaderFooterView).backgroundView?.backgroundColor = UIColor.clear
-        (view as! UITableViewHeaderFooterView).textLabel?.textAlignment = .left
-        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.init(name: "HiraginoSans-W3", size: 12)
-        (view as! UITableViewHeaderFooterView).textLabel?.textColor = UIColor.green
-        
-    }
-    
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         
         return 20
@@ -252,12 +186,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        DispatchQueue.main.async {
-            
-            let impact = UIImpactFeedbackGenerator()
-            impact.impactOccurred()
-            
-        }
+        impact()
         
         switch indexPath.section {
             
@@ -287,13 +216,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
         case 2:
             
-            //reset password
-//            DispatchQueue.main.async {
-//
-//                self.showUnlockScreen()
-//
-//            }
-            
             DispatchQueue.main.async {
                 
                 self.performSegue(withIdentifier: "goToSecurity", sender: self)
@@ -302,30 +224,12 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
         case 3:
             
-            //mining fee
-            print("do nothing")
+            kill()
             
         case 4:
             
-            kill()
-            
-        /*case 5:
-            
-            if ud.object(forKey: "bioMetricsDisabled") != nil {
-                
-                ud.removeObject(forKey: "bioMetricsDisabled")
-                
-            } else {
-                
-                ud.set(true, forKey: "bioMetricsDisabled")
-                
-            }
-            
-            DispatchQueue.main.async {
-                
-                tableView.reloadSections([5], with: .fade)
-                
-            }*/
+            //mining fee
+            print("do nothing")
             
         default:
             
@@ -379,9 +283,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         }
         
     }
-    
-    
-    
+        
 }
 
 public extension Int {

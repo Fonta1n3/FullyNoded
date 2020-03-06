@@ -276,11 +276,11 @@ Connecting to your nodes computer is the first part, once connected Fully Noded 
 Once Fully Noded is connected it will start issuing commands one at a time, here are some from the home table:
 
 ```
-curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "listwallets", "params":[] }' -H 'content-type: text/plain;' http://user:password@127.0.0.1:18443/
+curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "listwallets", "params":[] }' -H 'content-type: text/plain;' http://user:password@nwfwjfwjbefiu.onion:18443/
 
-curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "getbalance", "params":["*", 0, false] }' -H 'content-type: text/plain;' http://user:password@127.0.0.1:18443/
+curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "getbalance", "params":["*", 0, false] }' -H 'content-type: text/plain;' http://user:password@wfwjfwjbefiu.onion:18443/
 
-curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "listtransactions", "params":["*", 50, 0, true] }' -H 'content-type: text/plain;' http://user:password@127.0.0.1:18443/
+curl --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "listtransactions", "params":["*", 50, 0, true] }' -H 'content-type: text/plain;' http://user:password@wfwjfwjbefiu.onion:18443/
 ```
 
 The `method` is a `bitcoin-cli` command and you can use [this great resource](https://chainquery.com/bitcoin-cli) to dive deeper into what they all do.
@@ -309,6 +309,19 @@ PR's welcome.
 - [Tor](https://github.com/iCepa/Tor.framework) for connecting to your node more privately and securely.
 
 ## Changes
+
+### v0.1.36
+- Fix QR code scanner not dismissing when scanning a QuickConnect QR code
+- Add ExcludeExitNodes and other security minded settings to the tor config options
+- Add maximum file protection to ClientOnionAuthDir
+- Set URL session cache policy to prevent sensitive info from being stored in the devices memory
+- Fix bug where importing a descriptor with an xprv would not import private keys - this occurred originally because Bitcoin Core did not allow private keys to be imported in this way until v0.19.0.1
+- Increase imported extended key range to increment by 2,000 instead of 200
+- Signing multi-sig raw transactions will now use `signrawtransactionwithwallet` if no private keys are specified
+
+### v0.1.29
+- Prevent crashes when refrshing Tor connection by hardcoding the Tor session config as it is returning nil for some reason, and change 127.0.0.1 back to localhost, seems to be an issue with Tor v0.4.0.6
+- Hard code Dark mode to prevent weird UI
 
 ### v0.1.28
 - Update to Tor v0.4.0.6

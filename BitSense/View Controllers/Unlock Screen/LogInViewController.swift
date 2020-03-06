@@ -25,7 +25,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+                
         let tapGesture = UITapGestureRecognizer(target: self,
                                                 action: #selector(self.dismissKeyboard (_:)))
         

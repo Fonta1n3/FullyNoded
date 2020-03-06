@@ -41,7 +41,7 @@ class DescriptorsViewController: UIViewController, UITableViewDelegate, UITableV
             
             if !cd.errorBool {
                 
-                let nodes = cd.entities
+                //let nodes = cd.entities
                 
                 for descriptor in self.descriptors {
                     
@@ -51,24 +51,24 @@ class DescriptorsViewController: UIViewController, UITableViewDelegate, UITableV
                         let str = DescriptorStruct(dictionary: dict)
                         let label = aes.decryptKey(keyToDecrypt: str.label)
                         let range = aes.decryptKey(keyToDecrypt: str.range)
-                        var nodeLabel = ""
+                        //var nodeLabel = ""
                         
-                        for n in nodes {
-                            
-                            let node = NodeStruct(dictionary: n)
-                            let nodeID = node.id
-                            
-                            if str.nodeID == nodeID {
-                                
-                                nodeLabel = aes.decryptKey(keyToDecrypt: node.label)
-                                
-                            }
-                            
-                        }
+//                        for n in nodes {
+//
+//                            let node = NodeStruct(dictionary: n)
+//                            let nodeID = node.id
+//
+//                            if str.nodeID == nodeID {
+//
+//                                nodeLabel = aes.decryptKey(keyToDecrypt: node.label)
+//
+//                            }
+//
+//                        }
                         
                         let d = ["label":label,
-                                 "range":range,
-                                 "nodeID":nodeLabel]
+                                 "range":range/*,
+                                 "nodeID":nodeLabel*/]
                         
                         self.tableArray.append(d)
                         self.table.reloadData()
@@ -99,12 +99,12 @@ class DescriptorsViewController: UIViewController, UITableViewDelegate, UITableV
         cell.selectionStyle = .none
         let labelLabel = cell.viewWithTag(1) as! UILabel
         let rangeLabel = cell.viewWithTag(2) as! UILabel
-        let nodeLabel = cell.viewWithTag(3) as! UILabel
+        //let nodeLabel = cell.viewWithTag(3) as! UILabel
         let dict = tableArray[indexPath.row]
         let str = DescriptorStruct(dictionary: dict)
         labelLabel.text = str.label
         rangeLabel.text = str.range
-        nodeLabel.text = str.nodeID
+        //nodeLabel.text = str.nodeID
         return cell
         
     }

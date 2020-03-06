@@ -42,7 +42,7 @@ class RawTransaction {
                         let result = reducer.dictToReturn
                         let unsignedRawTx = result["hex"] as! String
                         
-                        executeNodeCommand(method: BTC_CLI_COMMAND.signrawtransactionwithwallet,
+                        executeNodeCommand(method: .signrawtransactionwithwallet,
                                               param: "\"\(unsignedRawTx)\"")
                         
                     case .createrawtransaction:
@@ -51,7 +51,7 @@ class RawTransaction {
                         
                         let param = "\"\(unsignedRawTx)\", { \"includeWatching\":false, \"subtractFeeFromOutputs\":[], \"replaceable\": true, \"conf_target\": \(numberOfBlocks) }"
                             
-                        executeNodeCommand(method: BTC_CLI_COMMAND.fundrawtransaction,
+                        executeNodeCommand(method: .fundrawtransaction,
                                               param: param)
                         
                     default:

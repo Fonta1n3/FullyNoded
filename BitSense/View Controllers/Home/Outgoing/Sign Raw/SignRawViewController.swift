@@ -64,7 +64,7 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                     
                 }
                 
-                self.executeNodeCommand(method: BTC_CLI_COMMAND.decoderawtransaction,
+                self.executeNodeCommand(method: .decoderawtransaction,
                                         param: "\"\(self.unsignedTextView.text!)\"")
                 
             }
@@ -128,7 +128,7 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                 
                 creatingView.addConnectingView(vc: self, description: "signing")
                 
-                executeNodeCommand(method: BTC_CLI_COMMAND.signrawtransactionwithwallet,
+                executeNodeCommand(method: .signrawtransactionwithwallet,
                                    param: "\"\(unsignedTextView.text!)\"")
                 
             } else if unsignedTextView.text == "" {
@@ -147,24 +147,37 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                 
                 let unsigned = unsignedTextView.text!
                 let redeemScript = scriptTextView.text!
-                let privateKey = privateKeyField.text!
+                var privateKeys = privateKeyField.text!
+                
+                if privateKeys.contains(", ") {
+                    
+                    //there is more then one, process the array
+                    privateKeys = privateKeys.replacingOccurrences(of: ", ", with: "\", \"")
+                    
+                }
                 
                 var param = ""
                 
                 if !isWitness {
                     
-                    param = "\"\(unsigned)\", ''[\"\(privateKey)\"]'', ''[{ \"txid\": \"\(self.prevTxID)\", \"vout\": \(vout), \"scriptPubKey\": \"\(scriptSigHex)\", \"redeemScript\": \"\(redeemScript)\", \"amount\": \(amount) }]''"
+                    param = "\"\(unsigned)\", ''[\"\(privateKeys)\"]'', ''[{ \"txid\": \"\(self.prevTxID)\", \"vout\": \(vout), \"scriptPubKey\": \"\(scriptSigHex)\", \"redeemScript\": \"\(redeemScript)\", \"amount\": \(amount) }]''"
                     
                 } else {
                     
-                    param = "\"\(unsigned)\", ''[\"\(privateKey)\"]'', ''[{ \"txid\": \"\(self.prevTxID)\", \"vout\": \(vout), \"scriptPubKey\": \"\(scriptSigHex)\", \"witnessScript\": \"\(redeemScript)\", \"amount\": \(amount) }]''"
+                    param = "\"\(unsigned)\", ''[\"\(privateKeys)\"]'', ''[{ \"txid\": \"\(self.prevTxID)\", \"vout\": \(vout), \"scriptPubKey\": \"\(scriptSigHex)\", \"witnessScript\": \"\(redeemScript)\", \"amount\": \(amount) }]''"
                     
                 }
                 
                 
                 
-                self.executeNodeCommand(method: BTC_CLI_COMMAND.signrawtransactionwithkey,
+                self.executeNodeCommand(method: .signrawtransactionwithkey,
                                         param: param)
+                
+            } else if unsignedTextView.text != "" {
+                
+                creatingView.addConnectingView(vc: self, description: "signing")
+                
+                self.executeNodeCommand(method: .signrawtransactionwithwallet, param: "\"\(unsignedTextView.text!)\"")
                 
             } else {
                 
@@ -366,7 +379,7 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
         
         let param = "\"\(tx)\", [\"\(key)\"]"
         
-        executeNodeCommand(method: BTC_CLI_COMMAND.signrawtransactionwithkey,
+        executeNodeCommand(method: .signrawtransactionwithkey,
                            param: param)
         
     }
@@ -399,7 +412,15 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
             
             DispatchQueue.main.async {
                 
-                self.privateKeyField.text = text
+                if self.privateKeyField.text != "" {
+                    
+                    self.privateKeyField.text! += ", \(text)"
+                    
+                } else {
+                    
+                    self.privateKeyField.text = text
+                    
+                }
                 
             }
             
@@ -479,6 +500,13 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                         var err = errorStrings.description.replacingOccurrences(of: "]", with: "")
                         err = err.description.replacingOccurrences(of: "[", with: "")
                         
+                        if let hex = dict["hex"] as? String {
+                            
+                            creatingView.removeConnectingView()
+                            self.showRaw(raw: hex)
+                            
+                        }
+                        
                         displayAlert(viewController: self,
                                      isError: true,
                                      message: err)
@@ -493,7 +521,7 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                     self.prevTxID = vinDict["txid"] as! String
                     self.vout = vinDict["vout"] as! Int
                     
-                    self.executeNodeCommand(method: BTC_CLI_COMMAND.getrawtransaction,
+                    self.executeNodeCommand(method: .getrawtransaction,
                                             param: "\"\(prevTxID)\", true")
                     
                 case .getrawtransaction:
@@ -514,7 +542,7 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                             scriptSigHex = scriptPubKey["hex"] as! String
                             amount = output["value"] as! Double
                             
-                            self.executeNodeCommand(method: BTC_CLI_COMMAND.getaddressinfo,
+                            self.executeNodeCommand(method: .getaddressinfo,
                                                     param: "\"\(spendingFromAddress)\"")
                             
                         }
@@ -723,7 +751,7 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
             
         }
         
-        getSmartFee(method: BTC_CLI_COMMAND.decoderawtransaction,
+        getSmartFee(method: .decoderawtransaction,
                     param: "\"\(raw)\"")
         
     }
@@ -755,7 +783,7 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                         
                         let result = reducer.stringToReturn
                         
-                        getSmartFee(method: BTC_CLI_COMMAND.decoderawtransaction,
+                        getSmartFee(method: .decoderawtransaction,
                                     param: "\"\(result)\"", vout: vout)
                         
                     case .decoderawtransaction:

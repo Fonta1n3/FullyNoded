@@ -84,7 +84,7 @@ class ChooseRangeViewController: UIViewController, UIPickerViewDelegate, UIPicke
     
     func pickerView(_ pickerView: UIPickerView, attributedTitleForRow row: Int, forComponent component: Int) -> NSAttributedString? {
         
-        let string = "\(row * 100) to \(row * 100 + 199)"
+        let string = "\(row * 2000) to \(row * 2000 + 2000)"
         return NSAttributedString(string: string, attributes: [NSAttributedString.Key.foregroundColor: UIColor.white])
         
     }
@@ -92,7 +92,7 @@ class ChooseRangeViewController: UIViewController, UIPickerViewDelegate, UIPicke
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         
         let row = pickerView.selectedRow(inComponent: component)
-        let string = "\(row * 100) to \(row * 100 + 199)"
+        let string = "\(row * 2000) to \(row * 2000 + 2000)"
         self.range = string
         
     }
@@ -101,7 +101,7 @@ class ChooseRangeViewController: UIViewController, UIPickerViewDelegate, UIPicke
         
         if range == "" {
             
-            range = "0 to 199"
+            range = "0 to 2000"
             
         }
         
@@ -210,7 +210,7 @@ class ChooseRangeViewController: UIViewController, UIPickerViewDelegate, UIPicke
         
         if range == "" {
             
-            range = "0 to 199"
+            range = "0 to 2000"
             
         }
         

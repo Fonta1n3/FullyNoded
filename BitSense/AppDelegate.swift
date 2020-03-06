@@ -28,56 +28,59 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
         // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
         
+        
+        
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
         
         
-        
     }
     
     
-    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
-        
-        addNode(url: "\(url)")
-        return true
-        
-    }
-    
-    func addNode(url: String) {
-        
-        if let myTabBar = self.window?.rootViewController as? UITabBarController {
-            
-            let qc = QuickConnect()
-            
-            func getResult() {
-                
-                if !qc.errorBool {
-                    
-                    print("success adding quick connect")
-                    
-                } else {
-                    
-                    print("error adding quick connect = \(qc.errorDescription)")
-                    
-                }
-                
-            }
-            
-            qc.addNode(vc: myTabBar,
-                       url: url,
-                       completion: getResult)
-            
-        } else {
-            
-            print("error adding quick connect no access to tabbar")
-            
-        }
-        
-    }
+//    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+//        
+//        addNode(url: "\(url)")
+//        return true
+//        
+//    }
+//    
+//    func addNode(url: String) {
+//        
+//        if let myTabBar = self.window?.rootViewController as? UITabBarController {
+//            
+//            let qc = QuickConnect()
+//            
+//            func getResult() {
+//                
+//                if !qc.errorBool {
+//                    
+//                    print("success adding quick connect")
+//                    
+//                } else {
+//                    
+//                    print("error adding quick connect = \(qc.errorDescription)")
+//                    
+//                }
+//                
+//            }
+//            
+//            qc.addNode(vc: myTabBar,
+//                       url: url,
+//                       completion: getResult)
+//            
+//        } else {
+//            
+//            print("error adding quick connect no access to tabbar")
+//            
+//        }
+//        
+//    }
 
     func applicationWillEnterForeground(_ application: UIApplication) {
         // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
+        
+        print("applicationWillEnterForeground")
         
         let keychain = KeychainSwift()
         
@@ -90,7 +93,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             if topVC!.restorationIdentifier != "LogIn" {
                 
                 topVC!.present(loginVC, animated: true, completion: nil)
-                
+                                
             }
             
         }
@@ -109,6 +112,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     // MARK: - Core Data stack
 
+    @available(iOS 10.0, *)
     lazy var persistentContainer: NSPersistentContainer = {
         /*
          The persistent container for the application. This implementation

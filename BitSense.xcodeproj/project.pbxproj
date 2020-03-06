@@ -29,6 +29,9 @@
 		D0233F2B236284200041FFBA /* ShowV3PubKeyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0233F2A236284200041FFBA /* ShowV3PubKeyViewController.swift */; };
 		D02958D3234F82E000ED8F72 /* IdentityViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02958D2234F82E000ED8F72 /* IdentityViewController.swift */; };
 		D02958D5235053B300ED8F72 /* SecurityCenterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02958D4235053B300ED8F72 /* SecurityCenterViewController.swift */; };
+		D02C940B240DF0F000EE2177 /* CryptoSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FBC22AE1B3000DBBFC2 /* CryptoSwift.framework */; platformFilter = ios; };
+		D02C940E240DF0F300EE2177 /* KeychainSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FBA22AE1B2B00DBBFC2 /* KeychainSwift.framework */; platformFilter = ios; };
+		D02C9410240DF0F500EE2177 /* Tor.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FB822ACB7D100DBBFC2 /* Tor.framework */; platformFilter = ios; };
 		D02FE431231107EB0048F8C4 /* Connector.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02FE430231107EB0048F8C4 /* Connector.swift */; };
 		D02FE43323136A600048F8C4 /* NodeLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02FE43223136A600048F8C4 /* NodeLogic.swift */; };
 		D02FE4362313882F0048F8C4 /* HomeTableStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02FE4352313882F0048F8C4 /* HomeTableStruct.swift */; };
@@ -62,9 +65,6 @@
 		D05D9730226425730035F1DE /* images.png in Resources */ = {isa = PBXBuildFile; fileRef = D05D972F226425730035F1DE /* images.png */; };
 		D05D9732226433B60035F1DE /* strobe.png in Resources */ = {isa = PBXBuildFile; fileRef = D05D9731226433B60035F1DE /* strobe.png */; };
 		D05D973422647CE60035F1DE /* QRGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05D973322647CE60035F1DE /* QRGenerator.swift */; };
-		D060120A23795B1300754DEE /* CryptoSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FBC22AE1B3000DBBFC2 /* CryptoSwift.framework */; platformFilter = ios; };
-		D060120D23795B1500754DEE /* KeychainSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FBA22AE1B2B00DBBFC2 /* KeychainSwift.framework */; platformFilter = ios; };
-		D060121123795B1900754DEE /* Tor.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FB822ACB7D100DBBFC2 /* Tor.framework */; platformFilter = ios; };
 		D071A2A0214880F700C4BCB3 /* Search - tripkey.png in Resources */ = {isa = PBXBuildFile; fileRef = D071A29F214880F700C4BCB3 /* Search - tripkey.png */; };
 		D073E16E22558CDE0012A28C /* CoreDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D073E16D22558CDE0012A28C /* CoreDataService.swift */; };
 		D073E17022558DF30012A28C /* AESService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D073E16F22558DF30012A28C /* AESService.swift */; };
@@ -98,6 +98,7 @@
 		D0A519B9226C212C00860D5C /* SendUTXO.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A519B8226C212C00860D5C /* SendUTXO.swift */; };
 		D0A519BB226C5B9E00860D5C /* GetSmartFee.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A519BA226C5B9E00860D5C /* GetSmartFee.swift */; };
 		D0A7CF73227967F900B683A0 /* AddressParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A7CF72227967F900B683A0 /* AddressParser.swift */; };
+		D0AD9B6823E7ECC20032C607 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0AD9B6723E7ECC20032C607 /* SceneDelegate.swift */; };
 		D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B3149E216C4DB1008FDC53 /* CreateRawTxViewController.swift */; };
 		D0B6936E22B2412D00A2C3E6 /* ChooseConnectionTypeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B6936D22B2412D00A2C3E6 /* ChooseConnectionTypeViewController.swift */; };
 		D0B6937222B32D6300A2C3E6 /* TorCredentialViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B6937122B32D6300A2C3E6 /* TorCredentialViewController.swift */; };
@@ -129,9 +130,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		A084FD702359E9D500DA63CF /* Podfile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Podfile; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		A084FD712359E9D500DA63CF /* Cartfile.resolved */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Cartfile.resolved; sourceTree = "<group>"; };
-		A084FD722359E9D500DA63CF /* Podfile.lock */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Podfile.lock; sourceTree = "<group>"; };
 		A084FD732359E9D500DA63CF /* Cartfile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Cartfile; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		A084FD782359F7B700DA63CF /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		D00B9A242111427200E8B95A /* BitSense.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BitSense.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -149,7 +148,6 @@
 		D0126FF72244842000412629 /* bWhite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = bWhite.png; sourceTree = "<group>"; };
 		D0196DD621B5AB300081E0AB /* KeyPadButtonView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = KeyPadButtonView.xib; sourceTree = "<group>"; };
 		D0196DDA21B5AC5F0081E0AB /* KeyPad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyPad.swift; sourceTree = "<group>"; };
-		D0196DDE21BEF3FF0081E0AB /* NMSSH.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NMSSH.framework; path = Carthage/Build/iOS/NMSSH.framework; sourceTree = "<group>"; };
 		D02094ED2256B06B002E8E7A /* Transition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transition.swift; sourceTree = "<group>"; };
 		D02094EF2257FB78002E8E7A /* FirstTime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstTime.swift; sourceTree = "<group>"; };
 		D02094F2225936D2002E8E7A /* ConnectingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectingView.swift; sourceTree = "<group>"; };
@@ -232,11 +230,11 @@
 		D0A519BA226C5B9E00860D5C /* GetSmartFee.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetSmartFee.swift; sourceTree = "<group>"; };
 		D0A7CF72227967F900B683A0 /* AddressParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressParser.swift; sourceTree = "<group>"; };
 		D0AC9D31234D079000290550 /* BitSense.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BitSense.entitlements; sourceTree = "<group>"; };
+		D0AD9B6723E7ECC20032C607 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		D0B3149E216C4DB1008FDC53 /* CreateRawTxViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateRawTxViewController.swift; sourceTree = "<group>"; };
 		D0B6936D22B2412D00A2C3E6 /* ChooseConnectionTypeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChooseConnectionTypeViewController.swift; sourceTree = "<group>"; };
 		D0B6937122B32D6300A2C3E6 /* TorCredentialViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TorCredentialViewController.swift; sourceTree = "<group>"; };
 		D0D71DA22351F835005CCDB9 /* UtilitieMenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilitieMenuViewController.swift; sourceTree = "<group>"; };
-		D0DA7CE82172F7D800A96F7E /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		D0DA954E2340A9C2001B7EB3 /* IncomingsMenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IncomingsMenuViewController.swift; sourceTree = "<group>"; };
 		D0DE292A22BCFE9900D9EBCF /* Readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Readme.md; sourceTree = "<group>"; };
 		D0DE292C22BCFEEA00D9EBCF /* addNode.PNG */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = addNode.PNG; sourceTree = "<group>"; };
@@ -258,9 +256,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D060120D23795B1500754DEE /* KeychainSwift.framework in Frameworks */,
-				D060121123795B1900754DEE /* Tor.framework in Frameworks */,
-				D060120A23795B1300754DEE /* CryptoSwift.framework in Frameworks */,
+				D02C9410240DF0F500EE2177 /* Tor.framework in Frameworks */,
+				D02C940E240DF0F300EE2177 /* KeychainSwift.framework in Frameworks */,
+				D02C940B240DF0F000EE2177 /* CryptoSwift.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -280,8 +278,6 @@
 				A084FD782359F7B700DA63CF /* .gitignore */,
 				A084FD732359E9D500DA63CF /* Cartfile */,
 				A084FD712359E9D500DA63CF /* Cartfile.resolved */,
-				A084FD702359E9D500DA63CF /* Podfile */,
-				A084FD722359E9D500DA63CF /* Podfile.lock */,
 			);
 			name = Build;
 			sourceTree = "<group>";
@@ -395,6 +391,7 @@
 				D00B9A332111427200E8B95A /* LaunchScreen.storyboard */,
 				D00B9A362111427200E8B95A /* Info.plist */,
 				D00B9A2E2111427200E8B95A /* BitSense.xcdatamodeld */,
+				D0AD9B6723E7ECC20032C607 /* SceneDelegate.swift */,
 			);
 			path = BitSense;
 			sourceTree = "<group>";
@@ -769,8 +766,6 @@
 				D0855FBC22AE1B3000DBBFC2 /* CryptoSwift.framework */,
 				D0855FBA22AE1B2B00DBBFC2 /* KeychainSwift.framework */,
 				D0855FB822ACB7D100DBBFC2 /* Tor.framework */,
-				D0196DDE21BEF3FF0081E0AB /* NMSSH.framework */,
-				D0DA7CE82172F7D800A96F7E /* StoreKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -1075,6 +1070,7 @@
 				D0A519BB226C5B9E00860D5C /* GetSmartFee.swift in Sources */,
 				D07E0DE822F9570A00A81FA8 /* WalletCreatorViewController.swift in Sources */,
 				D02094EE2256B06B002E8E7A /* Transition.swift in Sources */,
+				D0AD9B6823E7ECC20032C607 /* SceneDelegate.swift in Sources */,
 				D05D972C2264104D0035F1DE /* QRScanner.swift in Sources */,
 				D00B9A302111427200E8B95A /* BitSense.xcdatamodeld in Sources */,
 				D0560EE92277F75900C3E909 /* UTXOViewController.swift in Sources */,
@@ -1179,7 +1175,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -1233,7 +1229,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -1248,10 +1244,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = BitSense/BitSense.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development: Peter Denton (H3TA3EF8PX)";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 99;
+				CURRENT_PROJECT_VERSION = 112;
 				DEVELOPMENT_TEAM = 69FR345CDA;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1259,11 +1255,12 @@
 				);
 				INFOPLIST_FILE = BitSense/Info.plist;
 				INFOPLIST_PREPROCESS = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.97;
+				MARKETING_VERSION = 1.191;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1273,6 +1270,7 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "";
 			};
 			name = Debug;
 		};
@@ -1282,10 +1280,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = BitSense/BitSense.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Distribution";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Distribution: Peter Denton (69FR345CDA)";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 99;
+				CURRENT_PROJECT_VERSION = 112;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 69FR345CDA;
 				ENABLE_TESTABILITY = NO;
@@ -1295,19 +1293,21 @@
 				);
 				INFOPLIST_FILE = BitSense/Info.plist;
 				INFOPLIST_PREPROCESS = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.97;
+				MARKETING_VERSION = 1.191;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
-				PROVISIONING_PROFILE_SPECIFIER = iOS13_Distribution_Oct2019;
+				PROVISIONING_PROFILE_SPECIFIER = FullyNoded_Debug_Oct2019;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "BitSense/BitSense-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "";
 			};
 			name = Release;
 		};

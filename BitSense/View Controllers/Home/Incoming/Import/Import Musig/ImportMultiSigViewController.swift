@@ -181,7 +181,7 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
             
             let param = "\(sigsRequired), \(pubKeyArray), \(type)"
             
-            executeNodeCommandSsh(method: BTC_CLI_COMMAND.createmultisig,
+            executeNodeCommandSsh(method: .createmultisig,
                                   param: param)
             
         } else {
@@ -395,7 +395,7 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
     func addBlurView(frame: CGRect, button: UIButton) {
         
         button.removeFromSuperview()
-        let blur = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
+        let blur = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
         blur.frame = frame
         blur.clipsToBounds = true
         blur.layer.cornerRadius = frame.width / 2
@@ -448,6 +448,7 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
             self.pubKeyTable.reloadData()
             
         }
+        
     }
     
     @objc func chooseQRCodeFromLibrary() {
@@ -522,10 +523,9 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
         descriptor = descriptor.replacingOccurrences(of: "\"", with: "")
         descriptor = descriptor.replacingOccurrences(of: " ", with: "")
         
-        let method = BTC_CLI_COMMAND.getdescriptorinfo
         let param = "\"\(descriptor)\""
         
-        reducer.makeCommand(command: method,
+        reducer.makeCommand(command: .getdescriptorinfo,
                             param: param,
                             completion: completion)
         

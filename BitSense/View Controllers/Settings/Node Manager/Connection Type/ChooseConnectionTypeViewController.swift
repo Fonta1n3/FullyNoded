@@ -8,19 +8,20 @@
 
 import UIKit
 
-class ChooseConnectionTypeViewController: UIViewController {
+class ChooseConnectionTypeViewController: UIViewController, UITabBarControllerDelegate {
     
     let cd = CoreDataService()
     var selectedNode = [String:Any]()
     var isUpdating = Bool()
     var scannerShowing = false
     var isFirstTime = Bool()
+    var cameFromHome = Bool()
     
     @IBOutlet var imageView: UIImageView!
     
     let qrScanner = QRScanner()
     var isTorchOn = Bool()
-    let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
+    let blurView = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
     let connectingView = ConnectingView()
     @IBOutlet var scanButtonOutlet: UIButton!
     @IBOutlet var manualButtonOutlet: UIButton!
@@ -41,14 +42,14 @@ class ChooseConnectionTypeViewController: UIViewController {
         
     }
     
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        scanButtonOutlet.layer.cornerRadius = 40
-        manualButtonOutlet.layer.cornerRadius = 40
+        tabBarController?.delegate = self
+        scanButtonOutlet.layer.cornerRadius = 35
+        manualButtonOutlet.layer.cornerRadius = 35
         configureScanner()
-
+        
     }
     
     func configureScanner() {
@@ -72,32 +73,32 @@ class ChooseConnectionTypeViewController: UIViewController {
         
     }
         
-        @objc func back() {
+    @objc func back() {
+        
+        DispatchQueue.main.async {
             
-            DispatchQueue.main.async {
-                
-                self.qrScanner.textField.removeFromSuperview()
-                self.blurView.removeFromSuperview()
-                self.imageView.alpha = 0
-                self.scannerShowing = false
-                
-            }
+            self.qrScanner.textField.removeFromSuperview()
+            self.blurView.removeFromSuperview()
+            self.imageView.alpha = 0
+            self.scannerShowing = false
             
         }
         
-        @objc func toggleTorch() {
+    }
+    
+    @objc func toggleTorch() {
+        
+        if isTorchOn {
             
-            if isTorchOn {
-                
-                qrScanner.toggleTorch(on: false)
-                isTorchOn = false
-                
-            } else {
-                
-                qrScanner.toggleTorch(on: true)
-                isTorchOn = true
-                
-            }
+            qrScanner.toggleTorch(on: false)
+            isTorchOn = false
+            
+        } else {
+            
+            qrScanner.toggleTorch(on: true)
+            isTorchOn = true
+            
+        }
         
     }
     
@@ -157,19 +158,43 @@ class ChooseConnectionTypeViewController: UIViewController {
             
             if !qc.errorBool {
                 
-                if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+                print("error is false")
+                
+                if cameFromHome {
                     
-                    let window = appDelegate.window
-                    
-                    if let myTabBar = window?.rootViewController as? UITabBarController {
+                    DispatchQueue.main.async {
                         
-                        DispatchQueue.main.async {
-                            
-                            myTabBar.selectedIndex = 0
-                            
-                        }
+                        self.navigationController?.popToRootViewController(animated: true)
                         
                     }
+                    
+                } else {
+                    
+                    DispatchQueue.main.async {
+                        
+                        self.tabBarController?.selectedIndex = 0
+                        
+                    }
+                    
+//                    if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+//
+//                        let window = appDelegate.window
+//
+//                        if let myTabBar = window?.rootViewController as? UITabBarController {
+//
+//                            DispatchQueue.main.async {
+//
+//                                myTabBar.selectedIndex = 0
+//
+//                            }
+//
+//                        }
+//
+//                    } else {
+//
+//                        displayAlert(viewController: self, isError: true, message: "Unable to get app delegate")
+//
+//                    }
                     
                 }
                 
@@ -212,7 +237,6 @@ class ChooseConnectionTypeViewController: UIViewController {
             
             if let vc = segue.destination as? NodeDetailViewController  {
                 
-                vc.newNode["usingSSH"] = false
                 vc.newNode["usingTor"] = true
                 vc.selectedNode = self.selectedNode
                 

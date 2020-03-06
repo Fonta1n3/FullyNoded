@@ -12,8 +12,6 @@ import UIKit
 class ErrorView: UIView {
     
     let errorLabel = UILabel()
-    let impact = UIImpactFeedbackGenerator()
-    //let backgroundView = UIView()
     let upSwipe = UISwipeGestureRecognizer()
     let backgroundView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     
@@ -136,15 +134,7 @@ class ErrorView: UIView {
             
             DispatchQueue.main.async {
                 
-                //imageView.alpha = 0.2
-//                imageView.frame = CGRect(x: self.errorLabel.frame.midX - 15,
-//                                         y: self.errorLabel.frame.maxY - 18,
-//                                         width: 20,
-//                                         height: 20)
-                
-                //self.errorLabel.addSubview(imageView)
-                
-                self.impact.impactOccurred()
+                impact()
                 
             }
             
