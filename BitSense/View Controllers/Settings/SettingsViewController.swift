@@ -100,6 +100,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         let label = settingsCell.viewWithTag(1) as! UILabel
         label.textColor = UIColor.white
         settingsCell.selectionStyle = .none
+        label.adjustsFontSizeToFitWidth = true
         
         switch indexPath.section {
             
@@ -128,6 +129,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             let cell = tableView.dequeueReusableCell(withIdentifier: "miningFeeCell", for: indexPath)
             let label = cell.viewWithTag(1) as! UILabel
             let slider = cell.viewWithTag(2) as! UISlider
+            label.adjustsFontSizeToFitWidth = true
             
             slider.addTarget(self, action: #selector(setFee), for: .allEvents)
             slider.maximumValue = 2 * -1

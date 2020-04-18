@@ -9,8 +9,9 @@
 import UIKit
 import KeychainSwift
 
-class MainMenuViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITabBarControllerDelegate, UINavigationControllerDelegate {
+class MainMenuViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITabBarControllerDelegate, UINavigationControllerDelegate, OnionManagerDelegate {
     
+    weak var mgr = TorClient.sharedInstance
     let backView = UIView()
     let aes = AESService()
     let ud = UserDefaults.standard
@@ -23,8 +24,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     var currentBlock = Int()
     var transactionArray = [[String:Any]]()
     @IBOutlet var mainMenu: UITableView!
-    var refresher: UIRefreshControl!
-    var connector:Connector!
     var connectingView = ConnectingView()
     let cd = CoreDataService()
     var nodes = [[String:Any]]()
@@ -46,7 +45,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     var network = ""
     var sectionZeroLoaded = Bool()
     var sectionOneLoaded = Bool()
-    let spinner = UIActivityIndicatorView(style: .white)
+    let spinner = UIActivityIndicatorView(style: .medium)
     var refreshButton = UIBarButtonItem()
     var dataRefresher = UIBarButtonItem()
     var wallets = NSArray()
@@ -65,10 +64,31 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         sectionOneLoaded = false
         firstTimeHere()
         addNavBarSpinner()
-        configureRefresher()
         setFeeTarget()
         showUnlockScreen()
         addlaunchScreen()
+        existingWallet = ud.object(forKey: "walletName") as? String ?? ""
+        
+    }
+    
+    func torConnProgress(_ progress: Int) {
+        
+        print("progress = \(progress)")
+        
+    }
+    
+    func torConnFinished() {
+        print("finished connecting")
+        viewHasLoaded = true
+        removeSpinner()
+        loadWalletFirst()
+        displayAlert(viewController: self, isError: false, message: "Tor finished bootstrapping")
+        
+    }
+    
+    func torConnDifficulties() {
+        
+        displayAlert(viewController: self, isError: true, message: "We are having issues connecting tor")
         
     }
     
@@ -82,7 +102,14 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
-    override func viewDidAppear(_ animated: Bool) {
+    private func loadTable() {
+        print("loadTable")
+        
+        if mgr?.state != .started && mgr?.state != .connected  {
+
+            mgr?.start(delegate: self)
+
+        }
         
         getNodes { nodeArray in
             
@@ -98,7 +125,15 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                         
                         self.activeNode = self.activeNodeDict().node
                         let node = NodeStruct(dictionary: self.activeNode)
+                        if self.initialLoad {
+                            self.existingNodeID = node.id
+                        }
                         let newId = node.id
+                        DispatchQueue.main.async {
+                            let enc = node.label
+                            let dec = self.aes.decryptKey(keyToDecrypt: enc)
+                            self.navigationItem.title = dec
+                        }
                         
                         if newId != self.existingNodeID {
                             
@@ -108,17 +143,15 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                                 self.existingWallet = ""
                                 
                             }
-                            
-                            self.refresh()
-                            
+                                                        
                         } else if walletName != self.existingWallet {
                             
-                            if self.viewHasLoaded {
+                            //if self.viewHasLoaded {
                                 
                                 self.existingWallet = walletName
                                 self.reloadWalletData()
                                 
-                            }
+                            //}
                             
                         }
                         
@@ -145,10 +178,21 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     }
                     
                 }
-                
-                self.initialLoad = false
-                
+                                
             }
+            
+            self.initialLoad = false
+            
+        }
+        
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        
+        if initialLoad {
+            
+            addlaunchScreen()
+            loadTable()
             
         }
         
@@ -157,33 +201,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     @objc func refreshData(_ sender: Any) {
         print("refreshData")
         
-        if TorClient.sharedInstance.isOperational {
-            
-            refreshDataNow()
-            
-        } else {
-            
-            print("tor not connected yet")
-            
-        }
-        
-//        if connector != nil {
-//
-//            if connector.torConnected {
-//
-//                refreshDataNow()
-//
-//            } else {
-//
-//                refresh()
-//
-//            }
-//
-//        } else {
-//
-//            refresh()
-//
-//        }
+        refreshDataNow()
         
     }
     
@@ -247,26 +265,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
-//        switch section {
-//
-//        case 2:
-//
-//            if transactionArray.count > 0 {
-//
-//                return transactionArray.count
-//
-//            } else {
-//
-//                return 1
-//
-//            }
-//
-//        default:
-//
-//            return 1
-//
-//        }
-        
         return 1
         
     }
@@ -308,6 +306,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 hotBalanceLabel.text = self.hotBalance
                 coldBalanceLabel.text = self.coldBalance
                 unconfirmedLabel.text = self.unconfirmedBalance
+                hotBalanceLabel.adjustsFontSizeToFitWidth = true
+                coldBalanceLabel.adjustsFontSizeToFitWidth = true
+                unconfirmedLabel.adjustsFontSizeToFitWidth = true
                 return cell
                 
             } else {
@@ -495,13 +496,13 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         
-        let sectionString = ""
-//        switch section {
-//        case 0: sectionString = ud.object(forKey: "walletName") as? String ?? "Default Wallet"
-//        case 1: sectionString = "Node stats"
-//        case 2: sectionString = "Transactions"
-//        default: break
-//        }
+        var sectionString = ""
+        switch section {
+        case 0: sectionString = ud.object(forKey: "walletName") as? String ?? "Default Wallet"
+        //case 1: sectionString = "Node stats"
+        //case 2: sectionString = "Transactions"
+        default: break
+        }
         return sectionString
     }
     
@@ -601,91 +602,99 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             } else {
                 
                 walletDisabled = false
-                let wallets = nodeLogic.walletsToReturn
-                
-                switch wallets.count {
-                    
-                case 0:
-                    
-                    // this should never happen
-                    print("?")
-                    
-                case 1:
-                    
-                    print("wallet is default")
-                    loadSectionZero()
-                    
-                case 2:
-                    
-                    for w in wallets {
-                        
-                        let wallet = w as! String
-                        
-                        if wallet != "" {
-                            
-                            ud.set(wallet, forKey: "walletName")
-                            existingWallet = wallet
-                            
-                            DispatchQueue.main.async {
-                                
-                                self.mainMenu.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
-                                
-                            }
-                            
-                        }
-                        
-                    }
-                    
-                    loadSectionZero()
-                    
-                default:
-                    
-                    //multiple wallets are loaded
-                    
-                    //check if walletName matches a loaded wallet, if no matches then more then one wallet is loaded that we dont know about so we get user to choose one
-                    
-                    self.wallets = wallets
-                    var choose = false
-                    
-                    for w in wallets {
-                        
-                        let wallet = w as! String
-                        
-                        if let savedWallet = ud.object(forKey: "walletName") as? String {
-                            
-                            if wallet == savedWallet {
-                                
-                                //do nothing its already set to correct wallet
-                                choose = false
-                                
-                            }
-                            
-                        } else {
-                            
-                            //get user to choose correct wallet
-                            choose = true
-                            
-                        }
-                        
-                    }
-                    
-                    if choose {
-                        
-                        chooseAWallet()
-                        
-                    } else {
-                        
-                        loadSectionZero()
-                        
-                    }
-                    
-                }
+                loadSectionZero()
+//                let wallets = nodeLogic.walletsToReturn
+//
+//                switch wallets.count {
+//
+//                case 0:
+//
+//                    // this should never happen
+//                    print("?")
+//
+//                case 1:
+//
+//                    print("wallet is default")
+//                    loadSectionZero()
+//
+//                case 2:
+//
+//                    for w in wallets {
+//
+//                        let wallet = w as! String
+//
+//                        if wallet != "" {
+//
+//                            ud.set(wallet, forKey: "walletName")
+//                            existingWallet = wallet
+//
+//                            DispatchQueue.main.async {
+//
+//                                self.mainMenu.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
+//
+//                            }
+//
+//                        }
+//
+//                    }
+//
+//                    loadSectionZero()
+//
+//                default:
+//
+//                    //multiple wallets are loaded
+//
+//                    //check if walletName matches a loaded wallet, if no matches then more then one wallet is loaded that we dont know about so we get user to choose one
+//
+//                    self.wallets = wallets
+//                    var choose = false
+//
+//                    for w in wallets {
+//
+//                        let wallet = w as! String
+//
+//                        if let savedWallet = ud.object(forKey: "walletName") as? String {
+//
+//                            if wallet == savedWallet {
+//
+//                                //do nothing its already set to correct wallet
+//                                choose = false
+//
+//                            }
+//
+//                        } else {
+//
+//                            //get user to choose correct wallet
+//                            choose = true
+//
+//                        }
+//
+//                    }
+//
+//                    if choose {
+//
+//                        self.existingWallet = ""
+//                        chooseAWallet()
+//
+//                    } else {
+//
+//                        loadSectionZero()
+//
+//                    }
+//
+//                }
                 
             }
             
         }
         
         nodeLogic.loadWalletSection(completion: completion)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            
+            displayAlert(viewController: self, isError: false, message: "Fetching wallet balances...")
+            
+        }
         
     }
     
@@ -847,72 +856,72 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         if indexPath.section == 0 {
             
-            addNavBarSpinner()
-            let converter = FiatConverter()
-            
-            func getResult() {
-                
-                if !converter.errorBool {
-                    
-                    let btcHot = self.hotBalance
-                    let btcCold = self.coldBalance
-                    let rate = converter.fxRate
-                    
-                    guard let hotDouble = Double(self.hotBalance.replacingOccurrences(of: ",", with: "")) else {
-                        
-                        displayAlert(viewController: self,
-                                     isError: true,
-                                     message: "error converting hot balance to fiat")
-                        
-                        removeLoader()
-                        
-                        return
-                    }
-                    
-                    guard let coldDouble = Double(self.coldBalance.replacingOccurrences(of: ",", with: "")) else {
-                        
-                        displayAlert(viewController: self,
-                                     isError: true,
-                                     message: "error converting hot balance to fiat")
-                        
-                        removeLoader()
-                        
-                        return
-                    }
-                    
-                    let formattedHotDouble = (hotDouble * rate).withCommas()
-                    let formattedColdDouble = (coldDouble * rate).withCommas()
-                    self.hotBalance = "﹩\(formattedHotDouble)"
-                    self.coldBalance = "﹩\(formattedColdDouble)"
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.removeLoader()
-                        self.mainMenu.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
-                        
-                    }
-                    
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-                        
-                        self.hotBalance = btcHot
-                        self.coldBalance = btcCold
-                        self.mainMenu.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
-                        
-                    }
-                    
-                } else {
-                    
-                    removeLoader()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: "error getting fiat rate")
-                    
-                }
-                
-            }
-            
-            converter.getFxRate(completion: getResult)
+//            addNavBarSpinner()
+//            let converter = FiatConverter()
+//
+//            func getResult() {
+//
+//                if !converter.errorBool {
+//
+//                    let btcHot = self.hotBalance
+//                    let btcCold = self.coldBalance
+//                    let rate = converter.fxRate
+//
+//                    guard let hotDouble = Double(self.hotBalance.replacingOccurrences(of: ",", with: "")) else {
+//
+//                        displayAlert(viewController: self,
+//                                     isError: true,
+//                                     message: "error converting hot balance to fiat")
+//
+//                        removeLoader()
+//
+//                        return
+//                    }
+//
+//                    guard let coldDouble = Double(self.coldBalance.replacingOccurrences(of: ",", with: "")) else {
+//
+//                        displayAlert(viewController: self,
+//                                     isError: true,
+//                                     message: "error converting hot balance to fiat")
+//
+//                        removeLoader()
+//
+//                        return
+//                    }
+//
+//                    let formattedHotDouble = (hotDouble * rate).withCommas()
+//                    let formattedColdDouble = (coldDouble * rate).withCommas()
+//                    self.hotBalance = "﹩\(formattedHotDouble)"
+//                    self.coldBalance = "﹩\(formattedColdDouble)"
+//
+//                    DispatchQueue.main.async {
+//
+//                        self.removeLoader()
+//                        self.mainMenu.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
+//
+//                    }
+//
+//                    DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+//
+//                        self.hotBalance = btcHot
+//                        self.coldBalance = btcCold
+//                        self.mainMenu.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
+//
+//                    }
+//
+//                } else {
+//
+//                    removeLoader()
+//
+//                    displayAlert(viewController: self,
+//                                 isError: true,
+//                                 message: "error getting fiat rate")
+//
+//                }
+//
+//            }
+//
+//            converter.getFxRate(completion: getResult)
             
         } else {
             
@@ -976,9 +985,12 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 self.backView.addSubview(imageView)
                 self.view.addSubview(self.backView)
                 
-                UIView.animate(withDuration: 0.8) {
+                UIView.animate(withDuration: 0.8, animations: {
                     self.backView.alpha = 1
+                }) { (_) in
+                    displayAlert(viewController: self, isError: false, message: "Tor is bootstrapping, please wait")
                 }
+                
                 
             }
             
@@ -1012,7 +1024,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         DispatchQueue.main.async {
             
-            self.refresher.endRefreshing()
             UIView.animate(withDuration: 0.3, animations: {
                 self.backView.alpha = 0
                 self.mainMenu.alpha = 1
@@ -1021,21 +1032,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             }
             
         }
-        
-    }
-    
-    func configureRefresher() {
-        
-        refresher = UIRefreshControl()
-        refresher.tintColor = UIColor.white
-        
-        refresher.attributedTitle = NSAttributedString(string: "pull to reconnect",
-                                                       attributes: [NSAttributedString.Key.foregroundColor: UIColor.white])
-        
-        refresher.addTarget(self, action: #selector(self.refresh),
-                            for: UIControl.Event.valueChanged)
-        
-        mainMenu.addSubview(refresher)
         
     }
     
@@ -1129,127 +1125,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
-    @objc func refresh() {
-        print("refresh")
-        
-        if !self.initialLoad {
-
-            self.addlaunchScreen()
-            self.reloadTable()
-            self.addNavBarSpinner()
-            
-        }
-        
-        func load() {
-            print("load")
-            
-            DispatchQueue.main.async {
-                
-                let anyNodeActive = self.activeNodeDict().isAnyNodeActive
-                
-                if anyNodeActive {
-                    
-                    self.activeNode = self.activeNodeDict().node
-                    let str = NodeStruct(dictionary: self.activeNode)
-                    self.existingNodeID = str.id
-                    let enc = str.label
-                    let dec = self.aes.decryptKey(keyToDecrypt: enc)
-                    self.navigationItem.title = dec
-                    self.connector = Connector()
-                    self.connectTor(connector: self.connector)
-                    
-                } else {
-                    
-                    self.removeSpinner()
-                    self.removeLoader()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: "no active nodes")
-                    
-                }
-                
-            }
-            
-        }
-        
-//        if TorClient.sharedInstance.isOperational && !initialLoad {
-//            
-//            TorClient.sharedInstance.resign()
-//            
-//        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            
-            load()
-            
-        }
-        
-    }
-    
-    func connectTor(connector:Connector) {
-        print("connecttor")
-        
-        if TorClient.sharedInstance.isOperational {
-            
-            if TorClient.sharedInstance.progress == 100 {
-                
-                viewHasLoaded = true
-                removeSpinner()
-                self.loadWalletFirst()
-                
-            } else {
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                    
-                    self.connectTor(connector: Connector())
-                    
-                }
-                
-            }
-            
-            
-        } else {
-            
-            print("tor not connected yet")
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                
-                self.connectTor(connector: Connector())
-                
-            }
-            
-        }
-        
-        func completion() {
-            print("connecttor completion")
-            
-            if !connector.torConnected {
-                
-                removeSpinner()
-                removeLoader()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "unable to connect to tor")
-                
-            } else {
-                
-                viewHasLoaded = true
-                removeSpinner()
-                
-                //DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                    self.loadWalletFirst()
-                //}
-                
-            }
-            
-        }
-        
-        //connector.connectTor(completion: completion)
-        
-    }
-    
     func reloadWalletData() {
         
         addNavBarSpinner()
@@ -1329,6 +1204,11 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             if let vc = segue.destination as? ChooseWalletViewController {
                 
                 vc.wallets = wallets
+                vc.doneBlock = { result in
+                    
+                    self.loadTable()
+                    
+                }
                 
             }
             

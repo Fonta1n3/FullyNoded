@@ -270,6 +270,8 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
                 xprvDescriptor = xprvDescriptor.replacingOccurrences(of: "0'", with: "0'\"'\"'")
                 dict["descriptor"] = "\"\(xprvDescriptor)\""
                 
+                print("xprvDescriptor = \(xprvDescriptor)")
+                
                 self.executeNodeCommand(method: .deriveaddresses,
                                         param: "\"\(xprvDescriptor)\", ''\(convertedRange)''")
                 

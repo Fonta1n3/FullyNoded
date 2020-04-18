@@ -12,6 +12,7 @@ import UIKit
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     var window: UIWindow?
+    private var isBooting = true
     
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
@@ -41,9 +42,17 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func sceneWillEnterForeground(_ scene: UIScene) {
         // Called as the scene transitions from the background to the foreground.
         // Use this method to undo the changes made on entering the background.
-        TorClient.sharedInstance.start {
+        
+        let mgr = TorClient.sharedInstance
+
+        if !isBooting && mgr.state != .started && mgr.state != .connected  {
+            print("started in scene delegate")
+            mgr.start(delegate: nil)
+
+        } else {
             
-            print("start tor")
+            isBooting = false
+            
         }
         
     }
@@ -53,7 +62,20 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Use this method to save data, release shared resources, and store enough scene-specific state information
         // to restore the scene back to its current state.
         
-        TorClient.sharedInstance.resign()
+        let device = UIDevice.modelName
+        
+        if device != "iPhone 11 pro max" && device != "iPhone XS Max" {
+            
+            let mgr = TorClient.sharedInstance
+            
+            if mgr.state != .stopped {
+                
+                mgr.state = .refreshing
+                mgr.resign()
+                                                    
+            }
+            
+        }
 
         // Save changes in the application's managed object context when the application transitions to the background.
         (UIApplication.shared.delegate as? AppDelegate)?.saveContext()
@@ -65,6 +87,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let urlcontexts = URLContexts.first
         let url = urlcontexts?.url
         addNode(url: "\(url!)")
+        
     }
     
     

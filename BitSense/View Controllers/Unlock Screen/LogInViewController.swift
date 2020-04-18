@@ -37,7 +37,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         lockView.backgroundColor = UIColor.black
         lockView.alpha = 1
         
-        imageView.image = UIImage(named: "whiteLock.png")
+        imageView.image = UIImage(named: "ItunesArtwork@2x.png")
         imageView.alpha = 1
         
         passwordInput.keyboardType = UIKeyboardType.default

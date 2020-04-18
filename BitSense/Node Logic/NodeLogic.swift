@@ -365,7 +365,7 @@ class NodeLogic {
         
         if let difficultyCheck = blockchainInfo["difficulty"] as? Double {
             
-            dictToReturn["difficulty"] = "\(Int((Float(difficultyCheck) / Float(1000000000000))).withCommas) trillion difficulty"
+            dictToReturn["difficulty"] = "difficulty \(Int(difficultyCheck / 1000000000000).withCommas()) trillion"
             
         }
         

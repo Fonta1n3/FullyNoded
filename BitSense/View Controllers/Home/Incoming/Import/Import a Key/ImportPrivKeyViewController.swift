@@ -342,22 +342,19 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
             if !reducer.errorBool {
                 
                 let result = reducer.dictToReturn
-                print("result = \(result)")
                 let hasprivatekeys = result["hasprivatekeys"] as! Bool
-                print("hasprivatekeys = \(hasprivatekeys)")
                 let isrange = result["isrange"] as! Bool
                 let descriptor = result["descriptor"] as! String
                 
                 if !hasprivatekeys {
                     
                     isWatchOnly = true
-                    dict["descriptor"] = "\"\(descriptor)\""
+                    dict["descriptor"] = descriptor
                     
                 } else {
                     
                     isWatchOnly = false
                     let checksum = result["checksum"] as! String
-                    //let arr = descriptor.split(separator: "#")
                     let hotDescriptor = desc + "#" + checksum
                     dict["descriptor"] = hotDescriptor
                     

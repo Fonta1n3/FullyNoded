@@ -12,6 +12,7 @@ class ChooseWalletViewController: UIViewController, UITableViewDelegate, UITable
     
     var wallets = NSArray()
     var tableArray = [String]()
+    var doneBlock:((Bool) -> Void)?
     
     func loadTableArray() {
         
@@ -50,6 +51,7 @@ class ChooseWalletViewController: UIViewController, UITableViewDelegate, UITable
         
         let walletName = tableArray[indexPath.row]
         UserDefaults.standard.set(walletName, forKey: "walletName")
+        self.doneBlock!(true)
         navigationController?.popToRootViewController(animated: true)
         
     }

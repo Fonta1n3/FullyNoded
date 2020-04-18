@@ -84,17 +84,25 @@ class MakeRPCCall {
                 }
                 
                 var request = URLRequest(url: url)
-                print("url = \(url)")
+                var timeout = 10.0
+                if method == .gettxoutsetinfo {
+                    timeout = 500.0
+                }
+                request.timeoutInterval = timeout
                 request.httpMethod = "POST"
                 request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
-                print("request: \("{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method)\",\"params\":[\(formattedParam)]}")")
                 request.httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method)\",\"params\":[\(formattedParam)]}".data(using: .utf8)
+                
+                #if DEBUG
+                print("url = \(url)")
+                print("request: \("{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method)\",\"params\":[\(formattedParam)]}")")
+                #endif
                 
                 let queue = DispatchQueue(label: "com.FullyNoded.torQueue")
                 queue.async {
                     
                     let task = self.torClient.session.dataTask(with: request as URLRequest) { (data, response, error) in
-                        
+                                                
                         do {
                             
                             if error != nil {
@@ -121,6 +129,8 @@ class MakeRPCCall {
                                     do {
                                         
                                         let jsonAddressResult = try JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as! NSDictionary
+                                        
+                                        print("result = \(jsonAddressResult)")
                                         
                                         if let errorCheck = jsonAddressResult["error"] as? NSDictionary {
                                             

@@ -2598,7 +2598,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
             </objects>
             <point key="canvasLocation" x="-2791.1999999999998" y="375.56221889055473"/>
         </scene>
-        <!--Settings v0.1.36-->
+        <!--Settings v0.1.45-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="BitSense" customModuleProvider="target" sceneMemberID="viewController">
@@ -2668,8 +2668,8 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                                             </subviews>
                                             <constraints>
                                                 <constraint firstItem="Jge-sz-Rd3" firstAttribute="leading" secondItem="kM3-4c-eaE" secondAttribute="leadingMargin" id="2FM-XU-UBS"/>
+                                                <constraint firstItem="Jge-sz-Rd3" firstAttribute="trailing" secondItem="kM3-4c-eaE" secondAttribute="trailingMargin" id="IDZ-WO-5ub"/>
                                                 <constraint firstAttribute="bottom" secondItem="KcI-d3-4RO" secondAttribute="bottom" constant="8.5" id="QT1-Hd-r3L"/>
-                                                <constraint firstItem="Jge-sz-Rd3" firstAttribute="trailing" secondItem="kM3-4c-eaE" secondAttribute="trailingMargin" id="Zav-DS-4tE"/>
                                                 <constraint firstItem="KcI-d3-4RO" firstAttribute="top" secondItem="Jge-sz-Rd3" secondAttribute="bottom" constant="8" id="dLS-m7-VlC"/>
                                                 <constraint firstItem="Jge-sz-Rd3" firstAttribute="top" secondItem="kM3-4c-eaE" secondAttribute="topMargin" id="lPS-g8-gjB"/>
                                                 <constraint firstItem="KcI-d3-4RO" firstAttribute="centerX" secondItem="kM3-4c-eaE" secondAttribute="centerX" id="tWy-S0-7Gt"/>
@@ -2694,7 +2694,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                         <viewLayoutGuide key="safeArea" id="Cze-jj-bFe"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="Settings v0.1.36" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="Settings v0.1.45" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>

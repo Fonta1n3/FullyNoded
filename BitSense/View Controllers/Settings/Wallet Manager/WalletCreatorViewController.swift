@@ -82,7 +82,7 @@ class WalletCreatorViewController: UIViewController, UITextFieldDelegate {
                 
             }
             
-            self.executeNodeCommand(method: BTC_CLI_COMMAND.createwallet,
+            self.executeNodeCommand(method: .createwallet,
                                        param: param)
             
         } else {

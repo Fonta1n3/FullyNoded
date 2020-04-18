@@ -202,7 +202,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             
             DispatchQueue.main.async {
                 
-                tableView.reloadSections([3], with: .fade)
+                tableView.reloadSections([2], with: .fade)
                 
             }
             

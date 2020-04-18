@@ -146,17 +146,17 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
             
             if self.nativeSegwit {
                 
-                self.executeNodeCommand(method: BTC_CLI_COMMAND.getnewaddress,
+                self.executeNodeCommand(method: .getnewaddress,
                                            param: "\"\", \"bech32\"")
                 
             } else if self.legacy {
                 
-                self.executeNodeCommand(method: BTC_CLI_COMMAND.getnewaddress,
+                self.executeNodeCommand(method: .getnewaddress,
                                            param: "\"\", \"legacy\"")
                 
             } else if self.p2shSegwit {
                 
-                self.executeNodeCommand(method: BTC_CLI_COMMAND.getnewaddress,
+                self.executeNodeCommand(method: .getnewaddress,
                                            param: "")
                 
             }

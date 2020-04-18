@@ -101,18 +101,9 @@ class Reducer {
                 
             }
             
-            if TorClient.sharedInstance.isOperational {
-                
-                torRPC.executeRPCCommand(method: command,
-                                         param: param,
-                                         completion: getResult)
-                
-            } else {
-                
-                errorBool = true
-                errorDescription = "tor not connected"
-                
-            }
+            torRPC.executeRPCCommand(method: command,
+                                     param: param,
+                                     completion: getResult)
             
         }
         

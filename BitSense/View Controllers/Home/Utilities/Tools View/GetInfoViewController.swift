@@ -25,6 +25,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     var getbestblockhash = Bool()
     var getblock = Bool()
     var getUtxos = Bool()
+    var getTxoutset = Bool()
     
     let creatingView = ConnectingView()
     let qrScanner = QRScanner()
@@ -283,6 +284,18 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
                 self.creatingView.removeConnectingView()
                 
             }
+            
+        }
+        
+        if getTxoutset {
+            
+            DispatchQueue.main.async {
+                self.creatingView.label.text = "this can take awhile..."
+            }
+            
+            titleString = "UTXO Set Info"
+            self.executeNodeCommand(method: .gettxoutsetinfo,
+                                    param: "")
             
         }
         

@@ -790,6 +790,46 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                         
                         self.rawTxSigned = rawTransaction.signedRawTx
                         
+//                        DispatchQueue.main.async {
+//
+//                            let alert = UIAlertController(title: "Send transaction?", message: "Once you send there is no going back", preferredStyle: .actionSheet)
+//
+//                            alert.addAction(UIAlertAction(title: "Yes, send now", style: .default, handler: { action in
+//
+//                                self.creatingView.addConnectingView(vc: self, description: "broadcasting")
+//
+//                                let reducer = Reducer()
+//                                reducer.makeCommand(command: .sendrawtransaction, param: "\"\(self.rawTxSigned)\"") {
+//
+//                                    if !reducer.errorBool {
+//
+//                                        self.creatingView.removeConnectingView()
+//                                        displayAlert(viewController: self, isError: false, message: "Sent! TxID has been copied to clipboard")
+//
+//                                        DispatchQueue.main.async {
+//
+//                                            let pasteboard = UIPasteboard.general
+//                                            pasteboard.string = reducer.stringToReturn
+//
+//                                        }
+//
+//                                    } else {
+//
+//                                        displayAlert(viewController: self, isError: true, message: "Error: \(reducer.errorDescription)")
+//
+//                                    }
+//
+//                                }
+//
+//                            }))
+//
+//                            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+//
+//                            alert.popoverPresentationController?.sourceView = self.view
+//                            self.present(alert, animated: true, completion: nil)
+//
+//                        }
+                        
                     } else {
                         
                         self.rawTxSigned = rawTransaction.unsignedRawTx

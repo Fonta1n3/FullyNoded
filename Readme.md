@@ -310,6 +310,18 @@ PR's welcome.
 
 ## Changes
 
+### v0.1.39
+
+- adds send ability when creating a signed transaction for testflight
+- fixes the "could not connect to server" bug
+- no longer disconnect tor when swtiching between node
+
+### v0.1.37
+
+- Fix bug where difficulty statistic did not display properly
+- Stop automating Tor reconnection to prevent crashes
+- Update to latest stable Tor release
+
 ### v0.1.36
 - Fix QR code scanner not dismissing when scanning a QuickConnect QR code
 - Add ExcludeExitNodes and other security minded settings to the tor config options

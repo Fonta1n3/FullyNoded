@@ -29,6 +29,7 @@ class UtilitieMenuViewController: UIViewController, UITabBarControllerDelegate, 
     var goSign = Bool()
     var goVerify = Bool()
     var getUtxos = Bool()
+    var getTxoutset = Bool()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -56,6 +57,7 @@ class UtilitieMenuViewController: UIViewController, UITabBarControllerDelegate, 
         goVerify = false
         goSign = false
         getUtxos = false
+        getTxoutset = false
         
     }
     
@@ -67,7 +69,7 @@ class UtilitieMenuViewController: UIViewController, UITabBarControllerDelegate, 
         
         switch section {
         case 0: return 2
-        case 1: return 7
+        case 1: return 8
         case 2: return 7
         case 3: return 2
         case 4: return 1
@@ -103,6 +105,7 @@ class UtilitieMenuViewController: UIViewController, UITabBarControllerDelegate, 
             case 4: label.text = "Get Transaction"
             case 5: label.text = "Get Last Block"
             case 6: label.text = "Get Block"
+            case 7: label.text = "Get UTXO Set Info"
             default:break}
             
         case 2:
@@ -218,6 +221,11 @@ class UtilitieMenuViewController: UIViewController, UITabBarControllerDelegate, 
                     case 6:
                         
                         self.getblock = true
+                        self.performSegue(withIdentifier: "goGetInfo", sender: self)
+                        
+                    case 7:
+                        
+                        self.getTxoutset = true
                         self.performSegue(withIdentifier: "goGetInfo", sender: self)
                         
                     default:
@@ -392,6 +400,7 @@ class UtilitieMenuViewController: UIViewController, UITabBarControllerDelegate, 
                 vc.getbestblockhash = self.getbestblockhash
                 vc.getblock = self.getblock
                 vc.getUtxos = self.getUtxos
+                vc.getTxoutset = self.getTxoutset
                 
             }
             

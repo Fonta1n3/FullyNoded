@@ -103,7 +103,7 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
         
         if section == 0 {
             
-            return 7
+            return 7//6
             
         } else if section == 1 {
             

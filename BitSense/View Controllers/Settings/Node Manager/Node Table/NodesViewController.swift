@@ -238,12 +238,6 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     @objc func setActiveNow(_ sender: UISwitch) {
         print("setactivenow")
         
-        if TorClient.sharedInstance.isOperational {
-            
-            TorClient.sharedInstance.resign()
-            
-        }
-        
         impact()
         
         let restId = sender.restorationIdentifier ?? ""
