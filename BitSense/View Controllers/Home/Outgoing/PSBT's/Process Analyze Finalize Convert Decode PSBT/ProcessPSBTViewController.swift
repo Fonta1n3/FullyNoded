@@ -197,12 +197,34 @@ class ProcessPSBTViewController: UIViewController {
             
             if txChain {
                 
-                addTXChainLink(psbt: textView.text!)
+                addTXChainLink(psbt: psbt)
                 
             } else {
                 
-                self.executeNodeCommand(method: method,
-                                           param: "\"\(psbt)\"")
+                if broadcast {
+                    
+                    Broadcaster.sharedInstance.send(rawTx: psbt) { [unowned vc = self] (txid) in
+                        
+                        if txid != nil {
+                            
+                            DispatchQueue.main.async { [unowned vc = self] in
+                                
+                                UIPasteboard.general.string = txid!
+                                vc.creatingView.removeConnectingView()
+                                vc.textView.text = txid!
+                                
+                            }
+                            
+                        } else {
+                            vc.executeNodeCommand(method: vc.method, param: "\"\(psbt)\"")
+                            
+                        }
+                    }
+                    
+                } else {
+                    self.executeNodeCommand(method: method, param: "\"\(psbt)\"")
+                    
+                }
                 
             }
             

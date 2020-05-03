@@ -31,8 +31,6 @@ class NodeLogic {
                 
             } else {
                 
-                print("reducer.errorDescription = \(reducer.errorDescription)")
-                
                 if reducer.errorDescription.contains("Method not found") {
                     
                     errorBool = true
@@ -90,7 +88,7 @@ class NodeLogic {
                     let balanceCheck = reducer.doubleToReturn
                     parseBalance(balance: balanceCheck)
                     
-                    reducer.makeCommand(command: BTC_CLI_COMMAND.getunconfirmedbalance,
+                    reducer.makeCommand(command: .getunconfirmedbalance,
                                         param: "",
                                         completion: getResult)
                     
@@ -384,6 +382,7 @@ class NodeLogic {
         if let chain = blockchainInfo["chain"] as? String {
             
             dictToReturn["chain"] = "\(chain) chain"
+            UserDefaults.standard.set(chain, forKey: "chain")
             
         }
         

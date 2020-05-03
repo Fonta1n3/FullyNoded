@@ -241,15 +241,15 @@ The url can also be displayed as a QR Code and a user can simply scan it when th
 
 The format of the URL is:
 
-`btcstandup://<rpcuser>:<rpcpassword>@<hidden service hostname>:<hidden service port>/?label=<optional node label>`
+`btcstandup://<rpcuser>:<rpcpassword>@<hidden service hostname>:<hidden service port>?label=<optional node label>`
 
 Example with node label:
 
-`btcstandup://rpcuser:rpcpassword@kjhfefe.onion:8332/?label=Your%20Nodes%20Name`
+`btcstandup://rpcuser:rpcpassword@kjhfefe.onion:8332?label=Your%20Nodes%20Name`
 
 Example without node label:
 
-`btcstandup://rpcuser:rpcpassword@kjhfefe.onion:8332/?`
+`btcstandup://rpcuser:rpcpassword@kjhfefe.onion:8332?`
 
 Fully Noded is compatible with either V2 or V3 authenticated hidden services, the user has the option in the app to add a V3 private key for V3 cookie authentication. V2 authentication is only supported in the URL itself by adding `&v2password=yourV2Password` (e.g. the user has no option of manually inputting one).
 

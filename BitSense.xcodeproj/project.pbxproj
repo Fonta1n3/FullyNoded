@@ -63,6 +63,7 @@
 		D05D9732226433B60035F1DE /* strobe.png in Resources */ = {isa = PBXBuildFile; fileRef = D05D9731226433B60035F1DE /* strobe.png */; };
 		D05D973422647CE60035F1DE /* QRGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05D973322647CE60035F1DE /* QRGenerator.swift */; };
 		D071A2A0214880F700C4BCB3 /* Search - tripkey.png in Resources */ = {isa = PBXBuildFile; fileRef = D071A29F214880F700C4BCB3 /* Search - tripkey.png */; };
+		D07399D9245EEA5F00860B7E /* Broadcaster.swift in Sources */ = {isa = PBXBuildFile; fileRef = D07399D8245EEA5F00860B7E /* Broadcaster.swift */; };
 		D073E16E22558CDE0012A28C /* CoreDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D073E16D22558CDE0012A28C /* CoreDataService.swift */; };
 		D073E17022558DF30012A28C /* AESService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D073E16F22558DF30012A28C /* AESService.swift */; };
 		D07A8237235D4FEE00F7E095 /* ImportMultiSigViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D07A8236235D4FEE00F7E095 /* ImportMultiSigViewController.swift */; };
@@ -190,6 +191,7 @@
 		D05D9731226433B60035F1DE /* strobe.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = strobe.png; sourceTree = "<group>"; };
 		D05D973322647CE60035F1DE /* QRGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRGenerator.swift; sourceTree = "<group>"; };
 		D071A29F214880F700C4BCB3 /* Search - tripkey.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Search - tripkey.png"; sourceTree = "<group>"; };
+		D07399D8245EEA5F00860B7E /* Broadcaster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Broadcaster.swift; sourceTree = "<group>"; };
 		D073E16D22558CDE0012A28C /* CoreDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataService.swift; sourceTree = "<group>"; };
 		D073E16F22558DF30012A28C /* AESService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AESService.swift; sourceTree = "<group>"; };
 		D07A8236235D4FEE00F7E095 /* ImportMultiSigViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImportMultiSigViewController.swift; sourceTree = "<group>"; };
@@ -441,6 +443,7 @@
 				D02152DB23666CB400AD9007 /* QuickConnect.swift */,
 				D0CB48902435B32E0072D1F5 /* Commands.swift */,
 				D0CB488F2435B32E0072D1F5 /* Entities.swift */,
+				D07399D8245EEA5F00860B7E /* Broadcaster.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1001,6 +1004,7 @@
 				D037C876231CAFD9006C357D /* AddLabelViewController.swift in Sources */,
 				D0233F282361EA5F0041FFBA /* shim.swift in Sources */,
 				D05692E321434452006DF0F4 /* MainMenuViewController.swift in Sources */,
+				D07399D9245EEA5F00860B7E /* Broadcaster.swift in Sources */,
 				D02FE43323136A600048F8C4 /* NodeLogic.swift in Sources */,
 				D07A8237235D4FEE00F7E095 /* ImportMultiSigViewController.swift in Sources */,
 				D0855FC822B0C71900DBBFC2 /* CreatePSBTViewController.swift in Sources */,
@@ -1234,7 +1238,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 128;
+				CURRENT_PROJECT_VERSION = 129;
 				DEVELOPMENT_TEAM = 69FR345CDA;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1247,7 +1251,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.207;
+				MARKETING_VERSION = 1.208;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1270,7 +1274,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 128;
+				CURRENT_PROJECT_VERSION = 129;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 69FR345CDA;
 				ENABLE_TESTABILITY = NO;
@@ -1285,7 +1289,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.207;
+				MARKETING_VERSION = 1.208;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
