@@ -44,6 +44,9 @@
 		D037C872231BB020006C357D /* AddFingerprintViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D037C871231BB020006C357D /* AddFingerprintViewController.swift */; };
 		D037C874231BB04B006C357D /* ScanExtendedKeyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D037C873231BB04B006C357D /* ScanExtendedKeyViewController.swift */; };
 		D037C876231CAFD9006C357D /* AddLabelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D037C875231CAFD9006C357D /* AddLabelViewController.swift */; };
+		D0384E2F246AC4B1002FEE94 /* XpubConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0384E2E246AC4B1002FEE94 /* XpubConverter.swift */; };
+		D0384E31246AC4D8002FEE94 /* Base58.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0384E30246AC4D8002FEE94 /* Base58.swift */; };
+		D0384E34246AC53B002FEE94 /* base58.c in Sources */ = {isa = PBXBuildFile; fileRef = D0384E33246AC53B002FEE94 /* base58.c */; };
 		D039D3C823322F1300D1ED18 /* NodeStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D039D3C723322F1300D1ED18 /* NodeStruct.swift */; };
 		D039D3CA2332440D00D1ED18 /* HDMusigStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D039D3C92332440D00D1ED18 /* HDMusigStruct.swift */; };
 		D0410617224ED189004AC0D0 /* ObjectiveCHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = D0410616224ED189004AC0D0 /* ObjectiveCHeader.m */; };
@@ -171,6 +174,10 @@
 		D037C871231BB020006C357D /* AddFingerprintViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFingerprintViewController.swift; sourceTree = "<group>"; };
 		D037C873231BB04B006C357D /* ScanExtendedKeyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanExtendedKeyViewController.swift; sourceTree = "<group>"; };
 		D037C875231CAFD9006C357D /* AddLabelViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddLabelViewController.swift; sourceTree = "<group>"; };
+		D0384E2E246AC4B1002FEE94 /* XpubConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XpubConverter.swift; sourceTree = "<group>"; };
+		D0384E30246AC4D8002FEE94 /* Base58.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Base58.swift; sourceTree = "<group>"; };
+		D0384E33246AC53B002FEE94 /* base58.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = base58.c; sourceTree = "<group>"; };
+		D0384E37246AC66A002FEE94 /* base58.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = base58.h; sourceTree = "<group>"; };
 		D039D3C723322F1300D1ED18 /* NodeStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeStruct.swift; sourceTree = "<group>"; };
 		D039D3C92332440D00D1ED18 /* HDMusigStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HDMusigStruct.swift; sourceTree = "<group>"; };
 		D0410615224ED188004AC0D0 /* BitSense-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BitSense-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -444,6 +451,7 @@
 				D0CB48902435B32E0072D1F5 /* Commands.swift */,
 				D0CB488F2435B32E0072D1F5 /* Entities.swift */,
 				D07399D8245EEA5F00860B7E /* Broadcaster.swift */,
+				D0384E35246AC5B8002FEE94 /* Xpub Converter */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -484,6 +492,17 @@
 			);
 			name = Multisig;
 			path = Mulitsig;
+			sourceTree = "<group>";
+		};
+		D0384E35246AC5B8002FEE94 /* Xpub Converter */ = {
+			isa = PBXGroup;
+			children = (
+				D0384E2E246AC4B1002FEE94 /* XpubConverter.swift */,
+				D0384E30246AC4D8002FEE94 /* Base58.swift */,
+				D0384E33246AC53B002FEE94 /* base58.c */,
+				D0384E37246AC66A002FEE94 /* base58.h */,
+			);
+			path = "Xpub Converter";
 			sourceTree = "<group>";
 		};
 		D039D3C623322EC800D1ED18 /* Structs */ = {
@@ -1037,6 +1056,7 @@
 				D0233F242361EA090041FFBA /* Base32.swift in Sources */,
 				D037C86C231BAFB4006C357D /* AddToKeypoolViewController.swift in Sources */,
 				D0452ADB2247417F0013E225 /* ImportPrivKeyViewController.swift in Sources */,
+				D0384E2F246AC4B1002FEE94 /* XpubConverter.swift in Sources */,
 				D08CED0F22E5089D007E2A8E /* ImportExtendedKeysViewController.swift in Sources */,
 				D08A92B5233C979600409D6E /* FiatConverter.swift in Sources */,
 				D08A92A92337755600409D6E /* AddDescriptors.swift in Sources */,
@@ -1051,11 +1071,13 @@
 				D0410617224ED189004AC0D0 /* ObjectiveCHeader.m in Sources */,
 				D0B6936E22B2412D00A2C3E6 /* ChooseConnectionTypeViewController.swift in Sources */,
 				D07E0DE622F9168F00A81FA8 /* WalletManagerViewController.swift in Sources */,
+				D0384E34246AC53B002FEE94 /* base58.c in Sources */,
 				D037C874231BB04B006C357D /* ScanExtendedKeyViewController.swift in Sources */,
 				D044ED78235AF42D00300D62 /* ImportStruct.swift in Sources */,
 				D08A92A62334F66900409D6E /* Reducer.swift in Sources */,
 				D0806B4522EE9FBA002C20A1 /* TXChain.swift in Sources */,
 				D08A92B923403DB200409D6E /* NodesViewController.swift in Sources */,
+				D0384E31246AC4D8002FEE94 /* Base58.swift in Sources */,
 				D033D1CF22B5D1FA00523BEE /* ProcessPSBTViewController.swift in Sources */,
 				D0A519BB226C5B9E00860D5C /* GetSmartFee.swift in Sources */,
 				D07E0DE822F9570A00A81FA8 /* WalletCreatorViewController.swift in Sources */,
@@ -1238,7 +1260,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 129;
+				CURRENT_PROJECT_VERSION = 130;
 				DEVELOPMENT_TEAM = 69FR345CDA;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1251,7 +1273,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.208;
+				MARKETING_VERSION = 1.209;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1274,7 +1296,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 129;
+				CURRENT_PROJECT_VERSION = 130;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 69FR345CDA;
 				ENABLE_TESTABILITY = NO;
@@ -1289,7 +1311,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.208;
+				MARKETING_VERSION = 1.209;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";

@@ -47,7 +47,6 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
         
         let str = ImportStruct(dictionary: dict)
         descriptor = str.descriptor
-        print("descriptor to import = \(descriptor)")
         label = str.label
         timestamp = str.timeStamp
         isTestnet = str.isTestnet

@@ -588,6 +588,15 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     walletDisabled = true
                     loadSectionZero()
                     
+                } else if nodeLogic.errorDescription.contains("Wallet file not specified (must request wallet RPC through") {
+                    
+                    self.removeSpinner()
+                    self.removeLoader()
+                    
+                    displayAlert(viewController: self,
+                                 isError: true,
+                                 message: "Multiple wallets loaded, go to wallet manager, unload all active wallets then load the wallet you want to work with.")
+                    
                 } else {
                     
                     self.removeSpinner()
@@ -603,86 +612,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 walletDisabled = false
                 loadSectionZero()
-//                let wallets = nodeLogic.walletsToReturn
-//
-//                switch wallets.count {
-//
-//                case 0:
-//
-//                    // this should never happen
-//                    print("?")
-//
-//                case 1:
-//
-//                    print("wallet is default")
-//                    loadSectionZero()
-//
-//                case 2:
-//
-//                    for w in wallets {
-//
-//                        let wallet = w as! String
-//
-//                        if wallet != "" {
-//
-//                            ud.set(wallet, forKey: "walletName")
-//                            existingWallet = wallet
-//
-//                            DispatchQueue.main.async {
-//
-//                                self.mainMenu.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
-//
-//                            }
-//
-//                        }
-//
-//                    }
-//
-//                    loadSectionZero()
-//
-//                default:
-//
-//                    //multiple wallets are loaded
-//
-//                    //check if walletName matches a loaded wallet, if no matches then more then one wallet is loaded that we dont know about so we get user to choose one
-//
-//                    self.wallets = wallets
-//                    var choose = false
-//
-//                    for w in wallets {
-//
-//                        let wallet = w as! String
-//
-//                        if let savedWallet = ud.object(forKey: "walletName") as? String {
-//
-//                            if wallet == savedWallet {
-//
-//                                //do nothing its already set to correct wallet
-//                                choose = false
-//
-//                            }
-//
-//                        } else {
-//
-//                            //get user to choose correct wallet
-//                            choose = true
-//
-//                        }
-//
-//                    }
-//
-//                    if choose {
-//
-//                        self.existingWallet = ""
-//                        chooseAWallet()
-//
-//                    } else {
-//
-//                        loadSectionZero()
-//
-//                    }
-//
-//                }
                 
             }
             
@@ -719,12 +648,25 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
             if nodeLogic.errorBool {
                 
-                self.removeSpinner()
-                self.removeLoader()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: nodeLogic.errorDescription)
+                if nodeLogic.errorDescription.contains("Wallet file not specified (must request wallet RPC through") {
+                    
+                    self.removeSpinner()
+                    self.removeLoader()
+                    
+                    displayAlert(viewController: self,
+                                 isError: true,
+                                 message: "Multiple wallets loaded, go to wallet manager, unload all active wallets then load the wallet you want to work with.")
+                    
+                } else {
+                    
+                    self.removeSpinner()
+                    self.removeLoader()
+                    
+                    displayAlert(viewController: self,
+                                 isError: true,
+                                 message: nodeLogic.errorDescription)
+                    
+                }
                 
             } else {
                 

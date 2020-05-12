@@ -150,49 +150,51 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
                                          description: "deriving keys for confirmation")
         
         let str = ImportStruct(dictionary: dict)
-        dict["key"] = key
-        fingerprint = str.fingerprint
-        range = str.range
-        isTestnet = str.isTestnet
-        label = str.label
         
-        if key.hasPrefix("xprv") || key.hasPrefix("tprv") {
+        if let convertedkey = XpubConverter.convert(extendedKey: key) {
             
-            isWatchOnly = false
+            dict["key"] = convertedkey
+            print("convertedkey = \(convertedkey)")
+            fingerprint = str.fingerprint
+            range = str.range
+            isTestnet = str.isTestnet
+            label = str.label
             
-        } else {
-            
-            isWatchOnly = true
-            
-        }
-        
-        dict["isWatchOnly"] = isWatchOnly
-        let derivation = str.derivation
-        convertedRange = convertRange()
+            if convertedkey.hasPrefix("xprv") || convertedkey.hasPrefix("tprv") {
                 
-        switch derivation {
-        case "BIP44": desc = "pkh"
-        case "BIP84": desc = "wpkh"
-        case "BIP32Segwit": desc = "wpkh"
-        case "BIP32Legacy": desc = "pkh"
-        case "BIP32P2SH": desc = "sh"
-        case "BIP49": desc = "sh"
-        default:break
-        }
+                isWatchOnly = false
                 
-        if !isWatchOnly {
+            } else {
+                
+                isWatchOnly = true
+                
+            }
             
-            //isWatchOnly = false
-            importXprv(xprv: key)
-            
-        } else {
-            
-            //isWatchOnly = true
-            importXpub(xpub: key)
-            
+            dict["isWatchOnly"] = isWatchOnly
+            let derivation = str.derivation
+            convertedRange = convertRange()
+                    
+            switch derivation {
+            case "BIP44": desc = "pkh"
+            case "BIP84": desc = "wpkh"
+            case "BIP32Segwit": desc = "wpkh"
+            case "BIP32Legacy": desc = "pkh"
+            case "BIP32P2SH": desc = "sh"
+            case "BIP49": desc = "sh"
+            default:break
+            }
+                    
+            if !isWatchOnly {
+                
+                importXprv(xprv: convertedkey)
+                
+            } else {
+                
+                importXpub(xpub: convertedkey)
+                
+            }
+                        
         }
-        
-        print("iswatchonly = \(isWatchOnly)")
         
     }
     

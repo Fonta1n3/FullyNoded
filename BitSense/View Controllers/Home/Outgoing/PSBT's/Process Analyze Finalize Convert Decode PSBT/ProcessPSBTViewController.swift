@@ -203,25 +203,55 @@ class ProcessPSBTViewController: UIViewController {
                 
                 if broadcast {
                     
-                    Broadcaster.sharedInstance.send(rawTx: psbt) { [unowned vc = self] (txid) in
+                    DispatchQueue.main.async { [unowned vc = self] in
                         
-                        if txid != nil {
-                            
+                        vc.creatingView.removeConnectingView()
+                        
+                        let alert = UIAlertController(title: "Broadcast with your node?", message: "You can optionally broadcast this transaction using Blockstream's esplora API over Tor V3 for improved privacy.", preferredStyle: .actionSheet)
+                        
+                        func success(txid: String) {
                             DispatchQueue.main.async { [unowned vc = self] in
-                                
-                                UIPasteboard.general.string = txid!
+                                UIPasteboard.general.string = txid
                                 vc.creatingView.removeConnectingView()
-                                vc.textView.text = txid!
+                                vc.textView.text = txid
                                 
                             }
+                        }
+                        
+                        alert.addAction(UIAlertAction(title: "Privately", style: .default, handler: { action in
                             
-                        } else {
+                            vc.creatingView.addConnectingView(vc: vc, description: "broadcasting...")
+                            
+                            Broadcaster.sharedInstance.send(rawTx: psbt) { [unowned vc = self] (txid) in
+                                
+                                if txid != nil {
+                                    
+                                    success(txid: txid!)
+                                    
+                                } else {
+                                    
+                                    vc.creatingView.removeConnectingView()
+                                    displayAlert(viewController: vc, isError: true, message: "error broadcasting")
+                                    
+                                }
+                            }
+                            
+                        }))
+                        
+                        alert.addAction(UIAlertAction(title: "Use my node", style: .default, handler: { action in
+                            
                             vc.executeNodeCommand(method: vc.method, param: "\"\(psbt)\"")
                             
-                        }
+                        }))
+                        
+                        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+                        alert.popoverPresentationController?.sourceView = self.view
+                        self.present(alert, animated: true) {}
+                        
                     }
                     
                 } else {
+                    
                     self.executeNodeCommand(method: method, param: "\"\(psbt)\"")
                     
                 }
@@ -462,7 +492,7 @@ class ProcessPSBTViewController: UIViewController {
                     
                     let rawTransaction = reducer.stringToReturn
                     
-                    parsePrevTx(method: BTC_CLI_COMMAND.decoderawtransaction,
+                    parsePrevTx(method: .decoderawtransaction,
                                 param: "\"\(rawTransaction)\"",
                                 vout: vout)
                     
@@ -549,12 +579,18 @@ class ProcessPSBTViewController: UIViewController {
     func getInputInfo(index: Int) {
         
         let dict = inputArray[index]
-        let txid = dict["txid"] as! String
-        let vout = dict["vout"] as! Int
         
-        parsePrevTx(method: BTC_CLI_COMMAND.getrawtransaction,
-                    param: "\"\(txid)\"",
-                    vout: vout)
+        if let txid = dict["txid"] as? String {
+            
+            if let vout = dict["vout"] as? Int {
+                
+                parsePrevTx(method: .getrawtransaction,
+                            param: "\"\(txid)\"",
+                            vout: vout)
+                
+            }
+        }
+        
         
     }
     
@@ -563,14 +599,34 @@ class ProcessPSBTViewController: UIViewController {
         for (index, i) in inputs.enumerated() {
             
             let input = i as! NSDictionary
-            let txid = input["txid"] as! String
-            let vout = input["vout"] as! Int
-            let dict = ["inputNumber":index + 1, "txid":txid, "vout":vout as Any] as [String : Any]
-            inputArray.append(dict)
+            print("input = \(input)")
             
-            if index + 1 == inputs.count {
+            if let txid = input["txid"] as? String {
                 
-                completion()
+                if let vout = input["vout"] as? Int {
+                    
+                    let dict = ["inputNumber":index + 1, "txid":txid, "vout":vout as Any] as [String : Any]
+                    inputArray.append(dict)
+                    
+                    if index + 1 == inputs.count {
+                        
+                        completion()
+                        
+                    }
+                    
+                }
+                
+            } else if let coinbase = input["coinbase"] as? String {
+                
+                let dict = ["coinbase":coinbase] as [String : Any]
+                inputArray.append(dict)
+                
+                DispatchQueue.main.async { [unowned vc = self] in
+                    
+                    vc.textView.text = "Coinbase: \(coinbase)" + "\n\n\n" + vc.outputsString
+                    vc.creatingView.removeConnectingView()
+                    
+                }
                 
             }
             
