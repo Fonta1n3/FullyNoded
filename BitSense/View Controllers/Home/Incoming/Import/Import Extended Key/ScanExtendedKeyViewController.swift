@@ -151,16 +151,25 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
         
         let str = ImportStruct(dictionary: dict)
         
-        if let convertedkey = XpubConverter.convert(extendedKey: key) {
+        var extendedKey = ""
+        
+        if key.hasPrefix("xprv") || key.hasPrefix("xpub") || key.hasPrefix("tprv") || key.hasPrefix("tpub") {
+            extendedKey = key
             
-            dict["key"] = convertedkey
-            print("convertedkey = \(convertedkey)")
+        } else {
+            extendedKey = XpubConverter.convert(extendedKey: key) ?? ""
+            
+        }
+        
+        if extendedKey != "" {
+            
+            dict["key"] = extendedKey
             fingerprint = str.fingerprint
             range = str.range
             isTestnet = str.isTestnet
             label = str.label
             
-            if convertedkey.hasPrefix("xprv") || convertedkey.hasPrefix("tprv") {
+            if extendedKey.hasPrefix("xprv") || extendedKey.hasPrefix("tprv") {
                 
                 isWatchOnly = false
                 
@@ -186,14 +195,19 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
                     
             if !isWatchOnly {
                 
-                importXprv(xprv: convertedkey)
+                importXprv(xprv: extendedKey)
                 
             } else {
                 
-                importXpub(xpub: convertedkey)
+                importXpub(xpub: extendedKey)
                 
             }
-                        
+            
+        } else {
+            
+            connectingView.removeConnectingView()
+            displayAlert(viewController: self, isError: true, message: "invalid key")
+            
         }
         
     }
@@ -215,6 +229,8 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
             setValues(key: txt!)
             
         }
+        
+        textField.resignFirstResponder()
         
         return true
     }
@@ -271,9 +287,7 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
                 xprvDescriptor = xprvDescriptor.replacingOccurrences(of: "1'", with: "1'\"'\"'")
                 xprvDescriptor = xprvDescriptor.replacingOccurrences(of: "0'", with: "0'\"'\"'")
                 dict["descriptor"] = "\"\(xprvDescriptor)\""
-                
-                print("xprvDescriptor = \(xprvDescriptor)")
-                
+                                
                 self.executeNodeCommand(method: .deriveaddresses,
                                         param: "\"\(xprvDescriptor)\", ''\(convertedRange)''")
                 

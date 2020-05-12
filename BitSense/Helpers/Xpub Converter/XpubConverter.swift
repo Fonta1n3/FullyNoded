@@ -44,7 +44,6 @@ class XpubConverter {
             
             if extendedKey.hasPrefix(key) {
                 providedPrefix = value
-                print("providedPrefix = \(providedPrefix)")
                 
             }
         }
@@ -62,8 +61,6 @@ class XpubConverter {
         default:
             break
         }
-        
-        print("returnedPrefix = \(returnedPrefix)")
         
         if providedPrefix != "" {
             /// Decodes our original extended key to base58 data.
