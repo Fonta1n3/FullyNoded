@@ -10,21 +10,21 @@ import Foundation
 
 public struct Wallet: CustomStringConvertible {
     
-    let descriptor:String
-    let id:String
-    let index:String
+    let descriptor:Data?
+    let id:UUID?
+    let index:Int32
     let label:String
-    let nodeID:String
+    let nodeID:UUID?
     let range:String
     
     init(dictionary: [String: Any]) {
         
-        self.descriptor = dictionary["descriptor"] as? String ?? ""
-        self.id = dictionary["id"] as? String ?? ""
-        self.index = dictionary["index"] as? String ?? ""
-        self.label = dictionary["label"] as? String ?? ""
-        self.nodeID = dictionary["nodeID"] as? String ?? ""
-        self.range = dictionary["range"] as? String ?? ""
+        descriptor = dictionary["descriptor"] as? Data
+        id = dictionary["id"] as? UUID
+        index = dictionary["index"] as? Int32 ?? Int32(0)
+        label = dictionary["label"] as? String ?? ""
+        nodeID = dictionary["nodeID"] as? UUID
+        range = dictionary["range"] as? String ?? ""
         
     }
     

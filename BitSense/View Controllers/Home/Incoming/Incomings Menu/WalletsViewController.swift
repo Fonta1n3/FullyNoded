@@ -31,9 +31,7 @@ class WalletsViewController: UIViewController, UITableViewDataSource, UITableVie
         for w in wallets {
             
             let wallet = Wallet(dictionary: w)
-            let walletLabel = wallet.label
-            let decLabel = aes.decryptKey(keyToDecrypt: walletLabel)
-            let dict = ["label":decLabel]
+            let dict = ["label":wallet.label]
             tableArray.append(dict)
             walletTable.reloadData()
             
@@ -100,34 +98,21 @@ class WalletsViewController: UIViewController, UITableViewDataSource, UITableVie
             let cd = CoreDataService()
             let wallet = Wallet(dictionary: wallets[row])
             
-            cd.deleteEntity(id: wallet.id, entityName: .hdWallets) {
+            cd.deleteNode(id: wallet.id!, entityName: .newHdWallets) { [unowned vc = self] success in
                 
-                if !cd.errorBool {
+                if success {
                     
-                    let success = cd.boolToReturn
-                    
-                    if success {
+                    DispatchQueue.main.async { [unowned vc = self] in
                         
-                        DispatchQueue.main.async {
-                            
-                            self.tableArray.remove(at: row)
-                            self.wallets.remove(at: row)
-                            self.walletTable.deleteRows(at: [indexPath], with: .fade)
-                            
-                        }
-                        
-                    } else {
-                        
-                        displayAlert(viewController: self,
-                                     isError: true,
-                                     message: "We had an error trying to delete that wallet: \(cd.errorDescription)")
+                        vc.tableArray.remove(at: row)
+                        vc.wallets.remove(at: row)
+                        vc.walletTable.deleteRows(at: [indexPath], with: .fade)
                         
                     }
                     
-                    
                 } else {
                     
-                    displayAlert(viewController: self,
+                    displayAlert(viewController: vc,
                                  isError: true,
                                  message: "We had an error trying to delete that wallet: \(cd.errorDescription)")
                     

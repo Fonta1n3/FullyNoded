@@ -53,8 +53,7 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
             self.activeWallets.removeAll()
             self.inactiveWallets.removeAll()
             
-            self.executeNodeCommand(method: BTC_CLI_COMMAND.listwallets,
-                                       param: "")
+            self.executeNodeCommand(method: .listwallets, param: "")
             
         }
         
@@ -242,7 +241,7 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
             
         }
         
-        executeNodeCommand(method: BTC_CLI_COMMAND.listwalletdir,
+        executeNodeCommand(method: .listwalletdir,
                               param: "")
         
     }
@@ -252,7 +251,7 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
         connectingView.addConnectingView(vc: self,
                                          description: "Loading \(walletname)")
         
-        executeNodeCommand(method: BTC_CLI_COMMAND.loadwallet,
+        executeNodeCommand(method: .loadwallet,
                               param: "\"\(walletname)\"")
         
     }

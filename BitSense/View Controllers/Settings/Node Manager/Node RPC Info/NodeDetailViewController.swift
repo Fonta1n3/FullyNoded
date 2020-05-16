@@ -25,41 +25,39 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     
     @IBAction func save(_ sender: Any) {
         
+        func encryptedValue(_ decryptedValue: Data) -> Data? {
+            var encryptedValue:Data?
+            Crypto.encryptData(dataToEncrypt: decryptedValue) { encryptedData in
+                if encryptedData != nil {
+                    encryptedValue = encryptedData!
+                }
+            }
+            return encryptedValue
+        }
+        
         if createNew {
             
             if nodeLabel.text != "" {
-                
-                let enc = aes.encryptKey(keyToEncrypt: nodeLabel.text!)
-                newNode["label"] = enc
+                newNode["label"] = nodeLabel.text!
                 
             }
             
             if rpcUserField.text != "" {
-                
-                let enc = aes.encryptKey(keyToEncrypt: rpcUserField.text!)
+                guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
                 newNode["rpcuser"] = enc
-                
             }
             
             if rpcPassword.text != "" {
-                
-                let enc = aes.encryptKey(keyToEncrypt: rpcPassword.text!)
-                newNode["rpcpassword"] = enc
-                
-            }
-            
-            if rpcPassword.text != "" {
-                
-                let enc = aes.encryptKey(keyToEncrypt: rpcPassword.text!)
+                guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
                 newNode["rpcpassword"] = enc
                 
             }
             
             if nodeLabel.text != "" && rpcPassword.text != "" && rpcUserField.text != "" {
                 
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { [unowned vc = self] in
                     
-                    self.performSegue(withIdentifier: "goToTorDetails", sender: self)
+                    vc.performSegue(withIdentifier: "goToTorDetails", sender: vc)
                     
                 }
                 
@@ -75,67 +73,45 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             
             //updating
             
-            let id = selectedNode["id"] as! String
+            let id = selectedNode["id"] as! UUID
             
-            var arr = [[String:Any]]()
+            func update(key: String, value: Data) -> Bool {
+                var result = false
+                cd.update(id: id, keyToUpdate: key, newValue: value, entity: .newNodes) { success in
+                    result = success
+                }
+                return result
+            }
             
             if nodeLabel.text != "" {
-                
-                let enc = aes.encryptKey(keyToEncrypt: nodeLabel.text!)
-                selectedNode["label"] = enc
-                let d:[String:Any] = ["id":id,"newValue":enc,"keyToEdit":"label","entityName":ENTITY.nodes]
-                arr.append(d)
-                
+                cd.update(id: id, keyToUpdate: "label", newValue: nodeLabel.text!, entity: .newNodes) { success in
+                    if !success {
+                        displayAlert(viewController: self, isError: true, message: "error updating label")
+                    }
+                }
             }
             
             if rpcUserField.text != "" {
                 
-                let enc = aes.encryptKey(keyToEncrypt: rpcUserField.text!)
-                selectedNode["rpcuser"] = enc
-                let d:[String:Any] = ["id":id,"newValue":enc,"keyToEdit":"rpcuser","entityName":ENTITY.nodes]
-                arr.append(d)
+                guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
+                if !update(key: "rpcuser", value: enc) {
+                    displayAlert(viewController: self, isError: true, message: "error updating rpc username")
+                }
                 
             }
             
             if rpcPassword.text != "" {
                 
-                let enc = aes.encryptKey(keyToEncrypt: rpcPassword.text!)
-                selectedNode["rpcpassword"] = enc
-                let d:[String:Any] = ["id":id,"newValue":enc,"keyToEdit":"rpcpassword","entityName":ENTITY.nodes]
-                arr.append(d)
-                
-            }
-            
-            if (selectedNode["usingTor"] as! Bool) {
-                
-                let d1:[String:Any] = ["id":id,"newValue":false,"keyToEdit":"usingSSH","entityName":ENTITY.nodes]
-                let d2:[String:Any] = ["id":id,"newValue":true,"keyToEdit":"usingTor","entityName":ENTITY.nodes]
-                arr.append(d1)
-                arr.append(d2)
-                
-            }
-            
-            cd.updateEntity(dictsToUpdate: arr) {
-                
-                if !self.cd.errorBool {
-                    
-                    let success = self.cd.boolToReturn
-                    
-                    if success {
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.performSegue(withIdentifier: "goToTorDetails", sender: self)
-                            
-                        }
-                        
-                    }
-                    
-                } else {
-                    
-                    displayAlert(viewController: self, isError: true, message: self.cd.errorDescription)
-                    
+                guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
+                if !update(key: "rpcpassword", value: enc) {
+                    displayAlert(viewController: self, isError: true, message: "error updating rpc password")
                 }
+                
+            }
+            
+            DispatchQueue.main.async { [unowned vc = self] in
+                
+                vc.performSegue(withIdentifier: "goToTorDetails", sender: vc)
                 
             }
             
@@ -178,13 +154,23 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     
     func loadValues() {
         
+        func decryptedValue(_ encryptedValue: Data) -> String {
+            var decryptedValue = ""
+            Crypto.decryptData(dataToDecrypt: encryptedValue) { decryptedData in
+                if decryptedData != nil {
+                    decryptedValue = decryptedData!.utf8
+                }
+            }
+            return decryptedValue
+        }
+        
         let node = NodeStruct(dictionary: selectedNode)
         
-        if node.id != "" {
+        if node.id != nil {
             
             if node.label != "" {
                 
-                nodeLabel.text = aes.decryptKey(keyToDecrypt: node.label)
+                nodeLabel.text = node.label
                 
             } else {
                 
@@ -193,9 +179,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 
             }
             
-            if node.rpcuser != "" {
+            if node.rpcuser != nil {
                 
-                rpcUserField.text = aes.decryptKey(keyToDecrypt: node.rpcuser)
+                rpcUserField.text = decryptedValue(node.rpcuser!)
                 
             } else {
                 
@@ -204,9 +190,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 
             }
             
-            if node.rpcpassword != "" {
+            if node.rpcpassword != nil {
                 
-                rpcPassword.text = aes.decryptKey(keyToDecrypt: node.rpcpassword)
+                rpcPassword.text = decryptedValue(node.rpcpassword!)
                 
             } else {
                 

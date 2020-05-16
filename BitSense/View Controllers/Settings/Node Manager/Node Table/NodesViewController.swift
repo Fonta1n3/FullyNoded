@@ -32,27 +32,31 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func getNodes() {
         
-        cd.retrieveEntity(entityName: .nodes) {
+        cd.retrieveEntity(entityName: .newNodes) { [unowned vc = self] in
             
-            if !self.cd.errorBool {
+            if !vc.cd.errorBool {
                 
-                self.nodeArray = self.cd.entities
+                for node in vc.cd.entities {
+                    if node["id"] != nil {
+                        vc.nodeArray.append(node)
+                    }
+                }
                 
-                if self.nodeArray.count == 0 {
+                if vc.nodeArray.count == 0 {
                     
-                    displayAlert(viewController: self,
+                    displayAlert(viewController: vc,
                                  isError: true,
                                  message: "No nodes added yet, tap the + sign to add one")
                     
                 }
                 
-                DispatchQueue.main.async {
-                    self.nodeTable.reloadData()
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.nodeTable.reloadData()
                 }
                 
             } else {
                 
-               displayAlert(viewController: self,
+               displayAlert(viewController: vc,
                             isError: true,
                             message: "error getting nodes from core data")
                 
@@ -83,9 +87,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         if nodeArray[indexPath.row]["label"] != nil {
             
-            let aes = AESService()
-            let enc = (nodeArray[indexPath.row]["label"] as! String)
-            label.text = aes.decryptKey(keyToDecrypt: enc)
+            label.text = nodeArray[indexPath.row]["label"] as? String ?? ""
             
         } else {
             
@@ -136,23 +138,10 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 }, completion: { _ in
                     
                     if self.selectedIndex < self.nodeArray.count {
-                        
-                        let node = self.nodeArray[self.selectedIndex]
-                        let str = NodeStruct(dictionary: node)
-                        
-                        if !str.isDefault {
+                                                
+                        DispatchQueue.main.async {
                             
-                            DispatchQueue.main.async {
-                                
-                                self.performSegue(withIdentifier: "updateNode", sender: self)
-                                
-                            }
-                            
-                        } else {
-                            
-                            displayAlert(viewController: self,
-                                         isError: true,
-                                         message: "You can not edit the testing node")
+                            self.performSegue(withIdentifier: "updateNode", sender: self)
                             
                         }
                         
@@ -191,48 +180,29 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
     }
     
-    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        
-        if editingStyle == UITableViewCell.EditingStyle.delete {
-            
-            let node = NodeStruct(dictionary: nodeArray[indexPath.row])
-            
-            cd.deleteEntity(id: node.id, entityName: .nodes) {
-                
-                if !self.cd.errorBool {
-                    
-                    let success = self.cd.boolToReturn
-                    
-                    if success {
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.nodeArray.remove(at: indexPath.row)
-                            self.nodeTable.deleteRows(at: [indexPath], with: .fade)
-                            self.nodeTable.reloadData()
-                            
-                        }
-                        
-                    } else {
-                        
-                        displayAlert(viewController: self,
-                                     isError: true,
-                                     message: "We had an error trying to delete that node: \(self.cd.errorDescription)")
-                        
-                    }
-                    
-                } else {
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: "We had an error trying to delete that node: \(self.cd.errorDescription)")
-                    
+    private func deleteNode(nodeId: UUID, indexPath: IndexPath) {
+        cd.deleteNode(id: nodeId, entityName: .newNodes) { [unowned vc = self] success in
+            if success {
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.nodeArray.remove(at: indexPath.row)
+                    vc.nodeTable.deleteRows(at: [indexPath], with: .fade)
+                    vc.nodeTable.reloadData()
                 }
-                
+            } else {
+                displayAlert(viewController: vc,
+                             isError: true,
+                             message: "We had an error trying to delete that node")
             }
-            
         }
-        
+    }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == UITableViewCell.EditingStyle.delete {
+            let node = NodeStruct(dictionary: nodeArray[indexPath.row])
+            if node.id != nil {
+                deleteNode(nodeId: node.id!, indexPath: indexPath)
+            }
+        }
     }
     
     @objc func setActiveNow(_ sender: UISwitch) {
@@ -253,60 +223,16 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
             let str = NodeStruct(dictionary: nodeArray[index])
             
-            if !selectedSwitch.isOn {
-                
-                let d:[String:Any] = ["id":str.id,"newValue":false,"keyToEdit":"isActive","entityName":ENTITY.nodes]
-                cd.updateEntity(dictsToUpdate: [d]) {
+            cd.update(id: str.id!, keyToUpdate: "isActive", newValue: selectedSwitch.isOn, entity: .newNodes) { [unowned vc = self] success in
+                if success {
                     
-                    if !self.cd.errorBool {
-                        
-                        let success = self.cd.boolToReturn
-                        
-                        if success {
-                            
-                            self.removeWalletReloadTable()
-                            
-                        } else {
-                            
-                            displayAlert(viewController: self, isError: true, message: "error updating node")
-                            
-                        }
-                        
-                    } else {
-                        
-                        displayAlert(viewController: self, isError: true, message: self.cd.errorDescription)
-                        
-                    }
+                    vc.removeWalletReloadTable()
+                    
+                } else {
+                    
+                    displayAlert(viewController: vc, isError: true, message: "error updating node")
                     
                 }
-                
-            } else {
-                
-                let d:[String:Any] = ["id":str.id,"newValue":true,"keyToEdit":"isActive","entityName":ENTITY.nodes]
-                cd.updateEntity(dictsToUpdate: [d]) {
-                    
-                    if !self.cd.errorBool {
-                        
-                        let success = self.cd.boolToReturn
-                        
-                        if success {
-                            
-                            self.removeWalletReloadTable()
-                            
-                        } else {
-                            
-                            displayAlert(viewController: self, isError: true, message: "error updating node")
-                            
-                        }
-                        
-                    } else {
-                        
-                        displayAlert(viewController: self, isError: true, message: self.cd.errorDescription)
-                        
-                    }
-                    
-                }
-                
             }
             
             if nodeArray.count > 1 {
@@ -316,44 +242,37 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                     if i != index {
                         
                         let str = NodeStruct(dictionary: node)
-                        let d:[String:Any] = ["id":str.id,"newValue":false,"keyToEdit":"isActive","entityName":ENTITY.nodes]
-                        cd.updateEntity(dictsToUpdate: [d]) {
-                            
-                            if !self.cd.errorBool {
+                        
+                        cd.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { [unowned vc = self] success in
+                            if success {
                                 
-                                let success = self.cd.boolToReturn
-                                
-                                if success {
+                                vc.cd.retrieveEntity(entityName: .newNodes) { [unowned vc = self] in
                                     
-                                    self.cd.retrieveEntity(entityName: .nodes) {
+                                    if !vc.cd.errorBool {
                                         
-                                        if !self.cd.errorBool {
-                                            
-                                            DispatchQueue.main.async {
-                                                self.nodeArray = self.cd.entities
-                                                self.nodeTable.reloadData()
+                                        DispatchQueue.main.async { [unowned vc = self] in
+                                            //vc.nodeArray = vc.cd.entities
+                                            for node in vc.cd.entities {
+                                                if node["id"] != nil {
+                                                    vc.nodeArray.append(node)
+                                                }
                                             }
-                                            
-                                        } else {
-                                            
-                                            displayAlert(viewController: self, isError: true, message: self.cd.errorDescription)
-                                            
+                                            vc.nodeTable.reloadData()
                                         }
                                         
+                                    } else {
+                                        
+                                        displayAlert(viewController: vc, isError: true, message: vc.cd.errorDescription)
+                                        
                                     }
-                                    
-                                } else {
-                                    
-                                    displayAlert(viewController: self, isError: true, message: "error getting nodes form core data")
                                     
                                 }
                                 
                             } else {
                                 
-                                displayAlert(viewController: self, isError: true, message: self.cd.errorDescription)
+                                displayAlert(viewController: vc, isError: true, message: "error updating node")
                                 
                             }
-                            
                         }
                         
                     }
@@ -375,13 +294,18 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         ud.removeObject(forKey: "walletName")
         
-        cd.retrieveEntity(entityName: .nodes) {
+        cd.retrieveEntity(entityName: .newNodes) {
             
             if !self.cd.errorBool {
                 
-                DispatchQueue.main.async {
-                    self.nodeArray = self.cd.entities
-                    self.nodeTable.reloadData()
+                DispatchQueue.main.async { [unowned vc = self] in
+                    //self.nodeArray = self.cd.entities
+                    for node in vc.cd.entities {
+                        if node["id"] != nil {
+                            vc.nodeArray.append(node)
+                        }
+                    }
+                    vc.nodeTable.reloadData()
                 }
                 
             } else {
@@ -397,64 +321,29 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     private func deActivateNodes(nodes: [[String:Any]], completion: @escaping () -> Void) {
-        
         if nodes.count > 0 {
-            
             for node in nodes {
-                
                 let str = NodeStruct(dictionary: node)
-                let id = str.id
                 let isActive = str.isActive
-                
                 if isActive {
-                    
-                    let d1:[String:Any] = ["id":id,"newValue":false,"keyToEdit":"isActive","entityName":ENTITY.nodes]
-                    
-                    cd.updateEntity(dictsToUpdate: [d1]) {
-                        
-                        if !self.cd.errorBool {
-                            
-                            let success = self.cd.boolToReturn
-                            
-                            if success {
-                                
-                                //completion()
-                                
-                            } else {
-                                
-                                displayAlert(viewController: self, isError: true, message: "Error deactivating nodes")
-                                //completion()
-                                
-                            }
-                            
-                        } else {
-                            
-                            displayAlert(viewController: self, isError: true, message: self.cd.errorDescription)
-                            //completion()
-                            
+                    cd.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { [unowned vc = self] success in
+                        if !success {
+                            displayAlert(viewController: vc, isError: true, message: vc.cd.errorDescription)
                         }
-                        
                     }
-                    
                 }
-                
             }
-            
             completion()
-                        
         } else {
-            
             completion()
-            
         }
-                
     }
     
     @IBAction func addNode(_ sender: Any) {
         
         // Deactivate nodes here when adding a node to simplify QR scanning issues
         
-        deActivateNodes(nodes: self.nodeArray) {
+        deActivateNodes(nodes: nodeArray) {
             
             DispatchQueue.main.async {
                 

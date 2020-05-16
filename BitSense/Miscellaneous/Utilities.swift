@@ -9,6 +9,16 @@
 import Foundation
 import UIKit
 
+public extension Data {
+    var utf8:String {
+        if let string = String(bytes: self, encoding: .utf8) {
+            return string
+        } else {
+            return ""
+        }
+    }
+}
+
 public func impact() {
     
     if #available(iOS 10.0, *) {
@@ -22,37 +32,13 @@ public func impact() {
     
 }
 
-//public func hexStringToUIColor (hex:String) -> UIColor {
-//    var cString:String = hex.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
-//    
-//    if (cString.hasPrefix("#")) {
-//        cString.remove(at: cString.startIndex)
-//    }
-//    
-//    if ((cString.count) != 6) {
-//        return UIColor.gray
-//    }
-//    
-//    var rgbValue:UInt32 = 0
-//    Scanner(string: cString).scanHexInt32(&rgbValue)
-//    
-//    return UIColor (
-//        red: CGFloat((rgbValue & 0xFF0000) >> 16) / 255.0,
-//        green: CGFloat((rgbValue & 0x00FF00) >> 8) / 255.0,
-//        blue: CGFloat(rgbValue & 0x0000FF) / 255.0,
-//        alpha: CGFloat(1.0)
-//    )
-//}
-
 public func randomString(length: Int) -> String {
-    
     let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     return String((0...length-1).map{ _ in letters.randomElement()! })
     
 }
 
 public func rounded(number: Double) -> Double {
-    
     return Double(round(100000000*number)/100000000)
     
 }

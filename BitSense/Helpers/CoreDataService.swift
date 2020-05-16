@@ -209,6 +209,63 @@ class CoreDataService {
         
     }
     
+    func update(id: UUID, keyToUpdate: String, newValue: Any, entity: ENTITY, completion: @escaping ((Bool)) -> Void) {
+        
+        DispatchQueue.main.async {
+            
+            if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+                
+                let context = appDelegate.persistentContainer.viewContext
+                let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: entity.rawValue)
+                fetchRequest.returnsObjectsAsFaults = false
+                
+                do {
+                    
+                    let results = try context.fetch(fetchRequest) as [NSManagedObject]
+                    
+                    if results.count > 0 {
+                        
+                        for data in results {
+                            
+                            if id == data.value(forKey: "id") as? UUID {
+                                
+                                data.setValue(newValue, forKey: keyToUpdate)
+                                
+                                do {
+                                    
+                                    try context.save()
+                                    completion(true)
+                                    
+                                } catch {
+                                    
+                                    completion(false)
+                                    
+                                }
+                                
+                            }
+                            
+                        }
+                        
+                    } else {
+                        
+                        completion(false)
+                    }
+                    
+                } catch {
+                    
+                    completion(false)
+                }
+                
+            } else {
+                
+                completion(false)
+                
+            }
+            
+        }
+        
+    }
+    
     func deleteEntity(id: String, entityName: ENTITY, completion: @escaping () -> Void) {
         
         DispatchQueue.main.async {
@@ -276,6 +333,65 @@ class CoreDataService {
                 self.errorBool = true
                 self.errorDescription = "failed getting the app delegate"
                 completion()
+                
+            }
+            
+        }
+                
+    }
+    
+    func deleteNode(id: UUID, entityName: ENTITY, completion: @escaping ((Bool)) -> Void) {
+        
+        DispatchQueue.main.async {
+            
+            if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+                
+                let context = appDelegate.persistentContainer.viewContext
+                let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: entityName.rawValue)
+                fetchRequest.returnsObjectsAsFaults = false
+                
+                do {
+                    
+                    let results = try context.fetch(fetchRequest) as [NSManagedObject]
+                    
+                    if results.count > 0 {
+                        
+                        for (index, data) in results.enumerated() {
+                            
+                            if id == data.value(forKey: "id") as? UUID {
+                                
+                                context.delete(results[index] as NSManagedObject)
+                                
+                                do {
+                                    
+                                    try context.save()
+                                    completion(true)
+                                    
+                                } catch {
+                                    
+                                    completion(false)
+                                    
+                                }
+                                
+                            }
+                            
+                        }
+                                                
+                    } else {
+                        
+                        completion(false)
+                        
+                    }
+                    
+                } catch {
+                    
+                    completion(false)
+                    
+                }
+                
+            } else {
+                
+                completion(false)
                 
             }
             

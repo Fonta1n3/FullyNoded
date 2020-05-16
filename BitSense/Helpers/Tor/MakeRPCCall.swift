@@ -11,6 +11,7 @@ import Foundation
 class MakeRPCCall {
     
     static let sharedInstance = MakeRPCCall()
+    
     let aes = AESService()
     let cd = CoreDataService()
     var rpcusername = ""
@@ -24,61 +25,61 @@ class MakeRPCCall {
     var attempts = 0
     
     func executeRPCCommand(method: BTC_CLI_COMMAND, param: Any, completion: @escaping () -> Void) {
-        print("executeTorRPCCommand")
-        
         attempts += 1
         
-        cd.retrieveEntity(entityName: .nodes) {
+        cd.retrieveEntity(entityName: .newNodes) { [unowned vc = self] in
             
-            if !self.cd.errorBool {
-                
-                let nodes = self.cd.entities
+            if !vc.cd.errorBool {
+                let nodes = vc.cd.entities
                 var activeNode = [String:Any]()
                 
                 for node in nodes {
-                    
-                    if let b = node["isActive"] as? Bool {
-                        
-                        if b {
-                            
+                    if let isActive = node["isActive"] as? Bool {
+                        if isActive {
                             activeNode = node
-                            
                         }
-                        
                     }
-                    
+                }
+                
+                func decryptedValue(_ encryptedValue: Data) -> String {
+                    var decryptedValue = ""
+                    Crypto.decryptData(dataToDecrypt: encryptedValue) { decryptedData in
+                        if decryptedData != nil {
+                            decryptedValue = decryptedData!.utf8
+                        }
+                    }
+                    return decryptedValue
                 }
                 
                 let node = NodeStruct(dictionary: activeNode)
-                self.onionAddress = self.aes.decryptKey(keyToDecrypt: node.onionAddress)
-                self.rpcusername = self.aes.decryptKey(keyToDecrypt: node.rpcuser)
-                self.rpcpassword = self.aes.decryptKey(keyToDecrypt: node.rpcpassword)
+                if let encAddress = node.onionAddress {
+                    vc.onionAddress = decryptedValue(encAddress)
+                }
+                if let encUser = node.rpcuser {
+                    vc.rpcusername = decryptedValue(encUser)
+                }
+                if let encPassword = node.rpcpassword {
+                    vc.rpcpassword = decryptedValue(encPassword)
+                }
                 
-                var walletUrl = "http://\(self.rpcusername):\(self.rpcpassword)@\(self.onionAddress)"
+                var walletUrl = "http://\(vc.rpcusername):\(vc.rpcpassword)@\(vc.onionAddress)"
                 let ud = UserDefaults.standard
                 
                 if ud.object(forKey: "walletName") != nil {
-
                     if let walletName = ud.object(forKey: "walletName") as? String {
-
                         let b = isWalletRPC(command: method)
-
                         if b {
-
                             walletUrl += "/wallet/" + walletName
-
                         }
-
                     }
-
                 }
                 
                 var formattedParam = (param as! String).replacingOccurrences(of: "''", with: "")
                 formattedParam = formattedParam.replacingOccurrences(of: "'\"'\"'", with: "'")
                 
                 guard let url = URL(string: walletUrl) else {
-                    self.errorBool = true
-                    self.errorDescription = "url error"
+                    vc.errorBool = true
+                    vc.errorDescription = "url error"
                     completion()
                     return
                 }
@@ -98,89 +99,89 @@ class MakeRPCCall {
                 print("request: \("{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method)\",\"params\":[\(formattedParam)]}")")
                 #endif
                 
-                let queue = DispatchQueue(label: "com.FullyNoded.torQueue")
-                queue.async {
+                let task = vc.torClient.session.dataTask(with: request as URLRequest) { [unowned vc = self] (data, response, error) in
                     
-                    let task = self.torClient.session.dataTask(with: request as URLRequest) { (data, response, error) in
-                                                
-                        do {
+                    do {
+                        
+                        if error != nil {
                             
-                            if error != nil {
+                            if vc.attempts < 20 {
                                 
-                                if self.attempts < 20 {
-                                    
-                                    self.executeRPCCommand(method: method, param: param, completion: completion)
-                                    
-                                } else {
-                                    
-                                    self.attempts = 0
-                                    self.errorBool = true
-                                    self.errorDescription = error!.localizedDescription
-                                    completion()
-                                    
-                                }
+                                vc.executeRPCCommand(method: method, param: param, completion: completion)
                                 
                             } else {
                                 
-                                if let urlContent = data {
+                                vc.attempts = 0
+                                vc.errorBool = true
+                                vc.errorDescription = error!.localizedDescription
+                                #if DEBUG
+                                print("error: \(error!.localizedDescription)")
+                                #endif
+                                completion()
+                                
+                            }
+                            
+                        } else {
+                            
+                            if let urlContent = data {
+                                
+                                vc.attempts = 0
+                                
+                                do {
                                     
-                                    self.attempts = 0
+                                    let jsonAddressResult = try JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as! NSDictionary
                                     
-                                    do {
+                                    if let errorCheck = jsonAddressResult["error"] as? NSDictionary {
                                         
-                                        let jsonAddressResult = try JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as! NSDictionary
+                                        #if DEBUG
+                                        print("error: \(errorCheck)")
+                                        #endif
                                         
-                                        print("result = \(jsonAddressResult)")
-                                        
-                                        if let errorCheck = jsonAddressResult["error"] as? NSDictionary {
+                                        if let errorMessage = errorCheck["message"] as? String {
                                             
-                                                if let errorMessage = errorCheck["message"] as? String {
-                                                    
-                                                    self.errorDescription = errorMessage
-                                                    
-                                                } else {
-                                                    
-                                                    self.errorDescription = "Uknown error"
-                                                    
-                                                }
-                                                
-                                                self.errorBool = true
-                                                completion()
-                                                
+                                            vc.errorDescription = errorMessage
                                             
                                         } else {
                                             
-                                            self.errorBool = false
-                                            self.errorDescription = ""
-                                            self.objectToReturn = jsonAddressResult["result"]
-                                            completion()
+                                            vc.errorDescription = "Uknown error"
                                             
                                         }
                                         
-                                    } catch {
+                                        vc.errorBool = true
+                                        completion()
                                         
-                                        self.errorBool = true
-                                        self.errorDescription = "Uknown Error"
+                                        
+                                    } else {
+                                        
+                                        vc.errorBool = false
+                                        vc.errorDescription = ""
+                                        vc.objectToReturn = jsonAddressResult["result"]
                                         completion()
                                         
                                     }
+                                    
+                                } catch {
+                                    
+                                    vc.errorBool = true
+                                    vc.errorDescription = "Uknown Error"
+                                    completion()
                                     
                                 }
                                 
                             }
                             
                         }
-                    
+                        
                     }
-                    
-                    task.resume()
                     
                 }
                 
+                task.resume()
+                
             } else {
                 
-                self.errorBool = true
-                self.errorDescription = "error getting nodes from core data"
+                vc.errorBool = true
+                vc.errorDescription = "error getting nodes from core data"
                 completion()
                 
             }
@@ -188,7 +189,5 @@ class MakeRPCCall {
         }
         
     }
-    
     private init() {}
-    
 }

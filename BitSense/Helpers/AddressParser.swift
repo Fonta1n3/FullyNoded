@@ -8,7 +8,6 @@
 
 import Foundation
 
-
 class AddressParser {
     
     var url = ""

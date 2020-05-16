@@ -29,7 +29,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     var nodes = [[String:Any]]()
     var uptime = Int()
     var activeNode = [String:Any]()
-    var existingNodeID = ""
+    var existingNodeID:UUID!
     var initialLoad = Bool()
     var existingWallet = ""
     var mempoolCount = Int()
@@ -62,13 +62,21 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         viewHasLoaded = false
         sectionZeroLoaded = false
         sectionOneLoaded = false
-        firstTimeHere()
         addNavBarSpinner()
         setFeeTarget()
         showUnlockScreen()
         addlaunchScreen()
         existingWallet = ud.object(forKey: "walletName") as? String ?? ""
+        //setEncryptionKey()
         
+    }
+    
+    private func setEncryptionKey() {
+        firstTimeHere() { [unowned vc = self] success in
+            if !success {
+                displayAlert(viewController: vc, isError: true, message: "there was a critical error setting your devices encryption key, please delete and reinstall the app")
+            }
+        }
     }
     
     func torConnProgress(_ progress: Int) {
@@ -129,10 +137,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                             self.existingNodeID = node.id
                         }
                         let newId = node.id
-                        DispatchQueue.main.async {
-                            let enc = node.label
-                            let dec = self.aes.decryptKey(keyToDecrypt: enc)
-                            self.navigationItem.title = dec
+                        DispatchQueue.main.async { [unowned vc = self] in
+                            vc.navigationItem.title = node.label
                         }
                         
                         if newId != self.existingNodeID {
@@ -190,12 +196,15 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     override func viewDidAppear(_ animated: Bool) {
         
         if initialLoad {
-            
             addlaunchScreen()
-            loadTable()
-            
+            firstTimeHere() { [unowned vc = self] success in
+                if !success {
+                    displayAlert(viewController: vc, isError: true, message: "there was a critical error setting your devices encryption key, please delete and reinstall the app")
+                } else {
+                    vc.loadTable()
+                }
+            }
         }
-        
     }
     
     @objc func refreshData(_ sender: Any) {
@@ -400,8 +409,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             }
             
         default:
-            
-            //return blankCell()
             
             if transactionArray.count == 0 {
                 
@@ -997,7 +1004,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         nodes.removeAll()
         
-        cd.retrieveEntity(entityName: .nodes) {
+        cd.retrieveEntity(entityName: .newNodes) {
             
             if !self.cd.errorBool {
                 
@@ -1192,11 +1199,10 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
-    func firstTimeHere() {
-        
-        let firstTime = FirstTime()
-        firstTime.firstTimeHere()
-        
+    func firstTimeHere(completion: @escaping ((Bool)) -> Void) {
+        FirstTime.firstTimeHere() { success in
+            completion(success)
+        }
     }
     
 }

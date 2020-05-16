@@ -173,47 +173,50 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         
         let aes = AESService()
         let walletStr = Wallet(dictionary: wallet)
-        descriptor = aes.decryptKey(keyToDecrypt: walletStr.descriptor)
-        //let range = aes.decryptKey(keyToDecrypt: walletStr.range)
-        let label = aes.decryptKey(keyToDecrypt: walletStr.label)
-        let addressIndex = aes.decryptKey(keyToDecrypt: walletStr.index)
-        let param = "\(descriptor), [\(addressIndex),\(addressIndex)]"
-        
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
+        Crypto.decryptData(dataToDecrypt: walletStr.descriptor!) { [unowned vc = self] (desc) in
+            if desc != nil {
+                vc.descriptor = desc!.utf8
+                let label = walletStr.label
+                let addressIndex = "\(walletStr.index)"
+                let param = "\(vc.descriptor), [\(addressIndex),\(addressIndex)]"
                 
-                let result = reducer.arrayToReturn
-                let addressToReturn = result[0] as! String
+                let reducer = Reducer()
                 
-                DispatchQueue.main.async {
+                func getResult() {
                     
-                    self.indexDisplay.text = addressIndex
-                    self.addressOutlet.text = addressToReturn
-                    self.navigationController?.navigationBar.topItem?.title = label
-                    self.addressString = addressToReturn
-                    self.isHDMusig = true
-                    self.showAddress()
+                    if !reducer.errorBool {
+                        
+                        let result = reducer.arrayToReturn
+                        let addressToReturn = result[0] as! String
+                        
+                        DispatchQueue.main.async { [unowned vc = self] in
+                            
+                            vc.indexDisplay.text = addressIndex
+                            vc.addressOutlet.text = addressToReturn
+                            vc.navigationController?.navigationBar.topItem?.title = label
+                            vc.addressString = addressToReturn
+                            vc.isHDMusig = true
+                            vc.showAddress()
+                            
+                        }
+                        
+                    } else {
+                        
+                        vc.connectingView.removeConnectingView()
+                        
+                        displayAlert(viewController: self,
+                                     isError: true,
+                                     message: reducer.errorDescription)
+                        
+                    }
                     
                 }
                 
-            } else {
-                
-                connectingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: reducer.errorDescription)
-                
+                reducer.makeCommand(command: .deriveaddresses,
+                                    param: param,
+                                    completion: getResult)
             }
-            
         }
-        
-        reducer.makeCommand(command: .deriveaddresses,
-                            param: param,
-                            completion: getResult)
         
     }
     
@@ -244,9 +247,9 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             showAddress(address: addressString)
             connectingView.removeConnectingView()
             
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [unowned vc = self] in
                 
-                self.addressOutlet.text = self.addressString
+                vc.addressOutlet.text = vc.addressString
                 
             }
             
@@ -438,42 +441,25 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                     
                     let addressToReturn = reducer.arrayToReturn[0] as! String
                     
-                    DispatchQueue.main.async {
+                    DispatchQueue.main.async { [unowned vc = self] in
                         
-                        self.connectingView.removeConnectingView()
-                        self.addressString = addressToReturn
-                        self.addressOutlet.text = addressToReturn
-                        self.showAddress(address: addressToReturn)
+                        vc.connectingView.removeConnectingView()
+                        vc.addressString = addressToReturn
+                        vc.addressOutlet.text = addressToReturn
+                        vc.showAddress(address: addressToReturn)
                         
-                        let id = self.wallet["id"] as! String
-                        let aes = AESService()
-                        let encIndex = aes.encryptKey(keyToEncrypt: self.indexDisplay.text!)
-                        let d:[String:Any] = ["id":id,"newValue":encIndex,"keyToEdit":"index","entityName":ENTITY.hdWallets]
-                        
-                        self.cd.updateEntity(dictsToUpdate: [d]) {
-                            
-                            if !self.cd.errorBool {
+                        let id = vc.wallet["id"] as! UUID
+                        vc.cd.update(id: id, keyToUpdate: "index", newValue: Int32(vc.indexDisplay.text!)!, entity: .newHdWallets) { success in
+                            if success {
                                 
-                                let success = self.cd.boolToReturn
-                                
-                                if success {
-                                    
-                                    print("updated index")
-                                    
-                                } else {
-                                    
-                                    print("index update failed")
-                                    
-                                }
+                                print("updated index")
                                 
                             } else {
                                 
-                                print(self.cd.errorDescription)
+                                print("index update failed")
                                 
                             }
-                            
                         }
-                        
                     }
                     
                 case .getnewaddress:

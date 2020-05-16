@@ -10,8 +10,11 @@ import Foundation
 
 public enum ENTITY: String {
     
-    case descriptors = "Descriptors"
-    case hdWallets = "HDWallets"
-    case nodes = "Nodes"
+    case oldDescriptors = "Descriptors"
+    case newDescriptors = "NewDescriptors"
+    case oldHdWallets = "HDWallets"
+    case newHdWallets = "NewHDWallets"
+    case oldNodes = "Nodes"
+    case newNodes = "NewNodes"
     
 }

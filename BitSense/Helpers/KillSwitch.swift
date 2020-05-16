@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import KeychainSwift
+import UIKit
 
 class KillSwitch {
     
@@ -21,7 +21,7 @@ class KillSwitch {
         ud.removePersistentDomain(forName: domain)
         ud.synchronize()
         
-        cd.retrieveEntity(entityName: .descriptors) {
+        cd.retrieveEntity(entityName: .newDescriptors) {
             
             if !self.cd.errorBool {
                 
@@ -31,17 +31,11 @@ class KillSwitch {
                     let str = DescriptorStruct(dictionary: d)
                     let id = str.id
                     
-                    self.cd.deleteEntity(id: id, entityName: .descriptors) {
+                    self.cd.deleteNode(id: id!, entityName: .newDescriptors) { success in
                         
-                        if !self.cd.errorBool {
+                        if success {
                             
-                            let success = self.cd.boolToReturn
-                            
-                            if success {
-                                
-                                boolToReturn = true
-                                
-                            }
+                            boolToReturn = true
                             
                         }
                         
@@ -56,60 +50,43 @@ class KillSwitch {
             
         }
         
-        cd.retrieveEntity(entityName: .nodes) {
-            
-            if !self.cd.errorBool {
-                
-                let nodes = self.cd.entities
+        cd.retrieveEntity(entityName: .newNodes) { [unowned ks = self] in
+            if !ks.cd.errorBool {
+                let nodes = ks.cd.entities
                 for n in nodes {
-                    
                     let str = NodeStruct(dictionary: n)
-                    let id = str.id
-                    
-                    self.cd.deleteEntity(id: id, entityName: .nodes) {
-                        
-                        if !self.cd.errorBool {
-                            
-                            let success = self.cd.boolToReturn
-                            
-                            if success {
-                                
-                                boolToReturn = true
-                                
-                            }
-                            
+                    if let id = str.id {
+                        ks.cd.deleteNode(id: id, entityName: .newNodes) { success in
+                            boolToReturn = success
                         }
-                        
                     }
-                    
                 }
-                
             } else {
-                
                 displayAlert(viewController: vc, isError: true, message: "error getting core data")
             }
-            
         }
         
-        cd.retrieveEntity(entityName: .hdWallets) {
+        cd.retrieveEntity(entityName: .newHdWallets) { [unowned ks = self] in
             
-            if !self.cd.errorBool {
+            if !ks.cd.errorBool {
                 
-                let hdwallets = self.cd.entities
+                let hdwallets = ks.cd.entities
                 for h in hdwallets {
                     
                     let str = Wallet(dictionary: h)
-                    let id = str.id
-                    
-                    self.cd.deleteEntity(id: id, entityName: .hdWallets) {
+                    if let id = str.id {
                         
-                        if !self.cd.errorBool {
+                        ks.cd.deleteNode(id: id, entityName: .newHdWallets) { [unowned ks = self] success in
                             
-                            let success = self.cd.boolToReturn
-                            
-                            if success {
+                            if !ks.cd.errorBool {
                                 
-                                boolToReturn = true
+                                let success = ks.cd.boolToReturn
+                                
+                                if success {
+                                    
+                                    boolToReturn = true
+                                    
+                                }
                                 
                             }
                             
@@ -127,9 +104,9 @@ class KillSwitch {
             
         }
         
-        let keychain = KeychainSwift()
+        let _ = KeyChain.remove(key: "UnlockPassword")
         
-        if keychain.clear() {
+        if KeyChain.remove(key: "AESPassword") {
             
             boolToReturn = true
             

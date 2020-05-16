@@ -237,7 +237,6 @@ class ChooseConnectionTypeViewController: UIViewController, UITabBarControllerDe
             
             if let vc = segue.destination as? NodeDetailViewController  {
                 
-                vc.newNode["usingTor"] = true
                 vc.selectedNode = self.selectedNode
                 
                 if !isUpdating {

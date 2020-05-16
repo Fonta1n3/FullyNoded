@@ -282,7 +282,7 @@ class TorClient {
         
         let authPath = self.authDirPath
         let cd = CoreDataService()
-        cd.retrieveEntity(entityName: .nodes) {
+        cd.retrieveEntity(entityName: .newNodes) {
             
             if !cd.errorBool {
                 
@@ -294,13 +294,23 @@ class TorClient {
                     let str = NodeStruct(dictionary: nodeDict)
                     let id = str.id
                     
-                    if str.isActive && str.authKey != "" {
+                    if str.isActive && str.authKey != nil && str.onionAddress != nil {
                         
-                        let authorizedKey = aes.decryptKey(keyToDecrypt: str.authKey)
-                        let onionAddress = aes.decryptKey(keyToDecrypt: str.onionAddress)
+                        func decryptedValue(_ encryptedValue: Data) -> String {
+                            var decryptedValue = ""
+                            Crypto.decryptData(dataToDecrypt: encryptedValue) { decryptedData in
+                                if decryptedData != nil {
+                                    decryptedValue = decryptedData!.utf8
+                                }
+                            }
+                            return decryptedValue
+                        }
+                        
+                        let authorizedKey = decryptedValue(str.authKey!)
+                        let onionAddress = decryptedValue(str.onionAddress!)
                         let onionAddressArray = onionAddress.components(separatedBy: ".onion:")
                         let authString = onionAddressArray[0] + ":descriptor:x25519:" + authorizedKey
-                        let file = URL(fileURLWithPath: authPath, isDirectory: true).appendingPathComponent("\(id).auth_private")
+                        let file = URL(fileURLWithPath: authPath, isDirectory: true).appendingPathComponent("\(randomString(length: 10)).auth_private")
                         
                         do {
                             
@@ -333,14 +343,6 @@ class TorClient {
                             print("failed writing auth key")
                             //completion()
                         }
-                        
-                    } else if str.isActive && str.v2password != "" {
-                        
-                        let onionAddress = aes.decryptKey(keyToDecrypt: str.onionAddress)
-                        let onionAddressArr = onionAddress.components(separatedBy: ":")
-                        let hostname = onionAddressArr[0]
-                        let v2pass = aes.decryptKey(keyToDecrypt: str.v2password)
-                        self.v2Auth = "\(hostname) \(v2pass)"
                         
                     }
                     

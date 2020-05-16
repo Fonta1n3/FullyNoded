@@ -47,6 +47,9 @@
 		D0384E2F246AC4B1002FEE94 /* XpubConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0384E2E246AC4B1002FEE94 /* XpubConverter.swift */; };
 		D0384E31246AC4D8002FEE94 /* Base58.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0384E30246AC4D8002FEE94 /* Base58.swift */; };
 		D0384E34246AC53B002FEE94 /* base58.c in Sources */ = {isa = PBXBuildFile; fileRef = D0384E33246AC53B002FEE94 /* base58.c */; };
+		D0390326246B960B00D32C43 /* KeyChain.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0390325246B960B00D32C43 /* KeyChain.swift */; };
+		D03968B1246F6CBA0010D821 /* Crypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = D03968B0246F6CBA0010D821 /* Crypto.swift */; };
+		D03968B3246F769C0010D821 /* KeychainKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = D03968B2246F769C0010D821 /* KeychainKeys.swift */; };
 		D039D3C823322F1300D1ED18 /* NodeStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D039D3C723322F1300D1ED18 /* NodeStruct.swift */; };
 		D039D3CA2332440D00D1ED18 /* HDMusigStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D039D3C92332440D00D1ED18 /* HDMusigStruct.swift */; };
 		D0410617224ED189004AC0D0 /* ObjectiveCHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = D0410616224ED189004AC0D0 /* ObjectiveCHeader.m */; };
@@ -178,6 +181,9 @@
 		D0384E30246AC4D8002FEE94 /* Base58.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Base58.swift; sourceTree = "<group>"; };
 		D0384E33246AC53B002FEE94 /* base58.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = base58.c; sourceTree = "<group>"; };
 		D0384E37246AC66A002FEE94 /* base58.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = base58.h; sourceTree = "<group>"; };
+		D0390325246B960B00D32C43 /* KeyChain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyChain.swift; sourceTree = "<group>"; };
+		D03968B0246F6CBA0010D821 /* Crypto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Crypto.swift; sourceTree = "<group>"; };
+		D03968B2246F769C0010D821 /* KeychainKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainKeys.swift; sourceTree = "<group>"; };
 		D039D3C723322F1300D1ED18 /* NodeStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeStruct.swift; sourceTree = "<group>"; };
 		D039D3C92332440D00D1ED18 /* HDMusigStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HDMusigStruct.swift; sourceTree = "<group>"; };
 		D0410615224ED188004AC0D0 /* BitSense-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BitSense-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -452,6 +458,9 @@
 				D0CB488F2435B32E0072D1F5 /* Entities.swift */,
 				D07399D8245EEA5F00860B7E /* Broadcaster.swift */,
 				D0384E35246AC5B8002FEE94 /* Xpub Converter */,
+				D0390325246B960B00D32C43 /* KeyChain.swift */,
+				D03968B0246F6CBA0010D821 /* Crypto.swift */,
+				D03968B2246F769C0010D821 /* KeychainKeys.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1024,6 +1033,7 @@
 				D0233F282361EA5F0041FFBA /* shim.swift in Sources */,
 				D05692E321434452006DF0F4 /* MainMenuViewController.swift in Sources */,
 				D07399D9245EEA5F00860B7E /* Broadcaster.swift in Sources */,
+				D03968B3246F769C0010D821 /* KeychainKeys.swift in Sources */,
 				D02FE43323136A600048F8C4 /* NodeLogic.swift in Sources */,
 				D07A8237235D4FEE00F7E095 /* ImportMultiSigViewController.swift in Sources */,
 				D0855FC822B0C71900DBBFC2 /* CreatePSBTViewController.swift in Sources */,
@@ -1044,6 +1054,7 @@
 				D0233F2B236284200041FFBA /* ShowV3PubKeyViewController.swift in Sources */,
 				D02152DC23666CB400AD9007 /* QuickConnect.swift in Sources */,
 				D0D71DA32351F835005CCDB9 /* UtilitieMenuViewController.swift in Sources */,
+				D03968B1246F6CBA0010D821 /* Crypto.swift in Sources */,
 				D0452ADD224743C50013E225 /* LogInViewController.swift in Sources */,
 				D02958D3234F82E000ED8F72 /* IdentityViewController.swift in Sources */,
 				D0EC748A227DF06E001489B9 /* CreateUnsigned.swift in Sources */,
@@ -1086,6 +1097,7 @@
 				D05D972C2264104D0035F1DE /* QRScanner.swift in Sources */,
 				D00B9A302111427200E8B95A /* BitSense.xcdatamodeld in Sources */,
 				D0560EE92277F75900C3E909 /* UTXOViewController.swift in Sources */,
+				D0390326246B960B00D32C43 /* KeyChain.swift in Sources */,
 				D037C868231B85A0006C357D /* ExtendedKeysParentViewController.swift in Sources */,
 				D0EF29C1216B82B400EB776A /* SettingsViewController.swift in Sources */,
 				D037C86A231BAF8B006C357D /* ChooseRangeViewController.swift in Sources */,
@@ -1260,7 +1272,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 131;
+				CURRENT_PROJECT_VERSION = 132;
 				DEVELOPMENT_TEAM = 69FR345CDA;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1273,7 +1285,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.210;
+				MARKETING_VERSION = 1.211;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1296,7 +1308,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 131;
+				CURRENT_PROJECT_VERSION = 132;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 69FR345CDA;
 				ENABLE_TESTABILITY = NO;
@@ -1311,7 +1323,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.210;
+				MARKETING_VERSION = 1.211;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";

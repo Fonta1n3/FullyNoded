@@ -37,13 +37,14 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
         DispatchQueue.main.async {
         
             let keygen = KeyGen()
-            keygen.generate { (pubkey, privkey) in
+            keygen.generate { [unowned vc = self] (pubkey, privkey) in
                 
-                self.generateButtonOutlet.alpha = 0
-                self.pubkeyTextView.text = "descriptor:x25519:" + pubkey
-                self.authKeyField.text = privkey
-                self.pubkeyDescription.alpha = 1
-                self.pubkeyLabel.alpha = 1
+                vc.pubkeyTextView.addGestureRecognizer(vc.tapTextViewGesture)
+                vc.generateButtonOutlet.alpha = 0
+                vc.pubkeyTextView.text = "descriptor:x25519:" + pubkey
+                vc.authKeyField.text = privkey
+                vc.pubkeyDescription.alpha = 1
+                vc.pubkeyLabel.alpha = 1
                 
             }
             
@@ -111,44 +112,50 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
     
     @IBAction func saveAction(_ sender: Any) {
         
+        func encryptedValue(_ decryptedValue: Data) -> Data? {
+            var encryptedValue:Data?
+            Crypto.encryptData(dataToEncrypt: decryptedValue) { encryptedData in
+                if encryptedData != nil {
+                    encryptedValue = encryptedData!
+                }
+            }
+            return encryptedValue
+        }
+        
         if createNew {
             
             if onionAddressField.text != "" {
                 
-                let id = randomString(length: 23)
-                let enc = aes.encryptKey(keyToEncrypt: onionAddressField.text!)
-                newNode["onionAddress"] = enc
-                newNode["id"] = id
+                guard  let encryptedOnionAddress = encryptedValue((onionAddressField.text)!.dataUsingUTF8StringEncoding)  else { return }
                 
                 if authKeyField.text != "" {
-                    
-                    let enc = aes.encryptKey(keyToEncrypt: authKeyField.text!)
-                    newNode["authKey"] = enc
-                    
+                    guard let encryptedAuthKey = encryptedValue((authKeyField.text)!.dataUsingUTF8StringEncoding) else { return }
+                    newNode["authKey"] = encryptedAuthKey
                 }
                 
                 if pubkeyTextView.text != "" {
-                    
-                    let enc = aes.encryptKey(keyToEncrypt: pubkeyTextView.text!)
-                    newNode["authPubKey"] = enc
-                    
+                    guard let encryptedAuthPubKey = encryptedValue((pubkeyTextView.text)!.dataUsingUTF8StringEncoding) else { return }
+                    newNode["authPubKey"] = encryptedAuthPubKey
                 }
                 
-                cd.saveEntity(dict: newNode, entityName: .nodes) {
+                newNode["onionAddress"] = encryptedOnionAddress
+                newNode["id"] = UUID()
+                
+                cd.saveEntity(dict: newNode, entityName: .newNodes) { [unowned vc = self] in
                     
-                    if !self.cd.errorBool {
+                    if !vc.cd.errorBool {
                         
-                        let success = self.cd.boolToReturn
+                        let success = vc.cd.boolToReturn
                         
                         if success {
                             
-                            displayAlert(viewController: self,
+                            displayAlert(viewController: vc,
                                          isError: false,
                                          message: "Tor node saved")
                             
                         } else {
                             
-                            displayAlert(viewController: self,
+                            displayAlert(viewController: vc,
                                          isError: true,
                                          message: "Error saving tor node")
                             
@@ -156,9 +163,9 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
                         
                     } else {
                         
-                        displayAlert(viewController: self,
+                        displayAlert(viewController: vc,
                                      isError: true,
-                                     message: self.cd.errorDescription)
+                                     message: vc.cd.errorDescription)
                     }
                     
                 }
@@ -173,119 +180,60 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
         } else {
             
             //updating
-            if onionAddressField.text != "" && authKeyField.text != "" {
+            let node = NodeStruct(dictionary: selectedNode)
+            
+            if onionAddressField.text != "" && authKeyField.text != "" && pubkeyTextView.text != "" {
                 
-                let node = NodeStruct(dictionary: selectedNode)
-                let enc = aes.encryptKey(keyToEncrypt: onionAddressField.text!)
-                let privKey = (self.authKeyField.text!).replacingOccurrences(of: "====", with: "")
-                let enc2 = self.aes.encryptKey(keyToEncrypt: privKey)
-                let id = node.id
-                let d1:[String:Any] = ["id":id,"newValue":enc,"keyToEdit":"onionAddress","entityName":ENTITY.nodes]
-                let d2:[String:Any] = ["id":id,"newValue":enc2,"keyToEdit":"authKey","entityName":ENTITY.nodes]
-                let dicts = [d1,d2]
+                let privKeyData = (authKeyField.text)!.dataUsingUTF8StringEncoding
+                let addressData = (onionAddressField.text)!.dataUsingUTF8StringEncoding
+                let pubKeyData = (pubkeyTextView.text)!.dataUsingUTF8StringEncoding
                 
-                cd.updateEntity(dictsToUpdate: dicts) {
-                    
-                    if !self.cd.errorBool {
-                        
-                        let success = self.cd.boolToReturn
-                        
-                        if success {
-                            
-                            if self.pubkeyTextView.text != "" {
-                                
-                                let enc1 = self.aes.encryptKey(keyToEncrypt: self.pubkeyTextView.text!)
-                                let d1:[String:Any] = ["id":id,"newValue":enc1,"keyToEdit":"authPubKey","entityName":ENTITY.nodes]
-                                let dicts = [d1,d2]
-                                self.cd.updateEntity(dictsToUpdate: dicts) {
-                                    
-                                    if !self.cd.errorBool {
-                                        
-                                        let success = self.cd.boolToReturn
-                                        
-                                        if success {
-                                            
-                                            print("pubkey updated successfully")
-                                            
-                                            displayAlert(viewController: self,
-                                                         isError: false,
-                                                         message: "Node updated")
-                                            
-                                        } else {
-                                            
-                                            print("error updating pubkey")
-                                            
-                                            displayAlert(viewController: self,
-                                                         isError: true,
-                                                         message: "Error updating node")
-                                            
-                                        }
-                                        
+                guard let encryptedPrivKey = encryptedValue(privKeyData) else {
+                    return
+                }
+                guard let encryptedAddress = encryptedValue(addressData) else {
+                    return
+                }
+                guard let encryptedPubKey = encryptedValue(pubKeyData) else {
+                    return
+                }
+                
+                cd.update(id: node.id!, keyToUpdate: "authKey", newValue: encryptedPrivKey, entity: .newNodes) { [unowned vc = self] success in
+                    if success {
+                        vc.cd.update(id: node.id!, keyToUpdate: "onionAddress", newValue: encryptedAddress, entity: .newNodes) { [unowned vc = self] success in
+                            if success {
+                                vc.cd.update(id: node.id!, keyToUpdate: "authPubKey", newValue: encryptedPubKey, entity: .newNodes) { [unowned vc = self] success in
+                                    if success {
+                                        displayAlert(viewController: vc, isError: false, message: "Node updated")
+                                    } else {
+                                        displayAlert(viewController: vc, isError: true, message: "Error updating node")
                                     }
-                                    
                                 }
-                                
+                            } else {
+                                displayAlert(viewController: self, isError: true, message: "Error updating node")
                             }
-                            
-                        } else {
-                           
-                            displayAlert(viewController: self,
-                                         isError: true,
-                                         message: "Error updating tor node")
-                            
                         }
-                        
                     } else {
-                        
-                        displayAlert(viewController: self,
-                                     isError: true,
-                                     message: "Error updating tor node")
-                        
+                        displayAlert(viewController: self, isError: true, message: "Error updating node")
                     }
-                    
                 }
                 
             } else if onionAddressField.text != "" {
                 
-                let node = NodeStruct(dictionary: selectedNode)
-                let id = node.id
-                let enc = aes.encryptKey(keyToEncrypt: onionAddressField.text!)
-                let d1:[String:Any] = ["id":id,"newValue":enc,"keyToEdit":"onionAddress","entityName":ENTITY.nodes]
+                let decryptedAddress = (onionAddressField.text)!.dataUsingUTF8StringEncoding
                 
-                self.cd.updateEntity(dictsToUpdate: [d1]) {
-                    
-                    if !self.cd.errorBool {
-                        
-                        let success = self.cd.boolToReturn
-                        
-                        if success {
-                            
-                            print("onionaddress updated successfully")
-                            
-                            displayAlert(viewController: self,
-                                         isError: false,
-                                         message: "Tor node updated")
-                            
-                        } else {
-                            
-                            print("error updating onionaddress")
-                            
-                            displayAlert(viewController: self,
-                                         isError: true,
-                                         message: "Error updating tor node")
-                            
-                        }
-                        
+                guard let encryptedOnionAddress = encryptedValue(decryptedAddress) else { return }
+                cd.update(id: node.id!, keyToUpdate: "onionAddress", newValue: encryptedOnionAddress, entity: .newNodes) { [unowned vc = self] success in
+                    if success {
+                        displayAlert(viewController: self, isError: false, message: "Node updated!")
+                    } else {
+                        displayAlert(viewController: self, isError: true, message: "Error updating node!")
                     }
-                    
                 }
                 
             } else {
-                
                 //fields empty
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "text fields are empty")
+                displayAlert(viewController: self, isError: true, message: "text fields are empty")
                 
             }
             
@@ -303,9 +251,6 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
         pubkeyTextView.isSelectable = true
         
         tapTextViewGesture = UITapGestureRecognizer(target: self, action: #selector(shareRawText(_:)))
-        
-        pubkeyTextView.addGestureRecognizer(tapTextViewGesture)
-        
         imageView.alpha = 0
         imageView.backgroundColor = UIColor.black
 
@@ -336,43 +281,39 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
         
     }
     
-    override func viewWillDisappear(_ animated: Bool) {
-        
-        onionAddressField.text = ""
-        
-    }
-    
     func loadValues() {
         
         if !createNew {
             
-            let node = NodeStruct(dictionary: selectedNode)
-            let enc = node.onionAddress
-            onionAddressField.text = aes.decryptKey(keyToDecrypt: enc)
-            
-            if node.authKey != "" {
-                
-                let enc = node.authKey
-                
-                DispatchQueue.main.async {
-                    
-                    self.authKeyField.text = self.aes.decryptKey(keyToDecrypt: enc)
-                    
-                }
-                
-                if node.authPubKey != "" {
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.generateButtonOutlet.setTitle("refresh V3 auth key pair", for: .normal)
-                        self.pubkeyTextView.text = self.aes.decryptKey(keyToDecrypt: node.authPubKey)
-                        self.pubkeyDescription.alpha = 1
-                        self.pubkeyLabel.alpha = 1
-                        
+            func decryptedValue(_ encryptedValue: Data) -> String {
+                var decryptedValue = ""
+                Crypto.decryptData(dataToDecrypt: encryptedValue) { decryptedData in
+                    if decryptedData != nil {
+                        decryptedValue = decryptedData!.utf8
                     }
-                    
                 }
-                
+                return decryptedValue
+            }
+            
+            let node = NodeStruct(dictionary: selectedNode)
+            if let enc = node.onionAddress {
+                onionAddressField.text = decryptedValue(enc)
+            }
+            
+            
+            if node.authKey != nil {
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.authKeyField.text = decryptedValue(node.authKey!)
+                }
+                if node.authPubKey != nil {
+                    DispatchQueue.main.async { [unowned vc = self] in
+                        vc.pubkeyTextView.addGestureRecognizer(vc.tapTextViewGesture)
+                        vc.generateButtonOutlet.setTitle("refresh V3 auth key pair", for: .normal)
+                        vc.pubkeyTextView.text = decryptedValue(node.authPubKey!)
+                        vc.pubkeyDescription.alpha = 1
+                        vc.pubkeyLabel.alpha = 1
+                    }
+                }
             }
             
         } else {

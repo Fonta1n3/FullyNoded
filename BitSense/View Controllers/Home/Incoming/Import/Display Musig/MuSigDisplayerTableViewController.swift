@@ -247,44 +247,17 @@ class MuSigDisplayerTableViewController: UITableViewController {
                 
                 let params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"watchonly\": true, \"label\": \"\(label)\" }]"
                 
-                let aes = AESService()
                 let cd = CoreDataService()
-                let encDesc = aes.encryptKey(keyToEncrypt: descriptor)
-                let encLabel = aes.encryptKey(keyToEncrypt: label)
-                let encRange = aes.encryptKey(keyToEncrypt: "no range")
-                let id = randomString(length: 10)
-                
-                cd.retrieveEntity(entityName: .nodes) {
+                Crypto.encryptData(dataToEncrypt: descriptor.dataUsingUTF8StringEncoding) { encDesc in
                     
-                    if !cd.errorBool {
+                    if encDesc != nil {
                         
-                        let nodes = cd.entities
-                        let isActive = isAnyNodeActive(nodes: nodes)
-                        var nodeID = ""
+                        let descDict = ["descriptor":encDesc!,
+                                        "label":label,
+                                        "range":"no range",
+                                        "id":UUID()] as [String : Any]
                         
-                        if isActive {
-                            
-                            for node in nodes {
-                                
-                                let active = node["isActive"] as! Bool
-                                
-                                if active {
-                                    
-                                    nodeID = node["id"] as! String
-                                    
-                                }
-                                
-                            }
-                            
-                        }
-                        
-                        let descDict = ["descriptor":encDesc,
-                                        "label":encLabel,
-                                        "range":encRange,
-                                        "id":id,
-                                        "nodeID":nodeID]
-                        
-                        cd.saveEntity(dict: descDict, entityName: .descriptors) {
+                        cd.saveEntity(dict: descDict, entityName: .newDescriptors) {
                             
                             if !cd.errorBool {
                                 
@@ -317,12 +290,6 @@ class MuSigDisplayerTableViewController: UITableViewController {
                             }
                             
                         }
-                        
-                    } else {
-                        
-                        displayAlert(viewController: self,
-                                     isError: true,
-                                     message: cd.errorDescription)
                         
                     }
                     

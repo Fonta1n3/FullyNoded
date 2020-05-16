@@ -7,11 +7,9 @@
 //
 
 import UIKit
-import KeychainSwift
 
 class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate {
     
-    let keychain = KeychainSwift()
     let ud = UserDefaults.standard
     let lockView = UIView()
     let passwordInput = UITextField()
@@ -83,7 +81,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             
         case 0:
             
-            if keychain.get("UnlockPassword") != nil {
+            if KeyChain.getData("UnlockPassword") != nil {
                 
                 label.text = "Reset Password"
                 
@@ -306,46 +304,52 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             
             if self.firstPassword == self.secondPassword {
                 
-                let keychain = KeychainSwift()
-                keychain.set(self.secondPassword, forKey: "UnlockPassword")
+                let data = self.secondPassword.dataUsingUTF8StringEncoding
                 
-                self.nextButton.removeTarget(self, action: #selector(self.confirmLockPassword), for: .touchUpInside)
-                self.textInput.text = ""
-                self.textInput.resignFirstResponder()
-                
-                DispatchQueue.main.async {
+                if KeyChain.set(data, forKey: "UnlockPassword") {
                     
-                    UIView.animate(withDuration: 0.2, animations: {
+                    self.nextButton.removeTarget(self, action: #selector(self.confirmLockPassword), for: .touchUpInside)
+                    self.textInput.text = ""
+                    self.textInput.resignFirstResponder()
+                    
+                    DispatchQueue.main.async {
                         
-                        self.labelTitle.alpha = 0
-                        self.nextButton.alpha = 0
-                        self.textInput.alpha = 0
-                        self.lockView.alpha = 0
-                        
-                    }) { _ in
-                        
-                        self.textInput.text = ""
-                        self.passwordInput.text = ""
-                        self.labelTitle.text = "Unlock"
-                        self.labelTitle.font = UIFont.init(name: "HelveticaNeue-Light", size: 30)
-                        self.labelTitle.alpha = 0
-                        self.labelTitle.textAlignment = .center
-                        self.nextButton.removeFromSuperview()
-                        self.textInput.removeFromSuperview()
-                        self.lockView.removeFromSuperview()
-                        
-                        DispatchQueue.main.async {
+                        UIView.animate(withDuration: 0.2, animations: {
                             
-                            self.securityTable.reloadSections([0], with: .fade)
+                            self.labelTitle.alpha = 0
+                            self.nextButton.alpha = 0
+                            self.textInput.alpha = 0
+                            self.lockView.alpha = 0
+                            
+                        }) { _ in
+                            
+                            self.textInput.text = ""
+                            self.passwordInput.text = ""
+                            self.labelTitle.text = "Unlock"
+                            self.labelTitle.font = UIFont.init(name: "HelveticaNeue-Light", size: 30)
+                            self.labelTitle.alpha = 0
+                            self.labelTitle.textAlignment = .center
+                            self.nextButton.removeFromSuperview()
+                            self.textInput.removeFromSuperview()
+                            self.lockView.removeFromSuperview()
+                            
+                            DispatchQueue.main.async {
+                                
+                                self.securityTable.reloadSections([0], with: .fade)
+                                
+                            }
+                            
+                            displayAlert(viewController: self,
+                                         isError: false,
+                                         message: "Password updated")
                             
                         }
                         
-                        displayAlert(viewController: self,
-                                     isError: false,
-                                     message: "Password updated")
-                        
                     }
                     
+                } else {
+                    
+                    displayAlert(viewController: self, isError: true, message: "error saving password")
                 }
                 
             } else {
@@ -466,9 +470,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
     
     func showUnlockScreen() {
         
-        let keychain = KeychainSwift()
-        
-        if keychain.get("UnlockPassword") != nil {
+        if KeyChain.getData("UnlockPassword") != nil {
             
             DispatchQueue.main.async {
                 
@@ -523,31 +525,48 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
     
     func checkPassword(password: String) {
         
-        let keychain = KeychainSwift()
-        let retrievedPassword = keychain.get("UnlockPassword")
-        
-        if self.passwordInput.text! == retrievedPassword {
+        if let data = KeyChain.getData("UnlockPassword") {
             
-            self.nextButton.removeFromSuperview()
-            
-            UIView.animate(withDuration: 0.2, animations: {
+            if let retrievedPassword = String(bytes: data, encoding: .utf8) {
                 
-                self.passwordInput.alpha = 0
-                self.labelTitle.alpha = 0
+                if self.passwordInput.text! == retrievedPassword {
+                    
+                    self.nextButton.removeFromSuperview()
+                    
+                    UIView.animate(withDuration: 0.2, animations: {
+                        
+                        self.passwordInput.alpha = 0
+                        self.labelTitle.alpha = 0
+                        
+                    }, completion: { _ in
+                        
+                        self.passwordInput.removeFromSuperview()
+                        self.labelTitle.removeFromSuperview()
+                        self.addPassword()
+                        
+                    })
+                    
+                } else {
+                    
+                    displayAlert(viewController: self,
+                                 isError: true,
+                                 message: "Wrong password")
+                }
                 
-            }, completion: { _ in
+            } else {
                 
-                self.passwordInput.removeFromSuperview()
-                self.labelTitle.removeFromSuperview()
-                self.addPassword()
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: "error getting password")
                 
-            })
+            }
             
         } else {
             
             displayAlert(viewController: self,
                          isError: true,
-                         message: "Wrong password")
+                         message: "error getting password")
+            
         }
         
     }

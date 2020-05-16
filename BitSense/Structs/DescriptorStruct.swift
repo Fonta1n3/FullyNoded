@@ -13,18 +13,18 @@ public struct DescriptorStruct: CustomStringConvertible {
     public var description = ""
     
     let label:String
-    let id:String
-    let descriptor:String
+    let id:UUID?
+    let descriptor:Data?
     let range:String
-    let nodeID:String
+    let nodeID:UUID?
     
     init(dictionary: [String:Any]) {
         
-        self.descriptor = dictionary["descriptor"] as? String ?? ""
-        self.label = dictionary["label"] as? String ?? ""
-        self.id = dictionary["id"] as? String ?? ""
-        self.range = dictionary["range"] as? String ?? ""
-        self.nodeID = dictionary["nodeID"] as? String ?? "ooops"
+        descriptor = dictionary["descriptor"] as? Data
+        label = dictionary["label"] as? String ?? ""
+        id = dictionary["id"] as? UUID
+        range = dictionary["range"] as? String ?? ""
+        nodeID = dictionary["nodeID"] as? UUID
         
     }
     

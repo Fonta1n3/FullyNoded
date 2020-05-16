@@ -163,109 +163,82 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
         
     }
     
+    private func encryptedValue(_ decryptedValue: Data) -> Data? {
+        var encryptedValue:Data?
+        Crypto.encryptData(dataToEncrypt: decryptedValue) { encryptedData in
+            if encryptedData != nil {
+                encryptedValue = encryptedData!
+            }
+        }
+        return encryptedValue
+    }
+    
     func importHDMusig() {
         
-        let aes = AESService()
         let cd = CoreDataService()
-        let encDesc = aes.encryptKey(keyToEncrypt: descriptor)
-        let encLabel = aes.encryptKey(keyToEncrypt: label)
-        let encIndex = aes.encryptKey(keyToEncrypt: "\(convertedRange[0])")
-        let encRange = aes.encryptKey(keyToEncrypt: range)
-        let id = randomString(length: 10)
+        guard let encDesc = encryptedValue(descriptor.dataUsingUTF8StringEncoding) else { return }
         
-        cd.retrieveEntity(entityName: .nodes) {
+        let id = UUID()
+        
+        let dict = ["descriptor":encDesc,
+                    "label":label,
+                    "index":Int32(convertedRange[0]),
+                    "range":range,
+                    "id":id] as [String : Any]
+        
+        cd.saveEntity(dict: dict, entityName: .newHdWallets) { [unowned vc = self] in
             
             if !cd.errorBool {
                 
-                let nodes = cd.entities
-                let isActive = isAnyNodeActive(nodes: nodes)
-                var nodeID = ""
+                let success = cd.boolToReturn
                 
-                if isActive {
+                if success {
                     
-                    for node in nodes {
-                        
-                        let active = node["isActive"] as! Bool
-                        
-                        if active {
-                            
-                            nodeID = node["id"] as! String
-                            
-                        }
-                        
-                    }
+                    let descDict = ["descriptor":encDesc,
+                                    "label":vc.label,
+                                    "range":vc.range,
+                                    "id":id] as [String : Any]
                     
-                }
-                
-                let dict = ["descriptor":encDesc,
-                            "label":encLabel,
-                            "index":encIndex,
-                            "range":encRange,
-                            "id":id,
-                            "nodeID":nodeID]
-                
-                cd.saveEntity(dict: dict, entityName: .hdWallets) {
-                    
-                    if !cd.errorBool {
+                    cd.saveEntity(dict: descDict, entityName: .newDescriptors) {
                         
-                        let success = cd.boolToReturn
-                        
-                        if success {
+                        if !cd.errorBool {
                             
-                            let descDict = ["descriptor":encDesc,
-                                            "label":encLabel,
-                                            "range":encRange,
-                                            "id":id,
-                                            "nodeID":nodeID]
+                            let success = cd.boolToReturn
                             
-                            cd.saveEntity(dict: descDict, entityName: .descriptors) {
+                            if success {
                                 
-                                if !cd.errorBool {
-                                    
-                                    let success = cd.boolToReturn
-                                    
-                                    if success {
-                                        
-                                        print("wallet saved")
-                                        
-                                        self.connectingView.addConnectingView(vc: self,
-                                                                              description: "importing 200 BIP32 HD multisig addresses and scripts (index \(self.range)), this can take a little while, sit back and relax 😎")
-                                        
-                                        let params = "[{ \"desc\": \(self.descriptor), \"timestamp\": \(self.timestamp), \"range\": \(self.convertedRange), \"watchonly\": true, \"label\": \"\(self.label)\" }], ''{\"rescan\": true}''"
-                                        
-                                        self.executeNodeCommand(method: .importmulti,
-                                                                param: params)
-                                        
-                                    } else {
-                                        
-                                        displayAlert(viewController: self, isError: true, message: "error saving descriptor: \(cd.errorDescription)")
-                                        
-                                    }
-                                    
-                                } else {
-                                    
-                                    displayAlert(viewController: self, isError: true, message: "error saving descriptor: \(cd.errorDescription)")
-                                    
-                                }
+                                print("wallet saved")
+                                
+                                self.connectingView.addConnectingView(vc: self,
+                                                                      description: "importing 200 BIP32 HD multisig addresses and scripts (index \(self.range)), this can take a little while, sit back and relax 😎")
+                                
+                                let params = "[{ \"desc\": \(self.descriptor), \"timestamp\": \(self.timestamp), \"range\": \(self.convertedRange), \"watchonly\": true, \"label\": \"\(self.label)\" }], ''{\"rescan\": true}''"
+                                
+                                self.executeNodeCommand(method: .importmulti,
+                                                        param: params)
+                                
+                            } else {
+                                
+                                displayAlert(viewController: self, isError: true, message: "error saving descriptor: \(cd.errorDescription)")
                                 
                             }
                             
                         } else {
                             
-                            displayAlert(viewController: self, isError: true, message: "error saving hd wallet: \(cd.errorDescription)")
+                            displayAlert(viewController: self, isError: true, message: "error saving descriptor: \(cd.errorDescription)")
+                            
                         }
-                        
-                    } else {
-                        
-                        displayAlert(viewController: self, isError: true, message: cd.errorDescription)
                         
                     }
                     
+                } else {
+                    
+                    displayAlert(viewController: self, isError: true, message: "error saving hd wallet: \(cd.errorDescription)")
                 }
                 
             } else {
                 
-                displayAlert(viewController: self, isError: true, message: "error getting nodes")
+                displayAlert(viewController: self, isError: true, message: cd.errorDescription)
                 
             }
             
@@ -324,82 +297,43 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
             
         }
         
-        let aes = AESService()
         let cd = CoreDataService()
-        let encDesc = aes.encryptKey(keyToEncrypt: descriptor)
-        let encLabel = aes.encryptKey(keyToEncrypt: label)
-        let encRange = aes.encryptKey(keyToEncrypt: range)
-        let id = randomString(length: 10)
+        guard let encDesc = encryptedValue(descriptor.dataUsingUTF8StringEncoding) else { return }
         
-        cd.retrieveEntity(entityName: .nodes) {
+        let descDict = ["descriptor":encDesc,
+                        "label":label,
+                        "range":range,
+                        "id":UUID()] as [String : Any]
+        
+        cd.saveEntity(dict: descDict, entityName: .newDescriptors) {
             
             if !cd.errorBool {
                 
-                let nodes = cd.entities
-                let isActive = isAnyNodeActive(nodes: nodes)
-                var nodeID = ""
+                let success = cd.boolToReturn
                 
-                if isActive {
+                if success {
                     
-                    for node in nodes {
-                        
-                        let active = node["isActive"] as! Bool
-                        
-                        if active {
-                            
-                            nodeID = node["id"] as! String
-                            
-                        }
-                        
-                    }
+                    print("descriptor saved")
                     
-                }
-                
-                let descDict = ["descriptor":encDesc,
-                                "label":encLabel,
-                                "range":encRange,
-                                "id":id,
-                                "nodeID":nodeID]
-                
-                cd.saveEntity(dict: descDict, entityName: .descriptors) {
+                    self.executeNodeCommand(method: .importmulti,
+                                            param: params)
                     
-                    if !cd.errorBool {
-                        
-                        let success = cd.boolToReturn
-                        
-                        if success {
-                            
-                            print("descriptor saved")
-                            
-                            self.executeNodeCommand(method: .importmulti,
-                                                    param: params)
-                            
-                        } else {
-                            
-                            print("error saving descriptor")
-                            
-                            self.connectingView.removeConnectingView()
-                            
-                            displayAlert(viewController: self,
-                                         isError: true,
-                                         message: "error saving your descriptor: \(cd.errorDescription)")
-                        }
-                        
-                    } else {
-                        
-                        displayAlert(viewController: self,
-                                     isError: true,
-                                     message: "error saving your descriptor: \(cd.errorDescription)")
-                        
-                    }
+                } else {
                     
+                    print("error saving descriptor")
+                    
+                    self.connectingView.removeConnectingView()
+                    
+                    displayAlert(viewController: self,
+                                 isError: true,
+                                 message: "error saving your descriptor: \(cd.errorDescription)")
                 }
                 
             } else {
                 
                 displayAlert(viewController: self,
                              isError: true,
-                             message: "error getting your descriptor from core data")
+                             message: "error saving your descriptor: \(cd.errorDescription)")
                 
             }
             

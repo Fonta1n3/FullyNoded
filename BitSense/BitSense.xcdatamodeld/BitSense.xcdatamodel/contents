@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="15400" systemVersion="19A603" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="15702" systemVersion="19E242d" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="Descriptors" representedClassName="Descriptors" syncable="YES" codeGenerationType="class">
         <attribute name="descriptor" optional="YES" attributeType="String"/>
         <attribute name="id" optional="YES" attributeType="String"/>
@@ -14,6 +14,29 @@
         <attribute name="label" optional="YES" attributeType="String"/>
         <attribute name="nodeID" optional="YES" attributeType="String"/>
         <attribute name="range" optional="YES" attributeType="String"/>
+    </entity>
+    <entity name="NewDescriptors" representedClassName="NewDescriptors" syncable="YES" codeGenerationType="class">
+        <attribute name="descriptor" optional="YES" attributeType="Binary"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="label" optional="YES" attributeType="String"/>
+        <attribute name="range" optional="YES" attributeType="String"/>
+    </entity>
+    <entity name="NewHDWallets" representedClassName="NewHDWallets" syncable="YES" codeGenerationType="class">
+        <attribute name="descriptor" optional="YES" attributeType="Binary"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="index" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="label" optional="YES" attributeType="String"/>
+        <attribute name="range" optional="YES" attributeType="String"/>
+    </entity>
+    <entity name="NewNodes" representedClassName="NewNodes" syncable="YES" codeGenerationType="class">
+        <attribute name="authKey" optional="YES" attributeType="Binary"/>
+        <attribute name="authPubKey" optional="YES" attributeType="Binary"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="isActive" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="label" optional="YES" attributeType="String"/>
+        <attribute name="onionAddress" optional="YES" attributeType="Binary"/>
+        <attribute name="rpcpassword" optional="YES" attributeType="Binary"/>
+        <attribute name="rpcuser" optional="YES" attributeType="Binary"/>
     </entity>
     <entity name="Nodes" representedClassName="Nodes" syncable="YES" codeGenerationType="class">
         <attribute name="authKey" optional="YES" attributeType="String"/>
@@ -38,7 +61,10 @@
     </entity>
     <elements>
         <element name="Descriptors" positionX="-63" positionY="99" width="128" height="120"/>
-        <element name="HDWallets" positionX="-63" positionY="99" width="128" height="135"/>
+        <element name="HDWallets" positionX="-63" positionY="99" width="128" height="133"/>
         <element name="Nodes" positionX="-63" positionY="-18" width="128" height="328"/>
+        <element name="NewNodes" positionX="-54" positionY="135" width="128" height="163"/>
+        <element name="NewHDWallets" positionX="-36" positionY="144" width="128" height="118"/>
+        <element name="NewDescriptors" positionX="-18" positionY="153" width="128" height="103"/>
     </elements>
 </model>

@@ -644,6 +644,8 @@ class ProcessPSBTViewController: UIViewController {
             let amount = output["value"] as! Double
             let number = i + 1
             var addressString = ""
+            let type = scriptpubkey["type"] as? String ?? ""
+            let hex = scriptpubkey["hex"] as? String ?? ""
             
             for a in addresses {
                 
@@ -652,7 +654,18 @@ class ProcessPSBTViewController: UIViewController {
             }
             
             outputTotal += amount
-            outputsString += "Output #\(number):\nAmount: \(amount.avoidNotation)\nAddress: \(addressString)\n\n"
+            outputsString += "Output #\(number):\nAmount: \(amount.avoidNotation)\nAddress: \(addressString)\n"
+            
+            if type == "nulldata" {
+                
+                if hex != "" {
+                    outputsString += "NullData: \(hex)"
+                    
+                }                
+                
+            }
+            
+            outputsString += "\n\n"
             
         }
         

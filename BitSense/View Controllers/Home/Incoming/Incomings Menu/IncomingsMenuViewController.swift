@@ -311,7 +311,7 @@ class IncomingsMenuViewController: UIViewController, UITableViewDelegate, UITabl
                     
                     print("show descriptor")
                     
-                    self.cd.retrieveEntity(entityName: .descriptors) {
+                    self.cd.retrieveEntity(entityName: .newDescriptors) {
                         
                         if !self.cd.errorBool {
                             
@@ -509,66 +509,39 @@ class IncomingsMenuViewController: UIViewController, UITableViewDelegate, UITabl
         p2shSegwit = ud.object(forKey: "p2shSegwit") as? Bool ?? false
         legacy = ud.object(forKey: "legacy") as? Bool ?? false
         
-        cd.retrieveEntity(entityName: .nodes) {
+        cd.retrieveEntity(entityName: .newNodes) { [unowned vc = self] in
             
-            if !self.cd.errorBool {
+            if !vc.cd.errorBool {
                 
-                let nodes = self.cd.entities
-                //only display HDWallets that were imported into this node
-                for nodeDict in nodes {
+                vc.cd.retrieveEntity(entityName: .newHdWallets) { [unowned vc = self] in
                     
-                    let node = NodeStruct(dictionary: nodeDict)
-                    
-                    if node.isActive {
+                    if !vc.cd.errorBool {
                         
-                        let activeNodeID = node.id
+                        vc.wallets = vc.cd.entities
                         
-                        self.cd.retrieveEntity(entityName: .hdWallets) {
-                            
-                            if !self.cd.errorBool {
-                                
-                                let allWallets = self.cd.entities
-                                
-                                for walletDict in allWallets {
-                                    
-                                    let wallet = Wallet(dictionary: walletDict)
-                                    let walletsNodeID = wallet.nodeID
-                                    
-                                    if activeNodeID == walletsNodeID {
-                                        
-                                        self.wallets.append(walletDict)
-                                        
-                                    }
-                                    
-                                }
-                                
-                            } else {
-                                
-                                displayAlert(viewController: self, isError: true, message: "error getting hd wallets from coredata")
-                                
-                            }
-                            
-                        }
+                    } else {
+                        
+                        displayAlert(viewController: vc, isError: true, message: "error getting hd wallets from coredata")
                         
                     }
                     
                 }
                 
-                if self.wallets.count == 1 {
+                if vc.wallets.count == 1 {
                     
-                    self.wallet = self.wallets[0]
+                    vc.wallet = vc.wallets[0]
                     
                 }
                 
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { [unowned vc = self] in
                     
-                    self.incomingsTable.reloadData()
+                    vc.incomingsTable.reloadData()
                     
                 }
                 
             } else {
                 
-                displayAlert(viewController: self, isError: true, message: "error getting nodes from coredata")
+                displayAlert(viewController: vc, isError: true, message: "error getting nodes from coredata")
                 
             }
             
