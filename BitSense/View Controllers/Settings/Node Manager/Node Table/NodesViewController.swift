@@ -36,6 +36,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
             if !vc.cd.errorBool {
                 
+                vc.nodeArray.removeAll()
                 for node in vc.cd.entities {
                     if node["id"] != nil {
                         vc.nodeArray.append(node)
@@ -251,7 +252,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                                     if !vc.cd.errorBool {
                                         
                                         DispatchQueue.main.async { [unowned vc = self] in
-                                            //vc.nodeArray = vc.cd.entities
+                                            vc.nodeArray.removeAll()
                                             for node in vc.cd.entities {
                                                 if node["id"] != nil {
                                                     vc.nodeArray.append(node)
@@ -299,7 +300,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             if !self.cd.errorBool {
                 
                 DispatchQueue.main.async { [unowned vc = self] in
-                    //self.nodeArray = self.cd.entities
+                    vc.nodeArray.removeAll()
                     for node in vc.cd.entities {
                         if node["id"] != nil {
                             vc.nodeArray.append(node)

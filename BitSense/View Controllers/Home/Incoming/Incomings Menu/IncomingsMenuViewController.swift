@@ -234,6 +234,7 @@ class IncomingsMenuViewController: UIViewController, UITableViewDelegate, UITabl
                     case 1:
                         
                         if self.wallets.count > 0 {
+                            print("wallets = \(self.wallets)")
                             
                             if self.wallets.count > 1 {
                                 
@@ -509,41 +510,30 @@ class IncomingsMenuViewController: UIViewController, UITableViewDelegate, UITabl
         p2shSegwit = ud.object(forKey: "p2shSegwit") as? Bool ?? false
         legacy = ud.object(forKey: "legacy") as? Bool ?? false
         
-        cd.retrieveEntity(entityName: .newNodes) { [unowned vc = self] in
+        cd.retrieveEntity(entityName: .newHdWallets) { [unowned vc = self] in
             
             if !vc.cd.errorBool {
                 
-                vc.cd.retrieveEntity(entityName: .newHdWallets) { [unowned vc = self] in
-                    
-                    if !vc.cd.errorBool {
-                        
-                        vc.wallets = vc.cd.entities
-                        
-                    } else {
-                        
-                        displayAlert(viewController: vc, isError: true, message: "error getting hd wallets from coredata")
-                        
+                if vc.cd.entities.count > 0 {
+                   vc.wallets = vc.cd.entities
+                    if vc.wallets.count == 1 {
+                        vc.wallet = vc.wallets[0]
                     }
-                    
-                }
-                
-                if vc.wallets.count == 1 {
-                    
-                    vc.wallet = vc.wallets[0]
-                    
-                }
-                
-                DispatchQueue.main.async { [unowned vc = self] in
-                    
-                    vc.incomingsTable.reloadData()
-                    
                 }
                 
             } else {
                 
-                displayAlert(viewController: vc, isError: true, message: "error getting nodes from coredata")
+                displayAlert(viewController: vc, isError: true, message: "error getting hd wallets from coredata")
                 
             }
+            
+        }
+        
+        
+        
+        DispatchQueue.main.async { [unowned vc = self] in
+            
+            vc.incomingsTable.reloadData()
             
         }
         

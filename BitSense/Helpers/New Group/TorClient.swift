@@ -37,7 +37,6 @@ class TorClient {
     private var controller: TorController?
     private var authDirPath = ""
     private var torDirPath = ""
-    private var v2Auth = ""
     var isRefreshing = false
     
     // The tor url session configuration.
@@ -78,7 +77,6 @@ class TorClient {
                         "SocksPort": "19050 OnionTrafficOnly",
                         "AvoidDiskWrites": "1",
                         "ClientOnionAuthDir": "\(self.authDirPath)",
-                        "HidServAuth": "\(self.v2Auth)",
                         "LearnCircuitBuildTimeout": "1",
                         "NumEntryGuards": "8",
                         "SafeSocks": "1",
@@ -144,8 +142,6 @@ class TorClient {
                                 (type: String, severity: String, action: String, arguments: [String : String]?) -> Bool in
                                 
                                 if arguments != nil {
-                                    
-                                    print("args = \(arguments)")
                                     
                                     if arguments!["PROGRESS"] != nil {
                                         let progress = Int(arguments!["PROGRESS"]!)!
