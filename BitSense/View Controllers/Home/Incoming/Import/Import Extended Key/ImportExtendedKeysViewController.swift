@@ -31,6 +31,7 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
     let connectingView = ConnectingView()
     var isHDMusig = Bool()
     var address = ""
+    @IBOutlet weak var tapToImportOutlet: UIButton!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -210,7 +211,7 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
                                 print("wallet saved")
                                 
                                 self.connectingView.addConnectingView(vc: self,
-                                                                      description: "importing 200 BIP32 HD multisig addresses and scripts (index \(self.range)), this can take a little while, sit back and relax 😎")
+                                                                      description: "importing 2,000 BIP32 HD multisig addresses and scripts (index \(self.range)), this can take a little while, sit back and relax")
                                 
                                 let params = "[{ \"desc\": \(self.descriptor), \"timestamp\": \(self.timestamp), \"range\": \(self.convertedRange), \"watchonly\": true, \"label\": \"\(self.label)\" }], ''{\"rescan\": true}''"
                                 
@@ -255,15 +256,15 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
             //its an xpub
             if bip44 {
                 
-                description = "importing 200 BIP44 keys from xpub (index \(range)), this can take a little while, sit back and relax 😎"
+                description = "importing 2,000 BIP44 keys from xpub (index \(range)), this can take a little while, sit back and relax"
                 
             } else if bip84 {
                 
-                description = "importing 200 BIP84 keys from xpub (index \(range)), this can take a little while, sit back and relax 😎"
+                description = "importing 2,000 BIP84 keys from xpub (index \(range)), this can take a little while, sit back and relax"
                 
             } else if bip32 {
                 
-                description = "importing 200 BIP32 keys from xpub (index \(range)), this can take a little while, sit back and relax 😎"
+                description = "importing 2,000 BIP32 keys from xpub (index \(range)), this can take a little while, sit back and relax"
                 
             }
             
@@ -272,15 +273,15 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
             //its an xprv
             if bip44 {
                 
-                description = "importing 200 BIP44 keys from xprv (index \(range)), this can take a little while, sit back and relax 😎"
+                description = "importing 2,000 BIP44 keys from xprv (index \(range)), this can take a little while, sit back and relax"
                 
             } else if bip84 {
                 
-                description = "importing 200 BIP84 keys from xprv (index \(range)), this can take a little while, sit back and relax 😎"
+                description = "importing 2,000 BIP84 keys from xprv (index \(range)), this can take a little while, sit back and relax"
                 
             } else if bip32 {
                 
-                description = "importing 200 BIP32 keys from xprv (index \(range)), this can take a little while, sit back and relax 😎"
+                description = "importing 2,000 BIP32 keys from xprv (index \(range)), this can take a little while, sit back and relax"
                 
             }
             
@@ -359,10 +360,10 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
                     if success {
                         
                         connectingView.removeConnectingView()
-                        
-                        displayAlert(viewController: self,
-                                     isError: false,
-                                     message: "Sucessfully imported the keys!")
+                        DispatchQueue.main.async { [unowned vc = self] in
+                            vc.tapToImportOutlet.alpha = 0
+                            showAlert(vc: vc, title: "Success!", message: "2,000 keys imported successfully")
+                        }
                         
                     } else {
                         

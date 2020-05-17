@@ -795,7 +795,7 @@
                             </tableView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="0gk-sp-OBF">
                                 <rect key="frame" x="0.0" y="610" width="375" height="57"/>
-                                <color key="backgroundColor" red="0.086786141349999998" green="0.099837237960000005" blue="0.1145145897" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="backgroundColor" systemColor="systemBlueColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="57" id="O6g-sf-lPq"/>
                                 </constraints>
@@ -820,6 +820,7 @@
                     <navigationItem key="navigationItem" title="Keys to Import" id="8RU-Eh-1Ot"/>
                     <connections>
                         <outlet property="keyTable" destination="AHi-sk-wZC" id="yqv-nz-Nxi"/>
+                        <outlet property="tapToImportOutlet" destination="0gk-sp-OBF" id="kkl-SA-1lB"/>
                         <segue destination="Xxg-Pp-vvN" kind="show" identifier="displayKey" id="X76-BN-dSF"/>
                     </connections>
                 </viewController>
@@ -4391,7 +4392,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="cvp-U1-bU5"/>
         <segue reference="XqS-DL-3qc"/>
         <segue reference="YeE-je-QtC"/>
-        <segue reference="GsY-cw-4Ut"/>
+        <segue reference="X76-BN-dSF"/>
         <segue reference="HNI-HG-9ZQ"/>
         <segue reference="4EJ-HI-y5g"/>
         <segue reference="G1i-Bv-OSl"/>

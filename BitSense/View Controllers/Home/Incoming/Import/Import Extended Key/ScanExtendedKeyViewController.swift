@@ -26,6 +26,7 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
     var fingerprint = ""
     var isTestnet = Bool()
     var isWatchOnly = Bool()
+    var isChange = Bool()
     
     var keyArray = NSArray()
     
@@ -164,6 +165,7 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
         if extendedKey != "" {
             
             dict["key"] = extendedKey
+            isChange = dict["addAsChange"] as! Bool
             fingerprint = str.fingerprint
             range = str.range
             isTestnet = str.isTestnet
@@ -342,6 +344,12 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
                 
             }
             
+            if isChange {
+                
+                param = param.replacingOccurrences(of: "/0/*", with: "/1/*")
+                
+            }
+            
         } else {
             
             //treat the xpub as a BIP32 extended key
@@ -444,6 +452,12 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
                     param = "\"\(desc)(wpkh([\(fingerprint)/49h/0h/0h]\(xpub)/0/*))\""
                     
                 }
+                
+            }
+            
+            if isChange {
+                
+                param = param.replacingOccurrences(of: "/0/*", with: "/1/*")
                 
             }
             
