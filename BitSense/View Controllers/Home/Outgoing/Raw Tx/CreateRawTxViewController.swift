@@ -321,14 +321,28 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     // MARK: User Actions
-    @objc func close() {
+    
+    @IBAction func sweep(_ sender: Any) {
         
-        DispatchQueue.main.async {
+        if addressInput.text != "" {
             
-            self.dismiss(animated: true, completion: nil)
-            
+            creatingView.addConnectingView(vc: self, description: "sweeping...")
+            let ud = UserDefaults.standard
+            let rawTransaction = RawTransaction()
+            rawTransaction.numberOfBlocks = ud.object(forKey: "feeTarget") as! Int
+            rawTransaction.addressToPay = addressInput.text!
+            rawTransaction.sweepRawTx { [unowned vc = self] in
+                if !rawTransaction.errorBool {
+                    vc.removeViews()
+                    vc.creatingView.removeConnectingView()
+                    vc.rawTxSigned = rawTransaction.unsignedRawTx
+                    vc.showRaw(raw: vc.rawTxSigned)
+                } else {
+                    vc.creatingView.removeConnectingView()
+                    displayAlert(viewController: vc, isError: true, message: "error sweeping")
+                }
+            }
         }
-        
     }
     
     func configureRawDisplayer() {
@@ -349,16 +363,16 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     func removeViews() {
         
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [unowned vc = self] in
             
-            self.coldSwitchOutlet.removeFromSuperview()
-            self.coldLabel.removeFromSuperview()
-            self.amountInput.removeFromSuperview()
-            self.addressInput.removeFromSuperview()
-            self.amountLabel.removeFromSuperview()
-            self.receivingLabel.removeFromSuperview()
-            self.scanOutlet.removeFromSuperview()
-            self.outputsTable.removeFromSuperview()
+            vc.coldSwitchOutlet.removeFromSuperview()
+            vc.coldLabel.removeFromSuperview()
+            vc.amountInput.removeFromSuperview()
+            vc.addressInput.removeFromSuperview()
+            vc.amountLabel.removeFromSuperview()
+            vc.receivingLabel.removeFromSuperview()
+            vc.scanOutlet.removeFromSuperview()
+            vc.outputsTable.removeFromSuperview()
             
         }
         

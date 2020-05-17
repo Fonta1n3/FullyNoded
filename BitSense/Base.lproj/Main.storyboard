@@ -2553,12 +2553,26 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="hCl-Q8-hd5">
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                             </imageView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DPZ-i4-CIL">
+                                <rect key="frame" x="283.5" y="56" width="75.5" height="21"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="21" id="xcM-5N-Uil"/>
+                                </constraints>
+                                <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <state key="normal" title="sweep" image="paintbrush" catalog="system">
+                                    <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="sweep:" destination="pUo-bf-sNm" eventType="touchUpInside" id="MfD-fA-Tqw"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="0.078040815889835358" green="0.090017892420291901" blue="0.1025182381272316" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="8lb-GZ-xdc" firstAttribute="centerX" secondItem="DIN-Fg-EH6" secondAttribute="centerX" id="254-zV-mrr"/>
                             <constraint firstItem="C0H-pw-RSl" firstAttribute="trailing" secondItem="jXp-xP-J4h" secondAttribute="trailing" constant="16" id="561-gS-kW0"/>
                             <constraint firstItem="WP2-Zk-iPW" firstAttribute="top" secondItem="C0H-pw-RSl" secondAttribute="top" constant="12" id="8py-du-qbt"/>
+                            <constraint firstItem="C0H-pw-RSl" firstAttribute="trailing" secondItem="DPZ-i4-CIL" secondAttribute="trailing" constant="16" id="9N5-Hf-qXF"/>
                             <constraint firstItem="hCl-Q8-hd5" firstAttribute="top" secondItem="DIN-Fg-EH6" secondAttribute="top" id="9aj-Tf-f3P"/>
                             <constraint firstItem="WP2-Zk-iPW" firstAttribute="centerX" secondItem="DIN-Fg-EH6" secondAttribute="centerX" id="Cmx-qB-KyG"/>
                             <constraint firstItem="uIC-Eu-XZD" firstAttribute="top" secondItem="WBT-v4-ipz" secondAttribute="bottom" constant="8" id="DXs-Lg-hVd"/>
@@ -2576,6 +2590,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                             <constraint firstItem="vOa-19-8RX" firstAttribute="leading" secondItem="uIC-Eu-XZD" secondAttribute="leading" id="kHy-kf-yQ0"/>
                             <constraint firstItem="hCl-Q8-hd5" firstAttribute="bottom" secondItem="C0H-pw-RSl" secondAttribute="bottom" id="nv9-qL-otg"/>
                             <constraint firstItem="hCl-Q8-hd5" firstAttribute="trailing" secondItem="C0H-pw-RSl" secondAttribute="trailing" id="sCh-Gb-jd7"/>
+                            <constraint firstItem="DPZ-i4-CIL" firstAttribute="centerY" secondItem="WP2-Zk-iPW" secondAttribute="centerY" id="sLt-DE-ldz"/>
                             <constraint firstItem="C0H-pw-RSl" firstAttribute="trailing" secondItem="WBT-v4-ipz" secondAttribute="trailing" constant="16" id="tJA-8U-bH2"/>
                             <constraint firstItem="jXp-xP-J4h" firstAttribute="top" secondItem="vOa-19-8RX" secondAttribute="bottom" constant="6" id="vC1-SQ-Anu"/>
                             <constraint firstItem="vOa-19-8RX" firstAttribute="leading" secondItem="C0H-pw-RSl" secondAttribute="leading" constant="16" id="vVQ-E1-VyW"/>
@@ -4159,6 +4174,20 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 <color key="textColor" red="0.43343858940000002" green="0.43343858940000002" blue="0.43343858940000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="CPx-UE-tsT">
+                                <rect key="frame" x="279.5" y="51.5" width="79.5" height="30"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="30" id="NbA-BR-gDo"/>
+                                    <constraint firstAttribute="width" constant="79.5" id="zaO-7Z-iZT"/>
+                                </constraints>
+                                <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <state key="normal" title=" sweep" image="paintbrush" catalog="system">
+                                    <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="sweepPsbt:" destination="G5C-vD-tyQ" eventType="touchUpInside" id="ipu-dM-XeC"/>
+                                </connections>
+                            </button>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="vCr-7Z-dxh">
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                             </imageView>
@@ -4169,9 +4198,11 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                             <constraint firstItem="vCr-7Z-dxh" firstAttribute="bottom" secondItem="aqa-1j-651" secondAttribute="bottom" id="8op-u9-OzF"/>
                             <constraint firstItem="xUz-Xh-1yx" firstAttribute="centerX" secondItem="bAm-L1-o99" secondAttribute="centerX" id="DoN-vS-EnR"/>
                             <constraint firstItem="2Fu-M1-6Bz" firstAttribute="leading" secondItem="aqa-1j-651" secondAttribute="leading" constant="16" id="E05-jX-2aI"/>
+                            <constraint firstItem="CPx-UE-tsT" firstAttribute="centerY" secondItem="xUz-Xh-1yx" secondAttribute="centerY" id="GIQ-Mm-OXr"/>
                             <constraint firstItem="aqa-1j-651" firstAttribute="bottom" secondItem="cFM-Ok-gIA" secondAttribute="bottom" constant="19" id="H2P-0T-eBe"/>
                             <constraint firstItem="ELo-E4-X4f" firstAttribute="leading" secondItem="aqa-1j-651" secondAttribute="leading" constant="16" id="Jhw-Pw-znl"/>
                             <constraint firstItem="Esl-hp-4WM" firstAttribute="leading" secondItem="aqa-1j-651" secondAttribute="leading" constant="16" id="NaG-ko-Naw"/>
+                            <constraint firstItem="aqa-1j-651" firstAttribute="trailing" secondItem="CPx-UE-tsT" secondAttribute="trailing" constant="16" id="Q7M-yx-trr"/>
                             <constraint firstItem="cFM-Ok-gIA" firstAttribute="top" secondItem="NyG-3E-bnG" secondAttribute="bottom" constant="8" id="ThB-Ni-Uye"/>
                             <constraint firstItem="2Fu-M1-6Bz" firstAttribute="top" secondItem="xUz-Xh-1yx" secondAttribute="bottom" constant="8" id="TrD-cX-HlG"/>
                             <constraint firstItem="vCr-7Z-dxh" firstAttribute="trailing" secondItem="aqa-1j-651" secondAttribute="trailing" id="V0t-bW-DQf"/>
@@ -4394,6 +4425,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <image name="Settings" width="30" height="30"/>
         <image name="chevron.right" catalog="system" width="48" height="64"/>
         <image name="info.circle" catalog="system" width="64" height="60"/>
+        <image name="paintbrush" catalog="system" width="64" height="64"/>
         <image name="qrcode.viewfinder" catalog="system" width="64" height="56"/>
         <image name="whiteCheck.png" width="2048" height="2048"/>
     </resources>

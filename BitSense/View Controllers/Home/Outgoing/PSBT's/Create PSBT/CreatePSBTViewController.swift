@@ -77,8 +77,7 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
             let amountToSend = Double(amountField.text!)!
             let receivingAddress = receivingField.text!
             
-            creatingView.addConnectingView(vc: self,
-                                           description: "creating wallet funded psbt")
+            creatingView.addConnectingView(vc: self, description: "creating wallet funded psbt")
             
             let feeTarget = UserDefaults.standard.object(forKey: "feeTarget") as! Int
             let output = "[{\"\(receivingAddress)\":\(amountToSend)}]"
@@ -95,6 +94,82 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
             
         }
         
+    }
+    
+    @IBAction func sweepPsbt(_ sender: Any) {
+        
+        if receivingField.text != "" {
+            creatingView.addConnectingView(vc: self, description: "sweeping...")
+            let receivingAddress = receivingField.text!
+            let reducer = Reducer()
+            reducer.makeCommand(command: .listunspent, param: "0") { [unowned vc = self] in
+                
+                let resultArray = reducer.arrayToReturn
+                var inputArray = [Any]()
+                var inputs = ""
+                var amount = Double()
+                var spendFromCold = Bool()
+                
+                for utxo in resultArray {
+                    let utxoDict = utxo as! NSDictionary
+                    let txid = utxoDict["txid"] as! String
+                    let vout = "\(utxoDict["vout"] as! Int)"
+                    let spendable = utxoDict["spendable"] as! Bool
+                    if !spendable {
+                        spendFromCold = true
+                    }
+                    
+                    amount += utxoDict["amount"] as! Double
+                    
+                    let input = "{\"txid\":\"\(txid)\",\"vout\": \(vout),\"sequence\": 1}"
+                    inputArray.append(input)
+                }
+                
+                func processInputs() {
+                    inputs = inputArray.description
+                    inputs = inputs.replacingOccurrences(of: "[\"", with: "[")
+                    inputs = inputs.replacingOccurrences(of: "\"]", with: "]")
+                    inputs = inputs.replacingOccurrences(of: "\"{", with: "{")
+                    inputs = inputs.replacingOccurrences(of: "}\"", with: "}")
+                    inputs = inputs.replacingOccurrences(of: "\\", with: "")
+                }
+                
+                processInputs()
+                
+                let ud = UserDefaults.standard
+                let param = "''\(inputs)'', ''{\"\(receivingAddress)\":\(amount)}'', 0, ''{\"includeWatching\": \(spendFromCold), \"replaceable\": true, \"conf_target\": \(ud.object(forKey: "feeTarget") as! Int), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
+                reducer.makeCommand(command: .walletcreatefundedpsbt, param: param) {
+                    
+                    let result = reducer.dictToReturn
+                    let psbt1 = result["psbt"] as! String
+                    
+                    reducer.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt1)\"") { [unowned vc = self] in
+                        let dict = reducer.dictToReturn
+                        let isComplete = dict["complete"] as! Bool
+                        let processedPSBT = dict["psbt"] as! String
+                        vc.removeViews()
+                        vc.creatingView.removeConnectingView()
+                        vc.displayRaw(raw: processedPSBT)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [unowned vc = self] in
+                            
+                            if isComplete {
+                                
+                                displayAlert(viewController: vc,
+                                             isError: false,
+                                             message: "psbt is complete")
+                                
+                            } else {
+                                
+                                displayAlert(viewController: vc,
+                                             isError: true,
+                                             message: "psbt is incomplete")
+                                
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
     
     override func viewDidLoad() {

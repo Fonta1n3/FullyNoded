@@ -265,4 +265,67 @@ class RawTransaction {
         
     }
     
+    func sweepRawTx(completion: @escaping () -> Void) {
+        
+        let reducer = Reducer()
+        reducer.makeCommand(command: .listunspent, param: "0") {
+            
+            let resultArray = reducer.arrayToReturn
+            var inputArray = [Any]()
+            var inputs = ""
+            var amount = Double()
+            var spendFromCold = Bool()
+            
+            for utxo in resultArray {
+                let utxoDict = utxo as! NSDictionary
+                let txid = utxoDict["txid"] as! String
+                let vout = "\(utxoDict["vout"] as! Int)"
+                let spendable = utxoDict["spendable"] as! Bool
+                if !spendable {
+                    spendFromCold = true
+                }
+                
+                amount += utxoDict["amount"] as! Double
+                
+                let input = "{\"txid\":\"\(txid)\",\"vout\": \(vout),\"sequence\": 1}"
+                inputArray.append(input)
+            }
+            
+            func processInputs() {
+                inputs = inputArray.description
+                inputs = inputs.replacingOccurrences(of: "[\"", with: "[")
+                inputs = inputs.replacingOccurrences(of: "\"]", with: "]")
+                inputs = inputs.replacingOccurrences(of: "\"{", with: "{")
+                inputs = inputs.replacingOccurrences(of: "}\"", with: "}")
+                inputs = inputs.replacingOccurrences(of: "\\", with: "")
+            }
+            
+            processInputs()
+            
+            let receiver = "\"\(self.addressToPay)\":\(amount)"
+            let param = "''\(inputs)'', ''{\(receiver)}'', 0, true"
+            reducer.makeCommand(command: .createrawtransaction, param: param) { [unowned vc = self] in
+                
+                let unsignedRawTx1 = reducer.stringToReturn
+                
+                let param = "\"\(unsignedRawTx1)\", { \"includeWatching\":\(spendFromCold), \"subtractFeeFromOutputs\":[0], \"changeAddress\": \"\(self.addressToPay)\", \"replaceable\": true, \"conf_target\": \(vc.numberOfBlocks) }"
+                
+                reducer.makeCommand(command: .fundrawtransaction, param: param) { [unowned vc = self] in
+                    
+                    let result = reducer.dictToReturn
+                    if spendFromCold {
+                        vc.unsignedRawTx = result["hex"] as! String
+                        completion()
+                    } else {
+                        reducer.makeCommand(command: .signrawtransactionwithwallet, param: "\"\(result["hex"] as! String)\"") { [unowned vc = self] in
+                            let dict = reducer.dictToReturn
+                            vc.signedRawTx = dict["hex"] as! String
+                            completion()
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
 }
