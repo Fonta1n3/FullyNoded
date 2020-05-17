@@ -17,6 +17,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     var newNode = [String:Any]()
     var isInitialLoad = Bool()
     
+    @IBOutlet weak var headerLabel: UILabel!
     @IBOutlet var nodeLabel: UITextField!
     @IBOutlet var rpcUserField: UITextField!
     @IBOutlet var rpcPassword: UITextField!
@@ -127,18 +128,13 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         rpcPassword.delegate = self
         rpcUserField.delegate = self
         rpcPassword.isSecureTextEntry = true
+        headerLabel.adjustsFontSizeToFitWidth = true
         
     }
     
     override func viewDidAppear(_ animated: Bool) {
         
         loadValues()
-        
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-
-        rpcPassword.text = ""
         
     }
     

@@ -227,7 +227,10 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             cd.update(id: str.id!, keyToUpdate: "isActive", newValue: selectedSwitch.isOn, entity: .newNodes) { [unowned vc = self] success in
                 if success {
                     
-                    vc.removeWalletReloadTable()
+                    vc.ud.removeObject(forKey: "walletName")
+                    if vc.nodeArray.count == 1 {
+                        vc.reloadTable()
+                    }
                     
                 } else {
                     
@@ -259,6 +262,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                                                 }
                                             }
                                             vc.nodeTable.reloadData()
+                                            NotificationCenter.default.post(name: .refreshHome, object: nil, userInfo: nil)
                                         }
                                         
                                     } else {
@@ -290,10 +294,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
     }
     
-    func removeWalletReloadTable() {
-        print("removeWalletReloadTable")
-        
-        ud.removeObject(forKey: "walletName")
+    func reloadTable() {
         
         cd.retrieveEntity(entityName: .newNodes) {
             

@@ -24,6 +24,7 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
     var scanningAuthKey = Bool()
     var scanningOnion = Bool()
 
+    @IBOutlet weak var headerLabel: UILabel!
     @IBOutlet var onionAddressField: UITextField!
     @IBOutlet var saveButton: UIButton!
     @IBOutlet var authKeyField: UITextField!
@@ -33,18 +34,46 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
     @IBOutlet var generateButtonOutlet: UIButton!
     
     @IBAction func generateKeyPair(_ sender: Any) {
-        
         DispatchQueue.main.async {
-        
+            
             let keygen = KeyGen()
             keygen.generate { [unowned vc = self] (pubkey, privkey) in
                 
                 vc.pubkeyTextView.addGestureRecognizer(vc.tapTextViewGesture)
-                vc.generateButtonOutlet.alpha = 0
                 vc.pubkeyTextView.text = "descriptor:x25519:" + pubkey
                 vc.authKeyField.text = privkey
                 vc.pubkeyDescription.alpha = 1
                 vc.pubkeyLabel.alpha = 1
+                
+                let privKeyData = (vc.authKeyField.text)!.dataUsingUTF8StringEncoding
+                let pubKeyData = (vc.pubkeyTextView.text)!.dataUsingUTF8StringEncoding
+                
+                guard let encryptedPrivKey = vc.encryptedValue(privKeyData) else {
+                    return
+                }
+                guard let encryptedPubKey = vc.encryptedValue(pubKeyData) else {
+                    return
+                }
+                
+                let node = NodeStruct(dictionary: vc.selectedNode)
+                
+                vc.cd.update(id: node.id!, keyToUpdate: "authKey", newValue: encryptedPrivKey, entity: .newNodes) { [unowned vc = self] success in
+                    if success {
+                        vc.cd.update(id: node.id!, keyToUpdate: "authPubKey", newValue: encryptedPubKey, entity: .newNodes) { [unowned vc = self] success in
+                            if success {
+                                DispatchQueue.main.async {
+                                    vc.pubkeyTextView.addGestureRecognizer(vc.tapTextViewGesture)
+                                    vc.generateButtonOutlet.setTitle("refresh V3 auth key pair", for: .normal)
+                                }
+                                displayAlert(viewController: vc, isError: false, message: "Auth keys updated!")
+                            } else {
+                                displayAlert(viewController: vc, isError: true, message: "Error updating node")
+                            }
+                        }
+                    } else {
+                        displayAlert(viewController: self, isError: true, message: "Error updating node")
+                    }
+                }
                 
             }
             
@@ -109,18 +138,17 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
         
     }
     
+    private func encryptedValue(_ decryptedValue: Data) -> Data? {
+        var encryptedValue:Data?
+        Crypto.encryptData(dataToEncrypt: decryptedValue) { encryptedData in
+            if encryptedData != nil {
+                encryptedValue = encryptedData!
+            }
+        }
+        return encryptedValue
+    }
     
     @IBAction func saveAction(_ sender: Any) {
-        
-        func encryptedValue(_ decryptedValue: Data) -> Data? {
-            var encryptedValue:Data?
-            Crypto.encryptData(dataToEncrypt: decryptedValue) { encryptedData in
-                if encryptedData != nil {
-                    encryptedValue = encryptedData!
-                }
-            }
-            return encryptedValue
-        }
         
         if createNew {
             
@@ -140,34 +168,41 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
                 
                 newNode["onionAddress"] = encryptedOnionAddress
                 newNode["id"] = UUID()
-                
-                cd.saveEntity(dict: newNode, entityName: .newNodes) { [unowned vc = self] in
-                    
-                    if !vc.cd.errorBool {
+                var refresh = false
+                cd.retrieveEntity(entityName: .newNodes) { [unowned vc = self] in
+                    if vc.cd.entities.count == 0 {
+                        vc.newNode["isActive"] = true
+                        refresh = true
+                    } else {
+                        vc.newNode["isActive"] = false
+                    }
+                    vc.cd.saveEntity(dict: vc.newNode, entityName: .newNodes) { [unowned vc = self] in
                         
-                        let success = vc.cd.boolToReturn
-                        
-                        if success {
+                        if !vc.cd.errorBool {
                             
-                            displayAlert(viewController: vc,
-                                         isError: false,
-                                         message: "Tor node saved")
+                            let success = vc.cd.boolToReturn
+                            
+                            if success {
+                                
+                                if refresh {
+                                    NotificationCenter.default.post(name: .refreshHome, object: nil)
+                                    displayAlert(viewController: vc, isError: false, message: "Tor node saved, we are now refreshing the home screen automatically.")
+                                } else {
+                                    displayAlert(viewController: vc, isError: false, message: "Tor node saved")
+                                }
+                                
+                            } else {
+                                
+                                displayAlert(viewController: vc, isError: true, message: "Error saving tor node")
+                                
+                            }
                             
                         } else {
                             
-                            displayAlert(viewController: vc,
-                                         isError: true,
-                                         message: "Error saving tor node")
-                            
+                            displayAlert(viewController: vc, isError: true, message: vc.cd.errorDescription)
                         }
                         
-                    } else {
-                        
-                        displayAlert(viewController: vc,
-                                     isError: true,
-                                     message: vc.cd.errorDescription)
                     }
-                    
                 }
                 
             } else {
@@ -225,9 +260,9 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
                 guard let encryptedOnionAddress = encryptedValue(decryptedAddress) else { return }
                 cd.update(id: node.id!, keyToUpdate: "onionAddress", newValue: encryptedOnionAddress, entity: .newNodes) { [unowned vc = self] success in
                     if success {
-                        displayAlert(viewController: self, isError: false, message: "Node updated!")
+                        displayAlert(viewController: vc, isError: false, message: "Node updated!")
                     } else {
-                        displayAlert(viewController: self, isError: true, message: "Error updating node!")
+                        displayAlert(viewController: vc, isError: true, message: "Error updating node!")
                     }
                 }
                 
@@ -264,6 +299,7 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
         onionAddressField.isSecureTextEntry = true
         authKeyField.delegate = self
         authKeyField.isSecureTextEntry = true
+        headerLabel.adjustsFontSizeToFitWidth = true
         
         configureScanner()
         

@@ -9,6 +9,22 @@
 import Foundation
 import UIKit
 
+public func showAlert(vc: UIViewController, title: String, message: String) {
+    
+    DispatchQueue.main.async {
+        
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in }))
+        vc.present(alert, animated: true, completion: nil)
+        
+    }
+    
+}
+
+extension Notification.Name {
+    public static let refreshHome = Notification.Name(rawValue: "refreshHome")
+}
+
 public extension Data {
     var utf8:String {
         if let string = String(bytes: self, encoding: .utf8) {

@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import KeychainSwift
 
 class MainMenuViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITabBarControllerDelegate, UINavigationControllerDelegate, OnionManagerDelegate {
     
@@ -67,7 +66,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         showUnlockScreen()
         addlaunchScreen()
         existingWallet = ud.object(forKey: "walletName") as? String ?? ""
-        //setEncryptionKey()
+        NotificationCenter.default.addObserver(self, selector: #selector(refreshHome), name: .refreshHome, object: nil)
         
     }
     
@@ -108,6 +107,10 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         spinner.startAnimating()
         spinner.alpha = 1
         
+    }
+    
+    @objc func refreshHome() {
+        loadTable()
     }
     
     private func loadTable() {
@@ -239,10 +242,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func showUnlockScreen() {
-        
-        let keychain = KeychainSwift()
-        
-        if keychain.get("UnlockPassword") != nil {
+                
+        if KeyChain.getData("UnlockPassword") != nil {
             
             DispatchQueue.main.async {
                 

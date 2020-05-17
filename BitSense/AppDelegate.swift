@@ -8,7 +8,6 @@
 
 import UIKit
 import CoreData
-import KeychainSwift
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -80,11 +79,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationWillEnterForeground(_ application: UIApplication) {
         // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
         
-        print("applicationWillEnterForeground")
-        
-        let keychain = KeychainSwift()
-        
-        if keychain.get("UnlockPassword") != nil {
+        if KeyChain.getData("UnlockPassword") != nil {
             
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
             let loginVC = storyboard.instantiateViewController(withIdentifier: "LogIn")

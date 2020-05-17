@@ -30,7 +30,6 @@
 		D02958D3234F82E000ED8F72 /* IdentityViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02958D2234F82E000ED8F72 /* IdentityViewController.swift */; };
 		D02958D5235053B300ED8F72 /* SecurityCenterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02958D4235053B300ED8F72 /* SecurityCenterViewController.swift */; };
 		D02C940B240DF0F000EE2177 /* CryptoSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FBC22AE1B3000DBBFC2 /* CryptoSwift.framework */; platformFilter = ios; };
-		D02C940E240DF0F300EE2177 /* KeychainSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FBA22AE1B2B00DBBFC2 /* KeychainSwift.framework */; platformFilter = ios; };
 		D02C9410240DF0F500EE2177 /* Tor.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FB822ACB7D100DBBFC2 /* Tor.framework */; platformFilter = ios; };
 		D02FE43323136A600048F8C4 /* NodeLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02FE43223136A600048F8C4 /* NodeLogic.swift */; };
 		D02FE4362313882F0048F8C4 /* HomeTableStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02FE4352313882F0048F8C4 /* HomeTableStruct.swift */; };
@@ -216,7 +215,6 @@
 		D084960322EBCD3B003FE8EB /* GetInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetInfoViewController.swift; sourceTree = "<group>"; };
 		D084960522EC0A94003FE8EB /* LICENSE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
 		D0855FB822ACB7D100DBBFC2 /* Tor.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Tor.framework; path = Carthage/Build/iOS/Tor.framework; sourceTree = "<group>"; };
-		D0855FBA22AE1B2B00DBBFC2 /* KeychainSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = KeychainSwift.framework; path = Carthage/Build/iOS/KeychainSwift.framework; sourceTree = "<group>"; };
 		D0855FBC22AE1B3000DBBFC2 /* CryptoSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CryptoSwift.framework; path = Carthage/Build/iOS/CryptoSwift.framework; sourceTree = "<group>"; };
 		D0855FC522B08EE000DBBFC2 /* TorClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TorClient.swift; path = "../New Group/TorClient.swift"; sourceTree = "<group>"; };
 		D0855FC722B0C71900DBBFC2 /* CreatePSBTViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePSBTViewController.swift; sourceTree = "<group>"; };
@@ -270,7 +268,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D02C9410240DF0F500EE2177 /* Tor.framework in Frameworks */,
-				D02C940E240DF0F300EE2177 /* KeychainSwift.framework in Frameworks */,
 				D02C940B240DF0F000EE2177 /* CryptoSwift.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -783,7 +780,6 @@
 			isa = PBXGroup;
 			children = (
 				D0855FBC22AE1B3000DBBFC2 /* CryptoSwift.framework */,
-				D0855FBA22AE1B2B00DBBFC2 /* KeychainSwift.framework */,
 				D0855FB822ACB7D100DBBFC2 /* Tor.framework */,
 			);
 			name = Frameworks;
@@ -1003,7 +999,6 @@
 			inputPaths = (
 				"$(SRCROOT)/Carthage/Build/iOS/Tor.framework",
 				"$(SRCROOT)/Carthage/Build/iOS/CryptoSwift.framework",
-				"$(SRCROOT)/Carthage/Build/iOS/KeychainSwift.framework",
 			);
 			outputPaths = (
 			);

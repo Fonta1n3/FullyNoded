@@ -217,6 +217,16 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
         privateKeyField.delegate = self
         unsignedTextView.delegate = self
         
+        unsignedTextView.clipsToBounds = true
+        unsignedTextView.layer.cornerRadius = 8
+        unsignedTextView.layer.borderWidth = 1.0
+        unsignedTextView.layer.borderColor = UIColor.darkGray.cgColor
+        
+        scriptTextView.clipsToBounds = true
+        scriptTextView.layer.cornerRadius = 8
+        scriptTextView.layer.borderWidth = 1.0
+        scriptTextView.layer.borderColor = UIColor.darkGray.cgColor
+        
         switchOutlet.isOn = false
         
         let tapGesture = UITapGestureRecognizer(target: self,

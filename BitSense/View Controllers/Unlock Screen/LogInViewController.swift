@@ -9,7 +9,6 @@
 //need to copy account creation to create account view controller
 
 import UIKit
-import KeychainSwift
 import LocalAuthentication
 
 class LogInViewController: UIViewController, UITextFieldDelegate {
@@ -196,10 +195,10 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
 
     func checkPassword(password: String) {
         
-        let keychain = KeychainSwift()
- 
-        let retrievedPassword = keychain.get("UnlockPassword")
-        
+        if let passwordData = KeyChain.getData("UnlockPassword") {
+            
+            let retrievedPassword = passwordData.utf8
+            
             if self.passwordInput.text! == retrievedPassword {
                 
                 self.touchIDButton.removeFromSuperview()
@@ -227,7 +226,9 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
                 
                 displayAlert(viewController: self, isError: true, message: "Wrong password")
             }
-    
+            
+        }
+        
     }
     
     func unlock() {

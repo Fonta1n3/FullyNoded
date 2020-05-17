@@ -185,7 +185,7 @@ class WalletCreatorViewController: UIViewController, UITextFieldDelegate {
             
             displayAlert(viewController: self,
                          isError: false,
-                         message: "Succesfully created \"\(name)\"")
+                         message: "Succesfully created \"\(name)\", we are now refreshing your home screen.")
             
         } else {
             
@@ -196,6 +196,8 @@ class WalletCreatorViewController: UIViewController, UITextFieldDelegate {
                          message: "\"\(name)\" created with warning: \(warning)")
             
         }
+        
+        NotificationCenter.default.post(name: .refreshHome, object: nil)
         
         DispatchQueue.main.async {
             

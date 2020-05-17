@@ -106,7 +106,9 @@ class KillSwitch {
         
         let _ = KeyChain.remove(key: "UnlockPassword")
         
-        if KeyChain.remove(key: "AESPassword") {
+        let _ = KeyChain.remove(key: KeychainKeys.privateKey.rawValue)
+        
+        if KeyChain.remove(key: KeychainKeys.aesPassword.rawValue) {
             
             boolToReturn = true
             

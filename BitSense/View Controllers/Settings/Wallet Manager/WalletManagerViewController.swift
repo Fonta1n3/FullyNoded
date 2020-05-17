@@ -46,17 +46,19 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
         
     }
     
+    @IBAction func infoButtonAction(_ sender: Any) {
+        
+        showAlert(vc: self, title: "Wallet Manager Info", message: "Your node can have many \"loaded\" or \"unloaded\" wallets. In order to work with a specific wallet you need to ensure it is loaded. To unload and load wallets simply tap them.\n\nLoading a wallet will trigger your home screen to refresh and subsequently fires off many node commands so please do not attempt to load many wallets for no reason.\n\nFullyNoded will remember the wallet you last loaded and work with that wallet.\n\nFor best results unload all wallets, then load the one you want to work with.\n\nTo use the default wallet just unload all wallets. Bitcoin Core does not allow you to unload or load the default wallet, it happens implicitly.")
+        
+    }
+    
+    
     func refresh() {
-        
-        DispatchQueue.main.async {
-            
-            self.activeWallets.removeAll()
-            self.inactiveWallets.removeAll()
-            
-            self.executeNodeCommand(method: .listwallets, param: "")
-            
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.activeWallets.removeAll()
+            vc.inactiveWallets.removeAll()
+            vc.executeNodeCommand(method: .listwallets, param: "")
         }
-        
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -125,11 +127,11 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
         
         if section == 0 {
             
-            return "ACTIVE WALLETS"
+            return "LOADED WALLETS"
             
         } else {
             
-            return "INACTIVE WALLETS"
+            return "UNLOADED WALLETS"
             
         }
         
@@ -304,6 +306,9 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
                     }
                     
                     refresh()
+                    NotificationCenter.default.post(name: .refreshHome, object: nil, userInfo: nil)
+                    
+                    displayAlert(viewController: self, isError: false, message: "Wallet loaded, we are now refreshing the home screen.")
                     
                 case BTC_CLI_COMMAND.listwalletdir:
                     
