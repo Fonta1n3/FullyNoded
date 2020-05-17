@@ -1367,7 +1367,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="dl6-kT-n5U">
-                                <rect key="frame" x="16" y="194.5" width="343" height="401.5"/>
+                                <rect key="frame" x="16" y="194.5" width="343" height="339"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="separatorColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
@@ -1457,6 +1457,15 @@
                                     <action selector="p2shAction:" destination="JId-gB-rZm" eventType="valueChanged" id="6f6-At-1kl"/>
                                 </connections>
                             </switch>
+                            <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Ocm-ZW-43a">
+                                <rect key="frame" x="163" y="541.5" width="51" height="31"/>
+                            </switch>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="BIP67" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eFy-x7-DHb">
+                                <rect key="frame" x="167" y="575" width="42" height="16"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="aRv-9P-qNd">
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                             </imageView>
@@ -1465,8 +1474,9 @@
                         <constraints>
                             <constraint firstItem="HmL-hZ-cS7" firstAttribute="centerX" secondItem="J5x-mV-LUR" secondAttribute="centerX" id="0oH-tK-zzc"/>
                             <constraint firstItem="Ipt-O5-aIz" firstAttribute="top" secondItem="76u-7D-qkH" secondAttribute="top" constant="55" id="39e-Vy-Fqg"/>
-                            <constraint firstItem="7zp-aM-jt6" firstAttribute="top" secondItem="dl6-kT-n5U" secondAttribute="bottom" constant="7" id="5iI-af-8oO"/>
+                            <constraint firstItem="eFy-x7-DHb" firstAttribute="top" secondItem="Ocm-ZW-43a" secondAttribute="bottom" constant="8" id="5UU-oe-5Lu"/>
                             <constraint firstItem="blF-yu-Rg6" firstAttribute="top" secondItem="TIe-1I-w5A" secondAttribute="bottom" constant="8" id="6Gt-vV-6JY"/>
+                            <constraint firstItem="Ocm-ZW-43a" firstAttribute="top" secondItem="dl6-kT-n5U" secondAttribute="bottom" constant="8" id="8Vu-WV-wng"/>
                             <constraint firstItem="76u-7D-qkH" firstAttribute="trailing" secondItem="TIe-1I-w5A" secondAttribute="trailing" constant="16" id="CDG-2L-DO8"/>
                             <constraint firstItem="0WY-jv-arT" firstAttribute="centerX" secondItem="7zp-aM-jt6" secondAttribute="centerX" id="DNZ-Cq-ICb"/>
                             <constraint firstItem="76u-7D-qkH" firstAttribute="bottom" secondItem="0WY-jv-arT" secondAttribute="bottom" constant="10" id="Ddi-sz-37x"/>
@@ -1474,12 +1484,15 @@
                             <constraint firstItem="Ipt-O5-aIz" firstAttribute="centerX" secondItem="0d1-Xx-huc" secondAttribute="centerX" id="Hqk-u4-Tlu"/>
                             <constraint firstItem="zzm-jD-RHm" firstAttribute="top" secondItem="Ipt-O5-aIz" secondAttribute="bottom" constant="8" id="KNZ-5l-56H"/>
                             <constraint firstItem="aRv-9P-qNd" firstAttribute="bottom" secondItem="76u-7D-qkH" secondAttribute="bottom" id="KRr-kc-Cg4"/>
+                            <constraint firstItem="eFy-x7-DHb" firstAttribute="centerX" secondItem="0d1-Xx-huc" secondAttribute="centerX" id="MZr-kV-TcH"/>
                             <constraint firstItem="TIe-1I-w5A" firstAttribute="centerY" secondItem="J5x-mV-LUR" secondAttribute="centerY" id="Osr-td-vh6"/>
                             <constraint firstItem="dl6-kT-n5U" firstAttribute="leading" secondItem="76u-7D-qkH" secondAttribute="leading" constant="16" id="SQQ-02-oMk"/>
                             <constraint firstItem="7zp-aM-jt6" firstAttribute="centerX" secondItem="0d1-Xx-huc" secondAttribute="centerX" id="Vx3-Er-89M"/>
                             <constraint firstItem="0WY-jv-arT" firstAttribute="top" secondItem="7zp-aM-jt6" secondAttribute="bottom" constant="8" id="W2t-1F-Y83"/>
                             <constraint firstItem="aRv-9P-qNd" firstAttribute="trailing" secondItem="76u-7D-qkH" secondAttribute="trailing" id="Xoc-4x-tgB"/>
+                            <constraint firstItem="Ocm-ZW-43a" firstAttribute="centerX" secondItem="0d1-Xx-huc" secondAttribute="centerX" id="f52-Mx-NAN"/>
                             <constraint firstItem="76u-7D-qkH" firstAttribute="trailing" secondItem="dl6-kT-n5U" secondAttribute="trailing" constant="16" id="iTm-SK-ADC"/>
+                            <constraint firstItem="7zp-aM-jt6" firstAttribute="top" secondItem="eFy-x7-DHb" secondAttribute="bottom" constant="8" id="mZK-8A-S5h"/>
                             <constraint firstItem="J5x-mV-LUR" firstAttribute="leading" secondItem="76u-7D-qkH" secondAttribute="leading" constant="16" id="tFb-dz-JdT"/>
                             <constraint firstItem="blF-yu-Rg6" firstAttribute="centerX" secondItem="TIe-1I-w5A" secondAttribute="centerX" id="vb1-1q-ge0"/>
                             <constraint firstItem="aRv-9P-qNd" firstAttribute="leading" secondItem="76u-7D-qkH" secondAttribute="leading" id="wIJ-ks-k8r"/>
@@ -1507,6 +1520,7 @@
                         </rightBarButtonItems>
                     </navigationItem>
                     <connections>
+                        <outlet property="bip67" destination="Ocm-ZW-43a" id="anN-ve-YPB"/>
                         <outlet property="imageView" destination="aRv-9P-qNd" id="1rZ-tv-pzy"/>
                         <outlet property="p2shSwitchOutlet" destination="J5x-mV-LUR" id="Ap6-HH-EQx"/>
                         <outlet property="p2shp2wshOutlet" destination="7zp-aM-jt6" id="suA-Q1-eHv"/>
@@ -1519,7 +1533,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="nO8-Xl-WIl" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-7046" y="4146"/>
+            <point key="canvasLocation" x="-7047.1999999999998" y="4145.577211394303"/>
         </scene>
         <!--Import Priv Key View Controller-->
         <scene sceneID="NBE-TR-iyD">
@@ -4390,7 +4404,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="XQE-Ek-uZu"/>
         <segue reference="IVc-aG-8QZ"/>
         <segue reference="cvp-U1-bU5"/>
-        <segue reference="XqS-DL-3qc"/>
+        <segue reference="Fot-Mg-W3G"/>
         <segue reference="YeE-je-QtC"/>
         <segue reference="X76-BN-dSF"/>
         <segue reference="HNI-HG-9ZQ"/>

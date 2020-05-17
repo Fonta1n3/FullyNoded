@@ -43,6 +43,9 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
     
     var isHD = false
     
+    @IBOutlet weak var bip67: UISwitch!
+    
+    
     @IBAction func p2shAction(_ sender: Any) {
         
         if p2shSwitchOutlet.isOn {
@@ -139,7 +142,7 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
                 
             }
             
-            createMultiSig()
+            getHDMusigDescriptor()
             
         } else {
             
@@ -148,45 +151,6 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
             displayAlert(viewController: self,
                          isError: true,
                          message: "You need to fill out all the info first...")
-            
-        }
-        
-    }
-    
-    func createMultiSig() {
-        
-        let sigsRequired = signaturesField.text!
-        
-        var type = ""
-        
-        if p2sh {
-            
-            type = "\"legacy\""
-            
-        }
-        
-        if p2wsh {
-            
-            type = "\"bech32\""
-            
-        }
-        
-        if p2shP2wsh {
-            
-            type = "\"p2sh-segwit\""
-            
-        }
-        
-        if !isHD {
-            
-            let param = "\(sigsRequired), \(pubKeyArray), \(type)"
-            
-            executeNodeCommandSsh(method: .createmultisig,
-                                  param: param)
-            
-        } else {
-            
-            getHDMusigDescriptor()
             
         }
         
@@ -212,6 +176,7 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
         configureScanner()
         
         getSettings()
+        bip67.setOn(true, animated: false)
         
     }
     
@@ -520,6 +485,12 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
             
         }
         
+        if bip67.isOn {
+            
+            descriptor = descriptor.replacingOccurrences(of: "multi", with: "sortedmulti")
+            
+        }
+        
         descriptor = descriptor.replacingOccurrences(of: "\"", with: "")
         descriptor = descriptor.replacingOccurrences(of: " ", with: "")
         
@@ -528,55 +499,6 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
         reducer.makeCommand(command: .getdescriptorinfo,
                             param: param,
                             completion: completion)
-        
-    }
-    
-    func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
-        
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                
-                DispatchQueue.main.async {
-                    
-                    self.qrScanner.removeFromSuperview()
-                    
-                }
-                
-                switch method {
-                    
-                case .createmultisig:
-                    
-                    let dict = reducer.dictToReturn
-                    parseResponse(dict: dict)
-                    
-                default:
-                    
-                    break
-                    
-                }
-                
-            } else {
-                
-                DispatchQueue.main.async {
-                    
-                    self.connectingView.removeConnectingView()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: reducer.errorDescription)
-                    
-                }
-                
-            }
-            
-        }
-        
-        reducer.makeCommand(command: method,
-                            param: param,
-                            completion: getResult)
         
     }
     
