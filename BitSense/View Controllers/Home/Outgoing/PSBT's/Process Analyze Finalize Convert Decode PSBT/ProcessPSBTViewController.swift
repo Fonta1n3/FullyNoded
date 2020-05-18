@@ -366,6 +366,10 @@ class ProcessPSBTViewController: UIViewController {
                         
                         finalizedPSBT = check
                         
+                    } else if let psbt = dict["psbt"] as? String {
+                        
+                        finalizedPSBT = psbt
+                        
                     } else {
                         
                         finalizedPSBT = "error"

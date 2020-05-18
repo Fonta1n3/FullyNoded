@@ -131,12 +131,12 @@ class MakeRPCCall {
                                     
                                     let jsonAddressResult = try JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as! NSDictionary
                                     
+                                    #if DEBUG
+                                    print("json: \(jsonAddressResult)")
+                                    #endif
+                                    
                                     if let errorCheck = jsonAddressResult["error"] as? NSDictionary {
-                                        
-                                        #if DEBUG
-                                        print("error: \(errorCheck)")
-                                        #endif
-                                        
+                                                                                
                                         if let errorMessage = errorCheck["message"] as? String {
                                             
                                             vc.errorDescription = errorMessage

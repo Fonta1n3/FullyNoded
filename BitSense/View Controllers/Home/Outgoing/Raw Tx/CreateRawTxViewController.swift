@@ -721,7 +721,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     //MARK: Helpers
     
-    func rounded(number: Double) -> Double {
+    private func rounded(number: Double) -> Double {
         
         return Double(round(100000000*number)/100000000)
         
