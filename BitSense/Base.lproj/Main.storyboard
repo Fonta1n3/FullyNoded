@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="nU0-zz-6p3">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="nU0-zz-6p3">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -2628,7 +2628,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
             </objects>
             <point key="canvasLocation" x="-2791.1999999999998" y="375.56221889055473"/>
         </scene>
-        <!--Settings v0.1.45-->
+        <!--Settings-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="BitSense" customModuleProvider="target" sceneMemberID="viewController">
@@ -2724,7 +2724,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                         <viewLayoutGuide key="safeArea" id="Cze-jj-bFe"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="Settings v0.1.45" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="Settings" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
@@ -3234,7 +3234,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                                 <nil key="highlightedColor"/>
                             </label>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="yr4-Lf-upp">
-                                <rect key="frame" x="16" y="77" width="343" height="44"/>
+                                <rect key="frame" x="16" y="77" width="343" height="45.5"/>
                                 <color key="backgroundColor" red="0.090654351784955858" green="0.10521577147687036" blue="0.12842699836202076" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="30"/>
@@ -3255,38 +3255,38 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                                 </connections>
                             </button>
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="mQ4-50-wXU">
-                                <rect key="frame" x="44" y="155" width="51" height="31"/>
+                                <rect key="frame" x="44" y="156.5" width="51" height="31"/>
                                 <connections>
                                     <action selector="hotSwitchAction:" destination="LeO-8H-YRG" eventType="valueChanged" id="4Lc-tr-Px2"/>
                                 </connections>
                             </switch>
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="epA-lk-bVu">
-                                <rect key="frame" x="282" y="155" width="51" height="31"/>
+                                <rect key="frame" x="282" y="156.5" width="51" height="31"/>
                                 <color key="onTintColor" red="0.0" green="0.58980089430000004" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <connections>
                                     <action selector="coldSwitchAction:" destination="LeO-8H-YRG" eventType="valueChanged" id="33f-Wa-zjb"/>
                                 </connections>
                             </switch>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="COLD" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JMR-Sy-gib">
-                                <rect key="frame" x="284.5" y="133" width="44" height="14"/>
+                                <rect key="frame" x="284.5" y="134.5" width="44" height="14"/>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
                                 <color key="textColor" red="0.0" green="0.58980089430000004" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="HOT" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="f61-yr-Dbh">
-                                <rect key="frame" x="51.5" y="133" width="34" height="14"/>
+                                <rect key="frame" x="51.5" y="134.5" width="34" height="14"/>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
                                 <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="BLANK" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="i9p-p8-Hs4">
-                                <rect key="frame" x="161" y="133" width="53.5" height="14"/>
+                                <rect key="frame" x="161" y="134.5" width="53.5" height="14"/>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
                                 <color key="textColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="vMx-dK-f85">
-                                <rect key="frame" x="163" y="155" width="51" height="31"/>
+                                <rect key="frame" x="163" y="156.5" width="51" height="31"/>
                                 <connections>
                                     <action selector="blankSwitchAction:" destination="LeO-8H-YRG" eventType="valueChanged" id="TUD-QT-3gt"/>
                                 </connections>
@@ -4412,23 +4412,6 @@ COLD means no keys will be generated and no private keys can be imported.</strin
             <point key="canvasLocation" x="1877.5999999999999" y="375.56221889055473"/>
         </scene>
     </scenes>
-    <resources>
-        <image name="Home" width="30" height="30"/>
-        <image name="Image-1" width="30" height="30"/>
-        <image name="Image-14" width="30" height="30"/>
-        <image name="Image-15" width="30" height="30"/>
-        <image name="Image-2" width="30" height="30"/>
-        <image name="Image-4" width="30" height="30"/>
-        <image name="Merge" width="30" height="30"/>
-        <image name="Minus" width="30" height="30"/>
-        <image name="QR" width="30" height="30"/>
-        <image name="Settings" width="30" height="30"/>
-        <image name="chevron.right" catalog="system" width="48" height="64"/>
-        <image name="info.circle" catalog="system" width="64" height="60"/>
-        <image name="paintbrush" catalog="system" width="64" height="64"/>
-        <image name="qrcode.viewfinder" catalog="system" width="64" height="56"/>
-        <image name="whiteCheck.png" width="2048" height="2048"/>
-    </resources>
     <inferredMetricsTieBreakers>
         <segue reference="qed-hl-jG5"/>
         <segue reference="aQN-4W-cSW"/>
@@ -4444,4 +4427,21 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="G1i-Bv-OSl"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+    <resources>
+        <image name="Home" width="30" height="30"/>
+        <image name="Image-1" width="30" height="30"/>
+        <image name="Image-14" width="30" height="30"/>
+        <image name="Image-15" width="30" height="30"/>
+        <image name="Image-2" width="30" height="30"/>
+        <image name="Image-4" width="30" height="30"/>
+        <image name="Merge" width="30" height="30"/>
+        <image name="Minus" width="30" height="30"/>
+        <image name="QR" width="30" height="30"/>
+        <image name="Settings" width="30" height="30"/>
+        <image name="chevron.right" catalog="system" width="96" height="128"/>
+        <image name="info.circle" catalog="system" width="128" height="121"/>
+        <image name="paintbrush" catalog="system" width="128" height="128"/>
+        <image name="qrcode.viewfinder" catalog="system" width="128" height="114"/>
+        <image name="whiteCheck.png" width="2048" height="2048"/>
+    </resources>
 </document>

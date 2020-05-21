@@ -1,2 +1,2 @@
-binary "https://icepa.github.io/Tor.framework/Tor.json" "400.6.3"
+binary "https://icepa.github.io/Tor.framework/Tor.json" "403.5.1"
 github "krzyzanowskim/CryptoSwift" "1.3.1"

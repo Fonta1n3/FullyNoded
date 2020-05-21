@@ -6,10 +6,7 @@
 //  Copyright © 2019 Fontaine. All rights reserved.
 //
 
-import Foundation
-
 public enum BTC_CLI_COMMAND: String {
-    
     case abortrescan = "abortrescan"
     case listlockunspent = "listlockunspent"
     case lockunspent = "lockunspent"
@@ -75,5 +72,5 @@ public enum BTC_CLI_COMMAND: String {
     case walletlock = "walletlock"
     case walletpassphrasechange = "walletpassphrasechange"
     case gettxoutsetinfo = "gettxoutsetinfo"
-    
+    case dumpprivkey = "dumpprivkey"
 }
