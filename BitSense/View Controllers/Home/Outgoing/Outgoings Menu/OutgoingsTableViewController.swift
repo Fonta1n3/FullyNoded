@@ -103,7 +103,7 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
         
         if section == 0 {
             
-            return 7//6
+            return 6
             
         } else if section == 1 {
             
@@ -175,7 +175,7 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
             case 3: label.text = "Sign"
             case 4: label.text = "Decode"
             case 5: label.text = "Verify"
-            case 6: label.text = "Broadcast"
+            //case 6: label.text = "Broadcast"
             default:break}
             
         case 1:

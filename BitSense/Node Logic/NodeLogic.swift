@@ -101,12 +101,24 @@ class NodeLogic {
                 
             } else {
                 
-                errorBool = true
-                errorDescription = reducer.errorDescription
-                completion()
+                if reducer.errorDescription.contains("Method not found") {
+                    
+                    errorBool = true
+                    errorDescription = "walletDisabled"
+                    walletDisabled = true
+                    completion()
+                    
+                } else {
+                    
+                    errorBool = true
+                    errorDescription = reducer.errorDescription
+                    walletDisabled = false
+                    completion()
+                    
+                }
                 
             }
-            
+                        
         }
         
         if !walletDisabled {

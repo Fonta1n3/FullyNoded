@@ -22,12 +22,11 @@ class QuickConnect {
     // btcstandup://rpcuser:rpcpassword@uhqefiu873h827h3ufnjecnkajbciw7bui3hbuf233b.onion:18443?
     
     func addNode(vc: UIViewController, url: String, completion: @escaping () -> Void) {
-        
+                
         var host = ""
         var rpcPassword = ""
         var rpcUser = ""
         var label = "Node"
-        var v2password = ""
         
         if let params = URLComponents(string: url)?.queryItems {
             
@@ -80,12 +79,6 @@ class QuickConnect {
                 if let labelCheck = url?.value(for: "label") {
                     
                     label = labelCheck
-                    
-                }
-                
-                if let v2Check = url?.value(for: "v2password") {
-                    
-                    v2password = v2Check
                     
                 }
                 
