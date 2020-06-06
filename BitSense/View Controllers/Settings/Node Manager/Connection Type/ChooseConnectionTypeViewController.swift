@@ -153,12 +153,11 @@ class ChooseConnectionTypeViewController: UIViewController, UITabBarControllerDe
         let qc = QuickConnect()
     
         func nodeAdded() {
-            
-            print("result")
-            
+                        
             if !qc.errorBool {
                 
-                print("error is false")
+                back()
+                NotificationCenter.default.post(name: .refreshHome, object: nil, userInfo: nil)
                 
                 if cameFromHome {
                     
@@ -176,26 +175,6 @@ class ChooseConnectionTypeViewController: UIViewController, UITabBarControllerDe
                         
                     }
                     
-//                    if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
-//
-//                        let window = appDelegate.window
-//
-//                        if let myTabBar = window?.rootViewController as? UITabBarController {
-//
-//                            DispatchQueue.main.async {
-//
-//                                myTabBar.selectedIndex = 0
-//
-//                            }
-//
-//                        }
-//
-//                    } else {
-//
-//                        displayAlert(viewController: self, isError: true, message: "Unable to get app delegate")
-//
-//                    }
-                    
                 }
                 
             } else {
@@ -210,9 +189,7 @@ class ChooseConnectionTypeViewController: UIViewController, UITabBarControllerDe
         
         if url.hasPrefix("btcrpc://") || url.hasPrefix("btcstandup://") {
             
-            qc.addNode(vc: self,
-                       url: url,
-                       completion: nodeAdded)
+            qc.addNode(vc: self, url: url, completion: nodeAdded)
             
         } else {
             

@@ -110,7 +110,53 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     @objc func refreshHome() {
-        loadTable()
+        addNavBarSpinner()
+        getNodes { nodeArray in
+            
+            if nodeArray != nil {
+                
+                self.nodes = nodeArray!
+                let isActive = self.activeNodeDict().isAnyNodeActive
+                
+                if self.nodes.count > 0 {
+                    
+                    if isActive {
+                        
+                        self.activeNode = self.activeNodeDict().node
+                        let node = NodeStruct(dictionary: self.activeNode)
+                        self.existingNodeID = node.id
+                        DispatchQueue.main.async { [unowned vc = self] in
+                            vc.navigationItem.title = node.label
+                        }
+                        self.ud.removeObject(forKey: "walletName")
+                        self.existingWallet = ""
+                        self.reloadWalletData()
+                    } else {
+                        self.removeLoader()
+                        self.connectingView.removeConnectingView()
+                        
+                        displayAlert(viewController: self,
+                                     isError: true,
+                                     message: "no active nodes")
+                    }
+                } else {
+                    self.removeLoader()
+                    self.connectingView.removeConnectingView()
+                    
+                    displayAlert(viewController: self,
+                                 isError: true,
+                                 message: "no nodes")
+                }
+            } else {
+                
+                self.removeLoader()
+                self.connectingView.removeConnectingView()
+                
+                displayAlert(viewController: self,
+                             isError: true,
+                             message: "no nodes")
+            }
+        }
     }
     
     private func loadTable() {
@@ -136,14 +182,13 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                         
                         self.activeNode = self.activeNodeDict().node
                         let node = NodeStruct(dictionary: self.activeNode)
-                        if self.initialLoad {
+                        if self.initialLoad || self.existingNodeID == nil {
                             self.existingNodeID = node.id
                         }
                         let newId = node.id
                         DispatchQueue.main.async { [unowned vc = self] in
                             vc.navigationItem.title = node.label
                         }
-                        
                         if newId != self.existingNodeID {
                             
                             if !self.initialLoad {
@@ -300,7 +345,12 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 let hotBalanceLabel = cell.viewWithTag(1) as! UILabel
                 let coldBalanceLabel = cell.viewWithTag(2) as! UILabel
                 let unconfirmedLabel = cell.viewWithTag(3) as! UILabel
+                let walletLabel = cell.viewWithTag(4) as! UILabel
+                cell.layer.borderColor = UIColor.lightGray.cgColor
+                cell.layer.borderWidth = 0.5
                 
+                //walletLabel.adjustsFontSizeToFitWidth = true
+                walletLabel.text = ud.object(forKey: "walletName") as? String ?? "Default"
                 if hotBalance == "" {
                     
                     self.hotBalance = "0.00000000"
@@ -334,6 +384,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 let cell = tableView.dequeueReusableCell(withIdentifier: "NodeInfo", for: indexPath)
                 cell.selectionStyle = .none
                 cell.isSelected = false
+                
+                cell.layer.borderColor = UIColor.lightGray.cgColor
+                cell.layer.borderWidth = 0.5
                 
                 let network = cell.viewWithTag(1) as! UILabel
                 let pruned = cell.viewWithTag(2) as! UILabel
@@ -422,16 +475,16 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 cell.selectionStyle = .none
                 
-                let addressLabel = cell.viewWithTag(1) as! UILabel
+                cell.layer.borderColor = UIColor.lightGray.cgColor
+                cell.layer.borderWidth = 0.5
+                
+                let categoryImage = cell.viewWithTag(1) as! UIImageView
                 let amountLabel = cell.viewWithTag(2) as! UILabel
                 let confirmationsLabel = cell.viewWithTag(3) as! UILabel
                 let labelLabel = cell.viewWithTag(4) as! UILabel
                 let dateLabel = cell.viewWithTag(5) as! UILabel
                 let watchOnlyLabel = cell.viewWithTag(6) as! UILabel
-                let loading = cell.viewWithTag(14) as! UILabel
                 
-                loading.alpha = 0
-                addressLabel.alpha = 0
                 amountLabel.alpha = 1
                 confirmationsLabel.alpha = 1
                 labelLabel.alpha = 1
@@ -440,9 +493,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 mainMenu.separatorColor = UIColor.darkGray
                 let dict = self.transactionArray[indexPath.section - 2]
-                
-                addressLabel.text = dict["address"] as? String
-                
+                                
                 confirmationsLabel.text = (dict["confirmations"] as! String) + " " + "confs"
                 let label = dict["label"] as? String
                 
@@ -478,6 +529,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 if amount.hasPrefix("-") {
                     
+                    categoryImage.image = UIImage(systemName: "arrow.up.right")
+                    categoryImage.tintColor = .systemRed
                     amountLabel.text = amount
                     amountLabel.textColor = UIColor.darkGray
                     labelLabel.textColor = UIColor.darkGray
@@ -486,11 +539,13 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     
                 } else {
                     
+                    categoryImage.image = UIImage(systemName: "arrow.down.left")
+                    categoryImage.tintColor = .systemGreen
                     amountLabel.text = "+" + amount
-                    amountLabel.textColor = UIColor.white
-                    labelLabel.textColor = UIColor.white
-                    confirmationsLabel.textColor = UIColor.white
-                    dateLabel.textColor = UIColor.white
+                    amountLabel.textColor = .lightGray
+                    labelLabel.textColor = .lightGray
+                    confirmationsLabel.textColor = .lightGray
+                    dateLabel.textColor = .lightGray
                     
                 }
                 
@@ -506,9 +561,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         var sectionString = ""
         switch section {
-        case 0: sectionString = ud.object(forKey: "walletName") as? String ?? "Default Wallet"
-        //case 1: sectionString = "Node stats"
-        //case 2: sectionString = "Transactions"
+        case 0: sectionString = "Current Wallet"
+        case 1: sectionString = "Node Info"
+        case 2: sectionString = "Transactions"
         default: break
         }
         return sectionString
@@ -518,8 +573,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         (view as! UITableViewHeaderFooterView).backgroundView?.backgroundColor = UIColor.clear
         (view as! UITableViewHeaderFooterView).textLabel?.textAlignment = .left
-        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.init(name: "HiraginoSans-W3", size: 12)
-        (view as! UITableViewHeaderFooterView).textLabel?.textColor = UIColor.green
+        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.systemFont(ofSize: 12)
+        (view as! UITableViewHeaderFooterView).textLabel?.textColor = .darkGray
         (view as! UITableViewHeaderFooterView).textLabel?.alpha = 1
         
     }
@@ -546,7 +601,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
             if sectionZeroLoaded {
                 
-                return 142
+                return 136
                 
             } else {
                 
@@ -570,7 +625,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             
             if sectionZeroLoaded {
                 
-                return 101
+                return 74
                 
             } else {
                 
@@ -950,21 +1005,21 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     func removeLoader() {
         
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [unowned vc = self] in
             
-            self.spinner.stopAnimating()
-            self.spinner.alpha = 0
+            vc.spinner.stopAnimating()
+            vc.spinner.alpha = 0
             
-            self.refreshButton = UIBarButtonItem(barButtonSystemItem: .refresh,
-                                                 target: self,
-                                                 action: #selector(self.refreshData(_:)))
+            vc.refreshButton = UIBarButtonItem(barButtonSystemItem: .refresh,
+                                                 target: vc,
+                                                 action: #selector(vc.refreshData(_:)))
             
-            self.refreshButton.tintColor = UIColor.white.withAlphaComponent(1)
+            vc.refreshButton.tintColor = UIColor.lightGray.withAlphaComponent(1)
             
-            self.navigationItem.setRightBarButton(self.refreshButton,
+            vc.navigationItem.setRightBarButton(vc.refreshButton,
                                                   animated: true)
             
-            self.viewHasLoaded = true
+            vc.viewHasLoaded = true
             
         }
         

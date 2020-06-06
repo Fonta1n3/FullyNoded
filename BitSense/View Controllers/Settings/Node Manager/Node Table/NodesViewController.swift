@@ -102,11 +102,11 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         if !isActive.isOn {
             
-            label.textColor = UIColor.lightText
+            label.textColor = .darkGray
             
         } else {
             
-            label.textColor = UIColor.white
+            label.textColor = .lightGray
             
         }
         

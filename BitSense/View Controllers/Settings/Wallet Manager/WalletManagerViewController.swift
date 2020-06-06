@@ -141,8 +141,8 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
         
         (view as! UITableViewHeaderFooterView).backgroundView?.backgroundColor = UIColor.clear
         (view as! UITableViewHeaderFooterView).textLabel?.textAlignment = .left
-        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.init(name: "HiraginoSans-W3", size: 12)
-        (view as! UITableViewHeaderFooterView).textLabel?.textColor = UIColor.green
+        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.systemFont(ofSize: 12)
+        (view as! UITableViewHeaderFooterView).textLabel?.textColor = .darkGray
         
     }
     

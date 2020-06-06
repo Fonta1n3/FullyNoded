@@ -37,8 +37,8 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
         
         (view as! UITableViewHeaderFooterView).backgroundView?.backgroundColor = UIColor.clear
         (view as! UITableViewHeaderFooterView).textLabel?.textAlignment = .left
-        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.init(name: "HiraginoSans-W3", size: 12)
-        (view as! UITableViewHeaderFooterView).textLabel?.textColor = UIColor.green
+        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.systemFont(ofSize: 12)
+        (view as! UITableViewHeaderFooterView).textLabel?.textColor = .lightGray
         
     }
     
@@ -110,7 +110,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             } else {
                 
                 label.text = "Enabled"
-                label.textColor = UIColor.white
+                label.textColor = .lightGray
                 
             }
             
@@ -215,7 +215,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
     func configurePasswordManager() {
         
         textInput.delegate = self
-        textInput.backgroundColor = UIColor.white
+        textInput.backgroundColor = .lightGray
         textInput.keyboardType = UIKeyboardType.default
         textInput.layer.cornerRadius = 10
         textInput.textColor = UIColor.black
@@ -224,7 +224,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
         textInput.autocorrectionType = .no
         
         labelTitle.font = UIFont.systemFont(ofSize: 17)
-        labelTitle.textColor = UIColor.white
+        labelTitle.textColor = .lightGray
         labelTitle.alpha = 0
         labelTitle.numberOfLines = 0
         labelTitle.text = "Existing password"
@@ -247,7 +247,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
         passwordInput.autocapitalizationType = .none
         passwordInput.autocorrectionType = .no
         passwordInput.layer.cornerRadius = 10
-        passwordInput.backgroundColor = UIColor.white
+        passwordInput.backgroundColor = .lightGray
         passwordInput.alpha = 0
         passwordInput.textColor = UIColor.black
         passwordInput.placeholder = "Password"
@@ -267,7 +267,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
         nextButton.titleLabel?.textAlignment = .right
         nextButton.backgroundColor = UIColor.clear
         nextButton.showsTouchWhenHighlighted = true
-        nextButton.setTitleColor(UIColor.white, for: .normal)
+        nextButton.setTitleColor(.lightGray, for: .normal)
         nextButton.alpha = 0
         
     }
@@ -381,7 +381,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             
             self.nextButton.showsTouchWhenHighlighted = true
             self.nextButton.setTitle("Next", for: .normal)
-            self.nextButton.setTitleColor(UIColor.white, for: .normal)
+            self.nextButton.setTitleColor(.lightGray, for: .normal)
             self.nextButton.titleLabel?.font = UIFont.init(name: "HelveticaNeue-Bold", size: 20)
             self.nextButton.addTarget(self, action: #selector(self.nextButtonAction), for: .touchUpInside)
             self.lockView.addSubview(self.nextButton)

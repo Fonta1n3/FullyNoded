@@ -151,8 +151,8 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
         
         (view as! UITableViewHeaderFooterView).backgroundView?.backgroundColor = UIColor.clear
         (view as! UITableViewHeaderFooterView).textLabel?.textAlignment = .left
-        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.init(name: "HiraginoSans-W3", size: 12)
-        (view as! UITableViewHeaderFooterView).textLabel?.textColor = UIColor.green
+        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.systemFont(ofSize: 12)
+        (view as! UITableViewHeaderFooterView).textLabel?.textColor = .darkGray
         
     }
     
@@ -320,7 +320,7 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
                                   height: -200)
         
         amountInput.backgroundColor = view.backgroundColor
-        amountInput.textColor = UIColor.white
+        amountInput.textColor = .lightGray
         amountInput.keyboardAppearance = .dark
         amountInput.textAlignment = .center
         
@@ -331,7 +331,7 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
         
         amountInput.keyboardType = UIKeyboardType.decimalPad
         amountInput.font = UIFont.init(name: "HiraginoSans-W3", size: 40)
-        amountInput.tintColor = UIColor.white
+        amountInput.tintColor = .lightGray
         
         let tapGesture = UITapGestureRecognizer(target: self,
                                                 action: #selector(self.dismissKeyboard (_:)))
@@ -432,8 +432,8 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
                              width: amountView.frame.width,
                              height: 20)
         
-        label.font = UIFont.init(name: "HiraginoSans-W3", size: 20)
-        label.textColor = UIColor.white
+        label.font = UIFont.systemFont(ofSize: 20)
+        label.textColor = .lightGray
         label.textAlignment = .center
         label.text = "Amount to send"
         let button = UIButton()

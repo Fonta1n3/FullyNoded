@@ -22,14 +22,14 @@ class ErrorView: UIView {
         UIView.animate(withDuration: 0.2, animations: {
             
             self.backgroundView.frame = CGRect(x: 0,
-                                          y: -61,
+                                          y: -30,
                                           width: self.backgroundView.frame.width,
-                                          height: 61)
+                                          height: 30)
             
             self.errorLabel.frame = CGRect(x: 0,
-                                           y: -61,
+                                           y: -30,
                                            width: self.backgroundView.frame.width,
-                                           height: 61)
+                                           height: 30)
             
         }) { _ in
             
@@ -58,9 +58,9 @@ class ErrorView: UIView {
         let width = vc.view.frame.width
         
         backgroundView.frame = CGRect(x: 0,
-                                      y: -61,
+                                      y: -30,
                                       width: width,
-                                      height: 61)
+                                      height: 30)
         
         
         backgroundView.alpha = 0
@@ -80,9 +80,9 @@ class ErrorView: UIView {
         }
         
         errorLabel.frame = CGRect(x: 5,
-                                  y: -61,
+                                  y: -30,
                                   width: width - 10,
-                                  height: 61)
+                                  height: 30)
         
         //errorLabel.font = UIFont.init(name: "System-Regular", size: 10)
         errorLabel.font = UIFont.systemFont(ofSize: 12)
@@ -108,12 +108,12 @@ class ErrorView: UIView {
                 self.backgroundView.frame = CGRect(x: 0,
                                                    y: y,
                                                    width: width,
-                                                   height: 61)
+                                                   height: 30)
                 
                 self.errorLabel.frame = CGRect(x: 0,
                                                y: 0,
                                                width: width,
-                                               height: 61)
+                                               height: 30)
                 
             } else {
                 
@@ -122,12 +122,12 @@ class ErrorView: UIView {
                 self.backgroundView.frame = CGRect(x: 0,
                                                    y: 100,
                                                    width: width,
-                                                   height: 61)
+                                                   height: 30)
                 
                 self.errorLabel.frame = CGRect(x: 0,
                                                y: 0,
                                                width: width,
-                                               height: 61)
+                                               height: 30)
             }
             
         }) { _ in
@@ -145,14 +145,14 @@ class ErrorView: UIView {
                 UIView.animate(withDuration: 0.3, animations: {
                     
                     self.backgroundView.frame = CGRect(x: 0,
-                                                       y: -61,
+                                                       y: -30,
                                                        width: width,
-                                                       height: 61)
+                                                       height: 30)
                     
                     self.errorLabel.frame = CGRect(x: 0,
-                                                   y: -61,
+                                                   y: -30,
                                                    width: width,
-                                                   height: 61)
+                                                   height: 30)
                     
                 }) { _ in
                     

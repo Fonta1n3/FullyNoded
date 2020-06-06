@@ -98,7 +98,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         
         let settingsCell = tableView.dequeueReusableCell(withIdentifier: "settingsCell", for: indexPath)
         let label = settingsCell.viewWithTag(1) as! UILabel
-        label.textColor = UIColor.white
+        label.textColor = .lightGray
         settingsCell.selectionStyle = .none
         label.adjustsFontSizeToFitWidth = true
         

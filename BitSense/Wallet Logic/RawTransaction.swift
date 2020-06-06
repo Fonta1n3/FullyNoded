@@ -304,9 +304,15 @@ class RawTransaction {
                                     completion()
                                 } else {
                                     reducer.makeCommand(command: .signrawtransactionwithwallet, param: "\"\(result["hex"] as! String)\"") { [unowned vc = self] in
-                                        let dict = reducer.dictToReturn
-                                        vc.signedRawTx = dict["hex"] as! String
-                                        completion()
+                                        if !reducer.errorBool {
+                                            let dict = reducer.dictToReturn
+                                            vc.signedRawTx = dict["hex"] as! String
+                                            completion()
+                                        } else {
+                                            vc.errorBool = true
+                                            vc.errorDescription = reducer.errorDescription
+                                            completion()
+                                        }
                                     }
                                 }
                             } else {

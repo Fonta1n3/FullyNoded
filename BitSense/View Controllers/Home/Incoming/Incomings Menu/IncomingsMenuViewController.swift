@@ -86,7 +86,7 @@ class IncomingsMenuViewController: UIViewController, UITableViewDelegate, UITabl
         case 0:
             
             check.alpha = 0
-            label.textColor = UIColor.white
+            label.textColor = .lightGray
             
             switch indexPath.row {
             case 0: labelString = "Invoice"
@@ -99,7 +99,7 @@ class IncomingsMenuViewController: UIViewController, UITableViewDelegate, UITabl
         case 1:
             
             check.alpha = 0
-            label.textColor = UIColor.white
+            label.textColor = .lightGray
             
             switch indexPath.row {
             case 0:labelString = "Address"
@@ -118,7 +118,7 @@ class IncomingsMenuViewController: UIViewController, UITableViewDelegate, UITabl
         case 2:
             
             check.alpha = 0
-            label.textColor = UIColor.white
+            label.textColor = .lightGray
             
             switch indexPath.row {
             case 0:labelString = "Descriptors"
@@ -141,7 +141,7 @@ class IncomingsMenuViewController: UIViewController, UITableViewDelegate, UITabl
                 if nativeSegwit {
                     
                     check.alpha = 1
-                    label.textColor = UIColor.white
+                    label.textColor = .lightGray
                     
                 } else {
                     
@@ -158,7 +158,7 @@ class IncomingsMenuViewController: UIViewController, UITableViewDelegate, UITabl
                 if p2shSegwit {
                     
                     check.alpha = 1
-                    label.textColor = UIColor.white
+                    label.textColor = .lightGray
                     
                 } else {
                     
@@ -174,7 +174,7 @@ class IncomingsMenuViewController: UIViewController, UITableViewDelegate, UITabl
                 if legacy {
                     
                     check.alpha = 1
-                    label.textColor = UIColor.white
+                    label.textColor = .lightGray
                     
                 } else {
                     
@@ -434,8 +434,8 @@ class IncomingsMenuViewController: UIViewController, UITableViewDelegate, UITabl
         
         (view as! UITableViewHeaderFooterView).backgroundView?.backgroundColor = UIColor.clear
         (view as! UITableViewHeaderFooterView).textLabel?.textAlignment = .left
-        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.init(name: "HiraginoSans-W3", size: 12)
-        (view as! UITableViewHeaderFooterView).textLabel?.textColor = UIColor.green
+        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.systemFont(ofSize: 12)
+        (view as! UITableViewHeaderFooterView).textLabel?.textColor = .darkGray
         
     }
     

@@ -142,7 +142,6 @@ class QuickConnect {
                 
                 if success {
                     
-                    NotificationCenter.default.post(name: .refreshHome, object: nil)
                     let ud = UserDefaults.standard
                     ud.removeObject(forKey: "walletName")
                     vc.errorBool = false

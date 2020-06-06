@@ -43,18 +43,20 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         passwordInput.autocapitalizationType = .none
         passwordInput.autocorrectionType = .no
         passwordInput.layer.cornerRadius = 10
-        passwordInput.backgroundColor = UIColor.white
+        //passwordInput.backgroundColor = .lightGray
         passwordInput.alpha = 0
-        passwordInput.textColor = UIColor.black
-        passwordInput.placeholder = "Password"
+        //passwordInput.textColor = UIColor.black
+        passwordInput.placeholder = "password"
         passwordInput.isSecureTextEntry = true
         passwordInput.returnKeyType = UIReturnKeyType.go
         passwordInput.textAlignment = .center
         passwordInput.keyboardAppearance = UIKeyboardAppearance.dark
-        passwordInput.tintColor = UIColor.black
+        passwordInput.layer.borderWidth = 0.5
+        passwordInput.layer.borderColor = UIColor.lightGray.cgColor
+        //passwordInput.tintColor = UIColor.black
         
-        labelTitle.font = UIFont.init(name: "HelveticaNeue-Light", size: 30)
-        labelTitle.textColor = UIColor.white
+        labelTitle.font = UIFont.systemFont(ofSize: 30)
+        labelTitle.textColor = .lightGray
         labelTitle.alpha = 0
         labelTitle.numberOfLines = 0
         labelTitle.text = "Unlock"
@@ -133,9 +135,9 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         DispatchQueue.main.async {
             self.nextButton.removeFromSuperview()
             self.nextButton.showsTouchWhenHighlighted = true
-            self.nextButton.setTitle("Next", for: .normal)
-            self.nextButton.setTitleColor(UIColor.white, for: .normal)
-            self.nextButton.titleLabel?.font = UIFont.init(name: "HelveticaNeue-Bold", size: 20)
+            self.nextButton.setTitle("next", for: .normal)
+            self.nextButton.setTitleColor(.systemTeal, for: .normal)
+            self.nextButton.titleLabel?.font = UIFont.systemFont(ofSize: 20)
             self.nextButton.addTarget(self, action: #selector(self.nextButtonAction), for: .touchUpInside)
             self.view.addSubview(self.nextButton)
             
