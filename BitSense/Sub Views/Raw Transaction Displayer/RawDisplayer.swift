@@ -149,7 +149,7 @@ class RawDisplayer {
     
     func configureTextView() {
         
-        textView.textColor = UIColor.green
+        textView.textColor = .lightGray
         textView.backgroundColor = UIColor.clear
         textView.textAlignment = .natural
         textView.font = UIFont.init(name: "HelveticaNeue-Light", size: 14)

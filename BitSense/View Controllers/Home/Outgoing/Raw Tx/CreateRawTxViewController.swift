@@ -799,74 +799,74 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                         
                         self.rawTxSigned = rawTransaction.signedRawTx
                         
-//                        DispatchQueue.main.async { [unowned vc = self] in
-//
-//                            vc.creatingView.removeConnectingView()
-//
-//                            let alert = UIAlertController(title: "Broadcast with your node?", message: "You can optionally broadcast this transaction using Blockstream's esplora API over Tor V3 for improved privacy.", preferredStyle: .actionSheet)
-//
-//                            alert.addAction(UIAlertAction(title: "Privately", style: .default, handler: { action in
-//
-//                                vc.creatingView.addConnectingView(vc: vc, description: "broadcasting...")
-//
-//                                Broadcaster.sharedInstance.send(rawTx: self.rawTxSigned) { [unowned vc = self] (txid) in
-//
-//                                    if txid != nil {
-//
-//                                        self.creatingView.removeConnectingView()
-//                                        displayAlert(viewController: self, isError: false, message: "Sent! TxID has been copied to clipboard")
-//
-//                                        DispatchQueue.main.async {
-//
-//                                            let pasteboard = UIPasteboard.general
-//                                            pasteboard.string = txid!
-//
-//                                        }
-//
-//                                    } else {
-//
-//                                        vc.creatingView.removeConnectingView()
-//                                        displayAlert(viewController: vc, isError: true, message: "error broadcasting")
-//
-//                                    }
-//                                }
-//
-//                            }))
-//
-//                            alert.addAction(UIAlertAction(title: "Use my node", style: .default, handler: { action in
-//
-//                                self.creatingView.addConnectingView(vc: self, description: "broadcasting")
-//
-//                                let reducer = Reducer()
-//                                reducer.makeCommand(command: .sendrawtransaction, param: "\"\(self.rawTxSigned)\"") {
-//
-//                                    if !reducer.errorBool {
-//
-//                                        self.creatingView.removeConnectingView()
-//                                        displayAlert(viewController: self, isError: false, message: "Sent! TxID has been copied to clipboard")
-//
-//                                        DispatchQueue.main.async {
-//
-//                                            let pasteboard = UIPasteboard.general
-//                                            pasteboard.string = reducer.stringToReturn
-//
-//                                        }
-//
-//                                    } else {
-//
-//                                        displayAlert(viewController: self, isError: true, message: "Error: \(reducer.errorDescription)")
-//
-//                                    }
-//
-//                                }
-//
-//                            }))
-//
-//                            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-//                            alert.popoverPresentationController?.sourceView = self.view
-//                            self.present(alert, animated: true) {}
-//
-//                        }
+                        DispatchQueue.main.async { [unowned vc = self] in
+
+                            vc.creatingView.removeConnectingView()
+
+                            let alert = UIAlertController(title: "Broadcast with your node?", message: "You can optionally broadcast this transaction using Blockstream's esplora API over Tor V3 for improved privacy.", preferredStyle: .actionSheet)
+
+                            alert.addAction(UIAlertAction(title: "Privately", style: .default, handler: { action in
+
+                                vc.creatingView.addConnectingView(vc: vc, description: "broadcasting...")
+
+                                Broadcaster.sharedInstance.send(rawTx: self.rawTxSigned) { [unowned vc = self] (txid) in
+
+                                    if txid != nil {
+
+                                        self.creatingView.removeConnectingView()
+                                        displayAlert(viewController: self, isError: false, message: "Sent! TxID has been copied to clipboard")
+
+                                        DispatchQueue.main.async {
+
+                                            let pasteboard = UIPasteboard.general
+                                            pasteboard.string = txid!
+
+                                        }
+
+                                    } else {
+
+                                        vc.creatingView.removeConnectingView()
+                                        displayAlert(viewController: vc, isError: true, message: "error broadcasting")
+
+                                    }
+                                }
+
+                            }))
+
+                            alert.addAction(UIAlertAction(title: "Use my node", style: .default, handler: { action in
+
+                                self.creatingView.addConnectingView(vc: self, description: "broadcasting")
+
+                                let reducer = Reducer()
+                                reducer.makeCommand(command: .sendrawtransaction, param: "\"\(self.rawTxSigned)\"") {
+
+                                    if !reducer.errorBool {
+
+                                        self.creatingView.removeConnectingView()
+                                        displayAlert(viewController: self, isError: false, message: "Sent! TxID has been copied to clipboard")
+
+                                        DispatchQueue.main.async {
+
+                                            let pasteboard = UIPasteboard.general
+                                            pasteboard.string = reducer.stringToReturn
+
+                                        }
+
+                                    } else {
+
+                                        displayAlert(viewController: self, isError: true, message: "Error: \(reducer.errorDescription)")
+
+                                    }
+
+                                }
+
+                            }))
+
+                            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+                            alert.popoverPresentationController?.sourceView = self.view
+                            self.present(alert, animated: true) {}
+
+                        }
                         
                     } else {
                         

@@ -231,7 +231,7 @@ class ProcessPSBTViewController: UIViewController {
                                 } else {
                                     
                                     vc.creatingView.removeConnectingView()
-                                    displayAlert(viewController: vc, isError: true, message: "error broadcasting")
+                                    showAlert(vc: self, title: "Error", message: "error broadcasting")
                                     
                                 }
                             }
@@ -260,9 +260,8 @@ class ProcessPSBTViewController: UIViewController {
             
         } else {
             
-            displayAlert(viewController: self,
-                         isError: true,
-                         message: "You need to add a PSBT into the text field first")
+            creatingView.removeConnectingView()
+            showAlert(vc: self, title: "Error", message: "You need to add a PSBT into the text field first")
             
         }
         
@@ -461,10 +460,7 @@ class ProcessPSBTViewController: UIViewController {
             } else {
                 
                 creatingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: reducer.errorDescription)
+                showAlert(vc: self, title: "Error", message: reducer.errorDescription)
                 
             }
             
@@ -505,6 +501,11 @@ class ProcessPSBTViewController: UIViewController {
                     break
                     
                 }
+                
+            } else {
+                
+                creatingView.removeConnectingView()
+                showAlert(vc: self, title: "Error", message: reducer.errorDescription)
                 
             }
             
@@ -991,10 +992,7 @@ class ProcessPSBTViewController: UIViewController {
             } else {
                 
                 creatingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: txChain.errorDescription)
+                showAlert(vc: self, title: "Error", message: txChain.errorDescription)
                 
             }
             
