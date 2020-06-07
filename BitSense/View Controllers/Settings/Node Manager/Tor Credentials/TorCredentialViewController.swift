@@ -185,7 +185,7 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
                             if success {
                                 
                                 if refresh {
-                                    NotificationCenter.default.post(name: .refreshHome, object: nil)
+                                    NotificationCenter.default.post(name: .refreshNode, object: nil)
                                     displayAlert(viewController: vc, isError: false, message: "Tor node saved, we are now refreshing the home screen automatically.")
                                 } else {
                                     displayAlert(viewController: vc, isError: false, message: "Tor node saved")

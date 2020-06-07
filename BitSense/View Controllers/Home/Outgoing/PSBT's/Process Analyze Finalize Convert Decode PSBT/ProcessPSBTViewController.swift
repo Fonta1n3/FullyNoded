@@ -211,10 +211,10 @@ class ProcessPSBTViewController: UIViewController {
                         
                         func success(txid: String) {
                             DispatchQueue.main.async { [unowned vc = self] in
+                                displayAlert(viewController: vc, isError: false, message: "Sent ✓")
                                 UIPasteboard.general.string = txid
                                 vc.creatingView.removeConnectingView()
-                                vc.textView.text = txid
-                                
+                                vc.textView.text = "txid: \(txid)"
                             }
                         }
                         
@@ -240,6 +240,7 @@ class ProcessPSBTViewController: UIViewController {
                         
                         alert.addAction(UIAlertAction(title: "Use my node", style: .default, handler: { action in
                             
+                            vc.creatingView.addConnectingView(vc: vc, description: "broadcasting...")
                             vc.executeNodeCommand(method: vc.method, param: "\"\(psbt)\"")
                             
                         }))
@@ -318,11 +319,11 @@ class ProcessPSBTViewController: UIViewController {
                     
                     let result = reducer.stringToReturn
                     
-                    DispatchQueue.main.async {
-                        
+                    DispatchQueue.main.async { [unowned vc = self] in
+                        displayAlert(viewController: vc, isError: false, message: "Sent ✓")
                         UIPasteboard.general.string = result
                         self.creatingView.removeConnectingView()
-                        self.textView.text = "\(result)"
+                        self.textView.text = "txid: \(result)"
                         
                     }
                     

@@ -157,7 +157,7 @@ class ChooseConnectionTypeViewController: UIViewController, UITabBarControllerDe
             if !qc.errorBool {
                 
                 back()
-                NotificationCenter.default.post(name: .refreshHome, object: nil, userInfo: nil)
+                NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
                 
                 if cameFromHome {
                     

@@ -306,7 +306,7 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
                     }
                     
                     refresh()
-                    NotificationCenter.default.post(name: .refreshHome, object: nil, userInfo: nil)
+                    NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                     
                     displayAlert(viewController: self, isError: false, message: "Wallet loaded, we are now refreshing the home screen.")
                     

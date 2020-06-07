@@ -197,7 +197,7 @@ class WalletCreatorViewController: UIViewController, UITextFieldDelegate {
             
         }
         
-        NotificationCenter.default.post(name: .refreshHome, object: nil)
+        NotificationCenter.default.post(name: .refreshWallet, object: nil)
         
         DispatchQueue.main.async {
             

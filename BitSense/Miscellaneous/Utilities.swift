@@ -22,7 +22,8 @@ public func showAlert(vc: UIViewController, title: String, message: String) {
 }
 
 extension Notification.Name {
-    public static let refreshHome = Notification.Name(rawValue: "refreshHome")
+    public static let refreshNode = Notification.Name(rawValue: "refreshNode")
+    public static let refreshWallet = Notification.Name(rawValue: "refreshWallet")
 }
 
 public extension Data {
