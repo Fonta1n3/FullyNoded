@@ -67,6 +67,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         addlaunchScreen()
         existingWallet = ud.object(forKey: "walletName") as? String ?? ""
         NotificationCenter.default.addObserver(self, selector: #selector(refreshNode), name: .refreshNode, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(refreshWallet), name: .refreshWallet, object: nil)
         
     }
     
@@ -110,6 +111,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     @objc func refreshWallet() {
+        existingWallet = ""
         loadTable()
     }
     

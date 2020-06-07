@@ -244,46 +244,27 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 for (i, node) in nodeArray.enumerated() {
                     
                     if i != index {
-                        
                         let str = NodeStruct(dictionary: node)
-                        
-                        cd.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { [unowned vc = self] success in
-                            if success {
-                                
-                                vc.cd.retrieveEntity(entityName: .newNodes) { [unowned vc = self] in
-                                    
-                                    if !vc.cd.errorBool {
-                                        
-                                        DispatchQueue.main.async { [unowned vc = self] in
-                                            vc.nodeArray.removeAll()
-                                            for node in vc.cd.entities {
-                                                if node["id"] != nil {
-                                                    vc.nodeArray.append(node)
-                                                }
-                                            }
-                                            vc.nodeTable.reloadData()
-                                            NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
-                                        }
-                                        
-                                    } else {
-                                        
-                                        displayAlert(viewController: vc, isError: true, message: vc.cd.errorDescription)
-                                        
-                                    }
-                                    
-                                }
-                                
-                            } else {
-                                
-                                displayAlert(viewController: vc, isError: true, message: "error updating node")
-                                
-                            }
-                        }
-                        
+                        cd.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
                     }
                     
+                    if i + 1 == nodeArray.count {
+                        self.cd.retrieveEntity(entityName: .newNodes) { [unowned vc = self] in
+                            if !vc.cd.errorBool {
+                                DispatchQueue.main.async { [unowned vc = self] in
+                                    vc.nodeArray.removeAll()
+                                    for node in vc.cd.entities {
+                                        if node["id"] != nil {
+                                            vc.nodeArray.append(node)
+                                        }
+                                    }
+                                    vc.nodeTable.reloadData()
+                                    NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
+                                }
+                            }
+                        }
+                    }
                 }
-                
             }
             
         } else {

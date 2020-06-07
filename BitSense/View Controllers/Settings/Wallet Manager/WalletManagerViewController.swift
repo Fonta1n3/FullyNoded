@@ -306,9 +306,10 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
                     }
                     
                     refresh()
-                    NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-                    
-                    displayAlert(viewController: self, isError: false, message: "Wallet loaded, we are now refreshing the home screen.")
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                        NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+                    }
+                    displayAlert(viewController: self, isError: false, message: "Wallet loaded")
                     
                 case BTC_CLI_COMMAND.listwalletdir:
                     
