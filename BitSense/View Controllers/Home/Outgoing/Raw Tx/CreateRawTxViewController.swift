@@ -339,7 +339,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                     vc.showRaw(raw: vc.rawTxSigned)
                 } else {
                     vc.creatingView.removeConnectingView()
-                    displayAlert(viewController: vc, isError: true, message: rawTransaction.errorDescription)
+                    showAlert(vc: vc, title: "Error sweeping", message: rawTransaction.errorDescription)
                 }
             }
         }

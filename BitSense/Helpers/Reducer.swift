@@ -82,8 +82,6 @@ class Reducer {
         
         func torCommand() {
             
-            print("tor")
-            
             func getResult() {
                 
                 if !torRPC.errorBool {
@@ -101,9 +99,7 @@ class Reducer {
                 
             }
             
-            torRPC.executeRPCCommand(method: command,
-                                     param: param,
-                                     completion: getResult)
+            torRPC.executeRPCCommand(method: command, param: param, completion: getResult)
             
         }
         
