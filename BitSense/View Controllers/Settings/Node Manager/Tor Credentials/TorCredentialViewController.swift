@@ -21,78 +21,18 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
     var isTorchOn = Bool()
     var scannerShowing = false
     let imageView = UIImageView()
-    var scanningAuthKey = Bool()
-    var scanningOnion = Bool()
 
     @IBOutlet weak var headerLabel: UILabel!
     @IBOutlet var onionAddressField: UITextField!
     @IBOutlet var saveButton: UIButton!
-    @IBOutlet var authKeyField: UITextField!
-    @IBOutlet var pubkeyTextView: UITextView!
-    @IBOutlet var pubkeyLabel: UILabel!
-    @IBOutlet var pubkeyDescription: UILabel!
-    @IBOutlet var generateButtonOutlet: UIButton!
-    
-    @IBAction func generateKeyPair(_ sender: Any) {
-        DispatchQueue.main.async {
-            
-            let keygen = KeyGen()
-            keygen.generate { [unowned vc = self] (pubkey, privkey) in
-                
-                vc.pubkeyTextView.addGestureRecognizer(vc.tapTextViewGesture)
-                vc.pubkeyTextView.text = "descriptor:x25519:" + pubkey
-                vc.authKeyField.text = privkey
-                vc.pubkeyDescription.alpha = 1
-                vc.pubkeyLabel.alpha = 1
-                
-                let privKeyData = (vc.authKeyField.text)!.dataUsingUTF8StringEncoding
-                let pubKeyData = (vc.pubkeyTextView.text)!.dataUsingUTF8StringEncoding
-                
-                guard let encryptedPrivKey = vc.encryptedValue(privKeyData) else {
-                    return
-                }
-                guard let encryptedPubKey = vc.encryptedValue(pubKeyData) else {
-                    return
-                }
-                
-                let node = NodeStruct(dictionary: vc.selectedNode)
-                
-                vc.cd.update(id: node.id!, keyToUpdate: "authKey", newValue: encryptedPrivKey, entity: .newNodes) { [unowned vc = self] success in
-                    if success {
-                        vc.cd.update(id: node.id!, keyToUpdate: "authPubKey", newValue: encryptedPubKey, entity: .newNodes) { [unowned vc = self] success in
-                            if success {
-                                DispatchQueue.main.async {
-                                    vc.pubkeyTextView.addGestureRecognizer(vc.tapTextViewGesture)
-                                    vc.generateButtonOutlet.setTitle("refresh V3 auth key pair", for: .normal)
-                                }
-                                displayAlert(viewController: vc, isError: false, message: "Auth keys updated!")
-                            } else {
-                                displayAlert(viewController: vc, isError: true, message: "Error updating node")
-                            }
-                        }
-                    } else {
-                        displayAlert(viewController: self, isError: true, message: "Error updating node")
-                    }
-                }
-                
-            }
-            
-        }
-        
-    }
     
     @IBAction func scanNow(_ sender: Any) {
-        
-        scanningOnion = true
-        scanningAuthKey = false
         scanNow()
-        
     }
     
     func scanNow() {
         
         onionAddressField.resignFirstResponder()
-        authKeyField.resignFirstResponder()
         
         if isFirstTime {
             
@@ -131,11 +71,7 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
     }
     
     @IBAction func scanAuthKey(_ sender: Any) {
-        
-        scanningAuthKey = true
-        scanningOnion = false
         scanNow()
-        
     }
     
     private func encryptedValue(_ decryptedValue: Data) -> Data? {
@@ -155,16 +91,6 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
             if onionAddressField.text != "" {
                 
                 guard  let encryptedOnionAddress = encryptedValue((onionAddressField.text)!.dataUsingUTF8StringEncoding)  else { return }
-                
-                if authKeyField.text != "" {
-                    guard let encryptedAuthKey = encryptedValue((authKeyField.text)!.dataUsingUTF8StringEncoding) else { return }
-                    newNode["authKey"] = encryptedAuthKey
-                }
-                
-                if pubkeyTextView.text != "" {
-                    guard let encryptedAuthPubKey = encryptedValue((pubkeyTextView.text)!.dataUsingUTF8StringEncoding) else { return }
-                    newNode["authPubKey"] = encryptedAuthPubKey
-                }
                 
                 newNode["onionAddress"] = encryptedOnionAddress
                 newNode["id"] = UUID()
@@ -217,46 +143,8 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
             //updating
             let node = NodeStruct(dictionary: selectedNode)
             
-            if onionAddressField.text != "" && authKeyField.text != "" && pubkeyTextView.text != "" {
-                
-                let privKeyData = (authKeyField.text)!.dataUsingUTF8StringEncoding
-                let addressData = (onionAddressField.text)!.dataUsingUTF8StringEncoding
-                let pubKeyData = (pubkeyTextView.text)!.dataUsingUTF8StringEncoding
-                
-                guard let encryptedPrivKey = encryptedValue(privKeyData) else {
-                    return
-                }
-                guard let encryptedAddress = encryptedValue(addressData) else {
-                    return
-                }
-                guard let encryptedPubKey = encryptedValue(pubKeyData) else {
-                    return
-                }
-                
-                cd.update(id: node.id!, keyToUpdate: "authKey", newValue: encryptedPrivKey, entity: .newNodes) { [unowned vc = self] success in
-                    if success {
-                        vc.cd.update(id: node.id!, keyToUpdate: "onionAddress", newValue: encryptedAddress, entity: .newNodes) { [unowned vc = self] success in
-                            if success {
-                                vc.cd.update(id: node.id!, keyToUpdate: "authPubKey", newValue: encryptedPubKey, entity: .newNodes) { [unowned vc = self] success in
-                                    if success {
-                                        displayAlert(viewController: vc, isError: false, message: "Node updated")
-                                    } else {
-                                        displayAlert(viewController: vc, isError: true, message: "Error updating node")
-                                    }
-                                }
-                            } else {
-                                displayAlert(viewController: self, isError: true, message: "Error updating node")
-                            }
-                        }
-                    } else {
-                        displayAlert(viewController: self, isError: true, message: "Error updating node")
-                    }
-                }
-                
-            } else if onionAddressField.text != "" {
-                
+            if onionAddressField.text != "" {
                 let decryptedAddress = (onionAddressField.text)!.dataUsingUTF8StringEncoding
-                
                 guard let encryptedOnionAddress = encryptedValue(decryptedAddress) else { return }
                 cd.update(id: node.id!, keyToUpdate: "onionAddress", newValue: encryptedOnionAddress, entity: .newNodes) { [unowned vc = self] success in
                     if success {
@@ -265,56 +153,30 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
                         displayAlert(viewController: vc, isError: true, message: "Error updating node!")
                     }
                 }
-                
             } else {
-                //fields empty
                 displayAlert(viewController: self, isError: true, message: "text fields are empty")
-                
             }
-            
         }
-        
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        pubkeyLabel.alpha = 0
-        pubkeyDescription.alpha = 0
-        pubkeyTextView.isUserInteractionEnabled = true
-        pubkeyTextView.isEditable = false
-        pubkeyTextView.isSelectable = true
-        
-        tapTextViewGesture = UITapGestureRecognizer(target: self, action: #selector(shareRawText(_:)))
         imageView.alpha = 0
         imageView.backgroundColor = UIColor.black
-
-        let tapGesture = UITapGestureRecognizer(target: self,
-                                                action: #selector(dismissKeyboard (_:)))
-        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         view.addGestureRecognizer(tapGesture)
-        
         onionAddressField.delegate = self
         onionAddressField.isSecureTextEntry = true
-        authKeyField.delegate = self
-        authKeyField.isSecureTextEntry = true
         headerLabel.adjustsFontSizeToFitWidth = true
-        
         configureScanner()
-        
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        
         loadValues()
-        
         if !createNew {
-            
             saveButton.setTitle("Update", for: .normal)
-            
         }
-        
     }
     
     func loadValues() {
@@ -336,22 +198,6 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
                 onionAddressField.text = decryptedValue(enc)
             }
             
-            
-            if node.authKey != nil {
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.authKeyField.text = decryptedValue(node.authKey!)
-                }
-                if node.authPubKey != nil {
-                    DispatchQueue.main.async { [unowned vc = self] in
-                        vc.pubkeyTextView.addGestureRecognizer(vc.tapTextViewGesture)
-                        vc.generateButtonOutlet.setTitle("refresh V3 auth key pair", for: .normal)
-                        vc.pubkeyTextView.text = decryptedValue(node.authPubKey!)
-                        vc.pubkeyDescription.alpha = 1
-                        vc.pubkeyLabel.alpha = 1
-                    }
-                }
-            }
-            
         } else {
             
             onionAddressField.attributedPlaceholder = NSAttributedString(string: "hs7due39f4.onion:39876",
@@ -361,17 +207,12 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        
         self.view.endEditing(true)
         return true
-        
     }
     
     @objc func dismissKeyboard (_ sender: UITapGestureRecognizer) {
-        
         onionAddressField.resignFirstResponder()
-        authKeyField.resignFirstResponder()
-        
     }
     
     func configureScanner() {
@@ -467,98 +308,19 @@ class TorCredentialViewController: UIViewController, UINavigationControllerDeleg
     }
     
     func getQRCode() {
-        print("getQRCode")
-        
         let stringURL = qrScanner.stringToReturn
         imageView.alpha = 0
-        
-        if scanningOnion {
-            
-            onionAddressField.text = stringURL
-            
-        }
-        
-        if scanningAuthKey {
-            
-            authKeyField.text = stringURL
-            
-        }
-        
+        onionAddressField.text = stringURL
     }
     
     func didPickImage() {
-        
         let qrString = qrScanner.qrString
         imageView.alpha = 0
-        
-        if scanningOnion {
-            
-           onionAddressField.text = qrString
-            
-        }
-        
-        if scanningAuthKey {
-            
-            authKeyField.text = qrString
-            
-        }
-        
+        onionAddressField.text = qrString
     }
     
     @objc func chooseQRCodeFromLibrary() {
-        
         qrScanner.chooseQRCodeFromLibrary()
-        
-    }
-    
-    //showPubKey
-    
-    @objc func shareRawText(_ sender: UITapGestureRecognizer) {
-        
-        DispatchQueue.main.async {
-            
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                self.pubkeyTextView.alpha = 0
-                
-            }) { _ in
-                
-                UIView.animate(withDuration: 0.2, animations: {
-                    
-                    self.pubkeyTextView.alpha = 1
-                    
-                })
-                
-            }
-            
-            self.performSegue(withIdentifier: "showPubKey", sender: self)
-            
-        }
-        
-    }
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        
-        switch segue.identifier {
-            
-        case "showPubKey":
-            
-            if let vc = segue.destination as? ShowV3PubKeyViewController {
-                
-                if self.pubkeyTextView.text != "" {
-                    
-                    vc.pubkey = self.pubkeyTextView.text!
-                    
-                }
-                
-            }
-            
-        default:
-            
-            break
-            
-        }
-        
     }
 
 }

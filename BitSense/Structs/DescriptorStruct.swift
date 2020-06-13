@@ -8,7 +8,6 @@
 
 import Foundation
 
-
 public struct DescriptorStruct: CustomStringConvertible {
     public var description = ""
     

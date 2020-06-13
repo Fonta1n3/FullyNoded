@@ -13,6 +13,9 @@
 		D00B9A322111427200E8B95A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D00B9A312111427200E8B95A /* Assets.xcassets */; };
 		D00B9A352111427200E8B95A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D00B9A332111427200E8B95A /* LaunchScreen.storyboard */; };
 		D00BD9CB2365664600222A37 /* BitSenseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00BD9CA2365664600222A37 /* BitSenseTests.swift */; };
+		D00F851B24949691008D7CD3 /* AppPasswordViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00F851A24949691008D7CD3 /* AppPasswordViewController.swift */; };
+		D00F851D2494A616008D7CD3 /* TorAuthViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00F851C2494A616008D7CD3 /* TorAuthViewController.swift */; };
+		D00F851F2494A7CA008D7CD3 /* AuthKeysStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00F851E2494A7CA008D7CD3 /* AuthKeysStruct.swift */; };
 		D0126FF022443D1100412629 /* whitePlus.png in Resources */ = {isa = PBXBuildFile; fileRef = D0126FEF22443D1100412629 /* whitePlus.png */; };
 		D0126FF622446E3800412629 /* InvoiceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0126FF522446E3800412629 /* InvoiceViewController.swift */; };
 		D0126FF82244842000412629 /* bWhite.png in Resources */ = {isa = PBXBuildFile; fileRef = D0126FF72244842000412629 /* bWhite.png */; };
@@ -148,6 +151,9 @@
 		D00BD9C82365664600222A37 /* BitSenseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BitSenseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D00BD9CA2365664600222A37 /* BitSenseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BitSenseTests.swift; sourceTree = "<group>"; };
 		D00BD9CC2365664600222A37 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D00F851A24949691008D7CD3 /* AppPasswordViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPasswordViewController.swift; sourceTree = "<group>"; };
+		D00F851C2494A616008D7CD3 /* TorAuthViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TorAuthViewController.swift; sourceTree = "<group>"; };
+		D00F851E2494A7CA008D7CD3 /* AuthKeysStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthKeysStruct.swift; sourceTree = "<group>"; };
 		D0126FEF22443D1100412629 /* whitePlus.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whitePlus.png; sourceTree = "<group>"; };
 		D0126FF522446E3800412629 /* InvoiceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceViewController.swift; sourceTree = "<group>"; };
 		D0126FF72244842000412629 /* bWhite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = bWhite.png; sourceTree = "<group>"; };
@@ -309,7 +315,7 @@
 				D0048C72225F38D70057E21B /* Node Manager */,
 				D0EF29C0216B82B400EB776A /* SettingsViewController.swift */,
 				D039D3CB2333250900D1ED18 /* Wallet Manager */,
-				D02958D4235053B300ED8F72 /* SecurityCenterViewController.swift */,
+				D00F85192494966D008D7CD3 /* Security Center */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -412,6 +418,16 @@
 				D00BD9CC2365664600222A37 /* Info.plist */,
 			);
 			path = BitSenseTests;
+			sourceTree = "<group>";
+		};
+		D00F85192494966D008D7CD3 /* Security Center */ = {
+			isa = PBXGroup;
+			children = (
+				D02958D4235053B300ED8F72 /* SecurityCenterViewController.swift */,
+				D00F851A24949691008D7CD3 /* AppPasswordViewController.swift */,
+				D00F851C2494A616008D7CD3 /* TorAuthViewController.swift */,
+			);
+			path = "Security Center";
 			sourceTree = "<group>";
 		};
 		D02094F122593698002E8E7A /* Sub Views */ = {
@@ -519,6 +535,7 @@
 				D039D3C92332440D00D1ED18 /* HDMusigStruct.swift */,
 				D08A92AC2337A63000409D6E /* DescriptorStruct.swift */,
 				D044ED77235AF42D00300D62 /* ImportStruct.swift */,
+				D00F851E2494A7CA008D7CD3 /* AuthKeysStruct.swift */,
 			);
 			path = Structs;
 			sourceTree = "<group>";
@@ -1040,6 +1057,7 @@
 				D0196DDB21B5AC5F0081E0AB /* KeyPad.swift in Sources */,
 				D0ED69BC2325D768001F8FBC /* WalletsViewController.swift in Sources */,
 				D037C870231BAFF1006C357D /* RescanViewController.swift in Sources */,
+				D00F851F2494A7CA008D7CD3 /* AuthKeysStruct.swift in Sources */,
 				D02958D5235053B300ED8F72 /* SecurityCenterViewController.swift in Sources */,
 				D08A92AB23377D1000409D6E /* DescriptorsViewController.swift in Sources */,
 				D08A92B3233B527F00409D6E /* KillSwitch.swift in Sources */,
@@ -1048,6 +1066,7 @@
 				D0E51E592265640F005D1909 /* ErrorView.swift in Sources */,
 				D0233F2B236284200041FFBA /* ShowV3PubKeyViewController.swift in Sources */,
 				D02152DC23666CB400AD9007 /* QuickConnect.swift in Sources */,
+				D00F851B24949691008D7CD3 /* AppPasswordViewController.swift in Sources */,
 				D0D71DA32351F835005CCDB9 /* UtilitieMenuViewController.swift in Sources */,
 				D03968B1246F6CBA0010D821 /* Crypto.swift in Sources */,
 				D0452ADD224743C50013E225 /* LogInViewController.swift in Sources */,
@@ -1092,6 +1111,7 @@
 				D05D972C2264104D0035F1DE /* QRScanner.swift in Sources */,
 				D00B9A302111427200E8B95A /* BitSense.xcdatamodeld in Sources */,
 				D0560EE92277F75900C3E909 /* UTXOViewController.swift in Sources */,
+				D00F851D2494A616008D7CD3 /* TorAuthViewController.swift in Sources */,
 				D0390326246B960B00D32C43 /* KeyChain.swift in Sources */,
 				D037C868231B85A0006C357D /* ExtendedKeysParentViewController.swift in Sources */,
 				D0EF29C1216B82B400EB776A /* SettingsViewController.swift in Sources */,
@@ -1264,10 +1284,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = BitSense/BitSense.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
-				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 145;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 146;
 				DEVELOPMENT_TEAM = 69FR345CDA;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1280,11 +1300,11 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.224;
+				MARKETING_VERSION = 1.225;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
-				PROVISIONING_PROFILE_SPECIFIER = FullyNoded_Debug_Oct2019;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "BitSense/BitSense-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -1300,10 +1320,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = BitSense/BitSense.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
-				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 145;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 146;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 69FR345CDA;
 				ENABLE_TESTABILITY = NO;
@@ -1318,11 +1338,11 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.224;
+				MARKETING_VERSION = 1.225;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
-				PROVISIONING_PROFILE_SPECIFIER = FullyNoded_Debug_Oct2019;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "BitSense/BitSense-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;

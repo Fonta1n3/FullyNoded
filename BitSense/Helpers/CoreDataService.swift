@@ -17,6 +17,25 @@ class CoreDataService {
     var errorBool = Bool()
     var errorDescription = ""
     
+//    func deleteEntireEntity() {
+//        DispatchQueue.main.async {
+//            if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+//                let context = appDelegate.persistentContainer.viewContext
+//                let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "AuthKeys")
+//                fetchRequest.returnsObjectsAsFaults = false
+//                do {
+//                    let stuff = try context.fetch(fetchRequest)
+//                    for thing in stuff as! [NSManagedObject] {
+//                        context.delete(thing)
+//                    }
+//                    try context.save()
+//                } catch let error as NSError {
+//                    print("delete fail--",error)
+//                }
+//            }
+//        }
+//    }
+    
     func saveEntity(dict: [String:Any], entityName: ENTITY, completion: @escaping () -> Void) {
         print("saveEntityToCoreData")
         

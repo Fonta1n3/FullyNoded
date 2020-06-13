@@ -22,7 +22,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     let qrImageView = UIImageView()
     var stringURL = String()
     var address = String()
-    let nextButton = UIButton()
     var amount = String()
     var blurArray = [UIVisualEffectView]()
     let rawDisplayer = RawDisplayer()
@@ -31,7 +30,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     var outputs = [Any]()
     var outputsString = ""
     
-    @IBOutlet var addOutlet: UIButton!
+    @IBOutlet weak var addOutputOutlet: UIBarButtonItem!
+    @IBOutlet weak var playButtonOutlet: UIBarButtonItem!
     @IBOutlet var amountInput: UITextField!
     @IBOutlet var addressInput: UITextField!
     @IBOutlet var amountLabel: UILabel!
@@ -335,8 +335,14 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 if !rawTransaction.errorBool {
                     vc.removeViews()
                     vc.creatingView.removeConnectingView()
-                    vc.rawTxSigned = rawTransaction.unsignedRawTx
+                    if rawTransaction.unsignedRawTx != "" {
+                        vc.coldSwitchOutlet.setOn(true, animated: false)
+                        vc.rawTxSigned = rawTransaction.unsignedRawTx
+                    } else {
+                        vc.rawTxSigned = rawTransaction.signedRawTx
+                    }
                     vc.showRaw(raw: vc.rawTxSigned)
+                    vc.broadcastNow()
                 } else {
                     vc.creatingView.removeConnectingView()
                     showAlert(vc: vc, title: "Error sweeping", message: rawTransaction.errorDescription)
@@ -379,41 +385,25 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     func showRaw(raw: String) {
-        
-        DispatchQueue.main.async {
-            
-            self.rawDisplayer.rawString = raw
-            
-            if self.coldSwitchOutlet.isOn {
-                
-                self.navigationController?.navigationBar.topItem?.title = "Unsigned Tx"
-                
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.playButtonOutlet.tintColor = UIColor.lightGray.withAlphaComponent(0)
+            vc.addOutputOutlet.tintColor = UIColor.lightGray.withAlphaComponent(0)
+            vc.rawDisplayer.rawString = raw
+            if vc.coldSwitchOutlet.isOn {
+                vc.navigationController?.navigationBar.topItem?.title = "Unsigned Tx"
             } else {
-                
-                self.navigationController?.navigationBar.topItem?.title = "Signed Tx"
-                
+                vc.navigationController?.navigationBar.topItem?.title = "Signed Tx"
             }
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
-                
-                self.scannerView.removeFromSuperview()
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
-                    
-                    self.rawDisplayer.addRawDisplay()
-                    
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
-                        
-                        self.creatingView.removeConnectingView()
-                        
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: { [unowned vc = self] in
+                vc.scannerView.removeFromSuperview()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: { [unowned vc = self] in
+                    vc.rawDisplayer.addRawDisplay()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: { [unowned vc = self] in
+                        vc.creatingView.removeConnectingView()
                     })
-                    
                 })
-                
             })
-            
         }
-        
     }
     
     @IBAction func tryRawNow(_ sender: Any) {
@@ -571,12 +561,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         
         amountInput.resignFirstResponder()
         addressInput.resignFirstResponder()
-        
-    }
-    
-    @objc func nextButtonAction() {
-        
-        self.view.endEditing(true)
         
     }
     
@@ -777,10 +761,75 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         
     }
     
-    //MARK: Result Parsers
+    private func broadcastNow() {
+        DispatchQueue.main.async { [unowned vc = self] in
+            let alert = UIAlertController(title: "Broadcast with your node?", message: "You can optionally broadcast this transaction using Blockstream's esplora API over Tor V3 for improved privacy.", preferredStyle: .actionSheet)
+
+            alert.addAction(UIAlertAction(title: "Privately", style: .default, handler: { action in
+
+                vc.creatingView.addConnectingView(vc: vc, description: "broadcasting...")
+
+                Broadcaster.sharedInstance.send(rawTx: self.rawTxSigned) { [unowned vc = self] (txid) in
+
+                    if txid != nil {
+
+                        self.creatingView.removeConnectingView()
+                        displayAlert(viewController: self, isError: false, message: "Sent! TxID has been copied to clipboard")
+
+                        DispatchQueue.main.async {
+
+                            let pasteboard = UIPasteboard.general
+                            pasteboard.string = txid!
+
+                        }
+
+                    } else {
+
+                        vc.creatingView.removeConnectingView()
+                        displayAlert(viewController: vc, isError: true, message: "error broadcasting")
+
+                    }
+                }
+
+            }))
+
+            alert.addAction(UIAlertAction(title: "Use my node", style: .default, handler: { action in
+
+                self.creatingView.addConnectingView(vc: self, description: "broadcasting")
+
+                let reducer = Reducer()
+                reducer.makeCommand(command: .sendrawtransaction, param: "\"\(self.rawTxSigned)\"") {
+
+                    if !reducer.errorBool {
+
+                        self.creatingView.removeConnectingView()
+                        displayAlert(viewController: self, isError: false, message: "Sent! TxID has been copied to clipboard")
+
+                        DispatchQueue.main.async {
+
+                            let pasteboard = UIPasteboard.general
+                            pasteboard.string = reducer.stringToReturn
+
+                        }
+
+                    } else {
+
+                        displayAlert(viewController: self, isError: true, message: "Error: \(reducer.errorDescription)")
+
+                    }
+
+                }
+
+            }))
+
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true) {}
+
+        }
+    }
     
     func getRawTx() {
-        print("getRawTx")
         
         let rawTransaction = RawTransaction()
         rawTransaction.outputs = outputsString
@@ -793,88 +842,20 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 
                 removeViews()
                 
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { [unowned vc = self] in
                     
-                    if !self.coldSwitchOutlet.isOn {
-                        
-                        self.rawTxSigned = rawTransaction.signedRawTx
-                        
-                        DispatchQueue.main.async { [unowned vc = self] in
-
-                            vc.creatingView.removeConnectingView()
-
-                            let alert = UIAlertController(title: "Broadcast with your node?", message: "You can optionally broadcast this transaction using Blockstream's esplora API over Tor V3 for improved privacy.", preferredStyle: .actionSheet)
-
-                            alert.addAction(UIAlertAction(title: "Privately", style: .default, handler: { action in
-
-                                vc.creatingView.addConnectingView(vc: vc, description: "broadcasting...")
-
-                                Broadcaster.sharedInstance.send(rawTx: self.rawTxSigned) { [unowned vc = self] (txid) in
-
-                                    if txid != nil {
-
-                                        self.creatingView.removeConnectingView()
-                                        displayAlert(viewController: self, isError: false, message: "Sent! TxID has been copied to clipboard")
-
-                                        DispatchQueue.main.async {
-
-                                            let pasteboard = UIPasteboard.general
-                                            pasteboard.string = txid!
-
-                                        }
-
-                                    } else {
-
-                                        vc.creatingView.removeConnectingView()
-                                        displayAlert(viewController: vc, isError: true, message: "error broadcasting")
-
-                                    }
-                                }
-
-                            }))
-
-                            alert.addAction(UIAlertAction(title: "Use my node", style: .default, handler: { action in
-
-                                self.creatingView.addConnectingView(vc: self, description: "broadcasting")
-
-                                let reducer = Reducer()
-                                reducer.makeCommand(command: .sendrawtransaction, param: "\"\(self.rawTxSigned)\"") {
-
-                                    if !reducer.errorBool {
-
-                                        self.creatingView.removeConnectingView()
-                                        displayAlert(viewController: self, isError: false, message: "Sent! TxID has been copied to clipboard")
-
-                                        DispatchQueue.main.async {
-
-                                            let pasteboard = UIPasteboard.general
-                                            pasteboard.string = reducer.stringToReturn
-
-                                        }
-
-                                    } else {
-
-                                        displayAlert(viewController: self, isError: true, message: "Error: \(reducer.errorDescription)")
-
-                                    }
-
-                                }
-
-                            }))
-
-                            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-                            alert.popoverPresentationController?.sourceView = self.view
-                            self.present(alert, animated: true) {}
-
-                        }
+                    if !vc.coldSwitchOutlet.isOn {
+                        vc.rawTxSigned = rawTransaction.signedRawTx
+                        vc.creatingView.removeConnectingView()
+                        vc.broadcastNow()
                         
                     } else {
                         
-                        self.rawTxSigned = rawTransaction.unsignedRawTx
+                        vc.rawTxSigned = rawTransaction.unsignedRawTx
                         
                     }
                     
-                    self.showRaw(raw: self.rawTxSigned)
+                    vc.showRaw(raw: vc.rawTxSigned)
                     
                 }
                 

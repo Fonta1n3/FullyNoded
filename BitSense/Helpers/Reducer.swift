@@ -69,7 +69,7 @@ class Reducer {
                     self.stringToReturn = "Passphrase updated"
                     completion()
                     
-                } else if command == .encryptwallet || command == .walletlock {
+                } else if command == .walletlock {
                     
                     self.stringToReturn = "Wallet encrypted"
                     completion()

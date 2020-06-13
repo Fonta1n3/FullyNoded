@@ -79,6 +79,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             func update(key: String, value: Data) -> Bool {
                 var result = false
                 cd.update(id: id, keyToUpdate: key, newValue: value, entity: .newNodes) { success in
+                    print("success = \(success)")
                     result = success
                 }
                 return result
@@ -93,31 +94,27 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             }
             
             if rpcUserField.text != "" {
-                
                 guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
-                if !update(key: "rpcuser", value: enc) {
-                    displayAlert(viewController: self, isError: true, message: "error updating rpc username")
+                cd.update(id: id, keyToUpdate: "rpcuser", newValue: enc, entity: .newNodes) { success in
+                    if !success {
+                        displayAlert(viewController: self, isError: true, message: "error updating rpc username")
+                    }
                 }
-                
             }
             
             if rpcPassword.text != "" {
-                
                 guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
-                if !update(key: "rpcpassword", value: enc) {
-                    displayAlert(viewController: self, isError: true, message: "error updating rpc password")
+                cd.update(id: id, keyToUpdate: "rpcpassword", newValue: enc, entity: .newNodes) { success in
+                    if !success {
+                        displayAlert(viewController: self, isError: true, message: "error updating rpc password")
+                    }
                 }
-                
             }
             
             DispatchQueue.main.async { [unowned vc = self] in
-                
                 vc.performSegue(withIdentifier: "goToTorDetails", sender: vc)
-                
             }
-            
         }
-        
     }
     
     override func viewDidLoad() {

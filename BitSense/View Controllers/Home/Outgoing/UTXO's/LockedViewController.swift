@@ -81,17 +81,11 @@ class LockedViewController: UIViewController, UITableViewDelegate, UITableViewDa
     }
     
     func getAmounts(i: Int) {
-        
         if i <= helperArray.count - 1 {
-            
             selectedTxid = helperArray[i]["txid"] as! String
             selectedVout = helperArray[i]["vout"] as! Int
-            
-            executeNodeCommand(method: BTC_CLI_COMMAND.getrawtransaction,
-                               param: "\"\(selectedTxid)\", true")
-            
+            executeNodeCommand(method: .gettransaction, param: "\"\(selectedTxid)\", true")
         }
-        
     }
     
     // MARK: - Table view data source
@@ -172,43 +166,31 @@ class LockedViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 
                 switch method {
                     
-                case BTC_CLI_COMMAND.getrawtransaction:
+                case .gettransaction:
                     
                     let dict = reducer.dictToReturn
-                    let outputs = dict["vout"] as! NSArray
-                    
-                    for (i, outputDict) in outputs.enumerated() {
-                        
-                        let output = outputDict as! NSDictionary
-                        let value = output["value"] as! Double
-                        let vout = output["n"] as! Int
-                        
-                        if vout == selectedVout {
-                            
-                            helperArray[ind]["amount"] = value
-                            ind = ind + 1
-                            
-                        }
-                        
-                        if i + 1 == outputs.count {
-                            
-                            if ind <= helperArray.count - 1 {
-                                
-                                getAmounts(i: ind)
-                                
-                            } else {
-                                
-                                DispatchQueue.main.async {
-                                    
-                                    self.tableView.reloadData()
-                                    self.creatingView.removeConnectingView()
-                                    
+                    if let details = dict["details"] as? NSArray {
+                        for (i, output) in details.enumerated() {
+                            if let outputDict = output as? NSDictionary {
+                                let value = outputDict["amount"] as! Double
+                                let vout = outputDict["vout"] as! Int
+                                if vout == selectedVout {
+                                    helperArray[ind]["amount"] = value
+                                    ind = ind + 1
                                 }
                                 
+                                if i + 1 == details.count {
+                                    if ind <= helperArray.count - 1 {
+                                        getAmounts(i: ind)
+                                    } else {
+                                        DispatchQueue.main.async { [unowned vc = self] in
+                                            vc.tableView.reloadData()
+                                            vc.creatingView.removeConnectingView()
+                                        }
+                                    }
+                                }
                             }
-                            
                         }
-                        
                     }
                     
                 case BTC_CLI_COMMAND.listlockunspent:
@@ -236,8 +218,7 @@ class LockedViewController: UIViewController, UITableViewDelegate, UITableViewDa
                     
                     helperArray.removeAll()
                     
-                    executeNodeCommand(method: BTC_CLI_COMMAND.listlockunspent,
-                                       param: "")
+                    executeNodeCommand(method: .listlockunspent, param: "")
                     
                     DispatchQueue.main.async {
                         

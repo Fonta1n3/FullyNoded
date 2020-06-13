@@ -52,7 +52,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         tabBarController?.delegate = self
         mainMenu.delegate = self
         mainMenu.alpha = 0

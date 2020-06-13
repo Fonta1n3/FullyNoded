@@ -493,12 +493,17 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                         creatingView.removeConnectingView()
                         self.showRaw(raw: hex)
                         
-                    } else {
+                    } else if !complete {
+                        
+                        let hex = dict["hex"] as! String
+                        self.showRaw(raw: hex)
+                        creatingView.removeConnectingView()
+                        showAlert(vc: self, title: "Transaction still incomplete!", message: "This transaction is still not fully signed.")
+                        
+                    } else if let errors = dict["errors"] as? NSArray {
                         
                         creatingView.removeConnectingView()
-                        let errors = dict["errors"] as! NSArray
                         var errorStrings = [String]()
-                        
                         for error in errors {
                             
                             let dic = error as! NSDictionary
@@ -520,6 +525,7 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                         displayAlert(viewController: self,
                                      isError: true,
                                      message: err)
+                        
                         
                     }
                     

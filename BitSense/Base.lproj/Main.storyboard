@@ -2609,12 +2609,14 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                         </rightBarButtonItems>
                     </navigationItem>
                     <connections>
+                        <outlet property="addOutputOutlet" destination="nUU-fv-dwT" id="UuC-ki-MLf"/>
                         <outlet property="addressInput" destination="vOa-19-8RX" id="p5c-LC-6xw"/>
                         <outlet property="amountInput" destination="WBT-v4-ipz" id="4zO-8O-Q8c"/>
                         <outlet property="amountLabel" destination="WP2-Zk-iPW" id="fVP-up-4Ws"/>
                         <outlet property="coldLabel" destination="hx9-g4-Wzg" id="heW-Jj-rxX"/>
                         <outlet property="coldSwitchOutlet" destination="8lb-GZ-xdc" id="unA-Qo-88g"/>
                         <outlet property="outputsTable" destination="jXp-xP-J4h" id="y02-Rq-oD9"/>
+                        <outlet property="playButtonOutlet" destination="I94-Cm-0jw" id="Omf-yi-VMq"/>
                         <outlet property="receivingLabel" destination="uIC-Eu-XZD" id="wYg-jj-lxo"/>
                         <outlet property="scanOutlet" destination="DWs-Qd-5JU" id="zHM-yQ-elN"/>
                         <outlet property="scannerView" destination="hCl-Q8-hd5" id="iVt-0D-Bjm"/>
@@ -2878,35 +2880,71 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
             </objects>
             <point key="canvasLocation" x="4640.8000000000002" y="375.56221889055473"/>
         </scene>
-        <!--Security Center-->
+        <!--Security Center View Controller-->
         <scene sceneID="PNj-5X-XaN">
             <objects>
-                <viewController extendedLayoutIncludesOpaqueBars="YES" id="Jmi-bN-zgj" customClass="SecurityCenterViewController" customModule="BitSense" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="Jmi-bN-zgj" customClass="SecurityCenterViewController" customModule="BitSense" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="kzC-ve-Ytf">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="gto-Hh-JcM">
-                                <rect key="frame" x="0.0" y="44" width="375" height="623"/>
-                                <color key="separatorColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <rect key="frame" x="0.0" y="120.5" width="375" height="546.5"/>
+                                <color key="separatorColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="securityCell" textLabel="naa-Gg-rCQ" style="IBUITableViewCellStyleDefault" id="iZH-1U-Qkm">
-                                        <rect key="frame" x="15" y="55.5" width="345" height="43.5"/>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="securityCell" rowHeight="54" id="fG9-KL-t7L">
+                                        <rect key="frame" x="15" y="55.5" width="345" height="54"/>
                                         <autoresizingMask key="autoresizingMask"/>
-                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="iZH-1U-Qkm" id="KsR-6c-zJY">
-                                            <rect key="frame" x="0.0" y="0.0" width="345" height="43.5"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="fG9-KL-t7L" id="xYD-lp-qRG">
+                                            <rect key="frame" x="0.0" y="0.0" width="345" height="54"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="naa-Gg-rCQ">
-                                                    <rect key="frame" x="15" y="0.0" width="315" height="43.5"/>
-                                                    <autoresizingMask key="autoresizingMask"/>
+                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="chevron.right" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="uY1-pH-h8U">
+                                                    <rect key="frame" x="315" y="21.5" width="15" height="11.5"/>
+                                                    <color key="tintColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="height" constant="15" id="Shu-16-N7N"/>
+                                                        <constraint firstAttribute="width" constant="15" id="hDi-Yn-VMg"/>
+                                                    </constraints>
+                                                </imageView>
+                                                <view tag="3" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ocJ-l1-4bf">
+                                                    <rect key="frame" x="15" y="9.5" width="35" height="35"/>
+                                                    <subviews>
+                                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" tag="1" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="CKc-wE-2oc">
+                                                            <rect key="frame" x="5" y="5" width="25" height="25"/>
+                                                            <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                            <constraints>
+                                                                <constraint firstAttribute="height" constant="25" id="Zr2-ks-hMP"/>
+                                                                <constraint firstAttribute="width" constant="25" id="nWt-7n-YpE"/>
+                                                            </constraints>
+                                                        </imageView>
+                                                    </subviews>
+                                                    <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" constant="35" id="HoM-Al-mA8"/>
+                                                        <constraint firstItem="CKc-wE-2oc" firstAttribute="centerX" secondItem="ocJ-l1-4bf" secondAttribute="centerX" id="W6E-IA-k2T"/>
+                                                        <constraint firstAttribute="height" constant="35" id="cVo-mg-LId"/>
+                                                        <constraint firstItem="CKc-wE-2oc" firstAttribute="centerY" secondItem="ocJ-l1-4bf" secondAttribute="centerY" id="dks-S4-dqO"/>
+                                                        <constraint firstItem="CKc-wE-2oc" firstAttribute="centerY" secondItem="ocJ-l1-4bf" secondAttribute="centerY" id="jLZ-8h-kbf"/>
+                                                    </constraints>
+                                                </view>
+                                                <label opaque="NO" userInteractionEnabled="NO" tag="2" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NiX-DV-CO6">
+                                                    <rect key="frame" x="58" y="16.5" width="42" height="21"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                    <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                             </subviews>
+                                            <constraints>
+                                                <constraint firstItem="NiX-DV-CO6" firstAttribute="leading" secondItem="ocJ-l1-4bf" secondAttribute="trailing" constant="8" id="5i1-LA-Jn7"/>
+                                                <constraint firstItem="NiX-DV-CO6" firstAttribute="centerY" secondItem="xYD-lp-qRG" secondAttribute="centerY" id="Iwj-K3-wSr"/>
+                                                <constraint firstItem="ocJ-l1-4bf" firstAttribute="centerY" secondItem="xYD-lp-qRG" secondAttribute="centerY" id="JmP-AG-FKH"/>
+                                                <constraint firstItem="uY1-pH-h8U" firstAttribute="trailing" secondItem="xYD-lp-qRG" secondAttribute="trailingMargin" id="MJ7-6K-Eef"/>
+                                                <constraint firstItem="ocJ-l1-4bf" firstAttribute="leading" secondItem="xYD-lp-qRG" secondAttribute="leading" constant="15" id="nNz-87-PZ2"/>
+                                                <constraint firstItem="uY1-pH-h8U" firstAttribute="centerY" secondItem="xYD-lp-qRG" secondAttribute="centerY" id="q0h-8h-FPv"/>
+                                            </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" red="0.050706155599999997" green="0.05862525851" blue="0.071102283899999993" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="backgroundColor" red="0.13328838832487311" green="0.13328838832487311" blue="0.13328838832487311" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     </tableViewCell>
                                 </prototypes>
                                 <connections>
@@ -2914,24 +2952,34 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                                     <outlet property="delegate" destination="Jmi-bN-zgj" id="125-76-n2S"/>
                                 </connections>
                             </tableView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Security Center" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xLP-Y3-URj">
+                                <rect key="frame" x="16" y="58" width="198.5" height="33.5"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="28"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
+                            <constraint firstItem="xLP-Y3-URj" firstAttribute="top" secondItem="k95-vg-x64" secondAttribute="top" constant="14" id="3Vy-Xd-ZuA"/>
+                            <constraint firstItem="gto-Hh-JcM" firstAttribute="top" secondItem="xLP-Y3-URj" secondAttribute="bottom" constant="29" id="9rt-T6-0hz"/>
+                            <constraint firstItem="xLP-Y3-URj" firstAttribute="leading" secondItem="k95-vg-x64" secondAttribute="leading" constant="16" id="DnQ-oN-Vhn"/>
                             <constraint firstItem="gto-Hh-JcM" firstAttribute="trailing" secondItem="k95-vg-x64" secondAttribute="trailing" id="GzL-mA-UbB"/>
                             <constraint firstItem="gto-Hh-JcM" firstAttribute="bottom" secondItem="k95-vg-x64" secondAttribute="bottom" id="K5j-5Y-Lys"/>
-                            <constraint firstItem="gto-Hh-JcM" firstAttribute="top" secondItem="k95-vg-x64" secondAttribute="top" id="Ml2-Qr-4sg"/>
                             <constraint firstItem="gto-Hh-JcM" firstAttribute="leading" secondItem="k95-vg-x64" secondAttribute="leading" id="iVh-74-GEN"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="k95-vg-x64"/>
                     </view>
-                    <navigationItem key="navigationItem" title="Security Center" id="xcC-N2-d5d"/>
+                    <navigationItem key="navigationItem" id="xcC-N2-d5d"/>
                     <connections>
                         <outlet property="securityTable" destination="gto-Hh-JcM" id="4YA-OO-T73"/>
+                        <segue destination="bWB-tp-pgw" kind="show" identifier="addPasswordSegue" id="gF6-29-ZCL"/>
+                        <segue destination="KZO-Gi-4AH" kind="show" identifier="segueToTorAuth" id="tXz-u5-LNx"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="PtR-7d-dsy" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="5564" y="373"/>
+            <point key="canvasLocation" x="5564" y="372.86356821589209"/>
         </scene>
         <!--Tab Bar Controller-->
         <scene sceneID="T9u-Zb-e9t">
@@ -2964,7 +3012,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Scan or paste your nodes onion address. You will need a V3 hidden service configured that controls your nodes RPC port." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rsb-RY-Y0Y">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Scan or paste your nodes onion address with the port. e.g. yh83b83ndu8.onion:8332" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rsb-RY-Y0Y">
                                 <rect key="frame" x="16" y="48" width="343" height="58"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="58" id="73S-Nd-Zar"/>
@@ -2975,7 +3023,6 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                             </label>
                             <textField opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="o4M-Vw-QWb">
                                 <rect key="frame" x="16" y="131.5" width="305" height="34"/>
-                                <color key="backgroundColor" red="0.16919294269999999" green="0.19278580919999999" blue="0.219758807" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W3" family="Hiragino Sans" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
@@ -2998,19 +3045,6 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                                     <action selector="scanNow:" destination="AiX-Jq-Vnp" eventType="touchUpInside" id="2JB-Qy-A4b"/>
                                 </connections>
                             </button>
-                            <textField opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="bQf-n1-9HR">
-                                <rect key="frame" x="16" y="194" width="305" height="34"/>
-                                <color key="backgroundColor" red="0.16919294269999999" green="0.19278580919999999" blue="0.219758807" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <fontDescription key="fontDescription" name="HiraginoSans-W3" family="Hiragino Sans" pointSize="14"/>
-                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
-                            </textField>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Optional V3 Auth Private Key" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pwd-9F-qgK">
-                                <rect key="frame" x="16" y="174.5" width="163" height="14.5"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                             <button opaque="NO" tag="8" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9FZ-os-UZR">
                                 <rect key="frame" x="0.0" y="614" width="375" height="53"/>
                                 <color key="backgroundColor" systemColor="systemBlueColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -3025,118 +3059,35 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                                     <action selector="saveAction:" destination="AiX-Jq-Vnp" eventType="touchUpInside" id="6CJ-VV-43v"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HYv-Dn-Ka5">
-                                <rect key="frame" x="99" y="229" width="177" height="23"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                <state key="normal" title="generate V3 auth key pair">
-                                    <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                </state>
-                                <connections>
-                                    <action selector="generateKeyPair:" destination="AiX-Jq-Vnp" eventType="touchUpInside" id="Qob-gj-bRs"/>
-                                </connections>
-                            </button>
-                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="GXl-cU-eSO">
-                                <rect key="frame" x="16" y="313" width="343" height="92"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="92" id="SVI-fm-utB"/>
-                                </constraints>
-                                <color key="textColor" systemColor="systemGreenColor" red="0.20392156859999999" green="0.78039215689999997" blue="0.34901960780000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
-                            </textView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="V3 Auth Public Key" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0xJ-22-uKO">
-                                <rect key="frame" x="16" y="260" width="145" height="14"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tp2-g0-zeG">
-                                <rect key="frame" x="16" y="281" width="343" height="24"/>
-                                <string key="text">This pubkey should be placed in a file (fullynoded.auth), inside your Hidden services authorized_clients directory. Tap to export.</string>
-                                <fontDescription key="fontDescription" type="system" pointSize="10"/>
-                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Xer-7V-3Vo">
-                                <rect key="frame" x="329" y="196" width="30" height="30"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="30" id="Kg3-jE-Onq"/>
-                                    <constraint firstAttribute="width" constant="30" id="lje-U2-NL5"/>
-                                </constraints>
-                                <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <state key="normal" image="qrcode.viewfinder" catalog="system"/>
-                                <connections>
-                                    <action selector="scanAuthKey:" destination="AiX-Jq-Vnp" eventType="touchUpInside" id="wtT-Uj-dwO"/>
-                                </connections>
-                            </button>
                         </subviews>
                         <color key="backgroundColor" red="0.050706155598163605" green="0.058625258505344391" blue="0.071102283895015717" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="pwd-9F-qgK" firstAttribute="top" secondItem="o4M-Vw-QWb" secondAttribute="bottom" constant="9" id="29a-Wr-E7d"/>
                             <constraint firstItem="9FZ-os-UZR" firstAttribute="bottom" secondItem="xZf-Ri-ucz" secondAttribute="bottom" id="5OA-Uh-Na2"/>
-                            <constraint firstItem="HYv-Dn-Ka5" firstAttribute="top" secondItem="bQf-n1-9HR" secondAttribute="bottom" constant="6" id="5fL-U0-2c3"/>
-                            <constraint firstItem="GXl-cU-eSO" firstAttribute="leading" secondItem="xZf-Ri-ucz" secondAttribute="leading" constant="16" id="7In-8J-xn9"/>
                             <constraint firstItem="sh8-mN-0fm" firstAttribute="centerY" secondItem="o4M-Vw-QWb" secondAttribute="centerY" id="8V4-Rd-Cgt"/>
                             <constraint firstItem="rsb-RY-Y0Y" firstAttribute="leading" secondItem="xZf-Ri-ucz" secondAttribute="leading" constant="16" id="BC1-Lm-UwQ"/>
                             <constraint firstItem="9FZ-os-UZR" firstAttribute="leading" secondItem="xZf-Ri-ucz" secondAttribute="leading" id="G6y-2e-5kA"/>
-                            <constraint firstItem="bQf-n1-9HR" firstAttribute="top" secondItem="pwd-9F-qgK" secondAttribute="bottom" constant="5" id="Jnj-6Q-Blf"/>
                             <constraint firstItem="9FZ-os-UZR" firstAttribute="trailing" secondItem="xZf-Ri-ucz" secondAttribute="trailing" id="KYa-rR-RWC"/>
-                            <constraint firstItem="Xer-7V-3Vo" firstAttribute="leading" secondItem="bQf-n1-9HR" secondAttribute="trailing" constant="8" id="O7w-yW-wEK"/>
-                            <constraint firstItem="xZf-Ri-ucz" firstAttribute="trailing" secondItem="Tp2-g0-zeG" secondAttribute="trailing" constant="16" id="Phu-6D-D5M"/>
                             <constraint firstItem="1oS-WI-SUN" firstAttribute="leading" secondItem="xZf-Ri-ucz" secondAttribute="leading" constant="16" id="QnJ-oB-4HS"/>
-                            <constraint firstItem="Xer-7V-3Vo" firstAttribute="centerY" secondItem="bQf-n1-9HR" secondAttribute="centerY" id="Rqg-oa-dBO"/>
                             <constraint firstItem="o4M-Vw-QWb" firstAttribute="top" secondItem="1oS-WI-SUN" secondAttribute="bottom" constant="5" id="Rvd-Dp-OyU"/>
-                            <constraint firstItem="pwd-9F-qgK" firstAttribute="leading" secondItem="xZf-Ri-ucz" secondAttribute="leading" constant="16" id="Tnj-o4-tNe"/>
                             <constraint firstItem="xZf-Ri-ucz" firstAttribute="trailing" secondItem="sh8-mN-0fm" secondAttribute="trailing" constant="16" id="XcA-0S-rBJ"/>
                             <constraint firstItem="rsb-RY-Y0Y" firstAttribute="top" secondItem="xZf-Ri-ucz" secondAttribute="top" constant="4" id="bfv-Fe-aNT"/>
-                            <constraint firstItem="xZf-Ri-ucz" firstAttribute="trailing" secondItem="GXl-cU-eSO" secondAttribute="trailing" constant="16" id="dIw-eV-EeT"/>
-                            <constraint firstItem="GXl-cU-eSO" firstAttribute="top" secondItem="Tp2-g0-zeG" secondAttribute="bottom" constant="8" id="elh-Iv-gE5"/>
                             <constraint firstItem="xZf-Ri-ucz" firstAttribute="trailing" secondItem="rsb-RY-Y0Y" secondAttribute="trailing" constant="16" id="j5D-pc-w5e"/>
                             <constraint firstItem="1oS-WI-SUN" firstAttribute="top" secondItem="rsb-RY-Y0Y" secondAttribute="bottom" constant="6" id="khO-11-BEG"/>
-                            <constraint firstItem="Tp2-g0-zeG" firstAttribute="leading" secondItem="xZf-Ri-ucz" secondAttribute="leading" constant="16" id="m8j-uE-KbN"/>
-                            <constraint firstItem="bQf-n1-9HR" firstAttribute="leading" secondItem="pwd-9F-qgK" secondAttribute="leading" id="mXj-0C-sg7"/>
-                            <constraint firstItem="0xJ-22-uKO" firstAttribute="leading" secondItem="xZf-Ri-ucz" secondAttribute="leading" constant="16" id="oSx-bc-cXj"/>
-                            <constraint firstItem="0xJ-22-uKO" firstAttribute="top" secondItem="HYv-Dn-Ka5" secondAttribute="bottom" constant="8" id="p3r-OD-KMK"/>
                             <constraint firstItem="sh8-mN-0fm" firstAttribute="leading" secondItem="o4M-Vw-QWb" secondAttribute="trailing" constant="8" id="pWi-sl-NP7"/>
-                            <constraint firstItem="xZf-Ri-ucz" firstAttribute="trailing" secondItem="Xer-7V-3Vo" secondAttribute="trailing" constant="16" id="q8G-HH-Bmz"/>
-                            <constraint firstItem="Tp2-g0-zeG" firstAttribute="top" secondItem="0xJ-22-uKO" secondAttribute="bottom" constant="7" id="qjf-yF-SUP"/>
                             <constraint firstItem="o4M-Vw-QWb" firstAttribute="leading" secondItem="1oS-WI-SUN" secondAttribute="leading" id="sbG-x9-0XJ"/>
-                            <constraint firstItem="HYv-Dn-Ka5" firstAttribute="centerX" secondItem="ToV-RY-jtp" secondAttribute="centerX" id="teC-vR-kwE"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="xZf-Ri-ucz"/>
                     </view>
                     <navigationItem key="navigationItem" title="Onion Credentials" id="dpj-wA-JTE"/>
                     <connections>
-                        <outlet property="authKeyField" destination="bQf-n1-9HR" id="mLN-PB-V21"/>
-                        <outlet property="generateButtonOutlet" destination="HYv-Dn-Ka5" id="VlR-NX-3db"/>
                         <outlet property="headerLabel" destination="rsb-RY-Y0Y" id="Fx3-kz-JWX"/>
                         <outlet property="onionAddressField" destination="o4M-Vw-QWb" id="Zlu-Is-0Vy"/>
-                        <outlet property="pubkeyDescription" destination="Tp2-g0-zeG" id="Qdt-eT-x9C"/>
-                        <outlet property="pubkeyLabel" destination="0xJ-22-uKO" id="I8g-Wr-stF"/>
-                        <outlet property="pubkeyTextView" destination="GXl-cU-eSO" id="ozH-6w-m3n"/>
                         <outlet property="saveButton" destination="9FZ-os-UZR" id="hSO-Ga-rDP"/>
-                        <segue destination="YcD-09-aPW" kind="show" identifier="showPubKey" id="UFg-gO-e6l"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="g2X-Fh-3hU" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="4216.8000000000002" y="2836.7316341829087"/>
-        </scene>
-        <!--ShowV3 Pub Key View Controller-->
-        <scene sceneID="azO-qN-Sde">
-            <objects>
-                <viewController extendedLayoutIncludesOpaqueBars="YES" id="YcD-09-aPW" customClass="ShowV3PubKeyViewController" customModule="BitSense" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="MhE-kP-9Fd">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" red="0.050706155599999997" green="0.05862525851" blue="0.071102283899999993" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                        <viewLayoutGuide key="safeArea" id="EtS-RK-axR"/>
-                    </view>
-                    <navigationItem key="navigationItem" id="3r6-AR-oZm"/>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="tYi-cH-jr2" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="4217" y="3568"/>
         </scene>
         <!--Choose Connection Type View Controller-->
         <scene sceneID="E4l-AD-9N0">
@@ -3339,6 +3290,182 @@ COLD means no keys will be generated and no private keys can be imported.</strin
             </objects>
             <point key="canvasLocation" x="4656.8000000000002" y="1188.7556221889056"/>
         </scene>
+        <!--App Password View Controller-->
+        <scene sceneID="kuN-Nq-0VK">
+            <objects>
+                <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="bWB-tp-pgw" customClass="AppPasswordViewController" customModule="BitSense" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="rbo-Xj-SVe">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="G5O-Yl-luJ">
+                                <rect key="frame" x="16" y="161" width="315" height="34"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="next" secureTextEntry="YES" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
+                            </textField>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="App Password" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tL2-J8-k43">
+                                <rect key="frame" x="16" y="64" width="182" height="34"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="28"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Add unlock password" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="awR-fG-6eE">
+                                <rect key="frame" x="16" y="132" width="164" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hIn-Uo-p04">
+                                <rect key="frame" x="339" y="167" width="20" height="22"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="20" id="6ep-yB-bD0"/>
+                                    <constraint firstAttribute="height" constant="22" id="DI5-AZ-21i"/>
+                                </constraints>
+                                <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <state key="normal" image="plus.circle" catalog="system">
+                                    <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="buttonAction:" destination="bWB-tp-pgw" eventType="touchUpInside" id="gZn-ve-YQv"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="tL2-J8-k43" firstAttribute="top" secondItem="PoV-6L-X84" secondAttribute="top" constant="20" id="0Ix-aV-P0a"/>
+                            <constraint firstItem="hIn-Uo-p04" firstAttribute="leading" secondItem="G5O-Yl-luJ" secondAttribute="trailing" constant="8" id="0gD-OM-Yw6"/>
+                            <constraint firstItem="G5O-Yl-luJ" firstAttribute="top" secondItem="awR-fG-6eE" secondAttribute="bottom" constant="8" id="2fa-ID-XkN"/>
+                            <constraint firstItem="PoV-6L-X84" firstAttribute="trailing" secondItem="hIn-Uo-p04" secondAttribute="trailing" constant="16" id="IEo-qb-dvn"/>
+                            <constraint firstItem="tL2-J8-k43" firstAttribute="leading" secondItem="PoV-6L-X84" secondAttribute="leading" constant="16" id="Yru-hz-owd"/>
+                            <constraint firstItem="awR-fG-6eE" firstAttribute="top" secondItem="tL2-J8-k43" secondAttribute="bottom" constant="34" id="a04-br-hOu"/>
+                            <constraint firstItem="G5O-Yl-luJ" firstAttribute="leading" secondItem="PoV-6L-X84" secondAttribute="leading" constant="16" id="atT-Jd-HeH"/>
+                            <constraint firstItem="awR-fG-6eE" firstAttribute="leading" secondItem="PoV-6L-X84" secondAttribute="leading" constant="16" id="pFh-dj-SE5"/>
+                            <constraint firstItem="hIn-Uo-p04" firstAttribute="centerY" secondItem="G5O-Yl-luJ" secondAttribute="centerY" id="rcL-TW-JPH"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="PoV-6L-X84"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="rAI-6B-tTx"/>
+                    <connections>
+                        <outlet property="buttonOutlet" destination="hIn-Uo-p04" id="Ifb-g5-FKN"/>
+                        <outlet property="textField" destination="G5O-Yl-luJ" id="BTv-de-iwv"/>
+                        <outlet property="titleLabel" destination="awR-fG-6eE" id="0nf-4C-mMh"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="9MX-vC-prA" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="5576.8000000000002" y="1181.5592203898052"/>
+        </scene>
+        <!--Tor Auth View Controller-->
+        <scene sceneID="blU-xT-UtC">
+            <objects>
+                <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="KZO-Gi-4AH" customClass="TorAuthViewController" customModule="BitSense" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="uG4-04-Hlg">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tor Authentication" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rpP-21-3Z5">
+                                <rect key="frame" x="16" y="64" width="233" height="33.5"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="28"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="yal-Te-OvI">
+                                <rect key="frame" x="16" y="160" width="343" height="34"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="next" secureTextEntry="YES" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
+                            </textField>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Private Key" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1i0-rS-dgs">
+                                <rect key="frame" x="16" y="131.5" width="85.5" height="20.5"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Public Key" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nEN-fJ-IQg">
+                                <rect key="frame" x="16" y="224" width="79.5" height="20.5"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="descriptor:x25519:ckjbckjbckjbwdkcjbwkdjbcwkjdbc" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9uA-U1-aYX">
+                                <rect key="frame" x="16" y="252.5" width="343" height="45"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="45" id="HU3-Np-WCE"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="8gH-bm-rKb">
+                                <rect key="frame" x="340" y="223.5" width="19" height="22"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="wCH-QJ-4pU">
+                                        <rect key="frame" x="0.0" y="0.0" width="19" height="22"/>
+                                        <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <state key="normal" image="square.and.arrow.up" catalog="system"/>
+                                        <connections>
+                                            <action selector="exportAction:" destination="KZO-Gi-4AH" eventType="touchUpInside" id="jwF-8c-EOL"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                            </stackView>
+                            <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="4Dm-7E-1gc">
+                                <rect key="frame" x="341" y="131" width="18" height="22"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="SpG-OR-6dZ">
+                                        <rect key="frame" x="0.0" y="0.0" width="18" height="22"/>
+                                        <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <state key="normal" image="arrow.clockwise" catalog="system"/>
+                                        <connections>
+                                            <action selector="refreshAction:" destination="KZO-Gi-4AH" eventType="touchUpInside" id="vYW-Aa-AfD"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                            </stackView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KvQ-lH-ysz">
+                                <rect key="frame" x="16" y="305" width="343" height="67"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="67" id="Vnq-Ms-2dR"/>
+                                </constraints>
+                                <string key="text">You will need to add this public key in its current format to your tor "authorized_clients" directory and save it as a file with a ".auth" extension. Once added to your node's machine make sure you restart Tor.</string>
+                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                <color key="textColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="KvQ-lH-ysz" firstAttribute="leading" secondItem="JVg-t3-erP" secondAttribute="leading" constant="16" id="4Jc-YH-ZKM"/>
+                            <constraint firstItem="rpP-21-3Z5" firstAttribute="top" secondItem="JVg-t3-erP" secondAttribute="top" constant="20" id="9rn-Mz-pAk"/>
+                            <constraint firstItem="JVg-t3-erP" firstAttribute="trailing" secondItem="yal-Te-OvI" secondAttribute="trailing" constant="16" id="B2d-mX-922"/>
+                            <constraint firstItem="9uA-U1-aYX" firstAttribute="top" secondItem="nEN-fJ-IQg" secondAttribute="bottom" constant="8" id="Dnq-NP-dDC"/>
+                            <constraint firstItem="yal-Te-OvI" firstAttribute="top" secondItem="1i0-rS-dgs" secondAttribute="bottom" constant="8" id="FmK-pX-ZSo"/>
+                            <constraint firstItem="8gH-bm-rKb" firstAttribute="centerY" secondItem="nEN-fJ-IQg" secondAttribute="centerY" id="MLe-e2-Vwg"/>
+                            <constraint firstItem="JVg-t3-erP" firstAttribute="trailing" secondItem="KvQ-lH-ysz" secondAttribute="trailing" constant="16" id="Svp-9T-IV3"/>
+                            <constraint firstItem="KvQ-lH-ysz" firstAttribute="top" secondItem="9uA-U1-aYX" secondAttribute="bottom" constant="7.5" id="VQe-0d-dOB"/>
+                            <constraint firstItem="rpP-21-3Z5" firstAttribute="leading" secondItem="JVg-t3-erP" secondAttribute="leading" constant="16" id="VSh-Kv-CxE"/>
+                            <constraint firstItem="9uA-U1-aYX" firstAttribute="leading" secondItem="JVg-t3-erP" secondAttribute="leading" constant="16" id="VeB-m4-pRX"/>
+                            <constraint firstItem="nEN-fJ-IQg" firstAttribute="leading" secondItem="JVg-t3-erP" secondAttribute="leading" constant="16" id="biU-Ub-I5B"/>
+                            <constraint firstItem="JVg-t3-erP" firstAttribute="trailing" secondItem="4Dm-7E-1gc" secondAttribute="trailing" constant="16" id="cGB-9B-DxH"/>
+                            <constraint firstItem="yal-Te-OvI" firstAttribute="leading" secondItem="JVg-t3-erP" secondAttribute="leading" constant="16" id="cVY-qk-TIQ"/>
+                            <constraint firstItem="nEN-fJ-IQg" firstAttribute="top" secondItem="yal-Te-OvI" secondAttribute="bottom" constant="30" id="ddc-3v-HhR"/>
+                            <constraint firstItem="JVg-t3-erP" firstAttribute="trailing" secondItem="8gH-bm-rKb" secondAttribute="trailing" constant="16" id="gvY-sU-OtT"/>
+                            <constraint firstItem="JVg-t3-erP" firstAttribute="trailing" secondItem="9uA-U1-aYX" secondAttribute="trailing" constant="16" id="mqT-O1-Gkb"/>
+                            <constraint firstItem="1i0-rS-dgs" firstAttribute="top" secondItem="rpP-21-3Z5" secondAttribute="bottom" constant="34" id="q78-zM-cVg"/>
+                            <constraint firstItem="4Dm-7E-1gc" firstAttribute="centerY" secondItem="1i0-rS-dgs" secondAttribute="centerY" id="snv-1b-lGE"/>
+                            <constraint firstItem="1i0-rS-dgs" firstAttribute="leading" secondItem="JVg-t3-erP" secondAttribute="leading" constant="16" id="vpe-NX-Kxb"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="JVg-t3-erP"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="Pks-1N-J9K"/>
+                    <connections>
+                        <outlet property="publickKeyLabel" destination="9uA-U1-aYX" id="lPI-dt-rtM"/>
+                        <outlet property="textField" destination="yal-Te-OvI" id="O3c-Qm-07e"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="mH1-Z0-yiM" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="6324" y="1179.7601199400301"/>
+        </scene>
         <!--Node Detail View Controller-->
         <scene sceneID="79C-6o-WJP">
             <objects>
@@ -3358,7 +3485,6 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                             </label>
                             <textField opaque="NO" tag="1" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="LM8-fJ-o94">
                                 <rect key="frame" x="16" y="124" width="343" height="34"/>
-                                <color key="backgroundColor" red="0.16919294269999999" green="0.19278580919999999" blue="0.219758807" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W3" family="Hiragino Sans" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
@@ -3374,7 +3500,6 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                             </label>
                             <textField opaque="NO" tag="6" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="uRk-PX-ulA">
                                 <rect key="frame" x="16" y="185" width="343" height="34"/>
-                                <color key="backgroundColor" red="0.16919294269999999" green="0.19278580919999999" blue="0.219758807" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W3" family="Hiragino Sans" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
@@ -3390,7 +3515,6 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                             </label>
                             <textField opaque="NO" tag="6" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="4YC-xq-wqu">
                                 <rect key="frame" x="16" y="243" width="343" height="34"/>
-                                <color key="backgroundColor" red="0.16919294269999999" green="0.19278580919999999" blue="0.219758807" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W3" family="Hiragino Sans" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
@@ -4443,6 +4567,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <image name="Image-2" width="30" height="30"/>
         <image name="Image-4" width="30" height="30"/>
         <image name="Settings" width="30" height="30"/>
+        <image name="arrow.clockwise" catalog="system" width="115" height="128"/>
         <image name="arrow.dow" width="128" height="128"/>
         <image name="arrow.down.right.and.arrow.up.left" catalog="system" width="128" height="118"/>
         <image name="chevron.right" catalog="system" width="96" height="128"/>
@@ -4450,7 +4575,9 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <image name="lock" catalog="system" width="128" height="128"/>
         <image name="paintbrush" catalog="system" width="128" height="128"/>
         <image name="play.rectangle" catalog="system" width="128" height="93"/>
+        <image name="plus.circle" catalog="system" width="128" height="121"/>
         <image name="qrcode.viewfinder" catalog="system" width="128" height="114"/>
+        <image name="square.and.arrow.up" catalog="system" width="115" height="128"/>
         <image name="whiteCheck.png" width="2048" height="2048"/>
     </resources>
 </document>
