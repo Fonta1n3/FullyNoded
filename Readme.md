@@ -32,10 +32,6 @@ Go to nodl browser based UI, tap the Fully Noded link and Fully Noded will open,
 - So much more
 - BIP39 compatiblity for your Node
 
-## Join the Testflight
-
-[here](https://testflight.apple.com/join/PuFnSqgi)
-
 ## Download from App Store
 
 [here](https://apps.apple.com/us/app/fully-noded/id1436425586)
@@ -64,30 +60,14 @@ then
 
 Wait for bew to finish.
 
-Install carthage:  [Follow these instructions](https://brewinstall.org/install-carthage-on-mac-with-brew/)
-
-Install Tor.Framework Dependencies:
-
-```
-brew install automake
-brew install autoconf
-brew install libtool
-brew install gettext
-git clone git@github.com:iCepa/Tor.framework
-cd Tor.framework
-git submodule init
-git submodule update
-carthage build --no-skip-current --platform iOS
-```
-then
-
+- Install carthage:  `brew install carthage`
 - Install [Xcode](https://itunes.apple.com/id/app/xcode/id497799835?mt=12)
-- You will need a free Apple developer account [create one here](https://developer.apple.com/programs/enroll/)
-- In XCode, click "XCode" -> "preferences" -> "Accounts" -> add your github account
+- You will need a free Apple developer account create one [here](https://developer.apple.com/programs/enroll/)
+- In XCode, click "XCode" > "preferences" > "Accounts" > add your github account
 - Go to [Fully Noded in GitHub](https://github.com/Fonta1n3/FullyNoded) click "Clone and Download" -> "Open in XCode"
 - Open Terminal
-- `cd Documents FullyNoded` (or wherever it downloaded to)
-- run `carthage update --platform iOS` and let carthage do its thing
+- `cd FullyNoded`
+- `carthage update --platform iOS` and let carthage do its thing
 
 That's it, you can now run the app in XCode.
 
@@ -325,8 +305,6 @@ PR's welcome.
 
 ## Built With
 
-- [CryptoSwift](https://github.com/krzyzanowskim/CryptoSwift) for encrypting your nodes credentials.
-- [keychain-swift](https://github.com/evgenyneu/keychain-swift) for storing your nodes credentials decryption key on your iPhones secure enclave.
 - [Tor](https://github.com/iCepa/Tor.framework) for connecting to your node more privately and securely.
 
 ## Changes

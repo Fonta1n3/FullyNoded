@@ -164,10 +164,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     }
                 }
             }
-            
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.performSegue(withIdentifier: "goToTorDetails", sender: vc)
-            }
         }
     }
     
