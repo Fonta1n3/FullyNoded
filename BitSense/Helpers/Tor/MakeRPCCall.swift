@@ -12,7 +12,6 @@ class MakeRPCCall {
     
     static let sharedInstance = MakeRPCCall()
     
-    let aes = AESService()
     let cd = CoreDataService()
     var rpcusername = ""
     var rpcpassword = ""

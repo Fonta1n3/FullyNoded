@@ -11,18 +11,34 @@ import UIKit
 class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
     
     var selectedNode = [String:Any]()
-    let aes = AESService()
     let cd = CoreDataService()
     var createNew = Bool()
     var newNode = [String:Any]()
     var isInitialLoad = Bool()
     
-    @IBOutlet weak var headerLabel: UILabel!
     @IBOutlet var nodeLabel: UITextField!
     @IBOutlet var rpcUserField: UITextField!
     @IBOutlet var rpcPassword: UITextField!
     @IBOutlet var rpcLabel: UILabel!
     @IBOutlet var saveButton: UIButton!
+    @IBOutlet weak var onionAddressField: UITextField!
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        configureTapGesture()
+        nodeLabel.delegate = self
+        rpcPassword.delegate = self
+        rpcUserField.delegate = self
+        onionAddressField.delegate = self
+        rpcPassword.isSecureTextEntry = true
+        onionAddressField.isSecureTextEntry = true
+        saveButton.clipsToBounds = true
+        saveButton.layer.cornerRadius = 8
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        loadValues()
+    }
     
     @IBAction func save(_ sender: Any) {
         
@@ -38,9 +54,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         
         if createNew {
             
+            newNode["id"] = UUID()
+            
             if nodeLabel.text != "" {
                 newNode["label"] = nodeLabel.text!
-                
             }
             
             if rpcUserField.text != "" {
@@ -51,15 +68,49 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             if rpcPassword.text != "" {
                 guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
                 newNode["rpcpassword"] = enc
-                
             }
             
-            if nodeLabel.text != "" && rpcPassword.text != "" && rpcUserField.text != "" {
-                
-                DispatchQueue.main.async { [unowned vc = self] in
-                    
-                    vc.performSegue(withIdentifier: "goToTorDetails", sender: vc)
-                    
+            if onionAddressField.text != "" {
+                guard let encryptedOnionAddress = encryptedValue((onionAddressField.text)!.dataUsingUTF8StringEncoding)  else { return }
+                newNode["onionAddress"] = encryptedOnionAddress
+            }
+            
+            if nodeLabel.text != "" && rpcPassword.text != "" && rpcUserField.text != "" && onionAddressField.text != "" {
+                var refresh = false
+                cd.retrieveEntity(entityName: .newNodes) { [unowned vc = self] in
+                    if vc.cd.entities.count == 0 {
+                        vc.newNode["isActive"] = true
+                        refresh = true
+                    } else {
+                        vc.newNode["isActive"] = false
+                    }
+                    vc.cd.saveEntity(dict: vc.newNode, entityName: .newNodes) { [unowned vc = self] in
+                        
+                        if !vc.cd.errorBool {
+                            
+                            let success = vc.cd.boolToReturn
+                            
+                            if success {
+                                
+                                if refresh {
+                                    NotificationCenter.default.post(name: .refreshNode, object: nil)
+                                    displayAlert(viewController: vc, isError: false, message: "Tor node saved, we are now refreshing the home screen automatically.")
+                                } else {
+                                    displayAlert(viewController: vc, isError: false, message: "Tor node saved")
+                                }
+                                
+                            } else {
+                                
+                                displayAlert(viewController: vc, isError: true, message: "Error saving tor node")
+                                
+                            }
+                            
+                        } else {
+                            
+                            displayAlert(viewController: vc, isError: true, message: vc.cd.errorDescription)
+                        }
+                        
+                    }
                 }
                 
             } else {
@@ -75,15 +126,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             //updating
             
             let id = selectedNode["id"] as! UUID
-            
-            func update(key: String, value: Data) -> Bool {
-                var result = false
-                cd.update(id: id, keyToUpdate: key, newValue: value, entity: .newNodes) { success in
-                    print("success = \(success)")
-                    result = success
-                }
-                return result
-            }
             
             if nodeLabel.text != "" {
                 cd.update(id: id, keyToUpdate: "label", newValue: nodeLabel.text!, entity: .newNodes) { success in
@@ -111,28 +153,22 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
+            if onionAddressField.text != "" {
+                let decryptedAddress = (onionAddressField.text)!.dataUsingUTF8StringEncoding
+                guard let encryptedOnionAddress = encryptedValue(decryptedAddress) else { return }
+                cd.update(id: id, keyToUpdate: "onionAddress", newValue: encryptedOnionAddress, entity: .newNodes) { [unowned vc = self] success in
+                    if success {
+                        displayAlert(viewController: vc, isError: false, message: "Node updated!")
+                    } else {
+                        displayAlert(viewController: vc, isError: true, message: "Error updating node!")
+                    }
+                }
+            }
+            
             DispatchQueue.main.async { [unowned vc = self] in
                 vc.performSegue(withIdentifier: "goToTorDetails", sender: vc)
             }
         }
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        configureTapGesture()
-        nodeLabel.delegate = self
-        rpcPassword.delegate = self
-        rpcUserField.delegate = self
-        rpcPassword.isSecureTextEntry = true
-        headerLabel.adjustsFontSizeToFitWidth = true
-        
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        
-        loadValues()
-        
     }
     
     func configureTapGesture() {
@@ -194,6 +230,13 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 
             }
             
+            if let enc = node.onionAddress {
+                onionAddressField.text = decryptedValue(enc)
+            } else {
+                onionAddressField.attributedPlaceholder = NSAttributedString(string: "83nd8e93djh.onion:8332",
+                                                                             attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
+            }
+            
         } else {
                         
             rpcPassword.attributedPlaceholder = NSAttributedString(string: "rpcpassword",
@@ -205,45 +248,23 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             nodeLabel.attributedPlaceholder = NSAttributedString(string: "Give your node a label",
                                                                  attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
             
+            onionAddressField.attributedPlaceholder = NSAttributedString(string: "83nd8e93djh.onion:8332",
+                                                                         attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
+            
         }
         
     }
     
     @objc func dismissKeyboard (_ sender: UITapGestureRecognizer) {
-        
+        onionAddressField.resignFirstResponder()
         nodeLabel.resignFirstResponder()
         rpcUserField.resignFirstResponder()
         rpcPassword.resignFirstResponder()
-        
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        
         self.view.endEditing(true)
         return true
-        
-    }
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        
-        switch segue.identifier {
-            
-        case "goToTorDetails":
-            
-            if let vc = segue.destination as? TorCredentialViewController {
-                
-                vc.newNode = self.newNode
-                vc.selectedNode = self.selectedNode
-                vc.createNew = self.createNew
-                
-            }
-            
-        default:
-            
-            break
-            
-        }
-        
     }
     
 }

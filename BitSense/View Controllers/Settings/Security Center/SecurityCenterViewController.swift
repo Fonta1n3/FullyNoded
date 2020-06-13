@@ -436,7 +436,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
                 case .encryptwallet:
                     connectIngView.removeConnectingView()
                     let result = reducer.stringToReturn
-                    showAlert(viewController: self, title: "", message: result)
+                    showAlert(vc: self, title: "", message: result)
                     
                 case .walletlock:
                     displayAlert(viewController: self, isError: false, message: "Wallet encrypted")

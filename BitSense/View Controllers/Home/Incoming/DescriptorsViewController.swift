@@ -11,7 +11,6 @@ import UIKit
 class DescriptorsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var descriptors = [[String:Any]]()
-    let aes = AESService()
     var descriptor = ""
     var tableArray = [[String:Any]]()
     @IBOutlet var table: UITableView!

@@ -13,7 +13,6 @@ class WalletsViewController: UIViewController, UITableViewDataSource, UITableVie
     var wallets = [[String:Any]]()
     var wallet = [String:Any]()
     var isHDInvoice = Bool()
-    let aes = AESService()
     
     var tableArray = [[String:Any]]()
 

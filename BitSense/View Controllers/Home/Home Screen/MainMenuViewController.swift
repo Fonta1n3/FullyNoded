@@ -12,7 +12,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     weak var mgr = TorClient.sharedInstance
     let backView = UIView()
-    let aes = AESService()
     let ud = UserDefaults.standard
     var hashrateString = String()
     var version = String()
@@ -27,7 +26,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     let cd = CoreDataService()
     var nodes = [[String:Any]]()
     var uptime = Int()
-    var activeNode = [String:Any]()
+    var activeNode:[String:Any]?
     var existingNodeID:UUID!
     var initialLoad = Bool()
     var existingWallet = ""
@@ -63,7 +62,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         addNavBarSpinner()
         setFeeTarget()
         showUnlockScreen()
-        addlaunchScreen()
         existingWallet = ud.object(forKey: "walletName") as? String ?? ""
         NotificationCenter.default.addObserver(self, selector: #selector(refreshNode), name: .refreshNode, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(refreshWallet), name: .refreshWallet, object: nil)
@@ -88,7 +86,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         print("finished connecting")
         viewHasLoaded = true
         removeSpinner()
-        loadWalletFirst()
+        //loadWalletFirst()
+        loadTable()
         displayAlert(viewController: self, isError: false, message: "Tor finished bootstrapping")
         
     }
@@ -115,139 +114,86 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     @objc func refreshNode() {
+        print("refreshNode")
+        existingWallet = "user is refreshing"
+        existingNodeID = nil
         addNavBarSpinner()
-        getNodes { nodeArray in
-            
-            if nodeArray != nil {
-                
-                self.nodes = nodeArray!
-                let isActive = self.activeNodeDict().isAnyNodeActive
-                
-                if self.nodes.count > 0 {
-                    
-                    if isActive {
-                        
-                        self.activeNode = self.activeNodeDict().node
-                        let node = NodeStruct(dictionary: self.activeNode)
-                        self.existingNodeID = node.id
-                        DispatchQueue.main.async { [unowned vc = self] in
-                            vc.navigationItem.title = node.label
-                        }
-                        self.ud.removeObject(forKey: "walletName")
-                        self.existingWallet = ""
-                        self.reloadWalletData()
-                    } else {
-                        self.removeLoader()
-                        self.connectingView.removeConnectingView()
-                        
-                        displayAlert(viewController: self,
-                                     isError: true,
-                                     message: "no active nodes")
-                    }
-                } else {
-                    self.removeLoader()
-                    self.connectingView.removeConnectingView()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: "no nodes")
-                }
-            } else {
-                
-                self.removeLoader()
-                self.connectingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "no nodes")
-            }
-        }
+        loadTable()
     }
     
     private func loadTable() {
-        print("loadTable")
-        
         if mgr?.state != .started && mgr?.state != .connected  {
-
             mgr?.start(delegate: self)
-
         }
-        
-        getNodes { nodeArray in
-            
+        getNodes { [unowned vc = self] nodeArray in
             if nodeArray != nil {
-                
-                self.nodes = nodeArray!
-                let walletName = self.ud.object(forKey: "walletName") as? String ?? ""
-                let isActive = self.activeNodeDict().isAnyNodeActive
-                
-                if self.nodes.count > 0 {
-                    
-                    if isActive {
-                        
-                        self.activeNode = self.activeNodeDict().node
-                        let node = NodeStruct(dictionary: self.activeNode)
-                        if self.initialLoad || self.existingNodeID == nil {
-                            self.existingNodeID = node.id
-                        }
-                        let newId = node.id
-                        DispatchQueue.main.async { [unowned vc = self] in
-                            vc.navigationItem.title = node.label
-                        }
-                        if newId != self.existingNodeID {
-                            
-                            if !self.initialLoad {
-                                
-                                self.ud.removeObject(forKey: "walletName")
-                                self.existingWallet = ""
-                                
-                            }
-                                                        
-                        } else if walletName != self.existingWallet {
-                            
-                            //if self.viewHasLoaded {
-                                
-                                self.existingWallet = walletName
-                                self.reloadWalletData()
-                                
-                            //}
-                            
-                        }
-                        
-                    } else {
-                        
-                        self.removeLoader()
-                        self.connectingView.removeConnectingView()
-                        
-                        displayAlert(viewController: self,
-                                     isError: true,
-                                     message: "no active nodes")
-                        
-                    }
-                    
+                if nodeArray!.count > 0 {
+                    vc.loopThroughNodes(nodes: nodeArray!)
                 } else {
-                    
-                    self.removeLoader()
-                    self.connectingView.removeConnectingView()
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.performSegue(withIdentifier: "addNodeNow", sender: self)
-                        
+                    DispatchQueue.main.async { [unowned vc = self] in
+                        vc.performSegue(withIdentifier: "addNodeNow", sender: vc)
                     }
-                    
                 }
-                                
             }
-            
-            self.initialLoad = false
-            
+            vc.initialLoad = false
         }
-        
+    }
+    
+    private func loopThroughNodes(nodes: [[String:Any]]) {
+        var activeNode:[String:Any]?
+        for (i, node) in nodes.enumerated() {
+            let nodeStruct = NodeStruct.init(dictionary: node)
+            if nodeStruct.isActive {
+                activeNode = node
+            }
+            if i + 1 == nodes.count {
+                if activeNode != nil {
+                    loadNode(node: activeNode!)
+                } else {
+                    removeLoader()
+                    connectingView.removeConnectingView()
+                    showAlert(vc: self, title: "No Active Node", message: "Go to \"settings\" > \"node manager\" and toggle on one of your nodes.")
+                }
+            }
+        }
+    }
+    
+    private func loadNode(node: [String:Any]) {
+        let nodeStruct = NodeStruct(dictionary: node)
+        if initialLoad || existingNodeID == nil {
+            existingNodeID = nodeStruct.id
+        }
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.navigationItem.title = nodeStruct.label
+        }
+        checkIfNodesChanged(newNodeId: nodeStruct.id!)
+    }
+    
+    private func checkIfNodesChanged(newNodeId: UUID) {
+        if newNodeId != existingNodeID {
+            if !initialLoad {
+                ud.removeObject(forKey: "walletName")
+                existingWallet = ""
+            }
+            loadWalletFirst()
+        } else {
+            if !initialLoad {
+                checkIfWalletsChanged()
+            } else {
+                loadWalletFirst()
+            }
+        }
+    }
+    
+    private func checkIfWalletsChanged() {
+        let walletName = ud.object(forKey: "walletName") as? String ?? ""
+        if walletName != existingWallet {
+            existingWallet = walletName
+            reloadWalletData()
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        
         if initialLoad {
             addlaunchScreen()
             firstTimeHere() { [unowned vc = self] success in
@@ -261,18 +207,14 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     @objc func refreshData(_ sender: Any) {
-        print("refreshData")
-        
+        existingWallet = "user wants to refresh"
+        existingNodeID = nil
         refreshDataNow()
-        
     }
     
     func refreshDataNow() {
-        print("refreshDataNow")
-        
         addNavBarSpinner()
-        loadSectionZero()
-        
+        loadTable()
     }
     
     @IBAction func lockButton(_ sender: Any) {
@@ -318,9 +260,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             return 3
             
         }
-        
-        //return 3 + transactionArray.count - 1
-        
+                
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -660,7 +600,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     
                     self.removeSpinner()
                     self.removeLoader()
-                    
+                    self.existingWallet = "multiple wallets"
                     displayAlert(viewController: self,
                                  isError: true,
                                  message: "Multiple wallets loaded, go to wallet manager, unload all active wallets then load the wallet you want to work with.")
@@ -720,7 +660,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     
                     self.removeSpinner()
                     self.removeLoader()
-                    
+                    self.existingWallet = "multiple wallets"
                     displayAlert(viewController: self,
                                  isError: true,
                                  message: "Multiple wallets loaded, go to wallet manager, unload all active wallets then load the wallet you want to work with.")
@@ -1015,9 +955,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             vc.spinner.stopAnimating()
             vc.spinner.alpha = 0
             
-            vc.refreshButton = UIBarButtonItem(barButtonSystemItem: .refresh,
-                                                 target: vc,
-                                                 action: #selector(vc.refreshData(_:)))
+            vc.refreshButton = UIBarButtonItem(barButtonSystemItem: .refresh, target: vc, action: #selector(vc.refreshData(_:)))
             
             vc.refreshButton.tintColor = UIColor.lightGray.withAlphaComponent(1)
             
@@ -1082,28 +1020,19 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
-    func activeNodeDict() -> (isAnyNodeActive: Bool, node: [String:Any]) {
-        
-        var dictToReturn = [String:Any]()
-        var boolToReturn = false
-        
-        for nodeDict in self.nodes {
-            
-            let node = NodeStruct(dictionary: nodeDict)
-            let nodeActive = node.isActive
-            
-            if nodeActive {
-                
-                boolToReturn = true
-                dictToReturn = nodeDict
-                
-            }
-            
-        }
-        
-        return (boolToReturn, dictToReturn)
-        
-    }
+//    func activeNodeDict() -> (isAnyNodeActive: Bool, node: [String:Any]) {
+//        var dictToReturn = [String:Any]()
+//        var boolToReturn = false
+//        for nodeDict in nodes {
+//            let node = NodeStruct(dictionary: nodeDict)
+//            let nodeActive = node.isActive
+//            if nodeActive {
+//                boolToReturn = true
+//                dictToReturn = nodeDict
+//            }
+//        }
+//        return (boolToReturn, dictToReturn)
+//    }
     
     func addCloseButtonToConnectingView() {
         

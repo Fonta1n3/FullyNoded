@@ -11,7 +11,6 @@ import UIKit
 
 class QuickConnect {
     
-    let aes = AESService()
     let cd = CoreDataService()
     var errorBool = Bool()
     var errorDescription = ""

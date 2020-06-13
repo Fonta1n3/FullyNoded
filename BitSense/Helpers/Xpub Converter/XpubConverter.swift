@@ -68,7 +68,7 @@ class XpubConverter {
             /// Removes the original prefix.
             b58.removeFirst(4)
             /// Converts the new prefix string to data.
-            var prefix = Data.init(hex: returnedPrefix)
+            var prefix = Data(hexString: returnedPrefix)!
             /// Appends the xpub data to the new prefix.
             prefix.append(contentsOf: b58)
             /// Converts our data to array so we can easily manipulate it.
@@ -89,5 +89,23 @@ class XpubConverter {
             return nil
             
         }
+    }
+}
+
+extension Data {
+    init?(hexString: String) {
+        let len = hexString.count / 2
+        var data = Data(capacity: len)
+        for i in 0..<len {
+            let j = hexString.index(hexString.startIndex, offsetBy: i*2)
+            let k = hexString.index(j, offsetBy: 2)
+            let bytes = hexString[j..<k]
+            if var num = UInt8(bytes, radix: 16) {
+                data.append(&num, count: 1)
+            } else {
+                return nil
+            }
+        }
+        self = data
     }
 }
