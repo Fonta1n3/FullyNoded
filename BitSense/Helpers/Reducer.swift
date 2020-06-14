@@ -83,30 +83,45 @@ class Reducer {
         func torCommand() {
             
             func getResult() {
-                
                 if !torRPC.errorBool {
-                    
                     let response = torRPC.objectToReturn
                     parseResponse(response: response as Any)
-                    
                 } else {
-                    
-                    errorBool = true
-                    errorDescription = torRPC.errorDescription
-                    completion()
-                    
+                    if torRPC.errorDescription.contains("Requested wallet does not exist or is not loaded") {
+                        if let walletName = UserDefaults.standard.object(forKey: "walletName") as? String {
+                            torRPC.executeRPCCommand(method: .loadwallet, param: "\"\(walletName)\"") { [unowned vc = self] in
+                                if !vc.torRPC.errorBool || vc.torRPC.errorDescription.contains("Duplicate -wallet filename specified") {
+                                    vc.torRPC.executeRPCCommand(method: command, param: param) { [unowned vc = self] in
+                                        if !vc.torRPC.errorBool {
+                                            let response = vc.torRPC.objectToReturn
+                                            parseResponse(response: response as Any)
+                                        } else {
+                                            vc.errorBool = true
+                                            vc.errorDescription = vc.torRPC.errorDescription
+                                            completion()
+                                        }
+                                    }
+                                } else {
+                                    vc.errorBool = true
+                                    vc.errorDescription = vc.torRPC.errorDescription
+                                    completion()
+                                }
+                            }
+                        }
+                        
+                    } else {
+                        errorBool = true
+                        errorDescription = torRPC.errorDescription
+                        completion()
+                    }
                 }
-                
             }
             
             torRPC.executeRPCCommand(method: command, param: param, completion: getResult)
-            
         }
         
         torRPC.errorBool = false
         torRPC.errorDescription = ""
         torCommand()
-        
     }
-    
 }

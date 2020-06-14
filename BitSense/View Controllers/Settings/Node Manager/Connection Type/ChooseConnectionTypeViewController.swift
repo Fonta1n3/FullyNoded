@@ -161,17 +161,17 @@ class ChooseConnectionTypeViewController: UIViewController, UITabBarControllerDe
                 
                 if cameFromHome {
                     
-                    DispatchQueue.main.async {
+                    DispatchQueue.main.async { [unowned vc = self] in
                         
-                        self.navigationController?.popToRootViewController(animated: true)
+                        vc.navigationController?.popToRootViewController(animated: true)
                         
                     }
                     
                 } else {
                     
-                    DispatchQueue.main.async {
+                    DispatchQueue.main.async { [unowned vc = self] in
                         
-                        self.tabBarController?.selectedIndex = 0
+                        vc.navigationController?.popViewController(animated: true)
                         
                     }
                     

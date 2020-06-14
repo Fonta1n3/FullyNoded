@@ -21,6 +21,7 @@
 		D0126FF82244842000412629 /* bWhite.png in Resources */ = {isa = PBXBuildFile; fileRef = D0126FF72244842000412629 /* bWhite.png */; };
 		D0196DD721B5AB300081E0AB /* KeyPadButtonView.xib in Resources */ = {isa = PBXBuildFile; fileRef = D0196DD621B5AB300081E0AB /* KeyPadButtonView.xib */; };
 		D0196DDB21B5AC5F0081E0AB /* KeyPad.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0196DDA21B5AC5F0081E0AB /* KeyPad.swift */; };
+		D020480F249605AB00EF52DB /* ActiveWalletsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D020480E249605AB00EF52DB /* ActiveWalletsViewController.swift */; };
 		D02094EE2256B06B002E8E7A /* Transition.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02094ED2256B06B002E8E7A /* Transition.swift */; };
 		D02094F02257FB78002E8E7A /* FirstTime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02094EF2257FB78002E8E7A /* FirstTime.swift */; };
 		D02094F3225936D2002E8E7A /* ConnectingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02094F2225936D2002E8E7A /* ConnectingView.swift */; };
@@ -155,6 +156,7 @@
 		D0126FF72244842000412629 /* bWhite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = bWhite.png; sourceTree = "<group>"; };
 		D0196DD621B5AB300081E0AB /* KeyPadButtonView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = KeyPadButtonView.xib; sourceTree = "<group>"; };
 		D0196DDA21B5AC5F0081E0AB /* KeyPad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyPad.swift; sourceTree = "<group>"; };
+		D020480E249605AB00EF52DB /* ActiveWalletsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWalletsViewController.swift; sourceTree = "<group>"; };
 		D02094ED2256B06B002E8E7A /* Transition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transition.swift; sourceTree = "<group>"; };
 		D02094EF2257FB78002E8E7A /* FirstTime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstTime.swift; sourceTree = "<group>"; };
 		D02094F2225936D2002E8E7A /* ConnectingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectingView.swift; sourceTree = "<group>"; };
@@ -534,6 +536,7 @@
 			children = (
 				D07E0DE522F9168F00A81FA8 /* WalletManagerViewController.swift */,
 				D07E0DE722F9570A00A81FA8 /* WalletCreatorViewController.swift */,
+				D020480E249605AB00EF52DB /* ActiveWalletsViewController.swift */,
 			);
 			path = "Wallet Manager";
 			sourceTree = "<group>";
@@ -1055,6 +1058,7 @@
 				D0233F262361EA380041FFBA /* StringExtension.swift in Sources */,
 				D07EC09022DBFB5400F9160D /* JoinPSBTViewController.swift in Sources */,
 				D0233F242361EA090041FFBA /* Base32.swift in Sources */,
+				D020480F249605AB00EF52DB /* ActiveWalletsViewController.swift in Sources */,
 				D037C86C231BAFB4006C357D /* AddToKeypoolViewController.swift in Sources */,
 				D0452ADB2247417F0013E225 /* ImportPrivKeyViewController.swift in Sources */,
 				D0384E2F246AC4B1002FEE94 /* XpubConverter.swift in Sources */,
@@ -1262,7 +1266,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 149;
+				CURRENT_PROJECT_VERSION = 150;
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1275,7 +1279,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.228;
+				MARKETING_VERSION = 1.229;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1298,7 +1302,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 149;
+				CURRENT_PROJECT_VERSION = 150;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				ENABLE_TESTABILITY = NO;
@@ -1313,7 +1317,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.228;
+				MARKETING_VERSION = 1.229;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";

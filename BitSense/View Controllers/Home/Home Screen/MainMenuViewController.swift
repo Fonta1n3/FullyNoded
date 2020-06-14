@@ -68,6 +68,22 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        if initialLoad {
+            addlaunchScreen()
+            firstTimeHere() { [unowned vc = self] success in
+                if !success {
+                    displayAlert(viewController: vc, isError: true, message: "there was a critical error setting your devices encryption key, please delete and reinstall the app")
+                } else {
+                    if vc.mgr?.state != .started && vc.mgr?.state != .connected  {
+                        displayAlert(viewController: self, isError: false, message: "Tor is bootstrapping, please wait")
+                        vc.mgr?.start(delegate: self)
+                    }
+                }
+            }
+        }
+    }
+    
     private func setEncryptionKey() {
         firstTimeHere() { [unowned vc = self] success in
             if !success {
@@ -110,7 +126,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     @objc func refreshWallet() {
         existingWallet = ""
-        loadTable()
+        reloadWalletData()
     }
     
     @objc func refreshNode() {
@@ -122,9 +138,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     private func loadTable() {
-        if mgr?.state != .started && mgr?.state != .connected  {
-            mgr?.start(delegate: self)
-        }
         getNodes { [unowned vc = self] nodeArray in
             if nodeArray != nil {
                 if nodeArray!.count > 0 {
@@ -160,7 +173,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     private func loadNode(node: [String:Any]) {
         let nodeStruct = NodeStruct(dictionary: node)
-        if initialLoad || existingNodeID == nil {
+        if initialLoad {
             existingNodeID = nodeStruct.id
         }
         DispatchQueue.main.async { [unowned vc = self] in
@@ -174,6 +187,12 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             if !initialLoad {
                 ud.removeObject(forKey: "walletName")
                 existingWallet = ""
+                
+            }
+            loadWalletFirst()
+        } else if existingNodeID == nil {
+            if !initialLoad {
+                existingNodeID = newNodeId
             }
             loadWalletFirst()
         } else {
@@ -190,19 +209,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         if walletName != existingWallet {
             existingWallet = walletName
             reloadWalletData()
-        }
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        if initialLoad {
-            addlaunchScreen()
-            firstTimeHere() { [unowned vc = self] success in
-                if !success {
-                    displayAlert(viewController: vc, isError: true, message: "there was a critical error setting your devices encryption key, please delete and reinstall the app")
-                } else {
-                    vc.loadTable()
-                }
-            }
         }
     }
     
@@ -363,7 +369,11 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 sizeLabel.text = self.size
                 difficultyLabel.text = self.difficulty
-                sync.text = self.progress
+                if self.progress == "99% synced" {
+                    sync.text = "fully synced"
+                } else {
+                    sync.text = self.progress
+                }
                 feeRate.text = self.feeRate + " " + "fee rate"
                 
                 if torReachable {
@@ -601,9 +611,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     self.removeSpinner()
                     self.removeLoader()
                     self.existingWallet = "multiple wallets"
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: "Multiple wallets loaded, go to wallet manager, unload all active wallets then load the wallet you want to work with.")
+                    self.promptToChooseWallet()
                     
                 } else {
                     
@@ -661,9 +669,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     self.removeSpinner()
                     self.removeLoader()
                     self.existingWallet = "multiple wallets"
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: "Multiple wallets loaded, go to wallet manager, unload all active wallets then load the wallet you want to work with.")
+                    self.promptToChooseWallet()
                     
                 } else {
                     
@@ -701,6 +707,24 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         nodeLogic.loadSectionZero(completion: completion)
         
+    }
+    
+    private func promptToChooseWallet() {
+        DispatchQueue.main.async { [unowned vc = self] in
+            let alert = UIAlertController(title: "Your node has multiple wallets that are currently loaded, you need to choose which one you want to work with.", message: "", preferredStyle: .actionSheet)
+            alert.addAction(UIAlertAction(title: "Choose", style: .default, handler: { [unowned vc = self] action in
+                vc.goChooseWallet()
+            }))
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = vc.view
+            vc.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func goChooseWallet() {
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "segueToChooseWallet", sender: vc)
+        }
     }
     
     func loadSectionOne() {
@@ -937,10 +961,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 
                 UIView.animate(withDuration: 0.8, animations: {
                     self.backView.alpha = 1
-                }) { (_) in
-                    displayAlert(viewController: self, isError: false, message: "Tor is bootstrapping, please wait")
-                }
-                
+                })
                 
             }
             
@@ -1034,48 +1055,19 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
 //        return (boolToReturn, dictToReturn)
 //    }
     
-    func addCloseButtonToConnectingView() {
-        
-        let button = UIButton()
-        button.setTitle("close", for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 15)
-        button.setTitleColor(UIColor.darkGray, for: .normal)
-        button.addTarget(self, action: #selector(closeConnectingView), for: .touchUpInside)
-        let frame = connectingView.blurView.contentView.frame
-        
-        button.frame = CGRect(x: frame.midX - (80 / 2),
-                              y: frame.maxY - 30,
-                              width: 80,
-                              height: 15)
-        
-        DispatchQueue.main.async {
-            self.connectingView.blurView.contentView.addSubview(button)
-        }
-        
-   }
-    
     //MARK: User Actions
     
-    @objc func closeConnectingView() {
-        
-        DispatchQueue.main.async {
-            self.connectingView.removeConnectingView()
-        }
-        
-    }
-    
     func reloadWalletData() {
-        
+        print("reloadwalletdata")
         addNavBarSpinner()
         let nodeLogic = NodeLogic()
         nodeLogic.walletDisabled = false
         sectionZeroLoaded = false
         transactionArray.removeAll()
         
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [unowned vc = self] in
             
-            //self.mainMenu.reloadSections([0, 2], with: .fade)
-            self.mainMenu.reloadData()
+            vc.mainMenu.reloadData()
             
         }
         
@@ -1101,29 +1093,26 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 self.unconfirmedBalance = (str.unconfirmedBalance)
                 
                 DispatchQueue.main.async {
-                    
                     self.sectionZeroLoaded = true
                     self.mainMenu.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
-                    impact()
-                    
-                    if !self.sectionOneLoaded {
-                        
-                        self.loadSectionOne()
-                        
-                    } else {
-                        
-                        self.loadSectionTwo()
-                        
-                    }
-                    
                 }
                 
+                nodeLogic.loadSectionTwo { [unowned vc = self] in
+                    if nodeLogic.errorBool {
+                        vc.removeLoader()
+                        displayAlert(viewController: vc, isError: true, message: nodeLogic.errorDescription)
+                    } else {
+                        vc.transactionArray.removeAll()
+                        vc.transactionArray = nodeLogic.arrayToReturn.reversed()
+                        DispatchQueue.main.async { [unowned vc = self] in
+                            vc.mainMenu.reloadData()
+                            vc.removeLoader()
+                        }
+                    }
+                }
             }
-            
         }
-        
         nodeLogic.loadSectionZero(completion: completion)
-        
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

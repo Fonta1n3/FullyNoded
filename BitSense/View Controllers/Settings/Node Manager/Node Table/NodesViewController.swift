@@ -8,18 +8,24 @@
 
 import UIKit
 
-class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UINavigationControllerDelegate {
     
+    var colors = [UIColor.systemIndigo, UIColor.systemOrange, UIColor.systemGreen, UIColor.systemBlue, UIColor.systemYellow, UIColor.systemPurple, UIColor.systemPink]
     var nodeArray = [[String:Any]]()
     var selectedIndex = Int()
     let cd = CoreDataService()
     let ud = UserDefaults.standard
+    var addButton = UIBarButtonItem()
+    var editButton = UIBarButtonItem()
     @IBOutlet var nodeTable: UITableView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        navigationController?.delegate = self
         nodeTable.tableFooterView = UIView(frame: .zero)
+        addButton = UIBarButtonItem.init(barButtonSystemItem: .add, target: self, action: #selector(addNode))
+        editButton = UIBarButtonItem.init(barButtonSystemItem: .edit, target: self, action: #selector(editNodes))
+        self.navigationItem.setRightBarButtonItems([addButton, editButton], animated: true)
         
     }
     
@@ -68,116 +74,104 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        
-        return 1
-        
+        return nodeArray.count
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
-        return nodeArray.count
-        
+        return 1
     }
     
+    private func decryptedValue(_ encryptedValue: Data) -> String {
+        var decryptedValue = ""
+        Crypto.decryptData(dataToDecrypt: encryptedValue) { decryptedData in
+            if decryptedData != nil {
+                decryptedValue = decryptedData!.utf8
+            }
+        }
+        return decryptedValue
+    }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
         let cell = tableView.dequeueReusableCell(withIdentifier: "node", for: indexPath)
         let label = cell.viewWithTag(1) as! UILabel
         let isActive = cell.viewWithTag(2) as! UISwitch
-        
-        if nodeArray[indexPath.row]["label"] != nil {
-            
-            label.text = nodeArray[indexPath.row]["label"] as? String ?? ""
-            
+        let background = cell.viewWithTag(3)!
+        let icon = cell.viewWithTag(4) as! UIImageView
+        let button = cell.viewWithTag(5) as! UIButton
+        button.restorationIdentifier = "\(indexPath.section)"
+        button.addTarget(self, action: #selector(editNode(_:)), for: .touchUpInside)
+        background.clipsToBounds = true
+        background.layer.cornerRadius = 8
+        icon.tintColor = .white
+        icon.image = UIImage(systemName: "desktopcomputer")
+        if nodeArray.count < 7 {
+            background.backgroundColor = colors[indexPath.section]
         } else {
-            
-            label.text = "Tap to edit node label"
-            
+            background.backgroundColor = colors.randomElement()
         }
-        
-        isActive.isOn = nodeArray[indexPath.row]["isActive"] as? Bool ?? false
-        isActive.restorationIdentifier = "\(indexPath.row)"
+        let nodeStruct = NodeStruct.init(dictionary: nodeArray[indexPath.section])
+        let dec = decryptedValue(nodeStruct.onionAddress!)
+        let abbreviated = reduced(label: dec)
+        label.text = abbreviated//nodeArray[indexPath.row]["label"] as? String ?? ""
+        isActive.isOn = nodeArray[indexPath.section]["isActive"] as? Bool ?? false
+        isActive.restorationIdentifier = "\(indexPath.section)"
         isActive.addTarget(self, action: #selector(setActiveNow(_:)), for: .touchUpInside)
-        
         if !isActive.isOn {
-            
             label.textColor = .darkGray
+        } else {
+            label.textColor = .lightGray
+        }
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let header = UIView()
+        header.backgroundColor = UIColor.clear
+        header.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 50)
+        let textLabel = UILabel()
+        textLabel.textAlignment = .left
+        textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
+        textLabel.textColor = .white
+        textLabel.frame = CGRect(x: 0, y: 0, width: 200, height: 50)
+        textLabel.text =  nodeArray[section]["label"] as? String ?? "No Label"
+        header.addSubview(textLabel)
+        return header
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 50
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 54
+    }
+    
+    @objc func editNode(_ sender: UIButton) {
+        if sender.restorationIdentifier != nil {
+            if let section = Int(sender.restorationIdentifier!) {
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.selectedIndex = section
+                    vc.performSegue(withIdentifier: "updateNode", sender: vc)
+                }
+            }
+        }
+    }
+    
+    @objc func editNodes() {
+        
+        nodeTable.setEditing(!nodeTable.isEditing, animated: true)
+        
+        if nodeTable.isEditing {
+            
+            editButton = UIBarButtonItem(title: "Done", style: .plain, target: self, action: #selector(editNodes))
             
         } else {
             
-            label.textColor = .lightGray
+            editButton = UIBarButtonItem(title: "Edit", style: .plain, target: self, action: #selector(editNodes))
             
         }
         
-        return cell
-        
-    }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
-        selectedIndex = indexPath.row
-        
-        guard let cell = nodeTable.cellForRow(at: IndexPath.init(row: indexPath.row, section: 0)) else {
-            return
-        }
-        
-        DispatchQueue.main.async {
-            
-            impact()
-            
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                cell.alpha = 0
-                
-            }, completion: { _ in
-                
-                UIView.animate(withDuration: 0.2, animations: {
-                    
-                    cell.alpha = 1
-                    
-                }, completion: { _ in
-                    
-                    if self.selectedIndex < self.nodeArray.count {
-                                                
-                        DispatchQueue.main.async {
-                            
-                            self.performSegue(withIdentifier: "updateNode", sender: self)
-                            
-                        }
-                        
-                    }
-                    
-                })
-                
-            })
-            
-        }
-        
-    }
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        
-        if segue.identifier == "updateNode" {
-            
-            if let vc = segue.destination as? NodeDetailViewController {
-                
-                vc.selectedNode = self.nodeArray[selectedIndex]
-                vc.createNew = false
-                
-            }
-            
-        }
-        
-        if segue.identifier == "addNewNode" {
-            
-            if let vc = segue.destination as? ChooseConnectionTypeViewController {
-                
-                vc.isUpdating = false
-                
-            }
-            
-        }
+        self.navigationItem.setRightBarButtonItems([addButton, editButton], animated: true)
         
     }
     
@@ -185,9 +179,8 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         cd.deleteNode(id: nodeId, entityName: .newNodes) { [unowned vc = self] success in
             if success {
                 DispatchQueue.main.async { [unowned vc = self] in
-                    vc.nodeArray.remove(at: indexPath.row)
-                    vc.nodeTable.deleteRows(at: [indexPath], with: .fade)
-                    vc.nodeTable.reloadData()
+                    vc.nodeArray.remove(at: indexPath.section)
+                    vc.nodeTable.deleteSections(IndexSet.init(arrayLiteral: indexPath.section), with: .fade)
                 }
             } else {
                 displayAlert(viewController: vc,
@@ -199,22 +192,20 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == UITableViewCell.EditingStyle.delete {
-            let node = NodeStruct(dictionary: nodeArray[indexPath.row])
+            let node = NodeStruct(dictionary: nodeArray[indexPath.section])
             if node.id != nil {
                 deleteNode(nodeId: node.id!, indexPath: indexPath)
             }
         }
     }
     
-    @objc func setActiveNow(_ sender: UISwitch) {
-        print("setactivenow")
-        
+    @objc func setActiveNow(_ sender: UISwitch) {        
         impact()
         
         let restId = sender.restorationIdentifier ?? ""
         let index = Int(restId) ?? 10000
         
-        guard let selectedCell = nodeTable.cellForRow(at: IndexPath.init(row: index, section: 0)) else {
+        guard let selectedCell = nodeTable.cellForRow(at: IndexPath.init(row: 0, section: index)) else {
             return
         }
         
@@ -303,6 +294,12 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
     }
     
+    private func reduced(label: String) -> String {
+        let first = String(label.prefix(5))
+        let last = String(label.suffix(15))
+        return "\(first)...\(last)"
+    }
+    
     private func deActivateNodes(nodes: [[String:Any]], completion: @escaping () -> Void) {
         if nodes.count > 0 {
             for node in nodes {
@@ -338,5 +335,28 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
     }
     
-
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        
+        if segue.identifier == "updateNode" {
+            
+            if let vc = segue.destination as? NodeDetailViewController {
+                
+                vc.selectedNode = self.nodeArray[selectedIndex]
+                vc.createNew = false
+                
+            }
+            
+        }
+        
+        if segue.identifier == "addNewNode" {
+            
+            if let vc = segue.destination as? ChooseConnectionTypeViewController {
+                
+                vc.isUpdating = false
+                
+            }
+            
+        }
+        
+    }
 }

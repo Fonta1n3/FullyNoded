@@ -50,7 +50,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                     DispatchQueue.main.async {
                         
                         //less then an hour
-                        label.text = "Mining fee target \(numberOfBlocks) blocks (\(seconds / 60) minutes)"
+                        label.text = "Target \(numberOfBlocks) blocks (\(seconds / 60) minutes)"
                         //self.settingsTable.reloadSections(IndexSet(arrayLiteral: 1), with: .none)
                         
                     }
@@ -60,7 +60,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                     DispatchQueue.main.async {
                         
                         //more then an hour
-                        label.text = "Mining fee target \(numberOfBlocks) blocks (\(seconds / 3600) hours)"
+                        label.text = "Target \(numberOfBlocks) blocks (\(seconds / 3600) hours)"
                         //self.settingsTable.reloadSections(IndexSet(arrayLiteral: 1), with: .none)
                         
                     }
@@ -72,7 +72,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 DispatchQueue.main.async {
                     
                     //more then a day
-                    label.text = "Mining fee target \(numberOfBlocks) blocks (\(seconds / 86400) days)"
+                    label.text = "Target \(numberOfBlocks) blocks (\(seconds / 86400) days)"
                     //self.settingsTable.reloadSections(IndexSet(arrayLiteral: 1), with: .none)
                     
                 }
@@ -94,96 +94,132 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
-        let settingsCell = tableView.dequeueReusableCell(withIdentifier: "settingsCell", for: indexPath)
+    private func settingsCell(_ indexPath: IndexPath) -> UITableViewCell {
+        let settingsCell = settingsTable.dequeueReusableCell(withIdentifier: "settingsCell", for: indexPath)
         let label = settingsCell.viewWithTag(1) as! UILabel
         label.textColor = .lightGray
         settingsCell.selectionStyle = .none
         label.adjustsFontSizeToFitWidth = true
-        
+        let background = settingsCell.viewWithTag(2)!
+        let icon = settingsCell.viewWithTag(3) as! UIImageView
+        icon.tintColor = .white
+        background.clipsToBounds = true
+        background.layer.cornerRadius = 8
         switch indexPath.section {
-            
         case 0:
-            
             label.text = "Node Manager"
-            return settingsCell
-            
+            icon.image = UIImage(systemName: "desktopcomputer")
+            background.backgroundColor = .systemBlue
         case 1:
-            
             label.text = "Wallet Manager"
-            return settingsCell
-            
+            icon.image = UIImage(systemName: "square.stack.3d.down.right")
+            background.backgroundColor = .systemGreen
         case 2:
-            
             label.text = "Security Center"
-            return settingsCell
-            
+            icon.image = UIImage(systemName: "lock.shield")
+            background.backgroundColor = .systemOrange
         case 3:
-            
             label.text = "Kill Switch ☠️"
-            return settingsCell
+            icon.image = UIImage(systemName: "exclamationmark.triangle")
+            background.backgroundColor = .systemRed
+        default:
+            break
+        }
+        return settingsCell
+    }
+    
+    private func miningFeeCell(_ indexPath: IndexPath) -> UITableViewCell {
+        let cell = settingsTable.dequeueReusableCell(withIdentifier: "miningFeeCell", for: indexPath)
+        let label = cell.viewWithTag(1) as! UILabel
+        let slider = cell.viewWithTag(2) as! UISlider
+        label.adjustsFontSizeToFitWidth = true
+        let background = cell.viewWithTag(3)!
+        let icon = cell.viewWithTag(4) as! UIImageView
+        icon.image = UIImage(systemName: "timer")
+        icon.tintColor = .white
+        background.clipsToBounds = true
+        background.layer.cornerRadius = 8
+        background.backgroundColor = .systemIndigo
+        slider.addTarget(self, action: #selector(setFee), for: .allEvents)
+        slider.maximumValue = 2 * -1
+        slider.minimumValue = 1008 * -1
+        if ud.object(forKey: "feeTarget") != nil {
+            let numberOfBlocks = ud.object(forKey: "feeTarget") as! Int
+            slider.value = Float(numberOfBlocks) * -1
+            updateFeeLabel(label: label, numberOfBlocks: numberOfBlocks)
+        } else {
+            label.text = "Minimum fee set (you can always bump it)"
+            slider.value = 1008 * -1
+        }
+        label.text = ""
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        switch indexPath.section {
+        case 0, 1, 2, 3:
+            return settingsCell(indexPath)
             
         case 4:
-            
-            let cell = tableView.dequeueReusableCell(withIdentifier: "miningFeeCell", for: indexPath)
-            let label = cell.viewWithTag(1) as! UILabel
-            let slider = cell.viewWithTag(2) as! UISlider
-            label.adjustsFontSizeToFitWidth = true
-            
-            slider.addTarget(self, action: #selector(setFee), for: .allEvents)
-            slider.maximumValue = 2 * -1
-            slider.minimumValue = 1008 * -1
-            
-            if ud.object(forKey: "feeTarget") != nil {
-                
-                let numberOfBlocks = ud.object(forKey: "feeTarget") as! Int
-                slider.value = Float(numberOfBlocks) * -1
-                updateFeeLabel(label: label, numberOfBlocks: numberOfBlocks)
-                
-            } else {
-                
-                label.text = "Minimum fee set (you can always bump it)"
-                slider.value = 1008 * -1
-                
-            }
-            
-            label.text = ""
-            
-            return cell
+            return miningFeeCell(indexPath)
             
         default:
-            
             let cell = UITableViewCell()
             cell.backgroundColor = UIColor.clear
             return cell
-            
         }
-       
+    }
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let header = UIView()
+        header.backgroundColor = UIColor.clear
+        header.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 50)
+        let textLabel = UILabel()
+        textLabel.textAlignment = .left
+        textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
+        textLabel.textColor = .white
+        textLabel.frame = CGRect(x: 0, y: 0, width: 200, height: 50)
+        switch section {
+        case 0:
+            textLabel.text = "Nodes"
+            
+        case 1:
+            textLabel.text = "Wallets"
+            
+        case 2:
+            textLabel.text = "Security"
+            
+        case 3:
+            textLabel.text = "Reset"
+            
+        case 4:
+            textLabel.text = "Mining Fee"
+            
+        default:
+            break
+        }
+        header.addSubview(textLabel)
+        return header
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        
         return 5
-        
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
         return 1
-        
     }
     
-    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        
-        return 20
-        
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        if indexPath.section == 4 {
+            return 78
+        } else {
+            return 54
+        }
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        
-        return 30
-        
+        return 50
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
