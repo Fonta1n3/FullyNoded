@@ -93,6 +93,8 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "node", for: indexPath)
+        cell.layer.borderColor = UIColor.lightGray.cgColor
+        cell.layer.borderWidth = 0.5
         let label = cell.viewWithTag(1) as! UILabel
         let isActive = cell.viewWithTag(2) as! UISwitch
         let background = cell.viewWithTag(3)!
@@ -119,7 +121,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         if !isActive.isOn {
             label.textColor = .darkGray
         } else {
-            label.textColor = .lightGray
+            label.textColor = .white
         }
         return cell
     }

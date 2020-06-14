@@ -139,6 +139,39 @@
             </objects>
             <point key="canvasLocation" x="-7407" y="376"/>
         </scene>
+        <!--Item-->
+        <scene sceneID="LKx-jy-Wf3">
+            <objects>
+                <navigationController id="eoA-7K-rj7" sceneMemberID="viewController">
+                    <tabBarItem key="tabBarItem" title="Item" id="w6p-mX-zdg"/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="d6w-0p-4v0">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <connections>
+                        <segue destination="Dwu-lj-4IN" kind="relationship" relationship="rootViewController" id="cdI-Lt-HkV"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="oxn-ga-TGj" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-7796" y="-1254"/>
+        </scene>
+        <!--View Controller-->
+        <scene sceneID="brO-BN-cOK">
+            <objects>
+                <viewController id="Dwu-lj-4IN" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="vmz-O4-mSm">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="618"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <viewLayoutGuide key="safeArea" id="Bmh-eo-0G2"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="NF8-yN-8PP"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="jDi-KB-cQL" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-7796" y="-422"/>
+        </scene>
         <!--Navigation Controller-->
         <scene sceneID="MHs-EW-mfr">
             <objects>
@@ -3104,6 +3137,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                         <segue destination="2Yw-iO-uuQ" kind="relationship" relationship="viewControllers" id="nhV-zR-Krz"/>
                         <segue destination="l4n-lV-57s" kind="relationship" relationship="viewControllers" id="ATU-vi-bLt"/>
                         <segue destination="Tb8-sX-niL" kind="relationship" relationship="viewControllers" id="dlH-51-9Qn"/>
+                        <segue destination="eoA-7K-rj7" kind="relationship" relationship="viewControllers" id="aDk-1f-Tjn"/>
                     </connections>
                 </tabBarController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="bp7-AV-uP3" userLabel="First Responder" sceneMemberID="firstResponder"/>
