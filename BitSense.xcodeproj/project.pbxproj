@@ -113,12 +113,14 @@
 		D0DE292D22BCFEEA00D9EBCF /* addNode.PNG in Resources */ = {isa = PBXBuildFile; fileRef = D0DE292C22BCFEEA00D9EBCF /* addNode.PNG */; };
 		D0DE292F22BCFF0400D9EBCF /* switcher.PNG in Resources */ = {isa = PBXBuildFile; fileRef = D0DE292E22BCFF0400D9EBCF /* switcher.PNG */; };
 		D0DE293322BCFFAB00D9EBCF /* screenShot.png in Resources */ = {isa = PBXBuildFile; fileRef = D0DE293222BCFFAB00D9EBCF /* screenShot.png */; };
+		D0E2A1052496EE9400AE0C04 /* ActiveWalletViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E2A1042496EE9400AE0C04 /* ActiveWalletViewController.swift */; };
 		D0E51E592265640F005D1909 /* ErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E51E582265640F005D1909 /* ErrorView.swift */; };
 		D0E51E5B226592C9005D1909 /* NodeDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E51E5A226592C9005D1909 /* NodeDetailViewController.swift */; };
 		D0E9B63C211A94C600B416E7 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E9B63B211A94C600B416E7 /* Utilities.swift */; };
 		D0EC748A227DF06E001489B9 /* CreateUnsigned.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EC7489227DF06E001489B9 /* CreateUnsigned.swift */; };
 		D0EC7490227F6977001489B9 /* SignRawViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EC748F227F6977001489B9 /* SignRawViewController.swift */; };
 		D0ED69BC2325D768001F8FBC /* WalletsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0ED69BB2325D768001F8FBC /* WalletsViewController.swift */; };
+		D0EDDF1124972CEF00657931 /* InvoiceSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EDDF1024972CEF00657931 /* InvoiceSettingsViewController.swift */; };
 		D0EF29C1216B82B400EB776A /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EF29C0216B82B400EB776A /* SettingsViewController.swift */; };
 		D0FA417C213C7CDA0028E4F8 /* whiteLock.png in Resources */ = {isa = PBXBuildFile; fileRef = D0FA417B213C7CDA0028E4F8 /* whiteLock.png */; };
 		D0FA417E213C7CED0028E4F8 /* whiteFingerPrint.png in Resources */ = {isa = PBXBuildFile; fileRef = D0FA417D213C7CED0028E4F8 /* whiteFingerPrint.png */; };
@@ -251,12 +253,14 @@
 		D0DE292C22BCFEEA00D9EBCF /* addNode.PNG */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = addNode.PNG; sourceTree = "<group>"; };
 		D0DE292E22BCFF0400D9EBCF /* switcher.PNG */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = switcher.PNG; sourceTree = "<group>"; };
 		D0DE293222BCFFAB00D9EBCF /* screenShot.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = screenShot.png; sourceTree = "<group>"; };
+		D0E2A1042496EE9400AE0C04 /* ActiveWalletViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWalletViewController.swift; sourceTree = "<group>"; };
 		D0E51E582265640F005D1909 /* ErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorView.swift; sourceTree = "<group>"; };
 		D0E51E5A226592C9005D1909 /* NodeDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDetailViewController.swift; sourceTree = "<group>"; };
 		D0E9B63B211A94C600B416E7 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		D0EC7489227DF06E001489B9 /* CreateUnsigned.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateUnsigned.swift; sourceTree = "<group>"; };
 		D0EC748F227F6977001489B9 /* SignRawViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignRawViewController.swift; sourceTree = "<group>"; };
 		D0ED69BB2325D768001F8FBC /* WalletsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletsViewController.swift; sourceTree = "<group>"; };
+		D0EDDF1024972CEF00657931 /* InvoiceSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceSettingsViewController.swift; sourceTree = "<group>"; };
 		D0EF29C0216B82B400EB776A /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		D0FA417B213C7CDA0028E4F8 /* whiteLock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteLock.png; sourceTree = "<group>"; };
 		D0FA417D213C7CED0028E4F8 /* whiteFingerPrint.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteFingerPrint.png; sourceTree = "<group>"; };
@@ -475,6 +479,7 @@
 				D0048C71225F38BF0057E21B /* Settings */,
 				D0048C70225F38A90057E21B /* Home */,
 				D0048C75225F3B860057E21B /* Unlock Screen */,
+				D0E2A1042496EE9400AE0C04 /* ActiveWalletViewController.swift */,
 			);
 			path = "View Controllers";
 			sourceTree = "<group>";
@@ -553,6 +558,7 @@
 			isa = PBXGroup;
 			children = (
 				D0126FF522446E3800412629 /* InvoiceViewController.swift */,
+				D0EDDF1024972CEF00657931 /* InvoiceSettingsViewController.swift */,
 			);
 			path = Invoice;
 			sourceTree = "<group>";
@@ -1037,6 +1043,7 @@
 				D02094F3225936D2002E8E7A /* ConnectingView.swift in Sources */,
 				D0196DDB21B5AC5F0081E0AB /* KeyPad.swift in Sources */,
 				D0ED69BC2325D768001F8FBC /* WalletsViewController.swift in Sources */,
+				D0E2A1052496EE9400AE0C04 /* ActiveWalletViewController.swift in Sources */,
 				D037C870231BAFF1006C357D /* RescanViewController.swift in Sources */,
 				D00F851F2494A7CA008D7CD3 /* AuthKeysStruct.swift in Sources */,
 				D02958D5235053B300ED8F72 /* SecurityCenterViewController.swift in Sources */,
@@ -1099,6 +1106,7 @@
 				D00B9A282111427200E8B95A /* AppDelegate.swift in Sources */,
 				D0EC7490227F6977001489B9 /* SignRawViewController.swift in Sources */,
 				D07AED032435B62800C2FADB /* Commands.swift in Sources */,
+				D0EDDF1124972CEF00657931 /* InvoiceSettingsViewController.swift in Sources */,
 				D084960422EBCD3B003FE8EB /* GetInfoViewController.swift in Sources */,
 				D073E16E22558CDE0012A28C /* CoreDataService.swift in Sources */,
 				D037C86E231BAFD2006C357D /* AddAsChangeViewController.swift in Sources */,
@@ -1266,8 +1274,8 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 150;
-				DEVELOPMENT_TEAM = 69FR345CDA;
+				CURRENT_PROJECT_VERSION = 151;
+				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
@@ -1279,7 +1287,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.229;
+				MARKETING_VERSION = 1.230;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1302,9 +1310,9 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 150;
+				CURRENT_PROJECT_VERSION = 151;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 69FR345CDA;
+				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				ENABLE_TESTABILITY = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1317,7 +1325,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.229;
+				MARKETING_VERSION = 1.230;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";

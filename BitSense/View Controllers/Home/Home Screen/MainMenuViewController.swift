@@ -8,7 +8,7 @@
 
 import UIKit
 
-class MainMenuViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITabBarControllerDelegate, UINavigationControllerDelegate, OnionManagerDelegate {
+class MainMenuViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UINavigationControllerDelegate, OnionManagerDelegate {
     
     weak var mgr = TorClient.sharedInstance
     let backView = UIView()
@@ -18,9 +18,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     var incomingCount = Int()
     var outgoingCount = Int()
     var isPruned = Bool()
-    var tx = String()
     var currentBlock = Int()
-    var transactionArray = [[String:Any]]()
     @IBOutlet var mainMenu: UITableView!
     var connectingView = ConnectingView()
     let cd = CoreDataService()
@@ -29,43 +27,32 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     var activeNode:[String:Any]?
     var existingNodeID:UUID!
     var initialLoad = Bool()
-    var existingWallet = ""
     var mempoolCount = Int()
-    var walletDisabled = Bool()
     var torReachable = Bool()
     var progress = ""
     var difficulty = ""
     var feeRate = ""
     var size = ""
-    var hotBalance = ""
-    var coldBalance = ""
-    var unconfirmedBalance = ""
     var network = ""
-    var sectionZeroLoaded = Bool()
     var sectionOneLoaded = Bool()
     let spinner = UIActivityIndicatorView(style: .medium)
     var refreshButton = UIBarButtonItem()
     var dataRefresher = UIBarButtonItem()
-    var wallets = NSArray()
     var viewHasLoaded = Bool()
+    var nodeLabel = ""
+    @IBOutlet weak var headerLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        tabBarController?.delegate = self
         mainMenu.delegate = self
         mainMenu.alpha = 0
         mainMenu.tableFooterView = UIView(frame: .zero)
         initialLoad = true
         viewHasLoaded = false
-        sectionZeroLoaded = false
         sectionOneLoaded = false
         addNavBarSpinner()
-        setFeeTarget()
         showUnlockScreen()
-        existingWallet = ud.object(forKey: "walletName") as? String ?? ""
         NotificationCenter.default.addObserver(self, selector: #selector(refreshNode), name: .refreshNode, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(refreshWallet), name: .refreshWallet, object: nil)
-        
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -93,45 +80,30 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func torConnProgress(_ progress: Int) {
-        
         print("progress = \(progress)")
-        
     }
     
     func torConnFinished() {
         print("finished connecting")
         viewHasLoaded = true
-        removeSpinner()
-        //loadWalletFirst()
+        removeBackView()
         loadTable()
         displayAlert(viewController: self, isError: false, message: "Tor finished bootstrapping")
-        
     }
     
     func torConnDifficulties() {
-        
         displayAlert(viewController: self, isError: true, message: "We are having issues connecting tor")
-        
     }
     
     func addNavBarSpinner() {
-        
         spinner.frame = CGRect(x: 0, y: 0, width: 20, height: 20)
         dataRefresher = UIBarButtonItem(customView: spinner)
         navigationItem.setRightBarButton(dataRefresher, animated: true)
         spinner.startAnimating()
         spinner.alpha = 1
-        
-    }
-    
-    @objc func refreshWallet() {
-        existingWallet = ""
-        reloadWalletData()
     }
     
     @objc func refreshNode() {
-        print("refreshNode")
-        existingWallet = "user is refreshing"
         existingNodeID = nil
         addNavBarSpinner()
         loadTable()
@@ -175,45 +147,22 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         let nodeStruct = NodeStruct(dictionary: node)
         if initialLoad {
             existingNodeID = nodeStruct.id
+            loadSectionOne()
+        } else {
+            checkIfNodesChanged(newNodeId: nodeStruct.id!)
         }
         DispatchQueue.main.async { [unowned vc = self] in
-            vc.navigationItem.title = nodeStruct.label
+            vc.headerLabel.text = nodeStruct.label
         }
-        checkIfNodesChanged(newNodeId: nodeStruct.id!)
     }
     
     private func checkIfNodesChanged(newNodeId: UUID) {
         if newNodeId != existingNodeID {
-            if !initialLoad {
-                ud.removeObject(forKey: "walletName")
-                existingWallet = ""
-                
-            }
-            loadWalletFirst()
-        } else if existingNodeID == nil {
-            if !initialLoad {
-                existingNodeID = newNodeId
-            }
-            loadWalletFirst()
-        } else {
-            if !initialLoad {
-                checkIfWalletsChanged()
-            } else {
-                loadWalletFirst()
-            }
-        }
-    }
-    
-    private func checkIfWalletsChanged() {
-        let walletName = ud.object(forKey: "walletName") as? String ?? ""
-        if walletName != existingWallet {
-            existingWallet = walletName
-            reloadWalletData()
+            loadSectionOne()
         }
     }
     
     @objc func refreshData(_ sender: Any) {
-        existingWallet = "user wants to refresh"
         existingNodeID = nil
         refreshDataNow()
     }
@@ -224,722 +173,319 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     @IBAction func lockButton(_ sender: Any) {
-        
         showUnlockScreen()
-        
-    }
-    
-    func setFeeTarget() {
-        
-        if ud.object(forKey: "feeTarget") == nil {
-            
-            ud.set(1008, forKey: "feeTarget")
-            
-        }
-        
     }
     
     func showUnlockScreen() {
-                
         if KeyChain.getData("UnlockPassword") != nil {
-            
-            DispatchQueue.main.async {
-                
-                self.performSegue(withIdentifier: "lockScreen", sender: self)
-                
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.performSegue(withIdentifier: "lockScreen", sender: vc)
             }
-            
         }
-        
     }
     
     //MARK: Tableview Methods
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        
-        if transactionArray.count > 0 {
-            
-            return 2 + transactionArray.count
-            
-        } else {
-            
-            return 3
-            
-        }
-                
+        return 13//1
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
         return 1
-        
     }
     
     func blankCell() -> UITableViewCell {
-        
         let cell = UITableViewCell()
         cell.selectionStyle = .none
         cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         return cell
+    }
+    
+    private func homeCell(_ indexPath: IndexPath) -> UITableViewCell {
+        let cell = mainMenu.dequeueReusableCell(withIdentifier: "homeCell", for: indexPath)
+        cell.selectionStyle = .none
+        cell.layer.borderColor = UIColor.lightGray.cgColor
+        cell.layer.borderWidth = 0.5
+        let background = cell.viewWithTag(3)!
+        let icon = cell.viewWithTag(1) as! UIImageView
+        let label = cell.viewWithTag(2) as! UILabel
+        background.clipsToBounds = true
+        background.layer.cornerRadius = 8
+        icon.tintColor = .white
         
+        switch indexPath.section {
+        case 0:
+            if progress == "99% synced" {
+                label.text = "fully synced"
+                background.backgroundColor = .systemGreen
+                icon.image = UIImage(systemName: "checkmark.seal")
+            } else {
+                label.text = progress
+                background.backgroundColor = .systemRed
+                icon.image = UIImage(systemName: "exclamationmark.triangle")
+            }
+            
+        case 1:
+            label.text = "bitcoin core v\(self.version)"
+            icon.image = UIImage(systemName: "v.circle")
+            background.backgroundColor = .systemBlue
+            
+        case 2:
+            label.text = network
+            icon.image = UIImage(systemName: "link")
+            if network == "test chain" {
+                background.backgroundColor = .systemGreen
+            } else if network == "main chain" {
+                background.backgroundColor = .systemOrange
+            } else {
+                background.backgroundColor = .systemTeal
+            }
+            
+        case 3:
+            label.text = "\(outgoingCount) outgoing / \(incomingCount) incoming"
+            icon.image = UIImage(systemName: "person.3")
+            background.backgroundColor = .systemIndigo
+            
+        case 4:
+            if isPruned {
+                label.text = "pruned"
+                icon.image = UIImage(systemName: "rectangle.compress.vertical")
+                
+            } else if !isPruned {
+                label.text = "not pruned"
+                icon.image = UIImage(systemName: "rectangle.expand.vertical")
+            }
+            background.backgroundColor = .systemPurple
+            
+        case 5:
+            label.text = hashrateString + " " + "EH/s hashrate"
+            icon.image = UIImage(systemName: "speedometer")
+            background.backgroundColor = .systemRed
+            
+        case 6:
+            label.text = "\(self.currentBlock.withCommas()) blocks"
+            icon.image = UIImage(systemName: "square.stack.3d.up")
+            background.backgroundColor = .systemYellow
+            
+        case 7:
+            label.text = difficulty
+            icon.image = UIImage(systemName: "slider.horizontal.3")
+            background.backgroundColor = .systemBlue
+            
+        case 8:
+            label.text = size
+            background.backgroundColor = .systemPink
+            icon.image = UIImage(systemName: "archivebox")
+        
+        case 9:
+            label.text = "\(self.mempoolCount.withCommas()) mempool"
+            icon.image = UIImage(systemName: "waveform.path.ecg")
+            background.backgroundColor = .systemGreen
+            
+        case 10:
+            label.text = self.feeRate + " " + "fee rate"
+            icon.image = UIImage(systemName: "percent")
+            background.backgroundColor = .systemGray
+            
+        case 11:
+            if torReachable {
+                label.text = "tor hidden service on"
+                icon.image = UIImage(systemName: "wifi")
+                background.backgroundColor = .black
+                
+            } else {
+                label.text = "tor hidden service off"
+                icon.image = UIImage(systemName: "wifi.slash")
+                background.backgroundColor = .darkGray
+            }
+            
+        case 12:
+            label.text = "\(uptime / 86400) days \((uptime % 86400) / 3600) hours uptime"
+            icon.image = UIImage(systemName: "clock")
+            background.backgroundColor = .systemOrange
+            
+        default:
+            break
+        }
+        return cell
+    }
+    
+    private func nodeCell(_ indexPath: IndexPath) -> UITableViewCell {
+        let cell = mainMenu.dequeueReusableCell(withIdentifier: "NodeInfo", for: indexPath)
+        cell.selectionStyle = .none
+        cell.layer.borderColor = UIColor.lightGray.cgColor
+        cell.layer.borderWidth = 0.5
+        let network = cell.viewWithTag(1) as! UILabel
+        let pruned = cell.viewWithTag(2) as! UILabel
+        let connections = cell.viewWithTag(3) as! UILabel
+        let version = cell.viewWithTag(4) as! UILabel
+        let hashRate = cell.viewWithTag(5) as! UILabel
+        let sync = cell.viewWithTag(6) as! UILabel
+        let blockHeight = cell.viewWithTag(7) as! UILabel
+        let uptime = cell.viewWithTag(8) as! UILabel
+        let mempool = cell.viewWithTag(10) as! UILabel
+        let tor = cell.viewWithTag(11) as! UILabel
+        let difficultyLabel = cell.viewWithTag(12) as! UILabel
+        let sizeLabel = cell.viewWithTag(13) as! UILabel
+        let feeRate = cell.viewWithTag(14) as! UILabel
+        
+        network.layer.cornerRadius = 6
+        pruned.layer.cornerRadius = 6
+        connections.layer.cornerRadius = 6
+        version.layer.cornerRadius = 6
+        hashRate.layer.cornerRadius = 6
+        sync.layer.cornerRadius = 6
+        blockHeight.layer.cornerRadius = 6
+        uptime.layer.cornerRadius = 6
+        mempool.layer.cornerRadius = 6
+        tor.layer.cornerRadius = 6
+        difficultyLabel.layer.cornerRadius = 6
+        sizeLabel.layer.cornerRadius = 6
+        feeRate.layer.cornerRadius = 6
+        
+        sizeLabel.text = self.size
+        difficultyLabel.text = self.difficulty
+        if self.progress == "99% synced" {
+            sync.text = "fully synced"
+        } else {
+            sync.text = self.progress
+        }
+        feeRate.text = self.feeRate + " " + "fee rate"
+        
+        if torReachable {
+            
+            tor.text = "tor hidden service on"
+            
+        } else {
+            
+            tor.text = "tor hidden service off"
+            
+        }
+        
+        mempool.text = "\(self.mempoolCount.withCommas()) mempool"
+        
+        if self.isPruned {
+            
+            pruned.text = "pruned"
+            
+        } else if !self.isPruned {
+            
+            pruned.text = "not pruned"
+        }
+        
+        if self.network != "" {
+            
+            network.text = self.network
+            
+        }
+        
+        blockHeight.text = "\(self.currentBlock.withCommas()) blocks"
+        connections.text = "\(outgoingCount) ↑ / \(incomingCount) ↓ connections"
+        version.text = "bitcoin core v\(self.version)"
+        hashRate.text = self.hashrateString + " " + "EH/s hashrate"
+        uptime.text = "\(self.uptime / 86400) days \((self.uptime % 86400) / 3600) hours uptime"
+        
+        return cell
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
-        switch indexPath.section {
-            
-        case 0:
-            
-            if sectionZeroLoaded {
-                
-                let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-                let hotBalanceLabel = cell.viewWithTag(1) as! UILabel
-                let coldBalanceLabel = cell.viewWithTag(2) as! UILabel
-                let unconfirmedLabel = cell.viewWithTag(3) as! UILabel
-                let walletLabel = cell.viewWithTag(4) as! UILabel
-                cell.layer.borderColor = UIColor.lightGray.cgColor
-                cell.layer.borderWidth = 0.5
-                
-                //walletLabel.adjustsFontSizeToFitWidth = true
-                walletLabel.text = ud.object(forKey: "walletName") as? String ?? "Default"
-                if hotBalance == "" {
-                    
-                    self.hotBalance = "0.00000000"
-                    
-                }
-                
-                if coldBalance == "" {
-                    
-                    self.coldBalance = "0.00000000"
-                    
-                }
-                
-                hotBalanceLabel.text = self.hotBalance
-                coldBalanceLabel.text = self.coldBalance
-                unconfirmedLabel.text = self.unconfirmedBalance
-                hotBalanceLabel.adjustsFontSizeToFitWidth = true
-                coldBalanceLabel.adjustsFontSizeToFitWidth = true
-                unconfirmedLabel.adjustsFontSizeToFitWidth = true
-                return cell
-                
-            } else {
-                
-                return blankCell()
-                
-            }
-            
-        case 1:
-            
-            if sectionOneLoaded {
-                
-                let cell = tableView.dequeueReusableCell(withIdentifier: "NodeInfo", for: indexPath)
-                cell.selectionStyle = .none
-                cell.isSelected = false
-                
-                cell.layer.borderColor = UIColor.lightGray.cgColor
-                cell.layer.borderWidth = 0.5
-                
-                let network = cell.viewWithTag(1) as! UILabel
-                let pruned = cell.viewWithTag(2) as! UILabel
-                let connections = cell.viewWithTag(3) as! UILabel
-                let version = cell.viewWithTag(4) as! UILabel
-                let hashRate = cell.viewWithTag(5) as! UILabel
-                let sync = cell.viewWithTag(6) as! UILabel
-                let blockHeight = cell.viewWithTag(7) as! UILabel
-                let uptime = cell.viewWithTag(8) as! UILabel
-                let mempool = cell.viewWithTag(10) as! UILabel
-                let tor = cell.viewWithTag(11) as! UILabel
-                let difficultyLabel = cell.viewWithTag(12) as! UILabel
-                let sizeLabel = cell.viewWithTag(13) as! UILabel
-                let feeRate = cell.viewWithTag(14) as! UILabel
-                
-                network.layer.cornerRadius = 6
-                pruned.layer.cornerRadius = 6
-                connections.layer.cornerRadius = 6
-                version.layer.cornerRadius = 6
-                hashRate.layer.cornerRadius = 6
-                sync.layer.cornerRadius = 6
-                blockHeight.layer.cornerRadius = 6
-                uptime.layer.cornerRadius = 6
-                mempool.layer.cornerRadius = 6
-                tor.layer.cornerRadius = 6
-                difficultyLabel.layer.cornerRadius = 6
-                sizeLabel.layer.cornerRadius = 6
-                feeRate.layer.cornerRadius = 6
-                
-                sizeLabel.text = self.size
-                difficultyLabel.text = self.difficulty
-                if self.progress == "99% synced" {
-                    sync.text = "fully synced"
-                } else {
-                    sync.text = self.progress
-                }
-                feeRate.text = self.feeRate + " " + "fee rate"
-                
-                if torReachable {
-                    
-                    tor.text = "tor hidden service on"
-                    
-                } else {
-                    
-                    tor.text = "tor hidden service off"
-                    
-                }
-                
-                mempool.text = "\(self.mempoolCount.withCommas()) mempool"
-                
-                if self.isPruned {
-                    
-                    pruned.text = "pruned"
-                    
-                } else if !self.isPruned {
-                    
-                    pruned.text = "not pruned"
-                }
-                
-                if self.network != "" {
-                    
-                    network.text = self.network
-                    
-                }
-                
-                blockHeight.text = "\(self.currentBlock.withCommas()) blocks"
-                connections.text = "\(outgoingCount) ↑ / \(incomingCount) ↓ connections"
-                version.text = "bitcoin core v\(self.version)"
-                hashRate.text = self.hashrateString + " " + "EH/s hashrate"
-                uptime.text = "\(self.uptime / 86400) days \((self.uptime % 86400) / 3600) hours uptime"
-                
-                return cell
-                
-            } else {
-                
-                return blankCell()
-                
-            }
-            
-        default:
-            
-            if transactionArray.count == 0 {
-                
-                return blankCell()
-                
-            } else {
-                
-                let cell = tableView.dequeueReusableCell(withIdentifier: "MainMenuCell",
-                                                         for: indexPath)
-                
-                cell.selectionStyle = .none
-                
-                cell.layer.borderColor = UIColor.lightGray.cgColor
-                cell.layer.borderWidth = 0.5
-                
-                let categoryImage = cell.viewWithTag(1) as! UIImageView
-                let amountLabel = cell.viewWithTag(2) as! UILabel
-                let confirmationsLabel = cell.viewWithTag(3) as! UILabel
-                let labelLabel = cell.viewWithTag(4) as! UILabel
-                let dateLabel = cell.viewWithTag(5) as! UILabel
-                let watchOnlyLabel = cell.viewWithTag(6) as! UILabel
-                
-                amountLabel.alpha = 1
-                confirmationsLabel.alpha = 1
-                labelLabel.alpha = 1
-                dateLabel.alpha = 1
-                watchOnlyLabel.alpha = 1
-                
-                mainMenu.separatorColor = UIColor.darkGray
-                let dict = self.transactionArray[indexPath.section - 2]
-                                
-                confirmationsLabel.text = (dict["confirmations"] as! String) + " " + "confs"
-                let label = dict["label"] as? String
-                
-                if label != "," {
-                    
-                    labelLabel.text = label
-                    
-                } else if label == "," {
-                    
-                    labelLabel.text = ""
-                    
-                }
-                
-                dateLabel.text = dict["date"] as? String
-                
-                if dict["abandoned"] as? Bool == true {
-                    
-                    cell.backgroundColor = UIColor.red
-                    
-                }
-                
-                if dict["involvesWatchonly"] as? Bool == true {
-                    
-                    watchOnlyLabel.text = "COLD"
-                    
-                } else {
-                    
-                    watchOnlyLabel.text = ""
-                    
-                }
-                
-                let amount = dict["amount"] as! String
-                
-                if amount.hasPrefix("-") {
-                    
-                    categoryImage.image = UIImage(systemName: "arrow.up.right")
-                    categoryImage.tintColor = .systemRed
-                    amountLabel.text = amount
-                    amountLabel.textColor = UIColor.darkGray
-                    labelLabel.textColor = UIColor.darkGray
-                    confirmationsLabel.textColor = UIColor.darkGray
-                    dateLabel.textColor = UIColor.darkGray
-                    
-                } else {
-                    
-                    categoryImage.image = UIImage(systemName: "arrow.down.left")
-                    categoryImage.tintColor = .systemGreen
-                    amountLabel.text = "+" + amount
-                    amountLabel.textColor = .lightGray
-                    labelLabel.textColor = .lightGray
-                    confirmationsLabel.textColor = .lightGray
-                    dateLabel.textColor = .lightGray
-                    
-                }
-                
-                return cell
-                
-            }
-            
+        if sectionOneLoaded {
+            return homeCell(indexPath)//nodeCell(indexPath)
+        } else {
+            return blankCell()
         }
-        
     }
     
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let header = UIView()
+        header.backgroundColor = UIColor.clear
+        header.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 50)
+        let textLabel = UILabel()
+        textLabel.textAlignment = .left
+        textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
+        textLabel.textColor = .white
+        textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
         
-        var sectionString = ""
         switch section {
-        case 0: sectionString = "Current Wallet"
-        case 1: sectionString = "Node Info"
-        case 2: sectionString = "Transactions"
-        default: break
+        case 0:
+            textLabel.text = "Verification progress"
+        case 1:
+            textLabel.text = "Node version"
+        case 2:
+            textLabel.text = "Blockchain network"
+        case 3:
+            textLabel.text = "Peer connections"
+        case 4:
+            textLabel.text = "Blockchain state"
+        case 5:
+            textLabel.text = "Mining hashrate"
+        case 6:
+            textLabel.text = "Current blockheight"
+        case 7:
+            textLabel.text = "Mining difficulty"
+        case 8:
+            textLabel.text = "Blockchain size on disc"
+        case 9:
+            textLabel.text = "Node's mempool"
+        case 10:
+            textLabel.text = "Fee rate"
+        case 11:
+            textLabel.text = "P2P hidden service"
+        case 12:
+            textLabel.text = "Node uptime"
+        default:
+            break
         }
-        return sectionString
-    }
-    
-    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
         
-        (view as! UITableViewHeaderFooterView).backgroundView?.backgroundColor = UIColor.clear
-        (view as! UITableViewHeaderFooterView).textLabel?.textAlignment = .left
-        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.systemFont(ofSize: 12)
-        (view as! UITableViewHeaderFooterView).textLabel?.textColor = .darkGray
-        (view as! UITableViewHeaderFooterView).textLabel?.alpha = 1
-        
+        header.addSubview(textLabel)
+        return header
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        
-        if section == 0 {
-            
-            return 30
-            
-        } else {
-            
-            return 20
-            
-        }
-        
+        return 50
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        
-        switch indexPath.section {
-            
-        case 0:
-            
-            if sectionZeroLoaded {
-                
-                return 136
-                
-            } else {
-                
-                return 47
-                
-            }
-            
-        case 1:
-            
-            if sectionOneLoaded {
-                
-                return 203
-                
-            } else {
-                
-                return 47
-                
-            }
-            
-        default:
-            
-            if sectionZeroLoaded {
-                
-                return 74
-                
-            } else {
-                
-                return 47
-                
-            }
-            
-        }
-        
-    }
-    
-    func loadWalletFirst() {
-        print("loadwalletfirst")
-        
-        let nodeLogic = NodeLogic()
-        
-        func completion() {
-            
-            if nodeLogic.errorBool {
-                
-                if nodeLogic.errorDescription == "walletDisabled" {
-                    
-                    walletDisabled = true
-                    loadSectionZero()
-                    
-                } else if nodeLogic.errorDescription.contains("Wallet file not specified (must request wallet RPC through") {
-                    
-                    self.removeSpinner()
-                    self.removeLoader()
-                    self.existingWallet = "multiple wallets"
-                    self.promptToChooseWallet()
-                    
-                } else {
-                    
-                    self.removeSpinner()
-                    self.removeLoader()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: nodeLogic.errorDescription)
-                    
-                }
-                
-            } else {
-                
-                walletDisabled = false
-                loadSectionZero()
-                
-            }
-            
-        }
-        
-        nodeLogic.loadWalletSection(completion: completion)
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            
-            displayAlert(viewController: self, isError: false, message: "Fetching wallet balances...")
-            
-        }
-        
-    }
-    
-    func chooseAWallet() {
-        
-        DispatchQueue.main.async {
-            
-            self.performSegue(withIdentifier: "chooseAWallet", sender: self)
-            
-        }
-        
-    }
-    
-    func loadSectionZero() {
-        
-        // dont show refresh button until a valid connection is made
-        let nodeLogic = NodeLogic()
-        nodeLogic.walletDisabled = walletDisabled
-        
-        func completion() {
-            print("completion")
-            
-            if nodeLogic.errorBool {
-                
-                if nodeLogic.errorDescription.contains("Wallet file not specified (must request wallet RPC through") {
-                    
-                    self.removeSpinner()
-                    self.removeLoader()
-                    self.existingWallet = "multiple wallets"
-                    self.promptToChooseWallet()
-                    
-                } else {
-                    
-                    self.removeSpinner()
-                    self.removeLoader()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: nodeLogic.errorDescription)
-                    
-                }
-                
-            } else {
-                
-                let dict = nodeLogic.dictToReturn
-                let str = HomeStruct(dictionary: dict)
-                
-                self.hotBalance = str.hotBalance
-                self.coldBalance = str.coldBalance
-                self.unconfirmedBalance = str.unconfirmedBalance
-                
-                DispatchQueue.main.async {
-                    
-                    self.sectionZeroLoaded = true
-                    self.mainMenu.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
-                    let impact = UIImpactFeedbackGenerator()
-                    impact.impactOccurred()
-                    self.loadSectionTwo()
-                    
-                }
-                
-            }
-            
-        }
-        
-        nodeLogic.loadSectionZero(completion: completion)
-        
-    }
-    
-    private func promptToChooseWallet() {
-        DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Your node has multiple wallets that are currently loaded, you need to choose which one you want to work with.", message: "", preferredStyle: .actionSheet)
-            alert.addAction(UIAlertAction(title: "Choose", style: .default, handler: { [unowned vc = self] action in
-                vc.goChooseWallet()
-            }))
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = vc.view
-            vc.present(alert, animated: true, completion: nil)
-        }
-    }
-    
-    private func goChooseWallet() {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "segueToChooseWallet", sender: vc)
-        }
+//        if sectionOneLoaded {
+//            return 203
+//        } else {
+//            return 47
+//        }
+        return 54
     }
     
     func loadSectionOne() {
-        print("loadSectionOne")
-        
         let nodeLogic = NodeLogic()
-        nodeLogic.walletDisabled = walletDisabled
-        
-        func completion() {
-            
+        displayAlert(viewController: self, isError: false, message: "bitcoin-cli getblockchaininfo")
+        nodeLogic.loadSectionOne { [unowned vc = self] in
             if nodeLogic.errorBool {
-                
-                self.removeLoader()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: nodeLogic.errorDescription)
-                
+                vc.removeLoader()
+                displayAlert(viewController: self, isError: true, message: nodeLogic.errorDescription)
             } else {
-                
                 let dict = nodeLogic.dictToReturn
                 let str = HomeStruct(dictionary: dict)
-                sectionOneLoaded = true
-                feeRate = str.feeRate
-                mempoolCount = str.mempoolCount
-                network = str.network
-                torReachable = str.torReachable
-                size = str.size
-                difficulty = str.difficulty
-                progress = str.progress
-                isPruned = str.pruned
-                incomingCount = str.incomingCount
-                outgoingCount = str.outgoingCount
-                version = str.version
-                hashrateString = str.hashrate
-                uptime = str.uptime
-                currentBlock = str.blockheight
-                sectionOneLoaded = true
-                
-                DispatchQueue.main.async {
-                    
-                    self.mainMenu.reloadSections(IndexSet.init(arrayLiteral: 1),
-                                                 with: .fade)
-                    
-                    impact()
-                    self.removeLoader()
-                    
+                vc.sectionOneLoaded = true
+                vc.feeRate = str.feeRate
+                vc.mempoolCount = str.mempoolCount
+                vc.network = str.network
+                vc.torReachable = str.torReachable
+                vc.size = str.size
+                vc.difficulty = str.difficulty
+                vc.progress = str.progress
+                vc.isPruned = str.pruned
+                vc.incomingCount = str.incomingCount
+                vc.outgoingCount = str.outgoingCount
+                vc.version = str.version
+                vc.hashrateString = str.hashrate
+                vc.uptime = str.uptime
+                vc.currentBlock = str.blockheight
+                vc.sectionOneLoaded = true
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.mainMenu.reloadData()
+                    vc.removeLoader()
                 }
-                
             }
-            
         }
-        
-        nodeLogic.loadSectionOne(completion: completion)
-        
-    }
-    
-    func loadSectionTwo() {
-        
-        let nodeLogic = NodeLogic()
-        nodeLogic.walletDisabled = walletDisabled
-        
-        func completion() {
-            
-            if nodeLogic.errorBool {
-                
-                self.removeLoader()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: nodeLogic.errorDescription)
-                
-            } else {
-                
-                transactionArray.removeAll()
-                transactionArray = nodeLogic.arrayToReturn.reversed()
-                
-                DispatchQueue.main.async {
-                    
-//                    self.mainMenu.reloadSections(IndexSet.init(arrayLiteral: 2),
-//                                                 with: .fade)
-                    self.mainMenu.reloadData()
-                    
-                    let impact = UIImpactFeedbackGenerator()
-                    impact.impactOccurred()
-                    self.loadSectionOne()
-                    
-                    
-                    
-                }
-                
-            }
-            
-        }
-        
-        nodeLogic.loadSectionTwo(completion: completion)
-        
-    }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
-        impact()
-        
-        if indexPath.section == 0 {
-            
-//            addNavBarSpinner()
-//            let converter = FiatConverter()
-//
-//            func getResult() {
-//
-//                if !converter.errorBool {
-//
-//                    let btcHot = self.hotBalance
-//                    let btcCold = self.coldBalance
-//                    let rate = converter.fxRate
-//
-//                    guard let hotDouble = Double(self.hotBalance.replacingOccurrences(of: ",", with: "")) else {
-//
-//                        displayAlert(viewController: self,
-//                                     isError: true,
-//                                     message: "error converting hot balance to fiat")
-//
-//                        removeLoader()
-//
-//                        return
-//                    }
-//
-//                    guard let coldDouble = Double(self.coldBalance.replacingOccurrences(of: ",", with: "")) else {
-//
-//                        displayAlert(viewController: self,
-//                                     isError: true,
-//                                     message: "error converting hot balance to fiat")
-//
-//                        removeLoader()
-//
-//                        return
-//                    }
-//
-//                    let formattedHotDouble = (hotDouble * rate).withCommas()
-//                    let formattedColdDouble = (coldDouble * rate).withCommas()
-//                    self.hotBalance = "﹩\(formattedHotDouble)"
-//                    self.coldBalance = "﹩\(formattedColdDouble)"
-//
-//                    DispatchQueue.main.async {
-//
-//                        self.removeLoader()
-//                        self.mainMenu.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
-//
-//                    }
-//
-//                    DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-//
-//                        self.hotBalance = btcHot
-//                        self.coldBalance = btcCold
-//                        self.mainMenu.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
-//
-//                    }
-//
-//                } else {
-//
-//                    removeLoader()
-//
-//                    displayAlert(viewController: self,
-//                                 isError: true,
-//                                 message: "error getting fiat rate")
-//
-//                }
-//
-//            }
-//
-//            converter.getFxRate(completion: getResult)
-            
-        } else {
-            
-            if transactionArray.count > 0 {
-                
-                if indexPath.section > 1 {
-                    
-                    let cell = tableView.cellForRow(at: indexPath)!
-                    
-                    DispatchQueue.main.async {
-                        
-                        UIView.animate(withDuration: 0.2, animations: {
-                            
-                            cell.alpha = 0
-                            
-                        }) { _ in
-                            
-                            UIView.animate(withDuration: 0.2, animations: {
-                                
-                                cell.alpha = 1
-                                
-                            })
-                            
-                        }
-                        
-                    }
-                    
-                    let selectedTx = self.transactionArray[indexPath.section - 2]
-                    let txID = selectedTx["txID"] as! String
-                    self.tx = txID
-                    UIPasteboard.general.string = txID
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.performSegue(withIdentifier: "getTransaction", sender: self)
-                        
-                    }
-                    
-                }
-                
-            }
-            
-        }
-        
     }
     
     //MARK: User Interface
@@ -989,7 +535,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
-    func removeSpinner() {
+    func removeBackView() {
         
         DispatchQueue.main.async {
             
@@ -1005,12 +551,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func reloadTable() {
-        print("reloadTable")
-        
         //used when user switches between nodes so old node data is not displayed
-        sectionZeroLoaded = false
         sectionOneLoaded = false
-        transactionArray.removeAll()
         
         DispatchQueue.main.async {
             
@@ -1057,88 +599,11 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     //MARK: User Actions
     
-    func reloadWalletData() {
-        print("reloadwalletdata")
-        addNavBarSpinner()
-        let nodeLogic = NodeLogic()
-        nodeLogic.walletDisabled = false
-        sectionZeroLoaded = false
-        transactionArray.removeAll()
-        
-        DispatchQueue.main.async { [unowned vc = self] in
-            
-            vc.mainMenu.reloadData()
-            
-        }
-        
-        func completion() {
-            print("completion")
-            
-            if nodeLogic.errorBool {
-                
-                self.removeSpinner()
-                self.removeLoader()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: nodeLogic.errorDescription)
-                
-            } else {
-                
-                let dict = nodeLogic.dictToReturn
-                let str = HomeStruct(dictionary: dict)
-                
-                self.hotBalance = str.hotBalance
-                self.coldBalance = (str.coldBalance)
-                self.unconfirmedBalance = (str.unconfirmedBalance)
-                
-                DispatchQueue.main.async {
-                    self.sectionZeroLoaded = true
-                    self.mainMenu.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
-                }
-                
-                nodeLogic.loadSectionTwo { [unowned vc = self] in
-                    if nodeLogic.errorBool {
-                        vc.removeLoader()
-                        displayAlert(viewController: vc, isError: true, message: nodeLogic.errorDescription)
-                    } else {
-                        vc.transactionArray.removeAll()
-                        vc.transactionArray = nodeLogic.arrayToReturn.reversed()
-                        DispatchQueue.main.async { [unowned vc = self] in
-                            vc.mainMenu.reloadData()
-                            vc.removeLoader()
-                        }
-                    }
-                }
-            }
-        }
-        nodeLogic.loadSectionZero(completion: completion)
-    }
+    
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
         switch segue.identifier {
-            
-        case "getTransaction":
-            
-            if let vc = segue.destination as? TransactionViewController {
-                
-                vc.txid = tx
-                
-            }
-            
-        case "chooseAWallet":
-            
-            if let vc = segue.destination as? ChooseWalletViewController {
-                
-                vc.wallets = wallets
-                vc.doneBlock = { result in
-                    
-                    self.loadTable()
-                    
-                }
-                
-            }
             
         case "addNodeNow":
             
@@ -1158,26 +623,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     //MARK: Helpers
     
-    func isAnyNodeActive(nodes: [[String:Any]]) -> Bool {
-        
-        var boolToReturn = false
-        
-        for nodeDict in nodes {
-            
-            let node = NodeStruct(dictionary: nodeDict)
-            
-            if node.isActive {
-                
-                boolToReturn = true
-                
-            }
-            
-        }
-        
-        return boolToReturn
-        
-    }
-    
     func firstTimeHere(completion: @escaping ((Bool)) -> Void) {
         FirstTime.firstTimeHere() { success in
             completion(success)
@@ -1193,18 +638,6 @@ extension Double {
         let numberFormatter = NumberFormatter()
         numberFormatter.numberStyle = NumberFormatter.Style.decimal
         return numberFormatter.string(from: NSNumber(value:self))!
-        
-    }
-    
-}
-
-extension MainMenuViewController  {
-    
-    func tabBarController(_ tabBarController: UITabBarController,
-                          animationControllerForTransitionFrom fromVC: UIViewController,
-                          to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-        
-        return MyTransition(viewControllers: tabBarController.viewControllers)
         
     }
     

@@ -50,6 +50,13 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     @IBOutlet var coldSwitchOutlet: UISwitch!
     @IBOutlet var coldLabel: UILabel!
     
+    @IBAction func createPsbt(_ sender: Any) {
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "segueToCreatePsbt", sender: vc)
+        }
+    }
+    
+    
    @IBAction func coldAction(_ sender: Any) {
         
         if coldSwitchOutlet.isOn {

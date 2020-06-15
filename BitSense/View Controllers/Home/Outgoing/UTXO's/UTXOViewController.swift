@@ -46,21 +46,18 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                                                    owner: self,
                                                    options: nil)?.first as! UIView?
     
-    @IBOutlet var imageView: UIImageView!
-    @IBOutlet var utxoTable: UITableView!
+    @IBOutlet weak var utxoTable: UITableView!
+    @IBOutlet weak var imageView: UIImageView!
     
     @IBAction func lockAction(_ sender: Any) {
-        
         creatingView.addConnectingView(vc: self,
                                        description: "Getting Locked UTXO's")
         
         executeNodeCommand(method: BTC_CLI_COMMAND.listlockunspent,
                            param: "")
-        
     }
     
     @IBAction func getUtxoInfo(_ sender: Any) {
-        
         if self.utxoToSpendArray.count == 1 {
             
             DispatchQueue.main.async {
@@ -76,10 +73,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
             displayAlert(viewController: self, isError: true, message: "select one utxo to get info for")
             
         }
-        
     }
-    
-    
     
     func getAddressSettings() {
         
@@ -118,7 +112,6 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     }
     
     @IBAction func consolidate(_ sender: Any) {
-        
         if utxoArray.count > 0 {
             
             if utxoToSpendArray.count > 0 {
@@ -168,7 +161,6 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                          message: "No UTXO's to consolidate")
             
         }
-        
     }
     
     func configureAmountView() {
@@ -377,7 +369,6 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     }
     
     @IBAction func createRaw(_ sender: Any) {
-        
         if self.utxoToSpendArray.count > 0 {
             
             updateInputs()
@@ -405,7 +396,6 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                          message: "Select a UTXO first")
             
         }
-        
     }
     
     override func viewDidLoad() {
@@ -513,7 +503,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
             if !(selectedArray[indexPath.section]) {
                 
                 checkMark.alpha = 0
-                cell.backgroundColor = view.backgroundColor
+                cell.backgroundColor = #colorLiteral(red: 0.1333139837, green: 0.1333444417, blue: 0.1333120763, alpha: 1)
                 
             } else {
                 

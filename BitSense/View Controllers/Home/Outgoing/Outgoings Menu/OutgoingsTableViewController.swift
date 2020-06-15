@@ -558,9 +558,3 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
     }
 
 }
-
-extension OutgoingsTableViewController  {
-    func tabBarController(_ tabBarController: UITabBarController, animationControllerForTransitionFrom fromVC: UIViewController, to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-        return MyTransition(viewControllers: tabBarController.viewControllers)
-    }
-}

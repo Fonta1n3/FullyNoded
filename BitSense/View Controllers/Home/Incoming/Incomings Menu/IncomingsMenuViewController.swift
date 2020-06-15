@@ -8,49 +8,36 @@
 
 import UIKit
 
-class IncomingsMenuViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITabBarControllerDelegate {
+class IncomingsMenuViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var isSingleKey = Bool()
     var isPrivKey = Bool()
     var isPruned = Bool()
     var isTestnet = Bool()
-    var nativeSegwit = Bool()
-    var p2shSegwit = Bool()
-    var legacy = Bool()
-    let ud = UserDefaults.standard
     var isExtendedKey = Bool()
-    var isHDMultisig = Bool()
+    //var isHDMultisig = Bool()
     let cd = CoreDataService()
-    var wallets = [[String:Any]]()
-    var wallet = [String:Any]()
+    //var wallets = [[String:Any]]()
+    //var wallet = [String:Any]()
     var descriptors = [[String:Any]]()
     @IBOutlet var incomingsTable: UITableView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        tabBarController?.delegate = self
         incomingsTable.tableFooterView = UIView(frame: .zero)
-        navigationController?.navigationBar.setBackgroundImage(UIImage(), for: UIBarMetrics.default)
-        navigationController?.navigationBar.shadowImage = UIImage()
-        
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        
         descriptors.removeAll()
-        wallets.removeAll()
         isPrivKey = false
         isSingleKey = false
-        getSettings()
-        
     }
     
     // MARK: - Table view data source
     
     func numberOfSections(in tableView: UITableView) -> Int {
         
-        return 4
+        return 2//4
         
     }
     
@@ -58,10 +45,10 @@ class IncomingsMenuViewController: UIViewController, UITableViewDelegate, UITabl
         
         var numberOfRows = 0
         switch section {
-        case 0: numberOfRows = 2
-        case 1: numberOfRows = 7
-        case 2: numberOfRows = 1
-        case 3: numberOfRows = 3
+        case 0: numberOfRows = 7//2
+        case 1: numberOfRows = 1//7
+        //case 2: numberOfRows = 1
+        //case 3: numberOfRows = 3
         default:
             break
         }
@@ -71,36 +58,13 @@ class IncomingsMenuViewController: UIViewController, UITableViewDelegate, UITabl
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
-        let cell = tableView.dequeueReusableCell(withIdentifier: "importCell",
-                                                 for: indexPath)
-        
+        let cell = tableView.dequeueReusableCell(withIdentifier: "importCell", for: indexPath)
         cell.selectionStyle = .none
         let label = cell.viewWithTag(1) as! UILabel
-        let check = cell.viewWithTag(2) as! UIImageView
-        let chevron = cell.viewWithTag(3) as! UIImageView
         var labelString = ""
         
         switch indexPath.section {
-            
         case 0:
-            
-            check.alpha = 0
-            label.textColor = .lightGray
-            
-            switch indexPath.row {
-            case 0: labelString = "Invoice"
-            case 1: labelString = "HD Multisig"
-            default: break
-            }
-            
-            label.text = labelString
-            
-        case 1:
-            
-            check.alpha = 0
-            label.textColor = .lightGray
-            
             switch indexPath.row {
             case 0:labelString = "Address"
             case 1:labelString = "Public key"
@@ -112,354 +76,136 @@ class IncomingsMenuViewController: UIViewController, UITableViewDelegate, UITabl
             default:
                 break
             }
-            
             label.text = labelString
             
-        case 2:
-            
-            check.alpha = 0
-            label.textColor = .lightGray
-            
+        case 1:
             switch indexPath.row {
             case 0:labelString = "Descriptors"
             default:
                 break
             }
-            
             label.text = labelString
             
-        case 3:
-            
-            chevron.alpha = 0
-            
-            switch indexPath.row {
-                
-            case 0:
-                
-                label.text = "Native Segwit"
-                
-                if nativeSegwit {
-                    
-                    check.alpha = 1
-                    label.textColor = .lightGray
-                    
-                } else {
-                    
-                    check.alpha = 0
-                    label.textColor = UIColor.darkGray
-                    
-                }
-                
-                
-            case 1:
-                
-                label.text = "P2SH Segwit"
-                
-                if p2shSegwit {
-                    
-                    check.alpha = 1
-                    label.textColor = .lightGray
-                    
-                } else {
-                    
-                    check.alpha = 0
-                    label.textColor = UIColor.darkGray
-                    
-                }
-                
-            case 2:
-                
-                label.text = "Legacy"
-                
-                if legacy {
-                    
-                    check.alpha = 1
-                    label.textColor = .lightGray
-                    
-                } else {
-                    
-                    check.alpha = 0
-                    label.textColor = UIColor.darkGray
-                    
-                }
-                
-            default:
-                
-                break
-                
-            }
-            
         default:
-            
             break
-            
         }
-        
         return cell
-        
     }
     
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        let cell = tableView.cellForRow(at: IndexPath.init(row: indexPath.row,
-                                                           section: indexPath.section))!
-        
-        let impact = UIImpactFeedbackGenerator()
-        
-        DispatchQueue.main.async {
+        switch indexPath.section {
             
-            impact.impactOccurred()
+        case 0:
             
-            UIView.animate(withDuration: 0.2, animations: {
+            DispatchQueue.main.async {
                 
-                cell.alpha = 0
+                var segueString = ""
                 
-            }, completion: { _ in
-                
-                switch indexPath.section {
-                    
-                case 0:
-                    
-                    switch indexPath.row {
-                        
-                    case 0:
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.performSegue(withIdentifier: "createInvoice",
-                                              sender: self)
-                        }
-                        
-                    case 1:
-                        
-                        if self.wallets.count > 0 {
-                            print("wallets = \(self.wallets)")
-                            
-                            if self.wallets.count > 1 {
-                                
-                                DispatchQueue.main.async {
-                                    
-                                    self.performSegue(withIdentifier: "showWallets",
-                                                      sender: self)
-                                    
-                                }
-                                
-                            } else {
-                                
-                                DispatchQueue.main.async {
-                                    
-                                    self.performSegue(withIdentifier: "getHDmusigAddress",
-                                                      sender: self)
-                                }
-                                
-                            }
-                            
-                        } else {
-                            
-                            displayAlert(viewController: self,
-                                         isError: true,
-                                         message: "no hd musig wallets created yet")
-                            
-                        }
-                        
-                    default:
-                        
-                        break
-                        
-                    }
-                    
-                    
-                    
-                case 1:
-                    
-                    DispatchQueue.main.async {
-                        
-                        var segueString = ""
-                        
-                        switch indexPath.row {
-                            
-                        case 2:
-                            
-                            segueString = "importAKey"
-                            self.isPrivKey = true
-                            self.isSingleKey = true
-                            
-                        case 3, 4:
-                            
-                            segueString = "goImportExtendedKeys"
-                            
-                        case 5:
-                            
-                            segueString = "importMultiSig"
-                            
-                        case 6:
-                            
-                            segueString = "importDescriptor"
-                            
-                        default:
-                            
-                            segueString = "importAKey"
-                            self.isSingleKey = true
-                            
-                        }
-                        
-                        self.performSegue(withIdentifier: segueString,
-                                          sender: self)
-                    }
+                switch indexPath.row {
                     
                 case 2:
                     
-                    print("show descriptor")
+                    segueString = "importAKey"
+                    self.isPrivKey = true
+                    self.isSingleKey = true
                     
-                    self.cd.retrieveEntity(entityName: .newDescriptors) {
-                        
-                        if !self.cd.errorBool {
-                            
-                            self.descriptors = self.cd.entities
-                            
-                            if self.descriptors.count > 0 {
-                                
-                                DispatchQueue.main.async {
-                                    
-                                    self.performSegue(withIdentifier: "showDescriptors",
-                                                      sender: self)
-                                    
-                                }
-                                
-                            } else {
-                                
-                                displayAlert(viewController: self,
-                                             isError: true,
-                                             message: "no xpubs, xprvs or multisig wallets imported yet")
-                                
-                            }
-                            
-                        } else {
-                            
-                            displayAlert(viewController: self, isError: true, message: "error getting descriptors from core data")
-                            
-                        }
-                        
-                    }
+                case 3, 4:
                     
-                case 3:
+                    segueString = "goImportExtendedKeys"
                     
-                    //Address format
-                    for row in 0 ..< tableView.numberOfRows(inSection: 3) {
-                        
-                        if let cell = tableView.cellForRow(at: IndexPath(row: row, section: 3)) {
-                            
-                            var key = ""
-                            
-                            switch row {
-                            case 0: key = "nativeSegwit"
-                            case 1: key = "p2shSegwit"
-                            case 2: key = "legacy"
-                            default:
-                                break
-                            }
-                            
-                            if indexPath.row == row && cell.isSelected {
-                                
-                                cell.isSelected = true
-                                self.ud.set(true, forKey: key)
-                                
-                                DispatchQueue.main.async {
-                                    
-                                    self.getSettings()
-                                    tableView.reloadRows(at: [IndexPath(row: row, section: 3)], with: .none)
-                                    
-                                }
-                                
-                            } else {
-                                
-                                cell.isSelected = false
-                                self.ud.set(false, forKey: key)
-                                
-                                DispatchQueue.main.async {
-                                    
-                                    self.getSettings()
-                                    tableView.reloadRows(at: [IndexPath(row: row, section: 3)], with: .none)
-                                    
-                                }
-                                
-                            }
-                            
-                        }
-                        
-                    }
+                case 5:
+                    
+                    segueString = "importMultiSig"
+                    
+                case 6:
+                    
+                    segueString = "importDescriptor"
                     
                 default:
                     
-                    break
+                    segueString = "importAKey"
+                    self.isSingleKey = true
                     
                 }
                 
-                UIView.animate(withDuration: 0.2, animations: {
-                    
-                    cell.alpha = 1
-                    
-                })
-                
-            })
+                self.performSegue(withIdentifier: segueString,
+                                  sender: self)
+            }
             
-        }
-        
-    }
-    
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        
-        var string = ""
-        switch section {
-        case 0: string = "Get an address"
-        case 1: string = "Import"
-        case 2: string = "Export"
-        case 3: string = "Invoice address format"
+        case 1:
+            
+            self.cd.retrieveEntity(entityName: .newDescriptors) {
+                
+                if !self.cd.errorBool {
+                    
+                    self.descriptors = self.cd.entities
+                    
+                    if self.descriptors.count > 0 {
+                        
+                        DispatchQueue.main.async {
+                            
+                            self.performSegue(withIdentifier: "showDescriptors",
+                                              sender: self)
+                            
+                        }
+                        
+                    } else {
+                        
+                        displayAlert(viewController: self,
+                                     isError: true,
+                                     message: "no xpubs, xprvs or multisig wallets imported yet")
+                        
+                    }
+                    
+                } else {
+                    
+                    displayAlert(viewController: self, isError: true, message: "error getting descriptors from core data")
+                    
+                }
+                
+            }
+            
         default:
             break
         }
-        
-        return string
-        
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 54
+    }
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let header = UIView()
+        header.backgroundColor = UIColor.clear
+        header.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 50)
+        let textLabel = UILabel()
+        textLabel.textAlignment = .left
+        textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
+        textLabel.textColor = .white
+        textLabel.frame = CGRect(x: 0, y: 0, width: 200, height: 50)
+        switch section {
+        case 0:
+            textLabel.text = "Import"
+            
+        case 1:
+            textLabel.text = "Export"
+            
+        default:
+            break
+        }
+        header.addSubview(textLabel)
+        return header
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        
-        return 30
-        
-    }
-    
-    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
-        
-        (view as! UITableViewHeaderFooterView).backgroundView?.backgroundColor = UIColor.clear
-        (view as! UITableViewHeaderFooterView).textLabel?.textAlignment = .left
-        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.systemFont(ofSize: 12)
-        (view as! UITableViewHeaderFooterView).textLabel?.textColor = .darkGray
-        
+        return 50
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
         switch segue.identifier {
-            
-        case "showWallets":
-            
-            if let vc = segue.destination as? WalletsViewController {
-                
-                vc.wallets = wallets
-                vc.isHDInvoice = true
-                
-            }
-            
-        case "getHDmusigAddress":
-            
-            if let vc = segue.destination as? InvoiceViewController {
-                
-                vc.isHDInvoice = true
-                vc.wallet = wallet
-                
-            }
             
         case "importAKey":
             
@@ -504,45 +250,4 @@ class IncomingsMenuViewController: UIViewController, UITableViewDelegate, UITabl
         
     }
     
-    func getSettings() {
-        
-        nativeSegwit = ud.object(forKey: "nativeSegwit") as? Bool ?? true
-        p2shSegwit = ud.object(forKey: "p2shSegwit") as? Bool ?? false
-        legacy = ud.object(forKey: "legacy") as? Bool ?? false
-        
-        cd.retrieveEntity(entityName: .newHdWallets) { [unowned vc = self] in
-            
-            if !vc.cd.errorBool {
-                
-                if vc.cd.entities.count > 0 {
-                   vc.wallets = vc.cd.entities
-                    if vc.wallets.count == 1 {
-                        vc.wallet = vc.wallets[0]
-                    }
-                }
-                
-            } else {
-                
-                displayAlert(viewController: vc, isError: true, message: "error getting hd wallets from coredata")
-                
-            }
-            
-        }
-        
-        
-        
-        DispatchQueue.main.async { [unowned vc = self] in
-            
-            vc.incomingsTable.reloadData()
-            
-        }
-        
-    }
-    
-}
-
-extension IncomingsMenuViewController  {
-    func tabBarController(_ tabBarController: UITabBarController, animationControllerForTransitionFrom fromVC: UIViewController, to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-        return MyTransition(viewControllers: tabBarController.viewControllers)
-    }
 }

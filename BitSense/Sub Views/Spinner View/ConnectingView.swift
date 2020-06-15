@@ -40,7 +40,7 @@ class ConnectingView: UIView {
             
             self.label.text = description.lowercased()
             self.label.textColor = UIColor.white
-            self.label.font = UIFont.init(name: "HiraginoSans-W3", size: 12)
+            self.label.font = UIFont.systemFont(ofSize: 12)
             self.label.textAlignment = .center
             self.label.alpha = 0
             self.label.numberOfLines = 0

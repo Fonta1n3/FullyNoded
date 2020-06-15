@@ -45,7 +45,7 @@ class TorClient {
 
     // The tor client url session including the tor configuration.
     lazy var session = URLSession(configuration: sessionConfiguration)
-
+    
     // Start the tor client.
     func start(delegate: OnionManagerDelegate?) {
         print("start")

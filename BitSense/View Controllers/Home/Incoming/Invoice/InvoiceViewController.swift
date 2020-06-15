@@ -128,6 +128,10 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         
     }
     
+    @IBAction func goToSettings(_ sender: Any) {
+    }
+    
+    
     func load() {
         
         addressOutlet.text = ""
@@ -171,7 +175,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     func getHDMusigAddress() {
         
-        //let aes = AESService()
         let walletStr = Wallet(dictionary: wallet)
         Crypto.decryptData(dataToDecrypt: walletStr.descriptor!) { [unowned vc = self] (desc) in
             if desc != nil {

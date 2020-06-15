@@ -23,6 +23,8 @@ class MakeRPCCall {
     var objectToReturn:Any!
     var attempts = 0
     
+    private init() {}
+    
     func executeRPCCommand(method: BTC_CLI_COMMAND, param: Any, completion: @escaping () -> Void) {
         attempts += 1
         
@@ -188,5 +190,4 @@ class MakeRPCCall {
         }
         
     }
-    private init() {}
 }

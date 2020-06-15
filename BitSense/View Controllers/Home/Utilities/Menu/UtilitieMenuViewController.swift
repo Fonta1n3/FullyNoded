@@ -8,8 +8,9 @@
 
 import UIKit
 
-class UtilitieMenuViewController: UIViewController, UITabBarControllerDelegate, UITableViewDelegate, UITableViewDataSource {
-
+class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+    
+    var firstLink = ""
     var activeNode = [String:Any]()
     let connectingView = ConnectingView()
     var getBlockchainInfo = Bool()
@@ -30,16 +31,25 @@ class UtilitieMenuViewController: UIViewController, UITabBarControllerDelegate, 
     var goVerify = Bool()
     var getUtxos = Bool()
     var getTxoutset = Bool()
+    var decodeRaw = Bool()
+    var decodePSBT = Bool()
+    var process = Bool()
+    var finalize = Bool()
+    var analyze = Bool()
+    var convert = Bool()
+    var txChain = Bool()
+    var broadcast = Bool()
+    var verify = Bool()
+    var combinePSBT = Bool()
+    @IBOutlet weak var table: UITableView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        tabBarController?.delegate = self
-        
+        table.delegate = self
+        table.dataSource = self
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        
         getaddressesbylabel = false
         getMiningInfo = false
         getBlockchainInfo = false
@@ -58,11 +68,21 @@ class UtilitieMenuViewController: UIViewController, UITabBarControllerDelegate, 
         goSign = false
         getUtxos = false
         getTxoutset = false
-        
+        verify = false
+        broadcast = false
+        decodeRaw = false
+        decodePSBT = false
+        process = false
+        finalize = false
+        analyze = false
+        convert = false
+        txChain = false
+        combinePSBT = false
+        firstLink = ""
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 5
+        return 6
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -70,9 +90,10 @@ class UtilitieMenuViewController: UIViewController, UITabBarControllerDelegate, 
         switch section {
         case 0: return 2
         case 1: return 8
-        case 2: return 7
-        case 3: return 2
-        case 4: return 1
+        case 2: return 12
+        case 3: return 7
+        case 4: return 2
+        case 5: return 1
         default: return 0}
         
     }
@@ -88,7 +109,7 @@ class UtilitieMenuViewController: UIViewController, UITabBarControllerDelegate, 
         switch indexPath.section {
             
         case 0:
-            
+            //Identity
             switch indexPath.row {
             case 0: label.text = "Sign Message"
             case 1: label.text = "Verify Message"
@@ -109,6 +130,23 @@ class UtilitieMenuViewController: UIViewController, UITabBarControllerDelegate, 
             default:break}
             
         case 2:
+            //Transactions
+            switch indexPath.row {
+            case 0: label.text = "Create Raw"
+            case 1: label.text = "Sign Raw"
+            case 2: label.text = "Decode Raw"
+            case 3: label.text = "Verify Raw"
+            case 4: label.text = "Broadcast Raw"
+            case 5: label.text = "Process PSBT"
+            case 6: label.text = "Finalize PSBT"
+            case 7: label.text = "Join PSBT"
+            case 8: label.text = "Analyze PSBT"
+            case 9: label.text = "Convert Raw to PSBT"
+            case 10: label.text = "Decode PSBT"
+            case 11: label.text = "Combine PSBT"
+            default:break}
+            
+        case 3:
             
             //wallet
             switch indexPath.row {
@@ -121,7 +159,7 @@ class UtilitieMenuViewController: UIViewController, UITabBarControllerDelegate, 
             case 6: label.text = "UTXO's By Address"
             default:break}
             
-        case 3:
+        case 4:
             
             //network
             switch indexPath.row {
@@ -129,7 +167,7 @@ class UtilitieMenuViewController: UIViewController, UITabBarControllerDelegate, 
             case 1: label.text = "Get Peer Info"
             default:break}
             
-        case 4:
+        case 5:
             
             //mining
             switch indexPath.row {
@@ -148,183 +186,148 @@ class UtilitieMenuViewController: UIViewController, UITabBarControllerDelegate, 
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        let cell = tableView.cellForRow(at: IndexPath.init(row: indexPath.row, section: indexPath.section))!
-        
-        let impact = UIImpactFeedbackGenerator()
-        
-        DispatchQueue.main.async {
+        switch indexPath.section {
             
-            impact.impactOccurred()
+        case 0:
+            //Identity
+            switch indexPath.row {
+            case 0: goSign = true
+            case 1: goVerify = true
+            default: break}
+            segue(to: "goSign")
             
-            UIView.animate(withDuration: 0.2, animations: {
+        case 1:
+            //Blockchain
+            switch indexPath.row {
+            case 0:
+                displayAlert(viewController: self, isError: false, message: "starting rescan, this can take an hour or so and will affect the apps functionality")
+                executeNodeCommandSsh(method: BTC_CLI_COMMAND.rescanblockchain, param: "")
                 
-                cell.alpha = 0
+            case 1:
+                executeNodeCommandSsh(method: BTC_CLI_COMMAND.abortrescan, param: "")
                 
-            }, completion: { _ in
+            case 2:
+                getBlockchainInfo = true
+                segue(to: "goGetInfo")
                 
-                switch indexPath.section {
-                    
-                case 0:
-                    
-                    switch indexPath.row {
-                        
-                    case 0: self.goSign = true
-                    case 1: self.goVerify = true
-                    default: break}
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.performSegue(withIdentifier: "goSign", sender: self)
-                        
-                    }
-                    
-                case 1:
-                    
-                    //Blockchain
-                    switch indexPath.row {
-                        
-                    case 0:
-                        
-                        displayAlert(viewController: self,
-                                     isError: false,
-                                     message: "starting rescan, this can take an hour or so and will affect the apps functionality")
-                        
-                        self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.rescanblockchain,
-                                                   param: "")
-                        
-                    case 1:
-                        
-                        self.executeNodeCommandSsh(method: BTC_CLI_COMMAND.abortrescan,
-                                                   param: "")
-                        
-                    case 2:
-                        
-                        self.getBlockchainInfo = true
-                        self.performSegue(withIdentifier: "goGetInfo", sender: self)
-                        
-                    case 3:
-                        
-                        self.getMempoolInfo = true
-                        self.performSegue(withIdentifier: "goGetInfo", sender: self)
-                        
-                    case 4:
-                        
-                        self.getTransaction = true
-                        self.performSegue(withIdentifier: "goGetInfo", sender: self)
-                        
-                    case 5:
-                        
-                        self.getbestblockhash = true
-                        self.performSegue(withIdentifier: "goGetInfo", sender: self)
-                        
-                        
-                    case 6:
-                        
-                        self.getblock = true
-                        self.performSegue(withIdentifier: "goGetInfo", sender: self)
-                        
-                    case 7:
-                        
-                        self.getTxoutset = true
-                        self.performSegue(withIdentifier: "goGetInfo", sender: self)
-                        
-                    default:
-                        
-                        break
-                        
-                    }
-                    
-                case 2:
-                    
-                    //wallet
-                    switch indexPath.row {
-                    case 0: self.getAddressInfo = true
-                    case 1: self.listAddressGroups = true
-                    case 2: self.getWalletInfo = true
-                    case 3: self.decodeScript = true
-                    case 4: self.listLabels = true
-                    case 5: self.getaddressesbylabel = true
-                    case 6: self.getUtxos = true
-                    default:break}
-                    
-                    self.performSegue(withIdentifier: "goGetInfo", sender: self)
-                    
-                case 3:
-                    
-                    //network
-                    switch indexPath.row {
-                    case 0: self.getNetworkInfo = true
-                    case 1: self.getpeerinfo = true
-                    default:break}
-                    
-                    self.performSegue(withIdentifier: "goGetInfo", sender: self)
-                    
-                case 4:
-                    
-                    //mining
-                    switch indexPath.row {
-                        
-                    case 0:
-                        
-                        self.getMiningInfo = true
-                        self.performSegue(withIdentifier: "goGetInfo", sender: self)
-                        
-                    default:
-                        
-                        break
-                        
-                    }
-                    
-                    
-                default:
-                    
-                    break
-                    
-                }
+            case 3:
+                getMempoolInfo = true
+                segue(to: "goGetInfo")
                 
-                UIView.animate(withDuration: 0.2, animations: {
-                    
-                    cell.alpha = 1
-                    
-                })
+            case 4:
+                getTransaction = true
+                segue(to: "goGetInfo")
                 
-            })
+            case 5:
+                getbestblockhash = true
+                segue(to: "goGetInfo")
+                
+            case 6:
+                getblock = true
+                segue(to: "goGetInfo")
+                
+            case 7:
+                getTxoutset = true
+                segue(to: "goGetInfo")
+                
+            default:
+                break
+            }
             
+        case 2:
+            //Transactions
+            switch indexPath.row {
+            case 0: segue(to: "createUnsigned")//"Create Raw"
+            case 1: segue(to: "signRaw")//"Sign Raw"
+            case 2: decodeRaw = true; segue(to: "goDecode")//"Decode Raw"
+            case 3: verify = true; segue(to: "goDecode")//"Verify Raw"
+            case 4: broadcast = true; segue(to: "goDecode")//"Broadcast Raw"
+            case 5: process = true; segue(to: "goDecode")//"Process PSBT"
+            case 6: finalize = true; segue(to: "goDecode")//"Finalize PSBT"
+            case 7: combinePSBT = false; segue(to: "joinPSBT")//"Join PSBT"
+            case 8: analyze = true; segue(to: "goDecode")//"Analyze PSBT"
+            case 9: convert = true; segue(to: "goDecode")//"Convert Raw to PSBT"
+            case 10: decodePSBT = true; segue(to: "goDecode")//"Decode PSBT"
+            case 11: combinePSBT = true; segue(to: "joinPSBT")//"Combine PSBT"
+            default:break}
+            
+            
+        case 3:
+            //wallet
+            switch indexPath.row {
+            case 0: self.getAddressInfo = true
+            case 1: self.listAddressGroups = true
+            case 2: self.getWalletInfo = true
+            case 3: self.decodeScript = true
+            case 4: self.listLabels = true
+            case 5: self.getaddressesbylabel = true
+            case 6: self.getUtxos = true
+            default:break}
+            segue(to: "goGetInfo")
+            
+        case 4:
+            //network
+            switch indexPath.row {
+            case 0: self.getNetworkInfo = true
+            case 1: self.getpeerinfo = true
+            default:break}
+            segue(to: "goGetInfo")
+            
+        case 5:
+            //mining
+            switch indexPath.row {
+            case 0:
+                getMiningInfo = true
+                segue(to: "goGetInfo")
+            default:
+                break
+            }
+        default:
+            break
         }
-        
     }
     
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let header = UIView()
+        header.backgroundColor = UIColor.clear
+        header.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 50)
+        let textLabel = UILabel()
+        textLabel.textAlignment = .left
+        textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
+        textLabel.textColor = .white
+        textLabel.frame = CGRect(x: 0, y: 0, width: 200, height: 50)
         switch section {
-        case 0: return "Identity"
-        case 1: return "Blockchain"
-        case 2: return "Wallet"
-        case 3: return "Network"
-        case 4: return "Mining"
-        default: return ""}
+        case 0:
+            textLabel.text = "Identity"
+            
+        case 1:
+            textLabel.text = "Blockchain"
+            
+        case 2:
+            textLabel.text = "Transactions"
+            
+        case 3:
+            textLabel.text = "Wallet"
+            
+        case 4:
+            textLabel.text = "Network"
         
-    }
-    
-    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
-        
-        (view as! UITableViewHeaderFooterView).backgroundView?.backgroundColor = UIColor.clear
-        (view as! UITableViewHeaderFooterView).textLabel?.textAlignment = .left
-        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.systemFont(ofSize: 12)
-        (view as! UITableViewHeaderFooterView).textLabel?.textColor = .darkGray
-        
+        case 5:
+            textLabel.text = "Mining"
+            
+        default:
+            break
+        }
+        header.addSubview(textLabel)
+        return header
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        
-        return 30
-        
+        return 50
     }
     
-    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        
-        return 20
-        
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 54
     }
     
     func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
@@ -334,57 +337,37 @@ class UtilitieMenuViewController: UIViewController, UITabBarControllerDelegate, 
         func getResult() {
             
             if !reducer.errorBool {
-                
                 switch method {
-                    
                 case .rescanblockchain:
-                    
-                    displayAlert(viewController: self,
-                                 isError: false,
-                                 message: "Rescanning completed")
+                    displayAlert(viewController: self, isError: false, message: "Rescanning completed")
                     
                 case .abortrescan:
-                    
-                    displayAlert(viewController: self,
-                                 isError: false,
-                                 message: "Rescan aborted")
+                    displayAlert(viewController: self, isError: false, message: "Rescan aborted")
                     
                 default:
-                    
                     break
-                    
                 }
                 
             } else {
-                
-                DispatchQueue.main.async {
-                    
-                    self.connectingView.removeConnectingView()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: reducer.errorDescription)
-                    
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.connectingView.removeConnectingView()
+                    displayAlert(viewController: vc, isError: true, message: reducer.errorDescription)
                 }
-                
             }
-            
         }
-        
-        reducer.makeCommand(command: method,
-                            param: param,
-                            completion: getResult)
-        
+        reducer.makeCommand(command: method, param: param, completion: getResult)
+    }
+    
+    private func segue(to: String) {
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: to, sender: vc)
+        }
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        
         switch segue.identifier {
-            
         case "goGetInfo":
-            
             if let vc = segue.destination as? GetInfoViewController {
-                
                 vc.getBlockchainInfo = self.getBlockchainInfo
                 vc.getNetworkInfo = self.getNetworkInfo
                 vc.listAddressGroups = self.listAddressGroups
@@ -401,30 +384,35 @@ class UtilitieMenuViewController: UIViewController, UITabBarControllerDelegate, 
                 vc.getblock = self.getblock
                 vc.getUtxos = self.getUtxos
                 vc.getTxoutset = self.getTxoutset
-                
             }
             
         case "goSign":
-            
             if let vc = segue.destination as? IdentityViewController {
-                
                 vc.sign = goSign
                 vc.verify = goVerify
-                
+            }
+            
+        case "goDecode":
+            if let vc = segue.destination as? ProcessPSBTViewController {
+                vc.decodePSBT = decodePSBT
+                vc.decodeRaw = decodeRaw
+                vc.process = process
+                vc.analyze = analyze
+                vc.convert = convert
+                vc.finalize = finalize
+                vc.txChain = txChain
+                vc.firstLink = firstLink
+                vc.broadcast = broadcast
+                vc.verify = verify
+            }
+            
+        case "joinPSBT":
+            if let vc = segue.destination as? JoinPSBTViewController {
+                vc.combinePSBT = self.combinePSBT
             }
             
         default:
-            
             break
-            
         }
-        
-    }
-    
-}
-
-extension UtilitieMenuViewController  {
-    func tabBarController(_ tabBarController: UITabBarController, animationControllerForTransitionFrom fromVC: UIViewController, to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-        return MyTransition(viewControllers: tabBarController.viewControllers)
     }
 }
