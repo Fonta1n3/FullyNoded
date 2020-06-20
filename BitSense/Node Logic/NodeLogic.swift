@@ -386,9 +386,12 @@ class NodeLogic {
         }
         
         if let progressCheck = blockchainInfo["verificationprogress"] as? Double {
-            
-            dictToReturn["progress"] = "\(Int(progressCheck*100))% synced"
-            
+            dictToReturn["actualProgress"] = progressCheck
+            if progressCheck > 0.99 {
+                dictToReturn["progress"] = "Fully verified"
+            } else {
+                dictToReturn["progress"] = "\(Int(progressCheck*100))% verified"
+            }
         }
         
         if let chain = blockchainInfo["chain"] as? String {

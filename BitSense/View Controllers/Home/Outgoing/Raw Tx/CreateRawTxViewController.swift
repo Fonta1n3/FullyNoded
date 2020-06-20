@@ -40,6 +40,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     @IBOutlet var receivingLabel: UILabel!
     @IBOutlet var outputsTable: UITableView!
     @IBOutlet var scannerView: UIImageView!
+    @IBOutlet weak var psbtOutlet: UIButton!
     
     var creatingView = ConnectingView()
     let qrScanner = QRScanner()
@@ -395,6 +396,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         DispatchQueue.main.async { [unowned vc = self] in
             vc.playButtonOutlet.tintColor = UIColor.lightGray.withAlphaComponent(0)
             vc.addOutputOutlet.tintColor = UIColor.lightGray.withAlphaComponent(0)
+            vc.psbtOutlet.tintColor = UIColor.lightGray.withAlphaComponent(0)
             vc.rawDisplayer.rawString = raw
             if vc.coldSwitchOutlet.isOn {
                 vc.navigationController?.navigationBar.topItem?.title = "Unsigned Tx"

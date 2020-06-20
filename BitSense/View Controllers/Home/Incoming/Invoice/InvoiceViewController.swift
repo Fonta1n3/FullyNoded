@@ -21,7 +21,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     var legacy = Bool()
     let connectingView = ConnectingView()
     let qrGenerator = QRGenerator()
-    let copiedLabel = UILabel()
     var isHDMusig = Bool()
     var isHDInvoice = Bool()
     let cd = CoreDataService()
@@ -107,9 +106,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         
         amountField.delegate = self
         labelField.delegate = self
-        
-        configureCopiedLabel()
-        
+                
         amountField.addTarget(self,
                               action: #selector(textFieldDidChange(_:)),
                               for: .editingChanged)
@@ -127,10 +124,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         load()
         
     }
-    
-    @IBAction func goToSettings(_ sender: Any) {
-    }
-    
     
     func load() {
         
@@ -323,55 +316,12 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 self.qrView.alpha = 1
                 self.addressOutlet.alpha = 1
                 
-            }) { _ in
-                
-                self.addCopiedLabel()
-                
-            }
+            })
             
         }
         
     }
     
-    func addCopiedLabel() {
-        
-        view.addSubview(copiedLabel)
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            
-            UIView.animate(withDuration: 0.3, animations: {
-                
-                if self.tabBarController != nil {
-                    
-                    self.copiedLabel.frame = CGRect(x: 0,
-                                                    y: self.tabBarController!.tabBar.frame.minY - 50,
-                                                    width: self.view.frame.width,
-                                                    height: 50)
-                    
-                }
-                
-            })
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0, execute: {
-                
-                UIView.animate(withDuration: 0.3, animations: {
-                    
-                    self.copiedLabel.frame = CGRect(x: 0,
-                                                    y: self.view.frame.maxY + 100,
-                                                    width: self.view.frame.width,
-                                                    height: 50)
-                    
-                }, completion: { _ in
-                    
-                    self.copiedLabel.removeFromSuperview()
-                    
-                })
-                
-            })
-            
-        }
-        
-    }
     
     @objc func shareAddressText(_ sender: UITapGestureRecognizer) {
         
@@ -604,22 +554,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     @objc func dismissKeyboard() {
         
         view.endEditing(true)
-        
-    }
-    
-    func configureCopiedLabel() {
-        
-        copiedLabel.text = "copied to clipboard ✓"
-        
-        copiedLabel.frame = CGRect(x: 0,
-                                   y: view.frame.maxY + 100,
-                                   width: view.frame.width,
-                                   height: 50)
-        
-        copiedLabel.textColor = UIColor.darkGray
-        copiedLabel.font = UIFont.init(name: "HiraginoSans-W3", size: 17)
-        copiedLabel.backgroundColor = UIColor.black
-        copiedLabel.textAlignment = .center
         
     }
     

@@ -270,17 +270,15 @@ class ProcessPSBTViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        textView.layer.borderColor = UIColor.lightGray.cgColor
+        textView.layer.borderWidth = 0.5
+        textView.clipsToBounds = true
+        textView.layer.cornerRadius = 8
         configureScanner()
-        
-        let tapGesture = UITapGestureRecognizer(target: self,
-                                                action: #selector(self.dismissKeyboard (_:)))
-        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
-        
         configureView()
-        
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -489,9 +487,11 @@ class ProcessPSBTViewController: UIViewController {
                     let outputs = txDict["vout"] as! NSArray
                     parsePrevTxOutput(outputs: outputs, vout: vout)
                     
-                case .getrawtransaction:
+                case .gettransaction:
                     
-                    let rawTransaction = reducer.stringToReturn
+                    let dict = reducer.dictToReturn
+                    
+                    let rawTransaction = dict["hex"] as! String
                     
                     parsePrevTx(method: .decoderawtransaction,
                                 param: "\"\(rawTransaction)\"",
@@ -590,8 +590,8 @@ class ProcessPSBTViewController: UIViewController {
             
             if let vout = dict["vout"] as? Int {
                 
-                parsePrevTx(method: .getrawtransaction,
-                            param: "\"\(txid)\"",
+                parsePrevTx(method: .gettransaction,
+                            param: "\"\(txid)\", true",
                             vout: vout)
                 
             }

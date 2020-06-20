@@ -93,11 +93,11 @@ class MakeRPCCall {
                 request.timeoutInterval = timeout
                 request.httpMethod = "POST"
                 request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
-                request.httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method)\",\"params\":[\(formattedParam)]}".data(using: .utf8)
+                request.httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method.rawValue)\",\"params\":[\(formattedParam)]}".data(using: .utf8)
                 
                 #if DEBUG
                 print("url = \(url)")
-                print("request: \("{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method)\",\"params\":[\(formattedParam)]}")")
+                print("request: \("{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method.rawValue)\",\"params\":[\(formattedParam)]}")")
                 #endif
                 
                 let task = vc.torClient.session.dataTask(with: request as URLRequest) { [unowned vc = self] (data, response, error) in

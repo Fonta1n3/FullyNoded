@@ -30,6 +30,7 @@ public struct HomeStruct: CustomStringConvertible {
     let transactions:[[String: Any]]
     let uptime:Int
     let feeRate:String
+    let actualProgress:Double
     
     init(dictionary: [String: Any]) {
         
@@ -52,6 +53,7 @@ public struct HomeStruct: CustomStringConvertible {
         self.hotBalance = dictionary["hotBalance"] as? String ?? "0.00000000"
         self.mempoolCount = dictionary["mempoolCount"] as? Int ?? 0
         self.transactions = dictionary["transactions"] as? [[String: Any]] ?? []
+        self.actualProgress = dictionary["actualProgress"] as? Double ?? 0.0
         
     }
     

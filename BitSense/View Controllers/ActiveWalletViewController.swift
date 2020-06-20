@@ -24,15 +24,25 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     let spinner = UIActivityIndicatorView(style: .medium)
     var refreshButton = UIBarButtonItem()
     var dataRefresher = UIBarButtonItem()
+    @IBOutlet weak var sendView: UIView!
+    @IBOutlet weak var invoiceView: UIView!
+    @IBOutlet weak var importView: UIView!
+    @IBOutlet weak var utxosView: UIView!
+    @IBOutlet weak var advancedView: UIView!
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
         walletTable.delegate = self
         walletTable.dataSource = self
+        sendView.layer.cornerRadius = 5
+        invoiceView.layer.cornerRadius = 5
+        importView.layer.cornerRadius = 5
+        utxosView.layer.cornerRadius = 5
+        advancedView.layer.cornerRadius = 5
         existingWallet = ud.object(forKey: "walletName") as? String ?? ""
         sectionZeroLoaded = false
-        setFeeTarget()
         NotificationCenter.default.addObserver(self, selector: #selector(refreshWallet), name: .refreshWallet, object: nil)
         addNavBarSpinner()
         loadTable()
@@ -255,8 +265,8 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if transactionArray.count > 0 {
-            if indexPath.section > 1 {
-                let selectedTx = self.transactionArray[indexPath.section - 2]
+            if indexPath.section > 0 {
+                let selectedTx = self.transactionArray[indexPath.section - 1]
                 tx = selectedTx["txID"] as! String
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.performSegue(withIdentifier: "getTransaction", sender: vc)
@@ -270,12 +280,6 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         cell.selectionStyle = .none
         cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         return cell
-    }
-    
-    private func setFeeTarget() {
-        if ud.object(forKey: "feeTarget") == nil {
-            ud.set(1008, forKey: "feeTarget")
-        }
     }
     
     @objc func refreshWallet() {

@@ -17,22 +17,14 @@ class TransactionViewController: UIViewController {
     
     @IBOutlet var bumpButtonOutlet: UIButton!
     @IBAction func back(_ sender: Any) {
-        
         DispatchQueue.main.async {
-            
             self.dismiss(animated: true, completion: nil)
-            
         }
-        
     }
     
     @IBAction func bumpFee(_ sender: Any) {
-        
-        creatingView.addConnectingView(vc: self,
-                                       description: "bumping")
-        
-        executeNodeCommand(method: BTC_CLI_COMMAND.bumpfee,
-                              param: "\"\(txid)\"")
+        creatingView.addConnectingView(vc: self, description: "bumping")
+        executeNodeCommand(method: .bumpfee, param: "\"\(txid)\"")
         
     }
     
@@ -40,9 +32,11 @@ class TransactionViewController: UIViewController {
         super.viewDidLoad()
         
         bumpButtonOutlet.alpha = 0
-
-        creatingView.addConnectingView(vc: self,
-                                       description: "getting transaction")
+        textView.layer.borderColor = UIColor.lightGray.cgColor
+        textView.layer.borderWidth = 0.5
+        textView.clipsToBounds = true
+        textView.layer.cornerRadius = 8
+        creatingView.addConnectingView(vc: self, description: "getting transaction")
         
     }
     

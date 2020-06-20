@@ -13,33 +13,26 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     weak var mgr = TorClient.sharedInstance
     let backView = UIView()
     let ud = UserDefaults.standard
-    var hashrateString = String()
-    var version = String()
-    var incomingCount = Int()
-    var outgoingCount = Int()
-    var isPruned = Bool()
-    var currentBlock = Int()
+    var command = ""
     @IBOutlet var mainMenu: UITableView!
     var connectingView = ConnectingView()
     let cd = CoreDataService()
     var nodes = [[String:Any]]()
-    var uptime = Int()
     var activeNode:[String:Any]?
     var existingNodeID:UUID!
     var initialLoad = Bool()
-    var mempoolCount = Int()
-    var torReachable = Bool()
-    var progress = ""
-    var difficulty = ""
-    var feeRate = ""
-    var size = ""
-    var network = ""
     var sectionOneLoaded = Bool()
     let spinner = UIActivityIndicatorView(style: .medium)
     var refreshButton = UIBarButtonItem()
     var dataRefresher = UIBarButtonItem()
     var viewHasLoaded = Bool()
     var nodeLabel = ""
+    var detailImage = UIImage()
+    var detailImageTint = UIColor()
+    var detailHeaderText = ""
+    var detailSubheaderText = ""
+    var detailTextDescription = ""
+    var homeStruct:HomeStruct!
     @IBOutlet weak var headerLabel: UILabel!
     
     override func viewDidLoad() {
@@ -52,6 +45,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         sectionOneLoaded = false
         addNavBarSpinner()
         showUnlockScreen()
+        setFeeTarget()
         NotificationCenter.default.addObserver(self, selector: #selector(refreshNode), name: .refreshNode, object: nil)
     }
     
@@ -147,7 +141,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         let nodeStruct = NodeStruct(dictionary: node)
         if initialLoad {
             existingNodeID = nodeStruct.id
-            loadSectionOne()
+            loadTableData()
         } else {
             checkIfNodesChanged(newNodeId: nodeStruct.id!)
         }
@@ -158,7 +152,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     private func checkIfNodesChanged(newNodeId: UUID) {
         if newNodeId != existingNodeID {
-            loadSectionOne()
+            loadTableData()
         }
     }
     
@@ -187,7 +181,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     //MARK: Tableview Methods
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 13//1
+        return 13
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -209,86 +203,97 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         let background = cell.viewWithTag(3)!
         let icon = cell.viewWithTag(1) as! UIImageView
         let label = cell.viewWithTag(2) as! UILabel
+        let chevron = cell.viewWithTag(4) as! UIImageView
         background.clipsToBounds = true
         background.layer.cornerRadius = 8
         icon.tintColor = .white
         
         switch indexPath.section {
         case 0:
-            if progress == "99% synced" {
-                label.text = "fully synced"
+            if homeStruct.progress == "Fully verified" {
                 background.backgroundColor = .systemGreen
                 icon.image = UIImage(systemName: "checkmark.seal")
             } else {
-                label.text = progress
                 background.backgroundColor = .systemRed
                 icon.image = UIImage(systemName: "exclamationmark.triangle")
             }
+            label.text = homeStruct.progress
+            chevron.alpha = 1
             
         case 1:
-            label.text = "bitcoin core v\(self.version)"
+            label.text = "Bitcoin Core v\(homeStruct.version)"
             icon.image = UIImage(systemName: "v.circle")
             background.backgroundColor = .systemBlue
+            chevron.alpha = 1
             
         case 2:
-            label.text = network
+            label.text = homeStruct.network
             icon.image = UIImage(systemName: "link")
-            if network == "test chain" {
+            if homeStruct.network == "test chain" {
                 background.backgroundColor = .systemGreen
-            } else if network == "main chain" {
+            } else if homeStruct.network == "main chain" {
                 background.backgroundColor = .systemOrange
             } else {
                 background.backgroundColor = .systemTeal
             }
+            chevron.alpha = 0
             
         case 3:
-            label.text = "\(outgoingCount) outgoing / \(incomingCount) incoming"
+            label.text = "\(homeStruct.outgoingCount) outgoing / \(homeStruct.incomingCount) incoming"
             icon.image = UIImage(systemName: "person.3")
             background.backgroundColor = .systemIndigo
+            chevron.alpha = 0
             
         case 4:
-            if isPruned {
+            if homeStruct.pruned {
                 label.text = "pruned"
                 icon.image = UIImage(systemName: "rectangle.compress.vertical")
                 
-            } else if !isPruned {
+            } else if !homeStruct.pruned {
                 label.text = "not pruned"
                 icon.image = UIImage(systemName: "rectangle.expand.vertical")
             }
             background.backgroundColor = .systemPurple
+            chevron.alpha = 0
             
         case 5:
-            label.text = hashrateString + " " + "EH/s hashrate"
+            label.text = homeStruct.hashrate + " " + "EH/s hashrate"
             icon.image = UIImage(systemName: "speedometer")
             background.backgroundColor = .systemRed
+            chevron.alpha = 0
             
         case 6:
-            label.text = "\(self.currentBlock.withCommas()) blocks"
+            label.text = "\(homeStruct.blockheight.withCommas()) blocks"
             icon.image = UIImage(systemName: "square.stack.3d.up")
             background.backgroundColor = .systemYellow
+            chevron.alpha = 0
             
         case 7:
-            label.text = difficulty
+            label.text = homeStruct.difficulty
             icon.image = UIImage(systemName: "slider.horizontal.3")
             background.backgroundColor = .systemBlue
+            chevron.alpha = 0
             
         case 8:
-            label.text = size
+            label.text = homeStruct.size
             background.backgroundColor = .systemPink
             icon.image = UIImage(systemName: "archivebox")
+            chevron.alpha = 0
         
         case 9:
-            label.text = "\(self.mempoolCount.withCommas()) mempool"
+            label.text = "\(homeStruct.mempoolCount.withCommas()) mempool"
             icon.image = UIImage(systemName: "waveform.path.ecg")
             background.backgroundColor = .systemGreen
+            chevron.alpha = 0
             
         case 10:
-            label.text = self.feeRate + " " + "fee rate"
+            label.text = homeStruct.feeRate + " " + "fee rate"
             icon.image = UIImage(systemName: "percent")
             background.backgroundColor = .systemGray
+            chevron.alpha = 0
             
         case 11:
-            if torReachable {
+            if homeStruct.torReachable {
                 label.text = "tor hidden service on"
                 icon.image = UIImage(systemName: "wifi")
                 background.backgroundColor = .black
@@ -298,11 +303,13 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 icon.image = UIImage(systemName: "wifi.slash")
                 background.backgroundColor = .darkGray
             }
+            chevron.alpha = 0
             
         case 12:
-            label.text = "\(uptime / 86400) days \((uptime % 86400) / 3600) hours uptime"
+            label.text = "\(homeStruct.uptime / 86400) days \((homeStruct.uptime % 86400) / 3600) hours uptime"
             icon.image = UIImage(systemName: "clock")
             background.backgroundColor = .systemOrange
+            chevron.alpha = 0
             
         default:
             break
@@ -310,87 +317,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         return cell
     }
     
-    private func nodeCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let cell = mainMenu.dequeueReusableCell(withIdentifier: "NodeInfo", for: indexPath)
-        cell.selectionStyle = .none
-        cell.layer.borderColor = UIColor.lightGray.cgColor
-        cell.layer.borderWidth = 0.5
-        let network = cell.viewWithTag(1) as! UILabel
-        let pruned = cell.viewWithTag(2) as! UILabel
-        let connections = cell.viewWithTag(3) as! UILabel
-        let version = cell.viewWithTag(4) as! UILabel
-        let hashRate = cell.viewWithTag(5) as! UILabel
-        let sync = cell.viewWithTag(6) as! UILabel
-        let blockHeight = cell.viewWithTag(7) as! UILabel
-        let uptime = cell.viewWithTag(8) as! UILabel
-        let mempool = cell.viewWithTag(10) as! UILabel
-        let tor = cell.viewWithTag(11) as! UILabel
-        let difficultyLabel = cell.viewWithTag(12) as! UILabel
-        let sizeLabel = cell.viewWithTag(13) as! UILabel
-        let feeRate = cell.viewWithTag(14) as! UILabel
-        
-        network.layer.cornerRadius = 6
-        pruned.layer.cornerRadius = 6
-        connections.layer.cornerRadius = 6
-        version.layer.cornerRadius = 6
-        hashRate.layer.cornerRadius = 6
-        sync.layer.cornerRadius = 6
-        blockHeight.layer.cornerRadius = 6
-        uptime.layer.cornerRadius = 6
-        mempool.layer.cornerRadius = 6
-        tor.layer.cornerRadius = 6
-        difficultyLabel.layer.cornerRadius = 6
-        sizeLabel.layer.cornerRadius = 6
-        feeRate.layer.cornerRadius = 6
-        
-        sizeLabel.text = self.size
-        difficultyLabel.text = self.difficulty
-        if self.progress == "99% synced" {
-            sync.text = "fully synced"
-        } else {
-            sync.text = self.progress
-        }
-        feeRate.text = self.feeRate + " " + "fee rate"
-        
-        if torReachable {
-            
-            tor.text = "tor hidden service on"
-            
-        } else {
-            
-            tor.text = "tor hidden service off"
-            
-        }
-        
-        mempool.text = "\(self.mempoolCount.withCommas()) mempool"
-        
-        if self.isPruned {
-            
-            pruned.text = "pruned"
-            
-        } else if !self.isPruned {
-            
-            pruned.text = "not pruned"
-        }
-        
-        if self.network != "" {
-            
-            network.text = self.network
-            
-        }
-        
-        blockHeight.text = "\(self.currentBlock.withCommas()) blocks"
-        connections.text = "\(outgoingCount) ↑ / \(incomingCount) ↓ connections"
-        version.text = "bitcoin core v\(self.version)"
-        hashRate.text = self.hashrateString + " " + "EH/s hashrate"
-        uptime.text = "\(self.uptime / 86400) days \((self.uptime % 86400) / 3600) hours uptime"
-        
-        return cell
-    }
-    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if sectionOneLoaded {
-            return homeCell(indexPath)//nodeCell(indexPath)
+            return homeCell(indexPath)
         } else {
             return blankCell()
         }
@@ -446,15 +375,91 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-//        if sectionOneLoaded {
-//            return 203
-//        } else {
-//            return 47
-//        }
         return 54
     }
     
-    func loadSectionOne() {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        switch indexPath.section {
+        case 0:
+            command = "getblockchaininfo"
+            detailHeaderText = "Verification progress"
+            if homeStruct.progress == "Fully verified" {
+                detailImageTint = .systemGreen
+                detailImage = UIImage(systemName: "checkmark.seal")!
+            } else {
+                detailImageTint = .systemRed
+                detailImage = UIImage(systemName: "exclamationmark.triangle")!
+            }
+            detailSubheaderText = "\(homeStruct.actualProgress * 100)%"
+            detailTextDescription = """
+            Don't trust, verify!
+            
+            Simply put the "verification progress" field lets you know what percentage of the blockchain's transactions have been verified by your node. The value your node returns is a decimal number between 0.0 and 1.0. 1 meaning your node has verified 100% of the transactions on the blockchain. As new transactions and blocks are always being added to the blockchain your node is constantly catching up and this field will generally be a number such as "0.99999974646", never quite reaching 1 (although it is possible). Fully Noded checks if this number is greater than 0.99 (e.g. 0.999) and if it is we consider your node's copy of the blockchain to be "Fully Verified".
+            
+            Fully Noded makes the bitcoin-cli getblockchaininfo call to your node in order to get the "verification progress" of your node. Your node is always verifying each transaction that is broadcast onto the Bitcoin network. This is the fundamental reason to run your own node. If you use someone elses node you are trusting them to verify your utxo's which defeats the purpose of Bitcoin in the first place. Bitcoin was invented to disintermediate 3rd parties, removing trust from the foundation of our financial system, reintroducing that trust defeats Bitcoin's purpose. This is why it is so important to run your own node.
+            
+            During the initial block download your node proccesses each transaction starting from the genesis block, ensuring all the inputs and outputs of each transaction balance out with future transactions, this is possible because all transactions can be traced back to their coinbase transaction (also known as a "block reward"). This is true whether your node is pruned or not. In this way your node verifies all new transactions are valid, preventing double spending or inflation of the Bitcoin supply. You can think of it as preventing the counterfeiting of Bitcoin's as it would be impossible for an attacker to fake historic transactions in order to make the new one appear valid.
+            """
+            segueToShowDetail()
+        case 1:
+            command = "getnetworkinfo"
+            detailHeaderText = "Node version"
+            detailImageTint = .systemBlue
+            detailImage = UIImage(systemName: "v.circle")!
+            detailSubheaderText = "Bitcoin Core v\(homeStruct.version)"
+            detailTextDescription = """
+            The current version number of your node's software.
+            
+            Fully Noded makes the bitcoin-cli getnetworkinfo command to your node in order to obtain information about your node's connection to the Bitcoin peer to peer network. The command returns your node's current version number along with other info regarding your connections. To get the version number Fully Noded looks specifically at the "subversion" field.
+            
+            See the list of releases for each version along with detailed release notes.
+            """
+            segueToShowDetail()
+//        case 2:
+//            //"Blockchain network"
+//            segueToShowDetail()
+//        case 3:
+//            //"Peer connections"
+//            segueToShowDetail()
+//        case 4:
+//            //"Blockchain state"
+//            segueToShowDetail()
+//        case 5:
+//            //"Mining hashrate"
+//            segueToShowDetail()
+//        case 6:
+//            //"Current blockheight"
+//            segueToShowDetail()
+//        case 7:
+//            //"Mining difficulty"
+//            segueToShowDetail()
+//        case 8:
+//            //"Blockchain size on disc"
+//            segueToShowDetail()
+//        case 9:
+//            //"Node's mempool"
+//            segueToShowDetail()
+//        case 10:
+//            //"Fee rate"
+//            segueToShowDetail()
+//        case 11:
+//            //"P2P hidden service"
+//            segueToShowDetail()
+//        case 12:
+//            //"Node uptime"
+//            segueToShowDetail()
+        default:
+            break
+        }
+    }
+    
+    private func segueToShowDetail() {
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "showDetailSegue", sender: vc)
+        }
+    }
+    
+    func loadTableData() {
         let nodeLogic = NodeLogic()
         displayAlert(viewController: self, isError: false, message: "bitcoin-cli getblockchaininfo")
         nodeLogic.loadSectionOne { [unowned vc = self] in
@@ -463,22 +468,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 displayAlert(viewController: self, isError: true, message: nodeLogic.errorDescription)
             } else {
                 let dict = nodeLogic.dictToReturn
-                let str = HomeStruct(dictionary: dict)
-                vc.sectionOneLoaded = true
-                vc.feeRate = str.feeRate
-                vc.mempoolCount = str.mempoolCount
-                vc.network = str.network
-                vc.torReachable = str.torReachable
-                vc.size = str.size
-                vc.difficulty = str.difficulty
-                vc.progress = str.progress
-                vc.isPruned = str.pruned
-                vc.incomingCount = str.incomingCount
-                vc.outgoingCount = str.outgoingCount
-                vc.version = str.version
-                vc.hashrateString = str.hashrate
-                vc.uptime = str.uptime
-                vc.currentBlock = str.blockheight
+                vc.homeStruct = HomeStruct(dictionary: dict)
                 vc.sectionOneLoaded = true
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.mainMenu.reloadData()
@@ -583,27 +573,26 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
-//    func activeNodeDict() -> (isAnyNodeActive: Bool, node: [String:Any]) {
-//        var dictToReturn = [String:Any]()
-//        var boolToReturn = false
-//        for nodeDict in nodes {
-//            let node = NodeStruct(dictionary: nodeDict)
-//            let nodeActive = node.isActive
-//            if nodeActive {
-//                boolToReturn = true
-//                dictToReturn = nodeDict
-//            }
-//        }
-//        return (boolToReturn, dictToReturn)
-//    }
-    
-    //MARK: User Actions
-    
-    
+    private func setFeeTarget() {
+        if ud.object(forKey: "feeTarget") == nil {
+            ud.set(1008, forKey: "feeTarget")
+        }
+    }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
         switch segue.identifier {
+            
+        case "showDetailSegue":
+            
+            if let vc = segue.destination as? ShowDetailViewController {
+                vc.command = command
+                vc.iconImage = detailImage
+                vc.backgroundTint = detailImageTint
+                vc.detailHeaderText = detailHeaderText
+                vc.detailSubheaderText = detailSubheaderText
+                vc.detailTextDescription = detailTextDescription
+            }
             
         case "addNodeNow":
             

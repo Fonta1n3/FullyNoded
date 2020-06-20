@@ -72,5 +72,5 @@ public enum BTC_CLI_COMMAND: String {
     case walletlock = "walletlock"
     case walletpassphrasechange = "walletpassphrasechange"
     case gettxoutsetinfo = "gettxoutsetinfo"
-    case dumpprivkey = "dumpprivkey"
+    case help = "help"
 }

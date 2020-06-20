@@ -98,6 +98,8 @@
 		D08CED0F22E5089D007E2A8E /* ImportExtendedKeysViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08CED0E22E5089D007E2A8E /* ImportExtendedKeysViewController.swift */; };
 		D08CED1122E54B11007E2A8E /* TransactionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08CED1022E54B11007E2A8E /* TransactionViewController.swift */; };
 		D08CED1522E7F118007E2A8E /* ItunesArtwork@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D08CED1422E7F118007E2A8E /* ItunesArtwork@2x.png */; };
+		D096EDFE249DCF970084A065 /* ShowDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D096EDFD249DCF970084A065 /* ShowDetailViewController.swift */; };
+		D096EE00249DFADD0084A065 /* HelpViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D096EDFF249DFADD0084A065 /* HelpViewController.swift */; };
 		D0A2918F225114670099A2F3 /* MakeRPCCall.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A2918E225114670099A2F3 /* MakeRPCCall.swift */; };
 		D0A291912251743B0099A2F3 /* settings90.png in Resources */ = {isa = PBXBuildFile; fileRef = D0A291902251743B0099A2F3 /* settings90.png */; };
 		D0A519B7226B3DD400860D5C /* RawTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A519B6226B3DD400860D5C /* RawTransaction.swift */; };
@@ -235,6 +237,8 @@
 		D08CED0E22E5089D007E2A8E /* ImportExtendedKeysViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportExtendedKeysViewController.swift; sourceTree = "<group>"; };
 		D08CED1022E54B11007E2A8E /* TransactionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionViewController.swift; sourceTree = "<group>"; };
 		D08CED1422E7F118007E2A8E /* ItunesArtwork@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "ItunesArtwork@2x.png"; path = "BitSense/Assets.xcassets/AppIcon.appiconset/ItunesArtwork@2x.png"; sourceTree = SOURCE_ROOT; };
+		D096EDFD249DCF970084A065 /* ShowDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowDetailViewController.swift; sourceTree = "<group>"; };
+		D096EDFF249DFADD0084A065 /* HelpViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpViewController.swift; sourceTree = "<group>"; };
 		D0A2918E225114670099A2F3 /* MakeRPCCall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MakeRPCCall.swift; sourceTree = "<group>"; };
 		D0A291902251743B0099A2F3 /* settings90.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = settings90.png; sourceTree = "<group>"; };
 		D0A519B6226B3DD400860D5C /* RawTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RawTransaction.swift; sourceTree = "<group>"; };
@@ -480,6 +484,7 @@
 				D0048C70225F38A90057E21B /* Home */,
 				D0048C75225F3B860057E21B /* Unlock Screen */,
 				D0E2A1042496EE9400AE0C04 /* ActiveWalletViewController.swift */,
+				D096EDFF249DFADD0084A065 /* HelpViewController.swift */,
 			);
 			path = "View Controllers";
 			sourceTree = "<group>";
@@ -825,6 +830,7 @@
 				D05692E221434452006DF0F4 /* MainMenuViewController.swift */,
 				D068481922ECE5C700A825E1 /* Transaction Viewer */,
 				D08A92B0233B213300409D6E /* ChooseWalletViewController.swift */,
+				D096EDFD249DCF970084A065 /* ShowDetailViewController.swift */,
 			);
 			path = "Home Screen";
 			sourceTree = "<group>";
@@ -1019,6 +1025,7 @@
 			files = (
 				D0E9B63C211A94C600B416E7 /* Utilities.swift in Sources */,
 				D039D3CA2332440D00D1ED18 /* HDMusigStruct.swift in Sources */,
+				D096EDFE249DCF970084A065 /* ShowDetailViewController.swift in Sources */,
 				D02094F02257FB78002E8E7A /* FirstTime.swift in Sources */,
 				D0560EEF22784E9D00C3E909 /* UnsignedViewController.swift in Sources */,
 				D058F3C2226D9DED00CF4BE9 /* OutgoingsTableViewController.swift in Sources */,
@@ -1085,6 +1092,7 @@
 				D0384E34246AC53B002FEE94 /* base58.c in Sources */,
 				D037C874231BB04B006C357D /* ScanExtendedKeyViewController.swift in Sources */,
 				D044ED78235AF42D00300D62 /* ImportStruct.swift in Sources */,
+				D096EE00249DFADD0084A065 /* HelpViewController.swift in Sources */,
 				D08A92A62334F66900409D6E /* Reducer.swift in Sources */,
 				D0806B4522EE9FBA002C20A1 /* TXChain.swift in Sources */,
 				D08A92B923403DB200409D6E /* NodesViewController.swift in Sources */,
@@ -1274,7 +1282,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 151;
+				CURRENT_PROJECT_VERSION = 153;
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1287,7 +1295,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.230;
+				MARKETING_VERSION = 1.233;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1310,7 +1318,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 151;
+				CURRENT_PROJECT_VERSION = 153;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				ENABLE_TESTABILITY = NO;
@@ -1325,7 +1333,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.230;
+				MARKETING_VERSION = 1.233;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";

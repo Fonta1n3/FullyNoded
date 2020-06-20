@@ -10,6 +10,8 @@ import UIKit
 
 class GetInfoViewController: UIViewController, UITextFieldDelegate {
     
+    var command = ""
+    var helpText = ""
     var getBlockchainInfo = Bool()
     var getAddressInfo = Bool()
     var listAddressGroups = Bool()
@@ -39,7 +41,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     
     @IBOutlet var imageView: UIImageView!
     @IBOutlet var textView: UITextView!
-    @IBOutlet var navBar: UINavigationBar!
+    @IBOutlet weak var label: UILabel!
     
     var labelToSearch = ""
     
@@ -52,6 +54,16 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     
     var utxo = NSDictionary()
     var isUtxo = Bool()
+    
+    @IBAction func getHelp(_ sender: Any) {
+        getInfoHelpText()
+    }
+    
+    private func showHelp() {
+        DispatchQueue.main.async { [unowned vc = self] in
+                   vc.performSegue(withIdentifier: "segueToShowHelp", sender: vc)
+               }
+    }
     
     func scan() {
         
@@ -101,6 +113,10 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        textView.clipsToBounds = true
+        textView.layer.cornerRadius = 8
+        textView.layer.borderWidth = 0.5
+        textView.layer.borderColor = UIColor.lightGray.cgColor
         configureScanner()
         
         let tapGesture = UITapGestureRecognizer(target: self,
@@ -135,6 +151,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
             
             titleString = "UTXO's"
             placeholder = "address"
+            command = "listunspent"
             scan()
             
         }
@@ -143,12 +160,14 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
             
             titleString = "Block Info"
             placeholder = "block hash"
+            command = "getblock"
             scan()
             
         }
         
         if getbestblockhash {
             
+            command = "getbestblockhash"
             titleString = "Latest Block"
             executeNodeCommand(method: .getbestblockhash,
                                param: "")
@@ -157,6 +176,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
         if getTransaction {
             
+            command = "gettransaction"
             titleString = "Transaction"
             placeholder = "transaction ID"
             scan()
@@ -165,6 +185,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
         if getaddressesbylabel {
             
+            command = "getaddressesbylabel"
             titleString = "Address By Label"
             placeholder = "label"
             
@@ -189,6 +210,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
         if listLabels {
             
+            command = "listlabels"
             titleString = "Labels"
             self.executeNodeCommand(method: .listlabels,
                                     param: "")
@@ -197,6 +219,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
         if getMempoolInfo {
             
+            command = "getmempoolinfo"
             titleString = "Mempool Info"
             self.executeNodeCommand(method: .getmempoolinfo,
                                     param: "")
@@ -204,6 +227,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
         if getPeerInfo {
             
+            command = "getpeerinfo"
             titleString = "Peer Info"
             self.executeNodeCommand(method: .getpeerinfo,
                                     param: "")
@@ -212,6 +236,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
         if decodeScript {
             
+            command = "decodescript"
             placeholder = "script"
             titleString = "Decoded Script"
             scan()
@@ -220,6 +245,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
         if getMiningInfo {
             
+            command = "getmininginfo"
             titleString = "Mining Info"
             self.executeNodeCommand(method: .getmininginfo,
                                     param: "")
@@ -227,6 +253,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
         if getNetworkInfo {
             
+            command = "getnetworkinfo"
             titleString = "Network Info"
             self.executeNodeCommand(method: .getnetworkinfo,
                                     param: "")
@@ -235,6 +262,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
         if getBlockchainInfo {
             
+            command = "getblockchaininfo"
             titleString = "Blockchain Info"
             self.executeNodeCommand(method: .getblockchaininfo,
                                     param: "")
@@ -243,6 +271,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
         if getAddressInfo {
             
+            command = "getaddressinfo"
             titleString = "Address Info"
             placeholder = "address"
             
@@ -260,6 +289,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
         if listAddressGroups {
             
+            command = "listaddressgroupings"
             titleString = "Address Groups"
             self.executeNodeCommand(method: .listaddressgroupings,
                                     param: "")
@@ -268,6 +298,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
         if getWalletInfo {
             
+            command = "getwalletinfo"
             titleString = "Wallet Info"
             self.executeNodeCommand(method: .getwalletinfo,
                                     param: "")
@@ -276,6 +307,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
         if isUtxo {
             
+            command = "listunspent"
             titleString = "UTXO"
             
             DispatchQueue.main.async {
@@ -289,6 +321,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
         if getTxoutset {
             
+            command = "gettxoutsetinfo"
             DispatchQueue.main.async {
                 self.creatingView.label.text = "this can take awhile..."
             }
@@ -308,7 +341,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
                 
             }
             
-            self.navigationController?.navigationBar.topItem?.title = titleString
+            self.label.text = titleString
             
         }
         
@@ -748,6 +781,26 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
             
         }
         
+    }
+    
+    private func getInfoHelpText() {
+        let connectingView = ConnectingView()
+        connectingView.addConnectingView(vc: self, description: "help \(command)...")
+        let reducer = Reducer()
+        reducer.makeCommand(command: .help, param: "\"\(command)\"") { [unowned vc = self] in
+            connectingView.removeConnectingView()
+            vc.helpText = reducer.stringToReturn
+            vc.showHelp()
+        }
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "segueToShowHelp" {
+            if let vc = segue.destination as? HelpViewController {
+                vc.labelText = command
+                vc.textViewText = helpText
+            }
+        }
     }
     
 }
