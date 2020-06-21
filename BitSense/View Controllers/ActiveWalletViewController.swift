@@ -17,6 +17,9 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     var hotBalance = ""
     var coldBalance = ""
     var unconfirmedBalance = ""
+    var hotFiat = ""
+    var coldFiat = ""
+    var uncomfirmedFiat = ""
     var sectionZeroLoaded = Bool()
     var wallets = NSArray()
     var transactionArray = [[String:Any]]()
@@ -29,6 +32,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     @IBOutlet weak var importView: UIView!
     @IBOutlet weak var utxosView: UIView!
     @IBOutlet weak var advancedView: UIView!
+    @IBOutlet weak var fxRateLabel: UILabel!
     
     
     override func viewDidLoad() {
@@ -41,6 +45,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         importView.layer.cornerRadius = 5
         utxosView.layer.cornerRadius = 5
         advancedView.layer.cornerRadius = 5
+        fxRateLabel.text = ""
         existingWallet = ud.object(forKey: "walletName") as? String ?? ""
         sectionZeroLoaded = false
         NotificationCenter.default.addObserver(self, selector: #selector(refreshWallet), name: .refreshWallet, object: nil)
@@ -99,6 +104,9 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         let hotBalanceLabel = cell.viewWithTag(1) as! UILabel
         let coldBalanceLabel = cell.viewWithTag(2) as! UILabel
         let unconfirmedLabel = cell.viewWithTag(3) as! UILabel
+        let hotFiatLabel = cell.viewWithTag(4) as! UILabel
+        let coldFiatLabel = cell.viewWithTag(5) as! UILabel
+        let unconfirmedFiatLabel = cell.viewWithTag(6) as! UILabel
         cell.layer.borderColor = UIColor.lightGray.cgColor
         cell.layer.borderWidth = 0.5
         if hotBalance == "" {
@@ -107,6 +115,9 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         if coldBalance == "" {
             coldBalance = "0.00000000"
         }
+        hotFiatLabel.text = hotFiat
+        coldFiatLabel.text = coldFiat
+        unconfirmedFiatLabel.text = uncomfirmedFiat
         hotBalanceLabel.text = hotBalance
         coldBalanceLabel.text = coldBalance
         unconfirmedLabel.text = unconfirmedBalance
@@ -250,7 +261,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         switch indexPath.section {
         case 0:
             if sectionZeroLoaded {
-                return 103
+                return 116
             } else {
                 return 47
             }
@@ -335,9 +346,39 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
                 vc.transactionArray = nodeLogic.arrayToReturn.reversed()
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.walletTable.reloadData()
-                    vc.removeSpinner()
                 }
-                
+                vc.getFiatBalances()
+            }
+        }
+    }
+    
+    private func getFiatBalances() {
+        let fx = FiatConverter.sharedInstance
+        fx.getFxRate { [unowned vc = self] rate in
+            if rate != nil {
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.fxRateLabel.text = "$\(String(describing: rate!)) / btc"
+                }
+                if let btcHotBalance = Double(vc.hotBalance) {
+                    let hotBalanceFiat = btcHotBalance * rate!
+                    vc.hotFiat = "$\(round(hotBalanceFiat).withCommas())"
+                }
+                if let btcColdBalance = Double(vc.coldBalance) {
+                    let coldBalanceFiat = btcColdBalance * rate!
+                    vc.coldFiat = "$\(round(coldBalanceFiat).withCommas())"
+                }
+                if let btcUncomfirmedBalance = Double(vc.unconfirmedBalance) {
+                    let unconfirmedBalanceFiat = btcUncomfirmedBalance * rate!
+                    vc.uncomfirmedFiat = "$\(round(unconfirmedBalanceFiat).withCommas())"
+                }
+            } else {
+                vc.hotFiat = ""
+                vc.coldFiat = ""
+                vc.uncomfirmedFiat = ""
+            }
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.walletTable.reloadSections(IndexSet(arrayLiteral: 0), with: .fade)
+                vc.removeSpinner()
             }
         }
     }

@@ -65,16 +65,13 @@ class TorClient {
             
             self.addAuthKeysToAuthDirectory {
                 
-                //check if it is V2 or not
-                //HidServAuth 1234567890abcdefg.onion abcdef01234567890+/K
-                
                 self.thread = nil
                                         
                     self.config.options = [
                         
                         "DNSPort": "12345",
                         "AutomapHostsOnResolve": "1",
-                        "SocksPort": "19050 OnionTrafficOnly",
+                        "SocksPort": "19050",
                         "AvoidDiskWrites": "1",
                         "ClientOnionAuthDir": "\(self.authDirPath)",
                         "LearnCircuitBuildTimeout": "1",
@@ -83,9 +80,9 @@ class TorClient {
                         "LongLivedPorts": "80,443",
                         "NumCPUs": "2",
                         "DisableDebuggerAttachment": "1",
-                        "SafeLogging": "1",
+                        "SafeLogging": "1"/*,
                         "ExcludeExitNodes": "1",
-                        "StrictNodes": "1"
+                        "StrictNodes": "1"*/
                         
                     ]
                     

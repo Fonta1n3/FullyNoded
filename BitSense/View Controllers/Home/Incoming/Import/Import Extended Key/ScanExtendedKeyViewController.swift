@@ -265,6 +265,7 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
     
     func importXprv(xprv: String) {
         print("importxprv")
+        print("desc: \(desc)")
         
         var xprvDescriptor = ""
         let reducer = Reducer()
@@ -285,7 +286,9 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
                 
                 let checksum = result["checksum"] as? String ?? ""
                 xprvDescriptor += "#" + checksum
-                xprvDescriptor = xprvDescriptor.replacingOccurrences(of: "4'", with: "4'\"'\"'")
+                xprvDescriptor = xprvDescriptor.replacingOccurrences(of: "49'", with: "49'\"'\"'")
+                xprvDescriptor = xprvDescriptor.replacingOccurrences(of: "44'", with: "44'\"'\"'")
+                xprvDescriptor = xprvDescriptor.replacingOccurrences(of: "84'", with: "84'\"'\"'")
                 xprvDescriptor = xprvDescriptor.replacingOccurrences(of: "1'", with: "1'\"'\"'")
                 xprvDescriptor = xprvDescriptor.replacingOccurrences(of: "0'", with: "0'\"'\"'")
                 dict["descriptor"] = "\"\(xprvDescriptor)\""
@@ -308,10 +311,12 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
                 if isTestnet {
                     
                     param = "\"\(desc)([\(fingerprint)/44h/1h/0h]\(xprv)/0/*)\""
+                    xprvDescriptor = "\(desc)([\(fingerprint)/44h/1h/0h]\(xprv)/0/*)"
                     
                 } else {
                     
                     param = "\"\(desc)([\(fingerprint)/44h/0h/0h]\(xprv)/0/*)\""
+                    xprvDescriptor = "\(desc)([\(fingerprint)/44h/0h/0h]\(xprv)/0/*)"
                     
                 }
                 
@@ -321,10 +326,12 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
                 if isTestnet {
                     
                     param = "\"\(desc)([\(fingerprint)/84h/1h/0h]\(xprv)/0/*)\""
+                    xprvDescriptor = "\(desc)([\(fingerprint)/84h/1h/0h]\(xprv)/0/*)"
                     
                 } else {
                     
                     param = "\"\(desc)([\(fingerprint)/84h/0h/0h]\(xprv)/0/*)\""
+                    xprvDescriptor = "\(desc)([\(fingerprint)/84h/0h/0h]\(xprv)/0/*)"
                     
                 }
                 
@@ -335,10 +342,12 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
                 if isTestnet {
                     
                     param = "\"\(desc)(wpkh([\(fingerprint)/49h/1h/0h]\(xprv)/0/*))\""
+                    xprvDescriptor = "\(desc)(wpkh([\(fingerprint)/49h/1h/0h]\(xprv)/0/*))"
                     
                 } else {
                     
                     param = "\"\(desc)(wpkh([\(fingerprint)/49h/0h/0h]\(xprv)/0/*))\""
+                    xprvDescriptor = "\(desc)(wpkh([\(fingerprint)/49h/0h/0h]\(xprv)/0/*))"
                     
                 }
                 
@@ -347,6 +356,7 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
             if isChange {
                 
                 param = param.replacingOccurrences(of: "/0/*", with: "/1/*")
+                xprvDescriptor = xprvDescriptor.replacingOccurrences(of: "/0/*", with: "/1/*")
                 
             }
             
