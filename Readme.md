@@ -1,4 +1,4 @@
-# FullyNoded BETA
+# Fully Noded™️
 
 A feature rich Bitcoin app which is 100% powered by your own Full Node. Allows you to connect to and control multiple nodes using a client side native Tor thread making calls to your nodes rpcport via a hidden service.
 

@@ -263,10 +263,7 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    func importXprv(xprv: String) {
-        print("importxprv")
-        print("desc: \(desc)")
-        
+    func importXprv(xprv: String) {        
         var xprvDescriptor = ""
         let reducer = Reducer()
         

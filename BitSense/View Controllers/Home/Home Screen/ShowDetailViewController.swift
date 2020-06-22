@@ -24,8 +24,10 @@ class ShowDetailViewController: UIViewController, UITextViewDelegate, UINavigati
     var helpText = ""
     var command = ""
     let releases = "https://bitcoincore.org/en/releases/"
+    let bitcoinp2pnetwork = "https://en.bitcoinwiki.org/wiki/Network"
     let getblockchaininfo = "https://getblockchaininfo.com"
     let getnetworkinfo = "https://getnetworkinfo.com"
+    let getpeerinfo = "https://getpeerinfo.com"
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -42,11 +44,11 @@ class ShowDetailViewController: UIViewController, UITextViewDelegate, UINavigati
         textView.layer.cornerRadius = 8
         textView.layer.borderColor = UIColor.lightGray.cgColor
         textView.layer.borderWidth = 0.5
-        textView.addHyperLinksToText(originalText: textView.text, hyperLinks: ["releases": releases, "bitcoin-cli getnetworkinfo": getnetworkinfo, "bitcoin-cli getblockchaininfo": getblockchaininfo])
+        textView.addHyperLinksToText(originalText: textView.text, hyperLinks: ["releases": releases, "bitcoin-cli getnetworkinfo": getnetworkinfo, "bitcoin-cli getblockchaininfo": getblockchaininfo, "bitcoin-cli getpeerinfo": getpeerinfo, "Bitcoin p2p network": bitcoinp2pnetwork])
     }
     
     func textView(_ textView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
-        if (URL.absoluteString == releases) {
+        if (URL.absoluteString == releases) || (URL.absoluteString == bitcoinp2pnetwork) {
             UIApplication.shared.open(URL) { (Bool) in }
         } else {
             getInfoHelpText()
