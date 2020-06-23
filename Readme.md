@@ -2,7 +2,9 @@
 
 A feature rich Bitcoin app which is 100% powered by your own Full Node. Allows you to connect to and control multiple nodes using a client side native Tor thread making calls to your nodes rpcport via a hidden service.
 
-There may be bugs, always decode your transaction and study it before broadcasting, ideally get comfortable with it on testnet first, I am not responsible for loss of funds. It is not even possible to broadcast transactions in the app.
+There may be bugs, always decode your transaction and study it before broadcasting, ideally get comfortable with it on testnet first, I am not responsible for loss of funds. 
+
+**Extreme care should be taken when importing public keys (xpubs, ypubs, zpubs) into your node and then using the addresses your node creates to receive funds to. If you do not absolutely know and understand what you are doing then do not do it. When importing keys Fully Noded always displays the addresses for you to confirm first, if the addresses to do not match what you expect them to the do not import them!**
 
 ## Connect your Nodl
 

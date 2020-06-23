@@ -31,6 +31,7 @@ class IncomingsMenuViewController: UIViewController, UITableViewDelegate, UITabl
         descriptors.removeAll()
         isPrivKey = false
         isSingleKey = false
+        showAlert(vc: self, title: "Warning!", message: "Extreme care should be taken when importing public keys (xpubs, ypubs, zpubs) into your node and then using the addresses your node creates to receive funds to. If you do not absolutely know and understand what you are doing then do not do it. When importing keys Fully Noded always displays the addresses for you to confirm before it imports them, if the addresses to do not match what you expect them to then do not import them!")
     }
     
     // MARK: - Table view data source
