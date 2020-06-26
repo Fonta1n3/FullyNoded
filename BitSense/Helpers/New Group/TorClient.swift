@@ -123,8 +123,6 @@ class TorClient {
                             contentsOf: self.config.dataDirectory!.appendingPathComponent("control_auth_cookie"),
                             options: NSData.ReadingOptions(rawValue: 0)
                         )
-                        print("getcookie")
-                        
                         self.controller?.authenticate(with: cookie) { (success, error) in
                             
                             if let error = error {
@@ -144,7 +142,7 @@ class TorClient {
                                         let progress = Int(arguments!["PROGRESS"]!)!
                                         weakDelegate?.torConnProgress(progress)
                                         if progress >= 100 {
-                                            //self.controller?.removeObserver(progressObs)
+                                            self.controller?.removeObserver(progressObs)
                                         }
                                         
                                         return true

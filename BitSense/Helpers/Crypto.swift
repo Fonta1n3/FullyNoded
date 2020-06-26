@@ -12,10 +12,7 @@ class Crypto {
     
     class func privateKey() -> Data {
         return P256.Signing.PrivateKey().rawRepresentation
-        
     }
-    
-    // MARK: - New encryption
     
     class func encryptData(dataToEncrypt: Data, completion: @escaping ((Data?)) -> Void) {
         if let key = KeyChain.getData("privateKey") {

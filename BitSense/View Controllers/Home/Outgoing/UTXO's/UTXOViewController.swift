@@ -618,23 +618,20 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         
     }
     
-    func tableView(_ tableView: UITableView, editActionsForRowAt: IndexPath) -> [UITableViewRowAction]? {
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         
         let utxos = utxoArray as NSArray
-        let utxo = utxos[editActionsForRowAt.section] as! NSDictionary
+        let utxo = utxos[indexPath.section] as! NSDictionary
         let txid = utxo["txid"] as! String
         let vout = utxo["vout"] as! Int
         
-        let lock = UITableViewRowAction(style: .normal, title: "Lock") { action, index in
-            
+        let lock = UIContextualAction(style: .destructive, title: "Lock") {  (contextualAction, view, boolValue) in
             self.lockUTXO(txid: txid, vout: vout)
-            
         }
-        
         lock.backgroundColor = .red
-        
-        return [lock]
-        
+        let swipeActions = UISwipeActionsConfiguration(actions: [lock])
+
+        return swipeActions
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

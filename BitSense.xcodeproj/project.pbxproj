@@ -32,7 +32,6 @@
 		D0233F282361EA5F0041FFBA /* shim.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0233F272361EA5F0041FFBA /* shim.swift */; };
 		D02958D3234F82E000ED8F72 /* IdentityViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02958D2234F82E000ED8F72 /* IdentityViewController.swift */; };
 		D02958D5235053B300ED8F72 /* SecurityCenterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02958D4235053B300ED8F72 /* SecurityCenterViewController.swift */; };
-		D02C9410240DF0F500EE2177 /* Tor.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FB822ACB7D100DBBFC2 /* Tor.framework */; platformFilter = ios; };
 		D02FE43323136A600048F8C4 /* NodeLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02FE43223136A600048F8C4 /* NodeLogic.swift */; };
 		D02FE4362313882F0048F8C4 /* HomeTableStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02FE4352313882F0048F8C4 /* HomeTableStruct.swift */; };
 		D033D1CF22B5D1FA00523BEE /* ProcessPSBTViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D033D1CE22B5D1FA00523BEE /* ProcessPSBTViewController.swift */; };
@@ -109,6 +108,8 @@
 		D0AD9B6823E7ECC20032C607 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0AD9B6723E7ECC20032C607 /* SceneDelegate.swift */; };
 		D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B3149E216C4DB1008FDC53 /* CreateRawTxViewController.swift */; };
 		D0B6936E22B2412D00A2C3E6 /* ChooseConnectionTypeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B6936D22B2412D00A2C3E6 /* ChooseConnectionTypeViewController.swift */; };
+		D0C20ECE24A624E600C62AA4 /* Tor.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FB822ACB7D100DBBFC2 /* Tor.framework */; platformFilter = ios; };
+		D0C20ECF24A624E600C62AA4 /* Tor.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FB822ACB7D100DBBFC2 /* Tor.framework */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D0D71DA32351F835005CCDB9 /* UtilitieMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0D71DA22351F835005CCDB9 /* UtilitieMenuViewController.swift */; };
 		D0DA954F2340A9C2001B7EB3 /* IncomingsMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DA954E2340A9C2001B7EB3 /* IncomingsMenuViewController.swift */; };
 		D0DE292B22BCFE9900D9EBCF /* Readme.md in Resources */ = {isa = PBXBuildFile; fileRef = D0DE292A22BCFE9900D9EBCF /* Readme.md */; };
@@ -137,6 +138,20 @@
 			remoteInfo = BitSense;
 		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		D0C20ED024A624E600C62AA4 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				D0C20ECF24A624E600C62AA4 /* Tor.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		A084FD712359E9D500DA63CF /* Cartfile.resolved */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Cartfile.resolved; sourceTree = "<group>"; };
@@ -275,7 +290,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D02C9410240DF0F500EE2177 /* Tor.framework in Frameworks */,
+				D0C20ECE24A624E600C62AA4 /* Tor.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -878,6 +893,7 @@
 				D00B9A212111427200E8B95A /* Frameworks */,
 				D00B9A222111427200E8B95A /* Resources */,
 				D08C1FBE2111480100B7CA79 /* ShellScript */,
+				D0C20ED024A624E600C62AA4 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1282,7 +1298,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 156;
+				CURRENT_PROJECT_VERSION = 157;
 				DEVELOPMENT_TEAM = 69FR345CDA;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1295,7 +1311,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.236;
+				MARKETING_VERSION = 1.237;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1318,7 +1334,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 156;
+				CURRENT_PROJECT_VERSION = 157;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 69FR345CDA;
 				ENABLE_TESTABILITY = NO;
@@ -1333,7 +1349,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.236;
+				MARKETING_VERSION = 1.237;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";

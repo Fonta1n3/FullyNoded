@@ -611,24 +611,15 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func getNodes(completion: @escaping (([[String:Any]]?)) -> Void) {
-        
         nodes.removeAll()
-        
         CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
-            
             if nodes != nil {
-                
                 completion(nodes!)
-                
             } else {
-                
                 displayAlert(viewController: self, isError: true, message: "error getting nodes from coredata")
                 completion(nil)
-                
             }
-            
         }
-        
     }
     
     private func setFeeTarget() {

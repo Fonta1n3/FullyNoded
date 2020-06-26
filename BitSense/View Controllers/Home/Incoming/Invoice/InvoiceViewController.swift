@@ -388,7 +388,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         }
         
         func getAddress() {
-            Reducer.makeCommand(command: .getnewaddress, param: param) { (response, errorMessage) in
+            Reducer.makeCommand(command: .getnewaddress, param: param) { [unowned vc = self] (response, errorMessage) in
                 if let address = response as? String {
                     DispatchQueue.main.async { [unowned vc = self] in
                         vc.connectingView.removeConnectingView()
@@ -396,6 +396,9 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                         vc.addressOutlet.text = address
                         vc.showAddress(address: address)
                     }
+                } else {
+                    vc.connectingView.removeConnectingView()
+                    showAlert(vc: vc, title: "Error", message: errorMessage ?? "error fecthing address")
                 }
             }
         }

@@ -128,22 +128,19 @@ class LockedViewController: UIViewController, UITableViewDelegate, UITableViewDa
         
     }
     
-    func tableView(_ tableView: UITableView, editActionsForRowAt: IndexPath) -> [UITableViewRowAction]? {
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         
-        let utxo = helperArray[editActionsForRowAt.row]
+        let utxo = helperArray[indexPath.row]
         let txid = utxo["txid"] as! String
         let vout = utxo["vout"] as! Int
         
-        let unlock = UITableViewRowAction(style: .destructive, title: "Unlock") { action, index in
-            
+        let unlock = UIContextualAction(style: .destructive, title: "Unlock") {  (contextualAction, view, boolValue) in
             self.unlockUTXO(txid: txid, vout: vout)
-            
         }
-        
         unlock.backgroundColor = .blue
-        
-        return [unlock]
-        
+        let swipeActions = UISwipeActionsConfiguration(actions: [unlock])
+
+        return swipeActions
     }
     
     func unlockUTXO(txid: String, vout: Int) {
