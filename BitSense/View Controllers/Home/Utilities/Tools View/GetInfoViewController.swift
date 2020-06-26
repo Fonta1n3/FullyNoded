@@ -347,161 +347,80 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
     }
     
+    private func setTextView(text: String) {
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.textView.text = text
+            vc.creatingView.removeConnectingView()
+        }
+    }
+    
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
-        
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                
+        Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+            if errorMessage == nil {
                 switch method {
-                    
                 case .listunspent:
-                    
-                    let result = reducer.arrayToReturn
-                    
-                    creatingView.removeConnectingView()
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.textView.text = "\(result)"
-                        
+                    if let result = response as? NSArray {
+                        vc.setTextView(text: "\(result)")
                     }
                     
                 case .getaddressesbylabel:
-                    
-                    let result = reducer.dictToReturn
-                    
-                    if labelToSearch != "" {
-                        
-                        addressArray = result.allKeys as NSArray
-                        parseAddresses(addresses: addressArray, index: 0)
-                        
-                    } else {
-                        
-                        creatingView.removeConnectingView()
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.textView.text = "\(result)"
-                            
+                    if let result = response as? NSDictionary {
+                        if vc.labelToSearch != "" {
+                            vc.addressArray = result.allKeys as NSArray
+                            vc.parseAddresses(addresses: vc.addressArray, index: 0)
+                        } else {
+                            vc.setTextView(text: "\(result)")
                         }
-                        
                     }
                     
                 case .getaddressinfo:
-                    
-                    let result = reducer.dictToReturn
-                    
-                    if address != "" {
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.textView.text = "\(result)"
-                            self.creatingView.removeConnectingView()
-                            
-                        }
-                        
-                    } else {
-                        
-                        infoArray.append(result)
-                        
-                        if addressArray.count > 0 {
-                            
-                            if indexToParse < addressArray.count {
-                                
-                                indexToParse += 1
-                                parseAddresses(addresses: addressArray, index: indexToParse)
-                                
-                            }
-                            
-                            if indexToParse == addressArray.count {
-                                
-                                DispatchQueue.main.async {
-                                    
-                                    self.textView.text = "\(self.infoArray)"
-                                    self.creatingView.removeConnectingView()
-                                    
-                                    if self.alertMessage != "" {
-                                        
-                                        displayAlert(viewController: self,
-                                                     isError: false,
-                                                     message: self.alertMessage)
-                                        
-                                    }
-                                    
-                                }
-                                
-                            }
-                            
+                    if let result = response as? NSDictionary {
+                        if vc.address != "" {
+                            vc.setTextView(text: "\(result)")
                         } else {
-                            
-                            DispatchQueue.main.async {
-                                
-                                self.textView.text = "\(result)"
-                                self.creatingView.removeConnectingView()
-                                
+                            vc.infoArray.append(result)
+                            if vc.addressArray.count > 0 {
+                                if vc.indexToParse < vc.addressArray.count {
+                                    vc.indexToParse += 1
+                                    vc.parseAddresses(addresses: vc.addressArray, index: vc.indexToParse)
+                                }
+                                if vc.indexToParse == vc.addressArray.count {
+                                    vc.setTextView(text: "\(vc.infoArray)")
+                                    if vc.alertMessage != "" {
+                                        displayAlert(viewController: vc, isError: false, message: vc.alertMessage)
+                                    }
+                                }
+                            } else {
+                                DispatchQueue.main.async { [unowned vc = self] in
+                                    vc.textView.text = "\(result)"
+                                    vc.creatingView.removeConnectingView()
+                                }
                             }
-                            
                         }
-                        
                     }
                     
-                case .listaddressgroupings,
-                     .getpeerinfo,
-                     .listlabels:
-                    
-                    DispatchQueue.main.async {
-                        
-                        let result = reducer.arrayToReturn
-                        self.textView.text = "\(result)"
-                        self.creatingView.removeConnectingView()
-                        
+                case .listaddressgroupings, .getpeerinfo, .listlabels:
+                    if let result = response as? NSArray {
+                        vc.setTextView(text: "\(result)")
                     }
                     
                 case .getbestblockhash:
-                    
-                    DispatchQueue.main.async {
-                        
-                        let result = reducer.stringToReturn
-                        self.textView.text = result
-                        self.creatingView.removeConnectingView()
-                        
+                    if let result = response as? String {
+                        vc.setTextView(text: result)
                     }
                     
                 default:
-                    
-                    DispatchQueue.main.async {
-                        
-                        let result = reducer.dictToReturn
-                        self.textView.text = "\(result)"
-                        self.creatingView.removeConnectingView()
-                        
+                    if let result = response as? NSDictionary {
+                        vc.setTextView(text: "\(result)")
                     }
-                    
                 }
-                
             } else {
-                
-                DispatchQueue.main.async {
-                    
-                    self.creatingView.removeConnectingView()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: reducer.errorDescription)
-                    
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.creatingView.removeConnectingView()
+                    displayAlert(viewController: vc, isError: true, message: errorMessage!)
                 }
-                
             }
-            
         }
-        
-        reducer.makeCommand(command: method,
-                            param: param,
-                            completion: getResult)
-        
     }
     
     func parseAddresses(addresses: NSArray, index: Int) {
@@ -786,11 +705,12 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     private func getInfoHelpText() {
         let connectingView = ConnectingView()
         connectingView.addConnectingView(vc: self, description: "help \(command)...")
-        let reducer = Reducer()
-        reducer.makeCommand(command: .help, param: "\"\(command)\"") { [unowned vc = self] in
+        Reducer.makeCommand(command: .help, param: "\"\(command)\"") { [unowned vc = self] (response, errorMessage) in
             connectingView.removeConnectingView()
-            vc.helpText = reducer.stringToReturn
-            vc.showHelp()
+            if let text = response as? String {
+                vc.helpText = text
+                vc.showHelp()
+            }
         }
     }
     

@@ -82,8 +82,7 @@ class WalletCreatorViewController: UIViewController, UITextFieldDelegate {
                 
             }
             
-            self.executeNodeCommand(method: .createwallet,
-                                       param: param)
+            createWallet(param: param)
             
         } else {
             
@@ -129,51 +128,20 @@ class WalletCreatorViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
-        
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                
-                switch method {
-                    
-                case BTC_CLI_COMMAND.createwallet:
-                    
-                    let response = reducer.dictToReturn
-                    handleWalletCreation(response: response)
-                    
-                default:
-                    
-                    break
-                    
-                }
-                
+    private func createWallet(param: String) {
+        Reducer.makeCommand(command: .createwallet, param: param) { [unowned vc = self] (response, errorMessage) in
+            if let dict = response as? NSDictionary {
+                vc.handleWalletCreation(response: dict)
             } else {
-                
-                DispatchQueue.main.async {
-                    
-                    self.connectingView.removeConnectingView()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: reducer.errorDescription)
-                    
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.connectingView.removeConnectingView()
+                    displayAlert(viewController: vc, isError: true, message: errorMessage ?? "")
                 }
-                
             }
-            
         }
-        
-        reducer.makeCommand(command: method,
-                            param: param,
-                            completion: getResult)
-        
     }
     
     func handleWalletCreation(response: NSDictionary) {
-        
         let name = response["name"] as! String
         let warning = response["warning"] as! String
         let ud = UserDefaults.standard

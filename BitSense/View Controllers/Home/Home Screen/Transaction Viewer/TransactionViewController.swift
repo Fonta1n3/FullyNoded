@@ -62,60 +62,31 @@ class TransactionViewController: UIViewController {
     
 
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
-        
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                
+        Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+            if errorMessage == nil {
                 switch method {
-                    
-                case BTC_CLI_COMMAND.bumpfee:
-                    
-                    let result = reducer.dictToReturn
-                    bumpFee(result: result)
-                    
-                case BTC_CLI_COMMAND.gettransaction:
-                    
-                    let dict = reducer.dictToReturn
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.textView.text = "\(reducer.dictToReturn)"
-                        self.creatingView.removeConnectingView()
-                        let replaceable = dict["bip125-replaceable"] as? String ?? ""
-                        
-                        if replaceable == "yes" {
-                            
-                            self.bumpButtonOutlet.alpha = 1
-                            
-                        }
-                        
+                case .bumpfee:
+                    if let result = response as? NSDictionary {
+                        vc.bumpFee(result: result)
                     }
-                    
+                case .gettransaction:
+                    if let dict = response as? NSDictionary {
+                        DispatchQueue.main.async { [unowned vc = self] in
+                            vc.textView.text = "\(dict)"
+                            vc.creatingView.removeConnectingView()
+                            let replaceable = dict["bip125-replaceable"] as? String ?? ""
+                            if replaceable == "yes" {
+                                vc.bumpButtonOutlet.alpha = 1
+                            }
+                        }
+                    }
                 default:
-                    
                     break
-                    
                 }
-                
             } else {
-                
-                creatingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: reducer.errorDescription)
-                
+                vc.creatingView.removeConnectingView()
+                displayAlert(viewController: vc, isError: true, message: errorMessage!)
             }
-            
         }
-        
-        reducer.makeCommand(command: method,
-                            param: param,
-                            completion: getResult)
-        
     }
-
 }

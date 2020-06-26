@@ -343,96 +343,42 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
     }
     
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
-        
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                
-                switch method {
-                    
-                case .importmulti:
-                    
-                    let result = reducer.arrayToReturn
+        Reducer.makeCommand(command: .importmulti, param: param) { [unowned vc = self] (response, errorMessage) in
+            if errorMessage == nil {
+                if let result = response as? NSArray {
                     let success = (result[0] as! NSDictionary)["success"] as! Bool
-                    
                     if success {
-                        
-                        connectingView.removeConnectingView()
+                        vc.connectingView.removeConnectingView()
                         DispatchQueue.main.async { [unowned vc = self] in
                             vc.tapToImportOutlet.alpha = 0
                             showAlert(vc: vc, title: "Success!", message: "2,000 keys imported successfully")
                         }
-                        
                     } else {
-                        
                         let errorDict = (result[0] as! NSDictionary)["error"] as! NSDictionary
                         let error = errorDict["message"] as! String
-                        connectingView.removeConnectingView()
-                        
-                        displayAlert(viewController: self,
-                                     isError: true,
-                                     message: error)
-                        
+                        vc.connectingView.removeConnectingView()
+                        displayAlert(viewController: self, isError: true, message: error)
                     }
-                    
                     if let warnings = (result[0] as! NSDictionary)["warnings"] as? NSArray {
-                        
                         if warnings.count > 0 {
-                            
                             for warning in warnings {
-                                
                                 let warn = warning as! String
-                                
-                                DispatchQueue.main.async {
-                                    
-                                    let alert = UIAlertController(title: "Warning",
-                                                                  message: warn,
-                                                                  preferredStyle: UIAlertController.Style.alert)
-                                    
-                                    alert.addAction(UIAlertAction(title: "OK",
-                                                                  style: UIAlertAction.Style.default,
-                                                                  handler: nil))
-                                    
-                                    self.present(alert,
-                                                 animated: true,
-                                                 completion: nil)
-                                    
+                                DispatchQueue.main.async { [unowned vc = self] in
+                                    let alert = UIAlertController(title: "Warning", message: warn, preferredStyle: .alert)
+                                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                                    vc.present(alert, animated: true, completion: nil)
                                 }
-                                
                             }
-                            
                         }
-                        
                     }
-                    
-                default:
-                    
-                    break
-                    
                 }
-                
             } else {
-                
-                DispatchQueue.main.async {
-                    
-                    self.connectingView.removeConnectingView()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: reducer.errorDescription)
-                    
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.connectingView.removeConnectingView()
+                    displayAlert(viewController: vc, isError: true, message: errorMessage!)
                 }
-                
             }
-            
         }
-        
-        reducer.makeCommand(command: method,
-                            param: param,
-                            completion: getResult)
-        
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

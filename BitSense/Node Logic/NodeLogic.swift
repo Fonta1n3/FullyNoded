@@ -11,288 +11,174 @@ import Foundation
 class NodeLogic {
     
     let dateFormatter = DateFormatter()
-    var errorBool = Bool()
-    var errorDescription = ""
     var dictToReturn = [String:Any]()
     var arrayToReturn = [[String:Any]]()
-    var walletsToReturn = NSArray()
     var walletDisabled = Bool()
     
-    func loadWalletSection(completion: @escaping () -> Void) {
-        
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                
-                walletsToReturn = reducer.arrayToReturn
-                completion()
-                
+    func loadWalletSection(completion: @escaping ((wallets: NSArray?, errorMessage: String?)) -> Void) {
+        Reducer.makeCommand(command: .listwallets, param: "") { [unowned vc = self] (response, errorMessage) in
+            if let wallets = response as? NSArray {
+                completion((wallets, nil))
             } else {
-                
-                if reducer.errorDescription.contains("Method not found") {
-                    
-                    errorBool = true
-                    errorDescription = "walletDisabled"
-                    walletDisabled = true
-                    completion()
-                    
+                if errorMessage != nil {
+                    if errorMessage!.contains("Method not found") {
+                        vc.walletDisabled = true
+                        completion((nil, "walletDisabled"))
+                    }
                 } else {
-                    
-                    errorBool = true
-                    errorDescription = reducer.errorDescription
-                    walletDisabled = false
-                    completion()
-                    
+                    vc.walletDisabled = false
+                    completion((nil, "error getting wallets"))
                 }
-                
             }
-            
         }
-                
-        reducer.makeCommand(command: .listwallets,
-                            param: "",
-                            completion: getResult)
-        
     }
     
-    func loadSectionZero(completion: @escaping () -> Void) {
-        print("loadSectionZero")
-        
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                
-                switch reducer.method {
-                    
-                case BTC_CLI_COMMAND.listunspent.rawValue:
-                    
-                    let utxos = reducer.arrayToReturn
-                    parseUtxos(utxos: utxos)
-                    completion()
-                    
-                case BTC_CLI_COMMAND.getunconfirmedbalance.rawValue:
-                    
-                    let unconfirmedBalance = reducer.doubleToReturn
-                    parseUncomfirmedBalance(unconfirmedBalance: unconfirmedBalance)
-
-                    reducer.makeCommand(command: .listunspent,
-                                        param: "0",
-                                        completion: getResult)
-                    
-                case BTC_CLI_COMMAND.getbalance.rawValue:
-                    
-                    let balanceCheck = reducer.doubleToReturn
-                    parseBalance(balance: balanceCheck)
-                    
-                    reducer.makeCommand(command: .getunconfirmedbalance,
-                                        param: "",
-                                        completion: getResult)
-                    
-                default:
-                    
-                    print("break1")
-                    break
-                    
-                }
-                
-            } else {
-                
-                if reducer.errorDescription.contains("Method not found") {
-                    
-                    errorBool = true
-                    errorDescription = "walletDisabled"
-                    walletDisabled = true
-                    completion()
-                    
-                } else {
-                    
-                    errorBool = true
-                    errorDescription = reducer.errorDescription
-                    walletDisabled = false
-                    completion()
-                    
-                }
-                
-            }
-                        
-        }
-        
+    func loadSectionZero(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         if !walletDisabled {
-            
-            reducer.makeCommand(command: .getbalance,
-                                param: "\"*\", 0, false",
-                                completion: getResult)
-            
+            getBalance(completion: completion)
         } else {
-            
             dictToReturn["coldBalance"] = "disabled"
             dictToReturn["unconfirmedBalance"] = "disabled"
             dictToReturn["hotBalance"] = "disabled"
-            completion()
-            
+            completion((dictToReturn, nil))
         }
-        
     }
     
-    func loadSectionOne(completion: @escaping () -> Void) {
-        print("loadSectionOne")
-        
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                
-                switch reducer.method {
-                    
-                case BTC_CLI_COMMAND.estimatesmartfee.rawValue:
-                    
-                    let result = reducer.dictToReturn
-                    
-                    if let feeRate = result["feerate"] as? Double {
-                        
-                        let btcperbyte = feeRate / 1000
-                        let satsperbyte = (btcperbyte * 100000000).avoidNotation
-                        dictToReturn["feeRate"] = "\(satsperbyte) sats/byte"
-                        
-                    } else {
-                        
-                        if let errors = result["errors"] as? NSArray {
-                            
-                            dictToReturn["feeRate"] = "\(errors[0] as! String)"
-                            
-                        }
-                       
+    private func getUnconfirmedBalance(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        Reducer.makeCommand(command: .getunconfirmedbalance, param: "") { [unowned vc = self] (response, errorMessage) in
+            if let unconfirmedBalance = response as? Double {
+                vc.parseUncomfirmedBalance(unconfirmedBalance: unconfirmedBalance)
+                vc.listUnspent(completion: completion)
+            } else {
+                completion((nil, errorMessage ?? ""))
+            }
+        }
+    }
+    
+    private func getBalance(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        Reducer.makeCommand(command: .getbalance, param: "\"*\", 0, false") { [unowned vc = self] (response, errorMessage) in
+            if let balanceCheck = response as? Double {
+                vc.parseBalance(balance: balanceCheck)
+                vc.getUnconfirmedBalance(completion: completion)
+            } else if errorMessage != nil {
+                if errorMessage!.contains("Method not found") {
+                    vc.walletDisabled = true
+                    completion((nil, "wallet disabled"))
+                }
+            }
+        }
+    }
+    
+    private func listUnspent(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        Reducer.makeCommand(command: .listunspent, param: "0") { [unowned vc = self] (response, errorMessage) in
+            if let utxos = response as? NSArray {
+                vc.parseUtxos(utxos: utxos)
+                completion((vc.dictToReturn, nil))
+            } else {
+                completion((nil, errorMessage ?? ""))
+            }
+        }
+    }
+    
+    func loadSectionOne(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        Reducer.makeCommand(command: .getblockchaininfo, param: "") { [unowned vc = self] (response, errorMessage) in
+            if let blockchainInfo = response as? NSDictionary {
+                vc.parseBlockchainInfo(blockchainInfo: blockchainInfo)
+                vc.getPeerInfo(completion: completion)
+            } else {
+                completion((nil, errorMessage ?? ""))
+            }
+        }
+    }
+    
+    private func getPeerInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        Reducer.makeCommand(command: .getpeerinfo, param: "") { [unowned vc = self] (response, errorMessage) in
+            if let peerInfo = response as? NSArray {
+                vc.parsePeerInfo(peerInfo: peerInfo)
+                vc.getNetworkInfo(completion: completion)
+            } else {
+                 completion((nil, errorMessage ?? ""))
+            }
+        }
+    }
+    
+    private func getNetworkInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        Reducer.makeCommand(command: .getnetworkinfo, param: "") { [unowned vc = self] (response, errorMessage) in
+            if let networkInfo = response as? NSDictionary {
+                vc.parseNetworkInfo(networkInfo: networkInfo)
+                vc.getMiningInfo(completion: completion)
+            } else {
+                completion((nil, errorMessage ?? ""))
+            }
+        }
+    }
+    
+    private func getMiningInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        Reducer.makeCommand(command: .getmininginfo, param: "") { [unowned vc = self] (response, errorMessage) in
+            if let miningInfo = response as? NSDictionary {
+                vc.parseMiningInfo(miningInfo: miningInfo)
+                vc.getUptime(completion: completion)
+            } else {
+                completion((nil, errorMessage ?? ""))
+            }
+        }
+    }
+    
+    private func getUptime(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        Reducer.makeCommand(command: .uptime, param: "") { [unowned vc = self] (response, errorMessage) in
+            if let uptime = response as? Double {
+                vc.dictToReturn["uptime"] = Int(uptime)
+                 vc.getMempoolInfo(completion: completion)
+            } else {
+                completion((nil, errorMessage ?? ""))
+            }
+        }
+    }
+    
+    private func getMempoolInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        Reducer.makeCommand(command: .getmempoolinfo, param: "") { [unowned vc = self] (response, errorMessage) in
+            if let dict = response as? NSDictionary {
+                vc.dictToReturn["mempoolCount"] = dict["size"] as! Int
+                let feeRate = UserDefaults.standard.integer(forKey: "feeTarget")
+                vc.estimateSmartFee(feeRate: feeRate, completion: completion)
+            } else {
+                completion((nil, errorMessage ?? ""))
+            }
+        }
+    }
+    
+    private func estimateSmartFee(feeRate: Int, completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        Reducer.makeCommand(command: .estimatesmartfee, param: "\(feeRate)") { [unowned vc = self] (response, errorMessage) in
+            if let result = response as? NSDictionary {
+                if let feeRate = result["feerate"] as? Double {
+                    let btcperbyte = feeRate / 1000
+                    let satsperbyte = (btcperbyte * 100000000).avoidNotation
+                    vc.dictToReturn["feeRate"] = "\(satsperbyte) sats/byte"
+                    completion((vc.dictToReturn, nil))
+                } else {
+                    if let errors = result["errors"] as? NSArray {
+                        vc.dictToReturn["feeRate"] = "\(errors[0] as! String)"
+                        completion((vc.dictToReturn, nil))
                     }
-                    
-                    completion()
-                    
-                case BTC_CLI_COMMAND.getmempoolinfo.rawValue:
-                    
-                    let dict = reducer.dictToReturn
-                    dictToReturn["mempoolCount"] = dict["size"] as! Int
-                    let feeRate = UserDefaults.standard.integer(forKey: "feeTarget")
-                    
-                    reducer.makeCommand(command: BTC_CLI_COMMAND.estimatesmartfee,
-                                        param: "\(feeRate)",
-                                        completion: getResult)
-                    
-                case BTC_CLI_COMMAND.uptime.rawValue:
-                    
-                    dictToReturn["uptime"] = Int(reducer.doubleToReturn)
-                    
-                    reducer.makeCommand(command: BTC_CLI_COMMAND.getmempoolinfo,
-                                        param: "",
-                                        completion: getResult)
-                    
-                case BTC_CLI_COMMAND.getmininginfo.rawValue:
-                    
-                    let miningInfo = reducer.dictToReturn
-                    parseMiningInfo(miningInfo: miningInfo)
-                    
-                    reducer.makeCommand(command: BTC_CLI_COMMAND.uptime,
-                                        param: "",
-                                        completion: getResult)
-                    
-                case BTC_CLI_COMMAND.getnetworkinfo.rawValue:
-                    
-                    let networkInfo = reducer.dictToReturn
-                    parseNetworkInfo(networkInfo: networkInfo)
-                    
-                    reducer.makeCommand(command: BTC_CLI_COMMAND.getmininginfo,
-                                        param: "",
-                                        completion: getResult)
-                    
-                case BTC_CLI_COMMAND.getpeerinfo.rawValue:
-                    
-                    let peerInfo = reducer.arrayToReturn
-                    parsePeerInfo(peerInfo: peerInfo)
-                    
-                    reducer.makeCommand(command: BTC_CLI_COMMAND.getnetworkinfo,
-                                        param: "",
-                                        completion: getResult)
-                    
-                case BTC_CLI_COMMAND.getblockchaininfo.rawValue:
-                    
-                    let blockchainInfo = reducer.dictToReturn
-                    parseBlockchainInfo(blockchainInfo: blockchainInfo)
-                    
-                    reducer.makeCommand(command: BTC_CLI_COMMAND.getpeerinfo,
-                                        param: "",
-                                        completion: getResult)
-                    
-                default:
-                    
-                    break
-                    
                 }
-                
             } else {
-                
-                errorBool = true
-                errorDescription = reducer.errorDescription
-                completion()
-                
+                completion((nil, errorMessage ?? ""))
             }
-            
         }
-        
-        reducer.makeCommand(command: BTC_CLI_COMMAND.getblockchaininfo,
-                            param: "",
-                            completion: getResult)
-        
     }
     
-    func loadSectionTwo(completion: @escaping () -> Void) {
-        print("loadSectionTwo")
-        
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                
-                switch reducer.method {
-                    
-                case BTC_CLI_COMMAND.listtransactions.rawValue:
-                    
-                    let transactions = reducer.arrayToReturn
-                    parseTransactions(transactions: transactions)
-                    completion()
-                    
-                default:
-                    
-                    break
-                    
-                }
-                
-            } else {
-                
-                errorBool = true
-                errorDescription = reducer.errorDescription
-                completion()
-                
-            }
-            
-        }
-        
+    func loadSectionTwo(completion: @escaping ((response: [[String:Any]]?, errorMessage: String?)) -> Void) {
         if !walletDisabled {
-            
-            reducer.makeCommand(command: BTC_CLI_COMMAND.listtransactions,
-                                param: "\"*\", 50, 0, true",
-                                completion: getResult)
-            
+            Reducer.makeCommand(command: .listtransactions, param: "\"*\", 50, 0, true") { [unowned vc = self] (response, errorMessage) in
+                if let transactions = response as? NSArray {
+                    vc.parseTransactions(transactions: transactions)
+                    completion((vc.arrayToReturn, nil))
+                }
+            }
         } else {
-            
             arrayToReturn = []
-            completion()
-            
+            completion((arrayToReturn, nil))
         }
-        
     }
     
     // MARK: Section 0 parsers

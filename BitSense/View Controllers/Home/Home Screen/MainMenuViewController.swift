@@ -522,15 +522,14 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     func loadTableData() {
         let nodeLogic = NodeLogic()
         displayAlert(viewController: self, isError: false, message: "bitcoin-cli getblockchaininfo")
-        nodeLogic.loadSectionOne { [unowned vc = self] in
-            if nodeLogic.errorBool {
+        nodeLogic.loadSectionOne { [unowned vc = self] (response, errorMessage) in
+            if errorMessage != nil {
                 vc.removeLoader()
-                displayAlert(viewController: self, isError: true, message: nodeLogic.errorDescription)
-            } else {
-                let dict = nodeLogic.dictToReturn
-                vc.homeStruct = HomeStruct(dictionary: dict)
-                vc.sectionOneLoaded = true
+                displayAlert(viewController: self, isError: true, message: errorMessage!)
+            } else if response != nil {
                 DispatchQueue.main.async { [unowned vc = self] in
+                    vc.homeStruct = HomeStruct(dictionary: response!)
+                    vc.sectionOneLoaded = true
                     vc.mainMenu.reloadData()
                     vc.removeLoader()
                 }

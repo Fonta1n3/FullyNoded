@@ -424,43 +424,9 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
     
     func getHDMusigDescriptor() {
         
-        let reducer = Reducer()
-        
-        connectingView.addConnectingView(vc: self,
-                                         description: "creating HD multisig descriptor")
-        
+        connectingView.addConnectingView(vc: self, description: "creating HD multisig descriptor")
         let sigsRequired = signaturesField.text!
-        
-        func completion() {
-            
-            let result = reducer.dictToReturn
-            
-            if reducer.errorBool {
-                
-                connectingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: reducer.errorDescription)
-                
-            } else {
-                
-                let descriptor = "\"\(result["descriptor"] as! String)\""
-                dict["descriptor"] = descriptor
-                
-                DispatchQueue.main.async {
-                    
-                    self.performSegue(withIdentifier: "chooseRangeForHDMusig", sender: self)
-                    
-                }
-                
-            }
-            
-        }
-        
         var descriptor = ""
-        
-        //descriptor = sh(multi(2,XPUB/*,XPUB/*))
         var pubkeys = (pubKeyArray.description).replacingOccurrences(of: "[", with: "")
         pubkeys = pubkeys.replacingOccurrences(of: ",", with: "/*,")
         pubkeys = pubkeys.replacingOccurrences(of: "]", with: "/*]")
@@ -496,10 +462,18 @@ class ImportMultiSigViewController: UIViewController, UITextFieldDelegate, UITab
         
         let param = "\"\(descriptor)\""
         
-        reducer.makeCommand(command: .getdescriptorinfo,
-                            param: param,
-                            completion: completion)
-        
+        Reducer.makeCommand(command: .getdescriptorinfo, param: param) { [unowned vc = self] (response, errorMessage) in
+            if let result = response as? NSDictionary {
+                let descriptor = "\"\(result["descriptor"] as! String)\""
+                vc.dict["descriptor"] = descriptor
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.performSegue(withIdentifier: "chooseRangeForHDMusig", sender: vc)
+                }
+            } else {
+                vc.connectingView.removeConnectingView()
+                displayAlert(viewController: vc, isError: true, message: errorMessage ?? "")
+            }
+        }
     }
     
     func parseResponse(dict: NSDictionary) {

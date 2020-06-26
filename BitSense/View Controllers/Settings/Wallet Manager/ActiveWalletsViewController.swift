@@ -44,9 +44,8 @@ class ActiveWalletsViewController: UIViewController, UITableViewDelegate, UITabl
     
     private func unloadWallet(wallet: String, index: Int) {
         connectingView.addConnectingView(vc: self, description: "unloading wallet...")
-        let reducer = Reducer()
-        reducer.makeCommand(command: .unloadwallet, param: "\"\(wallet)\"") { [unowned vc = self] in
-            if !reducer.errorBool {
+        Reducer.makeCommand(command: .unloadwallet, param: "\"\(wallet)\"") { [unowned vc = self] (response, errorMessage) in
+            if errorMessage == nil {
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.activeWallets.remove(at: index)
                     if vc.activeWallets.count == 0 {
@@ -59,7 +58,7 @@ class ActiveWalletsViewController: UIViewController, UITableViewDelegate, UITabl
                 }
             } else {
                 vc.connectingView.removeConnectingView()
-                showAlert(vc: vc, title: "Error", message: "There was an error unloading your wallet: \(reducer.errorDescription)")
+                showAlert(vc: vc, title: "Error", message: "There was an error unloading your wallet: \(errorMessage!)")
             }
         }
     }

@@ -82,51 +82,29 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: Any) {
-        
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                
+        Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+            if errorMessage == nil {
                 switch method {
-                    
                 case .combinepsbt:
-                    
-                    psbt = reducer.stringToReturn
-                    showRaw(raw: psbt)
-                    
+                    if let psbtCombined = response as? String {
+                        vc.psbt = psbtCombined
+                        vc.showRaw(raw: vc.psbt)
+                    }
                 case .joinpsbts:
-                    
-                    psbt = reducer.stringToReturn
-                    showRaw(raw: psbt)
-                    
+                    if let psbtJoined = response as? String {
+                        vc.psbt = psbtJoined
+                        vc.showRaw(raw: vc.psbt)
+                    }
                 default:
-                    
                     break
-                    
                 }
-                
             } else {
-                
-                DispatchQueue.main.async {
-                    
-                    self.connectingView.removeConnectingView()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: reducer.errorDescription)
-                    
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.connectingView.removeConnectingView()
+                    displayAlert(viewController: vc, isError: true, message: errorMessage!)
                 }
-                
             }
-            
         }
-        
-        reducer.makeCommand(command: method,
-                            param: param,
-                            completion: getResult)
-        
     }
     
     override func viewDidLoad() {

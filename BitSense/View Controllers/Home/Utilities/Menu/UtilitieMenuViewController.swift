@@ -200,11 +200,10 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
             //Blockchain
             switch indexPath.row {
             case 0:
-                displayAlert(viewController: self, isError: false, message: "starting rescan, this can take an hour or so and will affect the apps functionality")
-                executeNodeCommandSsh(method: BTC_CLI_COMMAND.rescanblockchain, param: "")
+                rescan()
                 
             case 1:
-                executeNodeCommandSsh(method: BTC_CLI_COMMAND.abortrescan, param: "")
+                abortRescan()
                 
             case 2:
                 getBlockchainInfo = true
@@ -330,32 +329,30 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
         return 54
     }
     
-    func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
-        
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                switch method {
-                case .rescanblockchain:
-                    displayAlert(viewController: self, isError: false, message: "Rescanning completed")
-                    
-                case .abortrescan:
-                    displayAlert(viewController: self, isError: false, message: "Rescan aborted")
-                    
-                default:
-                    break
-                }
-                
+    private func rescan() {
+        Reducer.makeCommand(command: .rescanblockchain, param: "") { [unowned vc = self] (response, errorMessage) in
+            if errorMessage == nil {
+                displayAlert(viewController: vc, isError: false, message: "Rescanning completed")
             } else {
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.connectingView.removeConnectingView()
-                    displayAlert(viewController: vc, isError: true, message: reducer.errorDescription)
+                    displayAlert(viewController: vc, isError: true, message: "Error rescanning: \(errorMessage!)")
                 }
             }
         }
-        reducer.makeCommand(command: method, param: param, completion: getResult)
+    }
+    
+    private func abortRescan() {
+        Reducer.makeCommand(command: .abortrescan, param: "") { [unowned vc = self] (response, errorMessage) in
+            if errorMessage == nil {
+                displayAlert(viewController: vc, isError: false, message: "Rescan aborted")
+            } else {
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.connectingView.removeConnectingView()
+                    displayAlert(viewController: vc, isError: true, message: "Error: \(errorMessage!)")
+                }
+            }
+        }
     }
     
     private func segue(to: String) {

@@ -65,11 +65,12 @@ class ShowDetailViewController: UIViewController, UITextViewDelegate, UINavigati
     private func getInfoHelpText() {
         let connectingView = ConnectingView()
         connectingView.addConnectingView(vc: self, description: "help \(command)...")
-        let reducer = Reducer()
-        reducer.makeCommand(command: .help, param: "\"\(command)\"") { [unowned vc = self] in
-            connectingView.removeConnectingView()
-            vc.helpText = reducer.stringToReturn
-            vc.showHelp()
+        Reducer.makeCommand(command: .help, param: "\"\(command)\"") { [unowned vc = self] (response, errorMessage) in
+            if let helpCheck = response as? String {
+                connectingView.removeConnectingView()
+                vc.helpText = helpCheck
+                vc.showHelp()
+            }
         }
     }
     

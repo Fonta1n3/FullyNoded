@@ -24,250 +24,139 @@ class RawTransaction {
     }
     
     func createRawTransactionFromHotWallet(completion: @escaping () -> Void) {
-        
-        let reducer = Reducer()
-        
         func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
-            
-            func getResult() {
-                
-                if !reducer.errorBool {
-                    
+            Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+                if errorMessage == nil {
                     switch method {
-                        
                     case .signrawtransactionwithwallet:
-                        
-                        let dict = reducer.dictToReturn
-                        signedRawTx = dict["hex"] as! String
-                        completion()
+                        if let dict = response as? NSDictionary {
+                            vc.signedRawTx = dict["hex"] as! String
+                            completion()
+                        }
                         
                     case .fundrawtransaction:
-                        
-                        let result = reducer.dictToReturn
-                        let unsignedRawTx = result["hex"] as! String
-                        
-                        executeNodeCommand(method: .signrawtransactionwithwallet,
-                                              param: "\"\(unsignedRawTx)\"")
+                        if let result = response as? NSDictionary {
+                            let unsignedRawTx = result["hex"] as! String
+                            executeNodeCommand(method: .signrawtransactionwithwallet, param: "\"\(unsignedRawTx)\"")
+                        }
                         
                     case .createrawtransaction:
-                        
-                        let unsignedRawTx = reducer.stringToReturn
-                        
-                        let param = "\"\(unsignedRawTx)\", { \"includeWatching\":false, \"subtractFeeFromOutputs\":[], \"replaceable\": true, \"conf_target\": \(numberOfBlocks) }"
-                            
-                        executeNodeCommand(method: .fundrawtransaction,
-                                              param: param)
+                        if let unsignedRawTx = response as? String {
+                            let param = "\"\(unsignedRawTx)\", { \"includeWatching\":false, \"subtractFeeFromOutputs\":[], \"replaceable\": true, \"conf_target\": \(vc.numberOfBlocks) }"
+                            executeNodeCommand(method: .fundrawtransaction, param: param)
+                        }
                         
                     default:
-                        
                         break
-                        
                     }
-                    
                 } else {
-                    
-                    errorBool = true
-                    errorDescription = reducer.errorDescription
+                    vc.errorBool = true
+                    vc.errorDescription = errorMessage!
                     completion()
-                    
                 }
-                
             }
-            
-            reducer.makeCommand(command: method,
-                                param: param,
-                                completion: getResult)
-            
         }
-        
-        
-        
         let receiver = "\"\(self.addressToPay)\":\(self.amount)"
         let param = "''[]'', ''{\(receiver)}'', 0, true"
-        
         executeNodeCommand(method: BTC_CLI_COMMAND.createrawtransaction, param: param)
-        
     }
     
     func createRawTransactionFromColdWallet(completion: @escaping () -> Void) {
-        
-        let reducer = Reducer()
-        
         func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
-            
-            func getResult() {
-                
-                if !reducer.errorBool {
-                    
+            Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+                if errorMessage == nil {
                     switch method {
-                        
                     case .fundrawtransaction:
-                        
-                        let result = reducer.dictToReturn
-                        unsignedRawTx = result["hex"] as! String
-                        completion()
-                       
-                        
+                        if let result = response as? NSDictionary {
+                            vc.unsignedRawTx = result["hex"] as! String
+                            completion()
+                        }
                     case .createrawtransaction:
-                        
-                        let unsignedRawTx = reducer.stringToReturn
-                        
-                        let param = "\"\(unsignedRawTx)\", { \"includeWatching\":true, \"subtractFeeFromOutputs\":[], \"replaceable\": true, \"conf_target\": \(numberOfBlocks) }"
-                            
-                        executeNodeCommand(method: BTC_CLI_COMMAND.fundrawtransaction,
-                                           param: param)
-                        
+                        if let unsignedRawTx = response as? String {
+                            let param = "\"\(unsignedRawTx)\", { \"includeWatching\":true, \"subtractFeeFromOutputs\":[], \"replaceable\": true, \"conf_target\": \(vc.numberOfBlocks) }"
+                            executeNodeCommand(method: .fundrawtransaction, param: param)
+                        }
                     default:
-                        
                         break
-                        
                     }
-                    
                 } else {
-                    
-                    errorBool = true
-                    errorDescription = reducer.errorDescription
+                    vc.errorBool = true
+                    vc.errorDescription = errorMessage!
                     completion()
-                    
                 }
-                
             }
-            
-            reducer.makeCommand(command: method, param: param, completion: getResult)
-            
         }
-        
         let receiver = "\"\(self.addressToPay)\":\(self.amount)"
         let param = "''[]'', ''{\(receiver)}'', 0, true"
         executeNodeCommand(method: .createrawtransaction, param: param)
-        
     }
     
     func createBatchRawTransactionFromHotWallet(completion: @escaping () -> Void) {
-        
-        let reducer = Reducer()
-        
         func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
-            
-            func getResult() {
-                
-                if !reducer.errorBool {
-                    
+            Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+                if errorMessage == nil {
                     switch method {
-                        
                     case .signrawtransactionwithwallet:
-                        
-                        let dict = reducer.dictToReturn
-                        signedRawTx = dict["hex"] as! String
-                        completion()
-                        
+                        if let dict = response as? NSDictionary {
+                            vc.signedRawTx = dict["hex"] as! String
+                            completion()
+                        }
                     case .fundrawtransaction:
-                        
-                        let result = reducer.dictToReturn
-                        let unsignedRawTx = result["hex"] as! String
-                        
-                        executeNodeCommand(method: BTC_CLI_COMMAND.signrawtransactionwithwallet,
-                                              param: "\"\(unsignedRawTx)\"")
-                        
+                        if let result = response as? NSDictionary {
+                            let unsignedRawTx = result["hex"] as! String
+                            executeNodeCommand(method: .signrawtransactionwithwallet, param: "\"\(unsignedRawTx)\"")
+                        }
                     case .createrawtransaction:
-                        
-                        let unsignedRawTx = reducer.stringToReturn
-                        
-                        let param = "\"\(unsignedRawTx)\", { \"includeWatching\":false, \"subtractFeeFromOutputs\":[], \"replaceable\": true, \"conf_target\": \(numberOfBlocks) }"
-                            
-                        executeNodeCommand(method: BTC_CLI_COMMAND.fundrawtransaction,
-                                              param: param)
-                        
+                        if let unsignedRawTx = response as? String {
+                            let param = "\"\(unsignedRawTx)\", { \"includeWatching\":false, \"subtractFeeFromOutputs\":[], \"replaceable\": true, \"conf_target\": \(vc.numberOfBlocks) }"
+                            executeNodeCommand(method: .fundrawtransaction, param: param)
+                        }
                     default:
-                        
                         break
-                        
                     }
-                    
                 } else {
-                    
-                    errorBool = true
-                    errorDescription = reducer.errorDescription
+                    vc.errorBool = true
+                    vc.errorDescription = errorMessage!
                     completion()
-                    
                 }
-                
             }
-            
-            reducer.makeCommand(command: method,
-                                param: param,
-                                completion: getResult)
-            
         }
-        
         let param = "''[]'', ''{\(self.outputs)}'', 0, true"
         executeNodeCommand(method: .createrawtransaction, param: param)
-        
     }
     
     func createBatchRawTransactionFromColdWallet(completion: @escaping () -> Void) {
-        
-        let reducer = Reducer()
-        
         func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
-            
-            func getResult() {
-                
-                if !reducer.errorBool {
-                    
+            Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+                if errorMessage == nil {
                     switch method {
-                        
                     case .fundrawtransaction:
-                        
-                        let result = reducer.dictToReturn
-                        unsignedRawTx = result["hex"] as! String
-                        completion()
-                        
-                        
+                        if let result = response as? NSDictionary {
+                            vc.unsignedRawTx = result["hex"] as! String
+                            completion()
+                        }
                     case .createrawtransaction:
-                        
-                        let unsignedRawTx = reducer.stringToReturn
-                        
-                        let param = "\"\(unsignedRawTx)\", { \"includeWatching\":true, \"subtractFeeFromOutputs\":[], \"replaceable\": true, \"conf_target\": \(numberOfBlocks) }"
-                        
-                        executeNodeCommand(method: BTC_CLI_COMMAND.fundrawtransaction,
-                                           param: param)
-                        
+                        if let unsignedRawTx = response as? String {
+                            let param = "\"\(unsignedRawTx)\", { \"includeWatching\":true, \"subtractFeeFromOutputs\":[], \"replaceable\": true, \"conf_target\": \(vc.numberOfBlocks) }"
+                            executeNodeCommand(method: .fundrawtransaction, param: param)
+                        }
                     default:
-                        
                         break
-                        
                     }
-                    
                 } else {
-                    
-                    errorBool = true
-                    errorDescription = reducer.errorDescription
+                    vc.errorBool = true
+                    vc.errorDescription = errorMessage!
                     completion()
-                    
                 }
-                
             }
-            
-            reducer.makeCommand(command: method,
-                                param: param,
-                                completion: getResult)
-            
         }
-        
         let param = "''[]'', ''{\(self.outputs)}'', 0, true"
-        
-        executeNodeCommand(method: BTC_CLI_COMMAND.createrawtransaction,
-                           param: param)
-        
+        executeNodeCommand(method: .createrawtransaction, param: param)
     }
     
     func sweepRawTx(completion: @escaping () -> Void) {
-        
-        let reducer = Reducer()
-        reducer.makeCommand(command: .listunspent, param: "0") { [unowned vc = self] in
-            if !reducer.errorBool {
-                let resultArray = reducer.arrayToReturn
+        Reducer.makeCommand(command: .listunspent, param: "0") { [unowned vc = self] (response, errorMessage) in
+            if let resultArray = response as? NSArray {
                 var inputArray = [Any]()
                 var inputs = ""
                 var amount = Double()
@@ -292,48 +181,43 @@ class RawTransaction {
                 inputs = inputs.replacingOccurrences(of: "\\", with: "")
                 let receiver = "\"\(vc.addressToPay)\":\(vc.rounded(number: amount))"
                 let param = "''\(inputs)'', ''{\(receiver)}'', 0, true"
-                reducer.makeCommand(command: .createrawtransaction, param: param) { [unowned vc = self] in
-                    if !reducer.errorBool {
-                        let unsignedRawTx1 = reducer.stringToReturn
+                Reducer.makeCommand(command: .createrawtransaction, param: param) { [unowned vc = self] (response, errorMessage) in
+                    if let unsignedRawTx1 = response as? String {
                         let param = "\"\(unsignedRawTx1)\", { \"includeWatching\":\(spendFromCold), \"subtractFeeFromOutputs\":[0], \"changeAddress\": \"\(self.addressToPay)\", \"replaceable\": true, \"conf_target\": \(vc.numberOfBlocks) }"
-                        reducer.makeCommand(command: .fundrawtransaction, param: param) { [unowned vc = self] in
-                            if !reducer.errorBool {
-                                let result = reducer.dictToReturn
+                        Reducer.makeCommand(command: .fundrawtransaction, param: param) { [unowned vc = self] (response, errorMessage) in
+                            if let result = response as? NSDictionary {
                                 if spendFromCold {
                                     vc.unsignedRawTx = result["hex"] as! String
                                     completion()
                                 } else {
-                                    reducer.makeCommand(command: .signrawtransactionwithwallet, param: "\"\(result["hex"] as! String)\"") { [unowned vc = self] in
-                                        if !reducer.errorBool {
-                                            let dict = reducer.dictToReturn
+                                    Reducer.makeCommand(command: .signrawtransactionwithwallet, param: "\"\(result["hex"] as! String)\"") { [unowned vc = self] (response, errorMessage) in
+                                        if let dict = response as? NSDictionary {
                                             vc.signedRawTx = dict["hex"] as! String
                                             completion()
                                         } else {
                                             vc.errorBool = true
-                                            vc.errorDescription = reducer.errorDescription
+                                            vc.errorDescription = errorMessage ?? ""
                                             completion()
                                         }
                                     }
                                 }
                             } else {
                                 vc.errorBool = true
-                                vc.errorDescription = reducer.errorDescription
+                                vc.errorDescription = errorMessage ?? ""
                                 completion()
                             }
                         }
                     } else {
                         vc.errorBool = true
-                        vc.errorDescription = reducer.errorDescription
+                        vc.errorDescription = errorMessage ?? ""
                         completion()
                     }
                 }
             } else {
                 vc.errorBool = true
-                vc.errorDescription = reducer.errorDescription
+                vc.errorDescription = errorMessage ?? ""
                 completion()
             }
-            
         }
     }
-    
 }

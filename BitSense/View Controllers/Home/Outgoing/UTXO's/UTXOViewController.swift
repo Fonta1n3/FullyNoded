@@ -792,131 +792,85 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
         
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                
+        Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+            if errorMessage == nil {
                 switch method {
                     
                 case .listlockunspent:
-                    
-                    lockedArray = reducer.arrayToReturn
-                    
-                    creatingView.removeConnectingView()
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.performSegue(withIdentifier: "goToLocked", sender: self)
-                        
+                    if let lockedarr = response as? NSArray {
+                        DispatchQueue.main.async { [unowned vc = self] in
+                            vc.lockedArray = lockedarr
+                            vc.creatingView.removeConnectingView()
+                            vc.performSegue(withIdentifier: "goToLocked", sender: vc)
+                        }
                     }
                     
                 case .lockunspent:
-                    
-                    let result = reducer.doubleToReturn
-                    removeSpinner()
-                    
-                    if result == 1 {
-                        
-                        displayAlert(viewController: self,
-                                     isError: false,
-                                     message: "UTXO is locked and will not be selected for spends unless your node restarts, tap the lock button to unlock it")
-                        
-                        self.refresh()
-                        
-                    } else {
-                        
-                        displayAlert(viewController: self,
-                                     isError: true,
-                                     message: "Unable to lock that UTXO")
-                        
+                    if let result = response as? Double {
+                        vc.removeSpinner()
+                        if result == 1 {
+                            displayAlert(viewController: vc, isError: false, message: "UTXO is locked and will not be selected for spends unless your node restarts, tap the lock button to unlock it")
+                            vc.refresh()
+                        } else {
+                            displayAlert(viewController: vc, isError: true, message: "Unable to lock that UTXO")
+                        }
                     }
                     
                 case .getnewaddress:
-                    
-                    let address = reducer.stringToReturn
-                    let roundedAmount = rounded(number: self.amountTotal)
-                    
-                    let spendUtxo = SendUTXO()
-                    spendUtxo.inputArray = self.inputArray
-                    spendUtxo.sweep = true
-                    spendUtxo.addressToPay = address
-                    spendUtxo.amount = roundedAmount
-                    
-                    func getResult() {
+                    if let address = response as? String {
+                        let roundedAmount = rounded(number: self.amountTotal)
+                        let spendUtxo = SendUTXO()
+                        spendUtxo.inputArray = self.inputArray
+                        spendUtxo.sweep = true
+                        spendUtxo.addressToPay = address
+                        spendUtxo.amount = roundedAmount
                         
-                        if !spendUtxo.errorBool {
-                            
-                            let rawTx = spendUtxo.signedRawTx
-                            
-                            optimizeTheFee(raw: rawTx,
-                                           amount: roundedAmount,
-                                           addressToPay: address,
-                                           sweep: true,
-                                           inputArray: self.inputArray,
-                                           changeAddress: "",
-                                           changeAmount: 0.0)
-                            
-                        } else {
-                            
-                            DispatchQueue.main.async {
+                        func getResult() {
+                            if !spendUtxo.errorBool {
+                                let rawTx = spendUtxo.signedRawTx
+                                vc.optimizeTheFee(raw: rawTx,
+                                               amount: roundedAmount,
+                                               addressToPay: address,
+                                               sweep: true,
+                                               inputArray: self.inputArray,
+                                               changeAddress: "",
+                                               changeAmount: 0.0)
                                 
-                                self.amountTotal = 0.0
-                                self.utxoToSpendArray.removeAll()
-                                self.inputArray.removeAll()
-                                self.utxoTable.reloadData()
+                            } else {
                                 
-                                self.removeSpinner()
-                                
-                                displayAlert(viewController: self,
-                                             isError: true,
-                                             message: spendUtxo.errorDescription)
-                                
+                                DispatchQueue.main.async { [unowned vc = self] in
+                                    vc.amountTotal = 0.0
+                                    vc.utxoToSpendArray.removeAll()
+                                    vc.inputArray.removeAll()
+                                    vc.utxoTable.reloadData()
+                                    vc.removeSpinner()
+                                    displayAlert(viewController: vc, isError: true, message: spendUtxo.errorDescription)
+                                }
                             }
-                            
                         }
-                        
+                        spendUtxo.createRawTransaction(completion: getResult)
                     }
                     
-                    spendUtxo.createRawTransaction(completion: getResult)
-                    
                 case .listunspent:
-                    
-                    let resultArray = reducer.arrayToReturn
-                    parseUnspent(utxos: resultArray)
+                    if let resultArray = response as? NSArray {
+                        vc.parseUnspent(utxos: resultArray)
+                    }
                     
                 case .getrawchangeaddress:
-                    
-                    let changeAddress = reducer.stringToReturn
-                    self.getRawTx(changeAddress: changeAddress)
+                    if let changeAddress = response as? String {
+                        vc.getRawTx(changeAddress: changeAddress)
+                    }
                     
                 default:
-                    
                     break
-                    
                 }
-                
             } else {
-                
-                DispatchQueue.main.async {
-                    
-                    self.removeSpinner()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: reducer.errorDescription)
-                                        
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.removeSpinner()
+                    displayAlert(viewController: vc, isError: true, message: errorMessage!)
                 }
-                
             }
-            
         }
-        
-        reducer.makeCommand(command: method,
-                            param: param,
-                            completion: getResult)
-        
     }
     
     func removeSpinner() {
@@ -1320,72 +1274,72 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     
     func optimizeTheFee(raw: String, amount: Double, addressToPay: String, sweep: Bool, inputArray: [Any], changeAddress: String, changeAmount: Double) {
         
-        let getSmartFee = GetSmartFee()
-        getSmartFee.rawSigned = raw
-        getSmartFee.vc = self
-        
-        func getFeeResult() {
-            
-            let optimalFee = rounded(number: getSmartFee.optimalFee)
-            print("optimalFee = \(optimalFee)")
-            
-            let spendUtxo = SendUTXO()
-            spendUtxo.sweep = sweep
-            spendUtxo.addressToPay = addressToPay
-            spendUtxo.inputArray = inputArray
-            spendUtxo.changeAddress = changeAddress
-            
-            // sender always pays the fee
-            if !sweep {
-                
-                // if not sweeping then nullify the fixed fee we added initially and then reduce the optimal fee from the change output, receiver gets what is intended
-                let roundChange = rounded(number: (changeAmount + 0.00050000) - optimalFee)
-                spendUtxo.changeAmount = roundChange
-                let rnd = rounded(number: amount)
-                spendUtxo.amount = rnd
-                
-            } else {
-                
-                // if sweeping just reduce the overall amount by the optimal fee
-                let rnd = rounded(number: amount - optimalFee)
-                spendUtxo.amount = rnd
-                
-            }
-            
-            func getResult() {
-                
-                if !spendUtxo.errorBool {
-                    
-                    let rawTx = spendUtxo.signedRawTx
-                    
-                    DispatchQueue.main.async {
-                    
-                        self.rawSigned = rawTx
-                        self.displayRaw(raw: self.rawSigned)
-                    
-                    }
-                    
-                } else {
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.removeSpinner()
-                        
-                        displayAlert(viewController: self,
-                                     isError: true,
-                                     message: spendUtxo.errorDescription)
-                        
-                    }
-                    
-                }
-                
-            }
-            
-            spendUtxo.createRawTransaction(completion: getResult)
-            
-        }
-        
-        getSmartFee.getSmartFee(completion: getFeeResult)
+//        let getSmartFee = GetSmartFee()
+//        getSmartFee.rawSigned = raw
+//        getSmartFee.vc = self
+//
+//        func getFeeResult() {
+//
+//            let optimalFee = rounded(number: getSmartFee.optimalFee)
+//            print("optimalFee = \(optimalFee)")
+//
+//            let spendUtxo = SendUTXO()
+//            spendUtxo.sweep = sweep
+//            spendUtxo.addressToPay = addressToPay
+//            spendUtxo.inputArray = inputArray
+//            spendUtxo.changeAddress = changeAddress
+//
+//            // sender always pays the fee
+//            if !sweep {
+//
+//                // if not sweeping then nullify the fixed fee we added initially and then reduce the optimal fee from the change output, receiver gets what is intended
+//                let roundChange = rounded(number: (changeAmount + 0.00050000) - optimalFee)
+//                spendUtxo.changeAmount = roundChange
+//                let rnd = rounded(number: amount)
+//                spendUtxo.amount = rnd
+//
+//            } else {
+//
+//                // if sweeping just reduce the overall amount by the optimal fee
+//                let rnd = rounded(number: amount - optimalFee)
+//                spendUtxo.amount = rnd
+//
+//            }
+//
+//            func getResult() {
+//
+//                if !spendUtxo.errorBool {
+//
+//                    let rawTx = spendUtxo.signedRawTx
+//
+//                    DispatchQueue.main.async {
+//
+//                        self.rawSigned = rawTx
+//                        self.displayRaw(raw: self.rawSigned)
+//
+//                    }
+//
+//                } else {
+//
+//                    DispatchQueue.main.async {
+//
+//                        self.removeSpinner()
+//
+//                        displayAlert(viewController: self,
+//                                     isError: true,
+//                                     message: spendUtxo.errorDescription)
+//
+//                    }
+//
+//                }
+//
+//            }
+//
+//            spendUtxo.createRawTransaction(completion: getResult)
+//
+//        }
+//
+//        getSmartFee.getSmartFee(completion: getFeeResult)
         
     }
     

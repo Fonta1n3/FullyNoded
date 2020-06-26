@@ -393,7 +393,7 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
                 
                 self.amountView.removeFromSuperview()
                 self.amountInput.removeFromSuperview()
-                self.startATxChain(amount: amount)
+                //self.startATxChain(amount: amount)
                 
             }
             
@@ -479,46 +479,46 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
         
     }
     
-    func startATxChain(amount: Double) {
-        
-        let txChain = TXChain()
-        txChain.amount = amount
-        
-        func getResult() {
-            
-            if !txChain.errorBool {
-                
-                DispatchQueue.main.async {
-                    
-                    self.blurView2.removeFromSuperview()
-                    self.creatingView.removeConnectingView()
-                    self.firstLink = txChain.processedChain
-                    
-                    self.performSegue(withIdentifier: "goDecode",
-                                      sender: self)
-                    
-                }
-                
-            } else {
-                
-                DispatchQueue.main.async {
-                    
-                    self.blurView2.removeFromSuperview()
-                    self.creatingView.removeConnectingView()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: txChain.errorDescription)
-                    
-                }
-                
-            }
-            
-        }
-        
-        txChain.startAChain(completion: getResult)
-        
-    }
+//    func startATxChain(amount: Double) {
+//
+//        let txChain = TXChain()
+//        txChain.amount = amount
+//
+//        func getResult() {
+//
+//            if !txChain.errorBool {
+//
+//                DispatchQueue.main.async {
+//
+//                    self.blurView2.removeFromSuperview()
+//                    self.creatingView.removeConnectingView()
+//                    self.firstLink = txChain.processedChain
+//
+//                    self.performSegue(withIdentifier: "goDecode",
+//                                      sender: self)
+//
+//                }
+//
+//            } else {
+//
+//                DispatchQueue.main.async {
+//
+//                    self.blurView2.removeFromSuperview()
+//                    self.creatingView.removeConnectingView()
+//
+//                    displayAlert(viewController: self,
+//                                 isError: true,
+//                                 message: txChain.errorDescription)
+//
+//                }
+//
+//            }
+//
+//        }
+//
+//        txChain.startAChain(completion: getResult)
+//
+//    }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         

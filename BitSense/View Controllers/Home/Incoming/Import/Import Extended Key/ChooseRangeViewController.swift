@@ -117,93 +117,35 @@ class ChooseRangeViewController: UIViewController, UIPickerViewDelegate, UIPicke
     }
     
     func getHDMusigAddresses() {
-        
-        let reducer = Reducer()
-        
-        connectingView.addConnectingView(vc: self,
-                                         description: "deriving HD multisig addresses")
-        
+        connectingView.addConnectingView(vc: self, description: "deriving HD multisig addresses")
         let convertedRange = convertRange()
-        
-        func importDescriptor() {
-            
-            let result = reducer.dictToReturn
-            
-            if reducer.errorBool {
-                
-                connectingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: reducer.errorDescription)
-                
-            } else {
-                
-                let descriptor = "\"\(result["descriptor"] as! String)\""
-                
-                self.executeNodeCommandSsh(method: .deriveaddresses,
-                                           param: "\(descriptor), ''\(convertedRange)''")
-                
-            }
-            
-        }
-        
         let descriptor = dict["descriptor"] as! String
-        
-        reducer.makeCommand(command: .getdescriptorinfo,
-                            param: "\(descriptor)",
-                            completion: importDescriptor)
-        
+        Reducer.makeCommand(command: .getdescriptorinfo, param: "\(descriptor)") { [unowned vc = self] (response, errorMessage) in
+            if let result = response as? NSDictionary {
+                let descriptor = "\"\(result["descriptor"] as! String)\""
+                vc.deriveAddresses(param: "\(descriptor), ''\(convertedRange)''")
+            } else {
+                vc.connectingView.removeConnectingView()
+                displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
+            }
+        }
     }
     
-    func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
-        
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                
-                switch method {
-                    
-                case .deriveaddresses:
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.keyArray = reducer.arrayToReturn
-                        self.connectingView.removeConnectingView()
-                        
-                        self.performSegue(withIdentifier: "goDisplayHDMusig",
-                                          sender: self)
-                        
-                    }
-                    
-                default:
-                    
-                    break
-                    
+    private func deriveAddresses(param: String) {
+        Reducer.makeCommand(command: .deriveaddresses, param: param) { (response, errorMessage) in
+            if let addresses = response as? NSArray {
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.keyArray = addresses
+                    vc.connectingView.removeConnectingView()
+                    vc.performSegue(withIdentifier: "goDisplayHDMusig", sender: vc)
                 }
-                
             } else {
-                
-                DispatchQueue.main.async {
-                    
-                    self.connectingView.removeConnectingView()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: reducer.errorDescription)
-                    
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.connectingView.removeConnectingView()
+                    displayAlert(viewController: vc, isError: true, message: errorMessage ?? "")
                 }
-                
             }
-            
         }
-        
-        reducer.makeCommand(command: method,
-                            param: param,
-                            completion: getResult)
-        
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

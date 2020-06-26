@@ -197,7 +197,7 @@ class ProcessPSBTViewController: UIViewController {
             
             if txChain {
                 
-                addTXChainLink(psbt: psbt)
+                //addTXChainLink(psbt: psbt)
                 
             } else {
                 
@@ -304,218 +304,159 @@ class ProcessPSBTViewController: UIViewController {
     }
     
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
-        
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                
+        Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+            if errorMessage == nil {
+                vc.creatingView.removeConnectingView()
+                showAlert(vc: vc, title: "Error", message: errorMessage!)
+            } else {
                 switch method {
-                    
                 case .sendrawtransaction:
-                    
-                    let result = reducer.stringToReturn
-                    
-                    DispatchQueue.main.async { [unowned vc = self] in
-                        displayAlert(viewController: vc, isError: false, message: "Sent ✓")
-                        UIPasteboard.general.string = result
-                        self.creatingView.removeConnectingView()
-                        self.textView.text = "txid: \(result)"
-                        
-                    }
+                    vc.parseSendRawTx(response: response)
                     
                 case .walletprocesspsbt:
-                    
-                    let dict = reducer.dictToReturn
-                    
-                    let isComplete = dict["complete"] as! Bool
-                    let processedPSBT = dict["psbt"] as! String
-                    
-                    creatingView.removeConnectingView()
-                    
-                    displayRaw(raw: processedPSBT, title: "PSBT")
-                    
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                        
-                        if isComplete {
-                            
-                            displayAlert(viewController: self,
-                                         isError: false,
-                                         message: "PSBT is complete")
-                            
-                        } else {
-                            
-                            displayAlert(viewController: self,
-                                         isError: true,
-                                         message: "PSBT is incomplete")
-                            
-                        }
-                        
-                    }
+                    vc.parseProcessPsbt(response: response)
                     
                 case .finalizepsbt:
-                    
-                    let dict = reducer.dictToReturn
-                    let isComplete = dict["complete"] as! Bool
-                    var finalizedPSBT = ""
-                    
-                    if let check = dict["hex"] as? String {
-                        
-                        finalizedPSBT = check
-                        
-                    } else if let psbt = dict["psbt"] as? String {
-                        
-                        finalizedPSBT = psbt
-                        
-                    } else {
-                        
-                        finalizedPSBT = "error"
-                        
-                    }
-                    
-                    creatingView.removeConnectingView()
-                    
-                    displayRaw(raw: finalizedPSBT, title: "Finalized PSBT")
-                    
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                        
-                        if isComplete {
-                            
-                            displayAlert(viewController: self,
-                                         isError: false,
-                                         message: "PSBT is finalized")
-                            
-                        } else {
-                            
-                            displayAlert(viewController: self,
-                                         isError: true,
-                                         message: "PSBT is incomplete")
-                            
-                        }
-                        
-                    }
+                    vc.parseFinalizedPsbt(response: response)
                     
                 case .analyzepsbt:
-                    
-                    let dict = reducer.dictToReturn
-                    creatingView.removeConnectingView()
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.textView.text = "\(dict)"
-                        
-                    }
+                    vc.parseAnalyzedPsbt(response: response)
                     
                 case .converttopsbt:
-                    
-                    let psbt = reducer.stringToReturn
-                    creatingView.removeConnectingView()
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.displayRaw(raw: psbt, title: "PSBT")
-                        
-                    }
+                    vc.parseConvertToPsbt(response: response)
                     
                 case .decodepsbt:
-                    
-                    let dict = reducer.dictToReturn
-                    creatingView.removeConnectingView()
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.textView.text = "\(dict)"
-                        
-                    }
+                    vc.parseDecodedPsbt(response: response)
                     
                 case .decoderawtransaction:
-                    
-                    let dict = reducer.dictToReturn
-                    
-                    if !verify {
-                        
-                        creatingView.removeConnectingView()
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.textView.text = "\(dict)"
-                            
-                        }
-                        
-                    } else {
-                        
-                        // parse the inputs and outputs and display to user
-                        parseTransaction(tx: dict)
-                        
-                    }
+                    vc.parseDecodedTx(response: response)
                     
                 default:
-                    
                     break
-                    
                 }
+            }
+        }
+    }
+    
+    private func parseSendRawTx(response: Any?) {
+        if let result = response as? String {
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.setTextView(text: "txid: \(result)")
+                displayAlert(viewController: vc, isError: false, message: "Sent ✓")
+            }
+        }
+    }
+    
+    private func parseProcessPsbt(response: Any?) {
+        if let dict = response as? NSDictionary {
+            let isComplete = dict["complete"] as! Bool
+            let processedPSBT = dict["psbt"] as! String
+            creatingView.removeConnectingView()
+            displayRaw(raw: processedPSBT, title: "PSBT")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [unowned vc = self] in
+                if isComplete {
+                    displayAlert(viewController: vc, isError: false, message: "PSBT is complete")
+                } else {
+                    displayAlert(viewController: vc, isError: true, message: "PSBT is incomplete")
+                }
+            }
+        }
+    }
+    
+    private func parseFinalizedPsbt(response: Any?) {
+        if let dict = response as? NSDictionary {
+            let isComplete = dict["complete"] as! Bool
+            var finalizedPSBT = ""
+            if let check = dict["hex"] as? String {
+                finalizedPSBT = check
+                
+            } else if let psbt = dict["psbt"] as? String {
+                finalizedPSBT = psbt
                 
             } else {
-                
-                creatingView.removeConnectingView()
-                showAlert(vc: self, title: "Error", message: reducer.errorDescription)
+                finalizedPSBT = "error"
                 
             }
-            
+            creatingView.removeConnectingView()
+            displayRaw(raw: finalizedPSBT, title: "Finalized PSBT")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [unowned vc = self] in
+                if isComplete {
+                    displayAlert(viewController: vc, isError: false, message: "PSBT is finalized")
+                    
+                } else {
+                    displayAlert(viewController: vc, isError: true, message: "PSBT is incomplete")
+                    
+                }
+            }
         }
-        
-        reducer.makeCommand(command: method,
-                            param: param,
-                            completion: getResult)
-        
+    }
+    
+    private func parseAnalyzedPsbt(response: Any?) {
+        if let dict = response as? NSDictionary {
+            setTextView(text: "\(dict)")
+        }
+    }
+    
+    private func parseConvertToPsbt(response: Any?) {
+        if let psbt = response as? String {
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.displayRaw(raw: psbt, title: "PSBT")
+                vc.creatingView.removeConnectingView()
+            }
+        }
+    }
+    
+    private func parseDecodedPsbt(response: Any?) {
+        if let dict = response as? NSDictionary {
+            setTextView(text: "\(dict)")
+        }
+    }
+    
+    private func setTextView(text: String) {
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.textView.text = text
+            vc.creatingView.removeConnectingView()
+        }
+    }
+    
+    private func parseDecodedTx(response: Any?) {
+        if let dict = response as? NSDictionary {
+            if !verify {
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.textView.text = "\(dict)"
+                    vc.creatingView.removeConnectingView()
+                }
+            } else {
+                // parse the inputs and outputs and display to user
+                parseTransaction(tx: dict)
+            }
+        }
     }
     
     func parsePrevTx(method: BTC_CLI_COMMAND, param: String, vout: Int) {
-        
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                
+        Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+            if errorMessage == nil {
                 switch method {
-                    
                 case .decoderawtransaction:
-                    
-                    let txDict = reducer.dictToReturn
-                    let outputs = txDict["vout"] as! NSArray
-                    parsePrevTxOutput(outputs: outputs, vout: vout)
+                    if let txDict = response as? NSDictionary {
+                        let outputs = txDict["vout"] as! NSArray
+                        vc.parsePrevTxOutput(outputs: outputs, vout: vout)
+                    }
                     
                 case .gettransaction:
-                    
-                    let dict = reducer.dictToReturn
-                    
-                    let rawTransaction = dict["hex"] as! String
-                    
-                    parsePrevTx(method: .decoderawtransaction,
-                                param: "\"\(rawTransaction)\"",
-                                vout: vout)
+                    if let dict = response as? NSDictionary {
+                        let rawTransaction = dict["hex"] as! String
+                        vc.parsePrevTx(method: .decoderawtransaction, param: "\"\(rawTransaction)\"", vout: vout)
+                    }
                     
                 default:
-                    
                     break
-                    
                 }
-                
             } else {
-                
-                creatingView.removeConnectingView()
-                showAlert(vc: self, title: "Error", message: reducer.errorDescription)
-                
+                vc.creatingView.removeConnectingView()
+                showAlert(vc: self, title: "Error", message: errorMessage!)
             }
-            
         }
-        
-        reducer.makeCommand(command: method,
-                            param: param,
-                            completion: getResult)
-        
     }
     
     func parsePrevTxOutput(outputs: NSArray, vout: Int) {
@@ -972,35 +913,35 @@ class ProcessPSBTViewController: UIViewController {
         
     }
     
-    func addTXChainLink(psbt: String) {
-        
-        let txChain = TXChain()
-        txChain.tx = psbt
-        
-        func getResult() {
-            
-            if !txChain.errorBool {
-                
-                creatingView.removeConnectingView()
-                
-                let chain = txChain.chainToReturn
-                displayRaw(raw: chain, title: "TXChain")
-                
-                displayAlert(viewController: self,
-                             isError: false,
-                             message: "Link added to the TXChain!")
-                
-            } else {
-                
-                creatingView.removeConnectingView()
-                showAlert(vc: self, title: "Error", message: txChain.errorDescription)
-                
-            }
-            
-        }
-        
-        txChain.addALink(completion: getResult)
-        
-    }
+//    func addTXChainLink(psbt: String) {
+//
+//        let txChain = TXChain()
+//        txChain.tx = psbt
+//
+//        func getResult() {
+//
+//            if !txChain.errorBool {
+//
+//                creatingView.removeConnectingView()
+//
+//                let chain = txChain.chainToReturn
+//                displayRaw(raw: chain, title: "TXChain")
+//
+//                displayAlert(viewController: self,
+//                             isError: false,
+//                             message: "Link added to the TXChain!")
+//
+//            } else {
+//
+//                creatingView.removeConnectingView()
+//                showAlert(vc: self, title: "Error", message: txChain.errorDescription)
+//
+//            }
+//
+//        }
+//
+//        txChain.addALink(completion: getResult)
+//
+//    }
 
 }

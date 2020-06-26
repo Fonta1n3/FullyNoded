@@ -15,10 +15,7 @@ class IncomingsMenuViewController: UIViewController, UITableViewDelegate, UITabl
     var isPruned = Bool()
     var isTestnet = Bool()
     var isExtendedKey = Bool()
-    //var isHDMultisig = Bool()
     let cd = CoreDataService()
-    //var wallets = [[String:Any]]()
-    //var wallet = [String:Any]()
     var descriptors = [[String:Any]]()
     @IBOutlet var incomingsTable: UITableView!
     
