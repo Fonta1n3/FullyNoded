@@ -284,7 +284,6 @@ class MuSigDisplayerTableViewController: UITableViewController {
             if let dict = response as? NSDictionary {
                 let descriptor = "\"\(dict["descriptor"] as! String)\""
                 let params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"watchonly\": true, \"label\": \"\(label)\" }]"
-                let cd = CoreDataService()
                 Crypto.encryptData(dataToEncrypt: descriptor.dataUsingUTF8StringEncoding) { encDesc in
                     if encDesc != nil {
                         let descDict = ["descriptor":encDesc!,
@@ -292,18 +291,12 @@ class MuSigDisplayerTableViewController: UITableViewController {
                                         "range":"no range",
                                         "id":UUID()] as [String : Any]
                         
-                        cd.saveEntity(dict: descDict, entityName: .newDescriptors) {
-                            if !cd.errorBool {
-                                let success = cd.boolToReturn
-                                if success {
-                                    vc.importMulti(param: params)
-                                } else {
-                                    self.connectingView.removeConnectingView()
-                                    displayAlert(viewController: self, isError: true, message: "error saving descriptor: \(cd.errorDescription)")
-                                }
+                        CoreDataService.saveEntity(dict: descDict, entityName: .newDescriptors) { success in
+                            if success {
+                                vc.importMulti(param: params)
                             } else {
                                 self.connectingView.removeConnectingView()
-                                displayAlert(viewController: self, isError: true, message: "error saving descriptor: \(cd.errorDescription)")
+                                displayAlert(viewController: self, isError: true, message: "error saving descriptor")
                             }
                         }
                     }

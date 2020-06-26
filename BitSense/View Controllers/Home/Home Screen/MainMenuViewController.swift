@@ -614,11 +614,11 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         nodes.removeAll()
         
-        cd.retrieveEntity(entityName: .newNodes) {
+        CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
             
-            if !self.cd.errorBool {
+            if nodes != nil {
                 
-                completion(self.cd.entities)
+                completion(nodes!)
                 
             } else {
                 

@@ -133,14 +133,10 @@ class IncomingsMenuViewController: UIViewController, UITableViewDelegate, UITabl
             
         case 1:
             
-            self.cd.retrieveEntity(entityName: .newDescriptors) {
-                
-                if !self.cd.errorBool {
-                    
-                    self.descriptors = self.cd.entities
-                    
+            CoreDataService.retrieveEntity(entityName: .newDescriptors) { descs in
+                if descs != nil {
+                    self.descriptors = descs!
                     if self.descriptors.count > 0 {
-                        
                         DispatchQueue.main.async {
                             
                             self.performSegue(withIdentifier: "showDescriptors",

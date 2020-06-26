@@ -17,7 +17,6 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
     var p2shSegwit = Bool()
     var legacy = Bool()
     let ud = UserDefaults.standard
-    let cd = CoreDataService()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -212,12 +211,12 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
         p2shSegwit = ud.object(forKey: "p2shSegwit") as? Bool ?? false
         legacy = ud.object(forKey: "legacy") as? Bool ?? false
         
-        cd.retrieveEntity(entityName: .newHdWallets) { [unowned vc = self] in
+        CoreDataService.retrieveEntity(entityName: .newHdWallets) { [unowned vc = self] hdWallets in
             
-            if !vc.cd.errorBool {
+            if hdWallets != nil {
                 
-                if vc.cd.entities.count > 0 {
-                    vc.wallets = vc.cd.entities
+                if hdWallets!.count > 0 {
+                    vc.wallets = hdWallets!
                     if vc.wallets.count == 1 {
                         vc.wallet = vc.wallets[0]
                     }

@@ -24,6 +24,8 @@ class NodeLogic {
                     if errorMessage!.contains("Method not found") {
                         walletDisabled = true
                         completion((nil, "walletDisabled"))
+                    } else {
+                        completion((nil, errorMessage))
                     }
                 } else {
                     walletDisabled = false
@@ -64,6 +66,8 @@ class NodeLogic {
                 if errorMessage!.contains("Method not found") {
                     walletDisabled = true
                     completion((nil, "wallet disabled"))
+                } else {
+                    completion((nil, errorMessage ?? ""))
                 }
             }
         }

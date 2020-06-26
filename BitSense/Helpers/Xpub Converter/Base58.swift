@@ -14,8 +14,11 @@ public class Base58 {
     public class func encode(_ input: [UInt8]) -> String {
         var size = Int(ceil(log(256.0)/log(58)*Double(input.count))) + 1
         var data = Data(count: size)
-        data.withUnsafeMutableBytes {(bytes: UnsafeMutablePointer<Int8>)->Void in
-            b58enc(bytes, &size, input, input.count)
+        data.withUnsafeMutableBytes { (rawMutableBufferPointer) in
+            let bufferPointer = rawMutableBufferPointer.bindMemory(to: Int8.self)
+            if let address = bufferPointer.baseAddress {
+                b58enc(address, &size, input, input.count)
+            }
         }
         let r = data.subdata(in: 0..<(size - 1))
         
@@ -30,8 +33,11 @@ public class Base58 {
         var data = Data(count: csize)
         var size = csize
         
-        data.withUnsafeMutableBytes {(bytes: UnsafeMutablePointer<Int8>)->Void in
-            b58tobin(bytes, &size, c, c.count)
+        data.withUnsafeMutableBytes { (rawMutableBufferPointer) in
+            let bufferPointer = rawMutableBufferPointer.bindMemory(to: Int8.self)
+            if let address = bufferPointer.baseAddress {
+                b58tobin(address, &size, c, c.count)
+            }
         }
 
         let beginIndex = (csize - size)

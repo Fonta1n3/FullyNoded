@@ -371,7 +371,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                             vc.addressOutlet.text = addressToReturn
                             vc.showAddress(address: addressToReturn)
                             let id = vc.wallet["id"] as! UUID
-                            vc.cd.update(id: id, keyToUpdate: "index", newValue: Int32(vc.indexDisplay.text!)!, entity: .newHdWallets) { success in
+                            CoreDataService.update(id: id, keyToUpdate: "index", newValue: Int32(vc.indexDisplay.text!)!, entity: .newHdWallets) { success in
                                 if success {
                                     print("updated index")
                                 } else {

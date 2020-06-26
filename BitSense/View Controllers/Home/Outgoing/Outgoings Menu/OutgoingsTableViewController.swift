@@ -379,7 +379,6 @@ class OutgoingsTableViewController: UITableViewController, UITabBarControllerDel
             
             self.creatingView.addConnectingView(vc: self, description: "")
             self.amountToSend = self.amountInput.text!
-            let amount = Double(self.amountToSend)!
             self.amountInput.resignFirstResponder()
             
             UIView.animate(withDuration: 0.2, animations: {

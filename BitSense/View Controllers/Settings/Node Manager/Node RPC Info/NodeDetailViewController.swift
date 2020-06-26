@@ -77,36 +77,20 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             }
             
             if nodeLabel.text != "" && rpcPassword.text != "" && rpcUserField.text != "" && onionAddressField.text != "" {
-                var refresh = false
-                cd.retrieveEntity(entityName: .newNodes) { [unowned vc = self] in
-                    if vc.cd.entities.count == 0 {
-                        vc.newNode["isActive"] = true
-                        refresh = true
-                    } else {
-                        vc.newNode["isActive"] = false
-                    }
-                    vc.cd.saveEntity(dict: vc.newNode, entityName: .newNodes) { [unowned vc = self] in
-                        
-                        if !vc.cd.errorBool {
-                            
-                            let success = vc.cd.boolToReturn
-                            
+                CoreDataService.retrieveEntity(entityName: .newNodes) { [unowned vc = self] nodes in
+                    if nodes != nil {
+                        if nodes!.count == 0 {
+                            vc.newNode["isActive"] = true
+                        } else {
+                            vc.newNode["isActive"] = false
+                        }
+                        CoreDataService.saveEntity(dict: vc.newNode, entityName: .newNodes) { [unowned vc = self] success in
                             if success {
-                                if refresh {
-                                    NotificationCenter.default.post(name: .refreshNode, object: nil)
-                                }
                                 vc.nodeAddedSuccess()
                             } else {
-                                
                                 displayAlert(viewController: vc, isError: true, message: "Error saving tor node")
-                                
                             }
-                            
-                        } else {
-                            
-                            displayAlert(viewController: vc, isError: true, message: vc.cd.errorDescription)
                         }
-                        
                     }
                 }
                 
@@ -125,7 +109,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             let id = selectedNode["id"] as! UUID
             
             if nodeLabel.text != "" {
-                cd.update(id: id, keyToUpdate: "label", newValue: nodeLabel.text!, entity: .newNodes) { success in
+                CoreDataService.update(id: id, keyToUpdate: "label", newValue: nodeLabel.text!, entity: .newNodes) { success in
                     if !success {
                         displayAlert(viewController: self, isError: true, message: "error updating label")
                     }
@@ -134,7 +118,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             
             if rpcUserField.text != "" {
                 guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
-                cd.update(id: id, keyToUpdate: "rpcuser", newValue: enc, entity: .newNodes) { success in
+                CoreDataService.update(id: id, keyToUpdate: "rpcuser", newValue: enc, entity: .newNodes) { success in
                     if !success {
                         displayAlert(viewController: self, isError: true, message: "error updating rpc username")
                     }
@@ -143,7 +127,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             
             if rpcPassword.text != "" {
                 guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
-                cd.update(id: id, keyToUpdate: "rpcpassword", newValue: enc, entity: .newNodes) { success in
+                CoreDataService.update(id: id, keyToUpdate: "rpcpassword", newValue: enc, entity: .newNodes) { success in
                     if !success {
                         displayAlert(viewController: self, isError: true, message: "error updating rpc password")
                     }
@@ -153,7 +137,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             if onionAddressField.text != "" {
                 let decryptedAddress = (onionAddressField.text)!.dataUsingUTF8StringEncoding
                 guard let encryptedOnionAddress = encryptedValue(decryptedAddress) else { return }
-                cd.update(id: id, keyToUpdate: "onionAddress", newValue: encryptedOnionAddress, entity: .newNodes) { [unowned vc = self] success in
+                CoreDataService.update(id: id, keyToUpdate: "onionAddress", newValue: encryptedOnionAddress, entity: .newNodes) { [unowned vc = self] success in
                     if success {
                         vc.nodeAddedSuccess()
                     } else {
@@ -261,18 +245,21 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     private func nodeAddedSuccess() {
-        cd.retrieveEntity(entityName: .newNodes) { [unowned vc = self] in
-            if vc.cd.entities.count > 1 {
-                vc.deActivateNodes(nodes: vc.cd.entities) {
-                    DispatchQueue.main.async { [unowned vc = self] in
-                        let alert = UIAlertController(title: "Node saved successfully", message: "Your node has been saved and activated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection to your new node.", preferredStyle: .actionSheet)
-                        alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
-                            DispatchQueue.main.async { [unowned vc = self] in
-                                vc.navigationController?.popToRootViewController(animated: true)
-                            }
-                        }))
-                        alert.popoverPresentationController?.sourceView = vc.view
-                        vc.present(alert, animated: true) {}
+        CoreDataService.retrieveEntity(entityName: .newNodes) { [unowned vc = self] nodes in
+            if nodes != nil {
+                if nodes!.count > 1 {
+                    vc.deActivateNodes(nodes: nodes!) {
+                        DispatchQueue.main.async { [unowned vc = self] in
+                            let alert = UIAlertController(title: "Node saved successfully", message: "Your node has been saved and activated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection to your new node.", preferredStyle: .actionSheet)
+                            alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
+                                DispatchQueue.main.async { [unowned vc = self] in
+                                    NotificationCenter.default.post(name: .refreshNode, object: nil)
+                                    vc.navigationController?.popToRootViewController(animated: true)
+                                }
+                            }))
+                            alert.popoverPresentationController?.sourceView = vc.view
+                            vc.present(alert, animated: true) {}
+                        }
                     }
                 }
             }
@@ -284,17 +271,17 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             let str = NodeStruct(dictionary: node)
             let isActive = str.isActive
             if isActive {
-                cd.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
             }
             if i + 1 == nodes.count {
                 if createNew {
                     let id = newNode["id"] as! UUID
-                    cd.update(id: id, keyToUpdate: "isActive", newValue: true, entity: .newNodes) { success in
+                    CoreDataService.update(id: id, keyToUpdate: "isActive", newValue: true, entity: .newNodes) { success in
                         completion()
                     }
                 } else {
                     let id = selectedNode["id"] as! UUID
-                    cd.update(id: id, keyToUpdate: "isActive", newValue: true, entity: .newNodes) { success in
+                    CoreDataService.update(id: id, keyToUpdate: "isActive", newValue: true, entity: .newNodes) { success in
                         completion()
                     }
                 }

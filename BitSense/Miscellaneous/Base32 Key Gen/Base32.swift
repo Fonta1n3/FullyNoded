@@ -24,13 +24,13 @@ public func base32HexEncode(_ data: Data) -> String {
 
 public func base32DecodeToData(_ string: String) -> Data? {
     return base32decode(string, alphabetDecodeTable).flatMap {
-        Data(bytes: UnsafePointer<UInt8>($0), count: $0.count)
+        Data(bytes: [UInt8](string.utf8), count: $0.count)
     }
 }
 
 public func base32HexDecodeToData(_ string: String) -> Data? {
     return base32decode(string, extendedHexAlphabetDecodeTable).flatMap {
-        Data(bytes: UnsafePointer<UInt8>($0), count: $0.count)
+        Data(bytes: [UInt8](string.utf8), count: $0.count)
     }
 }
 
@@ -304,8 +304,13 @@ private func base32decode(_ string: String, _ table: [UInt8]) -> [UInt8]? {
         (data: UnsafeBufferPointer<CChar>) -> [UInt8] in
         var encoded = data.baseAddress!
         
-        let result = Array<UInt8>(repeating: 0, count: dataSize)
-        var decoded = UnsafeMutablePointer<UInt8>(mutating: result)
+        var result = Array<UInt8>(repeating: 0, count: dataSize)
+        var decoded:UnsafeMutablePointer<UInt8>!
+        result.withUnsafeMutableBufferPointer { (rawMutableBufferPointer) in
+            if let address = rawMutableBufferPointer.baseAddress {
+                decoded = address
+            }
+        }
         
         // decode regular blocks
         var value0, value1, value2, value3, value4, value5, value6, value7: UInt8

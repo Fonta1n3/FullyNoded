@@ -133,37 +133,18 @@ class QuickConnect {
         node["rpcpassword"] = torNodeRPCPass
         node["isActive"] = true
         
-        self.cd.saveEntity(dict: node, entityName: .newNodes) { [unowned vc = self] in
-            
-            if !vc.cd.errorBool {
-                
-                let success = vc.cd.boolToReturn
-                
-                if success {
-                    
-                    let ud = UserDefaults.standard
-                    ud.removeObject(forKey: "walletName")
-                    vc.errorBool = false
-                    completion()
-                    
-                } else {
-                    
-                    vc.errorBool = true
-                    vc.errorDescription = "Error adding QuickConnect node"
-                    completion()
-                    
-                }
-                
-            } else {
-                
-                vc.errorBool = true
-                vc.errorDescription = vc.cd.errorDescription
+        CoreDataService.saveEntity(dict: node, entityName: .newNodes) { [unowned vc = self] success in
+            if success {
+                let ud = UserDefaults.standard
+                ud.removeObject(forKey: "walletName")
+                vc.errorBool = false
                 completion()
-                
+            } else {
+                vc.errorBool = true
+                vc.errorDescription = "Error adding QuickConnect node"
+                completion()
             }
-            
         }
-        
     }
     
 }

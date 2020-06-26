@@ -51,7 +51,7 @@ class ActiveWalletsViewController: UIViewController, UITableViewDelegate, UITabl
                     if vc.activeWallets.count == 0 {
                         UserDefaults.standard.removeObject(forKey: "walletName")
                         NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-                        showAlert(vc: vc, title: "Success", message: "All wallets unloaded, you may now work with the default wallet, we are now refreshing the home screen.")
+                        vc.unloadedSuccess()
                     }
                     vc.table.reloadData()
                     vc.connectingView.removeConnectingView()
@@ -60,6 +60,19 @@ class ActiveWalletsViewController: UIViewController, UITableViewDelegate, UITabl
                 vc.connectingView.removeConnectingView()
                 showAlert(vc: vc, title: "Error", message: "There was an error unloading your wallet: \(errorMessage!)")
             }
+        }
+    }
+    
+    private func unloadedSuccess() {
+        DispatchQueue.main.async { [unowned vc = self] in
+            let alert = UIAlertController(title: "All wallets unloaded!", message: "You may now work with the default wallet, we are now refreshing the wallet screen. Tap Done to go back.", preferredStyle: .actionSheet)
+            alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.navigationController?.popToRootViewController(animated: true)
+                }
+            }))
+            alert.popoverPresentationController?.sourceView = vc.view
+            vc.present(alert, animated: true) {}
         }
     }
 }

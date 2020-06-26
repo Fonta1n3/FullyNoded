@@ -12,7 +12,6 @@ class MakeRPCCall {
     
     static let sharedInstance = MakeRPCCall()
     
-    let cd = CoreDataService()
     var rpcusername = ""
     var rpcpassword = ""
     var onionAddress = ""
@@ -28,13 +27,12 @@ class MakeRPCCall {
     func executeRPCCommand(method: BTC_CLI_COMMAND, param: Any, completion: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
         attempts += 1
         
-        cd.retrieveEntity(entityName: .newNodes) { [unowned vc = self] in
+        CoreDataService.retrieveEntity(entityName: .newNodes) { [unowned vc = self] nodes in
             
-            if !vc.cd.errorBool {
-                let nodes = vc.cd.entities
+            if nodes != nil {
                 var activeNode = [String:Any]()
                 
-                for node in nodes {
+                for node in nodes! {
                     if let isActive = node["isActive"] as? Bool {
                         if isActive {
                             activeNode = node

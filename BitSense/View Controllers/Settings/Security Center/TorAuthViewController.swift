@@ -25,14 +25,15 @@ class TorAuthViewController: UIViewController, UITextFieldDelegate {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         view.addGestureRecognizer(tapGesture)
-        let cd = CoreDataService()
-        cd.retrieveEntity(entityName: .authKeys) { [unowned vc = self] in
-            if cd.entities.count > 0 {
-                vc.text = "Refresh"
-                DispatchQueue.main.async { [unowned vc = self] in
-                    let authkeys = AuthKeysStruct.init(dictionary: cd.entities[0])
-                    vc.publickKeyLabel.text = authkeys.publicKey
-                    vc.textField.text = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        CoreDataService.retrieveEntity(entityName: .authKeys) { [unowned vc = self] authKeys in
+            if authKeys != nil {
+                if authKeys!.count > 0 {
+                    vc.text = "Refresh"
+                    DispatchQueue.main.async { [unowned vc = self] in
+                        let authkeys = AuthKeysStruct.init(dictionary: authKeys![0])
+                        vc.publickKeyLabel.text = authkeys.publicKey
+                        vc.textField.text = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                    }
                 }
             }
         }
@@ -63,30 +64,32 @@ class TorAuthViewController: UIViewController, UITextFieldDelegate {
         let data = (textField.text)!.dataUsingUTF8StringEncoding
         Crypto.encryptData(dataToEncrypt: data) { encryptedKey in
             if encryptedKey != nil {
-                let cd = CoreDataService()
-                cd.retrieveEntity(entityName: .authKeys) {
-                    if cd.entities.count > 0 {
-                        let authKeysStr = AuthKeysStruct.init(dictionary: cd.entities[0])
-                        cd.update(id: authKeysStr.id, keyToUpdate: "privateKey", newValue: encryptedKey!, entity: .authKeys) { [unowned vc = self] success in
-                            if success {
-                                cd.update(id: authKeysStr.id, keyToUpdate: "publicKey", newValue: "user supplied keys", entity: .authKeys) { [unowned vc = self] success in
-                                    if success {
-                                        displayAlert(viewController: vc, isError: false, message: "Updated auth keys")
-                                    } else {
-                                        showAlert(vc: vc, title: "Error", message: "Error saving user added public key")
+                CoreDataService.retrieveEntity(entityName: .authKeys) { authKeys in
+                    if authKeys != nil {
+                        if authKeys!.count > 0 {
+                            let authKeysStr = AuthKeysStruct.init(dictionary: authKeys![0])
+                            CoreDataService.update(id: authKeysStr.id, keyToUpdate: "privateKey", newValue: encryptedKey!, entity: .authKeys) { [unowned vc = self] success in
+                                if success {
+                                    CoreDataService.update(id: authKeysStr.id, keyToUpdate: "publicKey", newValue: "user supplied keys", entity: .authKeys) { [unowned vc = self] success in
+                                        if success {
+                                            displayAlert(viewController: vc, isError: false, message: "Updated auth keys")
+                                        } else {
+                                            showAlert(vc: vc, title: "Error", message: "Error saving user added public key")
+                                        }
                                     }
+                                } else {
+                                    showAlert(vc: vc, title: "Error", message: "Error saving user added private key")
                                 }
-                            } else {
-                                showAlert(vc: vc, title: "Error", message: "Error saving user added private key")
+                            }
+                        } else {
+                            let dict = ["privateKey":encryptedKey!, "publicKey":"user added public key", "id":UUID()] as [String : Any]
+                            CoreDataService.saveEntity(dict: dict, entityName: .authKeys) { [unowned vc = self] success in
+                                if success {
+                                    displayAlert(viewController: vc, isError: false, message: "Auth keys added")
+                                }
                             }
                         }
-                    } else {
-                        let dict = ["privateKey":encryptedKey!, "publicKey":"user added public key", "id":UUID()] as [String : Any]
-                        cd.saveEntity(dict: dict, entityName: .authKeys) { [unowned vc = self] in
-                            if !cd.errorBool {
-                                displayAlert(viewController: vc, isError: false, message: "Auth keys added")
-                            }
-                        }
+                        
                     }
                 }
             }
@@ -107,27 +110,28 @@ class TorAuthViewController: UIViewController, UITextFieldDelegate {
                 }
                 
                 let dict = ["privateKey":encryptedPrivKey, "publicKey":pubKey, "id":UUID()] as [String : Any]
-                let cd = CoreDataService()
-                cd.retrieveEntity(entityName: .authKeys) {
-                    if cd.entities.count > 0 {
-                        let authKeysStruct = AuthKeysStruct.init(dictionary: cd.entities[0])
-                        cd.update(id: authKeysStruct.id, keyToUpdate: "privateKey", newValue: encryptedPrivKey, entity: .authKeys) { success in
-                            if success {
-                                cd.update(id: authKeysStruct.id, keyToUpdate: "publicKey", newValue: pubKey, entity: .authKeys) { [unowned vc = self] success in
-                                    if success {
-                                        displayAlert(viewController: vc, isError: false, message: "auth keys updated!")
-                                    } else {
-                                        showAlert(vc: vc, title: "Error", message: "Error saving your public key")
+                CoreDataService.retrieveEntity(entityName: .authKeys) { authKeys in
+                    if authKeys != nil {
+                        if authKeys!.count > 0 {
+                            let authKeysStruct = AuthKeysStruct.init(dictionary: authKeys![0])
+                            CoreDataService.update(id: authKeysStruct.id, keyToUpdate: "privateKey", newValue: encryptedPrivKey, entity: .authKeys) { success in
+                                if success {
+                                    CoreDataService.update(id: authKeysStruct.id, keyToUpdate: "publicKey", newValue: pubKey, entity: .authKeys) { [unowned vc = self] success in
+                                        if success {
+                                            displayAlert(viewController: vc, isError: false, message: "auth keys updated!")
+                                        } else {
+                                            showAlert(vc: vc, title: "Error", message: "Error saving your public key")
+                                        }
                                     }
+                                } else {
+                                    showAlert(vc: vc, title: "Error", message: "Error saving your encrypted private key")
                                 }
-                            } else {
-                                showAlert(vc: vc, title: "Error", message: "Error saving your encrypted private key")
                             }
-                        }
-                    } else {
-                        cd.saveEntity(dict: dict, entityName: .authKeys) {
-                            if !cd.errorBool {
-                                displayAlert(viewController: vc, isError: false, message: "Auth keys saved!")
+                        } else {
+                            CoreDataService.saveEntity(dict: dict, entityName: .authKeys) { success in
+                                if success {
+                                    displayAlert(viewController: vc, isError: false, message: "Auth keys saved!")
+                                }
                             }
                         }
                     }
