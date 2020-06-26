@@ -302,39 +302,10 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         return "\(first)...\(last)"
     }
     
-    private func deActivateNodes(nodes: [[String:Any]], completion: @escaping () -> Void) {
-        if nodes.count > 0 {
-            for node in nodes {
-                let str = NodeStruct(dictionary: node)
-                let isActive = str.isActive
-                if isActive {
-                    cd.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { [unowned vc = self] success in
-                        if !success {
-                            displayAlert(viewController: vc, isError: true, message: vc.cd.errorDescription)
-                        }
-                    }
-                }
-            }
-            completion()
-        } else {
-            completion()
-        }
-    }
-    
     @IBAction func addNode(_ sender: Any) {
-        
-        // Deactivate nodes here when adding a node to simplify QR scanning issues
-        
-        deActivateNodes(nodes: nodeArray) {
-            
-            DispatchQueue.main.async {
-                
-                self.performSegue(withIdentifier: "addNewNode", sender: self)
-                
-            }
-            
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "addNewNode", sender: vc)
         }
-        
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

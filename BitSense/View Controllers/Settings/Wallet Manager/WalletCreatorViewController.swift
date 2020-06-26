@@ -8,7 +8,7 @@
 
 import UIKit
 
-class WalletCreatorViewController: UIViewController, UITextFieldDelegate {
+class WalletCreatorViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
     
     let connectingView = ConnectingView()
 
@@ -16,6 +16,22 @@ class WalletCreatorViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet var hotSwitchOutlet: UISwitch!
     @IBOutlet var coldSwitchOutlet: UISwitch!
     @IBOutlet var blankSwitchOutlet: UISwitch!
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        navigationController?.delegate = self
+        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        view.addGestureRecognizer(tap)
+        textField.delegate = self
+        textField.returnKeyType = .go
+        coldSwitchOutlet.isOn = true
+        hotSwitchOutlet.isOn = false
+        blankSwitchOutlet.isOn = false
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        textField.becomeFirstResponder()
+    }
     
     @IBAction func blankSwitchAction(_ sender: Any) {
         
@@ -94,27 +110,6 @@ class WalletCreatorViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self,
-                                                                 action: #selector(dismissKeyboard))
-        
-        view.addGestureRecognizer(tap)
-        textField.delegate = self
-        textField.returnKeyType = .go
-        coldSwitchOutlet.isOn = true
-        hotSwitchOutlet.isOn = false
-        blankSwitchOutlet.isOn = false
-        
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        
-        textField.becomeFirstResponder()
-        
-    }
-    
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         
         textField.resignFirstResponder()
@@ -143,36 +138,27 @@ class WalletCreatorViewController: UIViewController, UITextFieldDelegate {
     
     func handleWalletCreation(response: NSDictionary) {
         let name = response["name"] as! String
-        let warning = response["warning"] as! String
         let ud = UserDefaults.standard
         ud.set(name, forKey: "walletName")
-        
-        if warning == "" {
-            
-            self.connectingView.removeConnectingView()
-            
-            displayAlert(viewController: self,
-                         isError: false,
-                         message: "Succesfully created \"\(name)\", we are now refreshing your home screen.")
-            
-        } else {
-            
-            self.connectingView.removeConnectingView()
-            
-            displayAlert(viewController: self,
-                         isError: true,
-                         message: "\"\(name)\" created with warning: \(warning)")
-            
+        DispatchQueue.main.async { [unowned vc = self] in
+            NotificationCenter.default.post(name: .refreshWallet, object: nil)
+            vc.textField.text = ""
+            vc.walletCreatedSuccess()
         }
-        
-        NotificationCenter.default.post(name: .refreshWallet, object: nil)
-        
-        DispatchQueue.main.async {
-            
-            self.textField.text = ""
-            
+    }
+    
+    private func walletCreatedSuccess() {
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.connectingView.removeConnectingView()
+            let alert = UIAlertController(title: "Wallet created successfully", message: "Your wallet is automatically activated, the Wallet tab is now refreshing, tap Done to go back", preferredStyle: .actionSheet)
+            alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.navigationController?.popToRootViewController(animated: true)
+                }
+            }))
+            alert.popoverPresentationController?.sourceView = vc.view
+            vc.present(alert, animated: true) {}
         }
-        
     }
 
 }

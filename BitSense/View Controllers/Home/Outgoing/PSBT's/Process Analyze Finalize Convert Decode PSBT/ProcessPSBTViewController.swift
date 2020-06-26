@@ -306,9 +306,6 @@ class ProcessPSBTViewController: UIViewController {
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
         Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
             if errorMessage == nil {
-                vc.creatingView.removeConnectingView()
-                showAlert(vc: vc, title: "Error", message: errorMessage!)
-            } else {
                 switch method {
                 case .sendrawtransaction:
                     vc.parseSendRawTx(response: response)
@@ -334,6 +331,9 @@ class ProcessPSBTViewController: UIViewController {
                 default:
                     break
                 }
+            } else {
+                vc.creatingView.removeConnectingView()
+                showAlert(vc: vc, title: "Error", message: errorMessage!)
             }
         }
     }

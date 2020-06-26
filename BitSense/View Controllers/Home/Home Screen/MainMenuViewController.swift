@@ -520,9 +520,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func loadTableData() {
-        let nodeLogic = NodeLogic()
         displayAlert(viewController: self, isError: false, message: "bitcoin-cli getblockchaininfo")
-        nodeLogic.loadSectionOne { [unowned vc = self] (response, errorMessage) in
+        NodeLogic.loadSectionOne { [unowned vc = self] (response, errorMessage) in
             if errorMessage != nil {
                 vc.removeLoader()
                 displayAlert(viewController: self, isError: true, message: errorMessage!)

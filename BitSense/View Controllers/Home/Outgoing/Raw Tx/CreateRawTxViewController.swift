@@ -396,7 +396,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         DispatchQueue.main.async { [unowned vc = self] in
             vc.playButtonOutlet.tintColor = UIColor.lightGray.withAlphaComponent(0)
             vc.addOutputOutlet.tintColor = UIColor.lightGray.withAlphaComponent(0)
-            vc.psbtOutlet.tintColor = UIColor.lightGray.withAlphaComponent(0)
+            vc.psbtOutlet.alpha = 0
             vc.rawDisplayer.rawString = raw
             if vc.coldSwitchOutlet.isOn {
                 vc.navigationController?.navigationBar.topItem?.title = "Unsigned Tx"
@@ -781,16 +781,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 Broadcaster.sharedInstance.send(rawTx: self.rawTxSigned) { [unowned vc = self] (txid) in
 
                     if txid != nil {
-
                         self.creatingView.removeConnectingView()
-                        displayAlert(viewController: self, isError: false, message: "Sent! TxID has been copied to clipboard")
-
-                        DispatchQueue.main.async {
-
-                            let pasteboard = UIPasteboard.general
-                            pasteboard.string = txid!
-
-                        }
+                        displayAlert(viewController: self, isError: false, message: "Transaction Sent ✓")
 
                     } else {
 

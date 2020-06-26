@@ -10,30 +10,30 @@ import Foundation
 
 class NodeLogic {
     
-    let dateFormatter = DateFormatter()
-    var dictToReturn = [String:Any]()
-    var arrayToReturn = [[String:Any]]()
-    var walletDisabled = Bool()
+    static let dateFormatter = DateFormatter()
+    static var dictToReturn = [String:Any]()
+    static var arrayToReturn = [[String:Any]]()
+    static var walletDisabled = Bool()
     
-    func loadWalletSection(completion: @escaping ((wallets: NSArray?, errorMessage: String?)) -> Void) {
-        Reducer.makeCommand(command: .listwallets, param: "") { [unowned vc = self] (response, errorMessage) in
+    class func loadWalletSection(completion: @escaping ((wallets: NSArray?, errorMessage: String?)) -> Void) {
+        Reducer.makeCommand(command: .listwallets, param: "") { (response, errorMessage) in
             if let wallets = response as? NSArray {
                 completion((wallets, nil))
             } else {
                 if errorMessage != nil {
                     if errorMessage!.contains("Method not found") {
-                        vc.walletDisabled = true
+                        walletDisabled = true
                         completion((nil, "walletDisabled"))
                     }
                 } else {
-                    vc.walletDisabled = false
+                    walletDisabled = false
                     completion((nil, "error getting wallets"))
                 }
             }
         }
     }
     
-    func loadSectionZero(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+    class func loadSectionZero(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         if !walletDisabled {
             getBalance(completion: completion)
         } else {
@@ -44,121 +44,121 @@ class NodeLogic {
         }
     }
     
-    private func getUnconfirmedBalance(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        Reducer.makeCommand(command: .getunconfirmedbalance, param: "") { [unowned vc = self] (response, errorMessage) in
+    class func getUnconfirmedBalance(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        Reducer.makeCommand(command: .getunconfirmedbalance, param: "") { (response, errorMessage) in
             if let unconfirmedBalance = response as? Double {
-                vc.parseUncomfirmedBalance(unconfirmedBalance: unconfirmedBalance)
-                vc.listUnspent(completion: completion)
+                parseUncomfirmedBalance(unconfirmedBalance: unconfirmedBalance)
+                listUnspent(completion: completion)
             } else {
                 completion((nil, errorMessage ?? ""))
             }
         }
     }
     
-    private func getBalance(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        Reducer.makeCommand(command: .getbalance, param: "\"*\", 0, false") { [unowned vc = self] (response, errorMessage) in
+    class func getBalance(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        Reducer.makeCommand(command: .getbalance, param: "\"*\", 0, false") { (response, errorMessage) in
             if let balanceCheck = response as? Double {
-                vc.parseBalance(balance: balanceCheck)
-                vc.getUnconfirmedBalance(completion: completion)
+                parseBalance(balance: balanceCheck)
+                getUnconfirmedBalance(completion: completion)
             } else if errorMessage != nil {
                 if errorMessage!.contains("Method not found") {
-                    vc.walletDisabled = true
+                    walletDisabled = true
                     completion((nil, "wallet disabled"))
                 }
             }
         }
     }
     
-    private func listUnspent(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        Reducer.makeCommand(command: .listunspent, param: "0") { [unowned vc = self] (response, errorMessage) in
+    class func listUnspent(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        Reducer.makeCommand(command: .listunspent, param: "0") { (response, errorMessage) in
             if let utxos = response as? NSArray {
-                vc.parseUtxos(utxos: utxos)
-                completion((vc.dictToReturn, nil))
+                parseUtxos(utxos: utxos)
+                completion((dictToReturn, nil))
             } else {
                 completion((nil, errorMessage ?? ""))
             }
         }
     }
     
-    func loadSectionOne(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        Reducer.makeCommand(command: .getblockchaininfo, param: "") { [unowned vc = self] (response, errorMessage) in
+    class func loadSectionOne(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        Reducer.makeCommand(command: .getblockchaininfo, param: "") { (response, errorMessage) in
             if let blockchainInfo = response as? NSDictionary {
-                vc.parseBlockchainInfo(blockchainInfo: blockchainInfo)
-                vc.getPeerInfo(completion: completion)
+                parseBlockchainInfo(blockchainInfo: blockchainInfo)
+                getPeerInfo(completion: completion)
             } else {
                 completion((nil, errorMessage ?? ""))
             }
         }
     }
     
-    private func getPeerInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        Reducer.makeCommand(command: .getpeerinfo, param: "") { [unowned vc = self] (response, errorMessage) in
+    class func getPeerInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        Reducer.makeCommand(command: .getpeerinfo, param: "") { (response, errorMessage) in
             if let peerInfo = response as? NSArray {
-                vc.parsePeerInfo(peerInfo: peerInfo)
-                vc.getNetworkInfo(completion: completion)
+                parsePeerInfo(peerInfo: peerInfo)
+                getNetworkInfo(completion: completion)
             } else {
                  completion((nil, errorMessage ?? ""))
             }
         }
     }
     
-    private func getNetworkInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        Reducer.makeCommand(command: .getnetworkinfo, param: "") { [unowned vc = self] (response, errorMessage) in
+    class func getNetworkInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        Reducer.makeCommand(command: .getnetworkinfo, param: "") { (response, errorMessage) in
             if let networkInfo = response as? NSDictionary {
-                vc.parseNetworkInfo(networkInfo: networkInfo)
-                vc.getMiningInfo(completion: completion)
+                parseNetworkInfo(networkInfo: networkInfo)
+                getMiningInfo(completion: completion)
             } else {
                 completion((nil, errorMessage ?? ""))
             }
         }
     }
     
-    private func getMiningInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        Reducer.makeCommand(command: .getmininginfo, param: "") { [unowned vc = self] (response, errorMessage) in
+    class func getMiningInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        Reducer.makeCommand(command: .getmininginfo, param: "") { (response, errorMessage) in
             if let miningInfo = response as? NSDictionary {
-                vc.parseMiningInfo(miningInfo: miningInfo)
-                vc.getUptime(completion: completion)
+                parseMiningInfo(miningInfo: miningInfo)
+                getUptime(completion: completion)
             } else {
                 completion((nil, errorMessage ?? ""))
             }
         }
     }
     
-    private func getUptime(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        Reducer.makeCommand(command: .uptime, param: "") { [unowned vc = self] (response, errorMessage) in
+    class func getUptime(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        Reducer.makeCommand(command: .uptime, param: "") { (response, errorMessage) in
             if let uptime = response as? Double {
-                vc.dictToReturn["uptime"] = Int(uptime)
-                 vc.getMempoolInfo(completion: completion)
+                dictToReturn["uptime"] = Int(uptime)
+                getMempoolInfo(completion: completion)
             } else {
                 completion((nil, errorMessage ?? ""))
             }
         }
     }
     
-    private func getMempoolInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        Reducer.makeCommand(command: .getmempoolinfo, param: "") { [unowned vc = self] (response, errorMessage) in
+    class func getMempoolInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        Reducer.makeCommand(command: .getmempoolinfo, param: "") { (response, errorMessage) in
             if let dict = response as? NSDictionary {
-                vc.dictToReturn["mempoolCount"] = dict["size"] as! Int
+                dictToReturn["mempoolCount"] = dict["size"] as! Int
                 let feeRate = UserDefaults.standard.integer(forKey: "feeTarget")
-                vc.estimateSmartFee(feeRate: feeRate, completion: completion)
+                estimateSmartFee(feeRate: feeRate, completion: completion)
             } else {
                 completion((nil, errorMessage ?? ""))
             }
         }
     }
     
-    private func estimateSmartFee(feeRate: Int, completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        Reducer.makeCommand(command: .estimatesmartfee, param: "\(feeRate)") { [unowned vc = self] (response, errorMessage) in
+    class func estimateSmartFee(feeRate: Int, completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        Reducer.makeCommand(command: .estimatesmartfee, param: "\(feeRate)") { (response, errorMessage) in
             if let result = response as? NSDictionary {
                 if let feeRate = result["feerate"] as? Double {
                     let btcperbyte = feeRate / 1000
                     let satsperbyte = (btcperbyte * 100000000).avoidNotation
-                    vc.dictToReturn["feeRate"] = "\(satsperbyte) sats/byte"
-                    completion((vc.dictToReturn, nil))
+                    dictToReturn["feeRate"] = "\(satsperbyte) sats/byte"
+                    completion((dictToReturn, nil))
                 } else {
                     if let errors = result["errors"] as? NSArray {
-                        vc.dictToReturn["feeRate"] = "\(errors[0] as! String)"
-                        completion((vc.dictToReturn, nil))
+                        dictToReturn["feeRate"] = "\(errors[0] as! String)"
+                        completion((dictToReturn, nil))
                     }
                 }
             } else {
@@ -167,12 +167,12 @@ class NodeLogic {
         }
     }
     
-    func loadSectionTwo(completion: @escaping ((response: [[String:Any]]?, errorMessage: String?)) -> Void) {
+    class func loadSectionTwo(completion: @escaping ((response: [[String:Any]]?, errorMessage: String?)) -> Void) {
         if !walletDisabled {
-            Reducer.makeCommand(command: .listtransactions, param: "\"*\", 50, 0, true") { [unowned vc = self] (response, errorMessage) in
+            Reducer.makeCommand(command: .listtransactions, param: "\"*\", 50, 0, true") { (response, errorMessage) in
                 if let transactions = response as? NSArray {
-                    vc.parseTransactions(transactions: transactions)
-                    completion((vc.arrayToReturn, nil))
+                    parseTransactions(transactions: transactions)
+                    completion((arrayToReturn, nil))
                 }
             }
         } else {
@@ -183,7 +183,7 @@ class NodeLogic {
     
     // MARK: Section 0 parsers
     
-    func parseBalance(balance: Double) {
+    class func parseBalance(balance: Double) {
         
         if balance == 0.0 {
             
@@ -197,7 +197,7 @@ class NodeLogic {
         
     }
     
-    func parseUncomfirmedBalance(unconfirmedBalance: Double) {
+    class func parseUncomfirmedBalance(unconfirmedBalance: Double) {
         
         if unconfirmedBalance != 0.0 || unconfirmedBalance != 0 {
             
@@ -211,7 +211,7 @@ class NodeLogic {
         
     }
     
-    func parseUtxos(utxos: NSArray) {
+    class func parseUtxos(utxos: NSArray) {
         
         var amount = 0.0
         
@@ -243,7 +243,7 @@ class NodeLogic {
     
     // MARK: Section 1 parsers
     
-    func parseMiningInfo(miningInfo: NSDictionary) {
+    class func parseMiningInfo(miningInfo: NSDictionary) {
         
         let hashesPerSecond = miningInfo["networkhashps"] as! Double
         let exahashesPerSecond = hashesPerSecond / 1000000000000000000
@@ -251,7 +251,7 @@ class NodeLogic {
         
     }
     
-    func parseBlockchainInfo(blockchainInfo: NSDictionary) {
+    class func parseBlockchainInfo(blockchainInfo: NSDictionary) {
         
         if let currentblockheight = blockchainInfo["blocks"] as? Int {
             
@@ -295,7 +295,7 @@ class NodeLogic {
         
     }
     
-    func parsePeerInfo(peerInfo: NSArray) {
+    class func parsePeerInfo(peerInfo: NSArray) {
         
         var incomingCount = 0
         var outgoingCount = 0
@@ -322,7 +322,7 @@ class NodeLogic {
         
     }
     
-    func parseNetworkInfo(networkInfo: NSDictionary) {
+    class func parseNetworkInfo(networkInfo: NSDictionary) {
         
         let subversion = (networkInfo["subversion"] as! String).replacingOccurrences(of: "/", with: "")
         dictToReturn["subversion"] = subversion.replacingOccurrences(of: "Satoshi:", with: "")
@@ -345,7 +345,7 @@ class NodeLogic {
         
     }
     
-    func parseTransactions(transactions: NSArray) {
+    class func parseTransactions(transactions: NSArray) {
         
         var transactionArray = [Any]()
         
