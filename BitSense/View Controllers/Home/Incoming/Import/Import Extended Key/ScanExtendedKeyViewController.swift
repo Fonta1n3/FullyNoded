@@ -265,38 +265,6 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
     
     func importXprv(xprv: String) {        
         var xprvDescriptor = ""
-        let reducer = Reducer()
-        
-        func getDescriptor() {
-            
-            let result = reducer.dictToReturn
-            
-            if reducer.errorBool {
-                
-                connectingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: reducer.errorDescription)
-                
-            } else {
-                
-                let checksum = result["checksum"] as? String ?? ""
-                xprvDescriptor += "#" + checksum
-                xprvDescriptor = xprvDescriptor.replacingOccurrences(of: "49'", with: "49'\"'\"'")
-                xprvDescriptor = xprvDescriptor.replacingOccurrences(of: "44'", with: "44'\"'\"'")
-                xprvDescriptor = xprvDescriptor.replacingOccurrences(of: "84'", with: "84'\"'\"'")
-                xprvDescriptor = xprvDescriptor.replacingOccurrences(of: "1'", with: "1'\"'\"'")
-                xprvDescriptor = xprvDescriptor.replacingOccurrences(of: "0'", with: "0'\"'\"'")
-                dict["descriptor"] = "\"\(xprvDescriptor)\""
-                                
-                self.executeNodeCommand(method: .deriveaddresses,
-                                        param: "\"\(xprvDescriptor)\", ''\(convertedRange)''")
-                
-            }
-            
-        }
-        
         var param = ""
         
         if fingerprint != "" {
@@ -374,46 +342,44 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
             }
             
         }
-        
-        
-        
-        reducer.makeCommand(command: .getdescriptorinfo,
-                            param: param,
-                            completion: getDescriptor)
-        
+        Reducer.makeCommand(command: .getdescriptorinfo, param: param) { [unowned vc = self] (response, errorMessage) in
+            if let result = response as? NSDictionary {
+                let checksum = result["checksum"] as? String ?? ""
+                xprvDescriptor += "#" + checksum
+                xprvDescriptor = xprvDescriptor.replacingOccurrences(of: "49'", with: "49'\"'\"'")
+                xprvDescriptor = xprvDescriptor.replacingOccurrences(of: "44'", with: "44'\"'\"'")
+                xprvDescriptor = xprvDescriptor.replacingOccurrences(of: "84'", with: "84'\"'\"'")
+                xprvDescriptor = xprvDescriptor.replacingOccurrences(of: "1'", with: "1'\"'\"'")
+                xprvDescriptor = xprvDescriptor.replacingOccurrences(of: "0'", with: "0'\"'\"'")
+                vc.dict["descriptor"] = "\"\(xprvDescriptor)\""
+                vc.deriveAddress(param: "\"\(xprvDescriptor)\", ''\(vc.convertedRange)''")
+            } else {
+                vc.connectingView.removeConnectingView()
+                displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
+            }
+        }
+    }
+    
+    func deriveAddress(param: String) {
+        Reducer.makeCommand(command: .deriveaddresses, param: param) { (response, errorMessage) in
+            if let addressesCheck = response as? NSArray {
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.keyArray = addressesCheck
+                    vc.qrScanner.removeFromSuperview()
+                    vc.connectingView.removeConnectingView()
+                    vc.performSegue(withIdentifier: "goDisplayKeys", sender: vc)
+                }
+            } else {
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.connectingView.removeConnectingView()
+                    displayAlert(viewController: vc, isError: true, message: errorMessage ?? "")
+                }
+            }
+        }
     }
     
     func importXpub(xpub: String) {
         print("importxpub")
-        
-        let reducer = Reducer()
-        
-        func getDescriptor() {
-            
-            let result = reducer.dictToReturn
-            
-            if reducer.errorBool {
-                
-                connectingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: reducer.errorDescription)
-                
-            } else {
-                
-                descriptor = "\"\(result["descriptor"] as! String)\""
-                descriptor = descriptor.replacingOccurrences(of: "4'", with: "4'\"'\"'")
-                descriptor = descriptor.replacingOccurrences(of: "1'", with: "1'\"'\"'")
-                descriptor = descriptor.replacingOccurrences(of: "0'", with: "0'\"'\"'")
-                dict["descriptor"] = descriptor
-                
-                self.executeNodeCommand(method: .deriveaddresses,
-                                        param: "\(descriptor), ''\(convertedRange)''")
-                
-            }
-            
-        }
         
         var param = ""
         
@@ -482,69 +448,23 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
                 
             }
             
-            
         }
         
-        reducer.makeCommand(command: .getdescriptorinfo,
-                            param: param,
-                            completion: getDescriptor)
-        
-    }
-    
-    func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
-        
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                
-                DispatchQueue.main.async {
-                    
-                    self.qrScanner.removeFromSuperview()
-                    
-                }
-                
-                switch method {
-                    
-                case .deriveaddresses:
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.keyArray = reducer.arrayToReturn
-                        self.connectingView.removeConnectingView()
-                        
-                        self.performSegue(withIdentifier: "goDisplayKeys",
-                                          sender: self)
-                        
-                    }
-                    
-                default:
-                    
-                    break
-                    
-                }
-                
+        Reducer.makeCommand(command: .getdescriptorinfo, param: param) { [unowned vc = self] (response, errorMessage) in
+            if let result = response as? NSDictionary {
+                vc.descriptor = "\"\(result["descriptor"] as! String)\""
+                vc.descriptor = vc.descriptor.replacingOccurrences(of: "84'", with: "84'\"'\"'")
+                vc.descriptor = vc.descriptor.replacingOccurrences(of: "44'", with: "44'\"'\"'")
+                vc.descriptor = vc.descriptor.replacingOccurrences(of: "49'", with: "49'\"'\"'")
+                vc.descriptor = vc.descriptor.replacingOccurrences(of: "1'", with: "1'\"'\"'")
+                vc.descriptor = vc.descriptor.replacingOccurrences(of: "0'", with: "0'\"'\"'")
+                vc.dict["descriptor"] = vc.descriptor
+                vc.deriveAddress(param: "\"\(vc.descriptor)\", ''\(vc.convertedRange)''")
             } else {
-                
-                DispatchQueue.main.async {
-                    
-                    self.connectingView.removeConnectingView()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: reducer.errorDescription)
-                    
-                }
-                
+                vc.connectingView.removeConnectingView()
+                displayAlert(viewController: vc, isError: true, message: errorMessage ?? "")
             }
-            
         }
-        
-        reducer.makeCommand(command: method,
-                            param: param,
-                            completion: getResult)
-        
     }
     
     func convertRange() -> [Int] {

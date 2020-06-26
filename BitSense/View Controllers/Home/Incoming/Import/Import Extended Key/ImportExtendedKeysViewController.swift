@@ -176,7 +176,6 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
     
     func importHDMusig() {
         
-        let cd = CoreDataService()
         guard let encDesc = encryptedValue(descriptor.dataUsingUTF8StringEncoding) else { return }
         
         let id = UUID()
@@ -187,60 +186,37 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
                     "range":range,
                     "id":id] as [String : Any]
         
-        cd.saveEntity(dict: dict, entityName: .newHdWallets) { [unowned vc = self] in
+        CoreDataService.saveEntity(dict: dict, entityName: .newHdWallets) { [unowned vc = self] success in
             
-            if !cd.errorBool {
+            if success {
                 
-                let success = cd.boolToReturn
+                let descDict = ["descriptor":encDesc,
+                                "label":vc.label,
+                                "range":vc.range,
+                                "id":id] as [String : Any]
                 
-                if success {
+                CoreDataService.saveEntity(dict: descDict, entityName: .newDescriptors) { success in
                     
-                    let descDict = ["descriptor":encDesc,
-                                    "label":vc.label,
-                                    "range":vc.range,
-                                    "id":id] as [String : Any]
-                    
-                    cd.saveEntity(dict: descDict, entityName: .newDescriptors) {
+                    if success {
+                        self.connectingView.addConnectingView(vc: self,
+                                                              description: "importing 2,000 BIP32 HD multisig addresses and scripts (index \(self.range)), this can take a little while, sit back and relax")
                         
-                        if !cd.errorBool {
-                            
-                            let success = cd.boolToReturn
-                            
-                            if success {
-                                
-                                print("wallet saved")
-                                
-                                self.connectingView.addConnectingView(vc: self,
-                                                                      description: "importing 2,000 BIP32 HD multisig addresses and scripts (index \(self.range)), this can take a little while, sit back and relax")
-                                
-                                let params = "[{ \"desc\": \(self.descriptor), \"timestamp\": \(self.timestamp), \"range\": \(self.convertedRange), \"watchonly\": true, \"label\": \"\(self.label)\" }], ''{\"rescan\": true}''"
-                                
-                                self.executeNodeCommand(method: .importmulti,
-                                                        param: params)
-                                
-                            } else {
-                                
-                                displayAlert(viewController: self, isError: true, message: "error saving descriptor: \(cd.errorDescription)")
-                                
-                            }
-                            
-                        } else {
-                            
-                            displayAlert(viewController: self, isError: true, message: "error saving descriptor: \(cd.errorDescription)")
-                            
-                        }
+                        let params = "[{ \"desc\": \(self.descriptor), \"timestamp\": \(self.timestamp), \"range\": \(self.convertedRange), \"watchonly\": true, \"label\": \"\(self.label)\" }], ''{\"rescan\": true}''"
+                        
+                        self.executeNodeCommand(method: .importmulti,
+                                                param: params)
+                        
+                    } else {
+                        
+                        displayAlert(viewController: self, isError: true, message: "error saving descriptor")
                         
                     }
                     
-                } else {
-                    
-                    displayAlert(viewController: self, isError: true, message: "error saving hd wallet: \(cd.errorDescription)")
                 }
                 
             } else {
                 
-                displayAlert(viewController: self, isError: true, message: cd.errorDescription)
-                
+                displayAlert(viewController: self, isError: true, message: "error saving hd wallet")
             }
             
         }
@@ -261,7 +237,7 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
             } else if bip84 {
                 
                 description = "importing 2,000 BIP84 keys from xpub (index \(range)), this can take a little while, sit back and relax"
-                
+                                
             } else if bip32 {
                 
                 description = "importing 2,000 BIP32 keys from xpub (index \(range)), this can take a little while, sit back and relax"
@@ -298,7 +274,6 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
             
         }
         
-        let cd = CoreDataService()
         guard let encDesc = encryptedValue(descriptor.dataUsingUTF8StringEncoding) else { return }
         
         let descDict = ["descriptor":encDesc,
@@ -306,36 +281,24 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
                         "range":range,
                         "id":UUID()] as [String : Any]
         
-        cd.saveEntity(dict: descDict, entityName: .newDescriptors) {
+        CoreDataService.saveEntity(dict: descDict, entityName: .newDescriptors) { success in
             
-            if !cd.errorBool {
+            if success {
                 
-                let success = cd.boolToReturn
+                print("descriptor saved")
                 
-                if success {
-                    
-                    print("descriptor saved")
-                    
-                    self.executeNodeCommand(method: .importmulti,
-                                            param: params)
-                    
-                } else {
-                    
-                    print("error saving descriptor")
-                    
-                    self.connectingView.removeConnectingView()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: "error saving your descriptor: \(cd.errorDescription)")
-                }
+                self.executeNodeCommand(method: .importmulti,
+                                        param: params)
                 
             } else {
                 
+                print("error saving descriptor")
+                
+                self.connectingView.removeConnectingView()
+                
                 displayAlert(viewController: self,
                              isError: true,
-                             message: "error saving your descriptor: \(cd.errorDescription)")
-                
+                             message: "error saving your descriptor")
             }
             
         }
@@ -343,97 +306,67 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
     }
     
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
-        
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                
-                switch method {
-                    
-                case .importmulti:
-                    
-                    let result = reducer.arrayToReturn
+        Reducer.makeCommand(command: .importmulti, param: param) { [unowned vc = self] (response, errorMessage) in
+            if errorMessage == nil {
+                if let result = response as? NSArray {
                     let success = (result[0] as! NSDictionary)["success"] as! Bool
-                    
                     if success {
-                        
-                        connectingView.removeConnectingView()
+                        vc.connectingView.removeConnectingView()
                         DispatchQueue.main.async { [unowned vc = self] in
                             vc.tapToImportOutlet.alpha = 0
-                            showAlert(vc: vc, title: "Success!", message: "2,000 keys imported successfully")
+                            vc.importSuccess()
                         }
-                        
                     } else {
-                        
                         let errorDict = (result[0] as! NSDictionary)["error"] as! NSDictionary
                         let error = errorDict["message"] as! String
-                        connectingView.removeConnectingView()
-                        
-                        displayAlert(viewController: self,
-                                     isError: true,
-                                     message: error)
-                        
+                        vc.connectingView.removeConnectingView()
+                        displayAlert(viewController: self, isError: true, message: error)
                     }
-                    
                     if let warnings = (result[0] as! NSDictionary)["warnings"] as? NSArray {
-                        
                         if warnings.count > 0 {
-                            
+                            var warn = ""
                             for warning in warnings {
-                                
-                                let warn = warning as! String
-                                
-                                DispatchQueue.main.async {
-                                    
-                                    let alert = UIAlertController(title: "Warning",
-                                                                  message: warn,
-                                                                  preferredStyle: UIAlertController.Style.alert)
-                                    
-                                    alert.addAction(UIAlertAction(title: "OK",
-                                                                  style: UIAlertAction.Style.default,
-                                                                  handler: nil))
-                                    
-                                    self.present(alert,
-                                                 animated: true,
-                                                 completion: nil)
-                                    
-                                }
-                                
+                                warn += "\(warning)"
                             }
-                            
+                            vc.importWithWarning(warning: warn)
                         }
-                        
                     }
-                    
-                default:
-                    
-                    break
-                    
                 }
-                
             } else {
-                
-                DispatchQueue.main.async {
-                    
-                    self.connectingView.removeConnectingView()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: reducer.errorDescription)
-                    
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.connectingView.removeConnectingView()
+                    displayAlert(viewController: vc, isError: true, message: errorMessage!)
                 }
-                
             }
-            
         }
-        
-        reducer.makeCommand(command: method,
-                            param: param,
-                            completion: getResult)
-        
     }
+    
+    private func importSuccess() {
+        DispatchQueue.main.async { [unowned vc = self] in
+            let alert = UIAlertController(title: "Keys imported successfully!", message: "If you selected a rescan date your node will now be rescanning, you will need to wait for the rescan to complete before your balances will show up. You can check the scan status in Tools > Get Wallet Info. Tap Done to go back.", preferredStyle: .actionSheet)
+            alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.navigationController?.popToRootViewController(animated: true)
+                }
+            }))
+            alert.popoverPresentationController?.sourceView = vc.view
+            vc.present(alert, animated: true) {}
+        }
+    }
+    
+    private func importWithWarning(warning: String) {
+        DispatchQueue.main.async { [unowned vc = self] in
+            let alert = UIAlertController(title: "Keys imported with a warning!", message: "Warning: \(warning)\n\nIf you selected a rescan date your node will now be rescanning, you will need to wait for the rescan to complete before your balances will show up. You can check the scan status in Tools > Get Wallet Info. Tap Done to go back.", preferredStyle: .actionSheet)
+            alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.navigationController?.popToRootViewController(animated: true)
+                }
+            }))
+            alert.popoverPresentationController?.sourceView = vc.view
+            vc.present(alert, animated: true) {}
+        }
+    }
+
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         

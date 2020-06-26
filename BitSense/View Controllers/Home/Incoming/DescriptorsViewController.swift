@@ -32,15 +32,9 @@ class DescriptorsViewController: UIViewController, UITableViewDelegate, UITableV
     }
     
     func convertToTableArray() {
-        
-        let cd = CoreDataService()
-        
-        cd.retrieveEntity(entityName: .newNodes) { [unowned vc = self] in
-            
-            if !cd.errorBool {
-                
+        CoreDataService.retrieveEntity(entityName: .newNodes) { [unowned vc = self] nodes in
+            if nodes != nil {
                 for descriptor in vc.descriptors {
-                    
                     DispatchQueue.main.async { [unowned vc = self] in
                         
                         let dict = descriptor
@@ -135,11 +129,10 @@ class DescriptorsViewController: UIViewController, UITableViewDelegate, UITableV
         
         if editingStyle == UITableViewCell.EditingStyle.delete {
             
-            let cd = CoreDataService()
             let dict = descriptors[indexPath.row]
             let descriptor = DescriptorStruct(dictionary: dict)
             
-            cd.deleteNode(id: descriptor.id!, entityName: .newDescriptors) { success in
+            CoreDataService.deleteEntity(id: descriptor.id!, entityName: .newDescriptors) { success in
                 
                 if success {
                     
@@ -155,7 +148,7 @@ class DescriptorsViewController: UIViewController, UITableViewDelegate, UITableV
                     
                     displayAlert(viewController: self,
                                  isError: true,
-                                 message: "We had an error trying to delete that descriptor: \(cd.errorDescription)")
+                                 message: "We had an error trying to delete that descriptor")
                     
                 }
                 

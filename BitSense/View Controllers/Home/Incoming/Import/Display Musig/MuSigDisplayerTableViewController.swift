@@ -51,7 +51,7 @@ class MuSigDisplayerTableViewController: UITableViewController {
         
         if isHD {
             
-            importMulti()
+            importMultisig()
             
         }
         
@@ -137,7 +137,7 @@ class MuSigDisplayerTableViewController: UITableViewController {
                 
                 if indexPath.row == 0 {
                     
-                    self.importMulti()
+                    self.importMultisig()
                     
                 }
                 
@@ -219,92 +219,14 @@ class MuSigDisplayerTableViewController: UITableViewController {
         
     }
     
-    func importMulti() {
-        
-        let reducer = Reducer()
-        
-        connectingView.addConnectingView(vc: self,
-                                         description: "Importing MultiSig")
-        
+    func importMultisig() {
+        connectingView.addConnectingView(vc: self, description: "Importing MultiSig")
         let timestamp = dict["rescanDate"] as! Int
         let label = dict["label"] as! String
-        
-        func importDescriptor() {
-            
-            let result = reducer.dictToReturn
-            
-            if reducer.errorBool {
-                
-                connectingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: reducer.errorDescription)
-                
-            } else {
-                
-                let descriptor = "\"\(result["descriptor"] as! String)\""
-                
-                let params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"watchonly\": true, \"label\": \"\(label)\" }]"
-                
-                let cd = CoreDataService()
-                Crypto.encryptData(dataToEncrypt: descriptor.dataUsingUTF8StringEncoding) { encDesc in
-                    
-                    if encDesc != nil {
-                        
-                        let descDict = ["descriptor":encDesc!,
-                                        "label":label,
-                                        "range":"no range",
-                                        "id":UUID()] as [String : Any]
-                        
-                        cd.saveEntity(dict: descDict, entityName: .newDescriptors) {
-                            
-                            if !cd.errorBool {
-                                
-                                let success = cd.boolToReturn
-                                
-                                if success {
-                                    
-                                    print("descriptor saved")
-                                    
-                                    self.executeNodeCommand(method: .importmulti,
-                                                            param: params)
-                                    
-                                } else {
-                                    
-                                    self.connectingView.removeConnectingView()
-                                    
-                                    displayAlert(viewController: self,
-                                                 isError: true,
-                                                 message: "error saving descriptor: \(cd.errorDescription)")
-                                }
-                                
-                            } else {
-                                
-                                self.connectingView.removeConnectingView()
-                                
-                                displayAlert(viewController: self,
-                                             isError: true,
-                                             message: "error saving descriptor: \(cd.errorDescription)")
-                                
-                            }
-                            
-                        }
-                        
-                    }
-                    
-                }
-                
-            }
-            
-        }
-        
         var descriptor = ""
         
         if isHD {
             
-            //descriptor = sh(multi(2,XPUB/*,XPUB/*))
-            //process pubkeys
             var pubkeys = (pubkeyArray.description).replacingOccurrences(of: "[", with: "")
             pubkeys = pubkeys.replacingOccurrences(of: ",", with: "/*,")
             pubkeys = pubkeys.replacingOccurrences(of: "]", with: "/*]")
@@ -358,96 +280,60 @@ class MuSigDisplayerTableViewController: UITableViewController {
         descriptor = descriptor.replacingOccurrences(of: " ", with: "")
         let param = "\"\(descriptor)\""
         
-        reducer.makeCommand(command: .getdescriptorinfo,
-                            param: param,
-                            completion: importDescriptor)
-        
-    }
-    
-    func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
-        
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                
-                switch method {
-                    
-                case .importmulti:
-                    
-                    self.connectingView.removeConnectingView()
-                    
-                    let result = reducer.arrayToReturn
-                    let success = (result[0] as! NSDictionary)["success"] as! Bool
-                    
-                    if success {
+        Reducer.makeCommand(command: .getdescriptorinfo, param: param) { [unowned vc = self] (response, errorMessage) in
+            if let dict = response as? NSDictionary {
+                let descriptor = "\"\(dict["descriptor"] as! String)\""
+                let params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"watchonly\": true, \"label\": \"\(label)\" }]"
+                Crypto.encryptData(dataToEncrypt: descriptor.dataUsingUTF8StringEncoding) { encDesc in
+                    if encDesc != nil {
+                        let descDict = ["descriptor":encDesc!,
+                                        "label":label,
+                                        "range":"no range",
+                                        "id":UUID()] as [String : Any]
                         
-                        connectingView.removeConnectingView()
-                        
-                        displayAlert(viewController: self,
-                                     isError: false,
-                                     message: "MultiSig imported!")
-                        
-                    } else {
-                        
-                        let error = ((result[0] as! NSDictionary)["error"] as! NSDictionary)["message"] as! String
-                        connectingView.removeConnectingView()
-                        
-                        displayAlert(viewController: self,
-                                     isError: true,
-                                     message: error)
-                        
-                    }
-                    
-                    if let warnings = (result[0] as! NSDictionary)["warnings"] as? NSArray {
-                        
-                        if warnings.count > 0 {
-                            
-                            for warning in warnings {
-                                
-                                let warn = warning as! String
-                                
-                                DispatchQueue.main.async {
-                                    
-                                    let alert = UIAlertController(title: "Warning", message: warn, preferredStyle: UIAlertController.Style.alert)
-                                    alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil))
-                                    self.present(alert, animated: true, completion: nil)
-                                    
-                                }
-                                
+                        CoreDataService.saveEntity(dict: descDict, entityName: .newDescriptors) { success in
+                            if success {
+                                vc.importMulti(param: params)
+                            } else {
+                                self.connectingView.removeConnectingView()
+                                displayAlert(viewController: self, isError: true, message: "error saving descriptor")
                             }
-                            
                         }
-                        
                     }
-                    
-                default:
-                    
-                    break
-                    
                 }
-                
             } else {
-                
-                DispatchQueue.main.async {
-                    
-                    self.connectingView.removeConnectingView()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: reducer.errorDescription)
-                    
-                }
-                
+                vc.connectingView.removeConnectingView()
+                displayAlert(viewController: vc, isError: true, message: errorMessage ?? "")
             }
-            
         }
-        
-        reducer.makeCommand(command: method,
-                            param: param,
-                            completion: getResult)
-        
     }
     
+    private func importMulti(param: String) {
+        Reducer.makeCommand(command: .importmulti, param: param) { [unowned vc = self] (response, errorMessage) in
+            if let result = response as? NSArray {
+                vc.connectingView.removeConnectingView()
+                let success = (result[0] as! NSDictionary)["success"] as! Bool
+                if success {
+                    vc.connectingView.removeConnectingView()
+                    displayAlert(viewController: vc, isError: false, message: "MultiSig imported!")
+                } else {
+                    let error = ((result[0] as! NSDictionary)["error"] as! NSDictionary)["message"] as! String
+                    vc.connectingView.removeConnectingView()
+                    displayAlert(viewController: vc, isError: true, message: error)
+                }
+                if let warnings = (result[0] as! NSDictionary)["warnings"] as? NSArray {
+                    if warnings.count > 0 {
+                        for warning in warnings {
+                            let warn = warning as! String
+                            DispatchQueue.main.async { [unowned vc = self] in
+                                let alert = UIAlertController(title: "Warning", message: warn, preferredStyle: UIAlertController.Style.alert)
+                                alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil))
+                                vc.present(alert, animated: true, completion: nil)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

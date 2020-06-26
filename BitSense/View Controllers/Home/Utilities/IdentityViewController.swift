@@ -153,70 +153,36 @@ class IdentityViewController: UIViewController, UITextViewDelegate {
     }
     
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
-        
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                
+        Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+            if errorMessage == nil {
                 switch method {
-                    
                 case .signmessagewithprivkey,
                      .signmessage:
-                    
-                    let sig = reducer.stringToReturn
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.sigOutlet.text = sig
-                        
+                    if let sig = response as? String {
+                        DispatchQueue.main.async { [unowned vc = self] in
+                            vc.sigOutlet.text = sig
+                            vc.connectingView.removeConnectingView()
+                        }
                     }
-                    
-                    connectingView.removeConnectingView()
-                    
                 case .verifymessage:
-                    
-                    let verified = reducer.doubleToReturn
-                    
-                    if verified == 1.0 {
-                        
-                        showAlert(verified: true)
-                        
-                    } else {
-                        
-                        showAlert(verified: false)
-                        
+                    if let verified = response as? Double {
+                        if verified == 1.0 {
+                            vc.showAlert(verified: true)
+                        } else {
+                            vc.showAlert(verified: false)
+                        }
+                        vc.connectingView.removeConnectingView()
                     }
-                    
-                    connectingView.removeConnectingView()
-                    
                 default:
-                    
                     break
-                    
                 }
-                
             } else {
-                
-                DispatchQueue.main.async {
-                    
-                    self.connectingView.removeConnectingView()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: reducer.errorDescription)
-                    
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.connectingView.removeConnectingView()
+                    displayAlert(viewController: vc, isError: true, message: errorMessage!)
                 }
-                
             }
-            
         }
-        
-        reducer.makeCommand(command: method,
-                            param: param,
-                            completion: getResult)
-        
     }
     
     func showAlert(verified: Bool) {

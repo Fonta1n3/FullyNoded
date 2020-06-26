@@ -177,48 +177,21 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
     }
     
     func importPublicKey(pubKey: String) {
-        
         isAddress = false
-        
-        let reducer = Reducer()
-        
-        func getDescriptor() {
-            
-            let result = reducer.dictToReturn
-            
-            if reducer.errorBool {
-                
-                connectingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: reducer.errorDescription)
-                
-            } else {
-                
-                let descriptor = "\"\(result["descriptor"] as! String)\""
-                
-                var params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"watchonly\": true, \"label\": \"\(label)\", \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }]"
-                
-                if isInternal {
-                    
-                    params = "[{ \"desc\": \(descriptor), \"timestamp\": \(timestamp), \"watchonly\": true, \"keypool\": \(addToKeypool), \"internal\": true }]"
-                    
-                }
-                
-                self.executeNodeCommand(method: .importmulti,
-                                        param: params)
-                
-            }
-            
-        }
-        
         let param = "\"combo(\(pubKey))\""
-        
-        reducer.makeCommand(command: .getdescriptorinfo,
-                            param: param,
-                            completion: getDescriptor)
-        
+        Reducer.makeCommand(command: .getdescriptorinfo, param: param) { [unowned vc = self] (response, errorMessage) in
+            if let result = response as? NSDictionary {
+                let descriptor = "\"\(result["descriptor"] as! String)\""
+                var params = "[{ \"desc\": \(descriptor), \"timestamp\": \(vc.timestamp), \"watchonly\": true, \"label\": \"\(vc.label)\", \"keypool\": \(vc.addToKeypool), \"internal\": \(vc.isInternal) }]"
+                if vc.isInternal {
+                    params = "[{ \"desc\": \(descriptor), \"timestamp\": \(vc.timestamp), \"watchonly\": true, \"keypool\": \(vc.addToKeypool), \"internal\": true }]"
+                }
+                vc.executeNodeCommand(method: .importmulti, param: params)
+            } else {
+                vc.connectingView.removeConnectingView()
+                displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
+            }
+        }
     }
     
     func parseKey(key: String) {
@@ -331,229 +304,111 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
     }
     
     func analyzeDescriptor(desc: String) {
-        
-        connectingView.addConnectingView(vc: self,
-                                         description: "analyzing descriptor")
-        
-        let reducer = Reducer()
-        
-        func getDescriptorInfo() {
-            
-            if !reducer.errorBool {
-                
-                let result = reducer.dictToReturn
-                let hasprivatekeys = result["hasprivatekeys"] as! Bool
-                let isrange = result["isrange"] as! Bool
-                let descriptor = result["descriptor"] as! String
-                
-                if !hasprivatekeys {
-                    
-                    isWatchOnly = true
-                    dict["descriptor"] = descriptor
-                    
-                } else {
-                    
-                    isWatchOnly = false
-                    let checksum = result["checksum"] as! String
-                    let hotDescriptor = desc + "#" + checksum
-                    dict["descriptor"] = hotDescriptor
-                    
-                }
-                
-                dict["isWatchOnly"] = isWatchOnly
-                
-                if !isrange {
-                    
-                    importDescriptor(desc: (dict["descriptor"] as! String))
-                    
-                } else {
-                    
-                    displayDescriptorKeys(desc: "\"\(dict["descriptor"] as! String)\"")
-                    
-                }
-                
-            } else {
-                
-                connectingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: reducer.errorDescription)
-                
-            }
-            
-        }
-        
+        connectingView.addConnectingView(vc: self, description: "analyzing descriptor")
         let des = desc.replacingOccurrences(of: "'", with: "'\"'\"'")
         let param = "\"\(des)\""
-        
-        reducer.makeCommand(command: .getdescriptorinfo,
-                            param: param,
-                            completion: getDescriptorInfo)
-        
-        
+        Reducer.makeCommand(command: .getdescriptorinfo, param: param) { [unowned vc = self] (response, errorMessage) in
+            if errorMessage == nil {
+                if let result = response as? NSDictionary {
+                    let hasprivatekeys = result["hasprivatekeys"] as! Bool
+                    let isrange = result["isrange"] as! Bool
+                    let descriptor = result["descriptor"] as! String
+                    if !hasprivatekeys {
+                        vc.isWatchOnly = true
+                        vc.dict["descriptor"] = descriptor
+                    } else {
+                        vc.isWatchOnly = false
+                        let checksum = result["checksum"] as! String
+                        let hotDescriptor = desc + "#" + checksum
+                        vc.dict["descriptor"] = hotDescriptor
+                    }
+                    vc.dict["isWatchOnly"] = vc.isWatchOnly
+                    if !isrange {
+                        vc.importDescriptor(desc: (vc.dict["descriptor"] as! String))
+                    } else {
+                        vc.displayDescriptorKeys(desc: "\"\(vc.dict["descriptor"] as! String)\"")
+                    }
+                }
+            } else {
+                vc.connectingView.removeConnectingView()
+                displayAlert(viewController: self, isError: true, message: errorMessage!)
+            }
+        }
     }
     
     func displayDescriptorKeys(desc: String) {
-        
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                
-                keyArray = reducer.arrayToReturn
-                
-                getKeyInfo(desc: desc,
-                           address: keyArray[0] as! String)
-                
-                
-            } else {
-                
-                connectingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: reducer.errorDescription)
-                
-            }
-            
-        }
-        
         let str = ImportStruct(dictionary: dict)
         let range = str.range
         let convertedRange = convertRange(range: range)
-        let method = BTC_CLI_COMMAND.deriveaddresses
         let des = desc.replacingOccurrences(of: "'", with: "'\"'\"'")
         dict["descriptor"] = "\(des)"
         let param = "\(des), ''\(convertedRange)''"
-        
-        reducer.makeCommand(command: method,
-                            param: param,
-                            completion: getResult)
-        
+        Reducer.makeCommand(command: .deriveaddresses, param: param) { [unowned vc = self] (response, errorMessage) in
+            if errorMessage == nil {
+                if let result = response as? NSArray {
+                    vc.keyArray = result
+                    vc.getKeyInfo(desc: desc, address: vc.keyArray[0] as! String)
+                }
+            } else {
+                vc.connectingView.removeConnectingView()
+                displayAlert(viewController: vc, isError: true, message: errorMessage!)
+            }
+        }
     }
     
     func getKeyInfo(desc: String, address: String) {
-        
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                
-                let result = reducer.dictToReturn
-                isScript = result["isscript"] as! Bool
-                
-                DispatchQueue.main.async {
-                    
-                    self.performSegue(withIdentifier: "showDescriptorKeys",
-                                      sender: self)
-                    
-                }
-                
-            } else {
-                
-                connectingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: reducer.errorDescription)
-                
-            }
-            
-        }
-        
         let param = "\"\(address)\""
-        
-        reducer.makeCommand(command: .getaddressinfo,
-                            param: param,
-                            completion: getResult)
-        
+        Reducer.makeCommand(command: .getaddressinfo, param: param) { [unowned vc = self] (response, errorMessage) in
+            if errorMessage == nil {
+                if let result = response as? NSDictionary {
+                    vc.isScript = result["isscript"] as! Bool
+                    DispatchQueue.main.async { [unowned vc = self] in
+                        vc.performSegue(withIdentifier: "showDescriptorKeys",sender: vc)
+                    }
+                }
+            } else {
+                vc.connectingView.removeConnectingView()
+                displayAlert(viewController: vc, isError: true, message: errorMessage!)
+            }
+        }
     }
     
     func importDescriptor(desc: String) {
-        
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                
-                let result = reducer.arrayToReturn
-                let success = (result[0] as! NSDictionary)["success"] as! Bool
-                
-                if success {
-                    
-                    connectingView.removeConnectingView()
-                    
-                    displayAlert(viewController: self,
-                                 isError: false,
-                                 message: "Sucessfully imported the key!")
-                    
-                } else {
-                    
-                    let errorDict = (result[0] as! NSDictionary)["error"] as! NSDictionary
-                    let error = errorDict["message"] as! String
-                    connectingView.removeConnectingView()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: error)
-                    
-                }
-                
-                if let warnings = (result[0] as! NSDictionary)["warnings"] as? NSArray {
-                    
-                    if warnings.count > 0 {
-                        
-                        for warning in warnings {
-                            
-                            let warn = warning as! String
-                            
-                            DispatchQueue.main.async {
-                                
-                                let alert = UIAlertController(title: "Warning",
-                                                              message: warn,
-                                                              preferredStyle: UIAlertController.Style.alert)
-                                
-                                alert.addAction(UIAlertAction(title: "OK",
-                                                              style: UIAlertAction.Style.default,
-                                                              handler: nil))
-                                
-                                self.present(alert,
-                                             animated: true,
-                                             completion: nil)
-                                
-                            }
-                            
-                        }
-                        
-                    }
-                    
-                }
-                
-            } else {
-                
-                connectingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: reducer.errorDescription)
-                
-            }
-            
-        }
-        
         let des = desc.replacingOccurrences(of: "'", with: "'\"'\"'")
         let str = ImportStruct(dictionary: dict)
         isWatchOnly = str.isWatchOnly
         let param = "[{ \"desc\": \"\(des)\", \"label\": \"\(label)\", \"timestamp\": \(timestamp), \"watchonly\": \(isWatchOnly), \"keypool\": \(addToKeypool), \"internal\": \(isInternal) }], ''{\"rescan\": true}''"
-        
-        reducer.makeCommand(command: .importmulti,
-                            param: param,
-                            completion: getResult)
-        
+        Reducer.makeCommand(command: .importmulti, param: param) { [unowned vc = self] (response, errorMessage) in
+            if errorMessage == nil {
+                if let result = response as? NSArray {
+                    let success = (result[0] as! NSDictionary)["success"] as! Bool
+                    if success {
+                        vc.connectingView.removeConnectingView()
+                        displayAlert(viewController: self, isError: false, message: "Sucessfully imported the key!")
+                    } else {
+                        let errorDict = (result[0] as! NSDictionary)["error"] as! NSDictionary
+                        let error = errorDict["message"] as! String
+                        vc.connectingView.removeConnectingView()
+                        displayAlert(viewController: vc, isError: true, message: error)
+                    }
+                    if let warnings = (result[0] as! NSDictionary)["warnings"] as? NSArray {
+                        if warnings.count > 0 {
+                            for warning in warnings {
+                                let warn = warning as! String
+                                DispatchQueue.main.async { [unowned vc = self] in
+                                    let alert = UIAlertController(title: "Warning",message: warn, preferredStyle: .alert)
+                                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                                    vc.present(alert, animated: true, completion: nil)
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                vc.connectingView.removeConnectingView()
+                displayAlert(viewController: vc, isError: true, message: errorMessage!)
+            }
+        }
     }
     
     func convertRange(range: String) -> [Int] {
@@ -602,121 +457,64 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
     }
     
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
-        
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                
+        Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+            if errorMessage == nil {
                 DispatchQueue.main.async {
-                    
-                    self.qrScanner.removeFromSuperview()
-                    
+                    vc.qrScanner.removeFromSuperview()
                 }
-                
                 switch method {
-                    
                 case .importprivkey:
-                    
-                    connectingView.removeConnectingView()
-                    let result = reducer.stringToReturn
-                    
-                    if result == "Imported key success" {
-                        
-                        alertMessage = "Successfully imported private key"
-                        
-                    }
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.performSegue(withIdentifier: "showKeyDetails", sender: self)
-                        
-                    }
-                    
-                case .importmulti:
-                    
-                    let result = reducer.arrayToReturn
-                    let success = (result[0] as! NSDictionary)["success"] as! Bool
-                    
-                    if success {
-                        
-                        connectingView.removeConnectingView()
-                        var messageString = "Sucessfully imported the address"
-                        
-                        if !isAddress {
-                            
-                            messageString = "Sucessfully imported the public key and its three address types"
-                            
+                    vc.connectingView.removeConnectingView()
+                    if let result = response as? String {
+                        if result == "Imported key success" {
+                            vc.alertMessage = "Successfully imported private key"
                         }
-                        
-                        alertMessage = messageString
-                        
                         DispatchQueue.main.async {
-                            
-                            self.performSegue(withIdentifier: "showKeyDetails", sender: self)
-                            
+                            vc.performSegue(withIdentifier: "showKeyDetails", sender: vc)
                         }
-                        
-                    } else {
-                        
-                        let error = ((result[0] as! NSDictionary)["error"] as! NSDictionary)["message"] as! String
-                        connectingView.removeConnectingView()
-                        
-                        displayAlert(viewController: self,
-                                     isError: true,
-                                     message: error)
-                        
                     }
-                    
-                    if let warnings = (result[0] as! NSDictionary)["warnings"] as? NSArray {
-                        
-                        if warnings.count > 0 {
-                            
-                            for warning in warnings {
-                                
-                                let warn = warning as! String
-                                
-                                DispatchQueue.main.async {
-                                    
-                                    let alert = UIAlertController(title: "Warning", message: warn, preferredStyle: UIAlertController.Style.alert)
-                                    alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil))
-                                    self.present(alert, animated: true, completion: nil)
-                                    
-                                }
-                                
+                case .importmulti:
+                    if let result = response as? NSArray {
+                        let success = (result[0] as! NSDictionary)["success"] as! Bool
+                        if success {
+                            vc.connectingView.removeConnectingView()
+                            var messageString = "Sucessfully imported the address"
+                            if !vc.isAddress {
+                                messageString = "Sucessfully imported the public key and its three address types"
                             }
-                            
+                            vc.alertMessage = messageString
+                            DispatchQueue.main.async { [unowned vc = self] in
+                                vc.performSegue(withIdentifier: "showKeyDetails", sender: vc)
+                            }
+                        } else {
+                            let error = ((result[0] as! NSDictionary)["error"] as! NSDictionary)["message"] as! String
+                            vc.connectingView.removeConnectingView()
+                            displayAlert(viewController: self, isError: true, message: error)
                         }
                         
+                        if let warnings = (result[0] as! NSDictionary)["warnings"] as? NSArray {
+                            if warnings.count > 0 {
+                                for warning in warnings {
+                                    let warn = warning as! String
+                                    DispatchQueue.main.async { [unowned vc = self] in
+                                        let alert = UIAlertController(title: "Warning", message: warn, preferredStyle: .alert)
+                                        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                                        vc.present(alert, animated: true, completion: nil)
+                                    }
+                                }
+                            }
+                        }
                     }
-                    
                 default:
-                    
                     break
-                    
                 }
-                
             } else {
-                
                 DispatchQueue.main.async {
-                    
-                    self.connectingView.removeConnectingView()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: reducer.errorDescription)
-                    
+                    vc.connectingView.removeConnectingView()
+                    displayAlert(viewController: vc, isError: true, message: errorMessage!)
                 }
-                
             }
-            
         }
-        
-        reducer.makeCommand(command: method,
-                            param: param,
-                            completion: getResult)
-        
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

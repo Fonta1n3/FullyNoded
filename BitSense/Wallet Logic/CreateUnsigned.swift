@@ -27,62 +27,28 @@ class CreateUnsigned {
     var optimized = false
     
     func createRawTransaction(completion: @escaping () -> Void) {
-        
-        let reducer = Reducer()
-        
         func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
-            
-            func getResult() {
-                
-                if !reducer.errorBool {
-                    
+            Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+                if errorMessage == nil {
                     switch method {
-                        
                     case .listunspent:
-                        
-                        let resultArray = reducer.arrayToReturn
-                        parseUnspent(utxos: resultArray)
-                        
-                    case .createrawtransaction:
-                        
-                        if !optimized {
-                            
-                            let originalTx = reducer.stringToReturn
-                            
-                            optimizeTheFee(raw: originalTx,
-                                           amount: amount,
-                                           addressToPay: addressToPay,
-                                           sweep: false,
-                                           inputArray: inputArray,
-                                           changeAddress: changeAddress,
-                                           changeAmount: changeAmount)
-                            
-                        } else {
-                            
-                            unsignedRawTx = reducer.stringToReturn
-                            completion()
-                            
+                        if let resultArray = response as? NSArray {
+                            parseUnspent(utxos: resultArray)
                         }
-                        
+                    case .createrawtransaction:
+                        if let tx = response as? String {
+                            vc.unsignedRawTx = tx
+                            completion()
+                        }
                     default:
-                        
                         break
-                        
                     }
-                    
                 } else {
-                    
-                    errorBool = true
-                    errorDescription = reducer.errorDescription
+                    vc.errorBool = true
+                    vc.errorDescription = errorMessage ?? ""
                     completion()
-                    
                 }
-                
             }
-            
-            reducer.makeCommand(command: method,
-                                param: param,
-                                completion: getResult)
             
         }
         
@@ -179,36 +145,6 @@ class CreateUnsigned {
             self.inputs = self.inputs.replacingOccurrences(of: "\"{", with: "{")
             self.inputs = self.inputs.replacingOccurrences(of: "}\"", with: "}")
             self.inputs = self.inputs.replacingOccurrences(of: "\\", with: "")
-            
-        }
-        
-        func optimizeTheFee(raw: String, amount: Double, addressToPay: String, sweep: Bool, inputArray: [Any], changeAddress: String, changeAmount: Double) {
-            
-            let getSmartFee = GetSmartFee()
-            getSmartFee.rawSigned = raw
-            getSmartFee.isUnsigned = true
-            
-            func getFeeResult() {
-                
-                let optimalFee = rounded(number: getSmartFee.optimalFee)
-                
-                self.changeAmount = (changeAmount + 0.00050000) - optimalFee
-                self.changeAmount = rounded(number: self.changeAmount)
-                self.amount = amount
-                self.optimized = true
-                
-                let receiver = "\"\(self.addressToPay)\":\(self.amount)"
-                let change = "\"\(self.changeAddress)\":\(self.changeAmount)"
-                var param = "''\(self.inputs)'', ''{\(receiver), \(change)}'', 0, true"
-                param = param.replacingOccurrences(of: "\"{", with: "{")
-                param = param.replacingOccurrences(of: "}\"", with: "}")
-                
-                executeNodeCommand(method: BTC_CLI_COMMAND.createrawtransaction,
-                                      param: param)
-                
-            }
-            
-            getSmartFee.getSmartFee(completion: getFeeResult)
             
         }
         

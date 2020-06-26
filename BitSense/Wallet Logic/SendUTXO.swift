@@ -25,59 +25,38 @@ class SendUTXO {
     var errorDescription = ""
     
     func createRawTransaction(completion: @escaping () -> Void) {
-        
-        let reducer = Reducer()
-        
         func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
-            
-            func getResult() {
-                
-                if !reducer.errorBool {
-                    
+            Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+                if errorMessage == nil {
                     switch method {
-                        
                     case .signrawtransactionwithwallet:
-                        
-                        let dict = reducer.dictToReturn
-                        signedRawTx = dict["hex"] as! String
-                        completion()
-                        
+                        if let dict = response as? NSDictionary {
+                            vc.signedRawTx = dict["hex"] as! String
+                            completion()
+                        }
                     case .createrawtransaction:
-                        
-                        let unsignedRawTx = reducer.stringToReturn
-                        executeNodeCommand(method: BTC_CLI_COMMAND.signrawtransactionwithwallet, param: "\"\(unsignedRawTx)\"")
+                        if let unsignedRawTx = response as? String {
+                            executeNodeCommand(method: .signrawtransactionwithwallet, param: "\"\(unsignedRawTx)\"")
+                        }
                         
                     default:
-                        
                         break
-                        
                     }
-                    
                 } else {
-                    
-                    errorBool = true
-                    errorDescription = reducer.errorDescription
+                    vc.errorBool = true
+                    vc.errorDescription = errorMessage!
                     completion()
-                    
                 }
-                
             }
-            
-            reducer.makeCommand(command: method,
-                                param: param,
-                                completion: getResult)
-            
         }
         
         func processInputs() {
-            
-            self.inputs = self.inputArray.description
-            self.inputs = self.inputs.replacingOccurrences(of: "[\"", with: "[")
-            self.inputs = self.inputs.replacingOccurrences(of: "\"]", with: "]")
-            self.inputs = self.inputs.replacingOccurrences(of: "\"{", with: "{")
-            self.inputs = self.inputs.replacingOccurrences(of: "}\"", with: "}")
-            self.inputs = self.inputs.replacingOccurrences(of: "\\", with: "")
-            
+            inputs = inputArray.description
+            inputs = inputs.replacingOccurrences(of: "[\"", with: "[")
+            inputs = inputs.replacingOccurrences(of: "\"]", with: "]")
+            inputs = inputs.replacingOccurrences(of: "\"{", with: "{")
+            inputs = inputs.replacingOccurrences(of: "}\"", with: "}")
+            inputs = inputs.replacingOccurrences(of: "\\", with: "")
         }
         
         processInputs()

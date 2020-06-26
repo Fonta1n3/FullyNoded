@@ -307,21 +307,19 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     }
     
     private func loadSectionZero() {
-        let nodeLogic = NodeLogic()
-        nodeLogic.walletDisabled = walletDisabled
-        nodeLogic.loadSectionZero { [unowned vc = self] in
-            if nodeLogic.errorBool {
-                if nodeLogic.errorDescription.contains("Wallet file not specified (must request wallet RPC through") {
+        NodeLogic.walletDisabled = walletDisabled
+        NodeLogic.loadSectionZero { [unowned vc = self] (response, errorMessage) in
+            if errorMessage != nil {
+                if errorMessage!.contains("Wallet file not specified (must request wallet RPC through") {
                     vc.removeSpinner()
                     vc.existingWallet = "multiple wallets"
                     vc.promptToChooseWallet()
                 } else {
                     vc.removeSpinner()
-                    displayAlert(viewController: vc, isError: true, message: nodeLogic.errorDescription)
+                    displayAlert(viewController: vc, isError: true, message: errorMessage!)
                 }
-            } else {
-                let dict = nodeLogic.dictToReturn
-                let str = HomeStruct(dictionary: dict)
+            } else if response != nil {
+                let str = HomeStruct(dictionary: response!)
                 vc.hotBalance = str.hotBalance
                 vc.coldBalance = str.coldBalance
                 vc.unconfirmedBalance = str.unconfirmedBalance
@@ -335,16 +333,15 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     }
     
     func loadSectionTwo() {
-        let nodeLogic = NodeLogic()
-        nodeLogic.walletDisabled = walletDisabled
-        nodeLogic.loadSectionTwo { [unowned vc = self] in
-            if nodeLogic.errorBool {
+        NodeLogic.walletDisabled = walletDisabled
+        NodeLogic.loadSectionTwo { [unowned vc = self] (response, errorMessage) in
+            if errorMessage != nil {
                 vc.removeSpinner()
-                displayAlert(viewController: vc, isError: true, message: nodeLogic.errorDescription)
-            } else {
-                vc.transactionArray.removeAll()
-                vc.transactionArray = nodeLogic.arrayToReturn.reversed()
+                displayAlert(viewController: vc, isError: true, message: errorMessage!)
+            } else if response != nil {
                 DispatchQueue.main.async { [unowned vc = self] in
+                    vc.transactionArray.removeAll()
+                    vc.transactionArray = response!.reversed()
                     vc.walletTable.reloadData()
                 }
                 vc.getFiatBalances()
@@ -411,20 +408,18 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     
     func reloadWalletData() {
         addNavBarSpinner()
-        let nodeLogic = NodeLogic()
-        nodeLogic.walletDisabled = false
+        NodeLogic.walletDisabled = false
         sectionZeroLoaded = false
         transactionArray.removeAll()
         DispatchQueue.main.async { [unowned vc = self] in
             vc.walletTable.reloadData()
         }
-        nodeLogic.loadSectionZero { [unowned vc = self] in
-            if nodeLogic.errorBool {
+        NodeLogic.loadSectionZero { [unowned vc = self] (response, errorMessage) in
+            if errorMessage != nil {
                 vc.removeSpinner()
-                displayAlert(viewController: vc, isError: true, message: nodeLogic.errorDescription)
-            } else {
-                let dict = nodeLogic.dictToReturn
-                let str = HomeStruct(dictionary: dict)
+                displayAlert(viewController: vc, isError: true, message: errorMessage!)
+            } else if response != nil {
+                let str = HomeStruct(dictionary: response!)
                 vc.hotBalance = str.hotBalance
                 vc.coldBalance = (str.coldBalance)
                 vc.unconfirmedBalance = (str.unconfirmedBalance)
@@ -432,16 +427,16 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
                     vc.sectionZeroLoaded = true
                     vc.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
                 }
-                nodeLogic.loadSectionTwo { [unowned vc = self] in
-                    if nodeLogic.errorBool {
+                NodeLogic.loadSectionTwo { [unowned vc = self] (response, errorMessage) in
+                    if errorMessage != nil {
                         vc.removeSpinner()
-                        displayAlert(viewController: vc, isError: true, message: nodeLogic.errorDescription)
-                    } else {
-                        vc.transactionArray.removeAll()
-                        vc.transactionArray = nodeLogic.arrayToReturn.reversed()
+                        displayAlert(viewController: vc, isError: true, message: errorMessage!)
+                    } else if response != nil {
                         DispatchQueue.main.async { [unowned vc = self] in
-                            vc.removeSpinner()
+                            vc.transactionArray.removeAll()
+                            vc.transactionArray = response!.reversed()
                             vc.walletTable.reloadData()
+                            vc.removeSpinner()
                         }
                     }
                 }
@@ -450,11 +445,13 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     }
     
     private func addNavBarSpinner() {
-        spinner.frame = CGRect(x: 0, y: 0, width: 20, height: 20)
-        dataRefresher = UIBarButtonItem(customView: spinner)
-        navigationItem.setRightBarButton(dataRefresher, animated: true)
-        spinner.startAnimating()
-        spinner.alpha = 1
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.spinner.frame = CGRect(x: 0, y: 0, width: 20, height: 20)
+            vc.dataRefresher = UIBarButtonItem(customView: vc.spinner)
+            vc.navigationItem.setRightBarButton(vc.dataRefresher, animated: true)
+            vc.spinner.startAnimating()
+            vc.spinner.alpha = 1
+        }
     }
     
     private func removeSpinner() {

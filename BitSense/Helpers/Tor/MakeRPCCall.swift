@@ -12,29 +12,27 @@ class MakeRPCCall {
     
     static let sharedInstance = MakeRPCCall()
     
-    let cd = CoreDataService()
     var rpcusername = ""
     var rpcpassword = ""
     var onionAddress = ""
     var rpcport = ""
-    var errorBool = Bool()
-    var errorDescription = String()
+    //var errorBool = Bool()
+    //var errorDescription = String()
     let torClient = TorClient.sharedInstance
-    var objectToReturn:Any!
+    //var objectToReturn:Any!
     var attempts = 0
     
     private init() {}
     
-    func executeRPCCommand(method: BTC_CLI_COMMAND, param: Any, completion: @escaping () -> Void) {
+    func executeRPCCommand(method: BTC_CLI_COMMAND, param: Any, completion: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
         attempts += 1
         
-        cd.retrieveEntity(entityName: .newNodes) { [unowned vc = self] in
+        CoreDataService.retrieveEntity(entityName: .newNodes) { [unowned vc = self] nodes in
             
-            if !vc.cd.errorBool {
-                let nodes = vc.cd.entities
+            if nodes != nil {
                 var activeNode = [String:Any]()
                 
-                for node in nodes {
+                for node in nodes! {
                     if let isActive = node["isActive"] as? Bool {
                         if isActive {
                             activeNode = node
@@ -79,9 +77,9 @@ class MakeRPCCall {
                 formattedParam = formattedParam.replacingOccurrences(of: "'\"'\"'", with: "'")
                 
                 guard let url = URL(string: walletUrl) else {
-                    vc.errorBool = true
-                    vc.errorDescription = "url error"
-                    completion()
+                    //vc.errorBool = true
+                    //vc.errorDescription = "url error"
+                    completion((nil, "url error"))
                     return
                 }
                 
@@ -113,12 +111,12 @@ class MakeRPCCall {
                             } else {
                                 
                                 vc.attempts = 0
-                                vc.errorBool = true
-                                vc.errorDescription = error!.localizedDescription
+                                //vc.errorBool = true
+                                //vc.errorDescription = error!.localizedDescription
                                 #if DEBUG
                                 print("error: \(error!.localizedDescription)")
                                 #endif
-                                completion()
+                                completion((nil, error!.localizedDescription))
                                 
                             }
                             
@@ -137,35 +135,37 @@ class MakeRPCCall {
                                     #endif
                                     
                                     if let errorCheck = jsonAddressResult["error"] as? NSDictionary {
+                                        
+                                        var errorDesc = ""
                                                                                 
                                         if let errorMessage = errorCheck["message"] as? String {
                                             
-                                            vc.errorDescription = errorMessage
+                                            errorDesc = errorMessage
                                             
                                         } else {
                                             
-                                            vc.errorDescription = "Uknown error"
+                                            errorDesc = "Uknown error"
                                             
                                         }
                                         
-                                        vc.errorBool = true
-                                        completion()
+                                        //vc.errorBool = true
+                                        completion((nil, errorDesc))
                                         
                                         
                                     } else {
                                         
-                                        vc.errorBool = false
-                                        vc.errorDescription = ""
-                                        vc.objectToReturn = jsonAddressResult["result"]
-                                        completion()
+                                        //vc.errorBool = false
+                                        //vc.errorDescription = ""
+                                        //vc.objectToReturn = jsonAddressResult["result"]
+                                        completion((jsonAddressResult["result"], nil))
                                         
                                     }
                                     
                                 } catch {
                                     
-                                    vc.errorBool = true
-                                    vc.errorDescription = "Uknown Error"
-                                    completion()
+                                    //vc.errorBool = true
+                                    //vc.errorDescription = "Uknown Error"
+                                    completion((nil, "unknown error"))
                                     
                                 }
                                 
@@ -181,9 +181,9 @@ class MakeRPCCall {
                 
             } else {
                 
-                vc.errorBool = true
-                vc.errorDescription = "error getting nodes from core data"
-                completion()
+                //vc.errorBool = true
+                //vc.errorDescription = "error getting nodes from core data"
+                completion((nil, "error getting nodes from core data"))
                 
             }
             

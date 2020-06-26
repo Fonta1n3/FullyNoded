@@ -13,7 +13,6 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     var colors = [UIColor.systemIndigo, UIColor.systemOrange, UIColor.systemGreen, UIColor.systemBlue, UIColor.systemYellow, UIColor.systemPurple, UIColor.systemPink]
     var nodeArray = [[String:Any]]()
     var selectedIndex = Int()
-    let cd = CoreDataService()
     let ud = UserDefaults.standard
     var addButton = UIBarButtonItem()
     var editButton = UIBarButtonItem()
@@ -38,12 +37,10 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func getNodes() {
         
-        cd.retrieveEntity(entityName: .newNodes) { [unowned vc = self] in
-            
-            if !vc.cd.errorBool {
-                
+        CoreDataService.retrieveEntity(entityName: .newNodes) { [unowned vc = self] nodes in
+            if nodes != nil {
                 vc.nodeArray.removeAll()
-                for node in vc.cd.entities {
+                for node in nodes! {
                     if node["id"] != nil {
                         vc.nodeArray.append(node)
                     }
@@ -178,7 +175,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     private func deleteNode(nodeId: UUID, indexPath: IndexPath) {
-        cd.deleteNode(id: nodeId, entityName: .newNodes) { [unowned vc = self] success in
+        CoreDataService.deleteEntity(id: nodeId, entityName: .newNodes) { [unowned vc = self] success in
             if success {
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.nodeArray.remove(at: indexPath.section)
@@ -217,7 +214,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
             let str = NodeStruct(dictionary: nodeArray[index])
             
-            cd.update(id: str.id!, keyToUpdate: "isActive", newValue: selectedSwitch.isOn, entity: .newNodes) { [unowned vc = self] success in
+            CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: selectedSwitch.isOn, entity: .newNodes) { [unowned vc = self] success in
                 if success {
                     
                     vc.ud.removeObject(forKey: "walletName")
@@ -238,15 +235,15 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                     
                     if i != index {
                         let str = NodeStruct(dictionary: node)
-                        cd.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                        CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
                     }
                     
                     if i + 1 == nodeArray.count {
-                        self.cd.retrieveEntity(entityName: .newNodes) { [unowned vc = self] in
-                            if !vc.cd.errorBool {
+                        CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
+                            if nodes != nil {
                                 DispatchQueue.main.async { [unowned vc = self] in
                                     vc.nodeArray.removeAll()
-                                    for node in vc.cd.entities {
+                                    for node in nodes! {
                                         if node["id"] != nil {
                                             vc.nodeArray.append(node)
                                         }
@@ -270,13 +267,12 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func reloadTable() {
         
-        cd.retrieveEntity(entityName: .newNodes) {
+        CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
             
-            if !self.cd.errorBool {
-                
+            if nodes != nil {
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.nodeArray.removeAll()
-                    for node in vc.cd.entities {
+                    for node in nodes! {
                         if node["id"] != nil {
                             vc.nodeArray.append(node)
                         }
@@ -302,39 +298,10 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         return "\(first)...\(last)"
     }
     
-    private func deActivateNodes(nodes: [[String:Any]], completion: @escaping () -> Void) {
-        if nodes.count > 0 {
-            for node in nodes {
-                let str = NodeStruct(dictionary: node)
-                let isActive = str.isActive
-                if isActive {
-                    cd.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { [unowned vc = self] success in
-                        if !success {
-                            displayAlert(viewController: vc, isError: true, message: vc.cd.errorDescription)
-                        }
-                    }
-                }
-            }
-            completion()
-        } else {
-            completion()
-        }
-    }
-    
     @IBAction func addNode(_ sender: Any) {
-        
-        // Deactivate nodes here when adding a node to simplify QR scanning issues
-        
-        deActivateNodes(nodes: nodeArray) {
-            
-            DispatchQueue.main.async {
-                
-                self.performSegue(withIdentifier: "addNewNode", sender: self)
-                
-            }
-            
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "addNewNode", sender: vc)
         }
-        
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

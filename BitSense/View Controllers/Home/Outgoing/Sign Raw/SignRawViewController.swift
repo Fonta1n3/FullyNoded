@@ -474,219 +474,128 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
     
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
         
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                
+        Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+            if errorMessage == nil {
                 switch method {
                     
                 case .signrawtransactionwithwallet:
-                    
-                    let dict = reducer.dictToReturn
-                    let complete = dict["complete"] as! Bool
-                    
-                    if complete {
-                        
-                        let hex = dict["hex"] as! String
-                        creatingView.removeConnectingView()
-                        self.showRaw(raw: hex)
-                        
-                    } else if !complete {
-                        
-                        let hex = dict["hex"] as! String
-                        self.showRaw(raw: hex)
-                        creatingView.removeConnectingView()
-                        showAlert(vc: self, title: "Transaction still incomplete!", message: "This transaction is still not fully signed.")
-                        
-                    } else if let errors = dict["errors"] as? NSArray {
-                        
-                        creatingView.removeConnectingView()
-                        var errorStrings = [String]()
-                        for error in errors {
-                            
-                            let dic = error as! NSDictionary
-                            let str = dic["error"] as! String
-                            errorStrings.append(str)
-                            
-                        }
-                        
-                        var err = errorStrings.description.replacingOccurrences(of: "]", with: "")
-                        err = err.description.replacingOccurrences(of: "[", with: "")
-                        
-                        if let hex = dict["hex"] as? String {
-                            
-                            creatingView.removeConnectingView()
+                    if let dict = response as? NSDictionary {
+                        let complete = dict["complete"] as! Bool
+                        if complete {
+                            let hex = dict["hex"] as! String
+                            vc.creatingView.removeConnectingView()
                             self.showRaw(raw: hex)
                             
-                        }
-                        
-                        displayAlert(viewController: self,
-                                     isError: true,
-                                     message: err)
-                        
-                        
-                    }
-                    
-                case .decoderawtransaction:
-                    
-                    let txDict = reducer.dictToReturn
-                    let vin = txDict["vin"] as! NSArray
-                    let vinDict = vin[0] as! NSDictionary
-                    self.prevTxID = vinDict["txid"] as! String
-                    self.vout = vinDict["vout"] as! Int
-                    
-                    self.executeNodeCommand(method: .getrawtransaction,
-                                            param: "\"\(prevTxID)\", true")
-                    
-                case .getrawtransaction:
-                    
-                    let prevTxDict = reducer.dictToReturn
-                    let outputs = prevTxDict["vout"] as! NSArray
-                    
-                    for outputDict in outputs {
-                        
-                        let output = outputDict as! NSDictionary
-                        let index = output["n"] as! Int
-                        
-                        if index == self.vout {
+                        } else if !complete {
+                            let hex = dict["hex"] as! String
+                            self.showRaw(raw: hex)
+                            vc.creatingView.removeConnectingView()
+                            showAlert(vc: self, title: "Transaction still incomplete!", message: "This transaction is still not fully signed.")
                             
-                            let scriptPubKey = output["scriptPubKey"] as! NSDictionary
-                            let addresses = scriptPubKey["addresses"] as! NSArray
-                            let spendingFromAddress = addresses[0] as! String
-                            scriptSigHex = scriptPubKey["hex"] as! String
-                            amount = output["value"] as! Double
-                            
-                            self.executeNodeCommand(method: .getaddressinfo,
-                                                    param: "\"\(spendingFromAddress)\"")
-                            
-                        }
-                        
-                    }
-                    
-                case .getaddressinfo:
-                    
-                    let result = reducer.dictToReturn
-                    
-                    if let script = result["hex"] as? String {
-                        
-                        isWitness = result["iswitness"] as! Bool
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.scriptTextView.text = script
-                            self.creatingView.removeConnectingView()
-                            
-                        }
-                        
-                    } else {
-                        
-                        DispatchQueue.main.async {
-                            
-                            displayAlert(viewController: self,
-                                         isError: true,
-                                         message: "unable to fetch the redeem script")
-                            
-                            self.creatingView.removeConnectingView()
-                            
-                        }
-                        
-                    }
-                    
-                    
-                case .signrawtransactionwithkey:
-                    
-                    let dict = reducer.dictToReturn
-                    let complete = dict["complete"] as! Bool
-                    
-                    if complete {
-                        
-                        let hex = dict["hex"] as! String
-                        self.showRaw(raw: hex)
-                        
-                        creatingView.removeConnectingView()
-                        
-                        displayAlert(viewController: self,
-                                     isError: false,
-                                     message: "Transaction Complete")
-                        
-                    } else {
-                        
-                        DispatchQueue.main.async {
-                            
-                            self.creatingView.removeConnectingView()
-                            
-                            let errors = dict["errors"] as! NSArray
+                        } else if let errors = dict["errors"] as? NSArray {
+                            vc.creatingView.removeConnectingView()
                             var errorStrings = [String]()
-                            
                             for error in errors {
-                                
                                 let dic = error as! NSDictionary
                                 let str = dic["error"] as! String
                                 errorStrings.append(str)
-                                
                             }
                             
                             var err = errorStrings.description.replacingOccurrences(of: "]", with: "")
                             err = err.description.replacingOccurrences(of: "[", with: "")
-                            
-                            if self.switchOutlet.isOn {
-                                
-                                if let hex = dict["hex"] as? String {
-                                    
-                                    self.showRaw(raw: hex)
-                                    
-                                    displayAlert(viewController: self,
-                                                 isError: true,
-                                                 message: err)
-                                    
-                                } else {
-                                    
-                                    displayAlert(viewController: self,
-                                                 isError: true,
-                                                 message: err)
-                                    
-                                }
-                                
-                            } else {
-                                
-                                displayAlert(viewController: self,
-                                             isError: true,
-                                             message: err)
-                                
+                            if let hex = dict["hex"] as? String {
+                                vc.creatingView.removeConnectingView()
+                                vc.showRaw(raw: hex)
                             }
-                            
+                            displayAlert(viewController: vc, isError: true, message: err)
                         }
-                        
                     }
                     
+                case .decoderawtransaction:
+                    if let txDict = response as? NSDictionary {
+                        let vin = txDict["vin"] as! NSArray
+                        let vinDict = vin[0] as! NSDictionary
+                        vc.prevTxID = vinDict["txid"] as! String
+                        vc.vout = vinDict["vout"] as! Int
+                        vc.executeNodeCommand(method: .getrawtransaction, param: "\"\(vc.prevTxID)\", true")
+                    }
+                    
+                case .getrawtransaction:
+                    if let prevTxDict = response as? NSDictionary {
+                        let outputs = prevTxDict["vout"] as! NSArray
+                        for outputDict in outputs {
+                            let output = outputDict as! NSDictionary
+                            let index = output["n"] as! Int
+                            if index == vc.vout {
+                                let scriptPubKey = output["scriptPubKey"] as! NSDictionary
+                                let addresses = scriptPubKey["addresses"] as! NSArray
+                                let spendingFromAddress = addresses[0] as! String
+                                vc.scriptSigHex = scriptPubKey["hex"] as! String
+                                vc.amount = output["value"] as! Double
+                                vc.executeNodeCommand(method: .getaddressinfo, param: "\"\(spendingFromAddress)\"")
+                            }
+                        }
+                    }
+                    
+                case .getaddressinfo:
+                    if let result = response as? NSDictionary {
+                        if let script = result["hex"] as? String {
+                            vc.isWitness = result["iswitness"] as! Bool
+                            DispatchQueue.main.async {
+                                self.scriptTextView.text = script
+                                self.creatingView.removeConnectingView()
+                            }
+                        } else {
+                            DispatchQueue.main.async { [unowned vc = self] in
+                                displayAlert(viewController: vc, isError: true, message: "unable to fetch the redeem script")
+                                vc.creatingView.removeConnectingView()
+                            }
+                        }
+                    }
+                    
+                case .signrawtransactionwithkey:
+                    if let dict = response as? NSDictionary {
+                        let complete = dict["complete"] as! Bool
+                        if complete {
+                            let hex = dict["hex"] as! String
+                            vc.showRaw(raw: hex)
+                            vc.creatingView.removeConnectingView()
+                            displayAlert(viewController: vc, isError: false, message: "Transaction Complete")
+                        } else {
+                            DispatchQueue.main.async { [unowned vc = self] in
+                                vc.creatingView.removeConnectingView()
+                                let errors = dict["errors"] as! NSArray
+                                var errorStrings = [String]()
+                                for error in errors {
+                                    let dic = error as! NSDictionary
+                                    let str = dic["error"] as! String
+                                    errorStrings.append(str)
+                                }
+                                var err = errorStrings.description.replacingOccurrences(of: "]", with: "")
+                                err = err.description.replacingOccurrences(of: "[", with: "")
+                                if vc.switchOutlet.isOn {
+                                    if let hex = dict["hex"] as? String {
+                                        vc.showRaw(raw: hex)
+                                        displayAlert(viewController: vc, isError: true, message: err)
+                                    } else {
+                                        displayAlert(viewController: vc, isError: true, message: err)
+                                    }
+                                } else {
+                                    displayAlert(viewController: vc, isError: true, message: err)
+                                }
+                            }
+                        }
+                    }
                 default:
-                    
                     break
-                    
                 }
-                
             } else {
-                
-                DispatchQueue.main.async {
-                    
-                    self.creatingView.removeConnectingView()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: reducer.errorDescription)
-                    
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.creatingView.removeConnectingView()
+                    displayAlert(viewController: vc, isError: true, message: errorMessage ?? "")
                 }
-                
             }
-            
         }
-        
-        reducer.makeCommand(command: method,
-                            param: param,
-                            completion: getResult)
-        
     }
     
     func removeViews() {
@@ -710,158 +619,74 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
     }
     
     func getSmartFee(raw: String) {
-        
-        let reducer = Reducer()
-        
-        var dictToReturn = NSDictionary()
-        
-        func getSmartFee(method: BTC_CLI_COMMAND, param: String) {
-            
-            func getResult() {
-                
-                if !reducer.errorBool {
-                    
-                    switch method {
-                        
-                    case .decoderawtransaction:
-                        
-                        let dict = reducer.dictToReturn
-                        let txSize = dict["vsize"] as! Int
-                        let outputs = dict["vout"] as! NSArray
-                        let inputs = dict["vin"] as! NSArray
-                        let outputCount = outputs.count
-                        
-                        for (i, outputDict) in outputs.enumerated() {
-                            
-                            let output = outputDict as! NSDictionary
-                            amount = output["value"] as! Double
-                            self.outputTotalValue += amount
-                            
-                            if i == outputCount - 1 {
-                                
-                                self.getInputTotal(inputs: inputs, txSize: txSize)
-                                
-                            }
-                            
-                        }
-                        
-                    default:
-                        
-                        break
-                        
+        Reducer.makeCommand(command: .decoderawtransaction, param: "\"\(raw)\"") { [unowned vc = self] (response, errorMessage) in
+            if let dict = response as? NSDictionary {
+                let txSize = dict["vsize"] as! Int
+                let outputs = dict["vout"] as! NSArray
+                let inputs = dict["vin"] as! NSArray
+                let outputCount = outputs.count
+                for (i, outputDict) in outputs.enumerated() {
+                    let output = outputDict as! NSDictionary
+                    vc.amount = output["value"] as! Double
+                    vc.outputTotalValue += vc.amount
+                    if i == outputCount - 1 {
+                        vc.getInputTotal(inputs: inputs, txSize: txSize)
                     }
-                    
-                } else {
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: reducer.errorDescription)
-                    
                 }
-                
+            } else {
+                displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
             }
-            
-            reducer.makeCommand(command: method,
-                                param: param,
-                                completion: getResult)
-            
         }
-        
-        getSmartFee(method: .decoderawtransaction,
-                    param: "\"\(raw)\"")
-        
     }
     
     func getInputTotal(inputs: NSArray, txSize: Int) {
-        
-        let reducer = Reducer()
-        
         let feeTarget = UserDefaults.standard.object(forKey: "feeTarget") as! Int
         var inputsCount = inputs.count
-        
         func getSmartFee(method: BTC_CLI_COMMAND, param: String, vout: Int) {
-            
-            func getResult() {
-                
-                if !reducer.errorBool {
-                    
+            Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+                if errorMessage == nil {
                     switch method {
-                        
                     case .estimatesmartfee:
-                        
-                        let dict = reducer.dictToReturn
-                        
-                        displayFeeAlert(dict: dict,
-                                        vsize: txSize,
-                                        feeTarget: feeTarget)
+                        if let dict = response as? NSDictionary {
+                            vc.displayFeeAlert(dict: dict, vsize: txSize, feeTarget: feeTarget)
+                        }
                         
                     case .getrawtransaction:
-                        
-                        let result = reducer.stringToReturn
-                        
-                        getSmartFee(method: .decoderawtransaction,
-                                    param: "\"\(result)\"", vout: vout)
+                        if let result = response as? String {
+                            getSmartFee(method: .decoderawtransaction, param: "\"\(result)\"", vout: vout)
+                        }
                         
                     case .decoderawtransaction:
-                        
-                        let dict = reducer.dictToReturn
-                        let outputs = dict["vout"] as! NSArray
-                        
-                        for outputDict in outputs {
-                            
-                            let output = outputDict as! NSDictionary
-                            let index = output["n"] as! Int
-                            
-                            if index == vout {
-                                
-                                self.inputTotalValue += output["value"] as! Double
-                                
-                                if inputsIndex < inputsCount - 1 {
-                                    
-                                    inputsIndex += 1
-                                    getInputTotal(inputs: inputs, txSize: txSize)
-                                    
-                                } else if inputsIndex == inputsCount - 1 {
-                                    
-                                    //finished fetching all input values, can compare optimal fee to actual fee now
-                                    getSmartFee(method: BTC_CLI_COMMAND.estimatesmartfee,
-                                                param: "\(feeTarget)", vout: vout)
-                                    
+                        if let dict = response as? NSDictionary {
+                            let outputs = dict["vout"] as! NSArray
+                            for outputDict in outputs {
+                                let output = outputDict as! NSDictionary
+                                let index = output["n"] as! Int
+                                if index == vout {
+                                    vc.inputTotalValue += output["value"] as! Double
+                                    if vc.inputsIndex < inputsCount - 1 {
+                                        vc.inputsIndex += 1
+                                        vc.getInputTotal(inputs: inputs, txSize: txSize)
+                                    } else if vc.inputsIndex == inputsCount - 1 {
+                                        //finished fetching all input values, can compare optimal fee to actual fee now
+                                        getSmartFee(method: .estimatesmartfee, param: "\(feeTarget)", vout: vout)
+                                    }
                                 }
-                                
                             }
-                            
                         }
                         
                     default:
-                        
                         break
-                        
                     }
-                    
                 } else {
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: reducer.errorDescription)
-                    
+                    displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
                 }
-                
             }
-            
-            reducer.makeCommand(command: method,
-                                param: param,
-                                completion: getResult)
-            
         }
-        
         let inputDict = inputs[inputsIndex] as! NSDictionary
         let prevTxID = inputDict["txid"] as! String
         let vout = inputDict["vout"] as! Int
-        
-        getSmartFee(method: BTC_CLI_COMMAND.getrawtransaction,
-                    param: "\"\(prevTxID)\"", vout: vout)
-        
+        getSmartFee(method: .getrawtransaction, param: "\"\(prevTxID)\"", vout: vout)
     }
     
     func displayFeeAlert(dict: NSDictionary, vsize: Int, feeTarget: Int) {

@@ -158,34 +158,28 @@ class LockedViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
         
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                
+        Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+            if errorMessage == nil {
                 switch method {
-                    
                 case .gettransaction:
-                    
-                    let dict = reducer.dictToReturn
-                    if let details = dict["details"] as? NSArray {
-                        for (i, output) in details.enumerated() {
-                            if let outputDict = output as? NSDictionary {
-                                let value = outputDict["amount"] as! Double
-                                let vout = outputDict["vout"] as! Int
-                                if vout == selectedVout {
-                                    helperArray[ind]["amount"] = value
-                                    ind = ind + 1
-                                }
-                                
-                                if i + 1 == details.count {
-                                    if ind <= helperArray.count - 1 {
-                                        getAmounts(i: ind)
-                                    } else {
-                                        DispatchQueue.main.async { [unowned vc = self] in
-                                            vc.tableView.reloadData()
-                                            vc.creatingView.removeConnectingView()
+                    if let dict = response as? NSDictionary {
+                        if let details = dict["details"] as? NSArray {
+                            for (i, output) in details.enumerated() {
+                                if let outputDict = output as? NSDictionary {
+                                    let value = outputDict["amount"] as! Double
+                                    let vout = outputDict["vout"] as! Int
+                                    if vout == vc.selectedVout {
+                                        vc.helperArray[vc.ind]["amount"] = value
+                                        vc.ind += 1
+                                    }
+                                    if i + 1 == details.count {
+                                        if vc.ind <= vc.helperArray.count - 1 {
+                                            vc.getAmounts(i: vc.ind)
+                                        } else {
+                                            DispatchQueue.main.async { [unowned vc = self] in
+                                                vc.tableView.reloadData()
+                                                vc.creatingView.removeConnectingView()
+                                            }
                                         }
                                     }
                                 }
@@ -194,65 +188,35 @@ class LockedViewController: UIViewController, UITableViewDelegate, UITableViewDa
                     }
                     
                 case BTC_CLI_COMMAND.listlockunspent:
-                    
-                    lockedArray = reducer.arrayToReturn
-                    getHelperArray()
+                    if let lockedutxos = response as? NSArray {
+                        vc.lockedArray = lockedutxos
+                        vc.getHelperArray()
+                    }
                     
                 case BTC_CLI_COMMAND.lockunspent:
-                    
-                    let result = reducer.doubleToReturn
-                    
-                    if result == 1 {
-                        
-                        displayAlert(viewController: self,
-                                     isError: false,
-                                     message: "UTXO is unlocked and can be selected for spends")
-                        
-                    } else {
-                        
-                        displayAlert(viewController: self,
-                                     isError: true,
-                                     message: "Unable to unlock that UTXO")
-                        
+                    if let result = response as? Double {
+                        DispatchQueue.main.async { [unowned vc = self] in
+                            vc.creatingView.addConnectingView(vc: self, description: "Refreshing")
+                        }
+                        if result == 1 {
+                            displayAlert(viewController: self, isError: false, message: "UTXO is unlocked and can be selected for spends")
+                        } else {
+                            displayAlert(viewController: self, isError: true, message: "Unable to unlock that UTXO")
+                        }
+                        vc.helperArray.removeAll()
+                        vc.executeNodeCommand(method: .listlockunspent, param: "")
                     }
-                    
-                    helperArray.removeAll()
-                    
-                    executeNodeCommand(method: .listlockunspent, param: "")
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.creatingView.addConnectingView(vc: self,
-                                                            description: "Refreshing")
-                        
-                    }
-                    
                 default:
-                    
                     break
                     
                 }
-                
             } else {
-                
-                DispatchQueue.main.async {
-                    
-                    self.creatingView.removeConnectingView()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: reducer.errorDescription)
-                    
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.creatingView.removeConnectingView()
+                    displayAlert(viewController: vc, isError: true, message: errorMessage!)
                 }
-                
             }
-            
         }
-        
-        reducer.makeCommand(command: method,
-                            param: param,
-                            completion: getResult)
-        
     }
     
 }

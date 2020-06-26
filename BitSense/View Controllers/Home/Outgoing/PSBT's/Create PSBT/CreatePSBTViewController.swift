@@ -105,10 +105,8 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
         if receivingField.text != "" {
             creatingView.addConnectingView(vc: self, description: "sweeping...")
             let receivingAddress = receivingField.text!
-            let reducer = Reducer()
-            reducer.makeCommand(command: .listunspent, param: "0") { [unowned vc = self] in
-                if !reducer.errorBool {
-                    let resultArray = reducer.arrayToReturn
+            Reducer.makeCommand(command: .listunspent, param: "0") { [unowned vc = self] (response, errorMessage) in
+                if let resultArray = response as? NSArray {
                     var inputArray = [Any]()
                     var inputs = ""
                     var amount = Double()
@@ -136,13 +134,11 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
                     
                     let ud = UserDefaults.standard
                     let param = "''\(inputs)'', ''{\"\(receivingAddress)\":\(vc.rounded(number: amount))}'', 0, ''{\"includeWatching\": \(spendFromCold), \"replaceable\": true, \"conf_target\": \(ud.object(forKey: "feeTarget") as! Int), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
-                    reducer.makeCommand(command: .walletcreatefundedpsbt, param: param) {
-                        if !reducer.errorBool {
-                            let result = reducer.dictToReturn
+                    Reducer.makeCommand(command: .walletcreatefundedpsbt, param: param) { (response, errorMessage) in
+                        if let result = response as? NSDictionary {
                             let psbt1 = result["psbt"] as! String
-                            reducer.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt1)\"") { [unowned vc = self] in
-                                if !reducer.errorBool {
-                                    let dict = reducer.dictToReturn
+                            Reducer.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt1)\"") { [unowned vc = self] (response, errorMessage) in
+                                if let dict = response as? NSDictionary {
                                     let isComplete = dict["complete"] as! Bool
                                     let processedPSBT = dict["psbt"] as! String
                                     vc.removeViews()
@@ -166,17 +162,17 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
                                     }
                                 } else {
                                     vc.creatingView.removeConnectingView()
-                                    displayAlert(viewController: vc, isError: true, message: reducer.errorDescription)
+                                    displayAlert(viewController: vc, isError: true, message: errorMessage ?? "")
                                 }
                             }
                         } else {
                             vc.creatingView.removeConnectingView()
-                            displayAlert(viewController: vc, isError: true, message: reducer.errorDescription)
+                            displayAlert(viewController: vc, isError: true, message: errorMessage ?? "")
                         }
                     }
                 } else {
                     vc.creatingView.removeConnectingView()
-                    displayAlert(viewController: vc, isError: true, message: reducer.errorDescription)
+                    displayAlert(viewController: vc, isError: true, message: errorMessage ?? "")
                 }
             }
         }
@@ -232,82 +228,43 @@ class CreatePSBTViewController: UIViewController, UITextFieldDelegate {
     // MARK: NODE COMMANDS
     
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
-        
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
+        Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+            if errorMessage == nil {
                 
                 switch method {
-                    
                 case .walletprocesspsbt:
-                    
-                    let dict = reducer.dictToReturn
-                    
-                    let isComplete = dict["complete"] as! Bool
-                    let processedPSBT = dict["psbt"] as! String
-                    
-                    self.removeViews()
-                    
-                    creatingView.removeConnectingView()
-                    
-                    displayRaw(raw: processedPSBT)
-                    
-                    //convertPSBTtoData(string: processedPSBT)
-                    
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                        
-                        if isComplete {
-                            
-                            displayAlert(viewController: self,
-                                         isError: false,
-                                         message: "psbt is complete")
-                            
-                        } else {
-                            
-                            displayAlert(viewController: self,
-                                         isError: true,
-                                         message: "psbt is incomplete")
-                            
+                    if let dict = response as? NSDictionary {
+                        let isComplete = dict["complete"] as! Bool
+                        let processedPSBT = dict["psbt"] as! String
+                        vc.removeViews()
+                        vc.creatingView.removeConnectingView()
+                        vc.displayRaw(raw: processedPSBT)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            if isComplete {
+                                displayAlert(viewController: self, isError: false, message: "psbt is complete")
+                            } else {
+                                displayAlert(viewController: self, isError: true, message: "psbt is incomplete")
+                            }
                         }
-                        
                     }
                     
                 case .walletcreatefundedpsbt:
-                    
-                    let result = reducer.dictToReturn
-                    let psbt = result["psbt"] as! String
-                    
-                    self.executeNodeCommand(method: BTC_CLI_COMMAND.walletprocesspsbt,
-                                               param: "\"\(psbt)\"")
+                    if let result = response as? NSDictionary {
+                        let psbt = result["psbt"] as! String
+                        vc.executeNodeCommand(method: BTC_CLI_COMMAND.walletprocesspsbt, param: "\"\(psbt)\"")
+                    }
                     
                 default:
-                    
                     break
-                    
                 }
                 
             } else {
-                
-                DispatchQueue.main.async {
-                    
-                    self.removeSpinner()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: reducer.errorDescription)
-                    
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.removeSpinner()
+                    displayAlert(viewController: vc, isError: true, message: errorMessage ?? "")
                 }
-                
             }
-            
         }
-        
-        reducer.makeCommand(command: method,
-                            param: param,
-                            completion: getResult)
-        
     }
     
     func convertPSBTtoData(string: String) {

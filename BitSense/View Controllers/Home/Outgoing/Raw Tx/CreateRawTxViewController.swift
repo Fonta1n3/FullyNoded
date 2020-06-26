@@ -396,7 +396,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         DispatchQueue.main.async { [unowned vc = self] in
             vc.playButtonOutlet.tintColor = UIColor.lightGray.withAlphaComponent(0)
             vc.addOutputOutlet.tintColor = UIColor.lightGray.withAlphaComponent(0)
-            vc.psbtOutlet.tintColor = UIColor.lightGray.withAlphaComponent(0)
+            vc.psbtOutlet.alpha = 0
             vc.rawDisplayer.rawString = raw
             if vc.coldSwitchOutlet.isOn {
                 vc.navigationController?.navigationBar.topItem?.title = "Unsigned Tx"
@@ -781,16 +781,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 Broadcaster.sharedInstance.send(rawTx: self.rawTxSigned) { [unowned vc = self] (txid) in
 
                     if txid != nil {
-
                         self.creatingView.removeConnectingView()
-                        displayAlert(viewController: self, isError: false, message: "Sent! TxID has been copied to clipboard")
-
-                        DispatchQueue.main.async {
-
-                            let pasteboard = UIPasteboard.general
-                            pasteboard.string = txid!
-
-                        }
+                        displayAlert(viewController: self, isError: false, message: "Transaction Sent ✓")
 
                     } else {
 
@@ -802,33 +794,16 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
 
             }))
 
-            alert.addAction(UIAlertAction(title: "Use my node", style: .default, handler: { action in
-
-                self.creatingView.addConnectingView(vc: self, description: "broadcasting")
-
-                let reducer = Reducer()
-                reducer.makeCommand(command: .sendrawtransaction, param: "\"\(self.rawTxSigned)\"") {
-
-                    if !reducer.errorBool {
-
-                        self.creatingView.removeConnectingView()
-                        displayAlert(viewController: self, isError: false, message: "Sent! TxID has been copied to clipboard")
-
-                        DispatchQueue.main.async {
-
-                            let pasteboard = UIPasteboard.general
-                            pasteboard.string = reducer.stringToReturn
-
-                        }
-
+            alert.addAction(UIAlertAction(title: "Use my node", style: .default, handler: { [unowned vc = self] action in
+                vc.creatingView.addConnectingView(vc: vc, description: "broadcasting...")
+                Reducer.makeCommand(command: .sendrawtransaction, param: "\"\(vc.rawTxSigned)\"") { (response, errorMesage) in
+                    if let _ = response as? String {
+                        vc.creatingView.removeConnectingView()
+                        displayAlert(viewController: vc, isError: false, message: "Transaction sent ✓")
                     } else {
-
-                        displayAlert(viewController: self, isError: true, message: "Error: \(reducer.errorDescription)")
-
+                        displayAlert(viewController: self, isError: true, message: "Error: \(errorMesage ?? "")")
                     }
-
                 }
-
             }))
 
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
@@ -900,40 +875,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     //MARK: Node Commands
-    
-    func executeNodeCommandSsh(method: BTC_CLI_COMMAND, param: String) {
-        
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                
-                self.spendableBalance = 0.0
-                let utxos = reducer.arrayToReturn
-                self.parseUnpsent(utxos: utxos)
-                
-            } else {
-                
-                DispatchQueue.main.async {
-                    
-                    self.creatingView.removeConnectingView()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: reducer.errorDescription)
-                    
-                }
-                
-            }
-            
-        }
-    
-        reducer.makeCommand(command: method,
-                            param: param,
-                            completion: getResult)
-        
-    }
     
     func textFieldDidBeginEditing(_ textField: UITextField) {
         

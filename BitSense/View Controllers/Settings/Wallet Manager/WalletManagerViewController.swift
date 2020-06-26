@@ -44,10 +44,8 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
     
     @IBAction func unloadAction(_ sender: Any) {
         connectingView.addConnectingView(vc: self, description: "getting all loaded wallets...")
-        let reducer = Reducer()
-        reducer.makeCommand(command: .listwallets, param: "") { [unowned vc = self] in
-            if !reducer.errorBool {
-                let loadedWallets = reducer.arrayToReturn
+        Reducer.makeCommand(command: .listwallets, param: "") { [unowned vc = self] (response, errorMessage) in
+            if let loadedWallets = response as? NSArray {
                 for (i, w) in loadedWallets.enumerated() {
                     if (w as! String) != "" {
                         vc.walletsToUnload.append(w as! String)
@@ -60,7 +58,7 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
                 }
             } else {
                 vc.connectingView.removeConnectingView()
-                showAlert(vc: self, title: "Error", message: "There was an error getting your active wallets in order to deactivate them.")
+                showAlert(vc: self, title: "Error", message: "There was an error getting your active wallets in order to deactivate them: \(errorMessage ?? "")")
             }
         }
     }
@@ -72,7 +70,17 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
         DispatchQueue.main.async { [unowned vc = self] in
             vc.activeWallets.removeAll()
             vc.inactiveWallets.removeAll()
-            vc.executeNodeCommand(method: .listwalletdir, param: "")
+            //vc.executeNodeCommand(method: .listwalletdir, param: "")
+            Reducer.makeCommand(command: .listwalletdir, param: "") { [unowned vc = self] (response, errorMessage) in
+                if let dict =  response as? NSDictionary {
+                    vc.parseWallets(walletDict: dict)
+                } else {
+                    DispatchQueue.main.async { [unowned vc = self] in
+                        vc.connectingView.removeConnectingView()
+                        displayAlert(viewController: vc, isError: true, message: "error getting wallets: \(errorMessage ?? "")")
+                    }
+                }
+            }
         }
     }
     
@@ -135,10 +143,8 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
     
     private func getAllActiveWallets() {
         connectingView.addConnectingView(vc: self, description: "getting all loaded wallets...")
-        let reducer = Reducer()
-        reducer.makeCommand(command: .listwallets, param: "") { [unowned vc = self] in
-            if !reducer.errorBool {
-                let loadedWallets = reducer.arrayToReturn
+        Reducer.makeCommand(command: .listwallets, param: "") { [unowned vc = self] (response, errorMessage) in
+            if let loadedWallets = response as? NSArray {
                 for (i, w) in loadedWallets.enumerated() {
                     if (w as! String) != "" {
                         vc.walletsToUnload.append(w as! String)
@@ -154,7 +160,7 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
                 }
             } else {
                 vc.connectingView.removeConnectingView()
-                showAlert(vc: self, title: "Error", message: "There was an error getting your active wallets in order to deactivate them.")
+                showAlert(vc: self, title: "Error", message: "There was an error getting your active wallets in order to deactivate them: \(errorMessage ?? "")")
             }
         }
     }
@@ -217,48 +223,6 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
                 }
             }
         }
-    }
-    
-
-    
-    func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
-        
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                
-                switch method {
-                    
-                case BTC_CLI_COMMAND.listwalletdir:
-                    let dict =  reducer.dictToReturn
-                    parseWallets(walletDict: dict)
-                    
-                default:
-                    break
-                }
-                
-            } else {
-                
-                DispatchQueue.main.async {
-                    
-                    self.connectingView.removeConnectingView()
-                    
-                    displayAlert(viewController: self,
-                                 isError: true,
-                                 message: reducer.errorDescription)
-                    
-                }
-                
-            }
-            
-        }
-        
-        reducer.makeCommand(command: method,
-                            param: param,
-                            completion: getResult)
-        
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

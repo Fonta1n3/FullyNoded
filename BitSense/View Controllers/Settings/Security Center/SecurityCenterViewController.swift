@@ -426,39 +426,37 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
     }
     
     func executNodeCommand(method: BTC_CLI_COMMAND, param: Any) {
-        let connectIngView = ConnectingView()
-        connectIngView.addConnectingView(vc: self, description: "")
-        let reducer = Reducer()
-        
-        func getResult() {
-            if !reducer.errorBool {
+        let connectingView = ConnectingView()
+        connectingView.addConnectingView(vc: self, description: "")
+        Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+            if errorMessage == nil {
                 switch method {
                 case .encryptwallet:
-                    connectIngView.removeConnectingView()
-                    let result = reducer.stringToReturn
-                    showAlert(vc: self, title: "", message: result)
+                    connectingView.removeConnectingView()
+                    if let result = response as? String {
+                        showAlert(vc: self, title: "", message: result)
+                    }
                     
                 case .walletlock:
                     displayAlert(viewController: self, isError: false, message: "Wallet encrypted")
-                    connectIngView.removeConnectingView()
+                    connectingView.removeConnectingView()
                     
                 case .walletpassphrase:
                     displayAlert(viewController: self, isError: false, message: "Wallet decrypted for 10 minutes only")
-                    connectIngView.removeConnectingView()
+                    connectingView.removeConnectingView()
                     
                 case .walletpassphrasechange:
                     displayAlert(viewController: self, isError: false, message: "Passphrase updated")
-                    connectIngView.removeConnectingView()
+                    connectingView.removeConnectingView()
                     
                 default:
                     break
                 }
             } else {
-                connectIngView.removeConnectingView()
-                displayAlert(viewController: self, isError: true, message: reducer.errorDescription)
+                connectingView.removeConnectingView()
+                displayAlert(viewController: vc, isError: true, message: errorMessage ?? "")
             }
         }
-        reducer.makeCommand(command: method, param: param, completion: getResult)
     }
     
     func encryptWallet() {

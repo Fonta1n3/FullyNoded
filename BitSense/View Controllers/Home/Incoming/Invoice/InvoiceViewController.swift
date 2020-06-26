@@ -167,7 +167,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
     
     func getHDMusigAddress() {
-        
         let walletStr = Wallet(dictionary: wallet)
         Crypto.decryptData(dataToDecrypt: walletStr.descriptor!) { [unowned vc = self] (desc) in
             if desc != nil {
@@ -175,45 +174,25 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 let label = walletStr.label
                 let addressIndex = "\(walletStr.index)"
                 let param = "\(vc.descriptor), [\(addressIndex),\(addressIndex)]"
-                
-                let reducer = Reducer()
-                
-                func getResult() {
-                    
-                    if !reducer.errorBool {
-                        
-                        let result = reducer.arrayToReturn
-                        let addressToReturn = result[0] as! String
-                        
-                        DispatchQueue.main.async { [unowned vc = self] in
-                            
-                            vc.indexDisplay.text = addressIndex
-                            vc.addressOutlet.text = addressToReturn
-                            vc.navigationController?.navigationBar.topItem?.title = label
-                            vc.addressString = addressToReturn
-                            vc.isHDMusig = true
-                            vc.showAddress()
-                            
+                Reducer.makeCommand(command: .deriveaddresses, param: param) { (response, errorMessage) in
+                    if let result = response as? NSArray {
+                        if let addressToReturn = result[0] as? String {
+                            DispatchQueue.main.async { [unowned vc = self] in
+                                vc.indexDisplay.text = addressIndex
+                                vc.addressOutlet.text = addressToReturn
+                                vc.navigationController?.navigationBar.topItem?.title = label
+                                vc.addressString = addressToReturn
+                                vc.isHDMusig = true
+                                vc.showAddress()
+                            }
                         }
-                        
                     } else {
-                        
                         vc.connectingView.removeConnectingView()
-                        
-                        displayAlert(viewController: self,
-                                     isError: true,
-                                     message: reducer.errorDescription)
-                        
+                        displayAlert(viewController: self, isError: true, message: errorMessage ?? "error deriving addresses")
                     }
-                    
                 }
-                
-                reducer.makeCommand(command: .deriveaddresses,
-                                    param: param,
-                                    completion: getResult)
             }
         }
-        
     }
     
     func getAddressSettings() {
@@ -382,73 +361,55 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
         print("executeNodeCommand")
         
-        let reducer = Reducer()
-        
-        func getResult() {
-            
-            if !reducer.errorBool {
-                
-                switch method {
-                    
-                case .deriveaddresses:
-                    
-                    let addressToReturn = reducer.arrayToReturn[0] as! String
-                    
-                    DispatchQueue.main.async { [unowned vc = self] in
-                        
-                        vc.connectingView.removeConnectingView()
-                        vc.addressString = addressToReturn
-                        vc.addressOutlet.text = addressToReturn
-                        vc.showAddress(address: addressToReturn)
-                        
-                        let id = vc.wallet["id"] as! UUID
-                        vc.cd.update(id: id, keyToUpdate: "index", newValue: Int32(vc.indexDisplay.text!)!, entity: .newHdWallets) { success in
-                            if success {
-                                
-                                print("updated index")
-                                
-                            } else {
-                                
-                                print("index update failed")
-                                
+        func deriveAddresses() {
+            Reducer.makeCommand(command: .deriveaddresses, param: param) { [unowned vc = self] (response, errorMessage) in
+                if let result = response as? NSArray {
+                    if let addressToReturn = result[0] as? String {
+                        DispatchQueue.main.async { [unowned vc = self] in
+                            vc.connectingView.removeConnectingView()
+                            vc.addressString = addressToReturn
+                            vc.addressOutlet.text = addressToReturn
+                            vc.showAddress(address: addressToReturn)
+                            let id = vc.wallet["id"] as! UUID
+                            CoreDataService.update(id: id, keyToUpdate: "index", newValue: Int32(vc.indexDisplay.text!)!, entity: .newHdWallets) { success in
+                                if success {
+                                    print("updated index")
+                                } else {
+                                    print("index update failed")
+                                }
                             }
                         }
                     }
-                    
-                case .getnewaddress:
-                    
-                    let address = reducer.stringToReturn
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.connectingView.removeConnectingView()
-                        self.addressString = address
-                        self.addressOutlet.text = address
-                        self.showAddress(address: address)
-                        
-                    }
-                    
-                default:
-                    
-                    break
-                    
+                } else {
+                    vc.connectingView.removeConnectingView()
+                    displayAlert(viewController: vc, isError: true, message: errorMessage ?? "error deriving addresses")
                 }
-                
-            } else {
-                
-                connectingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: reducer.errorDescription)
             }
-            
         }
         
-        reducer.makeCommand(command: method,
-                            param: param,
-                            completion: getResult)
+        func getAddress() {
+            Reducer.makeCommand(command: .getnewaddress, param: param) { (response, errorMessage) in
+                if let address = response as? String {
+                    DispatchQueue.main.async { [unowned vc = self] in
+                        vc.connectingView.removeConnectingView()
+                        vc.addressString = address
+                        vc.addressOutlet.text = address
+                        vc.showAddress(address: address)
+                    }
+                }
+            }
+        }
         
+        switch method {
+        case .deriveaddresses:
+            deriveAddresses()
+            
+        case .getnewaddress:
+            getAddress()
+            
+        default:
+            break
+        }
     }
     
     @objc func textFieldDidChange(_ textField: UITextField) {

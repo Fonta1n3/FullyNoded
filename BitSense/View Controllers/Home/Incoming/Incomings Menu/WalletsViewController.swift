@@ -94,10 +94,9 @@ class WalletsViewController: UIViewController, UITableViewDataSource, UITableVie
         if editingStyle == UITableViewCell.EditingStyle.delete {
             
             let row = indexPath.row
-            let cd = CoreDataService()
             let wallet = Wallet(dictionary: wallets[row])
             
-            cd.deleteNode(id: wallet.id!, entityName: .newHdWallets) { [unowned vc = self] success in
+            CoreDataService.deleteEntity(id: wallet.id!, entityName: .newHdWallets) { [unowned vc = self] success in
                 
                 if success {
                     
@@ -113,7 +112,7 @@ class WalletsViewController: UIViewController, UITableViewDataSource, UITableVie
                     
                     displayAlert(viewController: vc,
                                  isError: true,
-                                 message: "We had an error trying to delete that wallet: \(cd.errorDescription)")
+                                 message: "We had an error trying to delete that wallet")
                     
                 }
                 

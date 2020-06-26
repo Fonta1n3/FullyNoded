@@ -273,9 +273,8 @@ class TorClient {
     private func addAuthKeysToAuthDirectory(completion: @escaping () -> Void) {
         print("addAuthKeysToAuthDirectory")
         let authPath = self.authDirPath
-        let cd = CoreDataService()
-        cd.retrieveEntity(entityName: .authKeys) {
-            if !cd.errorBool {
+        CoreDataService.retrieveEntity(entityName: .authKeys) { authKeys in
+            if authKeys != nil {
                 func decryptedValue(_ encryptedValue: Data) -> String {
                     var decryptedValue = ""
                     Crypto.decryptData(dataToDecrypt: encryptedValue) { decryptedData in
@@ -285,13 +284,12 @@ class TorClient {
                     }
                     return decryptedValue
                 }
-                if cd.entities.count > 0 {
-                    let authKeysStr = AuthKeysStruct.init(dictionary: cd.entities[0])
+                if authKeys!.count > 0 {
+                    let authKeysStr = AuthKeysStruct.init(dictionary: authKeys![0])
                     let authorizedKey = decryptedValue(authKeysStr.privateKey)
-                    cd.retrieveEntity(entityName: .newNodes) {
-                        if !cd.errorBool {
-                            let nodes = cd.entities
-                            for (i, nodeDict) in nodes.enumerated() {
+                    CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
+                        if nodes != nil {
+                            for (i, nodeDict) in nodes!.enumerated() {
                                 let str = NodeStruct(dictionary: nodeDict)
                                 if str.isActive && str.onionAddress != nil {
                                     let onionAddress = decryptedValue(str.onionAddress!)
@@ -315,7 +313,7 @@ class TorClient {
                                         print("failed writing auth key")
                                     }
                                 }
-                                if i + 1 == nodes.count {
+                                if i + 1 == nodes!.count {
                                     completion()
                                 }
                             }
