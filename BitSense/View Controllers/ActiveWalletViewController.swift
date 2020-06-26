@@ -437,6 +437,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
                             vc.transactionArray = response!.reversed()
                             vc.walletTable.reloadData()
                             vc.removeSpinner()
+                            vc.getFiatBalances()
                         }
                     }
                 }
@@ -458,15 +459,10 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         DispatchQueue.main.async { [unowned vc = self] in
             vc.spinner.stopAnimating()
             vc.spinner.alpha = 0
-            
             vc.refreshButton = UIBarButtonItem(barButtonSystemItem: .refresh, target: vc, action: #selector(vc.refreshData(_:)))
-            
             vc.refreshButton.tintColor = UIColor.lightGray.withAlphaComponent(1)
-            
             vc.navigationItem.setRightBarButton(vc.refreshButton, animated: true)
-                        
         }
-        
     }
     
     @objc func refreshData(_ sender: Any) {

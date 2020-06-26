@@ -71,7 +71,6 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
             vc.activeWallets.removeAll()
             vc.inactiveWallets.removeAll()
             vc.walletTable.reloadData()
-            //vc.executeNodeCommand(method: .listwalletdir, param: "")
             Reducer.makeCommand(command: .listwalletdir, param: "") { [unowned vc = self] (response, errorMessage) in
                 if let dict =  response as? NSDictionary {
                     vc.parseWallets(walletDict: dict)
