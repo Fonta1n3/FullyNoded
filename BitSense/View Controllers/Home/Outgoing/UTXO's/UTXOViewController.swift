@@ -33,7 +33,6 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     var blurArray = [UIVisualEffectView]()
     var isFirstTime = Bool()
     var isUnsigned = false
-    var lockedArray = NSArray()
     var utxo = NSDictionary()
     let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     let blurView2 = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
@@ -63,8 +62,9 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     }
     
     @IBAction func lockAction(_ sender: Any) {
-        creatingView.addConnectingView(vc: self, description: "Getting Locked UTXO's")
-        executeNodeCommand(method: BTC_CLI_COMMAND.listlockunspent, param: "")
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "goToLocked", sender: vc)
+        }
     }
     
     @IBAction func getUtxoInfo(_ sender: Any) {
@@ -565,12 +565,9 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     }
     
     func lockUTXO(txid: String, vout: Int) {
-        
+        creatingView.addConnectingView(vc: self, description: "locking...")
         let param = "false, ''[{\"txid\":\"\(txid)\",\"vout\":\(vout)}]''"
-        
-        executeNodeCommand(method: .lockunspent,
-                           param: param)
-        
+        executeNodeCommand(method: .lockunspent, param: param)
     }
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
@@ -726,20 +723,12 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
             if errorMessage == nil {
                 switch method {
                     
-                case .listlockunspent:
-                    if let lockedarr = response as? NSArray {
-                        DispatchQueue.main.async { [unowned vc = self] in
-                            vc.lockedArray = lockedarr
-                            vc.creatingView.removeConnectingView()
-                            vc.performSegue(withIdentifier: "goToLocked", sender: vc)
-                        }
-                    }
-                    
                 case .lockunspent:
                     if let result = response as? Double {
                         vc.removeSpinner()
                         if result == 1 {
                             displayAlert(viewController: vc, isError: false, message: "UTXO is locked and will not be selected for spends unless your node restarts, tap the lock button to unlock it")
+                            vc.creatingView.removeConnectingView()
                             vc.refresh()
                         } else {
                             displayAlert(viewController: vc, isError: true, message: "Unable to lock that UTXO")
@@ -1256,14 +1245,6 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
              
                 vc.utxo = utxo
                 vc.isUtxo = true
-                
-            }
-            
-        case "goToLocked":
-            
-            if let vc = segue.destination as? LockedViewController {
-                
-                vc.lockedArray = self.lockedArray
                 
             }
             
