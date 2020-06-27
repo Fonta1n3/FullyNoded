@@ -84,7 +84,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     }
     
     private func loadTable() {
-        loadSectionZero()
+        loadBalances()
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -267,7 +267,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
             }
         default:
             if sectionZeroLoaded {
-                return 74
+                return 62
             } else {
                 return 47
             }
@@ -306,9 +306,9 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         }
     }
     
-    private func loadSectionZero() {
+    private func loadBalances() {
         NodeLogic.walletDisabled = walletDisabled
-        NodeLogic.loadSectionZero { [unowned vc = self] (response, errorMessage) in
+        NodeLogic.loadBalances { [unowned vc = self] (response, errorMessage) in
             if errorMessage != nil {
                 if errorMessage!.contains("Wallet file not specified (must request wallet RPC through") {
                     vc.removeSpinner()
@@ -319,20 +319,20 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
                     displayAlert(viewController: vc, isError: true, message: errorMessage!)
                 }
             } else if response != nil {
-                let str = HomeStruct(dictionary: response!)
+                let str = Balances(dictionary: response!)
                 vc.hotBalance = str.hotBalance
                 vc.coldBalance = str.coldBalance
                 vc.unconfirmedBalance = str.unconfirmedBalance
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.sectionZeroLoaded = true
                     vc.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
-                    vc.loadSectionTwo()
+                    vc.loadSectionOne()
                 }
             }
         }
     }
     
-    func loadSectionTwo() {
+    func loadSectionOne() {
         NodeLogic.walletDisabled = walletDisabled
         NodeLogic.loadSectionTwo { [unowned vc = self] (response, errorMessage) in
             if errorMessage != nil {
@@ -414,12 +414,13 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         DispatchQueue.main.async { [unowned vc = self] in
             vc.walletTable.reloadData()
         }
-        NodeLogic.loadSectionZero { [unowned vc = self] (response, errorMessage) in
+        NodeLogic.loadBalances { [unowned
+            vc = self] (response, errorMessage) in
             if errorMessage != nil {
                 vc.removeSpinner()
                 displayAlert(viewController: vc, isError: true, message: errorMessage!)
             } else if response != nil {
-                let str = HomeStruct(dictionary: response!)
+                let str = Balances(dictionary: response!)
                 vc.hotBalance = str.hotBalance
                 vc.coldBalance = (str.coldBalance)
                 vc.unconfirmedBalance = (str.unconfirmedBalance)

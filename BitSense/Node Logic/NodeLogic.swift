@@ -15,27 +15,7 @@ class NodeLogic {
     static var arrayToReturn = [[String:Any]]()
     static var walletDisabled = Bool()
     
-    class func loadWalletSection(completion: @escaping ((wallets: NSArray?, errorMessage: String?)) -> Void) {
-        Reducer.makeCommand(command: .listwallets, param: "") { (response, errorMessage) in
-            if let wallets = response as? NSArray {
-                completion((wallets, nil))
-            } else {
-                if errorMessage != nil {
-                    if errorMessage!.contains("Method not found") {
-                        walletDisabled = true
-                        completion((nil, "walletDisabled"))
-                    } else {
-                        completion((nil, errorMessage))
-                    }
-                } else {
-                    walletDisabled = false
-                    completion((nil, "error getting wallets"))
-                }
-            }
-        }
-    }
-    
-    class func loadSectionZero(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+    class func loadBalances(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         if !walletDisabled {
             getBalance(completion: completion)
         } else {
@@ -84,11 +64,10 @@ class NodeLogic {
         }
     }
     
-    class func loadSectionOne(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+    class func loadBlockchainInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         Reducer.makeCommand(command: .getblockchaininfo, param: "") { (response, errorMessage) in
             if let blockchainInfo = response as? NSDictionary {
-                parseBlockchainInfo(blockchainInfo: blockchainInfo)
-                getPeerInfo(completion: completion)
+                parseBlockchainInfo(blockchainInfo: blockchainInfo, completion: completion)
             } else {
                 completion((nil, errorMessage ?? ""))
             }
@@ -98,8 +77,7 @@ class NodeLogic {
     class func getPeerInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         Reducer.makeCommand(command: .getpeerinfo, param: "") { (response, errorMessage) in
             if let peerInfo = response as? NSArray {
-                parsePeerInfo(peerInfo: peerInfo)
-                getNetworkInfo(completion: completion)
+                parsePeerInfo(peerInfo: peerInfo, completion: completion)
             } else {
                  completion((nil, errorMessage ?? ""))
             }
@@ -109,8 +87,7 @@ class NodeLogic {
     class func getNetworkInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         Reducer.makeCommand(command: .getnetworkinfo, param: "") { (response, errorMessage) in
             if let networkInfo = response as? NSDictionary {
-                parseNetworkInfo(networkInfo: networkInfo)
-                getMiningInfo(completion: completion)
+                parseNetworkInfo(networkInfo: networkInfo, completion: completion)
             } else {
                 completion((nil, errorMessage ?? ""))
             }
@@ -120,8 +97,7 @@ class NodeLogic {
     class func getMiningInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         Reducer.makeCommand(command: .getmininginfo, param: "") { (response, errorMessage) in
             if let miningInfo = response as? NSDictionary {
-                parseMiningInfo(miningInfo: miningInfo)
-                getUptime(completion: completion)
+                parseMiningInfo(miningInfo: miningInfo, completion: completion)
             } else {
                 completion((nil, errorMessage ?? ""))
             }
@@ -131,8 +107,9 @@ class NodeLogic {
     class func getUptime(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         Reducer.makeCommand(command: .uptime, param: "") { (response, errorMessage) in
             if let uptime = response as? Double {
-                dictToReturn["uptime"] = Int(uptime)
-                getMempoolInfo(completion: completion)
+                var toReturn = [String:Any]()
+                toReturn["uptime"] = Int(uptime)
+                completion((toReturn, nil))
             } else {
                 completion((nil, errorMessage ?? ""))
             }
@@ -142,16 +119,17 @@ class NodeLogic {
     class func getMempoolInfo(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         Reducer.makeCommand(command: .getmempoolinfo, param: "") { (response, errorMessage) in
             if let dict = response as? NSDictionary {
-                dictToReturn["mempoolCount"] = dict["size"] as! Int
-                let feeRate = UserDefaults.standard.integer(forKey: "feeTarget")
-                estimateSmartFee(feeRate: feeRate, completion: completion)
+                var mempoolInfo = [String:Any]()
+                mempoolInfo["mempoolCount"] = dict["size"] as! Int
+                completion((mempoolInfo, nil))
             } else {
                 completion((nil, errorMessage ?? ""))
             }
         }
     }
     
-    class func estimateSmartFee(feeRate: Int, completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+    class func estimateSmartFee(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        let feeRate = UserDefaults.standard.integer(forKey: "feeTarget")
         Reducer.makeCommand(command: .estimatesmartfee, param: "\(feeRate)") { (response, errorMessage) in
             if let result = response as? NSDictionary {
                 if let feeRate = result["feerate"] as? Double {
@@ -247,60 +225,65 @@ class NodeLogic {
     
     // MARK: Section 1 parsers
     
-    class func parseMiningInfo(miningInfo: NSDictionary) {
-        
+    class func parseMiningInfo(miningInfo: NSDictionary, completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        var miningInfoToReturn = [String:Any]()
         let hashesPerSecond = miningInfo["networkhashps"] as! Double
         let exahashesPerSecond = hashesPerSecond / 1000000000000000000
-        dictToReturn["networkhashps"] = Int(exahashesPerSecond).withCommas()
-        
+        miningInfoToReturn["networkhashps"] = Int(exahashesPerSecond).withCommas()
+        completion((miningInfoToReturn, nil))
     }
     
-    class func parseBlockchainInfo(blockchainInfo: NSDictionary) {
+    class func parseBlockchainInfo(blockchainInfo: NSDictionary, completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        
+        var blockchainInfoToReturn = [String:Any]()
         
         if let currentblockheight = blockchainInfo["blocks"] as? Int {
             
-            dictToReturn["blocks"] = currentblockheight
+            blockchainInfoToReturn["blocks"] = currentblockheight
             
         }
         
         if let difficultyCheck = blockchainInfo["difficulty"] as? Double {
             
-            dictToReturn["difficulty"] = "difficulty \(Int(difficultyCheck / 1000000000000).withCommas()) trillion"
+            blockchainInfoToReturn["difficulty"] = "difficulty \(Int(difficultyCheck / 1000000000000).withCommas()) trillion"
             
         }
         
         if let sizeCheck = blockchainInfo["size_on_disk"] as? Int {
             
-            dictToReturn["size"] = "\(sizeCheck/1000000000)gb blockchain"
+            blockchainInfoToReturn["size"] = "\(sizeCheck/1000000000)gb blockchain"
             
         }
         
         if let progressCheck = blockchainInfo["verificationprogress"] as? Double {
-            dictToReturn["actualProgress"] = progressCheck
+            blockchainInfoToReturn["actualProgress"] = progressCheck
             if progressCheck > 0.99 {
-                dictToReturn["progress"] = "Fully verified"
+                blockchainInfoToReturn["progress"] = "Fully verified"
             } else {
-                dictToReturn["progress"] = "\(Int(progressCheck*100))% verified"
+                blockchainInfoToReturn["progress"] = "\(Int(progressCheck*100))% verified"
             }
         }
         
         if let chain = blockchainInfo["chain"] as? String {
             
-            dictToReturn["chain"] = "\(chain) chain"
+            blockchainInfoToReturn["chain"] = "\(chain) chain"
             UserDefaults.standard.set(chain, forKey: "chain")
             
         }
         
         if let pruned = blockchainInfo["pruned"] as? Bool {
             
-            dictToReturn["pruned"] = pruned
+            blockchainInfoToReturn["pruned"] = pruned
             
         }
         
+        completion((blockchainInfoToReturn, nil))
+        
     }
     
-    class func parsePeerInfo(peerInfo: NSArray) {
+    class func parsePeerInfo(peerInfo: NSArray, completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         
+        var peerInfoToReturn = [String:Any]()
         var incomingCount = 0
         var outgoingCount = 0
         
@@ -313,23 +296,25 @@ class NodeLogic {
             if incoming {
                 
                 incomingCount += 1
-                dictToReturn["incomingCount"] = incomingCount
+                peerInfoToReturn["incomingCount"] = incomingCount
                 
             } else {
                 
                 outgoingCount += 1
-                dictToReturn["outgoingCount"] = outgoingCount
+                peerInfoToReturn["outgoingCount"] = outgoingCount
                 
             }
             
         }
+        completion((peerInfoToReturn, nil))
         
     }
     
-    class func parseNetworkInfo(networkInfo: NSDictionary) {
+    class func parseNetworkInfo(networkInfo: NSDictionary, completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         
+        var networkInfoToReturn = [String:Any]()
         let subversion = (networkInfo["subversion"] as! String).replacingOccurrences(of: "/", with: "")
-        dictToReturn["subversion"] = subversion.replacingOccurrences(of: "Satoshi:", with: "")
+        networkInfoToReturn["subversion"] = subversion.replacingOccurrences(of: "Satoshi:", with: "")
         
         let networks = networkInfo["networks"] as! NSArray
         
@@ -341,11 +326,12 @@ class NodeLogic {
             if name == "onion" {
                 
                 let reachable = dict["reachable"] as! Bool
-                dictToReturn["reachable"] = reachable
+                networkInfoToReturn["reachable"] = reachable
                 
             }
             
         }
+        completion((networkInfoToReturn, nil))
         
     }
     

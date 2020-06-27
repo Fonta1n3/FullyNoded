@@ -80,8 +80,7 @@ class SendUTXO {
             
         }
         
-        executeNodeCommand(method: BTC_CLI_COMMAND.createrawtransaction,
-                           param: param)
+        executeNodeCommand(method: .createrawtransaction, param: param)
         
     }
     

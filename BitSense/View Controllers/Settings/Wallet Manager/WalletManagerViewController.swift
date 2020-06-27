@@ -53,6 +53,9 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
                     if i + 1 == loadedWallets.count {
                         if vc.walletsToUnload.count > 0 {
                             vc.goUnload()
+                        } else {
+                            vc.connectingView.removeConnectingView()
+                            showAlert(vc: self, title: "Only the Default Wallet is loaded", message: "You can not unload the default wallet.")
                         }
                     }
                 }
@@ -70,6 +73,7 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
         DispatchQueue.main.async { [unowned vc = self] in
             vc.activeWallets.removeAll()
             vc.inactiveWallets.removeAll()
+            vc.wallets.removeAll()
             vc.walletTable.reloadData()
             Reducer.makeCommand(command: .listwalletdir, param: "") { [unowned vc = self] (response, errorMessage) in
                 if let dict =  response as? NSDictionary {
@@ -145,18 +149,22 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
         connectingView.addConnectingView(vc: self, description: "getting all loaded wallets...")
         Reducer.makeCommand(command: .listwallets, param: "") { [unowned vc = self] (response, errorMessage) in
             if let loadedWallets = response as? NSArray {
-                for (i, w) in loadedWallets.enumerated() {
-                    if (w as! String) != "" {
-                        vc.walletsToUnload.append(w as! String)
-                    }
-                    if i + 1 == loadedWallets.count {
-                        if vc.walletsToUnload.count > 0 {
-                            vc.promptToUnloadWallets()
-                        } else {
-                            vc.connectingView.removeConnectingView()
-                            UserDefaults.standard.removeObject(forKey: "walletName")
+                if loadedWallets.count > 1 {
+                    for (i, w) in loadedWallets.enumerated() {
+                        if (w as! String) != "" {
+                            vc.walletsToUnload.append(w as! String)
+                        }
+                        if i + 1 == loadedWallets.count {
+                            if vc.walletsToUnload.count > 0 {
+                                vc.promptToUnloadWallets()
+                            } else {
+                                vc.connectingView.removeConnectingView()
+                                UserDefaults.standard.removeObject(forKey: "walletName")
+                            }
                         }
                     }
+                } else {
+                    vc.connectingView.removeConnectingView()
                 }
             } else {
                 vc.connectingView.removeConnectingView()

@@ -131,7 +131,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         textLabel.textAlignment = .left
         textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
         textLabel.textColor = .white
-        textLabel.frame = CGRect(x: 0, y: 0, width: 200, height: 50)
+        textLabel.frame = CGRect(x: 0, y: 0, width: 400, height: 50)
         textLabel.text =  nodeArray[section]["label"] as? String ?? "No Label"
         header.addSubview(textLabel)
         return header
