@@ -1,0 +1,13 @@
+language: swift
+xcode_project: LibWally.xcodeproj
+xcode_scheme: LibWally
+xcode_destination: platform=iOS Simulator,OS=12.2,name=iPhone Xʀ
+osx_image: xcode11.2
+
+cache: ccache
+
+install:
+  - swift --version
+  - brew install gnu-sed ccache
+  - export PATH="/usr/local/opt/ccache/libexec:$PATH"
+  - ./build-libwally.sh -s

@@ -619,7 +619,14 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="Bmh-eo-0G2"/>
                     </view>
-                    <navigationItem key="navigationItem" id="NF8-yN-8PP"/>
+                    <navigationItem key="navigationItem" id="NF8-yN-8PP">
+                        <barButtonItem key="leftBarButtonItem" image="plus.rectangle" catalog="system" id="Epi-pI-X3u">
+                            <color key="tintColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <connections>
+                                <action selector="createWallet:" destination="Dwu-lj-4IN" id="OAb-MC-Hws"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
                         <outlet property="advancedView" destination="ANp-5e-llp" id="1t3-sZ-v6l"/>
                         <outlet property="fxRateLabel" destination="yUJ-iQ-fjZ" id="WLS-sg-DQk"/>
@@ -635,6 +642,7 @@
                         <segue destination="1tX-je-wOH" kind="show" identifier="segueToUtxos" id="zKf-il-zDu"/>
                         <segue destination="MkV-nj-qUL" kind="show" identifier="getTransaction" id="ZIq-qK-6Qt"/>
                         <segue destination="hL3-4s-vl7" kind="show" identifier="segueToChooseWallet" id="VU6-gc-B7y"/>
+                        <segue destination="0gR-Gj-FSR" kind="show" identifier="createFullyNodedWallet" id="e0d-Zp-a29"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="jDi-KB-cQL" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -1630,6 +1638,244 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Hew-JN-Tgz" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-8109" y="1035"/>
+        </scene>
+        <!--View Controller-->
+        <scene sceneID="Q5L-1h-B2i">
+            <objects>
+                <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="pBQ-SK-r7u" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="ecT-RY-DAq">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="Soh-th-maL">
+                                <rect key="frame" x="16" y="114" width="343" height="211"/>
+                                <color key="backgroundColor" red="0.078040815890000004" green="0.090017892419999995" blue="0.10251823810000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="211" id="Scu-jI-ayD"/>
+                                </constraints>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                            </textView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Seed Words" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="MdU-Rr-Lbu">
+                                <rect key="frame" x="16" y="71" width="159" height="35"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="35" id="8Va-u4-T38"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="In order to manually create a wallet you need to supply BIP39 seed words. " textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="8" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Qu0-JM-zmT">
+                                <rect key="frame" x="21" y="333" width="333" height="52"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="52" id="4o1-82-Gdp"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="S92-Fc-9YX">
+                                <rect key="frame" x="16" y="393" width="343" height="42"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="42" id="aYW-lD-sRP"/>
+                                </constraints>
+                                <state key="normal" title="create">
+                                    <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="gaX-UQ-PFc" firstAttribute="trailing" secondItem="Soh-th-maL" secondAttribute="trailing" constant="16" id="0u3-Pb-iT1"/>
+                            <constraint firstItem="S92-Fc-9YX" firstAttribute="leading" secondItem="gaX-UQ-PFc" secondAttribute="leading" constant="16" id="3SS-R3-fHl"/>
+                            <constraint firstItem="gaX-UQ-PFc" firstAttribute="trailing" secondItem="Qu0-JM-zmT" secondAttribute="trailing" constant="21" id="6bb-wY-Mwd"/>
+                            <constraint firstItem="S92-Fc-9YX" firstAttribute="top" secondItem="Qu0-JM-zmT" secondAttribute="bottom" constant="8" id="OmZ-Q9-Jvx"/>
+                            <constraint firstItem="MdU-Rr-Lbu" firstAttribute="top" secondItem="gaX-UQ-PFc" secondAttribute="top" constant="27" id="P8X-Ml-7sd"/>
+                            <constraint firstItem="Soh-th-maL" firstAttribute="top" secondItem="MdU-Rr-Lbu" secondAttribute="bottom" constant="8" id="aBG-Q0-7qJ"/>
+                            <constraint firstItem="Soh-th-maL" firstAttribute="leading" secondItem="gaX-UQ-PFc" secondAttribute="leading" constant="16" id="n8b-cn-JfH"/>
+                            <constraint firstItem="gaX-UQ-PFc" firstAttribute="trailing" secondItem="S92-Fc-9YX" secondAttribute="trailing" constant="16" id="pil-5b-2gn"/>
+                            <constraint firstItem="Qu0-JM-zmT" firstAttribute="leading" secondItem="gaX-UQ-PFc" secondAttribute="leading" constant="21" id="rGj-PP-8Cp"/>
+                            <constraint firstItem="MdU-Rr-Lbu" firstAttribute="leading" secondItem="gaX-UQ-PFc" secondAttribute="leading" constant="16" id="wGD-OU-YJQ"/>
+                            <constraint firstItem="Qu0-JM-zmT" firstAttribute="top" secondItem="Soh-th-maL" secondAttribute="bottom" constant="8" id="yRd-KQ-sm3"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="gaX-UQ-PFc"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="Q0u-kv-3Ie"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="0cJ-iY-7AU" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-8863.2000000000007" y="1800.4497751124438"/>
+        </scene>
+        <!--Create Fully Noded Wallet View Controller-->
+        <scene sceneID="92q-bk-EIf">
+            <objects>
+                <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="0gR-Gj-FSR" customClass="CreateFullyNodedWalletViewController" customModule="BitSense" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="YnF-Ky-Lx1">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Create a Fully Noded Wallet" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZTq-Qt-Cb4">
+                                <rect key="frame" x="103" y="54" width="246" height="60"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="60" id="ooP-eN-KUm"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="22"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="9" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bW8-lG-7Hz">
+                                <rect key="frame" x="16" y="131" width="333" height="100"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="100" id="J20-pl-qTn"/>
+                                </constraints>
+                                <string key="text">Fully Noded wallets are a bit different then your standard Bitcoin Core wallets. Fully Noded wallets support BIP39. Your seed is encrypted and stored locally to the device *not* on your node. Your node will only ever hold public keys, it simply builds psbt's for us which Fully Noded will sign locally. Your node of course verifies the utxo's and knows everything about the wallet except for its private keys.</string>
+                                <fontDescription key="fontDescription" type="system" pointSize="11"/>
+                                <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ItunesArtwork.png" translatesAutoresizingMaskIntoConstraints="NO" id="OAM-QB-2gl">
+                                <rect key="frame" x="16" y="54" width="79" height="60"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="60" id="b5g-jg-tUQ"/>
+                                    <constraint firstAttribute="width" constant="79" id="rAF-4K-N1S"/>
+                                </constraints>
+                            </imageView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GO8-o8-fXl">
+                                <rect key="frame" x="16" y="239" width="343" height="42"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="42" id="DuC-jM-CBU"/>
+                                </constraints>
+                                <state key="normal" title="single sig">
+                                    <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="automaticAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="WJS-8r-ich"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bPF-3j-BsX">
+                                <rect key="frame" x="16" y="289" width="343" height="42"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="42" id="zGi-CR-kOb"/>
+                                </constraints>
+                                <state key="normal" title="recovery">
+                                    <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="manualAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="eek-O1-fMF"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="OAM-QB-2gl" firstAttribute="leading" secondItem="V4I-Q6-GVc" secondAttribute="leading" constant="16" id="6WN-0B-5us"/>
+                            <constraint firstItem="bW8-lG-7Hz" firstAttribute="leading" secondItem="V4I-Q6-GVc" secondAttribute="leading" constant="16" id="B0g-uP-SGd"/>
+                            <constraint firstItem="OAM-QB-2gl" firstAttribute="top" secondItem="V4I-Q6-GVc" secondAttribute="top" constant="10" id="Ge6-2N-SKB"/>
+                            <constraint firstItem="V4I-Q6-GVc" firstAttribute="trailing" secondItem="ZTq-Qt-Cb4" secondAttribute="trailing" constant="26" id="H04-kj-cXt"/>
+                            <constraint firstItem="ZTq-Qt-Cb4" firstAttribute="leading" secondItem="OAM-QB-2gl" secondAttribute="trailing" constant="8" id="Hgg-cg-1rH"/>
+                            <constraint firstItem="bPF-3j-BsX" firstAttribute="top" secondItem="GO8-o8-fXl" secondAttribute="bottom" constant="8" id="SqH-Nw-6PE"/>
+                            <constraint firstItem="bPF-3j-BsX" firstAttribute="leading" secondItem="V4I-Q6-GVc" secondAttribute="leading" constant="16" id="Zh6-kh-GfC"/>
+                            <constraint firstItem="V4I-Q6-GVc" firstAttribute="trailing" secondItem="bW8-lG-7Hz" secondAttribute="trailing" constant="26" id="bRZ-mM-1XR"/>
+                            <constraint firstItem="V4I-Q6-GVc" firstAttribute="trailing" secondItem="bPF-3j-BsX" secondAttribute="trailing" constant="16" id="cKm-cX-le6"/>
+                            <constraint firstItem="ZTq-Qt-Cb4" firstAttribute="top" secondItem="V4I-Q6-GVc" secondAttribute="top" constant="10" id="gOC-hw-8vg"/>
+                            <constraint firstItem="GO8-o8-fXl" firstAttribute="top" secondItem="bW8-lG-7Hz" secondAttribute="bottom" constant="8" id="kd2-zD-OEk"/>
+                            <constraint firstItem="bW8-lG-7Hz" firstAttribute="top" secondItem="ZTq-Qt-Cb4" secondAttribute="bottom" constant="17" id="qzl-eY-Rue"/>
+                            <constraint firstItem="GO8-o8-fXl" firstAttribute="leading" secondItem="V4I-Q6-GVc" secondAttribute="leading" constant="16" id="wQy-He-p9B"/>
+                            <constraint firstItem="V4I-Q6-GVc" firstAttribute="trailing" secondItem="GO8-o8-fXl" secondAttribute="trailing" constant="16" id="wrb-2Q-9VK"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="V4I-Q6-GVc"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="5rs-4G-uHB">
+                        <barButtonItem key="rightBarButtonItem" image="questionmark.circle" catalog="system" id="3qP-4a-tPW">
+                            <color key="tintColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <segue destination="Yhd-sD-SB5" kind="show" identifier="segueToSeedWords" id="AJq-aA-dsj"/>
+                        <segue destination="pBQ-SK-r7u" kind="show" identifier="seguToManualCreation" id="tT8-Fn-Z1b"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="aBB-kS-R85" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-8106.3999999999996" y="1798.6506746626687"/>
+        </scene>
+        <!--Seed Displayer View Controller-->
+        <scene sceneID="O8O-77-jvo">
+            <objects>
+                <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="Yhd-sD-SB5" customClass="SeedDisplayerViewController" customModule="BitSense" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Dlo-Ju-3f8">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Seed Words" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="U4A-gK-Vwb">
+                                <rect key="frame" x="16" y="64" width="159" height="35"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="35" id="nmI-AM-gab"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="2NQ-HD-jgm">
+                                <rect key="frame" x="16" y="107" width="343" height="211"/>
+                                <color key="backgroundColor" red="0.078040815890000004" green="0.090017892419999995" blue="0.10251823810000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="211" id="13n-Ya-vyb"/>
+                                </constraints>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                            </textView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="In order to recover this wallet you will need these seed words! Write them down and store them safely. " textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="8" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qI7-sy-PmB">
+                                <rect key="frame" x="21" y="326" width="333" height="72"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="72" id="1Nm-Tz-Pap"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JEA-Zw-9G9">
+                                <rect key="frame" x="16" y="406" width="343" height="42"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="42" id="Qqt-MW-TpE"/>
+                                </constraints>
+                                <state key="normal" title="I saved them">
+                                    <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="savedAction:" destination="Yhd-sD-SB5" eventType="touchUpInside" id="TdI-5k-7iH"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="5Sh-1T-yaK" firstAttribute="trailing" secondItem="2NQ-HD-jgm" secondAttribute="trailing" constant="16" id="54d-ke-fPq"/>
+                            <constraint firstItem="5Sh-1T-yaK" firstAttribute="trailing" secondItem="qI7-sy-PmB" secondAttribute="trailing" constant="21" id="7RF-eA-6Jh"/>
+                            <constraint firstItem="JEA-Zw-9G9" firstAttribute="leading" secondItem="5Sh-1T-yaK" secondAttribute="leading" constant="16" id="AK9-OR-u9O"/>
+                            <constraint firstItem="U4A-gK-Vwb" firstAttribute="top" secondItem="5Sh-1T-yaK" secondAttribute="top" constant="20" id="Lfp-JQ-jui"/>
+                            <constraint firstItem="2NQ-HD-jgm" firstAttribute="leading" secondItem="5Sh-1T-yaK" secondAttribute="leading" constant="16" id="QWB-Cr-bnI"/>
+                            <constraint firstItem="2NQ-HD-jgm" firstAttribute="top" secondItem="U4A-gK-Vwb" secondAttribute="bottom" constant="8" id="YVi-Ip-ksq"/>
+                            <constraint firstItem="JEA-Zw-9G9" firstAttribute="top" secondItem="qI7-sy-PmB" secondAttribute="bottom" constant="8" id="ejS-2I-DwH"/>
+                            <constraint firstItem="U4A-gK-Vwb" firstAttribute="leading" secondItem="5Sh-1T-yaK" secondAttribute="leading" constant="16" id="lEW-Xm-JOO"/>
+                            <constraint firstItem="5Sh-1T-yaK" firstAttribute="trailing" secondItem="JEA-Zw-9G9" secondAttribute="trailing" constant="16" id="pP0-MA-ABL"/>
+                            <constraint firstItem="qI7-sy-PmB" firstAttribute="top" secondItem="2NQ-HD-jgm" secondAttribute="bottom" constant="8" id="py8-cg-7dX"/>
+                            <constraint firstItem="qI7-sy-PmB" firstAttribute="leading" secondItem="5Sh-1T-yaK" secondAttribute="leading" constant="21" id="uhR-3s-tfO"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="5Sh-1T-yaK"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="qOV-Rh-OKl"/>
+                    <connections>
+                        <outlet property="textView" destination="2NQ-HD-jgm" id="zl9-yc-Vk4"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Rhi-X1-mPE" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-7383.1999999999998" y="1798.6506746626687"/>
         </scene>
         <!--Import Multi Sig-->
         <scene sceneID="Z5b-Dt-9OJ">
@@ -4002,7 +4248,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="xUE-pm-qLc" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="4700" y="2021.7391304347827"/>
+            <point key="canvasLocation" x="4641" y="2024"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="sfg-es-QcU">
@@ -4994,6 +5240,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
     <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
     <resources>
         <image name="Home" width="30" height="30"/>
+        <image name="ItunesArtwork.png" width="512" height="512"/>
         <image name="Settings" width="30" height="30"/>
         <image name="arrow.clockwise" catalog="system" width="115" height="128"/>
         <image name="arrow.down.right.and.arrow.up.left" catalog="system" width="128" height="118"/>
@@ -5006,6 +5253,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <image name="paintbrush" catalog="system" width="128" height="128"/>
         <image name="play.rectangle" catalog="system" width="128" height="93"/>
         <image name="plus.circle" catalog="system" width="128" height="121"/>
+        <image name="plus.rectangle" catalog="system" width="128" height="93"/>
         <image name="qrcode.viewfinder" catalog="system" width="128" height="114"/>
         <image name="questionmark.circle" catalog="system" width="128" height="121"/>
         <image name="square.and.arrow.up" catalog="system" width="115" height="128"/>

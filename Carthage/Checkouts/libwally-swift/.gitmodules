@@ -1,0 +1,3 @@
+[submodule "libwally-core"]
+	path = CLibWally/libwally-core
+	url = https://github.com/ElementsProject/libwally-core.git

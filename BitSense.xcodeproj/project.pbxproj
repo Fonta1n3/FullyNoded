@@ -98,6 +98,9 @@
 		D08CED1522E7F118007E2A8E /* ItunesArtwork@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D08CED1422E7F118007E2A8E /* ItunesArtwork@2x.png */; };
 		D096EDFE249DCF970084A065 /* ShowDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D096EDFD249DCF970084A065 /* ShowDetailViewController.swift */; };
 		D096EE00249DFADD0084A065 /* HelpViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D096EDFF249DFADD0084A065 /* HelpViewController.swift */; };
+		D09A32FF24A8419D009FA0B2 /* CreateFullyNodedWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09A32FE24A8419C009FA0B2 /* CreateFullyNodedWallet.swift */; };
+		D09A330124A848DA009FA0B2 /* SeedDisplayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09A330024A848DA009FA0B2 /* SeedDisplayerViewController.swift */; };
+		D09A330324A86C7C009FA0B2 /* Signer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09A330224A86C7C009FA0B2 /* Signer.swift */; };
 		D0A2918F225114670099A2F3 /* MakeRPCCall.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A2918E225114670099A2F3 /* MakeRPCCall.swift */; };
 		D0A291912251743B0099A2F3 /* settings90.png in Resources */ = {isa = PBXBuildFile; fileRef = D0A291902251743B0099A2F3 /* settings90.png */; };
 		D0A519B7226B3DD400860D5C /* RawTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A519B6226B3DD400860D5C /* RawTransaction.swift */; };
@@ -107,7 +110,6 @@
 		D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B3149E216C4DB1008FDC53 /* CreateRawTxViewController.swift */; };
 		D0B6936E22B2412D00A2C3E6 /* ChooseConnectionTypeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B6936D22B2412D00A2C3E6 /* ChooseConnectionTypeViewController.swift */; };
 		D0C20ECE24A624E600C62AA4 /* Tor.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FB822ACB7D100DBBFC2 /* Tor.framework */; platformFilter = ios; };
-		D0C20ECF24A624E600C62AA4 /* Tor.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FB822ACB7D100DBBFC2 /* Tor.framework */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D0C20ED224A6DB9D00C62AA4 /* BlockchainInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20ED124A6DB9D00C62AA4 /* BlockchainInfo.swift */; };
 		D0C20ED424A6DFE600C62AA4 /* PeerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20ED324A6DFE500C62AA4 /* PeerInfo.swift */; };
 		D0C20ED624A6E19600C62AA4 /* NetworkInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20ED524A6E19600C62AA4 /* NetworkInfo.swift */; };
@@ -116,6 +118,8 @@
 		D0C20EDC24A6E51D00C62AA4 /* MempoolInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20EDB24A6E51D00C62AA4 /* MempoolInfo.swift */; };
 		D0C20EDE24A6E70A00C62AA4 /* SmartFee.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20EDD24A6E70A00C62AA4 /* SmartFee.swift */; };
 		D0C20EE024A6EF3800C62AA4 /* Balances.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20EDF24A6EF3800C62AA4 /* Balances.swift */; };
+		D0C20EE224A7639800C62AA4 /* LibWally.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0C20EE124A7639800C62AA4 /* LibWally.framework */; };
+		D0C20EE724A78A9700C62AA4 /* CreateFullyNodedWalletViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20EE624A78A9700C62AA4 /* CreateFullyNodedWalletViewController.swift */; };
 		D0D71DA32351F835005CCDB9 /* UtilitieMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0D71DA22351F835005CCDB9 /* UtilitieMenuViewController.swift */; };
 		D0DA954F2340A9C2001B7EB3 /* IncomingsMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DA954E2340A9C2001B7EB3 /* IncomingsMenuViewController.swift */; };
 		D0DE292B22BCFE9900D9EBCF /* Readme.md in Resources */ = {isa = PBXBuildFile; fileRef = D0DE292A22BCFE9900D9EBCF /* Readme.md */; };
@@ -144,20 +148,6 @@
 			remoteInfo = BitSense;
 		};
 /* End PBXContainerItemProxy section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		D0C20ED024A624E600C62AA4 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				D0C20ECF24A624E600C62AA4 /* Tor.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		A084FD712359E9D500DA63CF /* Cartfile.resolved */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Cartfile.resolved; sourceTree = "<group>"; };
@@ -259,6 +249,9 @@
 		D08CED1422E7F118007E2A8E /* ItunesArtwork@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "ItunesArtwork@2x.png"; path = "BitSense/Assets.xcassets/AppIcon.appiconset/ItunesArtwork@2x.png"; sourceTree = SOURCE_ROOT; };
 		D096EDFD249DCF970084A065 /* ShowDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowDetailViewController.swift; sourceTree = "<group>"; };
 		D096EDFF249DFADD0084A065 /* HelpViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpViewController.swift; sourceTree = "<group>"; };
+		D09A32FE24A8419C009FA0B2 /* CreateFullyNodedWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateFullyNodedWallet.swift; sourceTree = "<group>"; };
+		D09A330024A848DA009FA0B2 /* SeedDisplayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedDisplayerViewController.swift; sourceTree = "<group>"; };
+		D09A330224A86C7C009FA0B2 /* Signer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Signer.swift; sourceTree = "<group>"; };
 		D0A2918E225114670099A2F3 /* MakeRPCCall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MakeRPCCall.swift; sourceTree = "<group>"; };
 		D0A291902251743B0099A2F3 /* settings90.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = settings90.png; sourceTree = "<group>"; };
 		D0A519B6226B3DD400860D5C /* RawTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RawTransaction.swift; sourceTree = "<group>"; };
@@ -276,6 +269,8 @@
 		D0C20EDB24A6E51D00C62AA4 /* MempoolInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MempoolInfo.swift; sourceTree = "<group>"; };
 		D0C20EDD24A6E70A00C62AA4 /* SmartFee.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartFee.swift; sourceTree = "<group>"; };
 		D0C20EDF24A6EF3800C62AA4 /* Balances.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Balances.swift; sourceTree = "<group>"; };
+		D0C20EE124A7639800C62AA4 /* LibWally.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = LibWally.framework; path = Carthage/Build/iOS/LibWally.framework; sourceTree = "<group>"; };
+		D0C20EE624A78A9700C62AA4 /* CreateFullyNodedWalletViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateFullyNodedWalletViewController.swift; sourceTree = "<group>"; };
 		D0CB488F2435B32E0072D1F5 /* Entities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Entities.swift; sourceTree = "<group>"; };
 		D0CB48902435B32E0072D1F5 /* Commands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Commands.swift; sourceTree = "<group>"; };
 		D0D71DA22351F835005CCDB9 /* UtilitieMenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilitieMenuViewController.swift; sourceTree = "<group>"; };
@@ -302,6 +297,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D0C20EE224A7639800C62AA4 /* LibWally.framework in Frameworks */,
 				D0C20ECE24A624E600C62AA4 /* Tor.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -510,7 +506,7 @@
 				D0048C71225F38BF0057E21B /* Settings */,
 				D0048C70225F38A90057E21B /* Home */,
 				D0048C75225F3B860057E21B /* Unlock Screen */,
-				D0E2A1042496EE9400AE0C04 /* ActiveWalletViewController.swift */,
+				D0C20EE524A78A6F00C62AA4 /* Wallets */,
 				D096EDFF249DFADD0084A065 /* HelpViewController.swift */,
 			);
 			path = "View Controllers";
@@ -824,6 +820,7 @@
 		D08C1FBB211147F600B7CA79 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D0C20EE124A7639800C62AA4 /* LibWally.framework */,
 				D0855FB822ACB7D100DBBFC2 /* Tor.framework */,
 			);
 			name = Frameworks;
@@ -837,8 +834,20 @@
 				D0EC7489227DF06E001489B9 /* CreateUnsigned.swift */,
 				D0855FC922B0CEA800DBBFC2 /* CreatePSBT.swift */,
 				D0806B4422EE9FBA002C20A1 /* TXChain.swift */,
+				D09A32FE24A8419C009FA0B2 /* CreateFullyNodedWallet.swift */,
+				D09A330224A86C7C009FA0B2 /* Signer.swift */,
 			);
 			path = "Wallet Logic";
+			sourceTree = "<group>";
+		};
+		D0C20EE524A78A6F00C62AA4 /* Wallets */ = {
+			isa = PBXGroup;
+			children = (
+				D0E2A1042496EE9400AE0C04 /* ActiveWalletViewController.swift */,
+				D0C20EE624A78A9700C62AA4 /* CreateFullyNodedWalletViewController.swift */,
+				D09A330024A848DA009FA0B2 /* SeedDisplayerViewController.swift */,
+			);
+			path = Wallets;
 			sourceTree = "<group>";
 		};
 		D0EC748B227F5F64001489B9 /* Create Unsigned */ = {
@@ -911,7 +920,6 @@
 				D00B9A212111427200E8B95A /* Frameworks */,
 				D00B9A222111427200E8B95A /* Resources */,
 				D08C1FBE2111480100B7CA79 /* ShellScript */,
-				D0C20ED024A624E600C62AA4 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1043,6 +1051,7 @@
 			);
 			inputPaths = (
 				"$(SRCROOT)/Carthage/Build/iOS/Tor.framework",
+				"$(SRCROOT)/Carthage/Build/iOS/LibWally.framework",
 			);
 			outputPaths = (
 			);
@@ -1088,6 +1097,7 @@
 				D0ED69BC2325D768001F8FBC /* WalletsViewController.swift in Sources */,
 				D0E2A1052496EE9400AE0C04 /* ActiveWalletViewController.swift in Sources */,
 				D037C870231BAFF1006C357D /* RescanViewController.swift in Sources */,
+				D0C20EE724A78A9700C62AA4 /* CreateFullyNodedWalletViewController.swift in Sources */,
 				D00F851F2494A7CA008D7CD3 /* AuthKeysStruct.swift in Sources */,
 				D02958D5235053B300ED8F72 /* SecurityCenterViewController.swift in Sources */,
 				D0C20ED224A6DB9D00C62AA4 /* BlockchainInfo.swift in Sources */,
@@ -1101,6 +1111,7 @@
 				D03968B1246F6CBA0010D821 /* Crypto.swift in Sources */,
 				D0452ADD224743C50013E225 /* LogInViewController.swift in Sources */,
 				D02958D3234F82E000ED8F72 /* IdentityViewController.swift in Sources */,
+				D09A330324A86C7C009FA0B2 /* Signer.swift in Sources */,
 				D0EC748A227DF06E001489B9 /* CreateUnsigned.swift in Sources */,
 				D0A519B7226B3DD400860D5C /* RawTransaction.swift in Sources */,
 				D08CED1122E54B11007E2A8E /* TransactionViewController.swift in Sources */,
@@ -1137,6 +1148,7 @@
 				D08A92B923403DB200409D6E /* NodesViewController.swift in Sources */,
 				D0384E31246AC4D8002FEE94 /* Base58.swift in Sources */,
 				D033D1CF22B5D1FA00523BEE /* ProcessPSBTViewController.swift in Sources */,
+				D09A32FF24A8419D009FA0B2 /* CreateFullyNodedWallet.swift in Sources */,
 				D07E0DE822F9570A00A81FA8 /* WalletCreatorViewController.swift in Sources */,
 				D02094EE2256B06B002E8E7A /* Transition.swift in Sources */,
 				D0AD9B6823E7ECC20032C607 /* SceneDelegate.swift in Sources */,
@@ -1146,6 +1158,7 @@
 				D0560EE92277F75900C3E909 /* UTXOViewController.swift in Sources */,
 				D00F851D2494A616008D7CD3 /* TorAuthViewController.swift in Sources */,
 				D0C20EDA24A6E46E00C62AA4 /* Uptime.swift in Sources */,
+				D09A330124A848DA009FA0B2 /* SeedDisplayerViewController.swift in Sources */,
 				D0390326246B960B00D32C43 /* KeyChain.swift in Sources */,
 				D037C868231B85A0006C357D /* ExtendedKeysParentViewController.swift in Sources */,
 				D0EF29C1216B82B400EB776A /* SettingsViewController.swift in Sources */,
@@ -1323,7 +1336,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 159;
-				DEVELOPMENT_TEAM = 8JHDU5M9KD;
+				DEVELOPMENT_TEAM = 69FR345CDA;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
@@ -1360,7 +1373,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 159;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 8JHDU5M9KD;
+				DEVELOPMENT_TEAM = 69FR345CDA;
 				ENABLE_TESTABILITY = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",

@@ -1,0 +1,23 @@
+{
+  "Mac" : [
+    {
+      "name" : "Tor",
+      "hash" : "0a0e080a5b355c16c81f4d87f12f0cb8cd40de21745e4dc5ea4e6e84dcba0002",
+      "linking" : "dynamic"
+    }
+  ],
+  "watchOS" : [
+
+  ],
+  "tvOS" : [
+
+  ],
+  "commitish" : "403.5.1",
+  "iOS" : [
+    {
+      "name" : "Tor",
+      "hash" : "73a087595ec6e6b56eb7f1bf4eee244e09188d67ed9951a8090d468d22f1e2c3",
+      "linking" : "dynamic"
+    }
+  ]
+}

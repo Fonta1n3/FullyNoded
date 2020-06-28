@@ -1,1 +1,2 @@
 binary "https://icepa.github.io/Tor.framework/Tor.json" "403.5.1"
+github "blockchain/libwally-swift" "v0.0.1"

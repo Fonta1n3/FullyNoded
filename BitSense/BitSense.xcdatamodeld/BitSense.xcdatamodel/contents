@@ -26,10 +26,25 @@
         <attribute name="rpcpassword" optional="YES" attributeType="Binary"/>
         <attribute name="rpcuser" optional="YES" attributeType="Binary"/>
     </entity>
+    <entity name="Signers" representedClassName="Signers" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="words" optional="YES" attributeType="Binary"/>
+    </entity>
+    <entity name="Wallets" representedClassName="Wallets" syncable="YES" codeGenerationType="class">
+        <attribute name="changeDescriptor" optional="YES" attributeType="String"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="index" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="label" optional="YES" attributeType="String"/>
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="receiveDescriptor" optional="YES" attributeType="String"/>
+        <attribute name="type" optional="YES" attributeType="String"/>
+    </entity>
     <elements>
+        <element name="AuthKeys" positionX="-36" positionY="126" width="128" height="88"/>
         <element name="NewDescriptors" positionX="-18" positionY="153" width="128" height="103"/>
         <element name="NewHDWallets" positionX="-36" positionY="144" width="128" height="118"/>
         <element name="NewNodes" positionX="-54" positionY="135" width="128" height="133"/>
-        <element name="AuthKeys" positionX="-36" positionY="126" width="128" height="88"/>
+        <element name="Signers" positionX="-27" positionY="189" width="128" height="73"/>
+        <element name="Wallets" positionX="-36" positionY="180" width="128" height="148"/>
     </elements>
 </model>
