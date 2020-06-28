@@ -241,7 +241,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         textLabel.textAlignment = .left
         textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
         textLabel.textColor = .white
-        textLabel.frame = CGRect(x: 0, y: 0, width: 200, height: 50)
+        textLabel.frame = CGRect(x: 0, y: 0, width: 400, height: 50)
         switch section {
         case 0:
             textLabel.text = ud.object(forKey: "walletName") as? String ?? "Default Wallet"

@@ -10,23 +10,18 @@ import Foundation
 
 class CreatePSBT {
     
-//    var amount = Double()
-//    var addressToPay = ""
-//    var spendableUtxos = [NSDictionary]()
-//    var inputArray = [Any]()
-//    var utxoTxId = String()
-//    var utxoVout = Int()
-//    var inputs = ""
-//    var psbt = ""
-//    var errorBool = Bool()
-//    var errorDescription = ""
-//    var noInputs = Bool()
-//    var spendingAddress = ""
-//    var changeAddress = ""
-//    var changeAmount = Double()
-//    var miningFee = Double()
-    
-    func createPSBTNow(completion: @escaping () -> Void) {
+    class func create(outputs: String, completion: @escaping ((psbt: String?, rawTx: String?, errorMessage: String?)) -> Void) {
+        let feeTarget = UserDefaults.standard.object(forKey: "feeTarget") as! Int
+        //let output = "[{\"\(receiver)\":\(amount)}]"
+        let param = "[], ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget)}, true"
+        Reducer.makeCommand(command: .walletcreatefundedpsbt, param: param) { (response, errorMessage) in
+            if let result = response as? NSDictionary {
+                let psbt = result["psbt"] as! String
+                Signer.sign(psbt: psbt) { (psbt, rawTx, errorMessage) in
+                    completion((psbt, rawTx, errorMessage))
+                }
+            }
+        }
         
 //        let reducer = Reducer()
 //

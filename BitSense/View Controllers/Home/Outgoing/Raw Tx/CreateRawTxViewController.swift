@@ -815,61 +815,84 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     func getRawTx() {
         
-        let rawTransaction = RawTransaction()
-        rawTransaction.outputs = outputsString
-        let ud = UserDefaults.standard
-        rawTransaction.numberOfBlocks = ud.object(forKey: "feeTarget") as! Int
-        
-        func getResult() {
-            
-            if !rawTransaction.errorBool {
-                
-                removeViews()
-                
-                DispatchQueue.main.async { [unowned vc = self] in
-                    
-                    if !vc.coldSwitchOutlet.isOn {
-                        vc.rawTxSigned = rawTransaction.signedRawTx
-                        vc.creatingView.removeConnectingView()
-                        vc.broadcastNow()
-                        
-                    } else {
-                        
-                        vc.rawTxSigned = rawTransaction.unsignedRawTx
-                        
-                    }
-                    
-                    vc.showRaw(raw: vc.rawTxSigned)
-                    
+//        let rawTransaction = RawTransaction()
+//        rawTransaction.outputs = outputsString
+//        let ud = UserDefaults.standard
+//        rawTransaction.numberOfBlocks = ud.object(forKey: "feeTarget") as! Int
+//
+//        func getResult() {
+//
+//            if !rawTransaction.errorBool {
+//
+//                removeViews()
+//
+//                DispatchQueue.main.async { [unowned vc = self] in
+//
+//                    if !vc.coldSwitchOutlet.isOn {
+//                        vc.rawTxSigned = rawTransaction.signedRawTx
+//                        vc.creatingView.removeConnectingView()
+//                        vc.broadcastNow()
+//
+//                    } else {
+//
+//                        vc.rawTxSigned = rawTransaction.unsignedRawTx
+//
+//                    }
+//
+//                    vc.showRaw(raw: vc.rawTxSigned)
+//
+//                }
+//
+//            } else {
+//
+//                outputs.removeAll()
+//                outputArray.removeAll()
+//
+//                creatingView.removeConnectingView()
+//
+//                displayAlert(viewController: self,
+//                             isError: true,
+//                             message: rawTransaction.errorDescription)
+//
+//            }
+//
+//        }
+//
+//        DispatchQueue.main.async {
+//
+//            if !self.coldSwitchOutlet.isOn {
+//
+//                rawTransaction.createBatchRawTransactionFromHotWallet(completion: getResult)
+//
+//            } else if self.coldSwitchOutlet.isOn {
+//
+//                rawTransaction.createBatchRawTransactionFromColdWallet(completion: getResult)
+//
+//            }
+//
+//        }
+        CreatePSBT.create(outputs: outputsString) { [unowned vc = self] (psbt, rawTx, errorMessage) in
+            if psbt != nil {
+                vc.rawTxSigned = rawTx!
+                vc.creatingView.removeConnectingView()
+                vc.showRaw(raw: rawTx!)
+                DispatchQueue.main.async {
+                    vc.navigationController?.navigationBar.topItem?.title = "PSBT"
                 }
                 
-            } else {
+            } else if rawTx != nil {
+                vc.rawTxSigned = rawTx!
+                vc.creatingView.removeConnectingView()
+                vc.showRaw(raw: rawTx!)
+                DispatchQueue.main.async {
+                    vc.navigationController?.navigationBar.topItem?.title = "Signed Tx"
+                }
+                vc.broadcastNow()
                 
-                outputs.removeAll()
-                outputArray.removeAll()
-                
-                creatingView.removeConnectingView()
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: rawTransaction.errorDescription)
-                
+            } else if errorMessage != nil {
+                vc.creatingView.removeConnectingView()
+                showAlert(vc: vc, title: "Error", message: errorMessage!)
             }
-            
-        }
-        
-        DispatchQueue.main.async {
-            
-            if !self.coldSwitchOutlet.isOn {
-                
-                rawTransaction.createBatchRawTransactionFromHotWallet(completion: getResult)
-                
-            } else if self.coldSwitchOutlet.isOn {
-                
-                rawTransaction.createBatchRawTransactionFromColdWallet(completion: getResult)
-                
-            }
-            
         }
         
     }

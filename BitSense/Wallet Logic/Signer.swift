@@ -9,9 +9,9 @@
 import Foundation
 import LibWally
 
-class PSBTSigner {
+class Signer {
     
-    class func sign(psbt: String, completion: @escaping ((success: Bool, psbt: String?, rawTx: String?)) -> Void) {
+    class func sign(psbt: String, completion: @escaping ((psbt: String?, rawTx: String?, errorMessage: String?)) -> Void) {
         
         var seedsToSignWith = [[String:Any]]()
         var xprvsToSignWith = [HDKey]()
@@ -32,19 +32,19 @@ class PSBTSigner {
                         if complete {
                             let hex = result["hex"] as! String
                             reset()
-                            completion((true, nil, hex))
+                            completion((nil, hex, nil))
                         } else {
                             let psbt = result["psbt"] as! String
                             reset()
-                            completion((true, psbt, nil))
+                            completion((psbt, nil, nil))
                         }
                     } else {
                         reset()
-                        completion((false, nil, errorDescription))
+                        completion((nil, nil, errorDescription))
                     }
                 } else {
                     reset()
-                    completion((false, nil, errorDescription))
+                    completion((nil, nil, errorDescription))
                 }
             }
         }
@@ -70,7 +70,7 @@ class PSBTSigner {
                     }
                 } else {
                     reset()
-                    completion((false, nil, nil))
+                    completion((nil, nil, errorDescription))
                 }
             }
         }
