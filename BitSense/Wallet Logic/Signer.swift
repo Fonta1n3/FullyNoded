@@ -12,7 +12,6 @@ import LibWally
 class Signer {
     
     class func sign(psbt: String, completion: @escaping ((psbt: String?, rawTx: String?, errorMessage: String?)) -> Void) {
-        
         var seedsToSignWith = [[String:Any]]()
         var xprvsToSignWith = [HDKey]()
         var psbtToSign:PSBT!
@@ -167,9 +166,24 @@ class Signer {
                 }
             }
         }
-                
-        getSeeds()
+        
+        Reducer.makeCommand(command: .getblockchaininfo, param: "") { (response, errorMessage) in
+            if let dict = response as? NSDictionary {
+                if let network = dict["chain"] as? String {
+                    if network == "main" {
+                        chain = .mainnet
+                    } else {
+                        chain = .testnet
+                    }
+                    do {
+                        psbtToSign = try PSBT(psbt, chain)
+                    } catch {
+                        completion((nil, nil, "Error converting that psbt"))
+                    }
+                    getSeeds()
+                }
+            }
+        }
     }
-    
 }
 

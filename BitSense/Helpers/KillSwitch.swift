@@ -54,7 +54,7 @@ class KillSwitch {
         CoreDataService.retrieveEntity(entityName: .newHdWallets) { hdwallets in
             if hdwallets != nil {
                 for h in hdwallets! {
-                    let str = Wallet(dictionary: h)
+                    let str = WalletOld(dictionary: h)
                     if let id = str.id {
                         CoreDataService.deleteEntity(id: id, entityName: .newHdWallets) { success in
                             if success {

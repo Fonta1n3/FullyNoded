@@ -167,7 +167,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
     
     func getHDMusigAddress() {
-        let walletStr = Wallet(dictionary: wallet)
+        let walletStr = WalletOld(dictionary: wallet)
         Crypto.decryptData(dataToDecrypt: walletStr.descriptor!) { [unowned vc = self] (desc) in
             if desc != nil {
                 vc.descriptor = desc!.utf8
@@ -240,10 +240,13 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 
                 params = "\"\", \"legacy\""
                 
+            } else if self.p2shSegwit {
+                
+                params = "\"\", \"p2sh-segwit\""
+                
             }
             
-            self.executeNodeCommand(method: BTC_CLI_COMMAND.getnewaddress,
-                                       param: params)
+            self.executeNodeCommand(method: .getnewaddress, param: params)
             
         }
         

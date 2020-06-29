@@ -94,7 +94,7 @@ class WalletsViewController: UIViewController, UITableViewDataSource, UITableVie
         if editingStyle == UITableViewCell.EditingStyle.delete {
             
             let row = indexPath.row
-            let wallet = Wallet(dictionary: wallets[row])
+            let wallet = WalletOld(dictionary: wallets[row])
             
             CoreDataService.deleteEntity(id: wallet.id!, entityName: .newHdWallets) { [unowned vc = self] success in
                 

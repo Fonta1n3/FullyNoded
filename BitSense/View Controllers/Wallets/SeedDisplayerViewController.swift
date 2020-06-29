@@ -10,6 +10,7 @@ import UIKit
 
 class SeedDisplayerViewController: UIViewController, UINavigationControllerDelegate {
 
+    @IBOutlet weak var savedOutlet: UIButton!
     @IBOutlet weak var textView: UITextView!
     var spinner = ConnectingView()
     var primDesc = ""
@@ -22,6 +23,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         textView.layer.cornerRadius = 8
         textView.layer.borderColor = UIColor.lightGray.cgColor
         textView.layer.borderWidth = 0.5
+        savedOutlet.layer.cornerRadius = 8
         getWords()
     }
     
@@ -80,11 +82,11 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     }
     
     private func primaryDescriptor(_ fingerprint: String, _ xpub: String) -> String {
-        return "wpkh([\(fingerprint)/84h/1h/0h]\(xpub)/0/*)"
+        return "combo([\(fingerprint)/84h/1h/0h]\(xpub)/0/*)"
     }
     
     private func changeDescriptor(_ fingerprint: String, _ xpub: String) -> String {
-        return "wpkh([\(fingerprint)/84h/1h/0h]\(xpub)/1/*)"
+        return "combo([\(fingerprint)/84h/1h/0h]\(xpub)/1/*)"
     }
     
     private func createWallet(fingerprint: String, xpub: String, completion: @escaping ((Bool)) -> Void) {
@@ -198,6 +200,8 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         dict["receiveDescriptor"] = primDesc
         dict["type"] = "Single-Sig"
         dict["name"] = name
+        dict["maxIndex"] = 500
+        dict["index"] = 0
         CoreDataService.saveEntity(dict: dict, entityName: .wallets) { [unowned vc = self] success in
             if success {
                 NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)

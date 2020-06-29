@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct Wallet: CustomStringConvertible {
+public struct WalletOld: CustomStringConvertible {
     
     let descriptor:Data?
     let id:UUID?

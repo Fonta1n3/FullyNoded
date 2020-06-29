@@ -27,6 +27,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     let spinner = UIActivityIndicatorView(style: .medium)
     var refreshButton = UIBarButtonItem()
     var dataRefresher = UIBarButtonItem()
+    var walletLabel = ""
     @IBOutlet weak var sendView: UIView!
     @IBOutlet weak var invoiceView: UIView!
     @IBOutlet weak var importView: UIView!
@@ -92,6 +93,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     
     private func loadTable() {
         loadBalances()
+        getWalletLabel()
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -244,7 +246,11 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         textLabel.frame = CGRect(x: 0, y: 0, width: 400, height: 50)
         switch section {
         case 0:
-            textLabel.text = ud.object(forKey: "walletName") as? String ?? "Default Wallet"
+            if walletLabel != "" {
+                textLabel.text = walletLabel
+            } else {
+                textLabel.text = ud.object(forKey: "walletName") as? String ?? "Default Wallet"
+            }
             
         case 1:
             textLabel.text = "Transactions"
@@ -303,6 +309,25 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     @objc func refreshWallet() {
         existingWallet = ""
         reloadWalletData()
+    }
+    
+    private func getWalletLabel() {
+        let walletName = ud.object(forKey: "walletName") as? String ?? "Default Wallet"
+        CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
+            if wallets != nil {
+                if wallets!.count > 0 {
+                    for w in wallets! {
+                        let walletStruct = Wallet(dictionary: w)
+                        if walletStruct.name == walletName {
+                            DispatchQueue.main.async { [unowned vc = self] in
+                                vc.walletLabel = walletStruct.label
+                                vc.walletTable.reloadSections(IndexSet(arrayLiteral: 0), with: .none)
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
     
     private func checkIfWalletsChanged() {

@@ -9,11 +9,15 @@
 import UIKit
 
 class CreateFullyNodedWalletViewController: UIViewController {
+    
+    @IBOutlet weak var singleSigOutlet: UIButton!
+    @IBOutlet weak var recoveryOutlet: UIButton!
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Do any additional setup after loading the view.
+        singleSigOutlet.layer.cornerRadius = 8
+        recoveryOutlet.layer.cornerRadius = 8
     }
     
     @IBAction func automaticAction(_ sender: Any) {

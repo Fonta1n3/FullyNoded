@@ -40,7 +40,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     @IBOutlet var receivingLabel: UILabel!
     @IBOutlet var outputsTable: UITableView!
     @IBOutlet var scannerView: UIImageView!
-    @IBOutlet weak var psbtOutlet: UIButton!
     
     var creatingView = ConnectingView()
     let qrScanner = QRScanner()
@@ -48,64 +47,26 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     let qrGenerator = QRGenerator()
     var spendableBalance = Double()
     var outputArray = [[String:String]]()
-    @IBOutlet var coldSwitchOutlet: UISwitch!
-    @IBOutlet var coldLabel: UILabel!
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        amountInput.delegate = self
+        addressInput.delegate = self
+        outputsTable.delegate = self
+        outputsTable.dataSource = self
+        outputsTable.tableFooterView = UIView(frame: .zero)
+        outputsTable.alpha = 0
+        configureRawDisplayer()
+        configureScanner()
+        addTapGesture()
+        scannerView.alpha = 0
+        scannerView.backgroundColor = UIColor.black
+    }
     
     @IBAction func createPsbt(_ sender: Any) {
         DispatchQueue.main.async { [unowned vc = self] in
             vc.performSegue(withIdentifier: "segueToCreatePsbt", sender: vc)
         }
-    }
-    
-    
-   @IBAction func coldAction(_ sender: Any) {
-        
-        if coldSwitchOutlet.isOn {
-            
-            displayAlert(viewController: self,
-                         isError: false,
-                         message: "This transaction will also select inputs that are watch-only and create an unsigned transaction")
-            
-        }
-        
-    }
-    
-    func parseUnpsent(utxos: NSArray) {
-        
-        for utxo in utxos {
-            
-            let dict = utxo as! NSDictionary
-            let spendable = dict["spendable"] as! Bool
-            let amount = dict["amount"] as! Double
-            
-            DispatchQueue.main.async {
-                
-                if !self.coldSwitchOutlet.isOn {
-                    
-                    if spendable {
-                        
-                        self.spendableBalance += amount
-                        
-                    }
-                    
-                } else {
-                    
-                    self.spendableBalance += amount
-                    
-                }
-                
-            }
-            
-        }
-        
-        DispatchQueue.main.async {
-            
-            let sweepamount = self.spendableBalance
-            let round = self.rounded(number: sweepamount)
-            self.amountInput.text = "\(round)"
-            
-        }
-        
     }
     
     
@@ -293,32 +254,10 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         
     }
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        amountInput.delegate = self
-        addressInput.delegate = self
-        outputsTable.delegate = self
-        outputsTable.dataSource = self
-        outputsTable.tableFooterView = UIView(frame: .zero)
-        outputsTable.alpha = 0
-        configureRawDisplayer()
-        configureScanner()
-        addTapGesture()
-        coldSwitchOutlet.isOn = false
-        scannerView.alpha = 0
-        scannerView.backgroundColor = UIColor.black
-        
-    }
-    
     func addTapGesture() {
-        
-        let tapGesture = UITapGestureRecognizer(target: self,
-                                                action: #selector(self.dismissKeyboard (_:)))
-        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
-        
     }
     
     func getQRCode() {
@@ -344,7 +283,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                     vc.removeViews()
                     vc.creatingView.removeConnectingView()
                     if rawTransaction.unsignedRawTx != "" {
-                        vc.coldSwitchOutlet.setOn(true, animated: false)
                         vc.rawTxSigned = rawTransaction.unsignedRawTx
                     } else {
                         vc.rawTxSigned = rawTransaction.signedRawTx
@@ -368,41 +306,24 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         
         rawDisplayer.qrView.addGestureRecognizer(tapQRGesture)
         
-        tapTextViewGesture = UITapGestureRecognizer(target: self,
-                                                    action: #selector(shareRawText(_:)))
-        
-        rawDisplayer.textView.addGestureRecognizer(tapTextViewGesture)
-        
     }
     
     func removeViews() {
-        
         DispatchQueue.main.async { [unowned vc = self] in
-            
-            vc.coldSwitchOutlet.removeFromSuperview()
-            vc.coldLabel.removeFromSuperview()
             vc.amountInput.removeFromSuperview()
             vc.addressInput.removeFromSuperview()
             vc.amountLabel.removeFromSuperview()
             vc.receivingLabel.removeFromSuperview()
             vc.scanOutlet.removeFromSuperview()
             vc.outputsTable.removeFromSuperview()
-            
         }
-        
     }
     
     func showRaw(raw: String) {
         DispatchQueue.main.async { [unowned vc = self] in
             vc.playButtonOutlet.tintColor = UIColor.lightGray.withAlphaComponent(0)
             vc.addOutputOutlet.tintColor = UIColor.lightGray.withAlphaComponent(0)
-            vc.psbtOutlet.alpha = 0
             vc.rawDisplayer.rawString = raw
-            if vc.coldSwitchOutlet.isOn {
-                vc.navigationController?.navigationBar.topItem?.title = "Unsigned Tx"
-            } else {
-                vc.navigationController?.navigationBar.topItem?.title = "Signed Tx"
-            }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: { [unowned vc = self] in
                 vc.scannerView.removeFromSuperview()
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: { [unowned vc = self] in
@@ -416,9 +337,11 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     @IBAction func tryRawNow(_ sender: Any) {
-        
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.amountInput.resignFirstResponder()
+            vc.addressInput.resignFirstResponder()
+        }
         tryRaw()
-        
     }
     
     @objc func tryRaw() {
@@ -682,10 +605,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             
             processKeys(key: addressInput.text!)
             
-        //} else if textField == self.amountInput && self.amountInput.text != "" {
-            
-            //self.amountInput.resignFirstResponder()
-            
         } else if textField == addressInput && addressInput.text == "" {
             
             shakeAlert(viewToShake: self.qrScanner.textField)
@@ -814,78 +733,27 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     func getRawTx() {
-        
-//        let rawTransaction = RawTransaction()
-//        rawTransaction.outputs = outputsString
-//        let ud = UserDefaults.standard
-//        rawTransaction.numberOfBlocks = ud.object(forKey: "feeTarget") as! Int
-//
-//        func getResult() {
-//
-//            if !rawTransaction.errorBool {
-//
-//                removeViews()
-//
-//                DispatchQueue.main.async { [unowned vc = self] in
-//
-//                    if !vc.coldSwitchOutlet.isOn {
-//                        vc.rawTxSigned = rawTransaction.signedRawTx
-//                        vc.creatingView.removeConnectingView()
-//                        vc.broadcastNow()
-//
-//                    } else {
-//
-//                        vc.rawTxSigned = rawTransaction.unsignedRawTx
-//
-//                    }
-//
-//                    vc.showRaw(raw: vc.rawTxSigned)
-//
-//                }
-//
-//            } else {
-//
-//                outputs.removeAll()
-//                outputArray.removeAll()
-//
-//                creatingView.removeConnectingView()
-//
-//                displayAlert(viewController: self,
-//                             isError: true,
-//                             message: rawTransaction.errorDescription)
-//
-//            }
-//
-//        }
-//
-//        DispatchQueue.main.async {
-//
-//            if !self.coldSwitchOutlet.isOn {
-//
-//                rawTransaction.createBatchRawTransactionFromHotWallet(completion: getResult)
-//
-//            } else if self.coldSwitchOutlet.isOn {
-//
-//                rawTransaction.createBatchRawTransactionFromColdWallet(completion: getResult)
-//
-//            }
-//
-//        }
         CreatePSBT.create(outputs: outputsString) { [unowned vc = self] (psbt, rawTx, errorMessage) in
             if psbt != nil {
-                vc.rawTxSigned = rawTx!
+                vc.rawTxSigned = psbt!
                 vc.creatingView.removeConnectingView()
-                vc.showRaw(raw: rawTx!)
+                vc.showRaw(raw: psbt!)
                 DispatchQueue.main.async {
+                    vc.removeViews()
                     vc.navigationController?.navigationBar.topItem?.title = "PSBT"
+                    vc.tapTextViewGesture = UITapGestureRecognizer(target: self, action: #selector(vc.sharePSBT(_:)))
+                    vc.rawDisplayer.textView.addGestureRecognizer(vc.tapTextViewGesture)
+                    vc.exportPsbt()
                 }
-                
             } else if rawTx != nil {
                 vc.rawTxSigned = rawTx!
                 vc.creatingView.removeConnectingView()
                 vc.showRaw(raw: rawTx!)
                 DispatchQueue.main.async {
+                    vc.removeViews()
                     vc.navigationController?.navigationBar.topItem?.title = "Signed Tx"
+                    vc.tapTextViewGesture = UITapGestureRecognizer(target: self, action: #selector(vc.shareRawText(_:)))
+                    vc.rawDisplayer.textView.addGestureRecognizer(vc.tapTextViewGesture)
                 }
                 vc.broadcastNow()
                 
@@ -893,6 +761,78 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 vc.creatingView.removeConnectingView()
                 showAlert(vc: vc, title: "Error", message: errorMessage!)
             }
+        }
+    }
+    
+    private func exportPsbt() {
+        DispatchQueue.main.async {
+            
+            UIView.animate(withDuration: 0.2, animations: {
+                
+                self.rawDisplayer.textView.alpha = 0
+                
+            }) { _ in
+                
+                UIView.animate(withDuration: 0.2, animations: {
+                    
+                    self.rawDisplayer.textView.alpha = 1
+                    
+                })
+                
+            }
+            
+            let alert = UIAlertController(title: "Share as raw data or text?", message: "Sharing as raw data allows you to send the unsigned psbt directly to your Coldcard Wallets SD card for signing or to Electrum 4.0", preferredStyle: .actionSheet)
+            
+            alert.addAction(UIAlertAction(title: "Raw Data", style: .default, handler: { action in
+                
+                self.convertPSBTtoData(string: self.rawTxSigned)
+                
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Text", style: .default, handler: { action in
+                
+                DispatchQueue.main.async {
+                    
+                    let textToShare = [self.rawTxSigned]
+                    
+                    let activityViewController = UIActivityViewController(activityItems: textToShare,
+                                                                          applicationActivities: nil)
+                    
+                    activityViewController.popoverPresentationController?.sourceView = self.view
+                    self.present(activityViewController, animated: true) {}
+                    
+                }
+                
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in
+                
+            }))
+            
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true) {}
+            
+        }
+    }
+    
+    @objc func sharePSBT(_ sender: UITapGestureRecognizer) {
+        exportPsbt()
+    }
+    
+    func convertPSBTtoData(string: String) {
+     
+        if let data = Data(base64Encoded: string) {
+         
+            DispatchQueue.main.async {
+                
+                let activityViewController = UIActivityViewController(activityItems: [data],
+                                                                      applicationActivities: nil)
+                
+                activityViewController.popoverPresentationController?.sourceView = self.view
+                self.present(activityViewController, animated: true) {}
+                
+            }
+            
         }
         
     }
