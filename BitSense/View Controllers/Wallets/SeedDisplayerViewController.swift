@@ -16,6 +16,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     var primDesc = ""
     var changeDesc = ""
     var name = ""
+    var coinType = "0"
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -24,7 +25,26 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         textView.layer.borderColor = UIColor.lightGray.cgColor
         textView.layer.borderWidth = 0.5
         savedOutlet.layer.cornerRadius = 8
-        getWords()
+        setCoinType()
+    }
+    
+    private func setCoinType() {
+        spinner.addConnectingView(vc: self, description: "fetching chain type...")
+        Reducer.makeCommand(command: .getblockchaininfo, param: "") { [unowned vc = self] (response, errorMessage) in
+            if let dict = response as? NSDictionary {
+                if let chain = dict["chain"] as? String {
+                    if chain == "test" {
+                        vc.coinType = "1"
+                    }
+                    vc.getWords()
+                }
+            } else {
+                vc.showError(error: "Error getting blockchain info, please chack your connection to your node.")
+                DispatchQueue.main.async {
+                    vc.navigationController?.popToRootViewController(animated: true)
+                }
+            }
+        }
     }
     
     @IBAction func savedAction(_ sender: Any) {
@@ -54,7 +74,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     }
     
     private func getMasterKey(seed: String) {
-        if let masterKey = CreateFullyNodedWallet.masterKey(words: seed) {
+        if let masterKey = CreateFullyNodedWallet.masterKey(words: seed, coinType: coinType) {
             getXpubFingerprint(masterKey: masterKey)
         } else {
             showError(error: "Error deriving master key")
@@ -62,7 +82,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     }
     
     private func getXpubFingerprint(masterKey: String) {
-        if let xpub = CreateFullyNodedWallet.bip84AccountXpub(masterKey: masterKey) {
+        if let xpub = CreateFullyNodedWallet.bip84AccountXpub(masterKey: masterKey, coinType: coinType) {
             if let fingerprint = CreateFullyNodedWallet.fingerpint(masterKey: masterKey) {
                 createWallet(fingerprint: fingerprint, xpub: xpub) { [unowned vc = self] success in
                     if success {
@@ -82,11 +102,11 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     }
     
     private func primaryDescriptor(_ fingerprint: String, _ xpub: String) -> String {
-        return "combo([\(fingerprint)/84h/1h/0h]\(xpub)/0/*)"
+        return "combo([\(fingerprint)/84h/\(coinType)h/0h]\(xpub)/0/*)"
     }
     
     private func changeDescriptor(_ fingerprint: String, _ xpub: String) -> String {
-        return "combo([\(fingerprint)/84h/1h/0h]\(xpub)/1/*)"
+        return "combo([\(fingerprint)/84h/\(coinType)h/0h]\(xpub)/1/*)"
     }
     
     private func createWallet(fingerprint: String, xpub: String, completion: @escaping ((Bool)) -> Void) {
@@ -133,7 +153,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         getDescriptorInfo(desc: desc) { [unowned vc = self] descriptor in
             if descriptor != nil {
                 vc.primDesc = descriptor!
-                let params = "[{ \"desc\": \"\(descriptor!)\", \"timestamp\": \"now\", \"range\": [0,500], \"watchonly\": true, \"label\": \"Fully Noded\", \"keypool\": true, \"internal\": false }]"
+                let params = "[{ \"desc\": \"\(descriptor!)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"label\": \"Fully Noded\", \"keypool\": true, \"internal\": false }]"
                 vc.importMulti(params: params, completion: completion)
             } else {
                 vc.showError(error: "error getting primary descriptor info")
@@ -145,7 +165,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         getDescriptorInfo(desc: desc) { [unowned vc = self] descriptor in
             if descriptor != nil {
                 vc.changeDesc = descriptor!
-                let params = "[{ \"desc\": \"\(descriptor!)\", \"timestamp\": \"now\", \"range\": [0,500], \"watchonly\": true, \"keypool\": true, \"internal\": true }]"
+                let params = "[{ \"desc\": \"\(descriptor!)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"keypool\": true, \"internal\": true }]"
                 vc.importMulti(params: params, completion: completion)
             } else {
                 vc.showError(error: "error getting change descriptor info")
@@ -200,12 +220,14 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         dict["receiveDescriptor"] = primDesc
         dict["type"] = "Single-Sig"
         dict["name"] = name
-        dict["maxIndex"] = 500
+        dict["maxIndex"] = 2500
         dict["index"] = 0
         CoreDataService.saveEntity(dict: dict, entityName: .wallets) { [unowned vc = self] success in
             if success {
-                NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                 vc.spinner.removeConnectingView()
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+                }
                 showAlert(vc: vc, title: "Success!", message: "You created a Fully Noded single sig wallet, make sure you save your words so you can always recover this wallet if needed!")
             }
         }

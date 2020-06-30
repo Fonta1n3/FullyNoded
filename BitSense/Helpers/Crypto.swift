@@ -39,4 +39,11 @@ class Crypto {
         }
     }
     
+    class func checksum(_ descriptor: String) -> String {
+        let hash = SHA256.hash(data: Data(SHA256.hash(data: Base58.decode(descriptor))))
+        let checksum = Data(hash).subdata(in: Range(0...3))
+        let hex = checksum.hexString
+        return descriptor + "#" + hex
+    }
+    
 }

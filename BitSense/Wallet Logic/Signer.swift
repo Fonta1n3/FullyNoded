@@ -16,6 +16,7 @@ class Signer {
         var xprvsToSignWith = [HDKey]()
         var psbtToSign:PSBT!
         var chain:Network!
+        var coinType:String!
         
         func reset() {
             seedsToSignWith.removeAll()
@@ -134,7 +135,7 @@ class Signer {
                 Crypto.decryptData(dataToDecrypt: encryptedSeed) { (seed) in
                     if seed != nil {
                         if let words = String(data: seed!, encoding: .utf8) {
-                            if let masterKey = CreateFullyNodedWallet.masterKey(words: words) {
+                            if let masterKey = CreateFullyNodedWallet.masterKey(words: words, coinType: coinType) {
                                 if let hdkey = HDKey(masterKey) {
                                     xprvsToSignWith.append(hdkey)
                                 }
@@ -172,8 +173,10 @@ class Signer {
                 if let network = dict["chain"] as? String {
                     if network == "main" {
                         chain = .mainnet
+                        coinType = "0"
                     } else {
                         chain = .testnet
+                        coinType = "1"
                     }
                     do {
                         psbtToSign = try PSBT(psbt, chain)

@@ -29,7 +29,7 @@ class WalletsViewController: UIViewController, UITableViewDataSource, UITableVie
         
         for w in wallets {
             
-            let wallet = Wallet(dictionary: w)
+            let wallet = WalletOld(dictionary: w)
             let dict = ["label":wallet.label]
             tableArray.append(dict)
             walletTable.reloadData()

@@ -28,11 +28,17 @@ class CreateFullyNodedWallet {
         return words
     }
     
-    class func masterKey(words: String) -> String? {
+    class func masterKey(words: String, coinType: String) -> String? {
+        var chain:Network!
+        if coinType == "0" {
+            chain = .mainnet
+        } else {
+            chain = .testnet
+        }
         var masterKey:String?
         if let mnmemonic = BIP39Mnemonic(words) {
             let seedHex = mnmemonic.seedHex("")
-            if let mk = HDKey(seedHex, .testnet) {
+            if let mk = HDKey(seedHex, chain) {
                 if mk.xpriv != nil {
                     masterKey = mk.xpriv!
                 }
@@ -49,10 +55,25 @@ class CreateFullyNodedWallet {
         return fingerprint
     }
     
-    class func bip84AccountXpub(masterKey: String) -> String? {
+    class func bip84AccountXpub(masterKey: String, coinType: String) -> String? {
         var xpub:String?
         if let mk = HDKey(masterKey) {
-            if let path = BIP32Path("m/84'/1'/0'") {
+            if let path = BIP32Path("m/84'/\(coinType)'/0'") {
+                do {
+                    let accountKey = try mk.derive(path)
+                    xpub = accountKey.xpub
+                } catch {
+                    
+                }
+            }
+        }
+        return xpub
+    }
+    
+    class func xpub(path: String, masterKey: String) -> String? {
+        var xpub:String?
+        if let mk = HDKey(masterKey) {
+            if let path = BIP32Path(path) {
                 do {
                     let accountKey = try mk.derive(path)
                     xpub = accountKey.xpub

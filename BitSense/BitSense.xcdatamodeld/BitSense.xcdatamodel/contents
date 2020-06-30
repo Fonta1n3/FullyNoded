@@ -39,6 +39,7 @@
         <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="receiveDescriptor" optional="YES" attributeType="String"/>
         <attribute name="type" optional="YES" attributeType="String"/>
+        <attribute name="watching" optional="YES" attributeType="Transformable"/>
     </entity>
     <elements>
         <element name="AuthKeys" positionX="-36" positionY="126" width="128" height="88"/>
@@ -46,6 +47,6 @@
         <element name="NewHDWallets" positionX="-36" positionY="144" width="128" height="118"/>
         <element name="NewNodes" positionX="-54" positionY="135" width="128" height="133"/>
         <element name="Signers" positionX="-27" positionY="189" width="128" height="73"/>
-        <element name="Wallets" positionX="-36" positionY="180" width="128" height="163"/>
+        <element name="Wallets" positionX="-36" positionY="180" width="128" height="178"/>
     </elements>
 </model>

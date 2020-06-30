@@ -102,6 +102,10 @@
 		D09A330124A848DA009FA0B2 /* SeedDisplayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09A330024A848DA009FA0B2 /* SeedDisplayerViewController.swift */; };
 		D09A330324A86C7C009FA0B2 /* Signer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09A330224A86C7C009FA0B2 /* Signer.swift */; };
 		D09A330524A8C4F6009FA0B2 /* Wallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09A330424A8C4F6009FA0B2 /* Wallet.swift */; };
+		D09A330724A982F3009FA0B2 /* FullyNodedWalletsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09A330624A982F2009FA0B2 /* FullyNodedWalletsViewController.swift */; };
+		D09A330924A98EE1009FA0B2 /* WalletDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09A330824A98EE1009FA0B2 /* WalletDetailViewController.swift */; };
+		D09A330D24A9B10E009FA0B2 /* BIP39WordList.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09A330C24A9B10E009FA0B2 /* BIP39WordList.swift */; };
+		D09A330F24A9B853009FA0B2 /* RecoveryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09A330E24A9B853009FA0B2 /* RecoveryViewController.swift */; };
 		D0A2918F225114670099A2F3 /* MakeRPCCall.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A2918E225114670099A2F3 /* MakeRPCCall.swift */; };
 		D0A291912251743B0099A2F3 /* settings90.png in Resources */ = {isa = PBXBuildFile; fileRef = D0A291902251743B0099A2F3 /* settings90.png */; };
 		D0A519B7226B3DD400860D5C /* RawTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A519B6226B3DD400860D5C /* RawTransaction.swift */; };
@@ -254,6 +258,10 @@
 		D09A330024A848DA009FA0B2 /* SeedDisplayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedDisplayerViewController.swift; sourceTree = "<group>"; };
 		D09A330224A86C7C009FA0B2 /* Signer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Signer.swift; sourceTree = "<group>"; };
 		D09A330424A8C4F6009FA0B2 /* Wallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Wallet.swift; sourceTree = "<group>"; };
+		D09A330624A982F2009FA0B2 /* FullyNodedWalletsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullyNodedWalletsViewController.swift; sourceTree = "<group>"; };
+		D09A330824A98EE1009FA0B2 /* WalletDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletDetailViewController.swift; sourceTree = "<group>"; };
+		D09A330C24A9B10E009FA0B2 /* BIP39WordList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BIP39WordList.swift; sourceTree = "<group>"; };
+		D09A330E24A9B853009FA0B2 /* RecoveryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryViewController.swift; sourceTree = "<group>"; };
 		D0A2918E225114670099A2F3 /* MakeRPCCall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MakeRPCCall.swift; sourceTree = "<group>"; };
 		D0A291902251743B0099A2F3 /* settings90.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = settings90.png; sourceTree = "<group>"; };
 		D0A519B6226B3DD400860D5C /* RawTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RawTransaction.swift; sourceTree = "<group>"; };
@@ -498,6 +506,7 @@
 				D0390325246B960B00D32C43 /* KeyChain.swift */,
 				D03968B0246F6CBA0010D821 /* Crypto.swift */,
 				D03968B2246F769C0010D821 /* KeychainKeys.swift */,
+				D09A330C24A9B10E009FA0B2 /* BIP39WordList.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -849,6 +858,9 @@
 				D0E2A1042496EE9400AE0C04 /* ActiveWalletViewController.swift */,
 				D0C20EE624A78A9700C62AA4 /* CreateFullyNodedWalletViewController.swift */,
 				D09A330024A848DA009FA0B2 /* SeedDisplayerViewController.swift */,
+				D09A330624A982F2009FA0B2 /* FullyNodedWalletsViewController.swift */,
+				D09A330824A98EE1009FA0B2 /* WalletDetailViewController.swift */,
+				D09A330E24A9B853009FA0B2 /* RecoveryViewController.swift */,
 			);
 			path = Wallets;
 			sourceTree = "<group>";
@@ -1073,6 +1085,7 @@
 				D0C20ED424A6DFE600C62AA4 /* PeerInfo.swift in Sources */,
 				D09A330524A8C4F6009FA0B2 /* Wallet.swift in Sources */,
 				D039D3CA2332440D00D1ED18 /* HDMusigStruct.swift in Sources */,
+				D09A330924A98EE1009FA0B2 /* WalletDetailViewController.swift in Sources */,
 				D096EDFE249DCF970084A065 /* ShowDetailViewController.swift in Sources */,
 				D02094F02257FB78002E8E7A /* FirstTime.swift in Sources */,
 				D0560EEF22784E9D00C3E909 /* UnsignedViewController.swift in Sources */,
@@ -1085,6 +1098,7 @@
 				D039D3C823322F1300D1ED18 /* NodeStruct.swift in Sources */,
 				D08A92AD2337A63000409D6E /* DescriptorStruct.swift in Sources */,
 				D037C876231CAFD9006C357D /* AddLabelViewController.swift in Sources */,
+				D09A330D24A9B10E009FA0B2 /* BIP39WordList.swift in Sources */,
 				D0233F282361EA5F0041FFBA /* shim.swift in Sources */,
 				D05692E321434452006DF0F4 /* MainMenuViewController.swift in Sources */,
 				D07399D9245EEA5F00860B7E /* Broadcaster.swift in Sources */,
@@ -1093,6 +1107,7 @@
 				D07A8237235D4FEE00F7E095 /* ImportMultiSigViewController.swift in Sources */,
 				D0855FC822B0C71900DBBFC2 /* CreatePSBTViewController.swift in Sources */,
 				D05D973422647CE60035F1DE /* QRGenerator.swift in Sources */,
+				D09A330724A982F3009FA0B2 /* FullyNodedWalletsViewController.swift in Sources */,
 				D07AED042435B62B00C2FADB /* Entities.swift in Sources */,
 				D037C872231BB020006C357D /* AddFingerprintViewController.swift in Sources */,
 				D0855FCA22B0CEA800DBBFC2 /* CreatePSBT.swift in Sources */,
@@ -1161,6 +1176,7 @@
 				D0C20ED824A6E2FF00C62AA4 /* MiningInfo.swift in Sources */,
 				D0560EE92277F75900C3E909 /* UTXOViewController.swift in Sources */,
 				D00F851D2494A616008D7CD3 /* TorAuthViewController.swift in Sources */,
+				D09A330F24A9B853009FA0B2 /* RecoveryViewController.swift in Sources */,
 				D0C20EDA24A6E46E00C62AA4 /* Uptime.swift in Sources */,
 				D09A330124A848DA009FA0B2 /* SeedDisplayerViewController.swift in Sources */,
 				D0390326246B960B00D32C43 /* KeyChain.swift in Sources */,

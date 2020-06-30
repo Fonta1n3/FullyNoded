@@ -54,12 +54,17 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         loadTable()
     }
     
+    @IBAction func goToFullyNodedWallets(_ sender: Any) {
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "segueToWallets", sender: vc)
+        }
+    }
+    
     @IBAction func createWallet(_ sender: Any) {
         DispatchQueue.main.async { [unowned vc = self] in
             vc.performSegue(withIdentifier: "createFullyNodedWallet", sender: vc)
         }
     }
-    
     
     @IBAction func sendAction(_ sender: Any) {
         DispatchQueue.main.async { [unowned vc = self] in
@@ -92,8 +97,8 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     }
     
     private func loadTable() {
-        loadBalances()
         getWalletLabel()
+        loadBalances()
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -309,6 +314,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     @objc func refreshWallet() {
         existingWallet = ""
         reloadWalletData()
+        getWalletLabel()
     }
     
     private func getWalletLabel() {
