@@ -9,7 +9,7 @@
 import Foundation
 import LibWally
 
-class CreateFullyNodedWallet {
+class Keys {
     
     class func seed() -> String? {
         var words:String?
@@ -28,7 +28,7 @@ class CreateFullyNodedWallet {
         return words
     }
     
-    class func masterKey(words: String, coinType: String) -> String? {
+    class func masterKey(words: String, coinType: String, passphrase: String) -> String? {
         var chain:Network!
         if coinType == "0" {
             chain = .mainnet
@@ -37,7 +37,7 @@ class CreateFullyNodedWallet {
         }
         var masterKey:String?
         if let mnmemonic = BIP39Mnemonic(words) {
-            let seedHex = mnmemonic.seedHex("")
+            let seedHex = mnmemonic.seedHex(passphrase)
             if let mk = HDKey(seedHex, chain) {
                 if mk.xpriv != nil {
                     masterKey = mk.xpriv!
@@ -47,7 +47,7 @@ class CreateFullyNodedWallet {
         return masterKey
     }
     
-    class func fingerpint(masterKey: String) -> String? {
+    class func fingerprint(masterKey: String) -> String? {
         var fingerprint:String?
         if let mk = HDKey(masterKey) {
             fingerprint = mk.fingerprint.hexString
@@ -55,10 +55,10 @@ class CreateFullyNodedWallet {
         return fingerprint
     }
     
-    class func bip84AccountXpub(masterKey: String, coinType: String) -> String? {
+    class func bip84AccountXpub(masterKey: String, coinType: String, account: Int) -> String? {
         var xpub:String?
         if let mk = HDKey(masterKey) {
-            if let path = BIP32Path("m/84'/\(coinType)'/0'") {
+            if let path = BIP32Path("m/84'/\(coinType)'/\(account)'") {
                 do {
                     let accountKey = try mk.derive(path)
                     xpub = accountKey.xpub

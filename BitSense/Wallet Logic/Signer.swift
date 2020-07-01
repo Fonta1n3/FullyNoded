@@ -130,14 +130,28 @@ class Signer {
         /// Fetch keys to sign with
         func getKeysToSignWith() {
             xprvsToSignWith.removeAll()
-            for (i, seed) in seedsToSignWith.enumerated() {
-                let encryptedSeed = seed["words"] as! Data
-                Crypto.decryptData(dataToDecrypt: encryptedSeed) { (seed) in
+            for (i, s) in seedsToSignWith.enumerated() {
+                let encryptedSeed = s["words"] as! Data
+                Crypto.decryptData(dataToDecrypt: encryptedSeed) { seed in
                     if seed != nil {
                         if let words = String(data: seed!, encoding: .utf8) {
-                            if let masterKey = CreateFullyNodedWallet.masterKey(words: words, coinType: coinType) {
-                                if let hdkey = HDKey(masterKey) {
-                                    xprvsToSignWith.append(hdkey)
+                            if let encryptedPassphrase = s["passphrase"] as? Data {
+                                Crypto.decryptData(dataToDecrypt: encryptedPassphrase) { decryptedPassphrase in
+                                    if decryptedPassphrase != nil {
+                                        if let passphrase = String(data: decryptedPassphrase!, encoding: .utf8) {
+                                            if let masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: passphrase) {
+                                                if let hdkey = HDKey(masterKey) {
+                                                    xprvsToSignWith.append(hdkey)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            } else {
+                                if let masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: "") {
+                                    if let hdkey = HDKey(masterKey) {
+                                        xprvsToSignWith.append(hdkey)
+                                    }
                                 }
                             }
                         }

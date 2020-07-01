@@ -9,6 +9,27 @@
 import Foundation
 import UIKit
 
+public func activeWallet(completion: @escaping ((Wallet?)) -> Void) {
+    if let activeWalletName = UserDefaults.standard.object(forKey: "walletName") as? String {
+        CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
+            if wallets != nil {
+                if wallets!.count > 0 {
+                    for w in wallets! {
+                        let walletStruct = Wallet(dictionary: w)
+                        if walletStruct.name == activeWalletName {
+                            completion(walletStruct)
+                        }
+                    }
+                } else {
+                    completion(nil)
+                }
+            } else {
+                completion(nil)
+            }
+        }
+    }
+}
+
 public extension UITextView {
   func addHyperLinksToText(originalText: String, hyperLinks: [String: String]) {
     let style = NSMutableParagraphStyle()

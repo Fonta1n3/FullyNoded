@@ -196,19 +196,54 @@ class NodeLogic {
     class func parseUtxos(utxos: NSArray) {
         
         var amount = 0.0
+        var indexArray = [Int]()
         
-        for utxo in utxos {
+        for (x, utxo) in utxos.enumerated() {
             
             let utxoDict = utxo as! NSDictionary
             let spendable = utxoDict["spendable"] as! Bool
-            
             if !spendable {
-                
                 let balance = utxoDict["amount"] as! Double
                 amount += balance
-                
             }
-            
+            if let desc = utxoDict["desc"] as? String {
+                let p = DescriptorParser()
+                let str = p.descriptor(desc)
+                var paths:[String]!
+                if str.isMulti {
+                    paths = str.derivationArray
+                } else {
+                    paths = [str.derivation]
+                }
+                for path in paths {
+                    let arr = path.split(separator: "/")
+                    for (i, comp) in arr.enumerated() {
+                        if i + 1 == arr.count {
+                            if let int = Int(comp) {
+                                indexArray.append(int)
+                            }
+                        }
+                    }
+                }
+            }
+            if x + 1 == utxos.count {
+                activeWallet { wallet in
+                    if wallet != nil {
+                        if indexArray.count > 0 {
+                            let maxIndex = indexArray.reduce(Int.min, { max($0, $1) })
+                            if wallet!.index < maxIndex {
+                                CoreDataService.update(id: wallet!.id, keyToUpdate: "index", newValue: Int16(maxIndex), entity: .wallets) { success in
+                                    if success {
+                                        print("updated index from utxo")
+                                    } else {
+                                        print("failed to update index from utxo")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
         
         if amount == 0.0 {

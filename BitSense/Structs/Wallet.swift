@@ -19,6 +19,7 @@ public struct Wallet: CustomStringConvertible {
     let maxIndex:Int16
     let index:Int16
     let watching:[String]?
+    let account:Int16
     
     init(dictionary: [String: Any]) {
         id = dictionary["id"] as! UUID
@@ -30,6 +31,7 @@ public struct Wallet: CustomStringConvertible {
         maxIndex = dictionary["maxIndex"] as! Int16
         index = dictionary["index"] as! Int16
         watching = dictionary["watching"] as? [String]
+        account = dictionary["account"] as? Int16 ?? 0
     }
     
     public var description: String {

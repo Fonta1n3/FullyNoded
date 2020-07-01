@@ -63,7 +63,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     
     private func getWords() {
         spinner.addConnectingView(vc: self, description: "creating Fully Noded wallet...")
-        if let seed = CreateFullyNodedWallet.seed() {
+        if let seed = Keys.seed() {
             getMasterKey(seed: seed)
             DispatchQueue.main.async { [unowned vc = self] in
                 vc.textView.text = seed
@@ -74,7 +74,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     }
     
     private func getMasterKey(seed: String) {
-        if let masterKey = CreateFullyNodedWallet.masterKey(words: seed, coinType: coinType) {
+        if let masterKey = Keys.masterKey(words: seed, coinType: coinType, passphrase: "") {
             getXpubFingerprint(masterKey: masterKey)
         } else {
             showError(error: "Error deriving master key")
@@ -82,8 +82,8 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     }
     
     private func getXpubFingerprint(masterKey: String) {
-        if let xpub = CreateFullyNodedWallet.bip84AccountXpub(masterKey: masterKey, coinType: coinType) {
-            if let fingerprint = CreateFullyNodedWallet.fingerpint(masterKey: masterKey) {
+        if let xpub = Keys.bip84AccountXpub(masterKey: masterKey, coinType: coinType, account: 0) {
+            if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
                 createWallet(fingerprint: fingerprint, xpub: xpub) { [unowned vc = self] success in
                     if success {
                         DispatchQueue.main.async { [unowned vc = self] in

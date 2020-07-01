@@ -23,21 +23,22 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
     var justWords = [String]()
     var bip39Words = [String]()
     let label = UILabel()
-    let tap = UITapGestureRecognizer()
     var autoCompleteCharacterCount = 0
     var timer = Timer()
     @IBOutlet weak var textField: UITextField!
     @IBOutlet weak var wordView: UIView!
     @IBOutlet weak var recoverOutlet: UIButton!
     @IBOutlet weak var accountField: UITextField!
+    @IBOutlet weak var passphraseField: UITextField!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationController?.delegate = self
+        passphraseField.delegate = self
         accountField.delegate = self
         textField.delegate = self
-        tap.addTarget(self, action: #selector(handleTap))
-        view.addGestureRecognizer(tap)
+        //tap.addTarget(self, action: #selector(handleTap))
+        //view.addGestureRecognizer(tap)
         wordView.layer.cornerRadius = 8
         wordView.layer.borderColor = UIColor.lightGray.cgColor
         wordView.layer.borderWidth = 0.5
@@ -47,7 +48,47 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
         bip39Words = Words.valid
         updatePlaceHolder(wordNumber: 1)
         accountField.text = "0"
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
+        tapGesture.numberOfTapsRequired = 1
+        self.view.addGestureRecognizer(tapGesture)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
         setCoinType()
+    }
+    
+    @IBAction func showHelp(_ sender: Any) {
+        let message = "This tool allows you to import a BIP39 recovery phrase along with an optional passphrase and customizable account number. The recovery tool can take around 1 minute to complete. This is because it constructs most of the popular wallet derivation paths BIP44/49/84 and imports all address types for each derivation. It accounts for change and receive keys importing 2500 keys for each. Optionally you may opt to recover Samourai wallet derivations too (Ricochet, BadBank, Deposit, BIP47, PreMix, PostMix), this will add another minute or so. Once the recovery wallet is created it will rescan your blockchain. Your seed words are encrypted and saved locally, NOT on your node, your node will only hold the public keys"
+        showAlert(vc: self, title: "Recovery", message: message)
+    }
+    
+    @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
+        hideKeyboards()
+    }
+    
+    private func hideKeyboards() {
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.accountField.resignFirstResponder()
+            vc.textField.resignFirstResponder()
+            vc.passphraseField.resignFirstResponder()
+        }
+    }
+    
+    @objc func keyboardWillShow(notification: NSNotification) {
+        if passphraseField.isEditing {
+            if let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue {
+                if self.view.frame.origin.y == 0 {
+                    self.view.frame.origin.y -= keyboardSize.height
+                }
+            }
+        }
+    }
+    
+    @objc func keyboardWillHide(notification: NSNotification) {
+        if passphraseField.isEditing {
+            if self.view.frame.origin.y != 0 {
+                self.view.frame.origin.y = 0
+            }
+        }
     }
     
     private func setCoinType() {
@@ -116,10 +157,11 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
     private func recoverNow() {
         spinner.addConnectingView(vc: self, description: "creating your recovery wallet...")
         accountNumber = accountField.text ?? "0"
+        let passphrase = passphraseField.text ?? ""
         let seed = justWords.joined(separator: " ")
         createWallet { [unowned vc = self] success in
             if success {
-                if let mk = CreateFullyNodedWallet.masterKey(words: seed, coinType: vc.coinType) {
+                if let mk = Keys.masterKey(words: seed, coinType: vc.coinType, passphrase: passphrase) {
                     if vc.recoverSamourai {
                         vc.updateSpinnerText(text: "getting Samourai primary descriptor...")
                         vc.getDescriptorInfo(desc: vc.samouraiDesc1Prim(mk)) { [unowned vc = self] samDesc1Prim  in
@@ -129,52 +171,52 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
                                 vc.getDescriptorInfo(desc: vc.samouraiDesc1Change(mk)) { [unowned vc = self] sam1DescChange in
                                     if sam1DescChange != nil {
                                         vc.descriptorsToImport.append(sam1DescChange!)
-                                        vc.updateSpinnerText(text: "getting Samourai primary descriptor...")
-                                        vc.getDescriptorInfo(desc: vc.samouraiDesc2Prim(mk)) { [unowned vc = self] sam2DescPrim in
+                                        vc.updateSpinnerText(text: "getting Samourai Bad Bank primary descriptor...")
+                                        vc.getDescriptorInfo(desc: vc.samouraiBadBankPrim(mk)) { [unowned vc = self] sam2DescPrim in
                                             if sam2DescPrim != nil {
                                                 vc.descriptorsToImport.append(sam2DescPrim!)
-                                                vc.updateSpinnerText(text: "getting Samourai change descriptor...")
-                                                vc.getDescriptorInfo(desc: vc.samouraiDesc2Change(mk)) { [unowned vc = self] sam2DescChange in
+                                                vc.updateSpinnerText(text: "getting Samourai Bad Bank change descriptor...")
+                                                vc.getDescriptorInfo(desc: vc.samouraiBadBankChange(mk)) { [unowned vc = self] sam2DescChange in
                                                     if sam2DescChange != nil {
                                                         vc.descriptorsToImport.append(sam2DescChange!)
-                                                        vc.updateSpinnerText(text: "getting Samourai primary descriptor...")
-                                                        vc.getDescriptorInfo(desc: vc.samouraiDesc3Prim(mk)) { [unowned vc = self] samDesc3Prim in
+                                                        vc.updateSpinnerText(text: "getting Samourai Pre Mix primary descriptor...")
+                                                        vc.getDescriptorInfo(desc: vc.samouraiPreMixPrim(mk)) { [unowned vc = self] samDesc3Prim in
                                                             if samDesc3Prim != nil {
                                                                 vc.descriptorsToImport.append(samDesc3Prim!)
-                                                                vc.updateSpinnerText(text: "getting Samourai change descriptor...")
-                                                                vc.getDescriptorInfo(desc: vc.samouraiDesc3Change(mk)) { [unowned vc = self] samDesc3Change in
+                                                                vc.updateSpinnerText(text: "getting Samourai Pre Mix change descriptor...")
+                                                                vc.getDescriptorInfo(desc: vc.samouraiPreMixChange(mk)) { [unowned vc = self] samDesc3Change in
                                                                     if samDesc3Change != nil {
                                                                         vc.descriptorsToImport.append(samDesc3Change!)
-                                                                        vc.updateSpinnerText(text: "getting Samourai primary descriptor...")
-                                                                        vc.getDescriptorInfo(desc: vc.samouraiDesc4Prim(mk)) { [unowned vc = self] samDesc4Prim in
+                                                                        vc.updateSpinnerText(text: "getting Samourai Post Mix primary descriptor...")
+                                                                        vc.getDescriptorInfo(desc: vc.samouraiPostMixPrim(mk)) { [unowned vc = self] samDesc4Prim in
                                                                             if samDesc4Prim != nil {
                                                                                 vc.descriptorsToImport.append(samDesc4Prim!)
-                                                                                vc.updateSpinnerText(text: "getting Samourai change descriptor...")
-                                                                                vc.getDescriptorInfo(desc: vc.samouraiDesc4Change(mk)) { [unowned vc = self] samDesc4Change in
+                                                                                vc.updateSpinnerText(text: "getting Samourai Post Mix change descriptor...")
+                                                                                vc.getDescriptorInfo(desc: vc.samouraiPostMixChange(mk)) { [unowned vc = self] samDesc4Change in
                                                                                     if samDesc4Change != nil {
                                                                                         vc.descriptorsToImport.append(samDesc4Change!)
-                                                                                        vc.updateSpinnerText(text: "getting Samourai primary descriptor...")
-                                                                                        vc.getDescriptorInfo(desc: vc.samouraiDesc5Prim(mk)) { [unowned vc = self] samDesc5Prim in
+                                                                                        vc.updateSpinnerText(text: "getting Samourai Ricochet 84 primary descriptor...")
+                                                                                        vc.getDescriptorInfo(desc: vc.samouraiRicochet84Prim(mk)) { [unowned vc = self] samDesc5Prim in
                                                                                             if samDesc5Prim != nil {
                                                                                                 vc.descriptorsToImport.append(samDesc5Prim!)
-                                                                                                vc.updateSpinnerText(text: "getting Samourai change descriptor...")
-                                                                                                vc.getDescriptorInfo(desc: vc.samouraiDesc5Change(mk)) { [unowned vc = self] samDesc5Change in
+                                                                                                vc.updateSpinnerText(text: "getting Samourai Samourai Ricochet 84 change descriptor...")
+                                                                                                vc.getDescriptorInfo(desc: vc.samouraiRicochet84Change(mk)) { [unowned vc = self] samDesc5Change in
                                                                                                     if samDesc5Change != nil {
                                                                                                         vc.descriptorsToImport.append(samDesc5Change!)
-                                                                                                        vc.updateSpinnerText(text: "getting Samourai primary descriptor...")
-                                                                                                        vc.getDescriptorInfo(desc: vc.samouraiDesc6Prim(mk)) { [unowned vc = self] samDesc6Prim in
+                                                                                                        vc.updateSpinnerText(text: "getting Samourai Ricochet 44 primary descriptor...")
+                                                                                                        vc.getDescriptorInfo(desc: vc.samouraiRicochet44Prim(mk)) { [unowned vc = self] samDesc6Prim in
                                                                                                             if samDesc6Prim != nil {
                                                                                                                 vc.descriptorsToImport.append(samDesc6Prim!)
-                                                                                                                vc.updateSpinnerText(text: "getting Samourai change descriptor...")
-                                                                                                                vc.getDescriptorInfo(desc: vc.samouraiDesc6Change(mk)) { [unowned vc = self] samDesc6Change in
+                                                                                                                vc.updateSpinnerText(text: "getting Samourai Ricochet 44 change descriptor...")
+                                                                                                                vc.getDescriptorInfo(desc: vc.samouraiRicochet44Change(mk)) { [unowned vc = self] samDesc6Change in
                                                                                                                     if samDesc6Change != nil {
                                                                                                                         vc.descriptorsToImport.append(samDesc6Prim!)
-                                                                                                                        vc.updateSpinnerText(text: "getting Samourai primary descriptor...")
-                                                                                                                        vc.getDescriptorInfo(desc: vc.samouraiDesc7Prim(mk)) { [unowned vc = self] samDesc7Prim in
+                                                                                                                        vc.updateSpinnerText(text: "getting Samourai Ricochet 49 primary descriptor...")
+                                                                                                                        vc.getDescriptorInfo(desc: vc.samouraiRicochet49Prim(mk)) { [unowned vc = self] samDesc7Prim in
                                                                                                                             if samDesc7Prim != nil {
                                                                                                                                 vc.descriptorsToImport.append(samDesc7Prim!)
-                                                                                                                                vc.updateSpinnerText(text: "getting Samourai change descriptor...")
-                                                                                                                                vc.getDescriptorInfo(desc: vc.samouraiDesc7Change(mk)) { samDesc7Change in
+                                                                                                                                vc.updateSpinnerText(text: "getting Samourai Ricochet 49 change descriptor...")
+                                                                                                                                vc.getDescriptorInfo(desc: vc.samouraiRicochet49Change(mk)) { samDesc7Change in
                                                                                                                                     if samDesc7Change != nil {
                                                                                                                                         vc.descriptorsToImport.append(samDesc7Change!)
                                                                                                                                         vc.getNonSamouraiDescriptors(masterKey: mk)
@@ -305,8 +347,8 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
     
     private func samouraiDesc1Prim(_ masterKey: String) -> String {
         var desc = ""
-        if let xpub = CreateFullyNodedWallet.xpub(path: "m/47h/\(coinType)h/\(accountNumber)h", masterKey: masterKey) {
-            if let fingerprint = CreateFullyNodedWallet.fingerpint(masterKey: masterKey) {
+        if let xpub = Keys.xpub(path: "m/47h/\(coinType)h/\(accountNumber)h", masterKey: masterKey) {
+            if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
                 desc = "combo([\(fingerprint)/47h/\(coinType)h/\(accountNumber)h]\(xpub)/0/*)"
             }
         }
@@ -315,128 +357,128 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
     
     private func samouraiDesc1Change(_ masterKey: String) -> String {
         var desc = ""
-        if let xpub = CreateFullyNodedWallet.xpub(path: "m/47h/\(coinType)h/\(accountNumber)h", masterKey: masterKey) {
-            if let fingerprint = CreateFullyNodedWallet.fingerpint(masterKey: masterKey) {
+        if let xpub = Keys.xpub(path: "m/47h/\(coinType)h/\(accountNumber)h", masterKey: masterKey) {
+            if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
                 desc = "combo([\(fingerprint)/47h/\(coinType)h/\(accountNumber)h]\(xpub)/1/*)"
             }
         }
         return desc
     }
     
-    private func samouraiDesc2Prim(_ masterKey: String) -> String {
+    private func samouraiBadBankPrim(_ masterKey: String) -> String {
         var desc = ""
-        if let xpub = CreateFullyNodedWallet.xpub(path: "m/84h/\(coinType)h/2147483644h", masterKey: masterKey) {
-            if let fingerprint = CreateFullyNodedWallet.fingerpint(masterKey: masterKey) {
+        if let xpub = Keys.xpub(path: "m/84h/\(coinType)h/2147483644h", masterKey: masterKey) {
+            if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
                 desc = "combo([\(fingerprint)/84h/\(coinType)h/2147483644h]\(xpub)/0/*)"
             }
         }
         return desc
     }
     
-    private func samouraiDesc2Change(_ masterKey: String) -> String {
+    private func samouraiBadBankChange(_ masterKey: String) -> String {
         var desc = ""
-        if let xpub = CreateFullyNodedWallet.xpub(path: "m/84h/\(coinType)h/2147483644h", masterKey: masterKey) {
-            if let fingerprint = CreateFullyNodedWallet.fingerpint(masterKey: masterKey) {
+        if let xpub = Keys.xpub(path: "m/84h/\(coinType)h/2147483644h", masterKey: masterKey) {
+            if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
                 desc = "combo([\(fingerprint)/84h/\(coinType)h/2147483644h]\(xpub)/1/*)"
             }
         }
         return desc
     }
     
-    private func samouraiDesc3Prim(_ masterKey: String) -> String {
+    private func samouraiPreMixPrim(_ masterKey: String) -> String {
         var desc = ""
-        if let xpub = CreateFullyNodedWallet.xpub(path: "m/84h/\(coinType)h/2147483645h", masterKey: masterKey) {
-            if let fingerprint = CreateFullyNodedWallet.fingerpint(masterKey: masterKey) {
+        if let xpub = Keys.xpub(path: "m/84h/\(coinType)h/2147483645h", masterKey: masterKey) {
+            if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
                 desc = "combo([\(fingerprint)/84h/\(coinType)h/2147483645h]\(xpub)/0/*)"
             }
         }
         return desc
     }
     
-    private func samouraiDesc3Change(_ masterKey: String) -> String {
+    private func samouraiPreMixChange(_ masterKey: String) -> String {
         var desc = ""
-        if let xpub = CreateFullyNodedWallet.xpub(path: "m/84h/\(coinType)h/2147483645h", masterKey: masterKey) {
-            if let fingerprint = CreateFullyNodedWallet.fingerpint(masterKey: masterKey) {
+        if let xpub = Keys.xpub(path: "m/84h/\(coinType)h/2147483645h", masterKey: masterKey) {
+            if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
                 desc = "combo([\(fingerprint)/84h/\(coinType)h/2147483645h]\(xpub)/1/*)"
             }
         }
         return desc
     }
     
-    private func samouraiDesc4Prim(_ masterKey: String) -> String {
+    private func samouraiPostMixPrim(_ masterKey: String) -> String {
         var desc = ""
-        if let xpub = CreateFullyNodedWallet.xpub(path: "m/84h/\(coinType)h/2147483646h", masterKey: masterKey) {
-            if let fingerprint = CreateFullyNodedWallet.fingerpint(masterKey: masterKey) {
+        if let xpub = Keys.xpub(path: "m/84h/\(coinType)h/2147483646h", masterKey: masterKey) {
+            if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
                 desc = "combo([\(fingerprint)/84h/\(coinType)h/2147483646h]\(xpub)/0/*)"
             }
         }
         return desc
     }
     
-    private func samouraiDesc4Change(_ masterKey: String) -> String {
+    private func samouraiPostMixChange(_ masterKey: String) -> String {
         var desc = ""
-        if let xpub = CreateFullyNodedWallet.xpub(path: "m/84h/\(coinType)h/2147483646h", masterKey: masterKey) {
-            if let fingerprint = CreateFullyNodedWallet.fingerpint(masterKey: masterKey) {
+        if let xpub = Keys.xpub(path: "m/84h/\(coinType)h/2147483646h", masterKey: masterKey) {
+            if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
                 desc = "combo([\(fingerprint)/84h/\(coinType)h/2147483646h]\(xpub)/1/*)"
             }
         }
         return desc
     }
     
-    private func samouraiDesc5Prim(_ masterKey: String) -> String {
+    private func samouraiRicochet84Prim(_ masterKey: String) -> String {
         var desc = ""
-        if let xpub = CreateFullyNodedWallet.xpub(path: "m/84h/\(coinType)h/2147483647h", masterKey: masterKey) {
-            if let fingerprint = CreateFullyNodedWallet.fingerpint(masterKey: masterKey) {
+        if let xpub = Keys.xpub(path: "m/84h/\(coinType)h/2147483647h", masterKey: masterKey) {
+            if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
                 desc = "combo([\(fingerprint)/84h/\(coinType)h/2147483647h]\(xpub)/0/*)"
             }
         }
         return desc
     }
     
-    private func samouraiDesc5Change(_ masterKey: String) -> String {
+    private func samouraiRicochet84Change(_ masterKey: String) -> String {
         var desc = ""
-        if let xpub = CreateFullyNodedWallet.xpub(path: "m/84h/\(coinType)h/2147483647h", masterKey: masterKey) {
-            if let fingerprint = CreateFullyNodedWallet.fingerpint(masterKey: masterKey) {
+        if let xpub = Keys.xpub(path: "m/84h/\(coinType)h/2147483647h", masterKey: masterKey) {
+            if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
                 desc = "combo([\(fingerprint)/84h/\(coinType)h/2147483647h]\(xpub)/1/*)"
             }
         }
         return desc
     }
     
-    private func samouraiDesc6Prim(_ masterKey: String) -> String {
+    private func samouraiRicochet44Prim(_ masterKey: String) -> String {
         var desc = ""
-        if let xpub = CreateFullyNodedWallet.xpub(path: "m/44h/\(coinType)h/2147483647h", masterKey: masterKey) {
-            if let fingerprint = CreateFullyNodedWallet.fingerpint(masterKey: masterKey) {
+        if let xpub = Keys.xpub(path: "m/44h/\(coinType)h/2147483647h", masterKey: masterKey) {
+            if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
                 desc = "combo([\(fingerprint)/44h/\(coinType)h/2147483647h]\(xpub)/0/*)"
             }
         }
         return desc
     }
     
-    private func samouraiDesc6Change(_ masterKey: String) -> String {
+    private func samouraiRicochet44Change(_ masterKey: String) -> String {
         var desc = ""
-        if let xpub = CreateFullyNodedWallet.xpub(path: "m/44h/\(coinType)h/2147483647h", masterKey: masterKey) {
-            if let fingerprint = CreateFullyNodedWallet.fingerpint(masterKey: masterKey) {
+        if let xpub = Keys.xpub(path: "m/44h/\(coinType)h/2147483647h", masterKey: masterKey) {
+            if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
                 desc = "combo([\(fingerprint)/44h/\(coinType)h/2147483647h]\(xpub)/1/*)"
             }
         }
         return desc
     }
     
-    private func samouraiDesc7Prim(_ masterKey: String) -> String {
+    private func samouraiRicochet49Prim(_ masterKey: String) -> String {
         var desc = ""
-        if let xpub = CreateFullyNodedWallet.xpub(path: "m/49h/\(coinType)h/2147483647h", masterKey: masterKey) {
-            if let fingerprint = CreateFullyNodedWallet.fingerpint(masterKey: masterKey) {
+        if let xpub = Keys.xpub(path: "m/49h/\(coinType)h/2147483647h", masterKey: masterKey) {
+            if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
                 desc = "combo([\(fingerprint)/49h/\(coinType)h/2147483647h]\(xpub)/0/*)"
             }
         }
         return desc
     }
     
-    private func samouraiDesc7Change(_ masterKey: String) -> String {
+    private func samouraiRicochet49Change(_ masterKey: String) -> String {
         var desc = ""
-        if let xpub = CreateFullyNodedWallet.xpub(path: "m/49h/\(coinType)h/2147483647h", masterKey: masterKey) {
-            if let fingerprint = CreateFullyNodedWallet.fingerpint(masterKey: masterKey) {
+        if let xpub = Keys.xpub(path: "m/49h/\(coinType)h/2147483647h", masterKey: masterKey) {
+            if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
                 desc = "combo([\(fingerprint)/49h/\(coinType)h/2147483647h]\(xpub)/1/*)"
             }
         }
@@ -445,8 +487,8 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
     
     private func bip84PrimDesc(_ masterKey: String) -> String {
         var desc = ""
-        if let xpub = CreateFullyNodedWallet.xpub(path: "m/84'/1'/\(accountNumber)'", masterKey: masterKey) {
-            if let fingerprint = CreateFullyNodedWallet.fingerpint(masterKey: masterKey) {
+        if let xpub = Keys.xpub(path: "m/84'/1'/\(accountNumber)'", masterKey: masterKey) {
+            if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
                 desc = "combo([\(fingerprint)/84h/\(coinType)h/\(accountNumber)']\(xpub)/0/*)"
             }
         }
@@ -455,8 +497,8 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
     
     private func bip84ChangeDesc(_ masterKey: String) -> String {
         var desc = ""
-        if let xpub = CreateFullyNodedWallet.xpub(path: "m/84h/\(coinType)h/\(accountNumber)h", masterKey: masterKey) {
-            if let fingerprint = CreateFullyNodedWallet.fingerpint(masterKey: masterKey) {
+        if let xpub = Keys.xpub(path: "m/84h/\(coinType)h/\(accountNumber)h", masterKey: masterKey) {
+            if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
                 desc = "combo([\(fingerprint)/84h/\(coinType)h/\(accountNumber)h]\(xpub)/1/*)"
             }
         }
@@ -465,8 +507,8 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
     
     private func bip44PrimDesc(_ masterKey: String) -> String {
         var desc = ""
-        if let xpub = CreateFullyNodedWallet.xpub(path: "m/44h/\(coinType)h/\(accountNumber)h", masterKey: masterKey) {
-            if let fingerprint = CreateFullyNodedWallet.fingerpint(masterKey: masterKey) {
+        if let xpub = Keys.xpub(path: "m/44h/\(coinType)h/\(accountNumber)h", masterKey: masterKey) {
+            if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
                 desc = "combo([\(fingerprint)/44h/\(coinType)h/\(accountNumber)h]\(xpub)/0/*)"
             }
         }
@@ -475,8 +517,8 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
     
     private func bip44ChangeDesc(_ masterKey: String) -> String {
         var desc = ""
-        if let xpub = CreateFullyNodedWallet.xpub(path: "m/44h/\(coinType)h/\(accountNumber)h", masterKey: masterKey) {
-            if let fingerprint = CreateFullyNodedWallet.fingerpint(masterKey: masterKey) {
+        if let xpub = Keys.xpub(path: "m/44h/\(coinType)h/\(accountNumber)h", masterKey: masterKey) {
+            if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
                 desc = "combo([\(fingerprint)/44h/\(coinType)h/\(accountNumber)h]\(xpub)/1/*)"
             }
         }
@@ -485,8 +527,8 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
     
     private func bip49PrimDesc(_ masterKey: String) -> String {
         var desc = ""
-        if let xpub = CreateFullyNodedWallet.xpub(path: "m/49h/\(coinType)h/\(accountNumber)h", masterKey: masterKey) {
-            if let fingerprint = CreateFullyNodedWallet.fingerpint(masterKey: masterKey) {
+        if let xpub = Keys.xpub(path: "m/49h/\(coinType)h/\(accountNumber)h", masterKey: masterKey) {
+            if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
                 desc = "combo([\(fingerprint)/49h/\(coinType)h/\(accountNumber)h]\(xpub)/0/*)"
             }
         }
@@ -495,8 +537,8 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
     
     private func bip49ChangeDesc(_ masterKey: String) -> String {
         var desc = ""
-        if let xpub = CreateFullyNodedWallet.xpub(path: "m/49h/\(coinType)h/\(accountNumber)h", masterKey: masterKey) {
-            if let fingerprint = CreateFullyNodedWallet.fingerpint(masterKey: masterKey) {
+        if let xpub = Keys.xpub(path: "m/49h/\(coinType)h/\(accountNumber)h", masterKey: masterKey) {
+            if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
                 desc = "combo([\(fingerprint)/49h/\(coinType)h/\(accountNumber)h]\(xpub)/1/*)"
             }
         }
@@ -557,10 +599,31 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
         DispatchQueue.main.async { [unowned vc = self] in
             Crypto.encryptData(dataToEncrypt: (vc.justWords.joined(separator: " ")).dataUsingUTF8StringEncoding) { [unowned vc = self] encryptedWords in
                 if encryptedWords != nil {
-                    vc.saveSigner(encryptedSigner: encryptedWords!)
+                    DispatchQueue.main.async { [unowned vc = self] in
+                        if vc.passphraseField.text != "" {
+                            Crypto.encryptData(dataToEncrypt: (vc.passphraseField.text!).dataUsingUTF8StringEncoding) { encryptedPassphrase in
+                                if encryptedPassphrase != nil {
+                                    vc.saveSignerAndPassphrase(encryptedSigner: encryptedWords!, encryptedPassphrase: encryptedPassphrase!)
+                                }
+                            }
+                        } else {
+                            vc.saveSigner(encryptedSigner: encryptedWords!)
+                        }
+                    }
                 } else {
                     vc.showError(error: "error encrypting your seed")
                 }
+            }
+        }
+    }
+    
+    private func saveSignerAndPassphrase(encryptedSigner: Data, encryptedPassphrase: Data) {
+        let dict = ["id":UUID(), "words":encryptedSigner, "passphrase": encryptedPassphrase] as [String:Any]
+        CoreDataService.saveEntity(dict: dict, entityName: .signers) { [unowned vc = self] success in
+            if success {
+                vc.saveWallet()
+            } else {
+                vc.showError(error: "error saving encrypted seed")
             }
         }
     }
@@ -587,6 +650,10 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
         dict["name"] = name
         dict["maxIndex"] = 2500
         dict["index"] = 0
+        DispatchQueue.main.async { [unowned vc = self] in
+            dict["account"] = vc.accountField.text ?? "0"
+        }
+        dict["account"] =
         CoreDataService.saveEntity(dict: dict, entityName: .wallets) { [unowned vc = self] success in
             if success {
                 NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
@@ -777,17 +844,19 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         
-        var subString = (textField.text!.capitalized as NSString).replacingCharacters(in: range, with: string)
-        subString = formatSubstring(subString: subString)
-        
-        if subString.count == 0 {
+        if textField != accountField && textField != passphraseField {
+            var subString = (textField.text!.capitalized as NSString).replacingCharacters(in: range, with: string)
+            subString = formatSubstring(subString: subString)
             
-            resetValues()
-            
-        } else {
-            
-            searchAutocompleteEntriesWIthSubstring(substring: subString)
-            
+            if subString.count == 0 {
+                
+                resetValues()
+                
+            } else {
+                
+                searchAutocompleteEntriesWIthSubstring(substring: subString)
+                
+            }
         }
         
         return true
@@ -795,7 +864,11 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        processTextfieldInput()
+        if textField != accountField && textField != passphraseField {
+            processTextfieldInput()
+        } else if textField == accountField {
+            accountField.endEditing(true)
+        }
         return true
     }
     
@@ -918,6 +991,33 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
             
         }
         
+    }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        print("didendediting")
+        if textField == accountField {
+            if accountField.text != "" {
+                if let int = Int(accountField.text!) {
+                    let text = accountField.text!
+                    if int == 0 {
+                        
+                    } else if text.first == "0" {
+                        DispatchQueue.main.async { [unowned vc = self] in
+                            vc.accountField.text = "0"
+                            showAlert(vc: vc, title: "Error", message: "Input a valid number that does not start with 0")
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        if textField == accountField {
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.accountField.text = ""
+            }
+        }
     }
     
     private func processedCharacters(_ string: String) -> String {

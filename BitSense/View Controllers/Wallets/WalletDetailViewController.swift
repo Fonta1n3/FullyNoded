@@ -23,6 +23,12 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         setCoinType()
     }
     
+    @IBAction func showHelp(_ sender: Any) {
+        let message = "These are the details for your \"Fully Noded Wallet\". \"Label\" is the label we assing the wallet which can be edited by tapping it. \"Filename\" is your wallet.dat filename that this wallet is represented by on your node, in order to truly delete the wallet you need to delete this file on your node. \"Receive Descriptor Keypool\" is the descriptor your wallet will use to create invoices with. \"Change Descriptor Keypool\" is the descriptor your wallet will use to create change addresses with. \"Maximum Index\" field is the maximum address index your wallet is watching for, in order to increase it simply tap the text field and input a higher number. \"Current Index\" is the highest address index you have a utxo for. You will see the \"Signer\" which can sign for this wallet and any descriptors this wallet is watching for which will be quite a few if this is a Recovery Wallet."
+        showAlert(vc: self, title: "Fully Noded Wallets", message: message)
+    }
+    
+    
     private func setCoinType() {
         spinner.addConnectingView(vc: self, description: "fetching chain type...")
         Reducer.makeCommand(command: .getblockchaininfo, param: "") { [unowned vc = self] (response, errorMessage) in
@@ -86,12 +92,31 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                         Crypto.decryptData(dataToDecrypt: (signer["words"] as! Data)) { [unowned vc = self] decryptedData in
                             if decryptedData != nil {
                                 if let words = String(bytes: decryptedData!, encoding: .utf8) {
-                                    if let mk = CreateFullyNodedWallet.masterKey(words: words, coinType: vc.coinType) {
-                                        if let xpub = CreateFullyNodedWallet.bip84AccountXpub(masterKey: mk, coinType: vc.coinType) {
-                                            if xpub == vc.accountXpub() {
-                                                DispatchQueue.main.async { [unowned vc = self] in
-                                                    vc.signer = words
-                                                    vc.detailTable.reloadData()
+                                    if signer["passphrase"] as? Data != nil {
+                                        Crypto.decryptData(dataToDecrypt: (signer["passphrase"] as! Data)) { [unowned vc = self] decryptedPass in
+                                            if decryptedData != nil {
+                                                if let pass = String(bytes: decryptedData!, encoding: .utf8) {
+                                                    if let mk = Keys.masterKey(words: words, coinType: vc.coinType, passphrase: pass) {
+                                                        if let xpub = Keys.bip84AccountXpub(masterKey: mk, coinType: vc.coinType, account: Int(vc.wallet.account)) {
+                                                            if xpub == vc.accountXpub() {
+                                                                DispatchQueue.main.async { [unowned vc = self] in
+                                                                    vc.signer = words
+                                                                    vc.detailTable.reloadData()
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    } else {
+                                        if let mk = Keys.masterKey(words: words, coinType: vc.coinType, passphrase: "") {
+                                            if let xpub = Keys.bip84AccountXpub(masterKey: mk, coinType: vc.coinType, account: Int(vc.wallet.account)) {
+                                                if xpub == vc.accountXpub() {
+                                                    DispatchQueue.main.async { [unowned vc = self] in
+                                                        vc.signer = words
+                                                        vc.detailTable.reloadData()
+                                                    }
                                                 }
                                             }
                                         }

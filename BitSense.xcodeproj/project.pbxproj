@@ -106,6 +106,8 @@
 		D09A330924A98EE1009FA0B2 /* WalletDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09A330824A98EE1009FA0B2 /* WalletDetailViewController.swift */; };
 		D09A330D24A9B10E009FA0B2 /* BIP39WordList.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09A330C24A9B10E009FA0B2 /* BIP39WordList.swift */; };
 		D09A330F24A9B853009FA0B2 /* RecoveryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09A330E24A9B853009FA0B2 /* RecoveryViewController.swift */; };
+		D09A331124AC4BF6009FA0B2 /* DescriptorParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09A331024AC4BF6009FA0B2 /* DescriptorParser.swift */; };
+		D09A331324AC4C93009FA0B2 /* Descriptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09A331224AC4C93009FA0B2 /* Descriptor.swift */; };
 		D0A2918F225114670099A2F3 /* MakeRPCCall.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A2918E225114670099A2F3 /* MakeRPCCall.swift */; };
 		D0A291912251743B0099A2F3 /* settings90.png in Resources */ = {isa = PBXBuildFile; fileRef = D0A291902251743B0099A2F3 /* settings90.png */; };
 		D0A519B7226B3DD400860D5C /* RawTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A519B6226B3DD400860D5C /* RawTransaction.swift */; };
@@ -262,6 +264,8 @@
 		D09A330824A98EE1009FA0B2 /* WalletDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletDetailViewController.swift; sourceTree = "<group>"; };
 		D09A330C24A9B10E009FA0B2 /* BIP39WordList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BIP39WordList.swift; sourceTree = "<group>"; };
 		D09A330E24A9B853009FA0B2 /* RecoveryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryViewController.swift; sourceTree = "<group>"; };
+		D09A331024AC4BF6009FA0B2 /* DescriptorParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DescriptorParser.swift; sourceTree = "<group>"; };
+		D09A331224AC4C93009FA0B2 /* Descriptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Descriptor.swift; sourceTree = "<group>"; };
 		D0A2918E225114670099A2F3 /* MakeRPCCall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MakeRPCCall.swift; sourceTree = "<group>"; };
 		D0A291902251743B0099A2F3 /* settings90.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = settings90.png; sourceTree = "<group>"; };
 		D0A519B6226B3DD400860D5C /* RawTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RawTransaction.swift; sourceTree = "<group>"; };
@@ -507,6 +511,7 @@
 				D03968B0246F6CBA0010D821 /* Crypto.swift */,
 				D03968B2246F769C0010D821 /* KeychainKeys.swift */,
 				D09A330C24A9B10E009FA0B2 /* BIP39WordList.swift */,
+				D09A331024AC4BF6009FA0B2 /* DescriptorParser.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -579,6 +584,7 @@
 				D0C20EDD24A6E70A00C62AA4 /* SmartFee.swift */,
 				D0C20EDF24A6EF3800C62AA4 /* Balances.swift */,
 				D09A330424A8C4F6009FA0B2 /* Wallet.swift */,
+				D09A331224AC4C93009FA0B2 /* Descriptor.swift */,
 			);
 			path = Structs;
 			sourceTree = "<group>";
@@ -1119,6 +1125,7 @@
 				D0C20EE724A78A9700C62AA4 /* CreateFullyNodedWalletViewController.swift in Sources */,
 				D00F851F2494A7CA008D7CD3 /* AuthKeysStruct.swift in Sources */,
 				D02958D5235053B300ED8F72 /* SecurityCenterViewController.swift in Sources */,
+				D09A331124AC4BF6009FA0B2 /* DescriptorParser.swift in Sources */,
 				D0C20ED224A6DB9D00C62AA4 /* BlockchainInfo.swift in Sources */,
 				D08A92AB23377D1000409D6E /* DescriptorsViewController.swift in Sources */,
 				D08A92B3233B527F00409D6E /* KillSwitch.swift in Sources */,
@@ -1186,6 +1193,7 @@
 				D0A7CF73227967F900B683A0 /* AddressParser.swift in Sources */,
 				D00B9A282111427200E8B95A /* AppDelegate.swift in Sources */,
 				D0EC7490227F6977001489B9 /* SignRawViewController.swift in Sources */,
+				D09A331324AC4C93009FA0B2 /* Descriptor.swift in Sources */,
 				D07AED032435B62800C2FADB /* Commands.swift in Sources */,
 				D0EDDF1124972CEF00657931 /* InvoiceSettingsViewController.swift in Sources */,
 				D084960422EBCD3B003FE8EB /* GetInfoViewController.swift in Sources */,

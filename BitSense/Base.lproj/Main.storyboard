@@ -1726,7 +1726,7 @@
                                 </connections>
                             </button>
                             <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="J3O-9b-acQ">
-                                <rect key="frame" x="16" y="162" width="343" height="375"/>
+                                <rect key="frame" x="16" y="162" width="343" height="333"/>
                                 <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
                             </view>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="TIM-Je-Ssn">
@@ -1746,13 +1746,20 @@
                                 <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="optional passphrase" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="FGI-Cz-6Xp">
+                                <rect key="frame" x="16" y="503" width="343" height="34"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits"/>
+                            </textField>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="S92-Fc-9YX" firstAttribute="leading" secondItem="gaX-UQ-PFc" secondAttribute="leading" constant="16" id="3SS-R3-fHl"/>
+                            <constraint firstItem="FGI-Cz-6Xp" firstAttribute="leading" secondItem="gaX-UQ-PFc" secondAttribute="leading" constant="16" id="3gb-xp-F7g"/>
                             <constraint firstItem="Egm-58-pbp" firstAttribute="top" secondItem="MdU-Rr-Lbu" secondAttribute="bottom" constant="14" id="43J-Ye-j2s"/>
                             <constraint firstItem="gaX-UQ-PFc" firstAttribute="trailing" secondItem="Egm-58-pbp" secondAttribute="trailing" constant="16" id="4Vn-oG-eiB"/>
                             <constraint firstItem="gaX-UQ-PFc" firstAttribute="trailing" secondItem="Qu0-JM-zmT" secondAttribute="trailing" constant="21" id="6bb-wY-Mwd"/>
+                            <constraint firstItem="FGI-Cz-6Xp" firstAttribute="top" secondItem="J3O-9b-acQ" secondAttribute="bottom" constant="8" id="AtC-ed-4yU"/>
                             <constraint firstItem="TIM-Je-Ssn" firstAttribute="leading" secondItem="WA3-99-MRO" secondAttribute="trailing" constant="8" id="E86-aF-wLv"/>
                             <constraint firstItem="gaX-UQ-PFc" firstAttribute="trailing" secondItem="TIM-Je-Ssn" secondAttribute="trailing" constant="16" id="GTM-WQ-8Di"/>
                             <constraint firstItem="TIM-Je-Ssn" firstAttribute="top" secondItem="gaX-UQ-PFc" secondAttribute="top" constant="7" id="Jeh-pa-qDB"/>
@@ -1760,9 +1767,10 @@
                             <constraint firstItem="S92-Fc-9YX" firstAttribute="top" secondItem="Qu0-JM-zmT" secondAttribute="bottom" constant="8" id="OmZ-Q9-Jvx"/>
                             <constraint firstItem="MdU-Rr-Lbu" firstAttribute="top" secondItem="gaX-UQ-PFc" secondAttribute="top" constant="27" id="P8X-Ml-7sd"/>
                             <constraint firstItem="gaX-UQ-PFc" firstAttribute="bottom" secondItem="S92-Fc-9YX" secondAttribute="bottom" constant="20" id="RB8-Ja-MpE"/>
-                            <constraint firstItem="Qu0-JM-zmT" firstAttribute="top" secondItem="J3O-9b-acQ" secondAttribute="bottom" constant="8" id="RNn-Os-7Bm"/>
                             <constraint firstItem="TIM-Je-Ssn" firstAttribute="centerY" secondItem="WA3-99-MRO" secondAttribute="centerY" id="See-58-fir"/>
                             <constraint firstItem="Egm-58-pbp" firstAttribute="leading" secondItem="gaX-UQ-PFc" secondAttribute="leading" constant="16" id="bPy-7h-0Oh"/>
+                            <constraint firstItem="gaX-UQ-PFc" firstAttribute="trailing" secondItem="FGI-Cz-6Xp" secondAttribute="trailing" constant="16" id="dKZ-a4-DBJ"/>
+                            <constraint firstItem="Qu0-JM-zmT" firstAttribute="top" secondItem="FGI-Cz-6Xp" secondAttribute="bottom" constant="8" id="mnl-PG-A2X"/>
                             <constraint firstItem="gaX-UQ-PFc" firstAttribute="trailing" secondItem="S92-Fc-9YX" secondAttribute="trailing" constant="16" id="pil-5b-2gn"/>
                             <constraint firstItem="Qu0-JM-zmT" firstAttribute="leading" secondItem="gaX-UQ-PFc" secondAttribute="leading" constant="21" id="rGj-PP-8Cp"/>
                             <constraint firstItem="MdU-Rr-Lbu" firstAttribute="leading" secondItem="gaX-UQ-PFc" secondAttribute="leading" constant="16" id="wGD-OU-YJQ"/>
@@ -1771,9 +1779,17 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="gaX-UQ-PFc"/>
                     </view>
-                    <navigationItem key="navigationItem" id="Q0u-kv-3Ie"/>
+                    <navigationItem key="navigationItem" id="Q0u-kv-3Ie">
+                        <barButtonItem key="rightBarButtonItem" image="questionmark.circle" catalog="system" id="jMC-0r-Kfq">
+                            <color key="tintColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <connections>
+                                <action selector="showHelp:" destination="pBQ-SK-r7u" id="G91-Lc-pXY"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
                         <outlet property="accountField" destination="TIM-Je-Ssn" id="qbj-Jf-YFT"/>
+                        <outlet property="passphraseField" destination="FGI-Cz-6Xp" id="OOS-yq-UzK"/>
                         <outlet property="recoverOutlet" destination="S92-Fc-9YX" id="XWt-6Z-X93"/>
                         <outlet property="textField" destination="Ihd-q7-s4e" id="jM2-Q2-Ir5"/>
                         <outlet property="wordView" destination="J3O-9b-acQ" id="6oN-6I-T4i"/>
@@ -1870,6 +1886,9 @@
                     <navigationItem key="navigationItem" id="cM0-GQ-Lg4">
                         <barButtonItem key="rightBarButtonItem" image="questionmark.circle" catalog="system" id="rTe-cw-fwB">
                             <color key="tintColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <connections>
+                                <action selector="showHelp:" destination="TDC-7I-IgK" id="gYj-Rj-paj"/>
+                            </connections>
                         </barButtonItem>
                     </navigationItem>
                     <connections>
@@ -1938,7 +1957,7 @@
                                                             <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Receive Descriptor:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5Ah-74-sY6">
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Receive Descriptor Keypool:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5Ah-74-sY6">
                                                             <rect key="frame" x="0.0" y="173" width="345" height="20.5"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -1954,7 +1973,7 @@
                                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                             <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                         </textView>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Change Descriptor:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="54i-yP-uNz">
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Change Descriptor Keypool:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="54i-yP-uNz">
                                                             <rect key="frame" x="0.0" y="375.5" width="345" height="20.5"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -2058,12 +2077,20 @@
                         <viewLayoutGuide key="safeArea" id="x1B-QS-pyO"/>
                     </view>
                     <navigationItem key="navigationItem" id="RAH-Xa-aX3">
-                        <barButtonItem key="rightBarButtonItem" title="Item" image="trash.circle" catalog="system" id="8CT-h9-Y9D">
-                            <color key="tintColor" systemColor="systemPinkColor" red="1" green="0.1764705882" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                            <connections>
-                                <action selector="deleteWallet:" destination="l8t-Do-K11" id="ac9-zz-F0q"/>
-                            </connections>
-                        </barButtonItem>
+                        <rightBarButtonItems>
+                            <barButtonItem title="Item" image="trash.circle" catalog="system" id="8CT-h9-Y9D">
+                                <color key="tintColor" systemColor="systemPinkColor" red="1" green="0.1764705882" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <connections>
+                                    <action selector="deleteWallet:" destination="l8t-Do-K11" id="ac9-zz-F0q"/>
+                                </connections>
+                            </barButtonItem>
+                            <barButtonItem image="questionmark.circle" catalog="system" id="pzI-ZE-AQV">
+                                <color key="tintColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <connections>
+                                    <action selector="showHelp:" destination="l8t-Do-K11" id="DTm-NX-OZB"/>
+                                </connections>
+                            </barButtonItem>
+                        </rightBarButtonItems>
                     </navigationItem>
                     <connections>
                         <outlet property="detailTable" destination="hgF-Hw-8pz" id="I28-3h-wBF"/>
@@ -2156,6 +2183,9 @@
                     <navigationItem key="navigationItem" id="5rs-4G-uHB">
                         <barButtonItem key="rightBarButtonItem" image="questionmark.circle" catalog="system" id="3qP-4a-tPW">
                             <color key="tintColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <connections>
+                                <action selector="howHelp:" destination="0gR-Gj-FSR" id="mph-Yi-YdH"/>
+                            </connections>
                         </barButtonItem>
                     </navigationItem>
                     <connections>
