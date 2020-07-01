@@ -302,7 +302,7 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
     
     private func importDescriptors(index: Int) {
         if index < descriptorsToImport.count {
-            updateSpinnerText(text: "importing descriptor #\(index + 1)...")
+            updateSpinnerText(text: "importing descriptor #\(index + 1) out of \(descriptorsToImport.count)...")
             let descriptor = descriptorsToImport[index]
             var params = "[{ \"desc\": \"\(descriptor)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"label\": \"Fully Noded Recovery\", \"keypool\": false, \"internal\": false }], {\"rescan\": false}"
             if descriptor.contains("84'/1'/\(accountNumber)'") {

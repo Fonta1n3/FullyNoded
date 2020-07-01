@@ -272,26 +272,86 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     @IBAction func sweep(_ sender: Any) {
         
         if addressInput.text != "" {
-            
             creatingView.addConnectingView(vc: self, description: "sweeping...")
-            let ud = UserDefaults.standard
-            let rawTransaction = RawTransaction()
-            rawTransaction.numberOfBlocks = ud.object(forKey: "feeTarget") as! Int
-            rawTransaction.addressToPay = addressInput.text!
-            rawTransaction.sweepRawTx { [unowned vc = self] in
-                if !rawTransaction.errorBool {
-                    vc.removeViews()
-                    vc.creatingView.removeConnectingView()
-                    if rawTransaction.unsignedRawTx != "" {
-                        vc.rawTxSigned = rawTransaction.unsignedRawTx
-                    } else {
-                        vc.rawTxSigned = rawTransaction.signedRawTx
+            let receivingAddress = addressInput.text!
+            Reducer.makeCommand(command: .listunspent, param: "0") { [unowned vc = self] (response, errorMessage) in
+                if let resultArray = response as? NSArray {
+                    var inputArray = [Any]()
+                    var inputs = ""
+                    var amount = Double()
+                    var spendFromCold = Bool()
+                    
+                    for utxo in resultArray {
+                        let utxoDict = utxo as! NSDictionary
+                        let txid = utxoDict["txid"] as! String
+                        let vout = "\(utxoDict["vout"] as! Int)"
+                        let spendable = utxoDict["spendable"] as! Bool
+                        if !spendable {
+                            spendFromCold = true
+                        }
+                        amount += utxoDict["amount"] as! Double
+                        let input = "{\"txid\":\"\(txid)\",\"vout\": \(vout),\"sequence\": 1}"
+                        inputArray.append(input)
                     }
-                    vc.showRaw(raw: vc.rawTxSigned)
-                    vc.broadcastNow()
+                    
+                    inputs = inputArray.description
+                    inputs = inputs.replacingOccurrences(of: "[\"", with: "[")
+                    inputs = inputs.replacingOccurrences(of: "\"]", with: "]")
+                    inputs = inputs.replacingOccurrences(of: "\"{", with: "{")
+                    inputs = inputs.replacingOccurrences(of: "}\"", with: "}")
+                    inputs = inputs.replacingOccurrences(of: "\\", with: "")
+                    
+                    let ud = UserDefaults.standard
+                    let param = "''\(inputs)'', ''{\"\(receivingAddress)\":\(vc.rounded(number: amount))}'', 0, ''{\"includeWatching\": \(spendFromCold), \"replaceable\": true, \"conf_target\": \(ud.object(forKey: "feeTarget") as! Int), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
+                    Reducer.makeCommand(command: .walletcreatefundedpsbt, param: param) { (response, errorMessage) in
+                        if let result = response as? NSDictionary {
+                            let psbt1 = result["psbt"] as! String
+                            Reducer.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt1)\"") { [unowned vc = self] (response, errorMessage) in
+                                if let dict = response as? NSDictionary {
+                                    if let processedPSBT = dict["psbt"] as? String {
+                                        Signer.sign(psbt: processedPSBT) { (psbt, rawTx, errorMessage) in
+                                            if psbt != nil {
+                                                vc.rawTxSigned = psbt!
+                                                vc.creatingView.removeConnectingView()
+                                                vc.showRaw(raw: psbt!)
+                                                DispatchQueue.main.async {
+                                                    vc.removeViews()
+                                                    vc.navigationController?.navigationBar.topItem?.title = "PSBT"
+                                                    vc.tapTextViewGesture = UITapGestureRecognizer(target: self, action: #selector(vc.sharePSBT(_:)))
+                                                    vc.rawDisplayer.textView.addGestureRecognizer(vc.tapTextViewGesture)
+                                                    vc.exportPsbt()
+                                                }
+                                            } else if rawTx != nil {
+                                                vc.rawTxSigned = rawTx!
+                                                vc.creatingView.removeConnectingView()
+                                                vc.showRaw(raw: rawTx!)
+                                                DispatchQueue.main.async {
+                                                    vc.removeViews()
+                                                    vc.navigationController?.navigationBar.topItem?.title = "Signed Tx"
+                                                    vc.tapTextViewGesture = UITapGestureRecognizer(target: self, action: #selector(vc.shareRawText(_:)))
+                                                    vc.rawDisplayer.textView.addGestureRecognizer(vc.tapTextViewGesture)
+                                                }
+                                                vc.broadcastNow()
+                                                
+                                            } else if errorMessage != nil {
+                                                vc.creatingView.removeConnectingView()
+                                                showAlert(vc: vc, title: "Error", message: errorMessage!)
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    vc.creatingView.removeConnectingView()
+                                    displayAlert(viewController: vc, isError: true, message: errorMessage ?? "")
+                                }
+                            }
+                        } else {
+                            vc.creatingView.removeConnectingView()
+                            displayAlert(viewController: vc, isError: true, message: errorMessage ?? "")
+                        }
+                    }
                 } else {
                     vc.creatingView.removeConnectingView()
-                    showAlert(vc: vc, title: "Error sweeping", message: rawTransaction.errorDescription)
+                    displayAlert(viewController: vc, isError: true, message: errorMessage ?? "")
                 }
             }
         }
@@ -692,43 +752,50 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     private func broadcastNow() {
         DispatchQueue.main.async { [unowned vc = self] in
             let alert = UIAlertController(title: "Broadcast with your node?", message: "You can optionally broadcast this transaction using Blockstream's esplora API over Tor V3 for improved privacy.", preferredStyle: .actionSheet)
-
             alert.addAction(UIAlertAction(title: "Privately", style: .default, handler: { action in
-
                 vc.creatingView.addConnectingView(vc: vc, description: "broadcasting...")
-
-                Broadcaster.sharedInstance.send(rawTx: self.rawTxSigned) { [unowned vc = self] (txid) in
-
+                Broadcaster.sharedInstance.send(rawTx: vc.rawTxSigned) { [unowned vc = self] (txid) in
                     if txid != nil {
-                        self.creatingView.removeConnectingView()
-                        displayAlert(viewController: self, isError: false, message: "Transaction Sent ✓")
-
+                        DispatchQueue.main.async { [unowned vc = self] in
+                            vc.rawDisplayer.rawString = txid!
+                            vc.rawDisplayer.textView.text = "txid: " + txid!
+                            vc.rawDisplayer.qrView.image = vc.rawDisplayer.generateQrCode(key: txid!)
+                            vc.navigationController?.navigationBar.topItem?.title = "Transaction ID"
+                            vc.creatingView.removeConnectingView()
+                            displayAlert(viewController: vc, isError: false, message: "Transaction Sent ✓")
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                                NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+                            }
+                        }
                     } else {
-
                         vc.creatingView.removeConnectingView()
                         displayAlert(viewController: vc, isError: true, message: "error broadcasting")
-
                     }
                 }
-
             }))
-
             alert.addAction(UIAlertAction(title: "Use my node", style: .default, handler: { [unowned vc = self] action in
                 vc.creatingView.addConnectingView(vc: vc, description: "broadcasting...")
                 Reducer.makeCommand(command: .sendrawtransaction, param: "\"\(vc.rawTxSigned)\"") { (response, errorMesage) in
-                    if let _ = response as? String {
-                        vc.creatingView.removeConnectingView()
-                        displayAlert(viewController: vc, isError: false, message: "Transaction sent ✓")
+                    if let txid = response as? String {
+                        DispatchQueue.main.async { [unowned vc = self] in
+                            vc.navigationController?.navigationBar.topItem?.title = "Transaction ID"
+                            vc.rawDisplayer.rawString = txid
+                            vc.rawDisplayer.textView.text = "txid: " + txid
+                            vc.rawDisplayer.qrView.image = vc.rawDisplayer.generateQrCode(key: txid)
+                            vc.creatingView.removeConnectingView()
+                            displayAlert(viewController: vc, isError: false, message: "Transaction sent ✓")
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                                NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+                            }
+                        }
                     } else {
-                        displayAlert(viewController: self, isError: true, message: "Error: \(errorMesage ?? "")")
+                        displayAlert(viewController: vc, isError: true, message: "Error: \(errorMesage ?? "")")
                     }
                 }
             }))
-
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = self.view
-            self.present(alert, animated: true) {}
-
+            alert.popoverPresentationController?.sourceView = vc.view
+            vc.present(alert, animated: true) {}
         }
     }
     
