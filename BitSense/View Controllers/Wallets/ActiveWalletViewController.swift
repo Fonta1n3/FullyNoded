@@ -253,6 +253,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
                 if wallet != nil {
                     textLabel.text = wallet!.label
                 } else {
+                    print("label: \(UserDefaults.standard.object(forKey: "walletName") as? String ?? "Default Wallet")")
                     textLabel.text = UserDefaults.standard.object(forKey: "walletName") as? String ?? "Default Wallet"
                 }
             }

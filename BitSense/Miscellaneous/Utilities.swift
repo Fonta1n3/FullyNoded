@@ -14,10 +14,13 @@ public func activeWallet(completion: @escaping ((Wallet?)) -> Void) {
         CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
             if wallets != nil {
                 if wallets!.count > 0 {
-                    for w in wallets! {
+                    for (i, w) in wallets!.enumerated() {
                         let walletStruct = Wallet(dictionary: w)
                         if walletStruct.name == activeWalletName {
                             completion(walletStruct)
+                        }
+                        if i + 1 == wallets!.count {
+                            completion(nil)
                         }
                     }
                 } else {
@@ -27,6 +30,8 @@ public func activeWallet(completion: @escaping ((Wallet?)) -> Void) {
                 completion(nil)
             }
         }
+    } else {
+        completion(nil)
     }
 }
 
