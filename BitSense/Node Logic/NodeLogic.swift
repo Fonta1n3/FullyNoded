@@ -292,7 +292,7 @@ class NodeLogic {
         
         if let progressCheck = blockchainInfo["verificationprogress"] as? Double {
             blockchainInfoToReturn["actualProgress"] = progressCheck
-            if progressCheck > 0.99 {
+            if progressCheck > 0.9999 {
                 blockchainInfoToReturn["progress"] = "Fully verified"
             } else {
                 blockchainInfoToReturn["progress"] = "\(Int(progressCheck*100))% verified"
