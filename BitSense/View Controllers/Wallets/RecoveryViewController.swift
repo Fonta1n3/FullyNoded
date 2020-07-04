@@ -163,67 +163,55 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
             if success {
                 if let mk = Keys.masterKey(words: seed, coinType: vc.coinType, passphrase: passphrase) {
                     if vc.recoverSamourai {
-                        vc.updateSpinnerText(text: "getting Samourai primary descriptor...")
-                        vc.getDescriptorInfo(desc: vc.samouraiDesc1Prim(mk)) { [unowned vc = self] samDesc1Prim  in
-                            if samDesc1Prim != nil {
-                                vc.descriptorsToImport.append(samDesc1Prim!)
-                                vc.updateSpinnerText(text: "getting Samourai change descriptor...")
-                                vc.getDescriptorInfo(desc: vc.samouraiDesc1Change(mk)) { [unowned vc = self] sam1DescChange in
-                                    if sam1DescChange != nil {
-                                        vc.descriptorsToImport.append(sam1DescChange!)
-                                        vc.updateSpinnerText(text: "getting Samourai Bad Bank primary descriptor...")
-                                        vc.getDescriptorInfo(desc: vc.samouraiBadBankPrim(mk)) { [unowned vc = self] sam2DescPrim in
-                                            if sam2DescPrim != nil {
-                                                vc.descriptorsToImport.append(sam2DescPrim!)
-                                                vc.updateSpinnerText(text: "getting Samourai Bad Bank change descriptor...")
-                                                vc.getDescriptorInfo(desc: vc.samouraiBadBankChange(mk)) { [unowned vc = self] sam2DescChange in
-                                                    if sam2DescChange != nil {
-                                                        vc.descriptorsToImport.append(sam2DescChange!)
-                                                        vc.updateSpinnerText(text: "getting Samourai Pre Mix primary descriptor...")
-                                                        vc.getDescriptorInfo(desc: vc.samouraiPreMixPrim(mk)) { [unowned vc = self] samDesc3Prim in
-                                                            if samDesc3Prim != nil {
-                                                                vc.descriptorsToImport.append(samDesc3Prim!)
-                                                                vc.updateSpinnerText(text: "getting Samourai Pre Mix change descriptor...")
-                                                                vc.getDescriptorInfo(desc: vc.samouraiPreMixChange(mk)) { [unowned vc = self] samDesc3Change in
-                                                                    if samDesc3Change != nil {
-                                                                        vc.descriptorsToImport.append(samDesc3Change!)
-                                                                        vc.updateSpinnerText(text: "getting Samourai Post Mix primary descriptor...")
-                                                                        vc.getDescriptorInfo(desc: vc.samouraiPostMixPrim(mk)) { [unowned vc = self] samDesc4Prim in
-                                                                            if samDesc4Prim != nil {
-                                                                                vc.descriptorsToImport.append(samDesc4Prim!)
-                                                                                vc.updateSpinnerText(text: "getting Samourai Post Mix change descriptor...")
-                                                                                vc.getDescriptorInfo(desc: vc.samouraiPostMixChange(mk)) { [unowned vc = self] samDesc4Change in
-                                                                                    if samDesc4Change != nil {
-                                                                                        vc.descriptorsToImport.append(samDesc4Change!)
-                                                                                        vc.updateSpinnerText(text: "getting Samourai Ricochet 84 primary descriptor...")
-                                                                                        vc.getDescriptorInfo(desc: vc.samouraiRicochet84Prim(mk)) { [unowned vc = self] samDesc5Prim in
-                                                                                            if samDesc5Prim != nil {
-                                                                                                vc.descriptorsToImport.append(samDesc5Prim!)
-                                                                                                vc.updateSpinnerText(text: "getting Samourai Samourai Ricochet 84 change descriptor...")
-                                                                                                vc.getDescriptorInfo(desc: vc.samouraiRicochet84Change(mk)) { [unowned vc = self] samDesc5Change in
-                                                                                                    if samDesc5Change != nil {
-                                                                                                        vc.descriptorsToImport.append(samDesc5Change!)
-                                                                                                        vc.updateSpinnerText(text: "getting Samourai Ricochet 44 primary descriptor...")
-                                                                                                        vc.getDescriptorInfo(desc: vc.samouraiRicochet44Prim(mk)) { [unowned vc = self] samDesc6Prim in
-                                                                                                            if samDesc6Prim != nil {
-                                                                                                                vc.descriptorsToImport.append(samDesc6Prim!)
-                                                                                                                vc.updateSpinnerText(text: "getting Samourai Ricochet 44 change descriptor...")
-                                                                                                                vc.getDescriptorInfo(desc: vc.samouraiRicochet44Change(mk)) { [unowned vc = self] samDesc6Change in
-                                                                                                                    if samDesc6Change != nil {
-                                                                                                                        vc.descriptorsToImport.append(samDesc6Prim!)
-                                                                                                                        vc.updateSpinnerText(text: "getting Samourai Ricochet 49 primary descriptor...")
-                                                                                                                        vc.getDescriptorInfo(desc: vc.samouraiRicochet49Prim(mk)) { [unowned vc = self] samDesc7Prim in
-                                                                                                                            if samDesc7Prim != nil {
-                                                                                                                                vc.descriptorsToImport.append(samDesc7Prim!)
-                                                                                                                                vc.updateSpinnerText(text: "getting Samourai Ricochet 49 change descriptor...")
-                                                                                                                                vc.getDescriptorInfo(desc: vc.samouraiRicochet49Change(mk)) { samDesc7Change in
-                                                                                                                                    if samDesc7Change != nil {
-                                                                                                                                        vc.descriptorsToImport.append(samDesc7Change!)
-                                                                                                                                        vc.getNonSamouraiDescriptors(masterKey: mk)
-                                                                                                                                    }
-                                                                                                                                }
-                                                                                                                            }
-                                                                                                                        }
+                        vc.updateSpinnerText(text: "getting Samourai Bad Bank primary descriptor...")
+                        vc.getDescriptorInfo(desc: vc.samouraiBadBankPrim(mk)) { [unowned vc = self] sam2DescPrim in
+                            if sam2DescPrim != nil {
+                                vc.descriptorsToImport.append(sam2DescPrim!)
+                                vc.updateSpinnerText(text: "getting Samourai Bad Bank change descriptor...")
+                                vc.getDescriptorInfo(desc: vc.samouraiBadBankChange(mk)) { [unowned vc = self] sam2DescChange in
+                                    if sam2DescChange != nil {
+                                        vc.descriptorsToImport.append(sam2DescChange!)
+                                        vc.updateSpinnerText(text: "getting Samourai Pre Mix primary descriptor...")
+                                        vc.getDescriptorInfo(desc: vc.samouraiPreMixPrim(mk)) { [unowned vc = self] samDesc3Prim in
+                                            if samDesc3Prim != nil {
+                                                vc.descriptorsToImport.append(samDesc3Prim!)
+                                                vc.updateSpinnerText(text: "getting Samourai Pre Mix change descriptor...")
+                                                vc.getDescriptorInfo(desc: vc.samouraiPreMixChange(mk)) { [unowned vc = self] samDesc3Change in
+                                                    if samDesc3Change != nil {
+                                                        vc.descriptorsToImport.append(samDesc3Change!)
+                                                        vc.updateSpinnerText(text: "getting Samourai Post Mix primary descriptor...")
+                                                        vc.getDescriptorInfo(desc: vc.samouraiPostMixPrim(mk)) { [unowned vc = self] samDesc4Prim in
+                                                            if samDesc4Prim != nil {
+                                                                vc.descriptorsToImport.append(samDesc4Prim!)
+                                                                vc.updateSpinnerText(text: "getting Samourai Post Mix change descriptor...")
+                                                                vc.getDescriptorInfo(desc: vc.samouraiPostMixChange(mk)) { [unowned vc = self] samDesc4Change in
+                                                                    if samDesc4Change != nil {
+                                                                        vc.descriptorsToImport.append(samDesc4Change!)
+                                                                        vc.updateSpinnerText(text: "getting Samourai Ricochet 84 primary descriptor...")
+                                                                        vc.getDescriptorInfo(desc: vc.samouraiRicochet84Prim(mk)) { [unowned vc = self] samDesc5Prim in
+                                                                            if samDesc5Prim != nil {
+                                                                                vc.descriptorsToImport.append(samDesc5Prim!)
+                                                                                vc.updateSpinnerText(text: "getting Samourai Samourai Ricochet 84 change descriptor...")
+                                                                                vc.getDescriptorInfo(desc: vc.samouraiRicochet84Change(mk)) { [unowned vc = self] samDesc5Change in
+                                                                                    if samDesc5Change != nil {
+                                                                                        vc.descriptorsToImport.append(samDesc5Change!)
+                                                                                        vc.updateSpinnerText(text: "getting Samourai Ricochet 44 primary descriptor...")
+                                                                                        vc.getDescriptorInfo(desc: vc.samouraiRicochet44Prim(mk)) { [unowned vc = self] samDesc6Prim in
+                                                                                            if samDesc6Prim != nil {
+                                                                                                vc.descriptorsToImport.append(samDesc6Prim!)
+                                                                                                vc.updateSpinnerText(text: "getting Samourai Ricochet 44 change descriptor...")
+                                                                                                vc.getDescriptorInfo(desc: vc.samouraiRicochet44Change(mk)) { [unowned vc = self] samDesc6Change in
+                                                                                                    if samDesc6Change != nil {
+                                                                                                        vc.descriptorsToImport.append(samDesc6Prim!)
+                                                                                                        vc.updateSpinnerText(text: "getting Samourai Ricochet 49 primary descriptor...")
+                                                                                                        vc.getDescriptorInfo(desc: vc.samouraiRicochet49Prim(mk)) { [unowned vc = self] samDesc7Prim in
+                                                                                                            if samDesc7Prim != nil {
+                                                                                                                vc.descriptorsToImport.append(samDesc7Prim!)
+                                                                                                                vc.updateSpinnerText(text: "getting Samourai Ricochet 49 change descriptor...")
+                                                                                                                vc.getDescriptorInfo(desc: vc.samouraiRicochet49Change(mk)) { samDesc7Change in
+                                                                                                                    if samDesc7Change != nil {
+                                                                                                                        vc.descriptorsToImport.append(samDesc7Change!)
+                                                                                                                        vc.getNonSamouraiDescriptors(masterKey: mk)
                                                                                                                     }
                                                                                                                 }
                                                                                                             }
@@ -345,27 +333,7 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
         }
     }
     
-    private func samouraiDesc1Prim(_ masterKey: String) -> String {
-        var desc = ""
-        if let xpub = Keys.xpub(path: "m/47h/\(coinType)h/\(accountNumber)h", masterKey: masterKey) {
-            if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
-                desc = "combo([\(fingerprint)/47h/\(coinType)h/\(accountNumber)h]\(xpub)/0/*)"
-            }
-        }
-        return desc
-    }
-    
-    private func samouraiDesc1Change(_ masterKey: String) -> String {
-        var desc = ""
-        if let xpub = Keys.xpub(path: "m/47h/\(coinType)h/\(accountNumber)h", masterKey: masterKey) {
-            if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
-                desc = "combo([\(fingerprint)/47h/\(coinType)h/\(accountNumber)h]\(xpub)/1/*)"
-            }
-        }
-        return desc
-    }
-    
-    private func samouraiBadBankPrim(_ masterKey: String) -> String {
+   private func samouraiBadBankPrim(_ masterKey: String) -> String {
         var desc = ""
         if let xpub = Keys.xpub(path: "m/84h/\(coinType)h/2147483644h", masterKey: masterKey) {
             if let fingerprint = Keys.fingerprint(masterKey: masterKey) {

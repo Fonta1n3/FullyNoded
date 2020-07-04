@@ -62,44 +62,53 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
-        
         let urlcontexts = URLContexts.first
-        let url = urlcontexts?.url
-        addNode(url: "\(url!)")
-        
+        if let url = urlcontexts?.url {
+            print("url: \(url)")
+            if url.pathExtension == "psbt" {
+                print("its a psbt")
+                do {
+                    let data = try Data(contentsOf: url.absoluteURL)
+                    let psbt = data.base64EncodedString()
+                    presentSigner(psbt: psbt)
+                } catch {
+                    
+                }
+            } else {
+                addNode(url: "\(url)")
+            }
+        }
     }
     
     
     func addNode(url: String) {
-        
         if let myTabBar = self.window?.rootViewController as? UITabBarController {
-            
             let qc = QuickConnect()
-            
             func getResult() {
-                
                 if !qc.errorBool {
-                    
                     print("success adding quick connect")
-                    
                 } else {
-                    
                     print("error adding quick connect = \(qc.errorDescription)")
-                    
                 }
-                
             }
-            
-            qc.addNode(vc: myTabBar,
-                       url: url,
-                       completion: getResult)
-            
+            qc.addNode(vc: myTabBar, url: url, completion: getResult)
         } else {
-            
             print("error adding quick connect no access to tabbar")
-            
         }
-        
+    }
+    
+    private func presentSigner(psbt: String) {
+        let storyBoard = UIStoryboard(name: "Main", bundle: nil)
+        if let signerVc = storyBoard.instantiateViewController(identifier: "signerVc") as? SignerViewController {
+            signerVc.psbt = psbt
+            if let window = self.window, let rootViewController = window.rootViewController {
+                var currentController = rootViewController
+                while let presentedController = currentController.presentedViewController {
+                    currentController = presentedController
+                }
+                currentController.present(signerVc, animated: true, completion: nil)
+            }
+        }
     }
     
 }

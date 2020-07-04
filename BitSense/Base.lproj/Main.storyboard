@@ -633,6 +633,12 @@
                                     <action selector="goToFullyNodedWallets:" destination="Dwu-lj-4IN" id="Id4-yG-q99"/>
                                 </connections>
                             </barButtonItem>
+                            <barButtonItem image="info.circle" catalog="system" id="2iD-TI-Xqz">
+                                <color key="tintColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <connections>
+                                    <action selector="getDetails:" destination="Dwu-lj-4IN" id="k5S-fX-wFj"/>
+                                </connections>
+                            </barButtonItem>
                         </leftBarButtonItems>
                     </navigationItem>
                     <connections>
@@ -652,6 +658,7 @@
                         <segue destination="hL3-4s-vl7" kind="show" identifier="segueToChooseWallet" id="VU6-gc-B7y"/>
                         <segue destination="0gR-Gj-FSR" kind="show" identifier="createFullyNodedWallet" id="e0d-Zp-a29"/>
                         <segue destination="TDC-7I-IgK" kind="show" identifier="segueToWallets" id="vi7-1c-2H7"/>
+                        <segue destination="l8t-Do-K11" kind="show" identifier="segueToActiveWalletDetail" id="IAz-j1-Gq6"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="jDi-KB-cQL" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -1446,6 +1453,89 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Nvo-2v-clY" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-8975" y="-1254"/>
+        </scene>
+        <!--Signer View Controller-->
+        <scene sceneID="6ov-cz-KFR">
+            <objects>
+                <viewController restorationIdentifier="signerVc" storyboardIdentifier="signerVc" id="nyf-66-vKN" customClass="SignerViewController" customModule="BitSense" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="j0q-oU-GGv">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="PSBT Signer" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cgu-5V-2yM">
+                                <rect key="frame" x="16" y="30" width="164" height="35"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="WrC-5O-YmB">
+                                <rect key="frame" x="16" y="109" width="343" height="465"/>
+                                <color key="backgroundColor" red="0.090418781725888353" green="0.090418781725888353" blue="0.090418781725888353" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                            </textView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gvm-av-mkc">
+                                <rect key="frame" x="16" y="603" width="343" height="44"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="44" id="x0l-kc-OI3"/>
+                                </constraints>
+                                <state key="normal" title="sign psbt">
+                                    <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="signNow:" destination="nyf-66-vKN" eventType="touchUpInside" id="RdE-Vg-D2Z"/>
+                                </connections>
+                            </button>
+                            <stackView opaque="NO" contentMode="scaleToFill" spacing="238" translatesAutoresizingMaskIntoConstraints="NO" id="I0t-xT-ih4">
+                                <rect key="frame" x="16" y="73" width="343" height="30"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="yRk-fp-pB8">
+                                        <rect key="frame" x="0.0" y="0.0" width="52" height="30"/>
+                                        <state key="normal" title="decode">
+                                            <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="decodePsbt:" destination="nyf-66-vKN" eventType="touchUpInside" id="8QI-15-PyJ"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OL6-Lq-U52">
+                                        <rect key="frame" x="290" y="0.0" width="53" height="30"/>
+                                        <state key="normal" title="analyze">
+                                            <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="analyzePsbt:" destination="nyf-66-vKN" eventType="touchUpInside" id="VAb-O9-hZ9"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="WrC-5O-YmB" firstAttribute="top" secondItem="I0t-xT-ih4" secondAttribute="bottom" constant="6" id="4f8-gz-10B"/>
+                            <constraint firstItem="adl-yx-dXq" firstAttribute="trailing" secondItem="gvm-av-mkc" secondAttribute="trailing" constant="16" id="CKE-xK-slf"/>
+                            <constraint firstItem="gvm-av-mkc" firstAttribute="leading" secondItem="adl-yx-dXq" secondAttribute="leading" constant="16" id="CzL-kO-XOc"/>
+                            <constraint firstItem="WrC-5O-YmB" firstAttribute="leading" secondItem="adl-yx-dXq" secondAttribute="leading" constant="16" id="DRD-kZ-4el"/>
+                            <constraint firstItem="I0t-xT-ih4" firstAttribute="top" secondItem="cgu-5V-2yM" secondAttribute="bottom" constant="8" id="NGm-Hu-gk9"/>
+                            <constraint firstItem="adl-yx-dXq" firstAttribute="trailing" secondItem="I0t-xT-ih4" secondAttribute="trailing" constant="16" id="RVR-oR-2Wu"/>
+                            <constraint firstItem="cgu-5V-2yM" firstAttribute="top" secondItem="adl-yx-dXq" secondAttribute="top" constant="30" id="fsI-1t-AjK"/>
+                            <constraint firstItem="I0t-xT-ih4" firstAttribute="leading" secondItem="adl-yx-dXq" secondAttribute="leading" constant="16" id="gR8-4a-q1Z"/>
+                            <constraint firstItem="cgu-5V-2yM" firstAttribute="leading" secondItem="adl-yx-dXq" secondAttribute="leading" constant="16" id="iab-jw-nMZ"/>
+                            <constraint firstItem="gvm-av-mkc" firstAttribute="top" secondItem="WrC-5O-YmB" secondAttribute="bottom" constant="29" id="siv-7q-hfz"/>
+                            <constraint firstItem="adl-yx-dXq" firstAttribute="trailing" secondItem="WrC-5O-YmB" secondAttribute="trailing" constant="16" id="uMx-sE-FUj"/>
+                            <constraint firstItem="adl-yx-dXq" firstAttribute="bottom" secondItem="gvm-av-mkc" secondAttribute="bottom" constant="20" id="zMn-pJ-Vao"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="adl-yx-dXq"/>
+                    </view>
+                    <connections>
+                        <outlet property="textView" destination="WrC-5O-YmB" id="j0W-9j-poL"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="s3R-V1-NDB" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-10365.6" y="418.74062968515744"/>
         </scene>
         <!--Transaction View Controller-->
         <scene sceneID="VqF-ym-nmL">
@@ -5465,6 +5555,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="Aim-ze-LVg"/>
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="HNI-HG-9ZQ"/>
+        <segue reference="IAz-j1-Gq6"/>
         <segue reference="Ikt-mc-dmE"/>
         <segue reference="G1i-Bv-OSl"/>
         <segue reference="U54-oe-CeC"/>

@@ -8,7 +8,7 @@
 
 import UIKit
 
-class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate {
+class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UINavigationControllerDelegate {
     
     @IBOutlet weak var detailTable: UITableView!
     var walletId:UUID!
@@ -19,6 +19,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        navigationController?.delegate = self
         addTapGesture()
         setCoinType()
     }
@@ -97,7 +98,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                                             if decryptedData != nil {
                                                 if let pass = String(bytes: decryptedData!, encoding: .utf8) {
                                                     if let mk = Keys.masterKey(words: words, coinType: vc.coinType, passphrase: pass) {
-                                                        if let xpub = Keys.bip84AccountXpub(masterKey: mk, coinType: vc.coinType, account: Int(vc.wallet.account)) {
+                                                        if let xpub = Keys.bip84AccountXpub(masterKey: mk, coinType: vc.coinType, account: vc.wallet.account) {
                                                             if xpub == vc.accountXpub() {
                                                                 DispatchQueue.main.async { [unowned vc = self] in
                                                                     vc.signer = words
@@ -111,7 +112,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                                         }
                                     } else {
                                         if let mk = Keys.masterKey(words: words, coinType: vc.coinType, passphrase: "") {
-                                            if let xpub = Keys.bip84AccountXpub(masterKey: mk, coinType: vc.coinType, account: Int(vc.wallet.account)) {
+                                            if let xpub = Keys.bip84AccountXpub(masterKey: mk, coinType: vc.coinType, account: vc.wallet.account) {
                                                 if xpub == vc.accountXpub() {
                                                     DispatchQueue.main.async { [unowned vc = self] in
                                                         vc.signer = words

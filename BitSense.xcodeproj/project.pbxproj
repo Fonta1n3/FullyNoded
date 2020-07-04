@@ -127,6 +127,7 @@
 		D0C20EE024A6EF3800C62AA4 /* Balances.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20EDF24A6EF3800C62AA4 /* Balances.swift */; };
 		D0C20EE224A7639800C62AA4 /* LibWally.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0C20EE124A7639800C62AA4 /* LibWally.framework */; };
 		D0C20EE724A78A9700C62AA4 /* CreateFullyNodedWalletViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20EE624A78A9700C62AA4 /* CreateFullyNodedWalletViewController.swift */; };
+		D0C5A58824AECDBE003B11A9 /* SignerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C5A58724AECDBE003B11A9 /* SignerViewController.swift */; };
 		D0D71DA32351F835005CCDB9 /* UtilitieMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0D71DA22351F835005CCDB9 /* UtilitieMenuViewController.swift */; };
 		D0DA954F2340A9C2001B7EB3 /* IncomingsMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DA954E2340A9C2001B7EB3 /* IncomingsMenuViewController.swift */; };
 		D0DE292B22BCFE9900D9EBCF /* Readme.md in Resources */ = {isa = PBXBuildFile; fileRef = D0DE292A22BCFE9900D9EBCF /* Readme.md */; };
@@ -285,6 +286,7 @@
 		D0C20EDF24A6EF3800C62AA4 /* Balances.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Balances.swift; sourceTree = "<group>"; };
 		D0C20EE124A7639800C62AA4 /* LibWally.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = LibWally.framework; path = Carthage/Build/iOS/LibWally.framework; sourceTree = "<group>"; };
 		D0C20EE624A78A9700C62AA4 /* CreateFullyNodedWalletViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateFullyNodedWalletViewController.swift; sourceTree = "<group>"; };
+		D0C5A58724AECDBE003B11A9 /* SignerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignerViewController.swift; sourceTree = "<group>"; };
 		D0CB488F2435B32E0072D1F5 /* Entities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Entities.swift; sourceTree = "<group>"; };
 		D0CB48902435B32E0072D1F5 /* Commands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Commands.swift; sourceTree = "<group>"; };
 		D0D71DA22351F835005CCDB9 /* UtilitieMenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilitieMenuViewController.swift; sourceTree = "<group>"; };
@@ -524,6 +526,7 @@
 				D0048C75225F3B860057E21B /* Unlock Screen */,
 				D0C20EE524A78A6F00C62AA4 /* Wallets */,
 				D096EDFF249DFADD0084A065 /* HelpViewController.swift */,
+				D0C5A58724AECDBE003B11A9 /* SignerViewController.swift */,
 			);
 			path = "View Controllers";
 			sourceTree = "<group>";
@@ -1167,6 +1170,7 @@
 				D037C874231BB04B006C357D /* ScanExtendedKeyViewController.swift in Sources */,
 				D044ED78235AF42D00300D62 /* ImportStruct.swift in Sources */,
 				D0C20ED624A6E19600C62AA4 /* NetworkInfo.swift in Sources */,
+				D0C5A58824AECDBE003B11A9 /* SignerViewController.swift in Sources */,
 				D096EE00249DFADD0084A065 /* HelpViewController.swift in Sources */,
 				D0C20EDC24A6E51D00C62AA4 /* MempoolInfo.swift in Sources */,
 				D08A92A62334F66900409D6E /* Reducer.swift in Sources */,
@@ -1363,8 +1367,8 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 161;
-				DEVELOPMENT_TEAM = 69FR345CDA;
+				CURRENT_PROJECT_VERSION = 164;
+				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
@@ -1376,7 +1380,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.241;
+				MARKETING_VERSION = 1.244;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1399,9 +1403,9 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 161;
+				CURRENT_PROJECT_VERSION = 164;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 69FR345CDA;
+				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				ENABLE_TESTABILITY = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1414,7 +1418,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.241;
+				MARKETING_VERSION = 1.244;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";

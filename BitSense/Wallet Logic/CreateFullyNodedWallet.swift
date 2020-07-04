@@ -55,7 +55,7 @@ class Keys {
         return fingerprint
     }
     
-    class func bip84AccountXpub(masterKey: String, coinType: String, account: Int) -> String? {
+    class func bip84AccountXpub(masterKey: String, coinType: String, account: Int16) -> String? {
         var xpub:String?
         if let mk = HDKey(masterKey) {
             if let path = BIP32Path("m/84'/\(coinType)'/\(account)'") {

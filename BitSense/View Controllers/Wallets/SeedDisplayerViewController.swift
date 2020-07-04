@@ -117,21 +117,21 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                 if let name = dict["name"] as? String {
                     vc.name = name
                     UserDefaults.standard.set(name, forKey: "walletName")
-                    vc.importPrimaryKeys(desc: vc.primaryDescriptor(fingerprint, xpub)) { success in
+                    vc.importPrimaryKeys(desc: vc.primaryDescriptor(fingerprint, xpub)) { (success, errorMessage) in
                         if success {
-                            vc.importChangeKeys(desc: vc.changeDescriptor(fingerprint, xpub)) { changeImported in
+                            vc.importChangeKeys(desc: vc.changeDescriptor(fingerprint, xpub)) { (changeImported, errorDesc) in
                                 if changeImported {
                                     completion(true)
                                 } else {
-                                    vc.showError(error: "Error importing change keys")
+                                    vc.showError(error: "Error importing change keys: \(errorDesc ?? "unknown error")")
                                 }
                             }
                         } else {
-                            vc.showError(error: "Error importing primary keys")
+                            vc.showError(error: "Error importing primary keys: \(errorMessage ?? "unknown error")")
                         }
                     }
                 } else {
-                    vc.showError(error: "Error creating wallet on your node")
+                    vc.showError(error: "Error creating wallet on your node \(errorMessage ?? "unknown error")")
                 }
             } else {
                 vc.showError(error: "Error creating wallet on your node: \(errorMessage ?? "unknown")")
@@ -149,11 +149,11 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         }
     }
     
-    private func importPrimaryKeys(desc: String, completion: @escaping ((Bool)) -> Void) {
+    private func importPrimaryKeys(desc: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
         getDescriptorInfo(desc: desc) { [unowned vc = self] descriptor in
             if descriptor != nil {
                 vc.primDesc = descriptor!
-                let params = "[{ \"desc\": \"\(descriptor!)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"label\": \"Fully Noded\", \"keypool\": true, \"internal\": false }]"
+                let params = "[{ \"desc\": \"\(descriptor!)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"label\": \"Fully Noded\", \"keypool\": true, \"internal\": false }], {\"rescan\": false}"
                 vc.importMulti(params: params, completion: completion)
             } else {
                 vc.showError(error: "error getting primary descriptor info")
@@ -161,11 +161,11 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         }
     }
     
-    private func importChangeKeys(desc: String, completion: @escaping ((Bool)) -> Void) {
+    private func importChangeKeys(desc: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
         getDescriptorInfo(desc: desc) { [unowned vc = self] descriptor in
             if descriptor != nil {
                 vc.changeDesc = descriptor!
-                let params = "[{ \"desc\": \"\(descriptor!)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"keypool\": true, \"internal\": true }]"
+                let params = "[{ \"desc\": \"\(descriptor!)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"keypool\": true, \"internal\": true }], {\"rescan\": false}"
                 vc.importMulti(params: params, completion: completion)
             } else {
                 vc.showError(error: "error getting change descriptor info")
@@ -173,22 +173,22 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         }
     }
     
-    private func importMulti(params: String, completion: @escaping ((Bool)) -> Void) {
+    private func importMulti(params: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
         Reducer.makeCommand(command: .importmulti, param: params) { (response, errorDescription) in
             if let result = response as? NSArray {
                 if result.count > 0 {
                     if let dict = result[0] as? NSDictionary {
                         if let success = dict["success"] as? Bool {
-                            completion((success))
+                            completion((success, nil))
                         } else {
-                            completion((false))
+                            completion((false, errorDescription ?? "unknown error importing your keys"))
                         }
                     }
                 } else {
-                    completion((false))
+                    completion((false, errorDescription ?? "unknown error importing your keys"))
                 }
             } else {
-                completion((false))
+                completion((false, errorDescription ?? "unknown error importing your keys"))
             }
         }
     }
@@ -228,7 +228,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                 DispatchQueue.main.async {
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                 }
-                showAlert(vc: vc, title: "Success!", message: "You created a Fully Noded single sig wallet, make sure you save your words so you can always recover this wallet if needed!")
+                showAlert(vc: vc, title: "Success! ✅", message: "You created a Fully Noded single sig wallet, make sure you save your words so you can always recover this wallet if needed!")
             }
         }
     }
