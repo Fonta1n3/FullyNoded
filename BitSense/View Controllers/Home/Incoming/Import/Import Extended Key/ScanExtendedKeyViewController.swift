@@ -342,6 +342,7 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
             }
             
         }
+        
         Reducer.makeCommand(command: .getdescriptorinfo, param: param) { [unowned vc = self] (response, errorMessage) in
             if let result = response as? NSDictionary {
                 let checksum = result["checksum"] as? String ?? ""
@@ -459,7 +460,7 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
                 vc.descriptor = vc.descriptor.replacingOccurrences(of: "1'", with: "1'\"'\"'")
                 vc.descriptor = vc.descriptor.replacingOccurrences(of: "0'", with: "0'\"'\"'")
                 vc.dict["descriptor"] = vc.descriptor
-                vc.deriveAddress(param: "\"\(vc.descriptor)\", ''\(vc.convertedRange)''")
+                vc.deriveAddress(param: "\(vc.descriptor), ''\(vc.convertedRange)''")
             } else {
                 vc.connectingView.removeConnectingView()
                 displayAlert(viewController: vc, isError: true, message: errorMessage ?? "")

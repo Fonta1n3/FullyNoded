@@ -108,6 +108,10 @@
 		D09A330F24A9B853009FA0B2 /* RecoveryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09A330E24A9B853009FA0B2 /* RecoveryViewController.swift */; };
 		D09A331124AC4BF6009FA0B2 /* DescriptorParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09A331024AC4BF6009FA0B2 /* DescriptorParser.swift */; };
 		D09A331324AC4C93009FA0B2 /* Descriptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09A331224AC4C93009FA0B2 /* Descriptor.swift */; };
+		D09F9E4C24B0673C006B588C /* SignersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09F9E4B24B0673C006B588C /* SignersViewController.swift */; };
+		D09F9E4E24B06A63006B588C /* SignerStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09F9E4D24B06A63006B588C /* SignerStruct.swift */; };
+		D09F9E5024B1BAC3006B588C /* SignerDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09F9E4F24B1BAC3006B588C /* SignerDetailViewController.swift */; };
+		D09F9E5224B1F8DE006B588C /* AddSignerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09F9E5124B1F8DE006B588C /* AddSignerViewController.swift */; };
 		D0A2918F225114670099A2F3 /* MakeRPCCall.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A2918E225114670099A2F3 /* MakeRPCCall.swift */; };
 		D0A291912251743B0099A2F3 /* settings90.png in Resources */ = {isa = PBXBuildFile; fileRef = D0A291902251743B0099A2F3 /* settings90.png */; };
 		D0A519B7226B3DD400860D5C /* RawTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A519B6226B3DD400860D5C /* RawTransaction.swift */; };
@@ -267,6 +271,10 @@
 		D09A330E24A9B853009FA0B2 /* RecoveryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryViewController.swift; sourceTree = "<group>"; };
 		D09A331024AC4BF6009FA0B2 /* DescriptorParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DescriptorParser.swift; sourceTree = "<group>"; };
 		D09A331224AC4C93009FA0B2 /* Descriptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Descriptor.swift; sourceTree = "<group>"; };
+		D09F9E4B24B0673C006B588C /* SignersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignersViewController.swift; sourceTree = "<group>"; };
+		D09F9E4D24B06A63006B588C /* SignerStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignerStruct.swift; sourceTree = "<group>"; };
+		D09F9E4F24B1BAC3006B588C /* SignerDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignerDetailViewController.swift; sourceTree = "<group>"; };
+		D09F9E5124B1F8DE006B588C /* AddSignerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddSignerViewController.swift; sourceTree = "<group>"; };
 		D0A2918E225114670099A2F3 /* MakeRPCCall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MakeRPCCall.swift; sourceTree = "<group>"; };
 		D0A291902251743B0099A2F3 /* settings90.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = settings90.png; sourceTree = "<group>"; };
 		D0A519B6226B3DD400860D5C /* RawTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RawTransaction.swift; sourceTree = "<group>"; };
@@ -588,6 +596,7 @@
 				D0C20EDF24A6EF3800C62AA4 /* Balances.swift */,
 				D09A330424A8C4F6009FA0B2 /* Wallet.swift */,
 				D09A331224AC4C93009FA0B2 /* Descriptor.swift */,
+				D09F9E4D24B06A63006B588C /* SignerStruct.swift */,
 			);
 			path = Structs;
 			sourceTree = "<group>";
@@ -870,6 +879,9 @@
 				D09A330624A982F2009FA0B2 /* FullyNodedWalletsViewController.swift */,
 				D09A330824A98EE1009FA0B2 /* WalletDetailViewController.swift */,
 				D09A330E24A9B853009FA0B2 /* RecoveryViewController.swift */,
+				D09F9E4B24B0673C006B588C /* SignersViewController.swift */,
+				D09F9E4F24B1BAC3006B588C /* SignerDetailViewController.swift */,
+				D09F9E5124B1F8DE006B588C /* AddSignerViewController.swift */,
 			);
 			path = Wallets;
 			sourceTree = "<group>";
@@ -1092,6 +1104,7 @@
 			files = (
 				D0E9B63C211A94C600B416E7 /* Utilities.swift in Sources */,
 				D0C20ED424A6DFE600C62AA4 /* PeerInfo.swift in Sources */,
+				D09F9E5024B1BAC3006B588C /* SignerDetailViewController.swift in Sources */,
 				D09A330524A8C4F6009FA0B2 /* Wallet.swift in Sources */,
 				D039D3CA2332440D00D1ED18 /* HDMusigStruct.swift in Sources */,
 				D09A330924A98EE1009FA0B2 /* WalletDetailViewController.swift in Sources */,
@@ -1121,7 +1134,9 @@
 				D037C872231BB020006C357D /* AddFingerprintViewController.swift in Sources */,
 				D0855FCA22B0CEA800DBBFC2 /* CreatePSBT.swift in Sources */,
 				D02094F3225936D2002E8E7A /* ConnectingView.swift in Sources */,
+				D09F9E5224B1F8DE006B588C /* AddSignerViewController.swift in Sources */,
 				D0196DDB21B5AC5F0081E0AB /* KeyPad.swift in Sources */,
+				D09F9E4C24B0673C006B588C /* SignersViewController.swift in Sources */,
 				D0ED69BC2325D768001F8FBC /* WalletsViewController.swift in Sources */,
 				D0E2A1052496EE9400AE0C04 /* ActiveWalletViewController.swift in Sources */,
 				D037C870231BAFF1006C357D /* RescanViewController.swift in Sources */,
@@ -1172,6 +1187,7 @@
 				D0C20ED624A6E19600C62AA4 /* NetworkInfo.swift in Sources */,
 				D0C5A58824AECDBE003B11A9 /* SignerViewController.swift in Sources */,
 				D096EE00249DFADD0084A065 /* HelpViewController.swift in Sources */,
+				D09F9E4E24B06A63006B588C /* SignerStruct.swift in Sources */,
 				D0C20EDC24A6E51D00C62AA4 /* MempoolInfo.swift in Sources */,
 				D08A92A62334F66900409D6E /* Reducer.swift in Sources */,
 				D0806B4522EE9FBA002C20A1 /* TXChain.swift in Sources */,
@@ -1368,7 +1384,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 165;
-				DEVELOPMENT_TEAM = 8JHDU5M9KD;
+				DEVELOPMENT_TEAM = 69FR345CDA;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
@@ -1405,7 +1421,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 165;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 8JHDU5M9KD;
+				DEVELOPMENT_TEAM = 69FR345CDA;
 				ENABLE_TESTABILITY = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",

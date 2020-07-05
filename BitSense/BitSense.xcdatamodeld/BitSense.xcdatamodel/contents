@@ -27,7 +27,9 @@
         <attribute name="rpcuser" optional="YES" attributeType="Binary"/>
     </entity>
     <entity name="Signers" representedClassName="Signers" syncable="YES" codeGenerationType="class">
+        <attribute name="added" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="label" optional="YES" attributeType="String"/>
         <attribute name="passphrase" optional="YES" attributeType="Binary"/>
         <attribute name="words" optional="YES" attributeType="Binary"/>
     </entity>
@@ -48,7 +50,7 @@
         <element name="NewDescriptors" positionX="-18" positionY="153" width="128" height="103"/>
         <element name="NewHDWallets" positionX="-36" positionY="144" width="128" height="118"/>
         <element name="NewNodes" positionX="-54" positionY="135" width="128" height="133"/>
-        <element name="Signers" positionX="-27" positionY="189" width="128" height="88"/>
+        <element name="Signers" positionX="-27" positionY="189" width="128" height="118"/>
         <element name="Wallets" positionX="-36" positionY="180" width="128" height="193"/>
     </elements>
 </model>

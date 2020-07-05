@@ -37,9 +37,13 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                 if let chain = dict["chain"] as? String {
                     if chain == "test" {
                         vc.coinType = "1"
+                        vc.load()
+                        vc.spinner.removeConnectingView()
+                    } else {
+                        vc.load()
+                        vc.spinner.removeConnectingView()
                     }
-                    vc.load()
-                    vc.spinner.removeConnectingView()
+                    
                 }
             } else {
                 vc.showError(error: "Error getting blockchain info, please chack your connection to your node.")
@@ -77,6 +81,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                         let walletStruct = Wallet(dictionary: w)
                         if walletStruct.id == vc.walletId {
                             vc.wallet = walletStruct
+                            print("w = \(w)")
                             vc.findSigner()
                         }
                     }
@@ -89,7 +94,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         CoreDataService.retrieveEntity(entityName: .signers) { signers in
             if signers != nil {
                 if signers!.count > 0 {
-                    for signer in signers! {
+                    for (i, signer) in signers!.enumerated() {
                         Crypto.decryptData(dataToDecrypt: (signer["words"] as! Data)) { [unowned vc = self] decryptedData in
                             if decryptedData != nil {
                                 if let words = String(bytes: decryptedData!, encoding: .utf8) {
@@ -100,10 +105,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                                                     if let mk = Keys.masterKey(words: words, coinType: vc.coinType, passphrase: pass) {
                                                         if let xpub = Keys.bip84AccountXpub(masterKey: mk, coinType: vc.coinType, account: vc.wallet.account) {
                                                             if xpub == vc.accountXpub() {
-                                                                DispatchQueue.main.async { [unowned vc = self] in
-                                                                    vc.signer = words
-                                                                    vc.detailTable.reloadData()
-                                                                }
+                                                                vc.signer = words
                                                             }
                                                         }
                                                     }
@@ -114,15 +116,17 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                                         if let mk = Keys.masterKey(words: words, coinType: vc.coinType, passphrase: "") {
                                             if let xpub = Keys.bip84AccountXpub(masterKey: mk, coinType: vc.coinType, account: vc.wallet.account) {
                                                 if xpub == vc.accountXpub() {
-                                                    DispatchQueue.main.async { [unowned vc = self] in
-                                                        vc.signer = words
-                                                        vc.detailTable.reloadData()
-                                                    }
+                                                    vc.signer = words
                                                 }
                                             }
                                         }
                                     }
                                 }
+                            }
+                        }
+                        if i + 1 == signers!.count {
+                            DispatchQueue.main.async { [unowned vc = self] in
+                                vc.detailTable.reloadData()
                             }
                         }
                     }
