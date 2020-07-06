@@ -136,11 +136,15 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func accountXpub() -> String {
-        let desc = wallet.receiveDescriptor
-        let arr = desc.split(separator: "]")
-        let xpubWithPath = "\(arr[1])"
-        let arr2 = xpubWithPath.split(separator: "/")
-        return "\(arr2[0])"
+        if wallet.receiveDescriptor != "" {
+            let desc = wallet.receiveDescriptor
+            let arr = desc.split(separator: "]")
+            let xpubWithPath = "\(arr[1])"
+            let arr2 = xpubWithPath.split(separator: "/")
+            return "\(arr2[0])"
+        } else {
+            return ""
+        }
     }
     
     private func promptToDeleteWallet() {
@@ -176,7 +180,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             let alert = UIAlertController(title: "Fully Noded wallet removed", message: "It will no longer appear in your list of \"Fully Noded Wallets\".", preferredStyle: .actionSheet)
             alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                 DispatchQueue.main.async { [unowned vc = self] in
-                    vc.navigationController?.popToRootViewController(animated: true)
+                    vc.navigationController?.popViewController(animated: true)
                 }
             }))
             alert.popoverPresentationController?.sourceView = vc.view
