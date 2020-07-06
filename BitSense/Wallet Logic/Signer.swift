@@ -142,6 +142,9 @@ class Signer {
                                             if let masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: passphrase) {
                                                 if let hdkey = HDKey(masterKey) {
                                                     xprvsToSignWith.append(hdkey)
+                                                    if i + 1 == seedsToSignWith.count {
+                                                        processWithActiveWallet()
+                                                    }
                                                 }
                                             }
                                         }
@@ -151,14 +154,14 @@ class Signer {
                                 if let masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: "") {
                                     if let hdkey = HDKey(masterKey) {
                                         xprvsToSignWith.append(hdkey)
+                                        if i + 1 == seedsToSignWith.count {
+                                            processWithActiveWallet()
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }
-                if i + 1 == seedsToSignWith.count {
-                    processWithActiveWallet()
                 }
             }
         }

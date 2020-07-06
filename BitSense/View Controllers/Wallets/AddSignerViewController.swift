@@ -14,6 +14,7 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
     @IBOutlet weak var textView: UITextField!
     @IBOutlet weak var wordView: UIView!
     @IBOutlet weak var passphraseField: UITextField!
+    @IBOutlet weak var addSignerOutlet: UIButton!
     
     var addedWords = [String]()
     var justWords = [String]()
@@ -29,6 +30,7 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
         navigationController?.delegate = self
         passphraseField.delegate = self
         textView.delegate = self
+        addSignerOutlet.isEnabled = false
         wordView.layer.cornerRadius = 8
         wordView.layer.borderColor = UIColor.lightGray.cgColor
         wordView.layer.borderWidth = 0.5
@@ -40,6 +42,11 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
+    
+    @IBAction func addSignerAction(_ sender: Any) {
+        saveLocally()
+    }
+    
     
     @IBAction func addWordAction(_ sender: Any) {
         processTextfieldInput()
@@ -202,6 +209,8 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
                             Crypto.encryptData(dataToEncrypt: (vc.passphraseField.text!).dataUsingUTF8StringEncoding) { encryptedPassphrase in
                                 if encryptedPassphrase != nil {
                                     vc.saveSignerAndPassphrase(encryptedSigner: encryptedWords!, encryptedPassphrase: encryptedPassphrase!)
+                                } else {
+                                    vc.showError(error: "error encrypting your passphrase")
                                 }
                             }
                         } else {
@@ -216,10 +225,10 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
     }
     
     private func saveSignerAndPassphrase(encryptedSigner: Data, encryptedPassphrase: Data) {
-        let dict = ["id":UUID(), "words":encryptedSigner, "passphrase": encryptedPassphrase] as [String:Any]
+        let dict = ["id":UUID(), "words":encryptedSigner, "passphrase":encryptedPassphrase, "added":Date(), "label":"Signer"] as [String:Any]
         CoreDataService.saveEntity(dict: dict, entityName: .signers) { [unowned vc = self] success in
             if success {
-                showAlert(vc: vc, title: "Success ✅", message: "Signer encrypted and saved to device.")
+                vc.signerAdded()
             } else {
                 vc.showError(error: "error saving encrypted seed")
             }
@@ -227,10 +236,10 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
     }
     
     private func saveSigner(encryptedSigner: Data) {
-        let dict = ["id":UUID(), "words":encryptedSigner] as [String:Any]
+        let dict = ["id":UUID(), "words":encryptedSigner, "added":Date(), "label":"Signer"] as [String:Any]
         CoreDataService.saveEntity(dict: dict, entityName: .signers) { [unowned vc = self] success in
             if success {
-                showAlert(vc: vc, title: "Success ✅", message: "Signer encrypted and saved to device.")
+                vc.signerAdded()
             } else {
                 vc.showError(error: "error saving encrypted seed")
             }
@@ -302,24 +311,16 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
     }
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        
         if textField != passphraseField {
             var subString = (textField.text!.capitalized as NSString).replacingCharacters(in: range, with: string)
             subString = formatSubstring(subString: subString)
-            
             if subString.count == 0 {
-                
                 resetValues()
-                
             } else {
-                
                 searchAutocompleteEntriesWIthSubstring(substring: subString)
-                
             }
         }
-        
         return true
-        
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
@@ -330,58 +331,38 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
     }
     
     func getAutocompleteSuggestions(userText: String) -> [String]{
-        
         var possibleMatches: [String] = []
-        
         for item in bip39Words {
-            
             let myString:NSString! = item as NSString
             let substringRange:NSRange! = myString.range(of: userText)
-            
             if (substringRange.location == 0) {
-                
                 possibleMatches.append(item)
-                
             }
-            
         }
-        
         return possibleMatches
-        
     }
     
     func putColorFormattedTextInTextField(autocompleteResult: String, userQuery : String) {
-        
         let coloredString: NSMutableAttributedString = NSMutableAttributedString(string: userQuery + autocompleteResult)
-        
         coloredString.addAttribute(NSAttributedString.Key.foregroundColor,
                                    value: UIColor.systemGreen,
                                    range: NSRange(location: userQuery.count,length:autocompleteResult.count))
-        
         self.textView.attributedText = coloredString
-        
     }
     
     func moveCaretToEndOfUserQueryPosition(userQuery : String) {
-        
         if let newPosition = self.textView.position(from: self.textView.beginningOfDocument, offset: userQuery.count) {
-            
             self.textView.selectedTextRange = self.textView.textRange(from: newPosition, to: newPosition)
-            
         }
-        
         let selectedRange: UITextRange? = textView.selectedTextRange
         textView.offset(from: textView.beginningOfDocument, to: (selectedRange?.start)!)
-        
     }
     
     func formatAutocompleteResult(substring: String, possibleMatches: [String]) -> String {
-        
         var autoCompleteResult = possibleMatches[0]
         autoCompleteResult.removeSubrange(autoCompleteResult.startIndex..<autoCompleteResult.index(autoCompleteResult.startIndex, offsetBy: substring.count))
         autoCompleteCharacterCount = autoCompleteResult.count
         return autoCompleteResult
-        
     }
     
     private func addMultipleWords(words: [String]) {
@@ -459,8 +440,22 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
     private func validWordsAdded() {
         DispatchQueue.main.async { [unowned vc = self] in
             vc.textView.resignFirstResponder()
+            vc.addSignerOutlet.isEnabled = true
         }
-        showAlert(vc: self, title: "Valid Words ✓", message: "That is a valid recovery phrase, you may tap \"recover\" to recover this wallet.")
+        showAlert(vc: self, title: "Valid Words ✓", message: "That is a valid recovery phrase, tap \"add signer\" to encrypt it and save it securely to the device so that it may sign your psbt's.")
+    }
+    
+    private func signerAdded() {
+        DispatchQueue.main.async { [unowned vc = self] in
+            let alert = UIAlertController(title: "Signer successfully encrypted and saved securely to your device.", message: "Tap done", preferredStyle: .actionSheet)
+            alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.navigationController?.popViewController(animated: true)
+                }
+            }))
+            alert.popoverPresentationController?.sourceView = vc.view
+            vc.present(alert, animated: true, completion: nil)
+        }
     }
     
     /*

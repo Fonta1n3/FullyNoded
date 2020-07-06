@@ -57,6 +57,26 @@ class CoreDataService {
         }
     }
     
+    class func deleteAllData(entity: ENTITY, completion: @escaping ((Bool)) -> Void) {
+        DispatchQueue.main.async {
+            if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+                let managedContext = appDelegate.persistentContainer.viewContext
+                let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entity.rawValue)
+                fetchRequest.returnsObjectsAsFaults = false
+                do {
+                    let stuff = try managedContext.fetch(fetchRequest)
+                    for thing in stuff as! [NSManagedObject] {
+                        managedContext.delete(thing)
+                    }
+                    try managedContext.save()
+                    completion(true)
+                } catch {
+                    completion(false)
+                }
+            }
+        }
+    }
+    
 //    class func updateEntity(dictsToUpdate: [[String:Any]], completion: @escaping () -> Void) {
 //        for (i, d) in dictsToUpdate.enumerated() {
 //            var newValue:Any!

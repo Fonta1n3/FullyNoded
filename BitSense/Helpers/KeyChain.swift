@@ -62,6 +62,14 @@ class KeyChain {
         }
 
     }
+    
+    class func removeAll() {
+        let secItemClasses =  [kSecClassGenericPassword, kSecClassInternetPassword, kSecClassCertificate, kSecClassKey, kSecClassIdentity]
+        for itemClass in secItemClasses {
+            let spec: NSDictionary = [kSecClass: itemClass]
+            SecItemDelete(spec)
+        }
+    }
 
     private func createUniqueID() -> String {
         let uuid: CFUUID = CFUUIDCreate(nil)
@@ -70,6 +78,7 @@ class KeyChain {
         let swiftString: String = cfStr as String
         return swiftString
     }
+    
 }
 
 extension Data {

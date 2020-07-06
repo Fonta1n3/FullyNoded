@@ -29,6 +29,7 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
         labelField.layer.cornerRadius = 8
         labelField.layer.borderWidth = 0.5
         labelField.layer.borderColor = UIColor.lightGray.cgColor
+        labelField.returnKeyType = .done
         wordsField.clipsToBounds = true
         wordsField.layer.cornerRadius = 8
         wordsField.layer.borderWidth = 0.5
@@ -55,7 +56,7 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
     
     private func promptToDeleteSigner() {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Remove this signer?", message: "YOU WILL NOT BE ABLE TO SPEND BITCOIN ASSOCIATED WITH THIS SIGNER IF YOU DELETE THIS", preferredStyle: .actionSheet)
+            let alert = UIAlertController(title: "Remove this signer?", message: "YOU WILL NOT BE ABLE TO SPEND BITCOIN ASSOCIATED WITH THIS SIGNER IF YOU DELETE THIS SIGNER", preferredStyle: .actionSheet)
             alert.addAction(UIAlertAction(title: "Delete", style: .destructive, handler: { [unowned vc = self] action in
                 vc.deleteNow()
             }))
@@ -111,9 +112,17 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
         DispatchQueue.main.async { [unowned vc = self] in
             vc.labelField.text = signer.label
             vc.dateLabel.text = "  " +  vc.formattedDate(signer.added)
-            vc.wordsField.text = "\(signer.words.hexString)"
+            Crypto.decryptData(dataToDecrypt: signer.words) { (decrypted) in
+                if let words = String(bytes: decrypted!, encoding: .utf8) {
+                    vc.wordsField.text = words
+                }
+            }
             if signer.passphrase != nil {
-                vc.passphraseLabel.text = "  \(signer.passphrase!)"
+                Crypto.decryptData(dataToDecrypt: signer.passphrase!) { (decrypted) in
+                    if let passphrase = String(bytes: decrypted!, encoding: .utf8) {
+                        vc.passphraseLabel.text = "  " + passphrase
+                    }
+                }
             } else {
                 vc.passphraseLabel.text = "  ** no passphrase **"
             }

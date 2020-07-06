@@ -273,7 +273,19 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
                                                 vc.getDescriptorInfo(desc: vc.bip44ChangeDesc(masterKey)) { [unowned vc = self] bip44Change in
                                                     if bip44Change != nil {
                                                         vc.descriptorsToImport.append(bip44Change!)
-                                                        vc.importDescriptors(index: 0)
+                                                        vc.updateSpinnerText(text: "getting BRD wallet primary descriptor...")
+                                                        vc.getDescriptorInfo(desc: vc.brdPrimDesc(masterKey)) { [unowned vc = self] (bdrPrimDesd) in
+                                                            if bdrPrimDesd != nil {
+                                                                vc.descriptorsToImport.append(bdrPrimDesd!)
+                                                                vc.updateSpinnerText(text: "getting BRD wallet change descriptor...")
+                                                                vc.getDescriptorInfo(desc: vc.brdChangeDesc(masterKey)) { (brdChangeDesc) in
+                                                                    if brdChangeDesc != nil {
+                                                                        vc.descriptorsToImport.append(brdChangeDesc!)
+                                                                        vc.importDescriptors(index: 0)
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
                                                     }
                                                 }
                                             }
@@ -455,9 +467,9 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
     
     private func bip84PrimDesc(_ masterKey: String) -> String {
         var desc = ""
-        if let xpub = Keys.xpub(path: "m/84'/1'/\(accountNumber)'", masterKey: masterKey) {
+        if let xpub = Keys.xpub(path: "m/84h/\(coinType)h/\(accountNumber)h", masterKey: masterKey) {
             if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
-                desc = "combo([\(fingerprint)/84h/\(coinType)h/\(accountNumber)']\(xpub)/0/*)"
+                desc = "combo([\(fingerprint)/84h/\(coinType)h/\(accountNumber)h]\(xpub)/0/*)"
             }
         }
         return desc
@@ -508,6 +520,26 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
         if let xpub = Keys.xpub(path: "m/49h/\(coinType)h/\(accountNumber)h", masterKey: masterKey) {
             if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
                 desc = "combo([\(fingerprint)/49h/\(coinType)h/\(accountNumber)h]\(xpub)/1/*)"
+            }
+        }
+        return desc
+    }
+    
+    private func brdPrimDesc(_ masterKey: String) -> String {
+        var desc = ""
+        if let xpub = Keys.xpub(path: "m/0h", masterKey: masterKey) {
+            if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
+                desc = "combo([\(fingerprint)/0h]\(xpub)/0/*)"
+            }
+        }
+        return desc
+    }
+    
+    private func brdChangeDesc(_ masterKey: String) -> String {
+        var desc = ""
+        if let xpub = Keys.xpub(path: "m/0h", masterKey: masterKey) {
+            if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
+                desc = "combo([\(fingerprint)/0h]\(xpub)/1/*)"
             }
         }
         return desc

@@ -168,7 +168,13 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
             isChange = dict["addAsChange"] as! Bool
             fingerprint = str.fingerprint
             range = str.range
-            isTestnet = str.isTestnet
+            if extendedKey.hasPrefix("xpub") || extendedKey.hasPrefix("xprv") {
+                isTestnet = false
+                dict["isTestnet"] = "false"
+            } else {
+                isTestnet = true
+                dict["isTestnet"] = "true"
+            }
             label = str.label
             
             if extendedKey.hasPrefix("xprv") || extendedKey.hasPrefix("tprv") {

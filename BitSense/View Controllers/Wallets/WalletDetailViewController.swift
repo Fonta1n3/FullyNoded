@@ -81,7 +81,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                         let walletStruct = Wallet(dictionary: w)
                         if walletStruct.id == vc.walletId {
                             vc.wallet = walletStruct
-                            print("w = \(w)")
                             vc.findSigner()
                         }
                     }
@@ -95,13 +94,14 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             if signers != nil {
                 if signers!.count > 0 {
                     for (i, signer) in signers!.enumerated() {
-                        Crypto.decryptData(dataToDecrypt: (signer["words"] as! Data)) { [unowned vc = self] decryptedData in
+                        let signerStruct = SignerStruct(dictionary: signer)
+                        Crypto.decryptData(dataToDecrypt: signerStruct.words) { [unowned vc = self] decryptedData in
                             if decryptedData != nil {
                                 if let words = String(bytes: decryptedData!, encoding: .utf8) {
-                                    if signer["passphrase"] as? Data != nil {
-                                        Crypto.decryptData(dataToDecrypt: (signer["passphrase"] as! Data)) { [unowned vc = self] decryptedPass in
-                                            if decryptedData != nil {
-                                                if let pass = String(bytes: decryptedData!, encoding: .utf8) {
+                                    if signerStruct.passphrase != nil {
+                                        Crypto.decryptData(dataToDecrypt: signerStruct.passphrase!) { [unowned vc = self] decryptedPass in
+                                            if decryptedPass != nil {
+                                                if let pass = String(bytes: decryptedPass!, encoding: .utf8) {
                                                     if let mk = Keys.masterKey(words: words, coinType: vc.coinType, passphrase: pass) {
                                                         if let xpub = Keys.bip84AccountXpub(masterKey: mk, coinType: vc.coinType, account: vc.wallet.account) {
                                                             if xpub == vc.accountXpub() {

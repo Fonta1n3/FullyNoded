@@ -55,16 +55,6 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         loadTable()
     }
     
-//    override func viewDidAppear(_ animated: Bool) {
-//        activeWallet { [unowned vc = self] (wallet) in
-//            if wallet != nil {
-//                vc.id = wallet!.id
-//                vc.goToDetail()
-//            }
-//        }
-//        walletTable.reloadData()
-//    }
-    
     @IBAction func getDetails(_ sender: Any) {
         activeWallet { [unowned vc = self] (wallet) in
             if wallet != nil {
@@ -124,6 +114,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
                 vc.walletLabel = wallet!.label
                 vc.id = wallet!.id
                 DispatchQueue.main.async {
+                    vc.transactionArray.removeAll()
                     vc.walletTable.reloadData()
                 }
             }
@@ -435,7 +426,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
                 vc.uncomfirmedFiat = ""
             }
             DispatchQueue.main.async { [unowned vc = self] in
-                vc.walletTable.reloadSections(IndexSet(arrayLiteral: 0), with: .fade)
+                vc.walletTable.reloadSections(IndexSet(arrayLiteral: 0), with: .none)
                 vc.removeSpinner()
             }
         }
@@ -459,14 +450,6 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         }
     }
     
-    private func reloadTable() {
-        sectionZeroLoaded = false
-        transactionArray.removeAll()
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.walletTable.reloadData()
-        }
-    }
-    
     func reloadWalletData() {
         NodeLogic.loadBalances { [unowned
             vc = self] (response, errorMessage) in
@@ -480,7 +463,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
                 vc.unconfirmedBalance = (str.unconfirmedBalance)
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.sectionZeroLoaded = true
-                    vc.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
+                    vc.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .none)
                 }
                 NodeLogic.loadSectionTwo { [unowned vc = self] (response, errorMessage) in
                     if errorMessage != nil {

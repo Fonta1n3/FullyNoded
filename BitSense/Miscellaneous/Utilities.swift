@@ -10,6 +10,7 @@ import Foundation
 import UIKit
 
 public func activeWallet(completion: @escaping ((Wallet?)) -> Void) {
+    var structToReturn:Wallet!
     if let activeWalletName = UserDefaults.standard.object(forKey: "walletName") as? String {
         CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
             if wallets != nil {
@@ -17,10 +18,10 @@ public func activeWallet(completion: @escaping ((Wallet?)) -> Void) {
                     for (i, w) in wallets!.enumerated() {
                         let walletStruct = Wallet(dictionary: w)
                         if walletStruct.name == activeWalletName {
-                            completion(walletStruct)
+                            structToReturn = walletStruct
                         }
                         if i + 1 == wallets!.count {
-                            completion(nil)
+                            completion(structToReturn)
                         }
                     }
                 } else {

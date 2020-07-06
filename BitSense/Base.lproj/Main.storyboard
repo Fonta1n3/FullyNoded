@@ -247,7 +247,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Active Wallet" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="F1S-br-LjG">
-                                <rect key="frame" x="16" y="30" width="165" height="33.5"/>
+                                <rect key="frame" x="65" y="24" width="165" height="33.5"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="28"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -595,8 +595,15 @@
                                     </view>
                                 </subviews>
                             </stackView>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ItunesArtwork.png" translatesAutoresizingMaskIntoConstraints="NO" id="kDg-8F-wzb">
+                                <rect key="frame" x="16" y="20" width="41" height="40"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="41" id="jFI-Q5-QMe"/>
+                                    <constraint firstAttribute="height" constant="40" id="xjw-w8-5mK"/>
+                                </constraints>
+                            </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="$9,343 / btc" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yUJ-iQ-fjZ">
-                                <rect key="frame" x="264" y="20" width="95" height="20.5"/>
+                                <rect key="frame" x="264" y="0.0" width="95" height="20.5"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -607,15 +614,17 @@
                             <constraint firstItem="xuS-Az-tfm" firstAttribute="leading" secondItem="Bmh-eo-0G2" secondAttribute="leading" id="4uv-HU-vlj"/>
                             <constraint firstItem="Bmh-eo-0G2" firstAttribute="trailing" secondItem="yUJ-iQ-fjZ" secondAttribute="trailing" constant="16" id="6bx-f6-Ldx"/>
                             <constraint firstItem="xR0-W6-ppZ" firstAttribute="leading" secondItem="Bmh-eo-0G2" secondAttribute="leading" constant="3" id="7eI-cW-iSK"/>
-                            <constraint firstItem="xuS-Az-tfm" firstAttribute="top" secondItem="F1S-br-LjG" secondAttribute="bottom" constant="8.5" id="BoS-wg-z7i"/>
+                            <constraint firstItem="xuS-Az-tfm" firstAttribute="top" secondItem="F1S-br-LjG" secondAttribute="bottom" constant="14.5" id="BoS-wg-z7i"/>
                             <constraint firstItem="Bmh-eo-0G2" firstAttribute="trailing" secondItem="xR0-W6-ppZ" secondAttribute="trailing" constant="3" id="Gob-b5-4fS"/>
                             <constraint firstItem="xR0-W6-ppZ" firstAttribute="top" secondItem="xuS-Az-tfm" secondAttribute="bottom" constant="8" id="IbQ-ww-9dC"/>
-                            <constraint firstItem="yUJ-iQ-fjZ" firstAttribute="top" secondItem="Bmh-eo-0G2" secondAttribute="top" constant="20" id="YXf-oY-lqg"/>
-                            <constraint firstItem="F1S-br-LjG" firstAttribute="leading" secondItem="Bmh-eo-0G2" secondAttribute="leading" constant="16" id="bN5-38-iWY"/>
+                            <constraint firstItem="kDg-8F-wzb" firstAttribute="leading" secondItem="Bmh-eo-0G2" secondAttribute="leading" constant="16" id="Mb6-lk-cww"/>
+                            <constraint firstItem="yUJ-iQ-fjZ" firstAttribute="top" secondItem="Bmh-eo-0G2" secondAttribute="top" id="YXf-oY-lqg"/>
                             <constraint firstItem="Bmh-eo-0G2" firstAttribute="bottom" secondItem="xR0-W6-ppZ" secondAttribute="bottom" constant="12" id="bx8-Jr-2X8"/>
-                            <constraint firstItem="yUJ-iQ-fjZ" firstAttribute="leading" secondItem="F1S-br-LjG" secondAttribute="trailing" constant="83" id="mku-LJ-H6R"/>
+                            <constraint firstItem="kDg-8F-wzb" firstAttribute="top" secondItem="Bmh-eo-0G2" secondAttribute="top" constant="20" id="jJu-XC-BDe"/>
+                            <constraint firstItem="yUJ-iQ-fjZ" firstAttribute="leading" secondItem="F1S-br-LjG" secondAttribute="trailing" constant="34" id="mku-LJ-H6R"/>
                             <constraint firstItem="Bmh-eo-0G2" firstAttribute="trailing" secondItem="xuS-Az-tfm" secondAttribute="trailing" id="rgc-th-7NN"/>
-                            <constraint firstItem="F1S-br-LjG" firstAttribute="top" secondItem="Bmh-eo-0G2" secondAttribute="top" constant="30" id="uDq-Ue-fnj"/>
+                            <constraint firstItem="F1S-br-LjG" firstAttribute="top" secondItem="Bmh-eo-0G2" secondAttribute="top" constant="24" id="uDq-Ue-fnj"/>
+                            <constraint firstItem="F1S-br-LjG" firstAttribute="leading" secondItem="kDg-8F-wzb" secondAttribute="trailing" constant="8" id="y6p-9o-9eV"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="Bmh-eo-0G2"/>
                     </view>
@@ -1925,7 +1934,7 @@
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits"/>
                                     </textField>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Encrypted Words:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yHF-Cg-d5U">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Words:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yHF-Cg-d5U">
                                         <rect key="frame" x="0.0" y="74.5" width="343" height="20.5"/>
                                         <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="17"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -1956,7 +1965,7 @@
                                         <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Encrypted Passphrase:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NuH-kW-2Oj">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Passphrase:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NuH-kW-2Oj">
                                         <rect key="frame" x="0.0" y="349.5" width="343" height="20.5"/>
                                         <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="17"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -2263,6 +2272,9 @@
                                 <state key="normal" title="add signer">
                                     <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
+                                <connections>
+                                    <action selector="addSignerAction:" destination="G0V-te-kek" eventType="touchUpInside" id="lll-hg-HBV"/>
+                                </connections>
                             </button>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="optional passphrase" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="yZn-vb-xcG">
                                 <rect key="frame" x="16" y="563" width="343" height="34"/>
@@ -2339,6 +2351,7 @@
                     </view>
                     <navigationItem key="navigationItem" id="Skj-se-LO2"/>
                     <connections>
+                        <outlet property="addSignerOutlet" destination="GaP-Ag-v0V" id="4go-yC-r2M"/>
                         <outlet property="passphraseField" destination="yZn-vb-xcG" id="cSn-pJ-Yz2"/>
                         <outlet property="textView" destination="CXh-rg-Y6f" id="AT7-ZV-CO8"/>
                         <outlet property="wordView" destination="oS8-q4-kL9" id="ZUQ-rL-8KD"/>
@@ -5913,7 +5926,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="Aim-ze-LVg"/>
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="HNI-HG-9ZQ"/>
-        <segue reference="oY9-Pq-H5b"/>
+        <segue reference="IAz-j1-Gq6"/>
         <segue reference="Ikt-mc-dmE"/>
         <segue reference="G1i-Bv-OSl"/>
         <segue reference="U54-oe-CeC"/>

@@ -7,7 +7,6 @@
 //
 
 import UIKit
-//import KeychainSwift
 
 class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITabBarControllerDelegate {
     
