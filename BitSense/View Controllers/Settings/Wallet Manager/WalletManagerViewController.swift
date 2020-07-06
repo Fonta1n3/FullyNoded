@@ -22,11 +22,8 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         walletTable.delegate = self
         walletTable.tableFooterView = UIView(frame: .zero)
-    
-        
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -34,12 +31,9 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
     }
     
     @IBAction func addWallet(_ sender: Any) {
-        
-        DispatchQueue.main.async {
-            
-            self.performSegue(withIdentifier: "addWallet", sender: self)
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "addWallet", sender: vc)
         }
-        
     }
     
     @IBAction func unloadAction(_ sender: Any) {
@@ -97,7 +91,6 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
         let cell = tableView.dequeueReusableCell(withIdentifier: "walletCell", for: indexPath)
         cell.selectionStyle = .none
         cell.layer.borderColor = UIColor.lightGray.cgColor
@@ -130,16 +123,19 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
     @objc func toggleAction(_ sender: UISwitch) {
         if sender.restorationIdentifier != nil {
             if let index = Int(sender.restorationIdentifier!) {
+                let wallet = (wallets[index]["name"] as! String)
                 if sender.isOn {
-                    let walletToActivate = (wallets[index]["name"] as! String)
-                    if walletToActivate != "Default Wallet" {
-                        UserDefaults.standard.set(walletToActivate, forKey: "walletName")
+                    if wallet != "Default Wallet" {
+                        UserDefaults.standard.set(wallet, forKey: "walletName")
                         wallets.removeAll()
                         didChange = true
                         refresh()
                     } else {
+                        UserDefaults.standard.removeObject(forKey: "walletName")
                         getAllActiveWallets()
                     }
+                } else {
+                    UserDefaults.standard.removeObject(forKey: "walletName")
                 }
             }
         }

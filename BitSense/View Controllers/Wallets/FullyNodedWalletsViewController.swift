@@ -95,8 +95,8 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
             if let section = Int(sender.restorationIdentifier!) {
                 let name = Wallet(dictionary: wallets[section]).name
                 if sender.isOn {
-                    UserDefaults.standard.set(name, forKey: "walletName")
                     DispatchQueue.main.async {
+                        UserDefaults.standard.set(name, forKey: "walletName")
                         NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                     }
                 } else {

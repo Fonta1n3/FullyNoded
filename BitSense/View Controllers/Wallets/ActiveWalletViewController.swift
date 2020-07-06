@@ -117,6 +117,8 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
                     vc.transactionArray.removeAll()
                     vc.walletTable.reloadData()
                 }
+            } else {
+                vc.walletLabel = nil
             }
             vc.loadBalances()
         }
@@ -338,6 +340,8 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
             if wallet != nil {
                 vc.id = wallet!.id
                 vc.walletLabel = wallet!.label
+            } else {
+                vc.walletLabel = nil
             }
             DispatchQueue.main.async { [unowned vc = self] in
                 vc.addNavBarSpinner()

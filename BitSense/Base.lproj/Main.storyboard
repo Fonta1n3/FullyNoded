@@ -1552,6 +1552,9 @@
                         <viewLayoutGuide key="safeArea" id="adl-yx-dXq"/>
                     </view>
                     <connections>
+                        <outlet property="analyzeOutlet" destination="OL6-Lq-U52" id="dd1-4g-UfA"/>
+                        <outlet property="decodeOutlet" destination="yRk-fp-pB8" id="8RA-AY-gey"/>
+                        <outlet property="signOutlet" destination="gvm-av-mkc" id="P8U-bs-Ug4"/>
                         <outlet property="textView" destination="WrC-5O-YmB" id="j0W-9j-poL"/>
                     </connections>
                 </viewController>

@@ -10,9 +10,13 @@ import UIKit
 
 class SignerViewController: UIViewController {
     
+    @IBOutlet weak var analyzeOutlet: UIButton!
+    @IBOutlet weak var decodeOutlet: UIButton!
     var spinner = ConnectingView()
     var psbt = ""
+    var broadcast = false
     @IBOutlet weak var textView: UITextView!
+    @IBOutlet weak var signOutlet: UIButton!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -81,19 +85,34 @@ class SignerViewController: UIViewController {
     }
     
     @IBAction func signNow(_ sender: Any) {
-        spinner.addConnectingView(vc: self, description: "signing psbt...")
-        Signer.sign(psbt: psbt) { [unowned vc = self] (psbt, rawTx, errorMessage) in
-            if psbt != nil {
-                vc.spinner.removeConnectingView()
-                vc.exportPsbt(psbt: psbt!)
-            } else if rawTx != nil {
-                vc.spinner.removeConnectingView()
-                vc.broadcastNow(tx: rawTx!)
-            } else {
-                vc.spinner.removeConnectingView()
-                vc.showError(error: "Error signing psbt: \(errorMessage ?? "unknown error")")
+        if !broadcast {
+            spinner.addConnectingView(vc: self, description: "signing psbt...")
+            Signer.sign(psbt: psbt) { [unowned vc = self] (psbt, rawTx, errorMessage) in
+                if psbt != nil {
+                    vc.spinner.removeConnectingView()
+                    vc.exportPsbt(psbt: psbt!)
+                    DispatchQueue.main.async {
+                        vc.textView.text = psbt!
+                    }
+                } else if rawTx != nil {
+                    vc.spinner.removeConnectingView()
+                    vc.broadcastNow(tx: rawTx!)
+                    DispatchQueue.main.async {
+                        vc.decodeOutlet.alpha = 0
+                        vc.analyzeOutlet.alpha = 0
+                        vc.textView.text = rawTx!
+                        vc.signOutlet.setTitle("broadcast", for: .normal)
+                        vc.broadcast = true
+                    }
+                } else {
+                    vc.spinner.removeConnectingView()
+                    vc.showError(error: "Error signing psbt: \(errorMessage ?? "unknown error")")
+                }
             }
+        } else {
+            broadcastNow(tx: textView.text!)
         }
+        
     }
     
     private func exportPsbt(psbt: String) {
