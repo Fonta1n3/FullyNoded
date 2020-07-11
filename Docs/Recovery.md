@@ -2,7 +2,24 @@
 
 ### Fully Noded Wallets
 
-There is a recovery tool which can be accessed via the "Active wallet" tab by tapping the plus button in the top left. With this tool recovery is powerful and automated. You can input any BIP39 words with an optional passphrase and custom account number. From that point on Fully Noded will import almost every conceivable (popular) derivation scheme into your nodes wallet so that you may sweep/spend the funds (BIP44/49/84 and Samourai derivations along with all three address types for each derivation including change and receive keys). The signing functionality of Fully Noded means it can sign for any derivation path at all, the only limitation is what is imported into your node. To be clear we import most of the popular schemes from [walletsrecovery.org](https://walletsrecovery.org) into your node as watch-only wallets where your node simply holds public keys and is able to watch for the utxo's. The node will build psbt's for us and Fully Noded then uses the seed words to sign the psbt's. Wehenever you recover or create a "Fully Noded Wallet" we use the `combo` prefix on your descriptors so that your node will see utxo's for every address type and be able to spend them. Fully Noded will recover the first 2500 keys for each derivation. Fully Noded automatically initiates a rescan either for the entire blockchain or for your pruned nodes pruned blockheight, you can monitor the rescan status from Tools > Get Wallet Info, you will not see balances until the scan has completed.
+There is a recovery tool which can be accessed via the "Active wallet" tab by tapping the plus button in the top left. With this tool recovery is powerful and automated. You can input any BIP39 words with an optional passphrase and custom account number (default account number is 0). From that point on Fully Noded will import almost every conceivable (popular) derivation scheme into your nodes wallet so that you may sweep/spend the funds (BIP44/49/84, Samourai derivations, and BRD along with all three address types for each derivation including change and receive keys). The signing functionality of Fully Noded means it can sign for any derivation path, the only limitation is what is imported into your node. 
+
+To be clear we import most of the popular schemes from [walletsrecovery.org](https://walletsrecovery.org) into your node as watch-only wallets where your node simply holds public keys and is able to watch for the utxo's, for Samourai all derivations are imported except BIP47. 
+
+The derivations (important to note these are the root derivation paths, we add `/0/*` for receive keys and `/1/*` for change keys as well as allowing testnet compatibility as per bip44/84/49 if you node is on testnet):
+
+- m/44'/0'/0' (bip44)
+- m/84'/0'/0' (bip84)
+- m/49'/0'/0' (bip49)
+- m/0' (BRD wallet)
+- m/84'/0'/2147483644' (Samourai bad bank)
+- m/84'/0'/2147483645 (Samourai pre mix)
+- m/84'/0'/2147483646' (Samourai post mix)
+- m/84'/0'/2147483647' (Samourai ricochet bip84)
+- m/44'/0'/2147483647' (Samourai ricochet bip44)
+- m/49'/0'/2147483647' (Samourai ricochet bip49)
+
+The node will build psbt's for us and Fully Noded then uses the seed words to sign the psbt's. Whenever you recover or create a "Fully Noded Wallet" we use the `combo` prefix on your descriptors so that your node will see utxo's for every address type and be able to spend them. Fully Noded will recover the first 2500 keys for each derivation. Fully Noded automatically initiates a rescan either for the entire blockchain or for your pruned nodes pruned blockheight, you can monitor the rescan status from Tools > Get Wallet Info, you will not see balances until the scan has completed.
 
 ### Anything
 
@@ -16,9 +33,9 @@ Or the user may choose BIP44/49/84. If making this choice the user will need to 
 
 A far more flexible way to recover things is by creating your own descriptor. Then you can recover whatever you want. For example a segwit bip84 account 2000 would be:
 
-`wpkh([5585785b]84'/0'/2000')/xprv73h7hr7rh/0/*)` as an example.
+`wpkh([5585785b/84'/0'/0']xprv73h7hr7rh/0/*)` as an example.
 
-Or all address types would be `combo([5585785b]84'/0'/2000')/xprv73h7hr7rh/0/*)` 
+Or all address types would be `combo([5585785b/84'/0'/0']xprv73h7hr7rh/0/*)` 
 
 To read more about what the above means check out this [explainer](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md).
 

@@ -52,6 +52,8 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
                 } else {
                     showAlert(vc: vc, title: "No Fully Noded Wallets", message: "Looks like you have not yet created any Fully Noded wallets, on the active wallet tab you can tap the plus sign (top left) to create a Fully Noded wallet.")
                 }
+            } else {
+                showAlert(vc: vc, title: "No Fully Noded Wallets", message: "Looks like you have not yet created any Fully Noded wallets, on the active wallet tab you can tap the plus sign (top left) to create a Fully Noded wallet.")
             }
         }
     }

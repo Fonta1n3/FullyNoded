@@ -115,8 +115,8 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         Reducer.makeCommand(command: .createwallet, param: param) { [unowned vc = self] (response, errorMessage) in
             if let dict = response as? NSDictionary {
                 if let name = dict["name"] as? String {
-                    vc.name = name
                     UserDefaults.standard.set(name, forKey: "walletName")
+                    vc.name = name
                     vc.importPrimaryKeys(desc: vc.primaryDescriptor(fingerprint, xpub)) { (success, errorMessage) in
                         if success {
                             vc.importChangeKeys(desc: vc.changeDescriptor(fingerprint, xpub)) { (changeImported, errorDesc) in
@@ -229,6 +229,9 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                 }
                 showAlert(vc: vc, title: "Success! ✅", message: "You created a Fully Noded single sig wallet, make sure you save your words so you can always recover this wallet if needed!")
+            } else {
+                vc.spinner.removeConnectingView()
+                vc.showError(error: "Error saving your wallet to the device")
             }
         }
     }

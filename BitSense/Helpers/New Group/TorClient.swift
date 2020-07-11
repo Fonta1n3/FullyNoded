@@ -12,11 +12,8 @@ import Tor
 import UIKit
 
 protocol OnionManagerDelegate: class {
-
     func torConnProgress(_ progress: Int)
-
     func torConnFinished()
-
     func torConnDifficulties()
 }
 

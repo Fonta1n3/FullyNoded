@@ -2181,21 +2181,25 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yyu-4l-B7V">
-                                                    <rect key="frame" x="15" y="16.5" width="229" height="21"/>
+                                                    <rect key="frame" x="15" y="16.5" width="225" height="21"/>
                                                     <constraints>
-                                                        <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="229" id="2Wp-Do-Yis"/>
+                                                        <constraint firstAttribute="width" constant="225" id="XgR-Kx-Aaa"/>
                                                     </constraints>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <button opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bRt-7R-ZFH">
-                                                    <rect key="frame" x="317" y="16" width="13" height="22"/>
+                                                    <rect key="frame" x="313" y="16" width="17" height="22"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" constant="17" id="FKQ-pi-RKK"/>
+                                                        <constraint firstAttribute="height" constant="22" id="zeN-xZ-qXC"/>
+                                                    </constraints>
                                                     <color key="tintColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <state key="normal" image="chevron.right" catalog="system"/>
                                                 </button>
                                                 <switch opaque="NO" tag="3" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="3NI-pQ-c1E">
-                                                    <rect key="frame" x="252" y="11.5" width="51" height="31"/>
+                                                    <rect key="frame" x="248" y="11.5" width="51" height="31"/>
                                                     <color key="onTintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <color key="thumbTintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 </switch>
@@ -2392,7 +2396,7 @@
                                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="Pa1-Sl-1ei">
                                                     <rect key="frame" x="0.0" y="11" width="345" height="1310"/>
                                                     <subviews>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="r4R-f2-fWC">
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label: (tap to edit)" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="r4R-f2-fWC">
                                                             <rect key="frame" x="0.0" y="0.0" width="345" height="20.5"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -2466,7 +2470,7 @@
                                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                             <textInputTraits key="textInputTraits"/>
                                                         </textField>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Maximum Index:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NWz-nb-Ygr">
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Maximum Index: (tap to edit)" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NWz-nb-Ygr">
                                                             <rect key="frame" x="0.0" y="664.5" width="345" height="20.5"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -5929,7 +5933,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="Aim-ze-LVg"/>
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="HNI-HG-9ZQ"/>
-        <segue reference="IAz-j1-Gq6"/>
+        <segue reference="oY9-Pq-H5b"/>
         <segue reference="Ikt-mc-dmE"/>
         <segue reference="G1i-Bv-OSl"/>
         <segue reference="U54-oe-CeC"/>

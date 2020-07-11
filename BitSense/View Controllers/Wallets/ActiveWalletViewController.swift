@@ -61,6 +61,8 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
                 vc.id = wallet!.id
                 vc.walletLabel = wallet!.label
                 vc.goToDetail()
+            } else {
+                showAlert(vc: vc, title: "Ooops", message: "That button only works for \"Fully Noded Wallets\" which can be created by tapping the plus button, you can see your Fully Noded Wallets by tapping the squares button. Fully Noded allows you to access, use and create wallets with ultimate flexibility using your node but it comes with some limitations. In order to get a better user experience we recommend creating a Fully Noded Wallet.")
             }
         }
     }

@@ -59,27 +59,27 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Save changes in the application's managed object context when the application transitions to the background.
         (UIApplication.shared.delegate as? AppDelegate)?.saveContext()
     }
-    
-    
+        
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
         let urlcontexts = URLContexts.first
         if let url = urlcontexts?.url {
-            print("url: \(url)")
             if url.pathExtension == "psbt" {
-                print("its a psbt")
+                let needTo = url.startAccessingSecurityScopedResource()
                 do {
                     let data = try Data(contentsOf: url.absoluteURL)
                     let psbt = data.base64EncodedString()
                     presentSigner(psbt: psbt)
                 } catch {
-                    
+                    print(error.localizedDescription)
+                }
+                if needTo {
+                  url.stopAccessingSecurityScopedResource()
                 }
             } else {
                 addNode(url: "\(url)")
             }
         }
     }
-    
     
     func addNode(url: String) {
         if let myTabBar = self.window?.rootViewController as? UITabBarController {
@@ -98,6 +98,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
     
     private func presentSigner(psbt: String) {
+        print("presentSigner")
         let storyBoard = UIStoryboard(name: "Main", bundle: nil)
         if let signerVc = storyBoard.instantiateViewController(identifier: "signerVc") as? SignerViewController {
             signerVc.psbt = psbt

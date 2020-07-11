@@ -16,10 +16,7 @@ class MakeRPCCall {
     var rpcpassword = ""
     var onionAddress = ""
     var rpcport = ""
-    //var errorBool = Bool()
-    //var errorDescription = String()
     let torClient = TorClient.sharedInstance
-    //var objectToReturn:Any!
     var attempts = 0
     
     private init() {}
@@ -77,8 +74,6 @@ class MakeRPCCall {
                 formattedParam = formattedParam.replacingOccurrences(of: "'\"'\"'", with: "'")
                 
                 guard let url = URL(string: walletUrl) else {
-                    //vc.errorBool = true
-                    //vc.errorDescription = "url error"
                     completion((nil, "url error"))
                     return
                 }
@@ -87,6 +82,9 @@ class MakeRPCCall {
                 var timeout = 10.0
                 if method == .gettxoutsetinfo {
                     timeout = 500.0
+                }
+                if method == .importmulti {
+                    timeout = 30.0
                 }
                 request.timeoutInterval = timeout
                 request.httpMethod = "POST"

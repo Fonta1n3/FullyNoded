@@ -1,38 +1,49 @@
 # Fully Noded™️
 
-A feature rich Bitcoin app which is 100% powered by your own Full Node. Allows you to connect to and control multiple nodes using a client side native Tor thread making calls to your nodes rpcport via a hidden service.
+A feature rich Bitcoin app which is 100% powered by your own Full Node. Allows you to connect to and control multiple nodes using a client side native Tor thread making calls to your nodes rpcport via a V3 hidden service with optional Tor V3 authentication whereby the app can either create key for you (out of band) or you may supply your own private key.
 
-There may be bugs, always decode your transaction and study it before broadcasting, ideally get comfortable with it on testnet first, I am not responsible for loss of funds. 
+## Supported Nodes
 
-**Extreme care should be taken when importing public keys (xpubs, ypubs, zpubs) into your node and then using the addresses your node creates to receive funds to. If you do not absolutely know and understand what you are doing then do not do it. When importing keys Fully Noded always displays the addresses for you to confirm first, if the addresses to do not match what you expect them to the do not import them!**
+- Nodl
+- myNode
+- BTCPayServer
+- Bitcoin Core (a Tor V3 hidden service controlling your rpcport is required)
+- Raspiblitz
+- Embassy
 
-## Connect your Nodl
-
-Go to nodl browser based UI, tap the Fully Noded link and Fully Noded will open, add and connect to your nodl over Tor, it is optional for users to add a V3 auth key. This enables worldwide access to your nodl from your iPhone with a native integrated Tor thread running in the app. 
-
-## Connect something else
+## Connect your own node
 
 - Create a hidden service that controls your nodes rpcport (there is a mac guide below on how to do that). 
-- Go to "settings" -> "node manager" -> "+" and add a Tor node. 
-- Find your bitcoin.conf and input your rpcuser and rpcpassword and a label into the app. See "bitcoin.conf settings" below.
+- Go to `settings` > `node manager` > `+` > `manually`
+- Find your bitcoin.conf and input your rpcuser and rpcpassword and a label into the app. See "bitcoin.conf settings" below. **No special characters allowed! Only alphanumeric**
 - Input the hidden services hostname with the port at the end (njcnewicnweiun.onion:8332)
-- Go back to "Settings" ->"Node Manager" and make sure the node is switched on
-- Go to home screen and it will automatically connect
+- Tap `save`, you will be alerted it if was saved successfully, it will automatically start connecting to it. Optionally, if you have authentication setup you will need to create V3 auth keys in the app by going to `settings` > `security center` > `Tor V3 Authentication` > `tap the refresh button to create keys out of band or add your own private key by pasting it in` > `tap the export button to export your public key`
+
+## Troubleshooting
+- `Unknown error`: restart your node, restart Fully Noded, if that does not work make sure your `rpcpassword` and `rpcuser` do not have any special characters, only alphanumeric is allowed, otherwise you will not connect as it breaks the url to your node.
+- `Internet connection appears offline`: reboot Tor on your node, force quit and reopen Fully Noded, this works every single time.
+- If you can not connect and you have added Tor V3 auth to your node then ensure you added the public key correctly as Fully Noded exports it, reboot Tor, force wuit Fully Noded and reopen.
+- The way Fully Noded works is very robust and reliable, if you have a connection issue there is a reason, don't lose hope :)
 
 ## What can Fully Noded do?
 
+- Recover any wallet
+- Import any wallet with xpubs/xprvs
+- WIF import
+- Create watch-only wallets on your node where the seed is encrypted and stored securely on your device so that you may sign the psbt's your node builds for you
+- RBF
 - Full coin control
-- Full integrated Tor
-- Raw Transaction's
-- PSBT's
+- A suite of raw transaction tools: verify, broadcast, build, sign etc...
+- A suite of PSBT tools: process, finalize, analyze, decode, join, combine etc...
 - HWW Paring
 - Easy HD Multisig capability
 - Easy Cold Storage
-- Coldcard wallet compatibilty for building unsigned transactions
+- Coldcard, Ledger, Trezor, Wasabi wallet compatibilty for building psbt's/watch-only wallets or recovery
 - Most of the Bitcoin Core JSON-RPC API is covered
-- Encrypt your wallet.dat file
+- wallet.dat encryption for hot wallets
 - So much more
 - BIP39 compatiblity for your Node
+- 100% self soveriegn Bitcoin use, Fully Noded is 95% powered by your own node with some additional code for smartly creating wallets and signing psbt's offline, a very minimized third party.
 
 ## Download from App Store
 
@@ -44,32 +55,28 @@ Go to nodl browser based UI, tap the Fully Noded link and Fully Noded will open,
 
 ## Tutorials
 
-Some are outdated but will give you a general idea:
-
-- [Airgapped Signing and pairing with Coldcard](https://www.youtube.com/watch?v=WqKEPpSky2g)
-
-- [Using Fully Noded for HD Multisig. creating, importing, receiving, spending](https://www.youtube.com/watch?v=zRMZJ4pKQ0Q)
+- Soon ™️, for now read these medium posts which go over some basics:
+1. [Intoducing Fully Noded Wallets](https://medium.com/@FullyNoded/introducing-fully-noded-wallets-9fc2e4837102)
+2. [Introducing Fully Noded PSBT Signers](https://medium.com/@FullyNoded/introducing-fully-noded-psbt-signers-8f259c1ec558?sk=fa56fa3939136f269f0ca2a4fcdeee38)
 
 ## Build From Source - Mac
 
-Run `brew --version` in a terminal, if you get a valid response you have brew installed already. If not:
+Run `brew --version` in a terminal, if you get a valid response you have brew installed already. If not install brew:
 
 `cd /usr/local`
-
-then
-
 `mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew`
 
 Wait for bew to finish.
 
-- Install carthage:  `brew install carthage`
+- Install carthage and libwally dependencies:  `brew install automake autoconf libtool gnu-sed carthage`
 - Install [Xcode](https://itunes.apple.com/id/app/xcode/id497799835?mt=12)
 - You will need a free Apple developer account create one [here](https://developer.apple.com/programs/enroll/)
-- In XCode, click "XCode" > "preferences" > "Accounts" > add your github account
-- Go to [Fully Noded in GitHub](https://github.com/Fonta1n3/FullyNoded) click "Clone and Download" -> "Open in XCode"
+- In Xcode, click "Xcode" > "preferences" > "Accounts" > add your github account
+- Go to [Fully Noded in GitHub](https://github.com/Fonta1n3/FullyNoded) click "Code" -> "Open in Xcode"
+- Once open quit Xcode
 - Open Terminal
 - `cd FullyNoded`
-- `carthage update --platform iOS` and let carthage do its thing
+- `carthage build libwally-swift` and let carthage do its thing
 
 That's it, you can now run the app in XCode.
 
@@ -114,9 +121,8 @@ HiddenServicePort 8332 127.0.0.1:8332
 #forces your node to accept rpc commands
 server=1
 
-#To get the most out of Fully Noded you should use it with a fully indexed non pruned node
-txindex=1
-prune=0
+# Up to you if you want to prune or not
+prune=1000
 
 #Choose any username or password, make the password very strong
 rpcuser=yourUserName
@@ -127,6 +133,12 @@ bind=127.0.0.1
 proxy=127.0.0.1:9050
 listen=1
 debug=tor
+
+# This is redundant but only allows your computer to access your node
+rpcallowip=127.0.0.1
+
+# For a faster IBD use dbcach=half your ram - for 8gb ram set dbcache to 4000
+dbcache=4000
 ```
 
 ## V3 Auth Keypair generation (optional)
@@ -282,7 +294,7 @@ This is an example from specter:
 Key_123&wsh(sortedmulti(2,[fe23bc9a/48h/1h/0h/2h]tpubDEzBBGMH87CU5rCdo7gSaByN6SVvJW7c4WDkMuC6mKS8bcqpaVD3FCoiAEefcGhC4TwRCtACZnmnTZbPUk4cbx6dsLnHG8CyG8jz2Gr6j2z,[e120e47b/48h/1h/0h/2h]tpubDEvTHKHDhi8rQyogJNsnoNsbF8hMefbAzXFCT8CuJiZtxeZM7vUHcH65qpsp7teB2hJPQMKpLV9QcEJkNy3fvnvR6zckoN1E3fFywzfmcBA,[f0578536/48h/1h/0h/2h]tpubDE5GYE61m5mx2WrgtFe1kSAeAHT5Npoy5C2TpQTQGLTQkRkmsWMoA5PSP5XAkt4DBLgKY386iyGDjJKT5fVrRgShJ5CSEdd66UUc4icA8rw))
 ```
 
-for FN1 just convert it to:
+for Fully Noded just convert it to:
 
 ```
 wsh(sortedmulti(2,[fe23bc9a/48h/1h/0h/2h]tpubDEzBBGMH87CU5rCdo7gSaByN6SVvJW7c4WDkMuC6mKS8bcqpaVD3FCoiAEefcGhC4TwRCtACZnmnTZbPUk4cbx6dsLnHG8CyG8jz2Gr6j2z/0/*,[e120e47b/48h/1h/0h/2h]tpubDEvTHKHDhi8rQyogJNsnoNsbF8hMefbAzXFCT8CuJiZtxeZM7vUHcH65qpsp7teB2hJPQMKpLV9QcEJkNy3fvnvR6zckoN1E3fFywzfmcBA/0/*,[f0578536/48h/1h/0h/2h]tpubDE5GYE61m5mx2WrgtFe1kSAeAHT5Npoy5C2TpQTQGLTQkRkmsWMoA5PSP5XAkt4DBLgKY386iyGDjJKT5fVrRgShJ5CSEdd66UUc4icA8rw/0/*))
@@ -290,7 +302,9 @@ wsh(sortedmulti(2,[fe23bc9a/48h/1h/0h/2h]tpubDEzBBGMH87CU5rCdo7gSaByN6SVvJW7c4WD
 
 All that is needed is to remove the `Key_123&` prefix and add `/0/*` to the end of each xpub.
 
-in FN1, incomings > import > descriptor, and paste or scan it as a QR, thats it.
+You will also want a change descriptor so modify slightly by replacing `/0/*` with `/1/*` and import it as your change descriptor.
+
+In Fully Noded, `incomings` > `import` > `descriptor`, and paste or scan it as a QR, thats it, do this twice once for the receive keys and once for the change keys.
 ...
 
 ## Contributing
@@ -302,3 +316,4 @@ PR's welcome.
 ## Built With
 
 - [Tor](https://github.com/iCepa/Tor.framework) for connecting to your node more privately and securely.
+- [LibWally-Swift](https://github.com/blockchain/libwally-swift) for generating BIP39 seed words, deriving keys and signing psbt's.

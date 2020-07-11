@@ -163,7 +163,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         CoreDataService.deleteEntity(id: walletId, entityName: .wallets) { [unowned vc = self] success in
             if success {
                 DispatchQueue.main.async { [unowned vc = self] in
-                    if vc.wallet.name == UserDefaults.standard.object(forKey: "walletName") as! String {
+                    if vc.wallet.name == UserDefaults.standard.object(forKey: "walletName") as? String {
                         UserDefaults.standard.removeObject(forKey: "walletName")
                         NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                     }
