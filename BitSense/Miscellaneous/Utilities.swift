@@ -68,6 +68,12 @@ public func showAlert(vc: UIViewController, title: String, message: String) {
     
 }
 
+extension String {
+    var isAlphanumeric: Bool {
+        return !isEmpty && range(of: "[^a-zA-Z0-9]", options: .regularExpression) == nil
+    }
+}
+
 extension Notification.Name {
     public static let refreshNode = Notification.Name(rawValue: "refreshNode")
     public static let refreshWallet = Notification.Name(rawValue: "refreshWallet")

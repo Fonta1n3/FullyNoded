@@ -62,18 +62,30 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             }
             
             if rpcUserField.text != "" {
-                guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
-                newNode["rpcuser"] = enc
+                if (rpcUserField.text!).isAlphanumeric {
+                    guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
+                    newNode["rpcuser"] = enc
+                } else {
+                    showAlert(vc: self, title: "Only alphanumeric characters allowed in RPC username", message: "")
+                    return
+                }
             }
             
             if rpcPassword.text != "" {
-                guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
-                newNode["rpcpassword"] = enc
+                if rpcPassword.text!.isAlphanumeric {
+                    guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
+                    newNode["rpcpassword"] = enc
+                } else {
+                    showAlert(vc: self, title: "Only alphanumeric characters allowed in RPC password", message: "")
+                    return
+                }
             }
             
-            if onionAddressField.text != "" {
+            if onionSane(onion: onionAddressField.text) {
                 guard let encryptedOnionAddress = encryptedValue((onionAddressField.text)!.dataUsingUTF8StringEncoding)  else { return }
                 newNode["onionAddress"] = encryptedOnionAddress
+            } else {
+                return
             }
             
             if nodeLabel.text != "" && rpcPassword.text != "" && rpcUserField.text != "" && onionAddressField.text != "" {
@@ -117,24 +129,32 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             }
             
             if rpcUserField.text != "" {
-                guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
-                CoreDataService.update(id: id, keyToUpdate: "rpcuser", newValue: enc, entity: .newNodes) { success in
-                    if !success {
-                        displayAlert(viewController: self, isError: true, message: "error updating rpc username")
+                if rpcUserField.text!.isAlphanumeric {
+                    guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
+                    CoreDataService.update(id: id, keyToUpdate: "rpcuser", newValue: enc, entity: .newNodes) { success in
+                        if !success {
+                            displayAlert(viewController: self, isError: true, message: "error updating rpc username")
+                        }
                     }
+                } else {
+                    showAlert(vc: self, title: "Only alphanumeric characters allowed in RPC username", message: "")
                 }
             }
             
             if rpcPassword.text != "" {
-                guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
-                CoreDataService.update(id: id, keyToUpdate: "rpcpassword", newValue: enc, entity: .newNodes) { success in
-                    if !success {
-                        displayAlert(viewController: self, isError: true, message: "error updating rpc password")
+                if rpcPassword.text!.isAlphanumeric {
+                    guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
+                    CoreDataService.update(id: id, keyToUpdate: "rpcpassword", newValue: enc, entity: .newNodes) { success in
+                        if !success {
+                            displayAlert(viewController: self, isError: true, message: "error updating rpc password")
+                        }
                     }
+                } else {
+                    showAlert(vc: self, title: "Only alphanumeric characters allowed in RPC password", message: "")
                 }
             }
             
-            if onionAddressField.text != "" {
+            if onionSane(onion: onionAddressField.text) {
                 let decryptedAddress = (onionAddressField.text)!.dataUsingUTF8StringEncoding
                 guard let encryptedOnionAddress = encryptedValue(decryptedAddress) else { return }
                 CoreDataService.update(id: id, keyToUpdate: "onionAddress", newValue: encryptedOnionAddress, entity: .newNodes) { [unowned vc = self] success in
@@ -145,6 +165,43 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     }
                 }
             }
+        }
+    }
+    
+    private func onionSane(onion: String?) -> Bool {
+        if onion != "" {
+            if onion!.contains(":") {
+                let arr = onion!.split(separator: ".")
+                print("arr[0] = \(arr[0])")
+                if "\(arr[0])".count == 56 && "\(arr[0])".isAlphanumeric {
+                    if "\(arr[1])".contains(":") {
+                        let arr1 = "\(arr[1])".split(separator: ":")
+                        if arr1.count > 0 {
+                                if let _ = Int("\(arr1[1])") {
+                                    return true
+                                } else {
+                                    showAlert(vc: self, title: "Not a valid port", message: "")
+                                    return false
+                                }
+                        } else {
+                            showAlert(vc: self, title: "No port added", message: "Ensure you add a port to the end of the onion url, for example heuehehe8444.onion:8332")
+                            return false
+                        }
+                    } else {
+                       showAlert(vc: self, title: "No port added", message: "Ensure you add a port to the end of the onion url, for example heuehehe8444.onion:8332")
+                        return false
+                    }
+                } else {
+                    showAlert(vc: self, title: "Not a valid Tor V3 hostname", message: "")
+                    return false
+                }
+            } else {
+               showAlert(vc: self, title: "Not a valid port", message: "")
+                return false
+            }
+        } else {
+            showAlert(vc: self, title: "Add an onion hostname", message: "")
+            return false
         }
     }
     
@@ -251,6 +308,32 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     vc.deActivateNodes(nodes: nodes!) {
                         DispatchQueue.main.async { [unowned vc = self] in
                             let alert = UIAlertController(title: "Node saved successfully", message: "Your node has been saved and activated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection to your new node.", preferredStyle: .actionSheet)
+                            alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
+                                DispatchQueue.main.async { [unowned vc = self] in
+                                    NotificationCenter.default.post(name: .refreshNode, object: nil)
+                                    vc.navigationController?.popToRootViewController(animated: true)
+                                }
+                            }))
+                            alert.popoverPresentationController?.sourceView = vc.view
+                            vc.present(alert, animated: true) {}
+                        }
+                    }
+                } else {
+                    if !vc.createNew {
+                        DispatchQueue.main.async { [unowned vc = self] in
+                            let alert = UIAlertController(title: "Node updated successfully", message: "Your node has been updated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection using your updated node credentials.", preferredStyle: .actionSheet)
+                            alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
+                                DispatchQueue.main.async { [unowned vc = self] in
+                                    NotificationCenter.default.post(name: .refreshNode, object: nil)
+                                    vc.navigationController?.popToRootViewController(animated: true)
+                                }
+                            }))
+                            alert.popoverPresentationController?.sourceView = vc.view
+                            vc.present(alert, animated: true) {}
+                        }
+                    } else {
+                       DispatchQueue.main.async { [unowned vc = self] in
+                            let alert = UIAlertController(title: "Node added successfully", message: "Your node has been added and activated. The home screen is automatically refreshing. Tap Done to go back.", preferredStyle: .actionSheet)
                             alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                                 DispatchQueue.main.async { [unowned vc = self] in
                                     NotificationCenter.default.post(name: .refreshNode, object: nil)
