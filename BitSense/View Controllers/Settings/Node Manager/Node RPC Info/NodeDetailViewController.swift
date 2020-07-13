@@ -172,11 +172,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         if onion != "" {
             if onion!.contains(":") {
                 let arr = onion!.split(separator: ".")
-                print("arr[0] = \(arr[0])")
                 if "\(arr[0])".count == 56 && "\(arr[0])".isAlphanumeric {
                     if "\(arr[1])".contains(":") {
                         let arr1 = "\(arr[1])".split(separator: ":")
-                        if arr1.count > 0 {
+                        if arr1.count > 1 {
                                 if let _ = Int("\(arr1[1])") {
                                     return true
                                 } else {
