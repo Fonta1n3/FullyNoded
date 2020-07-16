@@ -1,6 +1,6 @@
 # Fully Noded™️
 
-A feature rich Bitcoin app which is 100% powered by your own Full Node. Allows you to connect to and control multiple nodes using a client side native Tor thread making calls to your nodes rpcport via a V3 hidden service with optional Tor V3 authentication whereby the app can either create key for you (out of band) or you may supply your own private key.
+A feature rich Bitcoin app which is 100% powered by your own Full Node. Allows you to connect to - and control multiple nodes using a client side native Tor thread making calls to your nodes rpcport via a V3 hidden service with optional Tor V3 authentication, whereby the app can either create a key for you (out of band) or you may supply your own private key.
 
 ## Supported Nodes
 
@@ -43,7 +43,7 @@ A feature rich Bitcoin app which is 100% powered by your own Full Node. Allows y
 - wallet.dat encryption for hot wallets
 - So much more
 - BIP39 compatiblity for your Node
-- 100% self soveriegn Bitcoin use, Fully Noded is 95% powered by your own node with some additional code for smartly creating wallets and signing psbt's offline, a very minimized third party.
+- 100% self sovereign Bitcoin use, Fully Noded is 95% powered by your own node with some additional code for smartly creating wallets and signing psbt's offline, a very minimized third party.
 
 ## Download from App Store
 
@@ -51,22 +51,28 @@ A feature rich Bitcoin app which is 100% powered by your own Full Node. Allows y
 
 ## Telegram
 
-[here](https://t.me/FullyNoded)
+[here](https://t.me/FullyNoded) is the open Telegram group.
+
+## Q&A
+
+Discussions from the telegram group have been editted and categorized into [Question and Answers](./QuestionsAnswersFN.md) as off July 2020. 
 
 ## Tutorials
 
 - Soon ™️, for now read these medium posts which go over some basics:
 1. [Intoducing Fully Noded Wallets](https://medium.com/@FullyNoded/introducing-fully-noded-wallets-9fc2e4837102)
 2. [Introducing Fully Noded PSBT Signers](https://medium.com/@FullyNoded/introducing-fully-noded-psbt-signers-8f259c1ec558?sk=fa56fa3939136f269f0ca2a4fcdeee38)
+- Also going through the [questions & answers](./QuestionsAnswersFN.md) might be an instructional experience. 
+
 
 ## Build From Source - Mac
 
-Run `brew --version` in a terminal, if you get a valid response you have brew installed already. If not install brew:
+Run `brew --version` in a terminal, if you get a valid response you have brew installed already. If not, install brew:
 
 `cd /usr/local`
 `mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew`
 
-Wait for bew to finish.
+Wait for brew to finish.
 
 - Install carthage and libwally dependencies:  `brew install automake autoconf libtool gnu-sed carthage`
 - Install [Xcode](https://itunes.apple.com/id/app/xcode/id497799835?mt=12)
