@@ -648,6 +648,12 @@
                                     <action selector="getDetails:" destination="Dwu-lj-4IN" id="k5S-fX-wFj"/>
                                 </connections>
                             </barButtonItem>
+                            <barButtonItem image="square.and.arrow.up" catalog="system" id="rT4-pp-cpv">
+                                <color key="tintColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <connections>
+                                    <action selector="exportWalletAction:" destination="Dwu-lj-4IN" id="RQ5-xz-8X4"/>
+                                </connections>
+                            </barButtonItem>
                         </leftBarButtonItems>
                     </navigationItem>
                     <connections>
@@ -668,6 +674,7 @@
                         <segue destination="0gR-Gj-FSR" kind="show" identifier="createFullyNodedWallet" id="e0d-Zp-a29"/>
                         <segue destination="TDC-7I-IgK" kind="show" identifier="segueToWallets" id="vi7-1c-2H7"/>
                         <segue destination="l8t-Do-K11" kind="show" identifier="segueToActiveWalletDetail" id="IAz-j1-Gq6"/>
+                        <segue destination="GlR-4A-eAx" kind="presentation" identifier="segueToAccountMap" id="CLR-a1-fb0"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="jDi-KB-cQL" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -1561,6 +1568,87 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="s3R-V1-NDB" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-10365.6" y="418.74062968515744"/>
+        </scene>
+        <!--Displayer View Controller-->
+        <scene sceneID="Uym-uj-rYU">
+            <objects>
+                <viewController storyboardIdentifier="QRDisplayer" useStoryboardIdentifierAsRestorationIdentifier="YES" id="GlR-4A-eAx" customClass="QRDisplayerViewController" customModule="BitSense" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="1Ax-bN-O8E">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Wallet Export" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bbj-D4-jqr">
+                                <rect key="frame" x="16" y="20" width="174.5" height="35"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="Kj5-uB-hmc">
+                                <rect key="frame" x="16" y="422" width="343" height="205"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="textColor" systemColor="labelColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                            </textView>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="kT3-vW-HgJ">
+                                <rect key="frame" x="16" y="71" width="343" height="343"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="343" id="11T-Zr-4bL"/>
+                                    <constraint firstAttribute="height" constant="343" id="lbF-go-rBu"/>
+                                </constraints>
+                            </imageView>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="V2W-B3-jFj" firstAttribute="trailing" secondItem="Kj5-uB-hmc" secondAttribute="trailing" constant="16" id="BKp-nX-JEq"/>
+                            <constraint firstItem="Kj5-uB-hmc" firstAttribute="top" secondItem="kT3-vW-HgJ" secondAttribute="bottom" constant="8" id="Fxi-cU-AT4"/>
+                            <constraint firstItem="V2W-B3-jFj" firstAttribute="trailing" secondItem="kT3-vW-HgJ" secondAttribute="trailing" constant="16" id="UuP-QH-CTq"/>
+                            <constraint firstItem="bbj-D4-jqr" firstAttribute="leading" secondItem="V2W-B3-jFj" secondAttribute="leading" constant="16" id="ZTp-1A-Aj5"/>
+                            <constraint firstItem="bbj-D4-jqr" firstAttribute="top" secondItem="V2W-B3-jFj" secondAttribute="top" constant="20" id="eax-x0-2xF"/>
+                            <constraint firstItem="kT3-vW-HgJ" firstAttribute="leading" secondItem="V2W-B3-jFj" secondAttribute="leading" constant="16" id="m0z-We-aTR"/>
+                            <constraint firstItem="kT3-vW-HgJ" firstAttribute="top" secondItem="bbj-D4-jqr" secondAttribute="bottom" constant="16" id="ulr-8N-kxQ"/>
+                            <constraint firstItem="Kj5-uB-hmc" firstAttribute="leading" secondItem="V2W-B3-jFj" secondAttribute="leading" constant="16" id="wdF-UY-AT3"/>
+                            <constraint firstItem="V2W-B3-jFj" firstAttribute="bottom" secondItem="Kj5-uB-hmc" secondAttribute="bottom" constant="20" id="yzk-tn-uY1"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="V2W-B3-jFj"/>
+                    </view>
+                    <connections>
+                        <outlet property="imageView" destination="kT3-vW-HgJ" id="L4j-xg-uHU"/>
+                        <outlet property="textView" destination="Kj5-uB-hmc" id="2An-oW-xbw"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="9fz-hm-abX" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-10356" y="1129.385307346327"/>
+        </scene>
+        <!--Scanner View Controller-->
+        <scene sceneID="BJl-28-zDt">
+            <objects>
+                <viewController id="HJc-Yu-EXJ" customClass="QRScannerViewController" customModule="BitSense" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="FoJ-De-qVl">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="CUQ-0c-lMe">
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
+                            </imageView>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="CUQ-0c-lMe" firstAttribute="leading" secondItem="JO2-M4-m8b" secondAttribute="leading" id="7vl-P5-Qr7"/>
+                            <constraint firstItem="CUQ-0c-lMe" firstAttribute="trailing" secondItem="JO2-M4-m8b" secondAttribute="trailing" id="8Id-jY-Bly"/>
+                            <constraint firstItem="CUQ-0c-lMe" firstAttribute="bottom" secondItem="JO2-M4-m8b" secondAttribute="bottom" id="OIv-iZ-Cwk"/>
+                            <constraint firstItem="CUQ-0c-lMe" firstAttribute="top" secondItem="JO2-M4-m8b" secondAttribute="top" id="lO6-20-5fH"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="JO2-M4-m8b"/>
+                    </view>
+                    <connections>
+                        <outlet property="scannerView" destination="CUQ-0c-lMe" id="D7j-Mg-zEq"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="3tc-Ca-ZKK" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-9623.2000000000007" y="1127.5862068965519"/>
         </scene>
         <!--Transaction View Controller-->
         <scene sceneID="VqF-ym-nmL">
@@ -2628,20 +2716,36 @@
                                     <action selector="manualAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="eek-O1-fMF"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="5fe-JI-HkZ">
+                                <rect key="frame" x="16" y="442" width="343" height="44"/>
+                                <color key="backgroundColor" red="0.12129447610000001" green="0.12922456860000001" blue="0.14169979099999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="44" id="JmP-IB-OSx"/>
+                                </constraints>
+                                <state key="normal" title="import">
+                                    <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="importAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="3Zs-Bg-kQ6"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="OAM-QB-2gl" firstAttribute="leading" secondItem="V4I-Q6-GVc" secondAttribute="leading" constant="16" id="6WN-0B-5us"/>
+                            <constraint firstItem="V4I-Q6-GVc" firstAttribute="trailing" secondItem="5fe-JI-HkZ" secondAttribute="trailing" constant="16" id="8rb-ee-K59"/>
                             <constraint firstItem="bW8-lG-7Hz" firstAttribute="leading" secondItem="V4I-Q6-GVc" secondAttribute="leading" constant="16" id="B0g-uP-SGd"/>
                             <constraint firstItem="OAM-QB-2gl" firstAttribute="top" secondItem="V4I-Q6-GVc" secondAttribute="top" constant="10" id="Ge6-2N-SKB"/>
                             <constraint firstItem="V4I-Q6-GVc" firstAttribute="trailing" secondItem="ZTq-Qt-Cb4" secondAttribute="trailing" constant="26" id="H04-kj-cXt"/>
                             <constraint firstItem="ZTq-Qt-Cb4" firstAttribute="leading" secondItem="OAM-QB-2gl" secondAttribute="trailing" constant="8" id="Hgg-cg-1rH"/>
+                            <constraint firstItem="5fe-JI-HkZ" firstAttribute="leading" secondItem="V4I-Q6-GVc" secondAttribute="leading" constant="16" id="SVS-rV-iXA"/>
                             <constraint firstItem="bPF-3j-BsX" firstAttribute="top" secondItem="GO8-o8-fXl" secondAttribute="bottom" constant="8" id="SqH-Nw-6PE"/>
                             <constraint firstItem="bPF-3j-BsX" firstAttribute="leading" secondItem="V4I-Q6-GVc" secondAttribute="leading" constant="16" id="Zh6-kh-GfC"/>
                             <constraint firstItem="V4I-Q6-GVc" firstAttribute="trailing" secondItem="bW8-lG-7Hz" secondAttribute="trailing" constant="26" id="bRZ-mM-1XR"/>
                             <constraint firstItem="V4I-Q6-GVc" firstAttribute="trailing" secondItem="bPF-3j-BsX" secondAttribute="trailing" constant="16" id="cKm-cX-le6"/>
                             <constraint firstItem="ZTq-Qt-Cb4" firstAttribute="top" secondItem="V4I-Q6-GVc" secondAttribute="top" constant="10" id="gOC-hw-8vg"/>
                             <constraint firstItem="GO8-o8-fXl" firstAttribute="top" secondItem="bW8-lG-7Hz" secondAttribute="bottom" constant="8" id="kd2-zD-OEk"/>
+                            <constraint firstItem="5fe-JI-HkZ" firstAttribute="top" secondItem="bPF-3j-BsX" secondAttribute="bottom" constant="8" id="lys-vp-bod"/>
                             <constraint firstItem="bW8-lG-7Hz" firstAttribute="top" secondItem="ZTq-Qt-Cb4" secondAttribute="bottom" constant="17" id="qzl-eY-Rue"/>
                             <constraint firstItem="GO8-o8-fXl" firstAttribute="leading" secondItem="V4I-Q6-GVc" secondAttribute="leading" constant="16" id="wQy-He-p9B"/>
                             <constraint firstItem="V4I-Q6-GVc" firstAttribute="trailing" secondItem="GO8-o8-fXl" secondAttribute="trailing" constant="16" id="wrb-2Q-9VK"/>
@@ -2657,10 +2761,12 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
+                        <outlet property="importOutlet" destination="5fe-JI-HkZ" id="UlE-sQ-oBY"/>
                         <outlet property="recoveryOutlet" destination="bPF-3j-BsX" id="fdn-vK-RVg"/>
                         <outlet property="singleSigOutlet" destination="GO8-o8-fXl" id="6Gi-pM-wjc"/>
                         <segue destination="Yhd-sD-SB5" kind="show" identifier="segueToSeedWords" id="AJq-aA-dsj"/>
                         <segue destination="pBQ-SK-r7u" kind="show" identifier="seguToManualCreation" id="tT8-Fn-Z1b"/>
+                        <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScanner" id="1fQ-PG-chF"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="aBB-kS-R85" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -5933,7 +6039,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="Aim-ze-LVg"/>
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="HNI-HG-9ZQ"/>
-        <segue reference="oY9-Pq-H5b"/>
+        <segue reference="IAz-j1-Gq6"/>
         <segue reference="Ikt-mc-dmE"/>
         <segue reference="G1i-Bv-OSl"/>
         <segue reference="U54-oe-CeC"/>

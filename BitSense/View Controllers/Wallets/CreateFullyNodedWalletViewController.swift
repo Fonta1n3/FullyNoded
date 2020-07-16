@@ -8,16 +8,20 @@
 
 import UIKit
 
-class CreateFullyNodedWalletViewController: UIViewController {
+class CreateFullyNodedWalletViewController: UIViewController, UINavigationControllerDelegate {
     
     @IBOutlet weak var singleSigOutlet: UIButton!
     @IBOutlet weak var recoveryOutlet: UIButton!
-
+    @IBOutlet weak var importOutlet: UIButton!
+    var onDoneBlock:(((Bool)) -> Void)?
+    var spinner = ConnectingView()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        navigationController?.delegate = self
         singleSigOutlet.layer.cornerRadius = 8
         recoveryOutlet.layer.cornerRadius = 8
+        importOutlet.layer.cornerRadius = 8
     }
     
     @IBAction func automaticAction(_ sender: Any) {
@@ -37,14 +41,48 @@ class CreateFullyNodedWalletViewController: UIViewController {
         showAlert(vc: self, title: "Fully Noded Wallet", message: message)
     }
     
-    /*
+    @IBAction func importAction(_ sender: Any) {
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "segueToScanner", sender: vc)
+        }
+    }
+    
+    private func importAccountMap(_ accountMap: [String:Any]) {
+        spinner.addConnectingView(vc: self, description: "importing...")
+        if let _ = accountMap["descriptor"] as? String {
+            if let _ = accountMap["blockheight"] as? Int {
+                /// It is an Account Map.
+                ImportWallet.accountMap(accountMap) { [unowned vc = self] (success, errorDescription) in
+                    if success {
+                        DispatchQueue.main.async { [unowned vc = self] in
+                            vc.spinner.removeConnectingView()
+                            vc.onDoneBlock!(true)
+                            vc.navigationController?.popViewController(animated: true)
+                        }
+                    } else {
+                        vc.spinner.removeConnectingView()
+                        showAlert(vc: vc, title: "Error", message: "There was an error importing your wallet")
+                    }
+                }
+            }
+        }
+    }
+    
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destination.
         // Pass the selected object to the new view controller.
+        if segue.identifier == "segueToScanner" {
+            if let vc = segue.destination as? QRScannerViewController {
+                vc.isAccountMap = true
+                vc.onImportDoneBlock = { [unowned thisVc = self] accountMap in
+                    if accountMap != nil {
+                        thisVc.importAccountMap(accountMap!)
+                    }
+                }
+            }
+        }
     }
-    */
-
 }

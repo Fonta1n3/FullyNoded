@@ -29,6 +29,8 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     var dataRefresher = UIBarButtonItem()
     var id:UUID!
     var walletLabel:String!
+    var wallet:Wallet?
+    var window: UIWindow?
     @IBOutlet weak var sendView: UIView!
     @IBOutlet weak var invoiceView: UIView!
     @IBOutlet weak var importView: UIView!
@@ -39,7 +41,6 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
         walletTable.delegate = self
         walletTable.dataSource = self
         sendView.layer.cornerRadius = 5
@@ -56,16 +57,25 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     }
     
     @IBAction func getDetails(_ sender: Any) {
-        activeWallet { [unowned vc = self] (wallet) in
-            if wallet != nil {
-                vc.id = wallet!.id
-                vc.walletLabel = wallet!.label
-                vc.goToDetail()
-            } else {
-                showAlert(vc: vc, title: "Ooops", message: "That button only works for \"Fully Noded Wallets\" which can be created by tapping the plus button, you can see your Fully Noded Wallets by tapping the squares button. Fully Noded allows you to access, use and create wallets with ultimate flexibility using your node but it comes with some limitations. In order to get a better user experience we recommend creating a Fully Noded Wallet.")
-            }
+        if wallet != nil {
+            id = wallet!.id
+            walletLabel = wallet!.label
+            goToDetail()
+        } else {
+            showAlert(vc: self, title: "Ooops", message: "That button only works for \"Fully Noded Wallets\" which can be created by tapping the plus button, you can see your Fully Noded Wallets by tapping the squares button. Fully Noded allows you to access, use and create wallets with ultimate flexibility using your node but it comes with some limitations. In order to get a better user experience we recommend creating a Fully Noded Wallet.")
         }
     }
+    
+    @IBAction func exportWalletAction(_ sender: Any) {
+        if wallet != nil {
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.performSegue(withIdentifier: "segueToAccountMap", sender: vc)
+            }
+        } else {
+            showAlert(vc: self, title: "Exporting only works for Fully Noded Wallets", message: "You can create a Fully Noded Wallet by tapping the plus button. Fully Noded allows you to access all your nodes wallets, if you created the wallet externally from the app then the app does not have the information it needs to export the wallet.")
+        }
+    }
+    
     
     @IBAction func goToFullyNodedWallets(_ sender: Any) {
         DispatchQueue.main.async { [unowned vc = self] in
@@ -112,6 +122,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     private func loadTable() {
         activeWallet { [unowned vc = self] (wallet) in
             if wallet != nil {
+                vc.wallet = wallet!
                 vc.existingWallet = wallet!.name
                 vc.walletLabel = wallet!.label
                 vc.id = wallet!.id
@@ -340,6 +351,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         existingWallet = ""
         activeWallet { [unowned vc = self] (wallet) in
             if wallet != nil {
+                vc.wallet = wallet!
                 vc.id = wallet!.id
                 vc.walletLabel = wallet!.label
             } else {
@@ -547,6 +559,23 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
                 }
             }
             
+        case "segueToAccountMap":
+            if let vc = segue.destination as? QRDisplayerViewController {
+                if let json = AccountMap.create(wallet: wallet!) {
+                    vc.text = json
+                }
+            }
+            
+        case "createFullyNodedWallet":
+            if let vc = segue.destination as? CreateFullyNodedWalletViewController {
+                vc.onDoneBlock = { success in
+                    if success {
+                        showAlert(vc: self, title: "Success ✅", message: "Wallet imported successfully, it is now rescanning the blockchain you can monitor rescan status from \"tools\" > \"get wallet info\", historic transactions will not display until the rescan completes.")
+                        self.loadTable()
+                    }
+                }
+            }
+                    
         default:
             
             break

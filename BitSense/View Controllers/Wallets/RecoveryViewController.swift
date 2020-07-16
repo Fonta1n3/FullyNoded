@@ -25,6 +25,7 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
     let label = UILabel()
     var autoCompleteCharacterCount = 0
     var timer = Timer()
+    var blockheight:Int64!
     @IBOutlet weak var textField: UITextField!
     @IBOutlet weak var wordView: UIView!
     @IBOutlet weak var recoverOutlet: UIButton!
@@ -37,8 +38,6 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
         passphraseField.delegate = self
         accountField.delegate = self
         textField.delegate = self
-        //tap.addTarget(self, action: #selector(handleTap))
-        //view.addGestureRecognizer(tap)
         wordView.layer.cornerRadius = 8
         wordView.layer.borderColor = UIColor.lightGray.cgColor
         wordView.layer.borderWidth = 0.5
@@ -98,6 +97,9 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
                 if let chain = dict["chain"] as? String {
                     if chain == "test" {
                         vc.coinType = "1"
+                    }
+                    if let blocks = dict["blocks"] as? Int {
+                        vc.blockheight = Int64(blocks)
                     }
                     vc.spinner.removeConnectingView()
                 }
@@ -650,10 +652,10 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
         dict["name"] = name
         dict["maxIndex"] = 2500
         dict["index"] = 0
+        dict["blockheight"] = Int64(blockheight)
         DispatchQueue.main.async { [unowned vc = self] in
             dict["account"] = vc.accountField.text ?? "0"
         }
-        dict["account"] =
         CoreDataService.saveEntity(dict: dict, entityName: .wallets) { [unowned vc = self] success in
             if success {
                 NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)

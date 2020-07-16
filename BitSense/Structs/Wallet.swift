@@ -20,6 +20,7 @@ public struct Wallet: CustomStringConvertible {
     let index:Int16
     let watching:[String]?
     let account:Int16
+    let blockheight:Int64
     
     init(dictionary: [String: Any]) {
         id = dictionary["id"] as! UUID
@@ -27,11 +28,12 @@ public struct Wallet: CustomStringConvertible {
         changeDescriptor = dictionary["changeDescriptor"] as! String
         receiveDescriptor = dictionary["receiveDescriptor"] as! String
         type = dictionary["type"] as! String
-        name = dictionary["name"] as! String
+        name = dictionary["name"] as? String ?? ""
         maxIndex = dictionary["maxIndex"] as! Int16
         index = dictionary["index"] as! Int16
         watching = dictionary["watching"] as? [String]
         account = dictionary["account"] as? Int16 ?? 0
+        blockheight = dictionary["blockheight"] as? Int64 ?? 0
     }
     
     public var description: String {

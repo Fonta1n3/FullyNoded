@@ -35,6 +35,7 @@
     </entity>
     <entity name="Wallets" representedClassName="Wallets" syncable="YES" codeGenerationType="class">
         <attribute name="account" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="blockheight" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="changeDescriptor" optional="YES" attributeType="String"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="index" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
@@ -51,6 +52,6 @@
         <element name="NewHDWallets" positionX="-36" positionY="144" width="128" height="118"/>
         <element name="NewNodes" positionX="-54" positionY="135" width="128" height="133"/>
         <element name="Signers" positionX="-27" positionY="189" width="128" height="118"/>
-        <element name="Wallets" positionX="-36" positionY="180" width="128" height="193"/>
+        <element name="Wallets" positionX="-36" positionY="180" width="128" height="208"/>
     </elements>
 </model>

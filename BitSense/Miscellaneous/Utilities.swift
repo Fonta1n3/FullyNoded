@@ -68,6 +68,20 @@ public func showAlert(vc: UIViewController, title: String, message: String) {
     
 }
 
+public extension Dictionary {
+    func json() -> String? {
+        if let json = try? JSONSerialization.data(withJSONObject: self, options: []) {
+            if let jsonString = String(data: json, encoding: .utf8) {
+                return jsonString
+            } else {
+                return nil
+            }
+        } else {
+            return nil
+        }
+    }
+}
+
 extension String {
     var isAlphanumeric: Bool {
         return !isEmpty && range(of: "[^a-zA-Z0-9]", options: .regularExpression) == nil

@@ -1,0 +1,53 @@
+//
+//  QRDisplayerViewController.swift
+//  BitSense
+//
+//  Created by Peter on 16/07/20.
+//  Copyright © 2020 Fontaine. All rights reserved.
+//
+
+import UIKit
+
+class QRDisplayerViewController: UIViewController {
+    
+    var text = ""
+    var tapQRGesture = UITapGestureRecognizer()
+    var tapTextViewGesture = UITapGestureRecognizer()
+    @IBOutlet weak var imageView: UIImageView!
+    @IBOutlet weak var textView: UITextView!
+    
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        imageView.isUserInteractionEnabled = true
+        imageView.image = qR()
+        textView.text = text
+        tapQRGesture = UITapGestureRecognizer(target: self, action: #selector(shareQRCode(_:)))
+        imageView.addGestureRecognizer(tapQRGesture)
+    }
+    
+    private func qR() -> UIImage {
+        let qrGenerator = QRGenerator()
+        qrGenerator.textInput = text
+        return qrGenerator.getQRCode()
+    }
+    
+    @objc func shareQRCode(_ sender: UITapGestureRecognizer) {
+        let objectsToShare = [imageView.image]
+        let activityController = UIActivityViewController(activityItems: objectsToShare as [Any], applicationActivities: nil)
+        activityController.popoverPresentationController?.sourceView = self.view
+        self.present(activityController, animated: true) {}
+    }
+    
+
+    /*
+    // MARK: - Navigation
+
+    // In a storyboard-based application, you will often want to do a little preparation before navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        // Get the new view controller using segue.destination.
+        // Pass the selected object to the new view controller.
+    }
+    */
+
+}

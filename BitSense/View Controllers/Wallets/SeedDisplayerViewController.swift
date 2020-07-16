@@ -17,6 +17,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     var changeDesc = ""
     var name = ""
     var coinType = "0"
+    var blockheight:Int64!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,6 +36,9 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                 if let chain = dict["chain"] as? String {
                     if chain == "test" {
                         vc.coinType = "1"
+                    }
+                    if let blocks = dict["blocks"] as? Int {
+                        vc.blockheight = Int64(blocks)
                     }
                     vc.getWords()
                 }
@@ -222,6 +226,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         dict["name"] = name
         dict["maxIndex"] = 2500
         dict["index"] = 0
+        dict["blockheight"] = blockheight
         CoreDataService.saveEntity(dict: dict, entityName: .wallets) { [unowned vc = self] success in
             if success {
                 vc.spinner.removeConnectingView()
