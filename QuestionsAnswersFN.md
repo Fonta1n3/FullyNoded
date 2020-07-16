@@ -19,27 +19,26 @@ I adjusted the text to the Q&A format and added rating for how sure the responde
 
 Explanation:<br/>
 > ![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `sure`: respondent is sure about the answer given; at that point in time!<br/>
-
 > ![#1589F0](https://via.placeholder.com/15/1589F0/000000?text=+) `pretty sure` : could be wrong, but that's the respondents understanding<br/>
 > ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) `not sure` : just a fair guess, no garantuee<br/>
 
 ## Recommended reading
 1. [Introducing Fully Noded PSBT Signers](https://medium.com/@FullyNoded/introducing-fully-noded-psbt-signers-8f259c1ec558) July 2020 - @Fonta1n3
-> Topics:
-   > a. libwally
-   > b. add psbt signers
-   > c. signed raw transaction over psbt 
-   > d. airdrop psbt as a raw data BIP174 file
-   > e. add BIP39 seed words as a signer
-   > f. analyze the base64 encoded text of the psbt
+> Topics:<br/>
+   > a. libwally<br/>
+   > b. add psbt signers<br/>
+   > c. signed raw transaction over psbt <br/>
+   > d. airdrop psbt as a raw data BIP174 file<br/>
+   > e. add BIP39 seed words as a signer<br/>
+   > f. analyze the base64 encoded text of the psbt<br/>
    > g. filters through all the signers stored on your device and signs the psbt
 1. [Introducing Fully Noded Wallets](https://medium.com/@FullyNoded/introducing-fully-noded-wallets-9fc2e4837102) July 2020 - @Fonta1n3
-> Topics:
-   > a. wallets, bitcoin core versus Fully Noded wallets
-   > b. import public keys, derivation paths and address scripts
-   > c. recover every possible popular derivation across a number of wallet vendors
-   > d. Samourai wallet special treatment
-   > e. activate, deactivate and delete 
+> Topics:<br/>
+   > a. wallets, bitcoin core versus Fully Noded wallets<br/>
+   > b. import public keys, derivation paths and address scripts<br/>
+   > c. recover every possible popular derivation across a number of wallet vendors<br/>
+   > d. Samourai wallet special treatment<br/>
+   > e. activate, deactivate and delete
 ## Definitions
 
 - FN : Fully Noded app
