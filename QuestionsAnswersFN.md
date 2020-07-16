@@ -1,23 +1,38 @@
 # Q&A about Fully Noded
-Selected from Telegram *Fully Noded* group in 2020. 
+Selected from the open Telegram *Fully Noded* group [here](https://t.me/FullyNoded), from July 2020. 
+
+Beware: A Q&A is always *work in progress*. Tips & help welcome.
+
+### Disclaimer
+None of the respondents in the **open** Telegram group have been explicitely named as a source, except for ***@Fonta1n3***. For practical reasons educational images uploaded by Telegram group members have been downloaded to [Imgbb](http://imgbb.com), we de-personalised them (by giving a new name) and under this new name these images have been used in the Q&A to clarify the questions and answers.
+
+> We've done our uttermost to ensure the protection of privacy of the Telegram group members by checking the images for personal identifiable information (pii). However, should we after all have made a mistake, please let us know and we'll correct it immedeately.
+
+## Explanation of the Q&A
 
 The answers are given by ***@Fonta1n3***. If not than an explicit source is referenced.
 
 I adjusted the text to the Q&A format and added rating for how sure the respondent is about the answer:
+- ![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `sure` <br/>
+- ![#1589F0](https://via.placeholder.com/15/1589F0/000000?text=+) `pretty sure`<br/>
 - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) `not sure`
-- ![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `sure`
-- ![#1589F0](https://via.placeholder.com/15/1589F0/000000?text=+) `pretty sure`
 
-Explanation:
+Explanation:<br/>
 > ![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `sure`: respondent is sure about the answer given; at that point in time!<br/>
-> ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) `not sure` : just a fair guess, no garantuee<br/>
+
 > ![#1589F0](https://via.placeholder.com/15/1589F0/000000?text=+) `pretty sure` : could be wrong, but that's the respondents understanding<br/>
+> ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) `not sure` : just a fair guess, no garantuee<br/>
 
 ## Recommended reading
 1. [Introducing Fully Noded PSBT Signers](https://medium.com/@FullyNoded/introducing-fully-noded-psbt-signers-8f259c1ec558) July 2020 - @Fonta1n3
 > Topics:
-   > a. 
-   > b.
+   > a. libwally
+   > b. add psbt signers
+   > c. signed raw transaction over psbt 
+   > d. airdrop psbt as a raw data BIP174 file
+   > e. add BIP39 seed words as a signer
+   > f. analyze the base64 encoded text of the psbt
+   > g. filters through all the signers stored on your device and signs the psbt
 1. [Introducing Fully Noded Wallets](https://medium.com/@FullyNoded/introducing-fully-noded-wallets-9fc2e4837102) July 2020 - @Fonta1n3
 > Topics:
    > a. wallets, bitcoin core versus Fully Noded wallets
@@ -37,18 +52,18 @@ Explanation:
 - pure bitcoin core wallets: traditional bitcoin wallet, that has to be manually backed up, recovered etc using bitcoin-cli. Your node will sign transactions and will hold the private key.
 - Fully Noded wallets: support BIP39 recovery words, the seed is encrypted and stored on your device **not** on the node. The node will only ever hold public keys. Your node will build psbt for us that FN will sign (not your Node). Your node verifies the UTXO's
 - Libwally : an open source library (https://github.com/ElementsProject/libwally-core) used by Fully Noded, (https://github.com/blockchain/libwally-swift/blob/master/README.md) which allows us to utilize BIP39 directly in the app meaning you can easily recover your Fully Noded wallet with Electrum for example. Now when you create a wallet you will get a 12 word recovery phrase (no passphrase by default) to backup and keep safe.
-- legacy (p2pkh)
-- bech32 (p2wpkh) : 
+- legacy (p2pkh): NOT YET FILLED OUT
+- bech32 (p2wpkh):NOT YET FILLED OUT 
 - segwit wrapped (p2sh-p2wpkh)
-- BIP84 keys : 
-- keypool : 
+- BIP84 keys : NOT YET FILLED OUT
+- keypool : NOT YET FILLED OUT
 - Output descriptors: Descriptors are a clever way of importing specific keys into your node from any derivation, for any (or all) address types, single or multi signature, along with a fingerprint so offline psbt signers like a Coldcard and Fully Noded can sign the psbt if they hold the correct seed.
 - coldcard : a type of hardware wallet to store, send and receive crypto currencies
 - ledger Nano S/X: types of hardware wallets to store, send and receive crypto currencies
 - Keepkey : a type of hardware wallet to store, send and receive crypto currencies
 - Trezor : a type of hardware wallet to store, send and receive crypto currencies
-- Tor:
-- Node:
+- Tor:NOT YET FILLED OUT
+- Node:NOT YET FILLED OUT
 
 ## Knowledge you need to be confidently applying
 - The definitions above
