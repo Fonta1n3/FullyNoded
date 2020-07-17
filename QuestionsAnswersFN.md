@@ -231,6 +231,11 @@ Have a read and make sure there is nothing obvious going wrong there<br/>
 2. then open a terminal and paste in `sudo -u $(whoami) /usr/local/bin/brew services start tor'
 3. when installing tor and brew things can go wrong with permissions, if they do it should be onbvious in the tor.log
 
+**Service start/stop**
+I would just change the way you launch Tor from simply `tor` to `brew services start tor` and explain that way Tor will always launch automatically, to stop tor `brew services stop tor`.
+
+**Set permissions right**
+the proper way to add permissions to your hidden service directory (which is missing from the readme guide) is chmod 700 /usr/local/var/lib/tor/standup/main where /usr/local/var/lib/tor/standup/main represents the HiddenServiceDir in your torrc.
 ## Question
 I have FN on an iPad and bitcoin Core node running on a Macbook.<br/>
 I've reconfigured `Tor` following the guidelines [here](https://github.com/Fonta1n3/FullyNoded#connecting-over-tor-mac)
@@ -251,4 +256,3 @@ If its working you should get an error “server only responds to POST requests�
 > This is not great for security, so I would refresh your HS hostname after trouble shooting this and change your rpcpassword. All you have to do is delete the ‘HiddenServiceDir’ folder and restart tor and youll get a brand new url.
 
 > BUT before doing that, try rebooting tor on the Node server side, and force quitting FN (obviously on the client side) and see if it connects, double check you added your tor v3 url correctly with the right port at the end `:8332`
-
