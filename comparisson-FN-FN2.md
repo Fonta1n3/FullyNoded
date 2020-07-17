@@ -2,8 +2,7 @@ This table below also establishes provenance (repository of origin, permalink, a
 
 | Feature                                     | Fully Noded                                                  | FN2                                                          |
 | ------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | 
-| Objective                                   | Incorporate DID into FN2  FN2 utilizes apple 2fa, icloud, does accounting, totally automates multisig wallet creation. FN2 signs psbt with account based xprvs whereas FN uses the .
-                                                          | TBW                                                          |
+| Objective                                   | Incorporate DID into FN2                                     | TBW                                                          |
 | Utilizes apple 2fa                          | No                                                           | Yes                                                          |
 | Icloud integration                          | No                                                           | Yes                                                          |
 | Does accounting                             | No                                                           | Yes                                                          |
