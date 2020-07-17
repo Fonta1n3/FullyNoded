@@ -650,8 +650,8 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
         dict["watching"] = descriptorsToImport
         dict["type"] = "Single-Sig"
         dict["name"] = name
-        dict["maxIndex"] = 2500
-        dict["index"] = 0
+        dict["maxIndex"] = Int64(2500)
+        dict["index"] = Int64(0)
         dict["blockheight"] = Int64(blockheight)
         DispatchQueue.main.async { [unowned vc = self] in
             dict["account"] = vc.accountField.text ?? "0"

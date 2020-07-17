@@ -232,7 +232,7 @@ class NodeLogic {
                         if indexArray.count > 0 {
                             let maxIndex = indexArray.reduce(Int.min, { max($0, $1) })
                             if wallet!.index < maxIndex {
-                                CoreDataService.update(id: wallet!.id, keyToUpdate: "index", newValue: Int16(maxIndex), entity: .wallets) { success in
+                                CoreDataService.update(id: wallet!.id, keyToUpdate: "index", newValue: Int64(maxIndex), entity: .wallets) { success in
                                     if success {
                                         print("updated index from utxo")
                                     } else {

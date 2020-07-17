@@ -14,6 +14,22 @@
 				<string></string>
 			</array>
 			<key>CFBundleTypeName</key>
+			<string>TXN</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.fontaine.fullynoded.txn</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeIconFiles</key>
+			<array>
+				<string></string>
+			</array>
+			<key>CFBundleTypeName</key>
 			<string>PSBT</string>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
@@ -139,6 +155,21 @@
 	<false/>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Signed Raw Transaction</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.fontaine.fullynoded.txn</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<string>txn</string>
+			</dict>
+		</dict>
 		<dict>
 			<key>UTTypeConformsTo</key>
 			<array>

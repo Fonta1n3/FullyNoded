@@ -14,20 +14,34 @@ class SignerViewController: UIViewController {
     @IBOutlet weak var decodeOutlet: UIButton!
     var spinner = ConnectingView()
     var psbt = ""
+    var txn = ""
     var broadcast = false
     @IBOutlet weak var textView: UITextView!
     @IBOutlet weak var signOutlet: UIButton!
+    @IBOutlet weak var titleLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         textView.layer.cornerRadius = 8
         textView.layer.borderColor = UIColor.lightGray.cgColor
         textView.layer.borderWidth = 0.5
-        textView.text = psbt
+        if psbt != "" {
+            textView.text = psbt
+        } else if txn != "" {
+            titleLabel.text = "Broadcaster"
+            broadcast = true
+            textView.text = (txn.replacingOccurrences(of: "\n", with: "")).condenseWhitespace()
+            signOutlet.setTitle("broadcast", for: .normal)
+            analyzeOutlet.alpha = 0
+            decodeOutlet.alpha = 0
+        }
+        
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        process()
+        if psbt != "" {
+            process()
+        }
     }
     
     private func showError(error: String) {
@@ -137,10 +151,12 @@ class SignerViewController: UIViewController {
     
     private func convertPSBTtoData(string: String) {
         if let data = Data(base64Encoded: string) {
-            DispatchQueue.main.async { [unowned vc = self] in
-                let activityViewController = UIActivityViewController(activityItems: [data], applicationActivities: nil)
-                activityViewController.popoverPresentationController?.sourceView = vc.view
-                vc.present(activityViewController, animated: true) {}
+            if let url = exportPsbtToURL(data: data) {
+                DispatchQueue.main.async { [unowned vc = self] in
+                    let activityViewController = UIActivityViewController(activityItems: ["Fully Noded PSBT", url], applicationActivities: nil)
+                    activityViewController.popoverPresentationController?.sourceView = vc.view
+                    vc.present(activityViewController, animated: true) {}
+                }
             }
         }
     }

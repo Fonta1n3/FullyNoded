@@ -75,6 +75,19 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 if needTo {
                   url.stopAccessingSecurityScopedResource()
                 }
+            } else if url.pathExtension == "txn" {
+                let needTo = url.startAccessingSecurityScopedResource()
+                do {
+                    let data = try Data(contentsOf: url.absoluteURL)
+                    if let txn = String(bytes: data, encoding: .utf8) {
+                        presentBroadcaster(txn: txn)
+                    }
+                } catch {
+                    
+                }
+                if needTo {
+                  url.stopAccessingSecurityScopedResource()
+                }
             } else {
                 addNode(url: "\(url)")
             }
@@ -102,6 +115,21 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let storyBoard = UIStoryboard(name: "Main", bundle: nil)
         if let signerVc = storyBoard.instantiateViewController(identifier: "signerVc") as? SignerViewController {
             signerVc.psbt = psbt
+            if let window = self.window, let rootViewController = window.rootViewController {
+                var currentController = rootViewController
+                while let presentedController = currentController.presentedViewController {
+                    currentController = presentedController
+                }
+                currentController.present(signerVc, animated: true, completion: nil)
+            }
+        }
+    }
+    
+    private func presentBroadcaster(txn: String) {
+        print("presentBroadcaster")
+        let storyBoard = UIStoryboard(name: "Main", bundle: nil)
+        if let signerVc = storyBoard.instantiateViewController(identifier: "signerVc") as? SignerViewController {
+            signerVc.txn = txn
             if let window = self.window, let rootViewController = window.rootViewController {
                 var currentController = rootViewController
                 while let presentedController = currentController.presentedViewController {

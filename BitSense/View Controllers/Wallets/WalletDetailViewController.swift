@@ -43,7 +43,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                         vc.load()
                         vc.spinner.removeConnectingView()
                     }
-                    
                 }
             } else {
                 vc.showError(error: "Error getting blockchain info, please chack your connection to your node.")
@@ -90,6 +89,8 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func findSigner() {
+        let descriptorParser = DescriptorParser()
+        let descriptorStruct = descriptorParser.descriptor(wallet.receiveDescriptor)
         CoreDataService.retrieveEntity(entityName: .signers) { signers in
             if signers != nil {
                 if signers!.count > 0 {
@@ -103,9 +104,19 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                                             if decryptedPass != nil {
                                                 if let pass = String(bytes: decryptedPass!, encoding: .utf8) {
                                                     if let mk = Keys.masterKey(words: words, coinType: vc.coinType, passphrase: pass) {
-                                                        if let xpub = Keys.bip84AccountXpub(masterKey: mk, coinType: vc.coinType, account: vc.wallet.account) {
-                                                            if xpub == vc.accountXpub() {
-                                                                vc.signer = words
+                                                        if descriptorStruct.isMulti {
+                                                            for (x, xpub) in descriptorStruct.multiSigKeys.enumerated() {
+                                                                if let derivedXpub = Keys.xpub(path: descriptorStruct.derivationArray[x], masterKey: mk) {
+                                                                    if xpub == derivedXpub {
+                                                                        vc.signer += words + "\n\n"
+                                                                    }
+                                                                }
+                                                            }
+                                                        } else {
+                                                            if let derivedXpub = Keys.xpub(path: descriptorStruct.derivation, masterKey: mk) {
+                                                                if descriptorStruct.accountXpub == derivedXpub {
+                                                                    vc.signer = words
+                                                                }
                                                             }
                                                         }
                                                     }
@@ -114,9 +125,19 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                                         }
                                     } else {
                                         if let mk = Keys.masterKey(words: words, coinType: vc.coinType, passphrase: "") {
-                                            if let xpub = Keys.bip84AccountXpub(masterKey: mk, coinType: vc.coinType, account: vc.wallet.account) {
-                                                if xpub == vc.accountXpub() {
-                                                    vc.signer = words
+                                            if descriptorStruct.isMulti {
+                                                for (x, xpub) in descriptorStruct.multiSigKeys.enumerated() {
+                                                    if let derivedXpub = Keys.xpub(path: descriptorStruct.derivationArray[x], masterKey: mk) {
+                                                        if xpub == derivedXpub {
+                                                            vc.signer += words + "\n\n"
+                                                        }
+                                                    }
+                                                }
+                                            } else {
+                                                if let derivedXpub = Keys.xpub(path: descriptorStruct.derivation, masterKey: mk) {
+                                                    if descriptorStruct.accountXpub == derivedXpub {
+                                                        vc.signer = words
+                                                    }
                                                 }
                                             }
                                         }
@@ -323,17 +344,22 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func importDescriptors(index: Int, maxRange: Int, descriptorsToImport: [String]) {
+        let descriptorParser = DescriptorParser()
+        let descriptorStruct = descriptorParser.descriptor(wallet.receiveDescriptor)
+        var keypool = true
+        if descriptorStruct.isMulti {
+            keypool = false
+        }
         if index < descriptorsToImport.count {
             updateSpinnerText(text: "importing descriptor #\(index + 1), \(maxRange - Int(wallet.maxIndex) + 1) public keys...")
             let descriptor = descriptorsToImport[index]
-            var params = "[{ \"desc\": \"\(descriptor)\", \"timestamp\": \"now\", \"range\": [\(wallet.maxIndex),\(maxRange)], \"watchonly\": true, \"label\": \"Fully Noded Recovery\", \"keypool\": false, \"internal\": false }], {\"rescan\": false}"
+            var params = "[{ \"desc\": \"\(descriptor)\", \"timestamp\": \"now\", \"range\": [\(wallet.maxIndex),\(maxRange)], \"watchonly\": true, \"label\": \"\(wallet.label)\", \"keypool\": false, \"internal\": false }], {\"rescan\": false}"
             if descriptor.contains(wallet.receiveDescriptor) {
-                if descriptor.contains("/0/*") {
-                    params = "[{ \"desc\": \"\(descriptor)\", \"timestamp\": \"now\", \"range\": [\(wallet.maxIndex),\(maxRange)], \"watchonly\": true, \"label\": \"Fully Noded Recovery\", \"keypool\": true, \"internal\": false }], {\"rescan\": false}"
-                } else if descriptor.contains(wallet.changeDescriptor) {
-                    params = "[{ \"desc\": \"\(descriptor)\", \"timestamp\": \"now\", \"range\": [\(wallet.maxIndex),\(maxRange)], \"watchonly\": true, \"keypool\": true, \"internal\": true }], {\"rescan\": false}"
-                }
+                params = "[{ \"desc\": \"\(descriptor)\", \"timestamp\": \"now\", \"range\": [\(wallet.maxIndex),\(maxRange)], \"watchonly\": true, \"label\": \"\(wallet.label)\", \"keypool\": \(keypool), \"internal\": false }], {\"rescan\": false}"
+            } else if descriptor.contains(wallet.changeDescriptor) {
+                params = "[{ \"desc\": \"\(descriptor)\", \"timestamp\": \"now\", \"range\": [\(wallet.maxIndex),\(maxRange)], \"watchonly\": true, \"keypool\": \(keypool), \"internal\": \(keypool) }], {\"rescan\": false}"
             }
+            
             importMulti(params: params) { [unowned vc = self] success in
                 if success {
                     vc.importDescriptors(index: index + 1, maxRange: maxRange, descriptorsToImport: descriptorsToImport)
@@ -386,7 +412,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func updateMaxIndex(max: Int) {
-        CoreDataService.update(id: walletId, keyToUpdate: "maxIndex", newValue: Int16(max), entity: .wallets) { [unowned vc = self] success in
+        CoreDataService.update(id: walletId, keyToUpdate: "maxIndex", newValue: Int64(max), entity: .wallets) { [unowned vc = self] success in
             if success {
                 vc.spinner.removeConnectingView()
                 showAlert(vc: vc, title: "Success, you have imported up to \(max) public keys.", message: "Your wallet is now rescanning, you can check the progress at Tools > Get Wallet Info, if you want to abort the rescan you can do that from Tools as well. In order to see balances for all your addresses you'll need to wait for the rescan to complete.")
