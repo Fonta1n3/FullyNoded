@@ -1,4 +1,7 @@
-This table below also establishes provenance (repository of origin, permalink, and commit id) for files included from repositories that are outside of this repo. Contributors to these files are listed in the commit history for each repository, first with changes found in the commit history of this repo, then in changes in the commit history of their repo of their origin.
+##What is this?
+This table offers **a comparison of the differences and similarities of FN and FN2**, as far as objectives, features & functionality are concerned.
+
+Although the names are very similar, FN and FN2, their objectives are different. FN2 will get another name soon. Anyway, to have a structured overview of the differences and similarities on various topics is far from a *"unnecessary luxury"*.
 
 | Feature                                     | Fully Noded                                                  | FN2                                                          |
 | ------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | 
@@ -8,4 +11,5 @@ This table below also establishes provenance (repository of origin, permalink, a
 | Does accounting                             | No                                                           | Yes                                                          |
 | ultisig wallet creation                     | by hand                                                      | automated                                                    |
 | signs psbt with                             | root xprv                                                    | account based xprvs                                          |
-| exception-to-the-rule.c or exception-folder | [https://github.com/community/repo-name/PERMALINK](https://github.com/community/repo-name/PERMALINK) | [https://github.com/community/repo-name/commit/COMMITHASH]() |
+| ------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | 
+| exception-to-the-rule.c or exception-folder | [https://github.com/community/repo-name/PERMALINK](https://github.com/community/repo-name/PERMALINK)     | [https://github.com/community/repo-name/commit/COMMITHASH]() |
