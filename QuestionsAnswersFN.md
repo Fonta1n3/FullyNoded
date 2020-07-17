@@ -216,3 +216,39 @@ Any suggestion about this problem? All the username, password, and onion address
 <img src="https://i.ibb.co/WFpFtXm/err-network-conn.jpg" alt="err-network-conn" border="0" width="200">
 ### Answer - ![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `sure`
 Force quiting, and rebooting `tor` on your `node` always works
+
+## Question
+How do I get the connection basics over Tor right between FN and Bitcoin Core Nodes on a Mac
+### Answer - ![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `sure`
+Here are some [common issues and fixes](https://github.com/Fonta1n3/FullyNoded#troubleshooting)<br/>
+A Bitcoin Core GUI for iOS devices. Allows you to connect to and control multiple nodes via Tor - Fonta1n3/FullyNoded
+#### Further elaboration on the answer
+You can troubleshoot tor issues on the mac by running open `/usr/local/var/log/tor.log`<br/>
+Have a read and make sure there is nothing obvious going wrong there<br/>
+
+**You are also better off launching Tor as a service** 
+1. first ensure tor has stopped, 
+2. then open a terminal and paste in `sudo -u $(whoami) /usr/local/bin/brew services start tor'
+3. when installing tor and brew things can go wrong with permissions, if they do it should be onbvious in the tor.log
+
+## Question
+I have FN on an iPad and bitcoin Core node running on a Macbook.<br/>
+I've reconfigured `Tor` following the guidelines [here](https://github.com/Fonta1n3/FullyNoded#connecting-over-tor-mac)
+Then FN tries *'getblockchaininfo'*, but "it couldn't connect to the server". <br/>
+#### Further elaboration on the question
+There can be a variety of reasons for this, to start with the most basic ones: 
+a. How do I (physically / virtually connect an ipad to the Mac where de Node Runs? Select same wifi network?, discoverable in AirDrop (Finder-Mac)? 
+b. How can I test the network connection between them (FN and Node)?
+### Answer - ![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `sure`
+Add a. Bitcoin Core GUI for iOS devices. Allows you to connect to and control multiple nodes via Tor
+Add b. Take your Tor url  ‘http//:rpcuser:rpcpassword @xxx.onion:8332’ and **you should get an error** “server only responds to POST requests”, **that's a good sign!**
+#### Further elaboration on the answer
+a. FN only connects over Tor so its not possible in the app for now to connect over local wifi. It’s something that could be added fairly easily but is not there now.
+b. I would take your Tor url  ‘http//:rpcuser:rpcpassword @xxx.onion:8332’ and try and visit it in a tor browser as a website,**any tor browser, any device, any network. fixed typo http://rpcuser:rpcpassword@xxx.onion:8332**. <br/>
+If its working you should get an error “server only responds to POST requests” 
+
+***Big Disclaimer:***<br/>
+> This is not great for security, so I would refresh your HS hostname after trouble shooting this and change your rpcpassword. All you have to do is delete the ‘HiddenServiceDir’ folder and restart tor and youll get a brand new url.
+
+> BUT before doing that, try rebooting tor on the Node server side, and force quitting FN (obviously on the client side) and see if it connects, double check you added your tor v3 url correctly with the right port at the end `:8332`
+
