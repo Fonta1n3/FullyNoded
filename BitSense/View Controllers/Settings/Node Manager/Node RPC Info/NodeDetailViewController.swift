@@ -191,7 +191,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                         return false
                     }
                 } else {
-                    showAlert(vc: self, title: "Not a valid Tor V3 hostname", message: "")
+                    showAlert(vc: self, title: "Not a valid Tor V2/V3 hostname", message: "")
                     return false
                 }
             } else {
