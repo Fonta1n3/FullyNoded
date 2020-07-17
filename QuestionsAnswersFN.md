@@ -226,29 +226,29 @@ A Bitcoin Core GUI for iOS devices. Allows you to connect to and control multipl
 You can troubleshoot tor issues on the mac by running open `/usr/local/var/log/tor.log`<br/>
 Have a read and make sure there is nothing obvious going wrong there<br/>
 
-**You are also better off launching Tor as a service** 
+**You are also better off launching Tor as a service**<br/>
 1. first ensure tor has stopped, 
 2. then open a terminal and paste in `sudo -u $(whoami) /usr/local/bin/brew services start tor'
 3. when installing tor and brew things can go wrong with permissions, if they do it should be onbvious in the tor.log
 
-**Service start/stop**
+**Service start/stop**<br/>
 I would just change the way you launch Tor from simply `tor` to `brew services start tor` and explain that way Tor will always launch automatically, to stop tor `brew services stop tor`.
 
-**Set permissions right**
+**Set permissions right**<br/>
 the proper way to add permissions to your hidden service directory (which is missing from the readme guide) is chmod 700 /usr/local/var/lib/tor/standup/main where /usr/local/var/lib/tor/standup/main represents the HiddenServiceDir in your torrc.
 ## Question
 I have FN on an iPad and bitcoin Core node running on a Macbook.<br/>
 I've reconfigured `Tor` following the guidelines [here](https://github.com/Fonta1n3/FullyNoded#connecting-over-tor-mac)
 Then FN tries *'getblockchaininfo'*, but "it couldn't connect to the server". <br/>
 #### Further elaboration on the question
-There can be a variety of reasons for this, to start with the most basic ones: 
-a. How do I (physically / virtually connect an ipad to the Mac where de Node Runs? Select same wifi network?, discoverable in AirDrop (Finder-Mac)? 
+There can be a variety of reasons for this, to start with the most basic ones: <br/>
+a. How do I (physically / virtually connect an ipad to the Mac where de Node Runs? Select same wifi network?, discoverable in AirDrop (Finder-Mac)? <br/>
 b. How can I test the network connection between them (FN and Node)?
 ### Answer - ![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `sure`
-Add a. Bitcoin Core GUI for iOS devices. Allows you to connect to and control multiple nodes via Tor
+Add a. Bitcoin Core GUI for iOS devices. Allows you to connect to and control multiple nodes via Tor<br/>
 Add b. Take your Tor url  ‘http//:rpcuser:rpcpassword @xxx.onion:8332’ and **you should get an error** “server only responds to POST requests”, **that's a good sign!**
 #### Further elaboration on the answer
-a. FN only connects over Tor so its not possible in the app for now to connect over local wifi. It’s something that could be added fairly easily but is not there now.
+a. FN only connects over Tor so its not possible in the app for now to connect over local wifi. It’s something that could be added fairly easily but is not there now.<br/>
 b. I would take your Tor url  ‘http//:rpcuser:rpcpassword @xxx.onion:8332’ and try and visit it in a tor browser as a website,**any tor browser, any device, any network. fixed typo http://rpcuser:rpcpassword@xxx.onion:8332**. <br/>
 If its working you should get an error “server only responds to POST requests” 
 
