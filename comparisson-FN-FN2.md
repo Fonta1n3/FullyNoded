@@ -8,7 +8,7 @@ Both complement each other. The holy grail of bitcoin secure storage is multisig
 
 | Feature / topic                  | Fully Noded                                 | FN2                                      | Implication                                       |
 | ---------------------------------| --------------------------------------------| -----------------------------------------| --------------------------------------------------| 
-| Objective                        | full access to your nodes bitcoin-cli api   | Incorporate DID into FN2                 | Decentralised Identity creation, Signing & Backup |
+| ***Objective***                        | ***full access to your nodes bitcoin-cli api***   | ***Incorporate DID into FN2***                 | Decentralised Identity creation, Signing & Backup |
 | Utilizes Apple 2FA               | No                                          | Yes                                      | TBW                                               |
 | Icloud integration               | No                                          | Yes                                      | Icould for atrributes, DID Documents, Virtual Credentials?                      |
 | Does accounting                  | No                                          | Yes                                      | Users of FN2 are pseudonymous                     |
