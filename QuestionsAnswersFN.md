@@ -4,9 +4,9 @@ Selected from the open Telegram *Fully Noded* group [here](https://t.me/FullyNod
 Beware: A Q&A is always *work in progress*. Tips & help welcome.
 
 ### Disclaimer
-None of the respondents in the **open** Telegram group have been explicitely named as a source, except for ***@Fonta1n3***. For practical reasons educational images uploaded by Telegram group members have been downloaded to [Imgbb](http://imgbb.com), we de-personalised them (by giving a new name) and under this new name these images have been used in the Q&A to clarify the questions and answers.
+None of the respondents in the **open** Telegram group have been explicitely named as a source, except for ***@Fonta1n3***. For practical reasons educational images uploaded by Telegram group members have been downloaded to [Imgbb](http://imgbb.com), we de-personalised them by giving images a new name. Under these new names these images have been used in the Q&A to clarify the questions and answers.
 
-> We've done our uttermost to ensure the protection of privacy of the Telegram group members by checking the images for personal identifiable information (pii). However, should we after all have made a mistake, please let us know and we'll correct it immedeately.
+> We've done our best to protect the privacy of the Telegram group members by investigating the images we used. We haven't come across personal identifiable information (pii). However, should we have made a mistake after all, please let us know and we'll correct this immediately.
 
 ## Explanation of the Q&A
 
