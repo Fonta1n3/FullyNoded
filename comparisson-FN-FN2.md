@@ -15,11 +15,6 @@ Both complement each other. The holy grail of bitcoin secure storage is multisig
 | Multisig wallet creation                    | by hand using FN                                             | automated                                                    |
 | Signs psbt with                             | root xprv                                                    | account based xprvs                                          |
 | Uses hot wallets on your node               | Yes                                                          | No                                                           |
-| **Type of wallet**                          | **Multi-purpose**                                            | **Dedicated**                                                |
+| **Type of wallet**                          | **Multi-purpose for power user**                             | **Dedicated, with ease of use in mind**                      |
 | Import                                      | Anything                                                     | Limited                                                      |
-| Node wallet access                          | All
-FN gives you full access to your nodes bitcoin-cli api which will always be getting expanded on. FN allows you to import anything into it and use hot wallets on your node.
-
-FN allows access to all wallets on your node whereas FN2 only allows access to FN2 wallets.
-
-At the end of the day FN2 is a very focused wallet with ease of use in mind whereas FN is more of a power user enthusiasts tool/wallet.
+| Node wallet access                          | All                                                          | Only allows access to FN2 wallets                            |
