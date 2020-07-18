@@ -65,6 +65,7 @@ Explanation:<br/>
 - Trezor : a type of hardware wallet to store, send and receive crypto currencies
 - Tor:Tor is free and open-source software for enabling anonymous communication. The name derived from the acronym for the original software project name "The Onion Router". [Read more in Wikipedia](https://en.wikipedia.org/wiki/Tor_(anonymity_network))
 - Node: A bitcoin full Node is a independent entity in a peer to peer ecosystem. A Node independently checks and verifies all protocol rules for incoming broadcasted transactions. A full node does not trust, but verifies. Technically speaking a *node* is a computer connected to other computers which follows rules and shares information. A *'full node'* is a computer in Bitcoin's peer-to-peer network which hosts and synchronises a copy of the entire Bitcoin blockchain.
+- Account Map : TBW
 
 ## Knowledge you need to be confidently applying
 - The definitions above
@@ -252,4 +253,22 @@ Seeing the progress being made at Specter Desktop is 🔥🔥🔥 by far my favo
 3. This always **recreates a watchonly wallet** on your node with Fully Noded, to make it spendable just add a signer and the app will automatically sign the psbt your node creates with that wallet.<br/>
 4. To **export a wallet** just tap the export button from the active wallet tab in FN:<br/>
 <img src="https://i.ibb.co/BCBMrkg/FN-wallet-export.jpg" alt="FN-wallet-export" border="0" width="200">
+
+## Question : do I tell what version of fully nonded im using on my IOS device?
+### Answer - ![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `sure` : nowhere, will add it to the header of settings
+
+## Question : Made 2 single sig wallets in FN.  both have same signer words?
+<img src="https://i.ibb.co/bv2hjH2/double-same-sig-wallets-FN.jpg" alt="double-same-sig-wallets-FN" border="0" width="200">
+### Answer - ![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `sure` : Ignore wallet manager
+Tap the squares button on the active wallet view<br/>
+Use your Fully Noded wallets from there<br/>
+After deleting wallets via powershell make sure you restart your node<br/>
+Just use the one you’ve got in the Fully Noded wallets, Delete the other one from your node, that originally failed<br/>
+#### Further elaboration on the answer
+TBW
+
+## Question : where can I download this? [https://twitter.com/FullyNoded/status/1266363418103037958](https://twitter.com/FullyNoded/status/1266363418103037958)
+<img src="https://i.ibb.co/0CRPVkt/standup-screen.jpg" alt="standup-screen" border="0" width="200">
+### Answer - ![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `sure` : [here](https://github.com/BlockchainCommons/Bitcoin-Standup-MacOS/blob/master/Standup_0.1.1.dmg) is the notarized and pgp signed dmg
+Just click download and then open it
 
