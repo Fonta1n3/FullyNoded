@@ -412,6 +412,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     }
     
     func loadSectionOne() {
+        transactionArray.removeAll()
         NodeLogic.walletDisabled = walletDisabled
         NodeLogic.loadSectionTwo { [unowned vc = self] (response, errorMessage) in
             if errorMessage != nil {
@@ -419,7 +420,6 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
                 displayAlert(viewController: vc, isError: true, message: errorMessage!)
             } else if response != nil {
                 DispatchQueue.main.async { [unowned vc = self] in
-                    vc.transactionArray.removeAll()
                     vc.transactionArray = response!.reversed()
                     vc.walletTable.reloadData()
                 }
@@ -478,6 +478,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     }
     
     func reloadWalletData() {
+        transactionArray.removeAll()
         NodeLogic.loadBalances { [unowned
             vc = self] (response, errorMessage) in
             if errorMessage != nil {
@@ -498,7 +499,6 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
                         displayAlert(viewController: vc, isError: true, message: errorMessage!)
                     } else if response != nil {
                         DispatchQueue.main.async { [unowned vc = self] in
-                            vc.transactionArray.removeAll()
                             vc.transactionArray = response!.reversed()
                             vc.walletTable.reloadData()
                             vc.removeSpinner()

@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import LibWally
 
 class SignerViewController: UIViewController {
     
@@ -35,12 +36,58 @@ class SignerViewController: UIViewController {
             analyzeOutlet.alpha = 0
             decodeOutlet.alpha = 0
         }
-        
+        spinner.addConnectingView(vc: self, description: "checking which network the node is on...")
     }
     
     override func viewDidAppear(_ animated: Bool) {
+        Reducer.makeCommand(command: .getblockchaininfo, param: "") { [unowned vc = self] (response, errorMessage) in
+            if let dict = response as? NSDictionary {
+                if let network = dict["chain"] as? String {
+                    var chain:Network!
+                    if network == "main" {
+                        chain = .mainnet
+                    } else {
+                        chain = .testnet
+                    }
+                    vc.getPsbt(chain: chain)
+                } else {
+                    vc.showError(error: "error getting network type: \(errorMessage ?? "unknown")")
+                }
+            }
+        }
+    }
+    
+    private func updateLabel(text: String) {
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.spinner.label.text = text
+        }
+    }
+    
+    private func getPsbt(chain: Network) {
+        updateLabel(text: "checking if psbt is already complete...")
         if psbt != "" {
-            process()
+            do {
+                var psbtToSign = try PSBT(psbt, chain)
+                if psbtToSign.finalize() {
+                    if psbtToSign.complete {
+                        DispatchQueue.main.async { [unowned vc = self] in
+                            vc.textView.text = psbtToSign.transactionFinal?.description ?? "error finalizing psbt"
+                            vc.titleLabel.text = "Broadcaster"
+                            vc.broadcast = true
+                            vc.signOutlet.setTitle("broadcast", for: .normal)
+                            vc.analyzeOutlet.alpha = 0
+                            vc.decodeOutlet.alpha = 0
+                            vc.spinner.removeConnectingView()
+                        }
+                    } else {
+                        process()
+                    }
+                } else {
+                    process()
+                }
+            } catch {
+                process()
+            }
         }
     }
     
@@ -52,7 +99,7 @@ class SignerViewController: UIViewController {
     }
     
     private func process() {
-        spinner.addConnectingView(vc: self, description: "processing psbt with active wallet...")
+        updateLabel(text: "processing psbt with active wallet...")
         Reducer.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt)\", true, \"ALL\", true") { [unowned vc = self] (response, errorMessage) in
             if let dict = response as? NSDictionary {
                 if let processedPsbt = dict["psbt"] as? String {

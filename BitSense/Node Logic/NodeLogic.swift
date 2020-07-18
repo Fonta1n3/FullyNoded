@@ -468,6 +468,7 @@ class NodeLogic {
                 }
             }
         }
+        arrayToReturn.removeAll()
         for tx in transactionArray {
             if let remove = tx["remove"] as? Bool {
                 if !remove {
