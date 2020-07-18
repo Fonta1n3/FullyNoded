@@ -22,7 +22,7 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
    > d. Samourai wallet special treatment<br/>
    > e. activate, deactivate and delete
 2. [Introducing Fully Noded PSBT Signers](https://medium.com/@FullyNoded/introducing-fully-noded-psbt-signers-8f259c1ec558) July 2020 - @Fonta1n3
-   > Topics:<br/>
+> Topics:<br/>
    > a. libwally<br/>
    > b. add psbt signers<br/>
    > c. signed raw transaction over psbt <br/>
