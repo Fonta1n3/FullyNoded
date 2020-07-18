@@ -99,7 +99,8 @@ Non premium users can simply get their Tor V3 url for the RPC port add `:8332` t
 [here](https://t.me/FullyNoded) is the open Telegram group.
 
 ## Q&A
-For basic usage check out the website QA [here](https://fullynoded.app/faq/)
+For basic usage check out the website QA [here](https://fullynoded.app/faq/).
+
 For a more in depth Q&A inspired by discussions on the telegram group check out our [Question and Answers](./Docs/QandA.md) 
 
 ## Tutorials
