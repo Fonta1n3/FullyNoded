@@ -118,8 +118,9 @@ For a more in depth Q&A inspired by discussions on the telegram group check out 
 ## Build From Source - Mac
 Run `brew --version` in a terminal, if you get a valid response you have brew installed already. If not, install brew:
 
-`cd /usr/local`
-`mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew`
+```cd /usr/local
+mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew
+```
 
 Wait for brew to finish.
 
@@ -136,6 +137,11 @@ Wait for brew to finish.
 That's it, you can now run the app in XCode.
 
 ## Connecting over Tor (mac)
+Run `brew --version` in a terminal, if you get a valid response you have brew installed already. If not, install brew:
+
+```cd /usr/local
+mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew
+```
 - run `brew install tor` in a terminal
 - Once Tor is installed you will need to create a Hidden Service.
 - First locate your `torrc` file, this is Tor's configuration file. Open Finder and type `shift command h` to navigate to your home folder and  `shift command .` to show hidden files.
