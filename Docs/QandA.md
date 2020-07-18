@@ -77,7 +77,7 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 #### Question : This button should bring up info and allow me to make changes?
 <img src="https://i.ibb.co/N1FKq50/refresh-info.jpg" alt="refresh-info" border="0" width="200">
 
-It does only for Fully Noded wallets. Does not do anything for pure bitcoin core wallets. Fully Noded allows you to manually create wallets and access all your nodes wallets. If a user were to create a wallet externall from the app then there is now way for the app to know the required information about that wallet to be able to display these details. It is only possible for FN to show wallet details when the wallet was created via the `+` button on the `Active Wallet` tab. With these Fully Noded wallets the app will remember the public key descriptors that were used to create the wallet, its derivation, its keypool size so that the user may easily increase the size of the keypool, the wallets editable label, the wallets filename on your node, an in app unique ID so that we can delete the wallet from the app. If the user adds an independent signer in the form of BIP39 words then the app will cross check the derived xpubs match the xpubs in the descriptor used to create the wallet and show the user whichever signer is able to sign for this wallet.
+It does, but only for Fully Noded wallets. It does not do anything for wallets created on your node externally from FN. FN allows you to manually create wallets and access all your nodes wallets. It is only possible for FN to show wallet details when the wallet was created via the `+` button on the `Active Wallet` tab. With FN wallets the app will remember the public key descriptors that were used to create the wallet, it's derivation, it's keypool range, the wallet label, the wallet filename, and a unique identifier.
 
 
 #### Question: why can't I see the label I gave the change address? When I have wallet loaded and go to List Labels under settings I can only see the name I have the wallet, not the label I gave the change address?
@@ -87,7 +87,7 @@ When importing change keys *and* adding them to the keypool you can not add a la
 
 #### Question : I'd like to recover a wallet using FN without revealing seed words, is that possible?
 
-The recovery wallet is specifically for recovering wallet and making them spendable. However it is an extremely easy way to import wallets into FN, if you want to make it watch-only you can always delete the seed words by navigating to `Active Wallet` > `squares button` > `signers button` > `tap the signer` > `you will see a delete button`. The proper way to import a wallet as watch-only is to import either the `xpub` or the `descriptor` for that wallet via `Active Wallet` > `import` > `xpub/descriptor`. If importing an `xpub` you will need to know its derivation path, and ideally import it twice once using the receive path and once designating it as change to ensure all transactions/utxos show. ***To do, create a pictorial explaining how to do this with accurate instructions***
+There is a big difference between "recovery" and "importing". Recovering a wallet implies you would want to be able to spend the btc which means either seed words, an xprv or a WIF is needed. For importing and creating a watch-only wallet obly an xpub is needed. The recovery wallet is specifically for recovering wallets and making them spendable. However it is an extremely easy way to import wallets into FN as we can do all the complex derivations for you when you supply seed words, if you want to make it watch-only you can always delete the seed words by navigating to `Active Wallet` > `squares button` > `signers button` > `tap the signer` > `you will see a delete button`. The proper way to import a wallet as watch-only is to import either the `xpub` or the `descriptor` for that wallet via `Active Wallet` > `import` > `xpub/descriptor`. If importing an `xpub` you will need to know its derivation path, and ideally import it twice once using the receive path and once designating it as change to ensure all transactions/utxos show. ***To do, create a pictorial explaining how to do this with accurate instructions***
 
 
 #### Question : How to import my BRD wallet?
@@ -100,19 +100,19 @@ You can go to the “active wallet” tab > + button > recovery > input your BRD
 A `.txn` file is a signed raw transaction as exported by Coldcard. Fully Noded has registered the file extension `.txn` so that when you airdrop or tap a .txn file in the iOS Files app FN will automatically launch a `Broadcaster` allowing you to broadcast that transaction with your node. You can always copy and paste the raw transaction and go to `Tools` > `Transactions` > `Broadcast` to do it manually.
 
 
-#### Question : how to verify all outputs of a raw transaction? I verified the Send  address.  I would like to verify the Change address. How?
+#### Question : how to verify all outputs of a raw transaction? I verified the Send address. I would like to verify the Change address. How?
 
-Copy and paste the raw transaction in hex formate `02004849494...`, go to `Tools` > `Transactions` > `Verify`, this tool will go through each input and output fetching all the addresses associated with each input and output. You can from their copy and paste the address and `Tools` > `Wallet` > `Get Address Info` to verify whether the address belongs to your nodes current active wallet.
+Copy and paste the raw transaction in hex formate `0200011200...`, go to `Tools` > `Transactions` > `Verify`, this tool will go through each input and output fetching all the addresses associated with each input and output. You can from their copy and paste the address and go to `Tools` > `Wallet` > `Get Address Info` to verify whether the address belongs to your nodes current active wallet. To verify an address belongs to your node's wallet check the `solvable` field `=1`, if it `=0` it does not belong to your wallet.
 
 
 #### Question : Why doesn't broadcast work via my Node?
 
-You can only broadcast signed raw transactions. The only purpose of psbt's is to end up with a signed raw transaction. e.g. The `.txn` file from Coldcard.
+You can only broadcast signed raw transactions. The only purpose of psbts is to end up with a signed raw transaction. e.g. The `.txn` file from Coldcard.
 
 
 #### Question : Why did you choose iOS to build on? Any advantage compared to Android?
 
-Only because that is what I know how to code with the best and what I am a user of.
+Only because that is what I know how to code with and what I am a user of.
 
 
 #### Question: please elaborate on the seemingly *contradictory* statements about '100% offline signing'
@@ -122,16 +122,14 @@ Only because that is what I know how to code with the best and what I am a user 
 says the *Introduction to FN psbt signers* a week later [Link Medium post](https://medium.com/@FullyNoded/introducing-fully-noded-psbt-signers-8f259c1ec558).
 
 **Could you pls elaborate on that. My question is about the two medium posts of @Fonta1n3, that seem to have *contradictory* statements in it.**
-It's not contradictory, it does sign 100% offline. FN makes other commands that require an internet connection though, its possible to enhance that in the future. The 'online' commands that the signing process generates, do not reveal any sensitive data.
+It's not contradictory, it does sign 100% offline. FN makes other commands that require an internet connection though, it's possible to enhance that in the future. The 'online' commands that the signing process generates, do not reveal any sensitive data.
 
 #### Further elaboration on the answer / issue
-In order to make the signing functionality work as reliably as possible the app first passes it to your node for processing `bitcoin-cli walletprocesspsbt`, if for some reason the `psbt` you passed to the app does not hold all the `bip32_derivs` then that command will get your node to fill out the `bip32_derivs` for us (our offline signer needs the `bip32_derivs` in order to sign as they tell us what derivation path the private key needs to be at). The process command also gets your node to sign the psbt if it can, it is always possible a user has imported an `xprv` themselves into their node without FN knowing about it (FN2 for example makes your node a signer), so that command accounts for that possibility.
+In order to make the signing functionality work as reliably as possible the app first checks if the psbt is fully signed, if it is it will finalize it right away and allow you to broadcast, if not then it passes the psbt to your node for processing with `bitcoin-cli walletprocesspsbt`, if for some reason the `psbt` you passed to the app does not hold all the `bip32_derivs` then that command will get your node to fill out the `bip32_derivs` (our offline signer needs the `bip32_derivs` in order to sign as they tell us what derivation path the private key needs to be derived with). The process command also gets your node to sign the psbt if it can, it is always possible a user has imported an `xprv` themselves into their node without FN knowing about it (FN2 for example makes your node a signer), so that command accounts for that possibility.
 
-All of the above can not be done offline, if its going to be 100% offline we can't sign with your node and cant fill the `bip32_derivs` with your node.
+All of the above can not be done offline, if it is going to be 100% offline we can't sign with your node and cant fill the `bip32_derivs` with your node.
 
-After that we then loop through all the signers that are stored on the device, decrypting them and seeing if its possible to sign the `psbt` with each. It then signs locally using the Libwally library.
-
-From here we could use LibWally to finalize the `psbt` offline but there is a bug (its been fixed but waiting for it to be released) where if there are a certain number of inputs finalizing the `psbt` offline causes a crash. So again we pass it to the node for finalizing. Once it's complete it can be converted to raw transaction and broadcast.
+We then loop through each signer on the device, decrypting them and seeing if its possible to sign the `psbt` with each. It then signs locally using the Libwally library.
 
 
 #### Question : My transaction still says 0 confirm?
@@ -141,12 +139,12 @@ You can set a mining fee target in `settings`, if you want it to be confirmed qu
 #### Question : Any suggestion about this problem? All the username, password, and onion address are OK<br/>
 <img src="https://i.ibb.co/WFpFtXm/err-network-conn.jpg" alt="err-network-conn" border="0" width="200">
 
-Force quitting FN and rebooting `tor` on your `node` always works. Sometimes Tor can get "stuck" especially if your node's machine has gone offline or been put to sleep. This issue may also be encountered if you connect to multiple nodes and switch between them, simply force quitting FN and reopening it resolves the issue and force refreshes the connection to the new node.<br/>
+Force quitting FN and rebooting `tor` on your `node` usually works. Sometimes Tor can get "stuck" especially if your node's machine has gone offline or been put to sleep. This issue may also be encountered if you connect to multiple nodes and switch between them, simply force quitting FN and reopening it resolves the issue and force refreshes the connection to the new node.
 
 
 #### Question : How do I troubleshoot connection issues over Tor between FN and Bitcoin Core Nodes on a Mac?
 
-Here are some [common issues and fixes](https://github.com/Fonta1n3/FullyNoded#troubleshooting). You can troubleshoot Tor issues on the mac by opening a terminal and running `open /usr/local/var/log/tor.log`, read the Tor log and make sure there is nothing obvious going wrong there, most common Tor issues revolve around permissions, ensure your `HiddenServiceDir` has the correct permissions by running `chmod 700 <HiddenServiceDir>` where `HiddenServiceDir` represents the path to your `HiddenServiceDir` that is specified in your `torrc` file, your `torcc` file can be found at `/usr/local/etc/tor/torrc`. The Bitcoin Core log can be helpful too, however you must have the `debug=tor` line added to your `bitcoin.conf` file. Then you can run `open ~/Library/Application Support/Bitcoin/debug.log`
+Here are some [common issues and fixes](https://github.com/Fonta1n3/FullyNoded#troubleshooting). You can troubleshoot Tor issues on the mac by opening a terminal and running `open /usr/local/var/log/tor.log`, read the Tor log and make sure there is nothing obvious going wrong there. Most Tor issues revolve around permissions. Ensure your `HiddenServiceDir` has the correct permissions by running `chmod 700 <HiddenServiceDir>` where `<HiddenServiceDir>` represents the path to your `HiddenServiceDir` as specified in your `torrc` file which can be found at `/usr/local/etc/tor/torrc`. The Bitcoin Core log can be helpful too, however you must have the `debug=tor` line added to your `bitcoin.conf`. You can run `open ~/Library/Application\ Support/Bitcoin/debug.log`
 
 **You are also better off launching Tor as a service**<br/>
 1. first ensure tor has stopped
@@ -160,7 +158,7 @@ Here are some [common issues and fixes](https://github.com/Fonta1n3/FullyNoded#t
 
 > Before doing the below, try rebooting Tor on the node server side, force quitting FN and see if it connects, double check you added your tor v3 url correctly with the right port at the end, typically `:8332` for mainnet.
 
-Recreate your hidden service url like so: `http//:rpcuser:rpcpassword@xxx.onion:8332`, paste it in to a Tor browser as if you were visiting a website, if your connection is alive and functioning properly you will get a `server only responds to POST requests` error in the Tor browser. If you do not get that error then something is very wrong, again check the Tor and Bitcoin Core logs to debug the issue.<br/>
+Recreate your hidden service url like so: `http//:rpcuser:rpcpassword@xxx.onion:8332`, paste it in to a Tor browser as if you were visiting a website, if your connection is alive and functioning properly you will get a `server only responds to POST requests` error in the Tor browser. If you do not get that error then something is wrong, again check the Tor and Bitcoin Core logs to debug the issue.
 
 
 #### Question: What is the best of breed desktop wallet to connect to your node?
@@ -176,15 +174,4 @@ pip3 install -r requirements.txt
 pip3 install -e .
 python3 -m cryptoadvance.specter server
 ```
-Seeing the progress being made at Specter Desktop is 🔥🔥🔥 by far my favorite desktop wallet and a perfect match for Fully Noded. Highly recommended for using your own node as a wallet.
-#### Further elaboration on the answer
-1. To export a wallet from **Specter** click your `wallet > settings > export`<br/>
-<img src="https://i.ibb.co/PtnjHdt/Specter-export.jpg" alt="Specter-export" border="0" width="200"><br/>
-<img src="https://i.ibb.co/ZmNs9vN/QRcode-specter.jpg" alt="QRcode-specter" border="0" width="200"><br/>
-2. To import into FN: active wallet tab > + > import<br/>
-<img src="https://i.ibb.co/P9PnC3y/crea-wallet-FN.jpg" alt="crea-wallet-FN" border="0" width="200"><br/>
-<img src="https://i.ibb.co/ZhFPNLv/importing.jpg" alt="importing" border="0" width="200"><br/>
-<img src="https://i.ibb.co/s9FLCtM/import-succes-FN.jpg" alt="import-succes-FN" border="0" width="200"><br/>
-3. This always **recreates a watch-only wallet** on your node with Fully Noded, to make it spendable just add a signer and the app will automatically sign the `psbt` your node creates with that wallet.<br/>
-4. To **export a wallet** just tap the export button from the active wallet tab in FN:<br/><br/>
-<img src="https://i.ibb.co/BCBMrkg/FN-wallet-export.jpg" alt="FN-wallet-export" border="0" width="200">
+See the Readme for instructions on exporting a wallet from Specter to FN.

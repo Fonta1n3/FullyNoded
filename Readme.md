@@ -70,7 +70,7 @@ Non premium users can simply get their Tor V3 url for the RPC port add `:8332` t
 - Click `export`
 <img src="./Images/specter_2.png" alt="" width="250"/>
 
-- In Fully Noded go to the `Active Wallet` tab > in the top bar tap the squares button > `import` > scan the Specter export QR code
+- In Fully Noded go to the `Active Wallet` tab > `+`  > `import` > scan the Specter export QR code
 
 ## Troubleshooting
 - `Unknown error`: restart your node, restart Fully Noded, if that does not work make sure your `rpcpassword` and `rpcuser` do not have any special characters, only alphanumeric is allowed, otherwise you will not connect as it breaks the url to your node.
