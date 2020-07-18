@@ -266,6 +266,7 @@ After deleting wallets via powershell make sure you restart your node<br/>
 Just use the one you’ve got in the Fully Noded wallets, Delete the other one from your node, that originally failed<br/>
 #### Further elaboration on the answer
 TBW
+
 ## Question : where can I download this? [https://twitter.com/FullyNoded/status/1266363418103037958](https://twitter.com/FullyNoded/status/1266363418103037958)<br/>
 <img src="https://i.ibb.co/0CRPVkt/standup-screen.jpg" alt="standup-screen" border="0" width="200">
 ### Answer - ![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `sure` : [here](https://github.com/BlockchainCommons/Bitcoin-Standup-MacOS/blob/master/Standup_0.1.1.dmg) is the notarized and pgp signed dmg
