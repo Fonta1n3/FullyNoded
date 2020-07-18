@@ -1,26 +1,16 @@
 # Q&A about Fully Noded
-Selected from the open Telegram *Fully Noded* group [here](https://t.me/FullyNoded), from July 2020 and [Twitter](https://twitter.com/FullyNoded).
+Inspired by questions asked on the open Telegram *Fully Noded* group [here](https://t.me/FullyNoded).
 
 Beware: A Q&A is always *work in progress*. Tips & help welcome.
 
 ### Disclaimer
-None of the respondents in the **open** Telegram group have been explicitely named as a source, except for ***@Fonta1n3***. For practical reasons educational images uploaded by Telegram group members have been downloaded to [Imgbb](http://imgbb.com), we de-personalised them by giving images a new name. Under these new names these images have been used in the Q&A to clarify the questions and answers.
+None of the respondents in the **open** Telegram group have been explicitly named as a source, except for ***@Fonta1n3***. For practical reasons educational images uploaded by Telegram group members have been downloaded to [Imgbb](http://imgbb.com), we de-personalised them by giving images a new name. Under these new names these images have been used in the Q&A to clarify the questions and answers.
 
 > We've done our best to protect the privacy of the Telegram group members by investigating the images we used. We haven't come across personal identifiable information (pii). However, should we have made a mistake after all, please let us know and we'll correct this immediately.
 
 ## Explanation of the Q&A
 
 The answers are given by ***@Fonta1n3***. If not than an explicit source is referenced.
-
-I adjusted the text to the Q&A format and added rating for how sure the respondent is about the answer:
-- ![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `sure` <br/>
-- ![#1589F0](https://via.placeholder.com/15/1589F0/000000?text=+) `pretty sure`<br/>
-- ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) `not sure`
-
-Explanation:<br/>
-> ![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `sure`: respondent is sure about the answer given; at that point in time!<br/>
-> ![#1589F0](https://via.placeholder.com/15/1589F0/000000?text=+) `pretty sure` : could be wrong, but that's the respondents understanding<br/>
-> ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) `not sure` : just a fair guess, no garantuee<br/>
 
 ## Recommended reading
 
@@ -57,22 +47,22 @@ Explanation:<br/>
 - segwit wrapped  bitcoin address (p2sh-p2wpkh) : BIP49 refers to the accepted common standard of deriving segwit "compatibility" addresses. These addresses begin with a 3.
 - BIP84 keys : BIP84 refers to the accepted common standard of deriving native segwit addresses. These addresses always begin with bc1 - and are referred to bech32 addresses.
 - Segwit addresses: – Segregated Witness – or SegWit in short – reduced the transaction data’s size to allow for faster transactions, better scalability and decreased fees. Native SegWit (bech32) enhanced this even further and includes even lower fees. Not all exchanges and wallet providers support sending Bitcoin to a Native SegWit address yet, which is why you are presented both options in Ledger Live. Transactions between all 3 address types are possible
-- keypool : The keypool is a collection of unused addresses in your wallet. The keypool parameter tells the client how many unused addresses to keep in its pool. The original purpose of the keypool is to allow you to backup your wallet file less frequently and still have access to all your funds in the event of a hard drive failure. However since the invention of Hierarchical Deterministic Wallets (HD wallets, [BIP32](https://en.bitcoin.it/wiki/Deterministic_wallet)): If you have a HD wallet (check the icon on the bottom-right corner in Bitcoin Core), it doesn't matter. If you've created your wallet in an older version of Bitcoin Core, it's not an HD wallet. If that's the case, your keypool is important for backups: your backup has the same 1000 keys, which means you only need to make a new backup after using many different new addresses. If you would limit the keypool size to 20, you'll quickly run out of addresses, and you need to make new backups very often. That's the reason the keypool was increased from 100 to 1000.
+- keypool : The keypool is a collection of unused addresses in your wallet. The keypool parameter tells the client how many unused addresses to keep in its pool. The original purpose of the keypool is to allow you to backup your wallet file less frequently and still have access to all your funds in the event of a hard drive failure. However since the invention of Hierarchical Deterministic Wallets (HD wallets, [BIP32](https://en.bitcoin.it/wiki/Deterministic_wallet)): If you have a HD wallet (check the icon on the bottom-right corner in Bitcoin Core), it doesn't matter. If you've created your wallet in an older version of Bitcoin Core, it's not an HD wallet. If that's the case, your keypool is important for backups: your backup has the same 1000 keys, which means you only need to make a new backup after using many different new addresses. If you would limit the keypool size to 20, you'll quickly run out of addresses, and you need to make new backups very often. That's the reason the keypool was increased from 100 to 1000. An important distinction with regrads to FN and Bitcoin Core is that Bitcoin Core is not able to add multisig addresses to the keypool, therefore we rely on the `bitcoin-cli` command `deriveaddresses` to derive multisig addresses on the fly using your multisig descriptors.
 - Output descriptors: Descriptors are a clever way of importing specific keys into your node from any derivation, for any (or all) address types, single or multi signature, along with a fingerprint so offline psbt signers like a Coldcard and Fully Noded can sign the psbt if they hold the correct seed.
 - coldcard : a type of hardware wallet to store, send and receive crypto currencies
 - ledger Nano S/X: types of hardware wallets to store, send and receive crypto currencies
 - Keepkey : a type of hardware wallet to store, send and receive crypto currencies
 - Trezor : a type of hardware wallet to store, send and receive crypto currencies
 - Tor:Tor is free and open-source software for enabling anonymous communication. The name derived from the acronym for the original software project name "The Onion Router". [Read more in Wikipedia](https://en.wikipedia.org/wiki/Tor_(anonymity_network))
-- Node: A bitcoin full Node is a independent entity in a peer to peer ecosystem. A Node independently checks and verifies all protocol rules for incoming broadcasted transactions. A full node does not trust, but verifies. Technically speaking a *node* is a computer connected to other computers which follows rules and shares information. A *'full node'* is a computer in Bitcoin's peer-to-peer network which hosts and synchronises a copy of the entire Bitcoin blockchain.
+- Node: A bitcoin full Node is a independent entity in a peer to peer ecosystem. A Node independently checks and verifies all protocol rules for incoming broadcasted transactions. A full node does not trust, but verifies. Technically speaking a *node* is a computer connected to other computers which follows rules and shares information. A *'full node'* is a computer in Bitcoin's peer-to-peer network which hosts and synchronises a copy of the entire Bitcoin blockchain. [Here](https://medium.com/@gloriazhao/map-of-the-bitcoin-network-c6f2619a76f3) is an excellent read on nodes, what they are and the differences between types of nodes.
 
-## Knowledge you need to be confidently applying
+## Knowledge you should be confidently applying
 - The definitions above
 - Output Descriptors : https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md
 - BIP 32, BIP39, BIP44, BIP47, BIP49, BIP84, BIP174
 - derivation paths, keypools
-## Actions you need to be comfortable with
-- Amend knowledge and Keep existing knowledgde up to date
+## Actions you should to be comfortable with
+- Amend knowledge and keep existing knowledge up to date
 - recover from a seed
 - sweep to a new wallet
 - use bitcoin-cli
@@ -80,41 +70,28 @@ Explanation:<br/>
 - connect your TOR V3
 
 
-# Q&A July 2020
+# Q&A
 
 ## Question : This button should bring up info and allow me to make changes?
 <img src="https://i.ibb.co/N1FKq50/refresh-info.jpg" alt="refresh-info" border="0" width="200">
 
-### Answer - ![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `sure` : It does only for fully noded wallets.
-Does not do anything for pure bitcoin core wallets.
+### Answer - It does only for Fully Noded wallets. Does not do anything for pure bitcoin core wallets. Fully Noded allows you to manually create wallets and access all your nodes wallets. If a user were to create a wallet externall from the app then there is now way for the app to know the required information about that wallet to be able to display these details. It is only possible for FN to show wallet details when the wallet was created via the `+` button on the `Active Wallet` tab. With these Fully Noded wallets the app will remember the public key descriptors that were used to create the wallet, its derivation, its keypool size so that the user may easily increase the size of the keypool, the wallets editable label, the wallets filename on your node, an in app unique ID so that we can delete the wallet from the app. If the user adds an independent signer in the form of BIP39 words then the app will cross check the derived xpubs match the xpubs in the descriptor used to create the wallet and show the user whichever signer is able to sign for this wallet.  
 
-## Question: why can't I see the label I gave the change address?
-When I have wallet loaded and go to List Labels under settings I can only see the name I have the wallet, not the label I gave the change address?
-### Answer - ![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `sure` : if there are change keys and you labelled them you'll see the labels
-It should give the label you gave the change keys.<br/>
-“List address groups” also does the trick<br/>
-Or just try creating a tx, youll get an error if there are no change keys<br/>
-If in doubt just import them again.
+## Question: why can't I see the label I gave the change address? When I have wallet loaded and go to List Labels under settings I can only see the name I have the wallet, not the label I gave the change address?
 
-## Question : I'd like to recover a wallet using FN without revealing seed words. 
-Really don’t wanna put my seed words anyplace but my ColdCard if that’s possible.
-### Answer - ![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `sure` : It is a recovery wallet so it needs your seed words and optional passphrase. 
-When you add them youll be prompted that they are valid and can then tap recover.
-#### Further elaboration on the answer / issue
-Words are encrypted and saved locally, your node only holds public keys and can not spend on its own.<br/>
-Your device will be able to spend though by acting as a psbt signer for the psbts your node creates.<br/>
-You should opt out of Samourai when prompted as it takes a lot longer.<br/>
-You can always delete your seed words from the device if you dont want to be able to spend<br/>
+### Answer - When importing change keys *and* adding them to the keypool you can not add a label to change keys, this is a Bitcoin Core limitation. However if you do not add the keys to the keypool (multisig for example) yet you wish to designate your imported descriptor or extended key as deriving change keys then you can assign them a label. This would be useful if you are recreating an external wallet from say a Coldcard or a Ledger and you want to identify change outputs from receive outputs. There are multiple ways to see your keys labels. They will be shown in each transaction by default, in the utxo view or you can do it manually by going to `tools` > `Wallet` > `List Address Groups/List Labels/Get Address Info/Addresses by Label`. If your wallet conforms to BIP44/84/49/48 then you can always look at the utxo info view and see the change path in the descriptor for that utxo, for example a BIP44 receive path is `m/44'/0'/0'/0/0` and a change key would be `m/44'/0'/0'/1/0`
+
+## Question : I'd like to recover a wallet using FN without revealing seed words.
+
+### Answer - The recovery wallet is specifically for recovering wallet and making them spendable. However it is an extremely easy way to import wallets into FN, if you want to make it watch-only you can always delete the seed words by navigating to `Active Wallet` > `squares button` > `signers button` > `tap the signer` > `you will see a delete button`. The proper way to import a wallet as watch-only is to import either the xpub or the descriptor for that wallet. If importing an xpub you will need to know its derivation path, and ideally import it twice once using the receive path and once designating it as change to ensure all transactions show. ***To do, create a pictorial explaining how to do this with accurate instructions***
 
 ## Question : how to import my BRD wallet?
-I managed to get my node connected over TOR, could someone point me in the right direction to import my BRD wallet?
-### Answer - ![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `sure` : You can go to the “active wallet” tab > + button > recovery
+
+### Answer - You can go to the “active wallet” tab > + button > recovery > input your BRD seed words and optional BIP39 passphrase, then tap recover
 
 ## Question : `.txn` files, is there anyway to open on iPhone?
-### Answer - ![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `sure` : change the `.txn` extension to `.txt`
-i think if you change the `.txn` to `.txt` files app will let you actually open the text and copy it
-#### Further elaboration on the answer / issue
-its kind of annoying though, if an app has "registered" (with Apple) a specific extension it just automatically always launches that app rather then for example letting you simply view the contents. Changing the extension fixes that. Tt would be much better if multiple apps have the extension registered (e.g. .txn) and you then have a choice of what to do next.
+
+### Answer - Fully Noded has registered the file extension `.txn` so that when you airdrop or tap a .txn file in the Files app FN will automatically launch a `Broadcaster` allowing you to broadcast that transaction with your node. You can always copy and paste the raw transaction and go to `Tools` > `Transactions` > `Broadcast` to do it manually.
 
 ## Question : how to verify the Change address?
 I verified the Send  address.  I would like to verify the Change address. How?
@@ -200,7 +177,7 @@ for what it's worth by *"work"* i mean that if the device can not sign, it shoul
 ### Answer - ![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `sure` : Force quiting, and rebooting `tor` on your `node` always works
 
 ## Question : How do I get the connection basics right over Tor between FN and Bitcoin Core Nodes on a Mac
-### Answer - ![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `sure` : Troubleshoot using A Bitcoin Core GUI for iOS devices and commandline 'brew service ... tor' commands. 
+### Answer - ![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `sure` : Troubleshoot using A Bitcoin Core GUI for iOS devices and commandline 'brew service ... tor' commands.
 Here are some [common issues and fixes](https://github.com/Fonta1n3/FullyNoded#troubleshooting)<br/>
 A Bitcoin Core GUI for iOS devices. Allows you to connect to and control multiple nodes via Tor - Fonta1n3/FullyNoded
 #### Further elaboration on the answer
@@ -208,7 +185,7 @@ You can troubleshoot tor issues on the mac by running open `/usr/local/var/log/t
 Have a read and make sure there is nothing obvious going wrong there<br/>
 
 **You are also better off launching Tor as a service**<br/>
-1. first ensure tor has stopped, 
+1. first ensure tor has stopped,
 2. then open a terminal and paste in `sudo -u $(whoami) /usr/local/bin/brew services start tor'
 3. when installing tor and brew things can go wrong with permissions, if they do it should be onbvious in the tor.log
 
@@ -231,7 +208,7 @@ Add b. Take your Tor url  ‘http//:rpcuser:rpcpassword @xxx.onion:8332’ and *
 #### Further elaboration on the answer
 a. FN only connects over Tor so its not possible in the app for now to connect over local wifi. It’s something that could be added fairly easily but is not there now.<br/>
 b. I would take your Tor url  ‘http//:rpcuser:rpcpassword @xxx.onion:8332’ and try and visit it in a tor browser as a website,**any tor browser, any device, any network. fixed typo http://rpcuser:rpcpassword@xxx.onion:8332**. <br/>
-If its working you should get an error “server only responds to POST requests” 
+If its working you should get an error “server only responds to POST requests”
 
 ***Big Disclaimer:***<br/>
 > This is not great for security, so I would refresh your HS hostname after trouble shooting this and change your rpcpassword. All you have to do is delete the ‘HiddenServiceDir’ folder and restart tor and youll get a brand new url.
@@ -252,4 +229,3 @@ Seeing the progress being made at Specter Desktop is 🔥🔥🔥 by far my favo
 3. This always **recreates a watchonly wallet** on your node with Fully Noded, to make it spendable just add a signer and the app will automatically sign the psbt your node creates with that wallet.<br/>
 4. To **export a wallet** just tap the export button from the active wallet tab in FN:<br/>
 <img src="https://i.ibb.co/BCBMrkg/FN-wallet-export.jpg" alt="FN-wallet-export" border="0" width="200">
-
