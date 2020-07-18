@@ -14,14 +14,16 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 
 ## Recommended reading
 
-1. [Introducing Fully Noded Wallets](https://medium.com/@FullyNoded/introducing-fully-noded-wallets-9fc2e4837102) July 2020 - @Fonta1n3
+1. For basic usage of the app make sure to read the websites FAQ first [here](https://fullynoded.app/faq/)
+
+2. [Introducing Fully Noded Wallets](https://medium.com/@FullyNoded/introducing-fully-noded-wallets-9fc2e4837102) July 2020 - @Fonta1n3
 > Topics:<br/>
    > a. wallets, bitcoin core versus Fully Noded wallets<br/>
    > b. import public keys, derivation paths and address scripts<br/>
    > c. recover every possible popular derivation across a number of wallet vendors<br/>
    > d. Samourai wallet special treatment<br/>
    > e. activate, deactivate and delete
-2. [Introducing Fully Noded PSBT Signers](https://medium.com/@FullyNoded/introducing-fully-noded-psbt-signers-8f259c1ec558) July 2020 - @Fonta1n3
+3. [Introducing Fully Noded PSBT Signers](https://medium.com/@FullyNoded/introducing-fully-noded-psbt-signers-8f259c1ec558) July 2020 - @Fonta1n3
 > Topics:<br/>
    > a. libwally<br/>
    > b. add psbt signers<br/>
@@ -139,7 +141,7 @@ You can set a mining fee target in `settings`, if you want it to be confirmed qu
 #### Question : Any suggestion about this problem? All the username, password, and onion address are OK<br/>
 <img src="https://i.ibb.co/WFpFtXm/err-network-conn.jpg" alt="err-network-conn" border="0" width="200">
 
-Force quitting FN and rebooting `tor` on your `node` always works. Sometimes Tor can get "stuck" especially if your node's machine has gone offline or been put to sleep.
+Force quitting FN and rebooting `tor` on your `node` always works. Sometimes Tor can get "stuck" especially if your node's machine has gone offline or been put to sleep. This issue may also be encountered if you connect to multiple nodes and switch between them, simply force quitting FN and reopening it resolves the issue and force refreshes the connection to the new node.<br/>
 
 
 #### Question : How do I troubleshoot connection issues over Tor between FN and Bitcoin Core Nodes on a Mac?
@@ -148,7 +150,7 @@ Here are some [common issues and fixes](https://github.com/Fonta1n3/FullyNoded#t
 
 **You are also better off launching Tor as a service**<br/>
 1. first ensure tor has stopped
-2. then open a terminal and paste in `brew services start tor`, this will ensure Tor always launches automatically when your mac starts, if you want to stop tor run `brew services stop tor`
+2. then open a terminal and paste in `brew services start tor`, this will ensure Tor always launches automatically when your mac starts, if you want to stop tor run `brew services stop tor`<br/>
 
 
 #### Question : How can I test the network connection between them (FN and Node)?
@@ -158,7 +160,7 @@ Here are some [common issues and fixes](https://github.com/Fonta1n3/FullyNoded#t
 
 > Before doing the below, try rebooting Tor on the node server side, force quitting FN and see if it connects, double check you added your tor v3 url correctly with the right port at the end, typically `:8332` for mainnet.
 
-Recreate your hidden service url like so: `http//:rpcuser:rpcpassword@xxx.onion:8332`, paste it in to a Tor browser as if you were visiting a website, if your connection is alive and functioning properly you will get a `server only responds to POST requests` error in the Tor browser. If you do not get that error then something is very wrong, again check the Tor and Bitcoin Core logs to debug the issue.
+Recreate your hidden service url like so: `http//:rpcuser:rpcpassword@xxx.onion:8332`, paste it in to a Tor browser as if you were visiting a website, if your connection is alive and functioning properly you will get a `server only responds to POST requests` error in the Tor browser. If you do not get that error then something is very wrong, again check the Tor and Bitcoin Core logs to debug the issue.<br/>
 
 
 #### Question: What is the best of breed desktop wallet to connect to your node?
@@ -177,12 +179,12 @@ python3 -m cryptoadvance.specter server
 Seeing the progress being made at Specter Desktop is 🔥🔥🔥 by far my favorite desktop wallet and a perfect match for Fully Noded. Highly recommended for using your own node as a wallet.
 #### Further elaboration on the answer
 1. To export a wallet from **Specter** click your `wallet > settings > export`<br/>
-<img src="https://i.ibb.co/PtnjHdt/Specter-export.jpg" alt="Specter-export" border="0" width="200">
+<img src="https://i.ibb.co/PtnjHdt/Specter-export.jpg" alt="Specter-export" border="0" width="200"><br/>
 <img src="https://i.ibb.co/ZmNs9vN/QRcode-specter.jpg" alt="QRcode-specter" border="0" width="200"><br/>
 2. To import into FN: active wallet tab > + > import<br/>
-<img src="https://i.ibb.co/P9PnC3y/crea-wallet-FN.jpg" alt="crea-wallet-FN" border="0" width="200">
-<img src="https://i.ibb.co/ZhFPNLv/importing.jpg" alt="importing" border="0" width="200">
+<img src="https://i.ibb.co/P9PnC3y/crea-wallet-FN.jpg" alt="crea-wallet-FN" border="0" width="200"><br/>
+<img src="https://i.ibb.co/ZhFPNLv/importing.jpg" alt="importing" border="0" width="200"><br/>
 <img src="https://i.ibb.co/s9FLCtM/import-succes-FN.jpg" alt="import-succes-FN" border="0" width="200"><br/>
 3. This always **recreates a watch-only wallet** on your node with Fully Noded, to make it spendable just add a signer and the app will automatically sign the `psbt` your node creates with that wallet.<br/>
-4. To **export a wallet** just tap the export button from the active wallet tab in FN:<br/>
+4. To **export a wallet** just tap the export button from the active wallet tab in FN:<br/><br/>
 <img src="https://i.ibb.co/BCBMrkg/FN-wallet-export.jpg" alt="FN-wallet-export" border="0" width="200">

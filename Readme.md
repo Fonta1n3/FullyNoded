@@ -1,13 +1,16 @@
 # Fully Noded™️
 
+## Webiste (work in progress!)
+https://fullynoded.app
+
 A feature rich Bitcoin app which is 100% powered by your own Full Node. Allows you to connect to - and control multiple nodes using a client side native Tor thread making calls to your nodes rpcport via a V3 hidden service with optional Tor V3 authentication, whereby the app can either create a key for you (out of band) or you may supply your own private key.
 
 ## Supported Nodes
 
+- Bitcoin Core (0.20.0 is recommended for full functionality)
 - Nodl
 - myNode
 - BTCPayServer
-- Bitcoin Core (a Tor V3 hidden service controlling your rpcport is required)
 - Raspiblitz
 - Embassy
 
@@ -55,7 +58,9 @@ A feature rich Bitcoin app which is 100% powered by your own Full Node. Allows y
 
 ## Q&A
 
-Discussions from the telegram group have been editted and categorized into [Question and Answers](./QuestionsAnswersFN.md) as off July 2020. 
+For basic usage check out the website QA [here](https://fullynoded.app/faq/)
+
+For a more in depth Q&A inspired by discussions on the telegram group check out our [Question and Answers](./Docs/QandA.md) 
 
 ## Tutorials
 
@@ -106,18 +111,17 @@ That's it, you can now run the app in XCode.
 ```
 - And below it add:
 ```
-HiddenServiceDir /Users⁩/yourName/Desktop⁩/tor/FullyNodedV3/
+HiddenServiceDir /usr/local/var/lib/tor/fullynoded
 HiddenServiceVersion 3
 HiddenServicePort 8332 127.0.0.1:8332
 ```
 
-- The `HiddenServiceDir` can be whatever you want, you will need to access it so put it somewhere you will remember.
 - Save and close nano with `ctrl x` + `y` + `enter` to save and exit nano (follow the prompts)
-- Start Tor by opening a terminal and running `tor`
-- Tor should start and you should be able to open Finder and navigate to your `/Users⁩/yourName/Desktop⁩/tor/FullyNodedV3/` (the directory we added to the torrc file) and see a file called `hostname`, open it and that is the onion address you need for Fully Noded.
+- Start Tor by opening a terminal and running `brew services start tor`
+- Tor should start and you should be able to open Finder and navigate to your `/usr/local/var/lib/tor/fullynoded` (the directory we added to the torrc file) and see a file called `hostname`, open it and that is the onion address you need for Fully Noded.
 - The `HiddenServicePort` needs to control your nodes rpcport, by default for mainnet that is 8332 or for testnet 18332.
-- Now in Fully Noded go to "Settings" -> "Node Manager" -> and add a new node choosing Tor and inputting your RPC credentials, then copy and paste your onion address with the port at the end `qndoiqnwoiquf713y8731783rg.onion:8332`
-- Restart your node and you should be able to connect to your V3 hidden service from anywhere in the world with your node completely behind a firewall and no port forwarding
+- Now in Fully Noded go to `Settings` > `Node Manager` > `+` and add a new node by inputting your RPC credentials and copy and paste your onion address with the port at the end `qndoiqnwoiquf713y8731783rgd.onion:8332`
+- Restart Tor on your nodes computer `brew services restart tor` and you should be able to connect to your V3 hidden service from anywhere in the world with your node completely behind a firewall and no port forwarding
 
 ## bitcoin.conf settings
 
