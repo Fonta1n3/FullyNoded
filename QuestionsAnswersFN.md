@@ -255,20 +255,21 @@ Seeing the progress being made at Specter Desktop is 🔥🔥🔥 by far my favo
 <img src="https://i.ibb.co/BCBMrkg/FN-wallet-export.jpg" alt="FN-wallet-export" border="0" width="200">
 
 ## Question : do I tell what version of fully nonded im using on my IOS device?
-### Answer - ![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `sure` : nowhere, will add it to the header of settings
+### Answer - ![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `sure` : nowhere, will add it to the header of settings<br/>
 
 ## Question : Made 2 single sig wallets in FN.  both have same signer words?<br/>
-<img src="https://i.ibb.co/bv2hjH2/double-same-sig-wallets-FN.jpg" alt="double-same-sig-wallets-FN" border="0" width="200">
+<img src="https://i.ibb.co/bv2hjH2/double-same-sig-wallets-FN.jpg" alt="double-same-sig-wallets-FN" border="0" width="200"><br/>
 ### Answer - ![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `sure` : Ignore wallet manager
 Tap the squares button on the active wallet view<br/>
 Use your Fully Noded wallets from there<br/>
 After deleting wallets via powershell make sure you restart your node<br/>
 Just use the one you’ve got in the Fully Noded wallets, Delete the other one from your node, that originally failed<br/>
+
 #### Further elaboration on the answer
-TBW
+TBW<br/>
 
 ## Question : where can I download this? [https://twitter.com/FullyNoded/status/1266363418103037958](https://twitter.com/FullyNoded/status/1266363418103037958)<br/>
-<img src="https://i.ibb.co/0CRPVkt/standup-screen.jpg" alt="standup-screen" border="0" width="200">
+<img src="https://i.ibb.co/0CRPVkt/standup-screen.jpg" alt="standup-screen" border="0" width="200"><br/>
 ### Answer - ![#c5f015](https://via.placeholder.com/15/c5f015/000000?text=+) `sure` : [here](https://github.com/BlockchainCommons/Bitcoin-Standup-MacOS/blob/master/Standup_0.1.1.dmg) is the notarized and pgp signed dmg
-Just click download and then open it
+Just click download and then open it<br/>
 
