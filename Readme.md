@@ -1,11 +1,9 @@
 # Fully Noded™️
-
 [https://fullynoded.app](https://fullynoded.app) (work in progress)
 
 A feature rich Bitcoin app which is 100% powered by your own Full Node. Allows you to connect to - and control multiple nodes using a client side native Tor thread making calls to your nodes rpcport via a V3 hidden service with optional Tor V3 authentication, whereby the app can either create a key for you (out of band) or you may supply your own private key.
 
 ## Supported Nodes
-
 - Bitcoin Core (0.20.0 is recommended for full functionality)
 - Nodl
 - myNode
@@ -14,12 +12,58 @@ A feature rich Bitcoin app which is 100% powered by your own Full Node. Allows y
 - Embassy
 
 ## Connect your own node
-
 - Create a hidden service that controls your nodes rpcport (there is a mac guide below on how to do that). 
 - Go to `settings` > `node manager` > `+` > `manually`
 - Find your bitcoin.conf and input your rpcuser and rpcpassword and a label into the app. See "bitcoin.conf settings" below. **No special characters allowed! Only alphanumeric**
 - Input the hidden services hostname with the port at the end (njcnewicnweiun.onion:8332)
 - Tap `save`, you will be alerted it if was saved successfully, it will automatically start connecting to it. Optionally, if you have authentication setup you will need to create V3 auth keys in the app by going to `settings` > `security center` > `Tor V3 Authentication` > `tap the refresh button to create keys out of band or add your own private key by pasting it in` > `tap the export button to export your public key`
+
+## Connect BTCPayServer
+- In BTCPay go to `Server Settings` > `Services` > click on `Full Node RPC`
+- In Fully Noded go to `Settings` > `Node Manager` > `+` > `Scan Quick Connect QR`
+- Once you have scanned the QR the app will automatically connect and start loading the home screen, to ensure its working go home and see the table load. To troubleshoot any connection issue reboot your BTCPayServer and force quit and reopen Fully Noded.
+
+## Connect Nodl
+- In Nodl go to the Tor tile settings pane which will dsiplay:
+<img src="./Images/nodl_1.JPG" alt="" width="250"/>
+
+- Click `Details and settings`
+<img src="./Images/nodl_2.JPG" alt="" width="250"/>
+
+- Click `BTCRPC Link`
+- In Fully Noded go to `Settings` > `Node Manager` > `+` > `Scan Quick Connect QR`
+- Once you have scanned the QR the app will automatically connect and start loading the home screen, to ensure its working go home and see the table load. To troubleshoot any connection issue reboot Tor on your Nodl and force quit and reopen Fully Noded.
+
+## Connect Raspiblitz
+***No provided instructions from raspiblitz***
+
+## Connect Embassy
+- In Fully Noded go to `Settings` > `Node Manager` > `+` > `manually`
+- Simply add the Tor onion url with `:8332` appended to it and your rpc username/password
+
+## Connect myNode
+- In myNode:
+<img src="./Images/myNode_1.png" alt="" width="250"/>
+
+1. From your dashboard, navigate to the Tor page
+<img src="./Images/myNode_2.png" alt="" width="250"/>
+
+2. At the bottom of the Tor page your will see the Fully Nodes button, press it.
+<img src="./Images/myNode_3.png" alt="" width="250"/>
+
+3. You will now see your connection QR.
+This is for premium myNode users only.
+- In Fully Noded go to `Settings` > `Node Manager` > `+` > `Scan Quick Connect QR` and scan the QR
+
+## Importing a wallet from Specter
+- In Specter click the wallet of your choice, Fully Noded is compatible with all of them
+- Click `Settings`
+<img src="./Images/specter_1.png" alt="" width="250"/>
+
+- Click `export`
+<img src="./Images/specter_2.png" alt="" width="250"/>
+
+- In Fully Noded go to the `Active Wallet` tab > in the top bar tap the `squares` button > `import` > `scan the Specter export QR code`
 
 ## Troubleshooting
 - `Unknown error`: restart your node, restart Fully Noded, if that does not work make sure your `rpcpassword` and `rpcuser` do not have any special characters, only alphanumeric is allowed, otherwise you will not connect as it breaks the url to your node.
@@ -28,7 +72,6 @@ A feature rich Bitcoin app which is 100% powered by your own Full Node. Allows y
 - The way Fully Noded works is very robust and reliable, if you have a connection issue there is a reason, don't lose hope :)
 
 ## What can Fully Noded do?
-
 - Recover any wallet
 - Import any wallet with xpubs/xprvs
 - WIF import
@@ -48,21 +91,16 @@ A feature rich Bitcoin app which is 100% powered by your own Full Node. Allows y
 - 100% self sovereign Bitcoin use, Fully Noded is 95% powered by your own node with some additional code for smartly creating wallets and signing psbt's offline, a very minimized third party.
 
 ## Download from App Store
-
 [here](https://apps.apple.com/us/app/fully-noded/id1436425586)
 
 ## Telegram
-
 [here](https://t.me/FullyNoded) is the open Telegram group.
 
 ## Q&A
-
 For basic usage check out the website QA [here](https://fullynoded.app/faq/)
-
 For a more in depth Q&A inspired by discussions on the telegram group check out our [Question and Answers](./Docs/QandA.md) 
 
 ## Tutorials
-
 - Soon ™️, for now read these medium posts which go over some basics:
 1. [Intoducing Fully Noded Wallets](https://medium.com/@FullyNoded/introducing-fully-noded-wallets-9fc2e4837102)
 2. [Introducing Fully Noded PSBT Signers](https://medium.com/@FullyNoded/introducing-fully-noded-psbt-signers-8f259c1ec558?sk=fa56fa3939136f269f0ca2a4fcdeee38)
@@ -70,7 +108,6 @@ For a more in depth Q&A inspired by discussions on the telegram group check out 
 
 
 ## Build From Source - Mac
-
 Run `brew --version` in a terminal, if you get a valid response you have brew installed already. If not, install brew:
 
 `cd /usr/local`
@@ -91,7 +128,6 @@ Wait for brew to finish.
 That's it, you can now run the app in XCode.
 
 ## Connecting over Tor (mac)
-
 - run `brew install tor` in a terminal
 - Once Tor is installed you will need to create a Hidden Service.
 - First locate your `torrc` file, this is Tor's configuration file. Open Finder and type `shift command h` to navigate to your home folder and  `shift command .` to show hidden files.
@@ -123,7 +159,6 @@ HiddenServicePort 8332 127.0.0.1:8332
 - Restart Tor on your nodes computer `brew services restart tor` and you should be able to connect to your V3 hidden service from anywhere in the world with your node completely behind a firewall and no port forwarding
 
 ## bitcoin.conf settings
-
 - Here is an example bitcoin.conf file best suited for Fully Noded:
 
 ```
@@ -166,7 +201,6 @@ source ENV/bin/activate
 pip install pynacl
 sudo nano createKeys.py
 ```
-
 - Copy and paste this script into the terminals nano session:
 
 ```
@@ -235,8 +269,7 @@ and paste in:
 Save and exit and you have one of the most secure node/light client set ups possible. (assuming your server is firewalled off)
 
 ## QuickConnect URL Scheme
-
-Fully Noded has a deep link registered with the following prefix `btcstandup://`
+Fully Noded has a deep link registered with the following prefixes  `btcstandup://` and `btcrpc://` either prefix will work.
 
 If you are a node manufacturer you can embed such a link to your web based UI that allows a user who has Fully Noded installed on their device to add and connect to their node with a single tap from the web based UI.
 
@@ -244,15 +277,15 @@ The url can also be displayed as a QR Code and a user can simply scan it when th
 
 The format of the URL is:
 
-`btcstandup://<rpcuser>:<rpcpassword>@<hidden service hostname>:<hidden service port>?label=<optional node label>`
+`btcrpc://<rpcuser>:<rpcpassword>@<hidden service hostname>:<hidden service port>?label=<optional node label>`
 
 Example with node label:
 
-`btcstandup://rpcuser:rpcpassword@kjhfefe.onion:8332?label=Your%20Nodes%20Name`
+`btcrpc://rpcuser:rpcpassword@kjhfefe.onion:8332?label=Your%20Nodes%20Name`
 
 Example without node label:
 
-`btcstandup://rpcuser:rpcpassword@kjhfefe.onion:8332?`
+`btcrpc://rpcuser:rpcpassword@kjhfefe.onion:8332?`
 
 Fully Noded is compatible with V3 authenticated hidden services, the user has the option in the app to add a V3 private key for authentication.
 
@@ -284,37 +317,9 @@ The `method` is a `bitcoin-cli` command and you can use [this great resource](ht
 
 [This is the code in Fully Noded from the Node Logic class](https://github.com/Fonta1n3/FullyNoded/tree/master/BitSense/Node%20Logic) which issues the above commands, if you look at it you will see a lot of commands that look like this:
 
-```
-reducer.makeCommand(command: .listunspent,
-                    param: "0",
-                    completion: getResult)
-
-```
+`reducer.makeCommand(command: .listunspent, param: "0", completion: getResult)`
 
 The `.listunspent` directly represents the `bitcoin-cli` commands we linked to just above and the `params` represent the options you can pass with those commands.  You can get the same functionality copying and pasting these commands into a terminal or using the Bitcoin-Qt console.
-
-## Specter Pairing
-
-Specter will give you a wallet import QR code, you can convert that manually to a bitcoin core descriptor then simply import that descriptor to FN1.
-
-This is an example from specter:
-
-```
-Key_123&wsh(sortedmulti(2,[fe23bc9a/48h/1h/0h/2h]tpubDEzBBGMH87CU5rCdo7gSaByN6SVvJW7c4WDkMuC6mKS8bcqpaVD3FCoiAEefcGhC4TwRCtACZnmnTZbPUk4cbx6dsLnHG8CyG8jz2Gr6j2z,[e120e47b/48h/1h/0h/2h]tpubDEvTHKHDhi8rQyogJNsnoNsbF8hMefbAzXFCT8CuJiZtxeZM7vUHcH65qpsp7teB2hJPQMKpLV9QcEJkNy3fvnvR6zckoN1E3fFywzfmcBA,[f0578536/48h/1h/0h/2h]tpubDE5GYE61m5mx2WrgtFe1kSAeAHT5Npoy5C2TpQTQGLTQkRkmsWMoA5PSP5XAkt4DBLgKY386iyGDjJKT5fVrRgShJ5CSEdd66UUc4icA8rw))
-```
-
-for Fully Noded just convert it to:
-
-```
-wsh(sortedmulti(2,[fe23bc9a/48h/1h/0h/2h]tpubDEzBBGMH87CU5rCdo7gSaByN6SVvJW7c4WDkMuC6mKS8bcqpaVD3FCoiAEefcGhC4TwRCtACZnmnTZbPUk4cbx6dsLnHG8CyG8jz2Gr6j2z/0/*,[e120e47b/48h/1h/0h/2h]tpubDEvTHKHDhi8rQyogJNsnoNsbF8hMefbAzXFCT8CuJiZtxeZM7vUHcH65qpsp7teB2hJPQMKpLV9QcEJkNy3fvnvR6zckoN1E3fFywzfmcBA/0/*,[f0578536/48h/1h/0h/2h]tpubDE5GYE61m5mx2WrgtFe1kSAeAHT5Npoy5C2TpQTQGLTQkRkmsWMoA5PSP5XAkt4DBLgKY386iyGDjJKT5fVrRgShJ5CSEdd66UUc4icA8rw/0/*))
-```
-
-All that is needed is to remove the `Key_123&` prefix and add `/0/*` to the end of each xpub.
-
-You will also want a change descriptor so modify slightly by replacing `/0/*` with `/1/*` and import it as your change descriptor.
-
-In Fully Noded, `incomings` > `import` > `descriptor`, and paste or scan it as a QR, thats it, do this twice once for the receive keys and once for the change keys.
-...
 
 ## Contributing
 
