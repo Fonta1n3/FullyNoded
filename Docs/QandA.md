@@ -163,8 +163,7 @@ Recreate your hidden service url like so: `http://rpcuser:rpcpassword@xxx.onion:
 
 #### Question: What is the best of breed desktop wallet to connect to your node?
 
-[Specter](https://github.com/cryptoadvance/specter-desktop), for me the easiest way to get it running is the following commands in a terminal:
-
+[Specter](https://github.com/cryptoadvance/specter-desktop), to build from source use following commands in a terminal:
 ```
 git clone https://github.com/cryptoadvance/specter-desktop.git
 cd specter-desktop
@@ -174,4 +173,12 @@ pip3 install -r requirements.txt
 pip3 install -e .
 python3 -m cryptoadvance.specter server
 ```
-See the Readme for instructions on exporting a wallet from Specter to FN.
+
+That will install and launch Specter, once installed the only commands you need to launch it:
+```
+cd specter-desktop
+virtualenv --python=python3 .env
+source .env/bin/activate
+python3 -m cryptoadvance.specter server
+```
+See [this](https://github.com/Fonta1n3/FullyNoded#importing-a-wallet-from-specter) for instructions on exporting a wallet from Specter to FN.
