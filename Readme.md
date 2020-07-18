@@ -30,9 +30,14 @@ A feature rich Bitcoin app which is 100% powered by your own Full Node. Allows y
 - Click `Details and settings`
 <img src="./Images/nodl_2.JPG" alt="" width="250"/>
 
-- Click `BTCRPC Link`
+- If you are on your iPhone or iPad you can click `BTCRPC Link` and it will automatically launch Fully Noded and connect your node.
+- If you are accessing the Nodl gui via a computer click `QR-Code`:
+<img src="./Images/nodl_3.jpeg" alt="" width="250"/>
+
 - In Fully Noded go to `Settings` > `Node Manager` > `+` > `Scan Quick Connect QR`
 - Once you have scanned the QR the app will automatically connect and start loading the home screen, to ensure its working go home and see the table load. To troubleshoot any connection issue reboot Tor on your Nodl and force quit and reopen Fully Noded.
+
+You can always do this manually by inputting your `rpcuser` and `rpcpassword` along with the Tor hidden service url in Fully Noded. Just add `:8332` to the end of the onion url.
 
 ## Connect Raspiblitz
 ***No provided instructions from raspiblitz***
