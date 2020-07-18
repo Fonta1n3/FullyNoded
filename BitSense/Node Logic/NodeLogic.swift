@@ -372,7 +372,7 @@ class NodeLogic {
     
     class func parseTransactions(transactions: NSArray) {
         
-        var transactionArray = [Any]()
+        var transactionArray = [[String:Any]]()
         
         for item in transactions {
             
@@ -438,14 +438,44 @@ class NodeLogic {
                                          "rbf": rbf,
                                          "txID": txID,
                                          "replacedBy": replaced_by_txid,
-                                         "involvesWatchonly":isCold])
+                                         "involvesWatchonly":isCold,
+                                         "selfTransfer":false,
+                                         "remove":false
+                ])
                 
             }
             
         }
         
-        arrayToReturn = transactionArray as! [[String:Any]]
-        
+        for (i, tx) in transactionArray.enumerated() {
+            if let _ = tx["amount"] as? String {
+                if let amount = Double(tx["amount"] as! String) {
+                    if let txID = tx["txID"] as? String {
+                        for (x, transaction) in transactionArray.enumerated() {
+                            if let amountToCompare = Double(transaction["amount"] as! String) {
+                                if x != i && txID == (transaction["txID"] as! String) {
+                                    if amount + amountToCompare == 0 && amount > 0 {
+                                        transactionArray[i]["selfTransfer"] = true
+                                        
+                                    } else if amount + amountToCompare == 0 && amount < 0 {
+                                        transactionArray[i]["remove"] = true
+                                        
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        for tx in transactionArray {
+            if let remove = tx["remove"] as? Bool {
+                if !remove {
+                    arrayToReturn.append(tx)
+                    
+                }
+            }
+        }
     }
     
 }

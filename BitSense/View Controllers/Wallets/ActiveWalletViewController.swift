@@ -200,6 +200,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         watchOnlyLabel.alpha = 1
         
         let dict = self.transactionArray[indexPath.section - 1]
+        let selfTransfer = dict["selfTransfer"] as! Bool
                         
         confirmationsLabel.text = (dict["confirmations"] as! String) + " " + "confs"
         let label = dict["label"] as? String
@@ -254,6 +255,14 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
             confirmationsLabel.textColor = .lightGray
             dateLabel.textColor = .lightGray
             
+        }
+        
+        if selfTransfer {
+            amountLabel.text = (amountLabel.text!).replacingOccurrences(of: "+", with: "")
+            amountLabel.text = (amountLabel.text!).replacingOccurrences(of: "-", with: "")
+            amountLabel.textColor = .darkGray
+            categoryImage.image = UIImage.init(systemName: "arrow.2.circlepath")
+            categoryImage.tintColor = .darkGray
         }
         
         return cell
