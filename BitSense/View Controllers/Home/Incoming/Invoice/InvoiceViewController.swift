@@ -37,133 +37,110 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet var indexLabel: UILabel!
     
     @IBAction func minusAction(_ sender: Any) {
-        
         if indexDisplay.text != "" {
-            
             let index = Int(indexDisplay.text!)!
-            
             if index != 0 {
-                
                 //fetch new address then save the updated index
                 connectingView.addConnectingView(vc: self, description: "fetching address index \(index - 1)")
-                
                 DispatchQueue.main.async {
-                    
                     self.indexDisplay.text = "\(index - 1)"
-                    
                 }
-                
                 let param = "\(descriptor), [\(index - 1),\(index - 1)]"
-                
-                self.executeNodeCommand(method: BTC_CLI_COMMAND.deriveaddresses,
-                                           param: param)
+                self.executeNodeCommand(method: .deriveaddresses, param: param)
             }
-            
         }
-        
     }
     
     @IBAction func plusAction(_ sender: Any) {
-        
         if indexDisplay.text != "" {
-            
             let index = Int(indexDisplay.text!)!
-            
             if index >= 0 {
-                
                 //fetch new address then save the updated index
                 connectingView.addConnectingView(vc: self, description: "fetching address index \(index + 1)")
-                
                 DispatchQueue.main.async {
-                    
                     self.indexDisplay.text = "\(index + 1)"
-                    
                 }
-                
                 let param = "\(descriptor), [\(index + 1),\(index + 1)]"
-                
-                self.executeNodeCommand(method: .deriveaddresses,
-                                           param: param)
+                self.executeNodeCommand(method: .deriveaddresses, param: param)
             }
-            
         }
-        
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        connectingView.addConnectingView(vc: self,
-                                         description: "")
-        
+        connectingView.addConnectingView(vc: self, description: "fetching address...")
         addressOutlet.isUserInteractionEnabled = true
-        
         addressOutlet.text = ""
         minusOutlet.alpha = 0
         plusOutlet.alpha = 0
         indexLabel.alpha = 0
         indexDisplay.alpha = 0
-        
         amountField.delegate = self
         labelField.delegate = self
-                
-        amountField.addTarget(self,
-                              action: #selector(textFieldDidChange(_:)),
-                              for: .editingChanged)
-        
-        labelField.addTarget(self,
-                             action: #selector(textFieldDidChange(_:)),
-                             for: .editingChanged)
-        
-        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self,
-                                                                 action: #selector(dismissKeyboard))
-        
+        amountField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        labelField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         view.addGestureRecognizer(tap)
         getAddressSettings()
         addDoneButtonOnKeyboard()
         load()
-        
     }
     
     func load() {
-        
         addressOutlet.text = ""
-        
         if isHDInvoice {
-            
             DispatchQueue.main.async {
-                
                 UIView.animate(withDuration: 0.2, animations: {
-                    
                     self.minusOutlet.alpha = 1
                     self.plusOutlet.alpha = 1
                     self.indexLabel.alpha = 1
                     self.indexDisplay.alpha = 1
-                    
                 }) { _ in
-                    
                     self.getHDMusigAddress()
-                    
                 }
-                
             }
-            
         } else {
-            
-            showAddress()
-            
+            activeWallet { [unowned vc = self] (wallet) in
+                if wallet != nil {
+                    let descriptorParser = DescriptorParser()
+                    let descriptorStruct = descriptorParser.descriptor(wallet!.receiveDescriptor)
+                    if descriptorStruct.isMulti {
+                        vc.getReceieveAddressForFullyNodedMultiSig(wallet!)
+                    } else {
+                        vc.showAddress()
+                    }
+                } else {
+                    vc.showAddress()
+                }
+            }
         }
-        
+    }
+    
+    private func getReceieveAddressForFullyNodedMultiSig(_ wallet: Wallet) {
+        let index = Int(wallet.index) + 1
+        CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(index), entity: .wallets) { (success) in
+            if success {
+                let param = "\"\(wallet.receiveDescriptor)\", [\(index),\(index)]"
+                Reducer.makeCommand(command: .deriveaddresses, param: param) { (response, errorMessage) in
+                    if let addresses = response as? NSArray {
+                        if let address = addresses[0] as? String {
+                            DispatchQueue.main.async { [unowned vc = self] in
+                                vc.addressOutlet.alpha = 1
+                                vc.addressString = address
+                                vc.addressOutlet.text = address
+                                vc.showAddress(address: address)
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
     
     @IBAction func getAddressInfo(_ sender: Any) {
-        
-        DispatchQueue.main.async {
-            
-            self.performSegue(withIdentifier: "getAddressInfo", sender: self)
-            
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "getAddressInfo", sender: vc)
         }
-        
     }
     
     func getHDMusigAddress() {
@@ -196,112 +173,60 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
     
     func getAddressSettings() {
-        
         let ud = UserDefaults.standard
         nativeSegwit = ud.object(forKey: "nativeSegwit") as? Bool ?? true
         p2shSegwit = ud.object(forKey: "p2shSegwit") as? Bool ?? false
         legacy = ud.object(forKey: "legacy") as? Bool ?? false
-        
-    }
-    
-
-   @IBAction func backAction(_ sender: Any) {
-        
-        DispatchQueue.main.async {
-            
-            self.dismiss(animated: true, completion: nil)
-            
-        }
-        
     }
     
     func showAddress() {
-        
         if isHDMusig {
-            
             showAddress(address: addressString)
             connectingView.removeConnectingView()
-            
             DispatchQueue.main.async { [unowned vc = self] in
-                
                 vc.addressOutlet.text = vc.addressString
-                
             }
-            
         } else {
-            
             var params = ""
-            
             if self.nativeSegwit {
-                
                 params = "\"\", \"bech32\""
-                
             } else if self.legacy {
-                
                 params = "\"\", \"legacy\""
-                
             } else if self.p2shSegwit {
-                
                 params = "\"\", \"p2sh-segwit\""
-                
             }
-            
             self.executeNodeCommand(method: .getnewaddress, param: params)
-            
         }
-        
     }
     
     func showAddress(address: String) {
-        
-        DispatchQueue.main.async {
-            
-            let pasteboard = UIPasteboard.general
-            pasteboard.string = address
-            
-            self.qrCode = self.generateQrCode(key: address)
-            
-            self.qrView.image = self.qrCode
-            self.qrView.isUserInteractionEnabled = true
-            self.qrView.alpha = 0
-            self.view.addSubview(self.qrView)
-            
-            self.descriptionLabel.frame = CGRect(x: 10,
-                                            y: self.view.frame.maxY - 30,
-                                            width: self.view.frame.width - 20,
-                                            height: 20)
-            
-            self.descriptionLabel.textAlignment = .center
-            
-            self.descriptionLabel.font = UIFont.init(name: "HelveticaNeue-Light",
-                                                size: 12)
-            
-            self.descriptionLabel.textColor = UIColor.white
-            self.descriptionLabel.text = "Tap the QR Code or text to copy/save/share"
-            self.descriptionLabel.adjustsFontSizeToFitWidth = true
-            self.descriptionLabel.alpha = 0
-            self.view.addSubview(self.descriptionLabel)
-            
-            self.tapAddressGesture = UITapGestureRecognizer(target: self,
-                                                       action: #selector(self.shareAddressText(_:)))
-            
-            self.addressOutlet.addGestureRecognizer(self.tapAddressGesture)
-            
-            self.tapQRGesture = UITapGestureRecognizer(target: self,
-                                                  action: #selector(self.shareQRCode(_:)))
-            
-            self.qrView.addGestureRecognizer(self.tapQRGesture)
-            
-            UIView.animate(withDuration: 0.3, animations: {
-                
-                self.descriptionLabel.alpha = 1
-                self.qrView.alpha = 1
-                self.addressOutlet.alpha = 1
-                
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.qrCode = vc.generateQrCode(key: address)
+            vc.qrView.image = vc.qrCode
+            vc.qrView.isUserInteractionEnabled = true
+            vc.qrView.alpha = 0
+            vc.view.addSubview(vc.qrView)
+            vc.descriptionLabel.frame = CGRect(x: 10, y: vc.view.frame.maxY - 30, width: vc.view.frame.width - 20, height: 20)
+            vc.descriptionLabel.textAlignment = .center
+            vc.descriptionLabel.font = UIFont.init(name: "HelveticaNeue-Light", size: 12)
+            vc.descriptionLabel.textColor = UIColor.white
+            vc.descriptionLabel.text = "Tap the QR Code or text to copy/save/share"
+            vc.descriptionLabel.adjustsFontSizeToFitWidth = true
+            vc.descriptionLabel.alpha = 0
+            vc.view.addSubview(vc.descriptionLabel)
+            vc.tapAddressGesture = UITapGestureRecognizer(target: vc, action: #selector(vc.shareAddressText(_:)))
+            vc.addressOutlet.addGestureRecognizer(vc.tapAddressGesture)
+            vc.addressOutlet.text = address
+            vc.addressString = address
+            vc.tapQRGesture = UITapGestureRecognizer(target: vc, action: #selector(vc.shareQRCode(_:)))
+            vc.qrView.addGestureRecognizer(vc.tapQRGesture)
+            vc.connectingView.removeConnectingView()
+            UIView.animate(withDuration: 0.3, animations: { [unowned vc = self] in
+                vc.descriptionLabel.alpha = 1
+                vc.qrView.alpha = 1
+                vc.addressOutlet.alpha = 1
             })
-            
         }
-        
     }
     
     

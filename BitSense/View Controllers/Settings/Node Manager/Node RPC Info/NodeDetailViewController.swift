@@ -172,7 +172,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         if onion != "" {
             if onion!.contains(":") {
                 let arr = onion!.split(separator: ".")
-                if "\(arr[0])".count == 56 && "\(arr[0])".isAlphanumeric {
+                if ("\(arr[0])".count == 16 || "\(arr[0])".count == 56) && "\(arr[0])".isAlphanumeric {
                     if "\(arr[1])".contains(":") {
                         let arr1 = "\(arr[1])".split(separator: ":")
                         if arr1.count > 1 {
@@ -191,7 +191,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                         return false
                     }
                 } else {
-                    showAlert(vc: self, title: "Not a valid Tor V3 hostname", message: "")
+                    showAlert(vc: self, title: "Not a valid Tor V2/V3 hostname", message: "")
                     return false
                 }
             } else {

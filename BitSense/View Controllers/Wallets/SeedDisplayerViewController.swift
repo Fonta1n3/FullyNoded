@@ -224,9 +224,10 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         dict["receiveDescriptor"] = primDesc
         dict["type"] = "Single-Sig"
         dict["name"] = name
-        dict["maxIndex"] = 2500
-        dict["index"] = 0
+        dict["maxIndex"] = Int64(2500)
+        dict["index"] = Int64(0)
         dict["blockheight"] = blockheight
+        dict["account"] = 0
         CoreDataService.saveEntity(dict: dict, entityName: .wallets) { [unowned vc = self] success in
             if success {
                 vc.spinner.removeConnectingView()

@@ -25,8 +25,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
                 
-        let tapGesture = UITapGestureRecognizer(target: self,
-                                                action: #selector(self.dismissKeyboard (_:)))
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
@@ -43,9 +42,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         passwordInput.autocapitalizationType = .none
         passwordInput.autocorrectionType = .no
         passwordInput.layer.cornerRadius = 10
-        //passwordInput.backgroundColor = .lightGray
         passwordInput.alpha = 0
-        //passwordInput.textColor = UIColor.black
         passwordInput.placeholder = "password"
         passwordInput.isSecureTextEntry = true
         passwordInput.returnKeyType = UIReturnKeyType.go
@@ -53,7 +50,6 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         passwordInput.keyboardAppearance = UIKeyboardAppearance.dark
         passwordInput.layer.borderWidth = 0.5
         passwordInput.layer.borderColor = UIColor.lightGray.cgColor
-        //passwordInput.tintColor = UIColor.black
         
         labelTitle.font = UIFont.systemFont(ofSize: 30)
         labelTitle.textColor = .lightGray

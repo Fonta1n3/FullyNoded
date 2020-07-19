@@ -200,6 +200,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         watchOnlyLabel.alpha = 1
         
         let dict = self.transactionArray[indexPath.section - 1]
+        let selfTransfer = dict["selfTransfer"] as! Bool
                         
         confirmationsLabel.text = (dict["confirmations"] as! String) + " " + "confs"
         let label = dict["label"] as? String
@@ -254,6 +255,14 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
             confirmationsLabel.textColor = .lightGray
             dateLabel.textColor = .lightGray
             
+        }
+        
+        if selfTransfer {
+            amountLabel.text = (amountLabel.text!).replacingOccurrences(of: "+", with: "")
+            amountLabel.text = (amountLabel.text!).replacingOccurrences(of: "-", with: "")
+            amountLabel.textColor = .darkGray
+            categoryImage.image = UIImage.init(systemName: "arrow.2.circlepath")
+            categoryImage.tintColor = .darkGray
         }
         
         return cell
@@ -403,6 +412,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     }
     
     func loadSectionOne() {
+        transactionArray.removeAll()
         NodeLogic.walletDisabled = walletDisabled
         NodeLogic.loadSectionTwo { [unowned vc = self] (response, errorMessage) in
             if errorMessage != nil {
@@ -410,7 +420,6 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
                 displayAlert(viewController: vc, isError: true, message: errorMessage!)
             } else if response != nil {
                 DispatchQueue.main.async { [unowned vc = self] in
-                    vc.transactionArray.removeAll()
                     vc.transactionArray = response!.reversed()
                     vc.walletTable.reloadData()
                 }
@@ -469,6 +478,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     }
     
     func reloadWalletData() {
+        transactionArray.removeAll()
         NodeLogic.loadBalances { [unowned
             vc = self] (response, errorMessage) in
             if errorMessage != nil {
@@ -489,7 +499,6 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
                         displayAlert(viewController: vc, isError: true, message: errorMessage!)
                     } else if response != nil {
                         DispatchQueue.main.async { [unowned vc = self] in
-                            vc.transactionArray.removeAll()
                             vc.transactionArray = response!.reversed()
                             vc.walletTable.reloadData()
                             vc.removeSpinner()

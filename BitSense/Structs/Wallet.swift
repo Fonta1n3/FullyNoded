@@ -16,8 +16,8 @@ public struct Wallet: CustomStringConvertible {
     let receiveDescriptor:String
     let type:String
     let name:String
-    let maxIndex:Int16
-    let index:Int16
+    let maxIndex:Int64
+    let index:Int64
     let watching:[String]?
     let account:Int16
     let blockheight:Int64
@@ -29,8 +29,8 @@ public struct Wallet: CustomStringConvertible {
         receiveDescriptor = dictionary["receiveDescriptor"] as! String
         type = dictionary["type"] as! String
         name = dictionary["name"] as? String ?? ""
-        maxIndex = dictionary["maxIndex"] as! Int16
-        index = dictionary["index"] as! Int16
+        maxIndex = dictionary["maxIndex"] as? Int64 ?? 0
+        index = dictionary["index"] as? Int64 ?? 0
         watching = dictionary["watching"] as? [String]
         account = dictionary["account"] as? Int16 ?? 0
         blockheight = dictionary["blockheight"] as? Int64 ?? 0

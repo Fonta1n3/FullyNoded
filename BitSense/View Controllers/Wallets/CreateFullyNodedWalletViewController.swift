@@ -52,16 +52,16 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         if let _ = accountMap["descriptor"] as? String {
             if let _ = accountMap["blockheight"] as? Int {
                 /// It is an Account Map.
-                ImportWallet.accountMap(accountMap) { [unowned vc = self] (success, errorDescription) in
+                ImportWallet.accountMap(accountMap) { (success, errorDescription) in
                     if success {
-                        DispatchQueue.main.async { [unowned vc = self] in
-                            vc.spinner.removeConnectingView()
-                            vc.onDoneBlock!(true)
-                            vc.navigationController?.popViewController(animated: true)
+                        DispatchQueue.main.async {
+                            self.spinner.removeConnectingView()
+                            self.onDoneBlock!(true)
+                            self.navigationController?.popViewController(animated: true)
                         }
                     } else {
-                        vc.spinner.removeConnectingView()
-                        showAlert(vc: vc, title: "Error", message: "There was an error importing your wallet")
+                        self.spinner.removeConnectingView()
+                        showAlert(vc: self, title: "Error", message: "There was an error importing your wallet")
                     }
                 }
             }

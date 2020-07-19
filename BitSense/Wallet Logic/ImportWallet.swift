@@ -11,7 +11,6 @@ import Foundation
 class ImportWallet {
         
     class func accountMap(_ accountMap: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
-        
         var wallet = [String:Any]()
         var keypool = Bool()
         let descriptorParser = DescriptorParser()
@@ -46,7 +45,6 @@ class ImportWallet {
         }
         
         func importMulti(params: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-            print("importmulti")
             Reducer.makeCommand(command: .importmulti, param: params) { (response, errorDescription) in
                 if let result = response as? NSArray {
                     if result.count > 0 {
@@ -70,6 +68,8 @@ class ImportWallet {
             CoreDataService.saveEntity(dict: wallet, entityName: .wallets) { (success) in
                 if success {
                     completion((true, nil))
+                } else {
+                    completion((false, "error saving wallet locally"))
                 }
             }
         }
@@ -83,18 +83,21 @@ class ImportWallet {
                                 Reducer.makeCommand(command: .rescanblockchain, param: "\(pruneHeight)") { (response, errorMessage) in
                                     saveLocally()
                                 }
+                            } else {
+                                completion((false, errorMessage ?? "error getting prune height"))
                             }
                         } else {
                             Reducer.makeCommand(command: .rescanblockchain, param: "") { (response, errorMessage) in
                                 saveLocally()
                             }
                         }
+                    } else {
+                        completion((false, errorMessage ?? "error getting prune info"))
                     }
                 } else {
-                    //vc.showError(error: "Error starting a rescan, your wallet has not been saved. Please check your connection to your node and try again.")
+                     completion((false, errorMessage ?? "error getting blockchain info"))
                 }
             }
-
         }
         
         func createWallet(_ recDesc: String, _ changeDesc: String) {
@@ -112,28 +115,19 @@ class ImportWallet {
                                 importMulti(params: changeParams) { (changeImported, errorMessage) in
                                     if success {
                                         rescan()
+                                    } else {
+                                        completion((false, errorMessage ?? "error importing change keys"))
                                     }
                                 }
+                            } else {
+                                completion((false, errorMessage ?? "error importing keys"))
                             }
                         }
-//                        importPrimaryKeys(desc: recDesc) { (success, errorMessage) in
-//                            if success {
-//                                importChangeKeys(desc: changeDesc) { (changeImported, errorDesc) in
-//                                    if changeImported {
-//                                        rescan()
-//                                    } else {
-//                                        //vc.showError(error: "Error importing change keys: \(errorDesc ?? "unknown error")")
-//                                    }
-//                                }
-//                            } else {
-//                                //vc.showError(error: "Error importing primary keys: \(errorMessage ?? "unknown error")")
-//                            }
-//                        }
                     } else {
-                        //vc.showError(error: "Error creating wallet on your node \(errorMessage ?? "unknown error")")
+                        completion((false, errorMessage ?? "error getting wallet name"))
                     }
                 } else {
-                   // vc.showError(error: "Error creating wallet on your node: \(errorMessage ?? "unknown")")
+                   completion((false, errorMessage ?? "error creating wallet"))
                 }
             }
         }
@@ -145,8 +139,12 @@ class ImportWallet {
                     if changeDesc != nil {
                         wallet["changeDescriptor"] = changeDesc!
                         createWallet(recDesc!, changeDesc!)
+                    } else {
+                        completion((false, "error getting change descriptor info"))
                     }
                 }
+            } else {
+                completion((false, "error getting descriptor info"))
             }
         }
         

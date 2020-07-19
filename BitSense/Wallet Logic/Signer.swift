@@ -197,10 +197,23 @@ class Signer {
                     }
                     do {
                         psbtToSign = try PSBT(psbt, chain)
+                        if psbtToSign.finalize() {
+                            if psbtToSign.complete {
+                                if psbtToSign.transactionFinal != nil {
+                                    completion((nil, psbtToSign.transactionFinal!.description, nil))
+                                } else {
+                                    finalizeWithBitcoind()
+                                }
+                            } else {
+                                getSeeds()
+                            }
+                        } else {
+                             getSeeds()
+                        }
+                        
                     } catch {
                         completion((nil, nil, "Error converting that psbt"))
                     }
-                    getSeeds()
                 }
             }
         }
