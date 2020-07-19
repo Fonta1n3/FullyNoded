@@ -88,6 +88,28 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 if needTo {
                   url.stopAccessingSecurityScopedResource()
                 }
+            } else if url.pathExtension == "json" {
+                let needTo = url.startAccessingSecurityScopedResource()
+                do {
+                    let data = try Data(contentsOf: url.absoluteURL)
+                    let dict = try JSONSerialization.jsonObject(with: data, options: []) as! [String:Any]
+                    if let p2wsh_deriv = dict["p2wsh_deriv"] as? String {
+                        if p2wsh_deriv == "m/48'/0'/0'/2'" || p2wsh_deriv == "m/48'/1'/0'/2'" {
+                            if let zpub = dict["p2wsh"] as? String, let fingerprint = dict["xfp"] as? String {
+                                if let xpub = XpubConverter.convert(extendedKey: zpub) {
+                                    presentMultisigCreator(zpub: zpub, fingerprint: fingerprint, xpub: xpub)
+                                }
+                            }
+                        } else if let _ = dict["chain"] as? String {
+                            print("coldcard single sig")
+                        }
+                    }
+                } catch {
+                    
+                }
+                if needTo {
+                  url.stopAccessingSecurityScopedResource()
+                }
             } else {
                 addNode(url: "\(url)")
             }
@@ -111,7 +133,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
     
     private func presentSigner(psbt: String) {
-        print("presentSigner")
         let storyBoard = UIStoryboard(name: "Main", bundle: nil)
         if let signerVc = storyBoard.instantiateViewController(identifier: "signerVc") as? SignerViewController {
             signerVc.psbt = psbt
@@ -126,7 +147,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
     
     private func presentBroadcaster(txn: String) {
-        print("presentBroadcaster")
         let storyBoard = UIStoryboard(name: "Main", bundle: nil)
         if let signerVc = storyBoard.instantiateViewController(identifier: "signerVc") as? SignerViewController {
             signerVc.txn = txn
@@ -136,6 +156,23 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                     currentController = presentedController
                 }
                 currentController.present(signerVc, animated: true, completion: nil)
+            }
+        }
+    }
+    
+    private func presentMultisigCreator(zpub: String, fingerprint: String, xpub: String) {
+        //MultisigCreator
+        let storyBoard = UIStoryboard(name: "Main", bundle: nil)
+        if let multisigCreator = storyBoard.instantiateViewController(identifier: "MultisigCreator") as? MultiSigCreatorViewController {
+            let dict = ["signer":"","fingerprint":fingerprint,"xpub":xpub,"zpub":zpub]
+            multisigCreator.signers.append(dict)
+            if let window = self.window, let rootViewController = window.rootViewController {
+                var currentController = rootViewController
+                while let presentedController = currentController.presentedViewController {
+                    currentController = presentedController
+                }
+                multisigCreator.modalPresentationStyle = .fullScreen
+                currentController.present(multisigCreator, animated: true, completion: nil)
             }
         }
     }

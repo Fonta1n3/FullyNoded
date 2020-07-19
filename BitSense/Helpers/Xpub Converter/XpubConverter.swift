@@ -90,6 +90,60 @@ class XpubConverter {
             
         }
     }
+    
+    class func zpub(xpub: String) -> String? {
+//        let mainnetXpubPrefix = ["xpub":"0488b21e"]
+//        let testnetTpubPrefix = ["tpub":"043587cf"]
+//        let mainnetZpubPrefix = "02aa7ed3"
+//        let testnetVpubPrefix = "02575483"
+        var providedPrefix = ""
+        var returnedPrefix = "02aa7ed3"
+        let possibleXpubPrefixes = [
+            "xpub":"0488b21e",
+            "tpub":"043587cf"
+        ]
+        
+        for (key, value) in possibleXpubPrefixes {
+            if xpub.hasPrefix(key) {
+                providedPrefix = value
+            }
+        }
+        
+        switch providedPrefix {
+        case "0488b21e":
+            returnedPrefix = "02aa7ed3"
+        case "043587cf":
+            returnedPrefix = "02575483"
+        default:
+            break
+        }
+        
+        if providedPrefix != "" {
+            /// Decodes our original extended key to base58 data.
+            var b58 = Base58.decode(xpub)
+            /// Removes the original prefix.
+            b58.removeFirst(4)
+            /// Converts the new prefix string to data.
+            var prefix = Data(hexString: returnedPrefix)!
+            /// Appends the xpub data to the new prefix.
+            prefix.append(contentsOf: b58)
+            /// Converts our data to array so we can easily manipulate it.
+            var convertedXpub = [UInt8](prefix)
+            /// Removes incorrect checksum.
+            convertedXpub.removeLast(4)
+            /// Hashes the new raw xpub twice.
+            let hash = SHA256.hash(data: Data(SHA256.hash(data: convertedXpub)))
+            /// Gets the correct checksum from the double hash.
+            let checksum = Data(hash).subdata(in: Range(0...3))
+            /// Appends it.
+            convertedXpub.append(contentsOf: checksum)
+            /// And its ready 🤩
+            return Base58.encode(convertedXpub)
+        } else {
+            /// Invalid extended key supplied by the user.
+            return nil
+        }
+    }
 }
 
 extension Data {
