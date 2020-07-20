@@ -8,23 +8,56 @@
 
 import UIKit
 
-class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UITextFieldDelegate {
+class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UITextFieldDelegate, UINavigationControllerDelegate {
 
+    @IBOutlet weak var createOutlet: UIButton!
+    @IBOutlet weak var derivLabel: UILabel!
     @IBOutlet weak var editButtonOutlet: UIButton!
     @IBOutlet weak var table: UITableView!
     var signers:[[String:Any]] = []
+    var spinner = ConnectingView()
+    var cointType = "0"
+    var blockheight = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        navigationController?.delegate = self
         table.delegate = self
         table.dataSource = self
         addTapGesture()
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(notification:)), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(notification:)), name: UIResponder.keyboardWillHideNotification, object: nil)
+        spinner.addConnectingView(vc: self, description: "fetching chain type...")
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        loadData()
+        Reducer.makeCommand(command: .getblockchaininfo, param: "") { [unowned vc = self] (response, errorMessage) in
+            if let dict = response as? NSDictionary {
+                if let blocks = dict["blocks"] as? Int {
+                    vc.blockheight = blocks
+                }
+                if let chain = dict["chain"] as? String {
+                    if chain != "main" {
+                        vc.cointType = "1"
+                    }
+                    DispatchQueue.main.async { [unowned vc = self] in
+                        vc.derivLabel.text = "m/48'/\(vc.cointType)'/0'/2' - segwit (bc1)"
+                    }
+                    vc.loadData()
+                    vc.spinner.removeConnectingView()
+                } else {
+                    vc.spinner.removeConnectingView()
+                    showAlert(vc: vc, title: "Error", message: "error fetching chain type: \(errorMessage ?? "")")
+                }
+            } else {
+                vc.spinner.removeConnectingView()
+                showAlert(vc: vc, title: "Error", message: "error fetching chain type: \(errorMessage ?? "")")
+            }
+        }
+    }
+    
+    @IBAction func help(_ sender: Any) {
+        showAlert(vc: self, title: "MultiSig Creator", message: "Here you can add as many signers you like, by default we create a bip39 12 word seed for you (without a passphrase) and derive its account xpub/Zpub and fingerprint. All fields are editable, ensure you add valid words only. If you add valid words the app will derive the new fingerprint/xpub/Zpub for you. You may also delete the words and add a custom xpub or Zpub. If you do not want the device to be able to sign for certain seed words simply delete them and they will never get saved.")
     }
     
     @IBAction func createAction(_ sender: Any) {
@@ -46,50 +79,104 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
     }
     
     private func create(m: Int) {
+        spinner.addConnectingView(vc: self, description: "creating multisig wallet...")
         var keys = ""
         for (i, signer) in signers.enumerated() {
-            if let words = signer["signer"] as? String {
-                if let _ = Keys.masterKey(words: words, coinType: "0", passphrase: "") {
-                    Crypto.encryptData(dataToEncrypt: words.dataUsingUTF8StringEncoding) { [unowned vc = self] (encryptedWords) in
-                        if encryptedWords != nil {
-                            if vc.saveSigner(encryptedSigner: encryptedWords!) {
-                                if let fingerprint = signer["fingerprint"] as? String {
-                                    if let xpub = signer["xpub"] as? String {
-                                        keys += "[\(fingerprint)/48'/0'/0'/2']\(xpub)/0/*"
-                                        if i < vc.signers.count - 1 {
-                                            keys += ","
+            print("signer: \(signer)")
+            let fingerprint = signer["fingerprint"] as? String ?? ""
+            let xpub = signer["xpub"] as? String ?? ""
+            let words = signer["signer"] as? String ?? ""
+            if fingerprint != "" {
+                if xpub != "" {
+                    keys += "[\(fingerprint)/48'/\(cointType)'/0'/2']\(xpub)/0/*"
+                    if i < signers.count - 1 {
+                        keys += ","
+                    }
+//                    if i + 1 == signers.count {
+//                        let rawPrimDesc = "wsh(sortedmulti(\(m),\(keys)))"
+//                        let accountMap = ["descriptor":rawPrimDesc,"label":"MultiSig - \(m) of \(signers.count)", "blockheight": blockheight] as [String:Any]
+//                        ImportWallet.accountMap(accountMap) { [unowned vc = self] (success, errorDescription) in
+//                            if success {
+//                                vc.walletSuccessfullyCreated(m: m)
+//                            } else {
+//                                vc.spinner.removeConnectingView()
+//                                showAlert(vc: vc, title: "There was an error!", message: "Something went wrong during the wallet creation process: \(errorDescription ?? "unknown error")")
+//                            }
+//                        }
+//                    }
+                    if words != "" {
+                        if let _ = Keys.masterKey(words: words, coinType: cointType, passphrase: "") {
+                            Crypto.encryptData(dataToEncrypt: words.dataUsingUTF8StringEncoding) { (encryptedWords) in
+                                if encryptedWords != nil {
+                                    let dict = ["id":UUID(), "words":encryptedWords!] as [String:Any]
+                                    CoreDataService.saveEntity(dict: dict, entityName: .signers) { [unowned vc = self] success in
+                                        if success {
+                                            if i + 1 == vc.signers.count {
+                                                let rawPrimDesc = "wsh(sortedmulti(\(m),\(keys)))"
+                                                let accountMap = ["descriptor":rawPrimDesc,"label":"MultiSig - \(m) of \(vc.signers.count)", "blockheight": vc.blockheight] as [String:Any]
+                                                ImportWallet.accountMap(accountMap) { (success, errorDescription) in
+                                                    if success {
+                                                        vc.walletSuccessfullyCreated(m: m)
+                                                    } else {
+                                                        vc.spinner.removeConnectingView()
+                                                        showAlert(vc: self, title: "There was an error!", message: "Something went wrong during the wallet creation process: \(errorDescription ?? "unknown error")")
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            vc.spinner.removeConnectingView()
+                                            showAlert(vc: vc, title: "Error saving signer", message: "There was an error encrypting and saving your signer.")
                                         }
                                     }
                                 }
                             }
+                        } else {
+                            self.spinner.removeConnectingView()
+                            showAlert(vc: self, title: "Invalid BIP39 words", message: "")
+                        }
+                    } else {
+                        if i + 1 == signers.count {
+                            let rawPrimDesc = "wsh(sortedmulti(\(m),\(keys)))"
+                            let accountMap = ["descriptor":rawPrimDesc,"label":"MultiSig - \(m) of \(signers.count)", "blockheight": blockheight] as [String:Any]
+                            ImportWallet.accountMap(accountMap) { [unowned vc = self] (success, errorDescription) in
+                                if success {
+                                    vc.walletSuccessfullyCreated(m: m)
+                                } else {
+                                    vc.spinner.removeConnectingView()
+                                    showAlert(vc: vc, title: "There was an error!", message: "Something went wrong during the wallet creation process: \(errorDescription ?? "unknown error")")
+                                }
+                            }
                         }
                     }
+                } else {
+                    self.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "xpub missing!", message: "We can not create a multisig wallet wiouth a set of bip39 words and xpub, we need one or the other.")
                 }
             } else {
-                if let fingerprint = signer["fingerprint"] as? String {
-                    if let xpub = signer["xpub"] as? String {
-                        keys += "[\(fingerprint)/48'/0'/0'/2']\(xpub)/0/*"
-                        if i < signers.count - 1 {
-                            keys += ","
-                        }
-                    }
-                }
-            }
-            if i + 1 == signers.count {
-                let rawPrimDesc = "wsh(sortedmulti(\(m),\(keys)))"
-                let rawChangeDesc = rawPrimDesc.replacingOccurrences(of: "/0/*", with: "/1/*")
-                
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Fingerprint missing!", message: "Please add the correct fingerprint for the master key so offline signers will be able to sign.")
             }
         }
     }
     
-    private func saveSigner(encryptedSigner: Data) -> Bool {
-        var boolToReturn:Bool!
-        let dict = ["id":UUID(), "words":encryptedSigner] as [String:Any]
-        CoreDataService.saveEntity(dict: dict, entityName: .signers) { success in
-            boolToReturn = success
+    private func walletSuccessfullyCreated(m: Int) {
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.spinner.removeConnectingView()
+            NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+            vc.createOutlet.alpha = 0
+            let alert = UIAlertController(title: "\(m) of \(vc.signers.count) successfully created ✓", message: "Your active wallet tab is refreshing, tap done to go back.", preferredStyle: .actionSheet)
+            alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
+                DispatchQueue.main.async {
+                    if vc.navigationController != nil {
+                        vc.navigationController?.popToRootViewController(animated: true)
+                    } else {
+                        vc.dismiss(animated: true, completion: nil)
+                    }
+                }
+            }))
+            alert.popoverPresentationController?.sourceView = vc.view
+            vc.present(alert, animated: true, completion: nil)
         }
-        return boolToReturn
     }
     
     private func addTapGesture() {
@@ -127,9 +214,9 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
         
     @IBAction func addSignerAction(_ sender: Any) {
         if let words = Keys.seed() {
-            if let mk = Keys.masterKey(words: words, coinType: "0", passphrase: "") {
+            if let mk = Keys.masterKey(words: words, coinType: cointType, passphrase: "") {
                 if let fingerprint = Keys.fingerprint(masterKey: mk) {
-                    if let xpub = Keys.xpub(path: "m/48'/0'/0'/1'", masterKey: mk) {
+                    if let xpub = Keys.xpub(path: "m/48'/\(cointType)'/0'/2'", masterKey: mk) {
                         if let zpub = XpubConverter.zpub(xpub: xpub) {
                             let dict = ["signer":words,"fingerprint":fingerprint,"xpub":xpub,"zpub":zpub]
                             signers.append(dict)
@@ -149,7 +236,11 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 245
+        if signers.count > 0 {
+            return 245
+        } else {
+            return 44
+        }
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -221,7 +312,9 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
         textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
         textLabel.textColor = .white
         textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
-        textLabel.text = "#\(section + 1)"
+        if signers.count > 0 {
+            textLabel.text = "#\(section + 1)"
+        }
         header.addSubview(textLabel)
         return header
     }
@@ -247,18 +340,47 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
     
     private func updateWords(words: String, index: Int) {
         if words != "" {
-            if let mk = Keys.masterKey(words: words, coinType: "0", passphrase: "") {
+            if let mk = Keys.masterKey(words: words, coinType: cointType, passphrase: "") {
                 if let fingerprint = Keys.fingerprint(masterKey: mk) {
-                    if let xpub = Keys.xpub(path: "m/48'/0'/0'/1'", masterKey: mk) {
+                    if let xpub = Keys.xpub(path: "m/48'/\(cointType)'/0'/2'", masterKey: mk) {
                         if let zpub = XpubConverter.zpub(xpub: xpub) {
                             signers[index]["signer"] = words
                             signers[index]["fingerprint"] = fingerprint
                             signers[index]["xpub"] = xpub
                             signers[index]["zpub"] = zpub
                             reloadIndex(index: index)
+                            showAlert(vc: self, title: "Signer updated", message: "The fingerprint, xpub and Zpub have all been updated to be derived from the new bip39 words.")
+                        } else {
+                            signers[index]["signer"] = ""
+                            signers[index]["fingerprint"] = ""
+                            signers[index]["xpub"] = ""
+                            signers[index]["zpub"] = ""
+                            reloadIndex(index: index)
+                            showAlert(vc: self, title: "Error", message: "Error deriving Zpub")
                         }
+                    } else {
+                        signers[index]["signer"] = ""
+                        signers[index]["fingerprint"] = ""
+                        signers[index]["xpub"] = ""
+                        signers[index]["zpub"] = ""
+                        reloadIndex(index: index)
+                        showAlert(vc: self, title: "Error", message: "Error deriving xpub")
                     }
+                } else {
+                    signers[index]["signer"] = ""
+                    signers[index]["fingerprint"] = ""
+                    signers[index]["xpub"] = ""
+                    signers[index]["zpub"] = ""
+                    reloadIndex(index: index)
+                    showAlert(vc: self, title: "Error", message: "Error deriving fingerprint")
                 }
+            } else {
+                signers[index]["signer"] = ""
+                signers[index]["fingerprint"] = ""
+                signers[index]["xpub"] = ""
+                signers[index]["zpub"] = ""
+                reloadIndex(index: index)
+                showAlert(vc: self, title: "Error", message: "Invalid bip39 seed words")
             }
         } else {
             signers[index]["signer"] = ""
@@ -268,9 +390,11 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
     private func updateXpub(xpub: String, index: Int) {
         if xpub != "" {
             if let zpub = XpubConverter.zpub(xpub: xpub) {
+                signers[index]["signer"] = ""
                 signers[index]["xpub"] = xpub
                 signers[index]["zpub"] = zpub
                 reloadIndex(index: index)
+                showAlert(vc: self, title: "Signer updated", message: "You added a custom xpub, ensure the fingerprint is correct as this is important for offline signers to function properly.")
             }
         }
     }
@@ -278,9 +402,11 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
     private func updateZpub(zpub: String, index: Int) {
         if zpub != "" {
             if let xpub = XpubConverter.convert(extendedKey: zpub) {
+                signers[index]["signer"] = ""
                 signers[index]["xpub"] = xpub
                 signers[index]["zpub"] = zpub
                 reloadIndex(index: index)
+                showAlert(vc: self, title: "Signer updated", message: "You added a custom Zpub, ensure the fingerprint is correct as this is important for offline signers to function properly.")
             }
         }
     }

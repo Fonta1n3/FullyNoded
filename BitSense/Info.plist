@@ -15,10 +15,10 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>JSON</string>
-			<key>LSHandlerRank</key>
-			<string>Owner</string>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>com.fontaine.fullynoded.json</string>
@@ -172,12 +172,12 @@
 	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>
-			<key>UTTypeDescription</key>
-			<string>Coldcard Wallet Import</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.json</string>
 			</array>
+			<key>UTTypeDescription</key>
+			<string>Coldcard Wallet Import</string>
 			<key>UTTypeIdentifier</key>
 			<string>com.fontaine.fullynoded.json</string>
 			<key>UTTypeTagSpecification</key>

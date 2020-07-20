@@ -34,12 +34,14 @@ class ImportWallet {
         let arr = primDescriptor.split(separator: "#")
         primDescriptor = "\(arr[0])"
         
-        func getDescriptorInfo(desc: String, completion: @escaping ((String?)) -> Void) {
+        func getDescriptorInfo(desc: String, completion: @escaping ((desc: String?, errorMessage: String?)) -> Void) {
             Reducer.makeCommand(command: .getdescriptorinfo, param: "\"\(desc)\"") { (response, errorMessage) in
                 if let dict = response as? NSDictionary {
                     if let updatedDescriptor = dict["descriptor"] as? String {
-                        completion((updatedDescriptor))
+                        completion((updatedDescriptor, nil))
                     }
+                } else {
+                    completion((nil, errorMessage ?? "error getting descriptor info"))
                 }
             }
         }
@@ -132,19 +134,19 @@ class ImportWallet {
             }
         }
         
-        getDescriptorInfo(desc: primDescriptor) { (recDesc) in
+        getDescriptorInfo(desc: primDescriptor) { (recDesc, errorMessage) in
             if recDesc != nil {
                 wallet["receiveDescriptor"] = recDesc!
-                getDescriptorInfo(desc: primDescriptor.replacingOccurrences(of: "/0/*", with: "/1/*")) { (changeDesc) in
+                getDescriptorInfo(desc: primDescriptor.replacingOccurrences(of: "/0/*", with: "/1/*")) { (changeDesc, errorMessage) in
                     if changeDesc != nil {
                         wallet["changeDescriptor"] = changeDesc!
                         createWallet(recDesc!, changeDesc!)
                     } else {
-                        completion((false, "error getting change descriptor info"))
+                        completion((false, errorMessage ?? "error getting change descriptor info"))
                     }
                 }
             } else {
-                completion((false, "error getting descriptor info"))
+                completion((false, errorMessage ?? "error getting descriptor info"))
             }
         }
         
