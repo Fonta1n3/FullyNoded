@@ -1823,12 +1823,6 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Wallet Export" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bbj-D4-jqr">
-                                <rect key="frame" x="16" y="20" width="174.5" height="35"/>
-                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="Kj5-uB-hmc">
                                 <rect key="frame" x="16" y="422" width="343" height="205"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -1849,15 +1843,14 @@
                             <constraint firstItem="V2W-B3-jFj" firstAttribute="trailing" secondItem="Kj5-uB-hmc" secondAttribute="trailing" constant="16" id="BKp-nX-JEq"/>
                             <constraint firstItem="Kj5-uB-hmc" firstAttribute="top" secondItem="kT3-vW-HgJ" secondAttribute="bottom" constant="8" id="Fxi-cU-AT4"/>
                             <constraint firstItem="V2W-B3-jFj" firstAttribute="trailing" secondItem="kT3-vW-HgJ" secondAttribute="trailing" constant="16" id="UuP-QH-CTq"/>
-                            <constraint firstItem="bbj-D4-jqr" firstAttribute="leading" secondItem="V2W-B3-jFj" secondAttribute="leading" constant="16" id="ZTp-1A-Aj5"/>
-                            <constraint firstItem="bbj-D4-jqr" firstAttribute="top" secondItem="V2W-B3-jFj" secondAttribute="top" constant="20" id="eax-x0-2xF"/>
                             <constraint firstItem="kT3-vW-HgJ" firstAttribute="leading" secondItem="V2W-B3-jFj" secondAttribute="leading" constant="16" id="m0z-We-aTR"/>
-                            <constraint firstItem="kT3-vW-HgJ" firstAttribute="top" secondItem="bbj-D4-jqr" secondAttribute="bottom" constant="16" id="ulr-8N-kxQ"/>
+                            <constraint firstItem="kT3-vW-HgJ" firstAttribute="top" secondItem="V2W-B3-jFj" secondAttribute="top" constant="71" id="rbT-RD-kQQ"/>
                             <constraint firstItem="Kj5-uB-hmc" firstAttribute="leading" secondItem="V2W-B3-jFj" secondAttribute="leading" constant="16" id="wdF-UY-AT3"/>
                             <constraint firstItem="V2W-B3-jFj" firstAttribute="bottom" secondItem="Kj5-uB-hmc" secondAttribute="bottom" constant="20" id="yzk-tn-uY1"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="V2W-B3-jFj"/>
                     </view>
+                    <navigationItem key="navigationItem" id="VsN-eD-EWM"/>
                     <connections>
                         <outlet property="imageView" destination="kT3-vW-HgJ" id="L4j-xg-uHU"/>
                         <outlet property="textView" destination="Kj5-uB-hmc" id="2An-oW-xbw"/>
@@ -4378,7 +4371,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
             </objects>
             <point key="canvasLocation" x="-2791.1999999999998" y="375.56221889055473"/>
         </scene>
-        <!--v0.1.59-->
+        <!--v0.1.60-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="BitSense" customModuleProvider="target" sceneMemberID="viewController">
@@ -4525,7 +4518,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                         <viewLayoutGuide key="safeArea" id="Cze-jj-bFe"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="v0.1.59" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="v0.1.60" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
@@ -5346,13 +5339,21 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="uUf-aQ-0bN"/>
                     </view>
-                    <navigationItem key="navigationItem" id="J9p-j8-H8t"/>
+                    <navigationItem key="navigationItem" id="J9p-j8-H8t">
+                        <barButtonItem key="rightBarButtonItem" image="square.and.arrow.up" catalog="system" id="gwp-vI-ePE">
+                            <color key="tintColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <connections>
+                                <action selector="exportNode:" destination="B99-yZ-naR" id="c4z-NG-lTv"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
                         <outlet property="nodeLabel" destination="LM8-fJ-o94" id="kkD-Ha-NwZ"/>
                         <outlet property="onionAddressField" destination="o4M-Vw-QWb" id="hON-oG-n3p"/>
                         <outlet property="rpcPassword" destination="4YC-xq-wqu" id="KIS-dN-d6I"/>
                         <outlet property="rpcUserField" destination="uRk-PX-ulA" id="pCP-J4-Y3p"/>
                         <outlet property="saveButton" destination="p2J-sn-A5I" id="ZWz-y2-s1b"/>
+                        <segue destination="GlR-4A-eAx" kind="presentation" identifier="segueToExportNode" id="8MS-xS-DMP"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="YxC-Y3-iSs" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -6288,7 +6289,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="UBf-qr-XYG"/>
+        <segue reference="qed-hl-jG5"/>
         <segue reference="aQN-4W-cSW"/>
         <segue reference="jzM-oI-Kmu"/>
         <segue reference="4UK-no-SgJ"/>
@@ -6300,6 +6301,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="HNI-HG-9ZQ"/>
         <segue reference="IAz-j1-Gq6"/>
+        <segue reference="8MS-xS-DMP"/>
         <segue reference="Ikt-mc-dmE"/>
         <segue reference="G1i-Bv-OSl"/>
         <segue reference="U54-oe-CeC"/>

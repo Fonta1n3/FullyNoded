@@ -41,6 +41,12 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         loadValues()
     }
     
+    @IBAction func exportNode(_ sender: Any) {
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "segueToExportNode", sender: vc)
+        }
+    }
+    
     @IBAction func save(_ sender: Any) {
         
         func encryptedValue(_ decryptedValue: Data) -> Data? {
@@ -370,4 +376,13 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             }
         }
     }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "segueToExportNode" {
+            if let vc = segue.destination as? QRDisplayerViewController {
+                vc.text = "btcrpc://\(rpcUserField.text ?? ""):\(rpcPassword.text ?? "")@\(onionAddressField.text ?? "")/?label=\(nodeLabel.text?.replacingOccurrences(of: " ", with: "%20") ?? "")"
+            }
+        }
+    }
+    
 }
