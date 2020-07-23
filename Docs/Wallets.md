@@ -2,8 +2,8 @@
 
 Fully Noded utilizes a QR code in `json` format for exporting and importing wallets. Currently the only known wallet apps supporting this method are [Specter-Destkop](https://github.com/cryptoadvance/specter-desktop/tree/master/docs) and [Gordion Wallet](https://github.com/BlockchainCommons/FullyNoded-2) (formerly known as Fully Noded 2).
 
-An example multisig wallet export QR for testing:
-<img src="./Images/wallet_export.png" alt="" width="250"/>
+An example multisig wallet export QR for testing:</br>
+<img src="../Images/wallet_export.png" alt="" width="250"/>
 
 ### QR Contents
 
