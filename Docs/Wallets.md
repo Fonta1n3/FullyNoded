@@ -9,13 +9,13 @@ An example multisig wallet export QR for testing:</br></br>
 
 The QR consists of the following fields:
 
-- `descriptor`: string
+- `descriptor`: `string`
     - A Bitcoin Core [descriptor](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md), which represents your receive keys, it is up to the wallet software to interpret the descriptor and deduce a second descriptor for your change keys. If the wallet conforms to BIP44/49/84/48/45 then simply replacing `/0/*` with `/1/*` will generate the change (`internal`) descriptor.
 
-- `label`: string
+- `label`: `string`
     - A user defined label for the wallet.
 
-- `blockheight`: int
+- `blockheight`: `int`
     - Represents when the wallet was created so that wallets may automatically rescan the blockchain from that point.
 
 JSON was chosen as it is universal and widely used, the client side software can conver the QR code string to data then pass it directly to a JSON decoder, and from there parse it as a dictionary.
