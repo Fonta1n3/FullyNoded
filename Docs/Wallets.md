@@ -18,7 +18,7 @@ The QR consists of the following fields:
 - `blockheight`: `int`
     - Represents when the wallet was created so that wallets may automatically rescan the blockchain from that point.
 
-JSON was chosen as it is universal and widely used, the client side software can conver the QR code string to data then pass it directly to a JSON decoder, and from there parse it as a dictionary.
+JSON was chosen as it is universal and widely used, the client side software can convert the QR code string to data then pass it directly to a JSON decoder, and from there parse it as a dictionary.
 
 ```
 {
