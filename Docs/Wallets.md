@@ -18,7 +18,7 @@ The QR consists of the following fields:
 - `blockheight`: `int`
     - Represents when the wallet was created so that wallets may automatically rescan the blockchain from that point.
 
-JSON was chosen as it is universal and widely used, the client side software can convert the QR code string to data then pass it directly to a JSON decoder, and from there parse it as a dictionary.
+`JSON` was chosen as it is universal, the client side software can convert the QR code string to data then pass it directly to a `JSON` decoder, and parse it as a dictionary.
 
 ```
 {
@@ -30,5 +30,4 @@ JSON was chosen as it is universal and widely used, the client side software can
 
 ### Benefits
 
-These QR codes make it extremely easy for any app to import any wallet type unambiguously, directly comptaible with Bitcoin Core. For multisig it solves the "problem" of users needing to "save all their public keys" as the descriptor holds all the info required to completely recreate the wallet, with the ability to derive all public keys and redeem scripts.
-
+These QR codes make it extremely easy for any app to import any wallet type unambiguously, directly compatible with Bitcoin Core. For multisig it solves the "problem" of users needing to "save all their public keys" as the descriptor holds all the info required to completely recreate the wallet, with the ability to derive all public keys and redeem scripts.
