@@ -10,7 +10,7 @@ An example multisig wallet export QR for testing:</br></br>
 The QR consists of the following fields:
 
 - `descriptor`: string
-    - A Bitcoin Core [descriptor](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md), which represents your receive keys, it is up to the wallet software to interpret the descriptor and deduce a second descriptor for your change keys.
+    - A Bitcoin Core [descriptor](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md), which represents your receive keys, it is up to the wallet software to interpret the descriptor and deduce a second descriptor for your change keys. If the wallet conforms to BIP44/49/84/48/45 then simply replacing `/0/*` with `/1/*` will generate the change (`internal`) descriptor.
 
 - `label`: string
     - A user defined label for the wallet.
