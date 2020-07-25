@@ -224,5 +224,15 @@ Further elaboration on the answer :  Should be “impossible “
 The worst malware i can find are adware where an app gets you to click invisible ads.
 
 #### Question : The keychain encryption key is stored on the secure enclave? 
-         **So its very hard to crack that open once you have the device, which bricks itself without the icloud password?**<br/>
+*So its very hard to crack that open once you have the device, which bricks itself without the icloud password?*<br/>
 On FN its stored on the local keychain (secure enclave) only, no icloud support. FN2 account xprv can be synced to icloud. But again its encrypted three times by then.
+
+#### Question : What’s the diff in importing Xpub and import descriptor under wallet? 
+
+`Descriptor` has the derivation, address range, path and address format in it, can also specify multisig and `bip67`
+A descriptor can hold an `xpub` and derive specific addresses
+
+An `xpub` is very generic and you need more info to go with it <to do what? - TBW>
+`Descriptor` is a very specific way of telling a wallet to derive these very specific keys, `xpub` is not specific at all and up for lots of interpretation with possibility of really messing it up.
+
+The coldcard export and the txt file are basically `descriptors`.... when you import an `xpub` into FN it gets converted onto a `descriptor`. When you create a multisig wallet it creates a `descriptor` for you and the wallet uses the `descriptor` to derive keys.
