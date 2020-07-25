@@ -61,6 +61,7 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 - Standup app: is a personal one-click Mac OS installer for Bitcoin Core and Tor that will present a QuickConnect QR code that can be used to pair mobile wallets for remote use over Tor V3. [Read more](https://github.com/BlockchainCommons/GordianSystem)
 - Datadir: TBW
 - bitcoin.conf: TBW 
+- initial block download (IBD): TBW
 
 ## Knowledge you should be confidently applying
 - The definitions above
@@ -247,6 +248,15 @@ Video on how to easily create a 2 of 2 multisig wallet with your Coldcard and Fu
 not really... its possible if you imported multisig descriptors manually though.<br/>
 We should discourage the re-use of receiving addresses for the sake of privacy protection.<br/>
 
+## Standup app
+
 #### Question : If I allready have a full node running on my Mac. Can I use the standup app with it?
 `Standup` app is fully compatible with existing nodes, but you can not specify a `datadir` or a network in your `bitcoin.conf`
 You do not need to delete anything, generally speaking.
+
+#### Question :  I am about to start a full node on mac. Can I change the directory to an External SSD with the standApp?
+yes, in settings youll see a `datadir` box where you can "choose" a new folder. I would recommend just pruning and adding prune=550 to the `bitcoin.conf` then it will only ever take up 550mb of spcae but you still get full validation.
+
+the benefit of that is you do not need an external drive, you can just use the external to back everything up. i think doing an initial block download (IBD) to an external drive slows it down quite a bit <br/>
+Henk van Cann: it depends on the speed of the external drive, some can reach up to 500 Mbit/sec.
+
