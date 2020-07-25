@@ -116,22 +116,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
     }
     
-    func addNode(url: String) {
-        if let myTabBar = self.window?.rootViewController as? UITabBarController {
-            let qc = QuickConnect()
-            func getResult() {
-                if !qc.errorBool {
-                    print("success adding quick connect")
-                } else {
-                    print("error adding quick connect = \(qc.errorDescription)")
+    private func addNode(url: String) {
+        QuickConnect.addNode(url: url) { (success, errorMessage) in
+            if success {
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
                 }
             }
-            qc.addNode(vc: myTabBar, url: url, completion: getResult)
-        } else {
-            print("error adding quick connect no access to tabbar")
         }
     }
-    
+        
     private func presentSigner(psbt: String) {
         let storyBoard = UIStoryboard(name: "Main", bundle: nil)
         if let signerVc = storyBoard.instantiateViewController(identifier: "signerVc") as? SignerViewController {

@@ -2713,15 +2713,15 @@
                                 <rect key="frame" x="0.0" y="107" width="375" height="560"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletDetailCell" rowHeight="1417" id="JAd-yf-YW4">
-                                        <rect key="frame" x="15" y="55.5" width="345" height="1417"/>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="walletDetailCell" rowHeight="1761" id="JAd-yf-YW4">
+                                        <rect key="frame" x="15" y="55.5" width="345" height="1761"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="JAd-yf-YW4" id="ZVK-6O-VK1">
-                                            <rect key="frame" x="0.0" y="0.0" width="345" height="1417"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="345" height="1761"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="Pa1-Sl-1ei">
-                                                    <rect key="frame" x="0.0" y="11" width="345" height="1310"/>
+                                                    <rect key="frame" x="0.0" y="11" width="345" height="1762.5"/>
                                                     <subviews>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label: (tap to edit)" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="r4R-f2-fWC">
                                                             <rect key="frame" x="0.0" y="0.0" width="345" height="20.5"/>
@@ -2839,6 +2839,22 @@
                                                                 <constraint firstAttribute="height" constant="400" id="eBF-xi-CmV"/>
                                                             </constraints>
                                                             <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                            <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                                        </textView>
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Address Explorer:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Vpi-kU-D2j">
+                                                            <rect key="frame" x="0.0" y="1326" width="345" height="20.5"/>
+                                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                            <nil key="highlightedColor"/>
+                                                        </label>
+                                                        <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="9" contentMode="scaleToFill" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="f5e-Sk-Vgh">
+                                                            <rect key="frame" x="0.0" y="1362.5" width="345" height="400"/>
+                                                            <color key="backgroundColor" red="0.1333139837" green="0.13334444170000001" blue="0.1333120763" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                            <constraints>
+                                                                <constraint firstAttribute="height" constant="400" id="3vN-0w-2Gv"/>
+                                                            </constraints>
+                                                            <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                             <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                         </textView>
@@ -4371,7 +4387,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
             </objects>
             <point key="canvasLocation" x="-2791.1999999999998" y="375.56221889055473"/>
         </scene>
-        <!--v0.1.60-->
+        <!--v0.1.61-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -4518,7 +4534,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                         <viewLayoutGuide key="safeArea" id="Cze-jj-bFe"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="v0.1.60" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="v0.1.61" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
@@ -4535,7 +4551,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
         <!--Nodes View Controller-->
         <scene sceneID="iSc-Eo-e8H">
             <objects>
-                <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="FrY-WR-Inf" customClass="NodesViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="NodeManager" extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" useStoryboardIdentifierAsRestorationIdentifier="YES" id="FrY-WR-Inf" customClass="NodesViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="IRJ-OV-pqW">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -4902,34 +4918,27 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                                     <action selector="scanQR:" destination="bdZ-xF-GZ9" eventType="touchUpInside" id="Pzy-Ri-DcQ"/>
                                 </connections>
                             </button>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="MB0-vL-2TQ">
-                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
-                            </imageView>
                         </subviews>
                         <color key="backgroundColor" red="0.050706155598163605" green="0.058625258505344391" blue="0.071102283895015717" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="PD7-bM-EXX" firstAttribute="top" secondItem="fx6-xT-ZCO" secondAttribute="top" constant="21" id="9H5-18-4Mu"/>
                             <constraint firstItem="fx6-xT-ZCO" firstAttribute="trailing" secondItem="PD7-bM-EXX" secondAttribute="trailing" constant="16" id="BdJ-ba-0gV"/>
-                            <constraint firstItem="MB0-vL-2TQ" firstAttribute="trailing" secondItem="fx6-xT-ZCO" secondAttribute="trailing" id="HC1-11-cVc"/>
                             <constraint firstItem="0h9-MN-fB3" firstAttribute="top" secondItem="kR8-sm-Ak0" secondAttribute="bottom" constant="30" id="Xg0-fE-aLT"/>
                             <constraint firstItem="PD7-bM-EXX" firstAttribute="leading" secondItem="fx6-xT-ZCO" secondAttribute="leading" constant="16" id="XsS-9Q-crq"/>
                             <constraint firstItem="0h9-MN-fB3" firstAttribute="leading" secondItem="fx6-xT-ZCO" secondAttribute="leading" constant="16" id="d6J-Q0-0vM"/>
                             <constraint firstItem="0h9-MN-fB3" firstAttribute="trailing" secondItem="fx6-xT-ZCO" secondAttribute="trailing" constant="-16" id="efy-3d-5oY"/>
                             <constraint firstItem="kR8-sm-Ak0" firstAttribute="leading" secondItem="fx6-xT-ZCO" secondAttribute="leading" constant="16" id="fMV-qF-adG"/>
                             <constraint firstItem="kR8-sm-Ak0" firstAttribute="trailing" secondItem="fx6-xT-ZCO" secondAttribute="trailing" constant="-16" id="hTD-WD-UfJ"/>
-                            <constraint firstItem="MB0-vL-2TQ" firstAttribute="bottom" secondItem="fx6-xT-ZCO" secondAttribute="bottom" id="lNe-Xo-w4L"/>
                             <constraint firstItem="kR8-sm-Ak0" firstAttribute="top" secondItem="PD7-bM-EXX" secondAttribute="bottom" constant="46" id="ntF-dA-oP7"/>
-                            <constraint firstItem="MB0-vL-2TQ" firstAttribute="top" secondItem="PkC-s8-elz" secondAttribute="top" id="yVj-W8-qiC"/>
-                            <constraint firstItem="MB0-vL-2TQ" firstAttribute="leading" secondItem="fx6-xT-ZCO" secondAttribute="leading" id="zQi-5q-w2f"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="fx6-xT-ZCO"/>
                     </view>
                     <navigationItem key="navigationItem" id="Rmc-iP-Hef"/>
                     <connections>
-                        <outlet property="imageView" destination="MB0-vL-2TQ" id="YB3-yf-XL7"/>
                         <outlet property="manualButtonOutlet" destination="0h9-MN-fB3" id="LmW-Xd-1Ie"/>
                         <outlet property="scanButtonOutlet" destination="kR8-sm-Ak0" id="U47-ZT-sh0"/>
                         <segue destination="B99-yZ-naR" kind="show" identifier="goToNodeDetails" id="sOC-xM-b3f"/>
+                        <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScanQuickConnect" id="dK5-1r-ELX"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="jVs-su-0Tn" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -5249,7 +5258,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <!--Node Detail View Controller-->
         <scene sceneID="79C-6o-WJP">
             <objects>
-                <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="B99-yZ-naR" customClass="NodeDetailViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="NodeDetail" extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" useStoryboardIdentifierAsRestorationIdentifier="YES" id="B99-yZ-naR" customClass="NodeDetailViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="B9e-yr-KMo">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -6289,10 +6298,10 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="UBf-qr-XYG"/>
+        <segue reference="qed-hl-jG5"/>
         <segue reference="aQN-4W-cSW"/>
-        <segue reference="jzM-oI-Kmu"/>
-        <segue reference="VU6-gc-B7y"/>
+        <segue reference="CiB-VJ-HaC"/>
+        <segue reference="4UK-no-SgJ"/>
         <segue reference="RbT-dI-IvI"/>
         <segue reference="IVc-aG-8QZ"/>
         <segue reference="cvp-U1-bU5"/>
@@ -6301,7 +6310,8 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="HNI-HG-9ZQ"/>
         <segue reference="oY9-Pq-H5b"/>
-        <segue reference="CLR-a1-fb0"/>
+        <segue reference="dK5-1r-ELX"/>
+        <segue reference="8MS-xS-DMP"/>
         <segue reference="Ikt-mc-dmE"/>
         <segue reference="G1i-Bv-OSl"/>
         <segue reference="qmy-fM-U4p"/>

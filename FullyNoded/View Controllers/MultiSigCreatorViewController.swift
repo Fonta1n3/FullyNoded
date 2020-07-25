@@ -18,6 +18,10 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
     var spinner = ConnectingView()
     var cointType = "0"
     var blockheight = 0
+    var m = Int()
+    var n = Int()
+    var keysString = ""
+    var isDone = Bool()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -56,12 +60,35 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
         }
     }
     
+    private func export() {
+        let text = """
+        Name: Fully Noded
+        Policy: \(m) of \(n)
+        Derivation: m/48'/\(cointType)'/0'/2'
+        Format: P2WSH
+        
+        \(keysString)
+        """
+        if let url = exportMultisigWalletToURL(data: text.dataUsingUTF8StringEncoding) {
+            DispatchQueue.main.async { [unowned vc = self] in
+                let activityViewController = UIActivityViewController(activityItems: ["Multisig Export", url], applicationActivities: nil)
+                activityViewController.popoverPresentationController?.sourceView = vc.view
+                vc.present(activityViewController, animated: true) {}
+            }
+        }
+    }
+    
     @IBAction func help(_ sender: Any) {
         showAlert(vc: self, title: "MultiSig Creator", message: "Here you can add as many signers you like, by default we create a bip39 12 word seed for you (without a passphrase) and derive its account xpub/Zpub and fingerprint. All fields are editable, ensure you add valid words only. If you add valid words the app will derive the new fingerprint/xpub/Zpub for you. You may also delete the words and add a custom xpub or Zpub. If you do not want the device to be able to sign for certain seed words simply delete them and they will never get saved.")
     }
     
     @IBAction func createAction(_ sender: Any) {
-        promptToCreate()
+        if !isDone {
+            promptToCreate()
+        } else {
+            walletSuccessfullyCreated(m: m)
+        }
+        
     }
     
     private func promptToCreate() {
@@ -82,28 +109,16 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
         spinner.addConnectingView(vc: self, description: "creating multisig wallet...")
         var keys = ""
         for (i, signer) in signers.enumerated() {
-            print("signer: \(signer)")
             let fingerprint = signer["fingerprint"] as? String ?? ""
             let xpub = signer["xpub"] as? String ?? ""
             let words = signer["signer"] as? String ?? ""
             if fingerprint != "" {
                 if xpub != "" {
                     keys += "[\(fingerprint)/48'/\(cointType)'/0'/2']\(xpub)/0/*"
+                    keysString += "\(fingerprint):\(xpub)\n"
                     if i < signers.count - 1 {
                         keys += ","
                     }
-//                    if i + 1 == signers.count {
-//                        let rawPrimDesc = "wsh(sortedmulti(\(m),\(keys)))"
-//                        let accountMap = ["descriptor":rawPrimDesc,"label":"MultiSig - \(m) of \(signers.count)", "blockheight": blockheight] as [String:Any]
-//                        ImportWallet.accountMap(accountMap) { [unowned vc = self] (success, errorDescription) in
-//                            if success {
-//                                vc.walletSuccessfullyCreated(m: m)
-//                            } else {
-//                                vc.spinner.removeConnectingView()
-//                                showAlert(vc: vc, title: "There was an error!", message: "Something went wrong during the wallet creation process: \(errorDescription ?? "unknown error")")
-//                            }
-//                        }
-//                    }
                     if words != "" {
                         if let _ = Keys.masterKey(words: words, coinType: cointType, passphrase: "") {
                             Crypto.encryptData(dataToEncrypt: words.dataUsingUTF8StringEncoding) { (encryptedWords) in
@@ -112,6 +127,8 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
                                     CoreDataService.saveEntity(dict: dict, entityName: .signers) { [unowned vc = self] success in
                                         if success {
                                             if i + 1 == vc.signers.count {
+                                                vc.m = m
+                                                vc.n = vc.signers.count
                                                 let rawPrimDesc = "wsh(sortedmulti(\(m),\(keys)))"
                                                 let accountMap = ["descriptor":rawPrimDesc,"label":"MultiSig - \(m) of \(vc.signers.count)", "blockheight": vc.blockheight] as [String:Any]
                                                 ImportWallet.accountMap(accountMap) { (success, errorDescription) in
@@ -160,12 +177,16 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
     }
     
     private func walletSuccessfullyCreated(m: Int) {
+        isDone = true
         DispatchQueue.main.async { [unowned vc = self] in
             vc.spinner.removeConnectingView()
+            vc.createOutlet.setTitle("Done", for: .normal)
             NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-            vc.createOutlet.alpha = 0
-            let alert = UIAlertController(title: "\(m) of \(vc.signers.count) successfully created ✓", message: "Your active wallet tab is refreshing, tap done to go back.", preferredStyle: .actionSheet)
-            alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
+            let alert = UIAlertController(title: "\(m) of \(vc.signers.count) successfully created ✓", message: "Your active wallet tab is refreshing, tap done to go back, tap export to get a text file which holds all necessary info to export your multisig wallet to other apps, this txt file can be directly imported to a Coldcard via the SD card to import it.", preferredStyle: .actionSheet)
+            alert.addAction(UIAlertAction(title: "Export", style: .default, handler: { [unowned vc = self] action in
+                vc.export()
+            }))
+            alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { action in
                 DispatchQueue.main.async {
                     if vc.navigationController != nil {
                         vc.navigationController?.popToRootViewController(animated: true)
@@ -174,6 +195,7 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
                     }
                 }
             }))
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in }))
             alert.popoverPresentationController?.sourceView = vc.view
             vc.present(alert, animated: true, completion: nil)
         }
@@ -320,7 +342,6 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
     }
     
     func textViewDidEndEditing(_ textView: UITextView) {
-        print("did end editing")
         if textView.restorationIdentifier != nil {
             if let index = Int(textView.restorationIdentifier!) {
                 let tag = textView.tag

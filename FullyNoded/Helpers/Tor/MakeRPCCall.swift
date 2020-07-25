@@ -83,7 +83,7 @@ class MakeRPCCall {
                 if method == .gettxoutsetinfo {
                     timeout = 500.0
                 }
-                if method == .importmulti {
+                if method == .importmulti || method == .deriveaddresses {
                     timeout = 30.0
                 }
                 request.timeoutInterval = timeout
@@ -109,8 +109,6 @@ class MakeRPCCall {
                             } else {
                                 
                                 vc.attempts = 0
-                                //vc.errorBool = true
-                                //vc.errorDescription = error!.localizedDescription
                                 #if DEBUG
                                 print("error: \(error!.localizedDescription)")
                                 #endif
@@ -146,23 +144,17 @@ class MakeRPCCall {
                                             
                                         }
                                         
-                                        //vc.errorBool = true
                                         completion((nil, errorDesc))
                                         
                                         
                                     } else {
                                         
-                                        //vc.errorBool = false
-                                        //vc.errorDescription = ""
-                                        //vc.objectToReturn = jsonAddressResult["result"]
                                         completion((jsonAddressResult["result"], nil))
                                         
                                     }
                                     
                                 } catch {
                                     
-                                    //vc.errorBool = true
-                                    //vc.errorDescription = "Uknown Error"
                                     completion((nil, "unknown error"))
                                     
                                 }
@@ -179,8 +171,6 @@ class MakeRPCCall {
                 
             } else {
                 
-                //vc.errorBool = true
-                //vc.errorDescription = "error getting nodes from core data"
                 completion((nil, "error getting nodes from core data"))
                 
             }

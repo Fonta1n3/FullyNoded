@@ -16,6 +16,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     var signer = ""
     var spinner = ConnectingView()
     var coinType = "0"
+    var addresses = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,6 +30,21 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         showAlert(vc: self, title: "Fully Noded Wallets", message: message)
     }
     
+    private func getAddresses() {
+        let param = "\"\(wallet.receiveDescriptor)\", [\(0),\(wallet.maxIndex)]"
+        Reducer.makeCommand(command: .deriveaddresses, param: param) { [unowned vc = self] (response, errorMessage) in
+            if let addres = response as? NSArray {
+                for (i, address) in addres.enumerated() {
+                    vc.addresses += "#\(i): \(address)\n\n"
+                    if i + 1 == addres.count {
+                        DispatchQueue.main.async { [unowned vc = self] in
+                            vc.detailTable.reloadData()
+                        }
+                    }
+                }
+            }
+        }
+    }
     
     private func setCoinType() {
         spinner.addConnectingView(vc: self, description: "fetching chain type...")
@@ -81,6 +97,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                         if walletStruct.id == vc.walletId {
                             vc.wallet = walletStruct
                             vc.findSigner()
+                            vc.getAddresses()
                         }
                     }
                 }
@@ -238,7 +255,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 1417
+        return 1761
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -256,11 +273,15 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         let maxIndexField = cell.viewWithTag(6) as! UITextField
         let signerTextField = cell.viewWithTag(7) as! UITextView
         let watchingTextView = cell.viewWithTag(8) as! UITextView
+        let addressExlorerTextView = cell.viewWithTag(9) as! UITextView
         labelField.delegate = self
         maxIndexField.delegate = self
         receiveDescTextView.layer.cornerRadius = 8
         receiveDescTextView.layer.borderWidth = 0.5
         receiveDescTextView.layer.borderColor = UIColor.darkGray.cgColor
+        addressExlorerTextView.layer.cornerRadius = 8
+        addressExlorerTextView.layer.borderWidth = 0.5
+        addressExlorerTextView.layer.borderColor = UIColor.darkGray.cgColor
         changeDescTextView.layer.cornerRadius = 8
         changeDescTextView.layer.borderWidth = 0.5
         changeDescTextView.layer.borderColor = UIColor.darkGray.cgColor
@@ -285,6 +306,11 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             maxIndexField.text = "\(wallet.maxIndex)"
             currentIndexField.text = "\(wallet.index)"
             signerTextField.text = signer
+            if addresses == "" {
+                addressExlorerTextView.text = "fetching addresses from your node..."
+            } else {
+                addressExlorerTextView.text = addresses
+            }
             if wallet.watching != nil {
                 var watching = ""
                 for watch in wallet.watching! {

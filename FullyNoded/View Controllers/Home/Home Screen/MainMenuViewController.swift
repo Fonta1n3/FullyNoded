@@ -82,7 +82,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func torConnFinished() {
-        print("finished connecting")
         viewHasLoaded = true
         removeBackView()
         loadTable()

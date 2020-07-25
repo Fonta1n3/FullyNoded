@@ -12,6 +12,8 @@ class QRScannerViewController: UIViewController {
     
     var onImportDoneBlock : (([String:Any]?) -> Void)?
     var isAccountMap = Bool()
+    var isQuickConnect = Bool()
+    var onQuickConnectDoneBlock : ((String?) -> Void)?
     let spinner = ConnectingView()
     let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     let qrImageView = UIImageView()
@@ -110,6 +112,13 @@ class QRScannerViewController: UIViewController {
                 } catch {
                     spinner.removeConnectingView()
                     showAlert(vc: self, title: "Errore", message: "That is not a valid account map")
+                }
+            }
+        } else if isQuickConnect {
+            spinner.removeConnectingView()
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.dismiss(animated: true) {
+                    vc.onQuickConnectDoneBlock!(text)
                 }
             }
         }
