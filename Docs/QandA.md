@@ -3,6 +3,8 @@ Selected from the open Telegram *Fully Noded* group [here](https://t.me/FullyNod
 
 Beware: A Q&A is always *work in progress*. Tips & help welcome.
 
+Henk van Cann
+
 ### Disclaimer
 None of the respondents in the **open** Telegram group have been explicitely named as a source, except for ***@Fonta1n3***. For practical reasons educational images uploaded by Telegram group members have been downloaded to [Imgbb](http://imgbb.com), we de-personalised them by giving images a new name. Under these new names these images have been used in the Q&A to clarify the questions and answers.
 
