@@ -58,6 +58,9 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 - Trezor : a type of hardware wallet to store, send and receive crypto currencies
 - Tor:Tor is free and open-source software for enabling anonymous communication. The name derived from the acronym for the original software project name "The Onion Router". [Read more in Wikipedia](https://en.wikipedia.org/wiki/Tor_(anonymity_network))
 - Node: A bitcoin full Node is a independent entity in a peer to peer ecosystem. A Node independently checks and verifies all protocol rules for incoming broadcasted transactions. A full node does not trust, but verifies. Technically speaking a *node* is a computer connected to other computers which follows rules and shares information. A *'full node'* is a computer in Bitcoin's peer-to-peer network which hosts and synchronises a copy of the entire Bitcoin blockchain. [Here](https://medium.com/@gloriazhao/map-of-the-bitcoin-network-c6f2619a76f3) is an excellent read on nodes, what they are and the differences between types of nodes.
+- Standup app: is a personal one-click Mac OS installer for Bitcoin Core and Tor that will present a QuickConnect QR code that can be used to pair mobile wallets for remote use over Tor V3. [Read more](https://github.com/BlockchainCommons/GordianSystem)
+- Datadir: TBW
+- bitcoin.conf: TBW 
 
 ## Knowledge you should be confidently applying
 - The definitions above
@@ -239,3 +242,11 @@ The coldcard export and the txt file are basically `descriptors`.... when you im
 
 #### Question : how to create a 2 of 2 multisig wallet with my Coldcard and FullyNoded?
 Video on how to easily create a 2 of 2 multisig wallet with your Coldcard and FullyNoded: https://m.youtube.com/watch?v=daXvAcHy8H0
+
+#### Question : In `wallet - invoice`: Is there a way I can go back to a previous receive wallet address?
+not really... its possible if you imported multisig descriptors manually though.<br/>
+We should discourage the re-use of receiving addresses for the sake of privacy protection.<br/>
+
+#### Question : If I allready have a full node running on my Mac. Can I use the standup app with it?
+`Standup` app is fully compatible with existing nodes, but you can not specify a `datadir` or a network in your `bitcoin.conf`
+You do not need to delete anything, generally speaking.
