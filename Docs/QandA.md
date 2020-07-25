@@ -216,13 +216,13 @@ https://bitcoinfaucet.uo1.net/; accepts bech32 multisig
 Need to look into it more, not an expert. Standup is the first macos app i ever made... the app itself would probably need to run everything. I mean as it is its a notarized dmg, we can just add it as a link on any website and it downloads no problem.
 
 #### Question : So where is the private key stored then? On disk somewhere?
-A: If you create a “Fully Noded Wallet” the words are encrypted and stored on the devices keychain which is yet again encrypted
+If you create a “Fully Noded Wallet” the words are encrypted and stored on the devices keychain which is yet again encrypted
 Then we derive the child. Private key on the fly everytime you go to send or sign a tx from the words
 
 #### Further elaboration on the question: and since everything on iOS is sandboxed its pretty difficult for a different process or thread to peek at the contents of fully noded; right?
 Further elaboration on the answer :  Should be “impossible “
 The worst malware i can find are adware where an app gets you to click invisible ads.
 
-#### Question : The keychain encryption key is stored on the secure enclave? So its very hard to crack that open once you have the device
-which bricks itself without the icloud password?
+#### Question : The keychain encryption key is stored on the secure enclave? 
+         **So its very hard to crack that open once you have the device, which bricks itself without the icloud password?**<br/>
 On FN its stored on the local keychain (secure enclave) only, no icloud support. FN2 account xprv can be synced to icloud. But again its encrypted three times by then.
