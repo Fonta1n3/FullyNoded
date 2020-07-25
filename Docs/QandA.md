@@ -258,7 +258,8 @@ Standup, BTCPayServer, Nodl, myNode and Raspiblitz are supporting the QR. The "S
 
 I talk about **Tor V3 auth, this should definitely be used, if you want to share your node** as if that QR gets leaked and you do not have auth setup anyone can access your node (your trusted others may share without you knowing for example). However with auth you need to explicitly add their pubic key to your nodes tor config, for example I can give you my QR codes but they are useless to you.
 
-
+#### Question : Have you been able to overwrite other apps associations?
+If you airdrop FN gives a choice
 
 #### Question :  Does this imply that using my node is not private?
 <img src="https://i.ibb.co/7KF7h1p/use-my-node.jpg" alt="use-my-node" border="0" width="400"><br/>
