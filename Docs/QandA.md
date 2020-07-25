@@ -248,6 +248,9 @@ Video on how to easily create a 2 of 2 multisig wallet with your Coldcard and Fu
 not really... its possible if you imported multisig descriptors manually though.<br/>
 We should discourage the re-use of receiving addresses for the sake of privacy protection.<br/>
 
+#### Question : "Transaction invalid: some outputs that it attempts to spend have been already spent or ... Did I set my fee's too low?
+It probably was not `RBF` enabled to begin with.
+
 ## Standup app
 
 #### Question : If I allready have a full node running on my Mac. Can I use the standup app with it?
@@ -258,5 +261,5 @@ You do not need to delete anything, generally speaking.
 yes, in settings youll see a `datadir` box where you can "choose" a new folder. I would recommend just pruning and adding prune=550 to the `bitcoin.conf` then it will only ever take up 550mb of spcae but you still get full validation.
 
 the benefit of that is you do not need an external drive, you can just use the external to back everything up. i think doing an initial block download (IBD) to an external drive slows it down quite a bit <br/>
-Henk van Cann: it depends on the speed of the external drive, some can reach up to 500 Mbit/sec.
+Henk van Cann: it depends on the speed of the external drive, some can reach up to 500 Mbit/sec, cheapies or oldies won't go beyond 50 Mbit/sec which will be a pain.
 
