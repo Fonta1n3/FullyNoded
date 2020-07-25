@@ -251,6 +251,15 @@ We should discourage the re-use of receiving addresses for the sake of privacy p
 #### Question : "Transaction invalid: some outputs that it attempts to spend have been already spent or ... Did I set my fee's too low?
 It probably was not `RBF` enabled to begin with.
 
+#### Question : FN latest: “Added ability to share your node”. Please explain?
+Embassy allows you to add your Node credentials manually, but I had come up with a url scheme that converts your node's credentials into a "Quick Connect QR" https://github.com/Fonta1n3/FullyNoded#quickconnect-url-scheme. 
+
+Standup, BTCPayServer, Nodl, myNode and Raspiblitz are supporting the QR. The "Share" button on your "node details" just takes your current node credentials and puts them into that QR format so anyone can scan the QR and connect to your node. 
+
+I talk about **Tor V3 auth, this should definitely be used, if you want to share your node** as if that QR gets leaked and you do not have auth setup anyone can access your node (your trusted others may share without you knowing for example). However with auth you need to explicitly add their pubic key to your nodes tor config, for example I can give you my QR codes but they are useless to you.
+
+
+
 #### Question :  Does this imply that using my node is not private?
 <img src="https://i.ibb.co/7KF7h1p/use-my-node.jpg" alt="use-my-node" border="0" width="400"><br/>
 *I think it should say third party service or use my own node. In fact this should be a setting that you opt in right?*<br/>
