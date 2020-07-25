@@ -252,8 +252,8 @@ We should discourage the re-use of receiving addresses for the sake of privacy p
 It probably was not `RBF` enabled to begin with.
 
 #### Question :  Does this imply that using my node is not private?
-<img src="https://i.ibb.co/7KF7h1p/use-my-node.jpg" alt="use-my-node" border="0">
-*I think it should say third party service or use my own node. In fact this should be a setting that you opt in right?*
+<img src="https://i.ibb.co/7KF7h1p/use-my-node.jpg" alt="use-my-node" border="0" width="400"><br/>
+*I think it should say third party service or use my own node. In fact this should be a setting that you opt in right?*<br/>
 Javier: I think that option is in case your node is not running Tor. If your bitcoind instance is not running over Tor each tx propagated is more likely to be desanonymized.   That’s the reason to choose propagate Esplora API. 
 
 ## Standup app
