@@ -1,5 +1,5 @@
 # Q&A about Fully Noded
-Inspired by questions asked on the open Telegram *Fully Noded* group [here](https://t.me/FullyNoded).
+Inspired by questions asked on the open Telegram *Fully Noded* group [here](https://t.me/FullyNoded) and [Twitter](https://twitter.com/FullyNoded).
 
 Beware: A Q&A is always *work in progress*. Tips & help welcome.
 
@@ -183,3 +183,46 @@ source .env/bin/activate
 python3 -m cryptoadvance.specter server
 ```
 See [this](https://github.com/Fonta1n3/FullyNoded#importing-a-wallet-from-specter) for instructions on exporting a wallet from Specter to FN.
+
+#### Question : do I tell what version of fully nonded im using on my IOS device?
+Nowhere, will add it to the header of settings<br/>
+
+#### Question : Made 2 single sig wallets in FN.  both have same signer words?<br/>
+<img src="https://i.ibb.co/bv2hjH2/double-same-sig-wallets-FN.jpg" alt="double-same-sig-wallets-FN" border="0" width="200"><br/>
+Ignore wallet manager<br/>
+Tap the squares button on the active wallet view<br/>
+Use your Fully Noded wallets from there<br/>
+After deleting wallets via powershell make sure you restart your node<br/>
+Just use the one you’ve got in the Fully Noded wallets, Delete the other one from your node, that originally failed<br/>
+
+#### Further elaboration on the answer
+TBW<br/>
+
+#### Question : where can I download this? <br/>
+<img src="https://i.ibb.co/0CRPVkt/standup-screen.jpg" alt="standup-screen" border="0" width="200"><br/>
+[here](https://github.com/BlockchainCommons/Bitcoin-Standup-MacOS/blob/master/Standup_0.1.1.dmg) is the notarized and pgp signed dmg
+Just click download and then open it<br/>
+
+#### Question : what is the recovery wallet?
+Read the manual [here](https://medium.com/@FullyNoded/introducing-fully-noded-wallets-9fc2e4837102)
+
+#### Question : can fullynoded recover mycelium wallets?
+Mycelium on iOs is not maintained. But yes, FN should be able to recover your wallets. According to walletsrecovery.org they are bip44/49/84, if thats correct then it certainly will
+
+#### Question : Which faucet works the most reliable for testnet:
+https://bitcoinfaucet.uo1.net/; accepts bech32 multisig
+
+#### Question : what kind of compromises would standup have to make in order to be distributed via the mac app store?
+Need to look into it more, not an expert. Standup is the first macos app i ever made... the app itself would probably need to run everything. I mean as it is its a notarized dmg, we can just add it as a link on any website and it downloads no problem.
+
+#### Question : So where is the private key stored then? On disk somewhere?
+A: If you create a “Fully Noded Wallet” the words are encrypted and stored on the devices keychain which is yet again encrypted
+Then we derive the child. Private key on the fly everytime you go to send or sign a tx from the words
+
+#### Further elaboration on the question: and since everything on iOS is sandboxed its pretty difficult for a different process or thread to peek at the contents of fully noded; right?
+Further elaboration on the answer :  Should be “impossible “
+The worst malware i can find are adware where an app gets you to click invisible ads.
+
+#### Question : The keychain encryption key is stored on the secure enclave? So its very hard to crack that open once you have the device
+which bricks itself without the icloud password?
+On FN its stored on the local keychain (secure enclave) only, no icloud support. FN2 account xprv can be synced to icloud. But again its encrypted three times by then.
