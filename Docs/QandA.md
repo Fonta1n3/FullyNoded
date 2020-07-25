@@ -236,3 +236,6 @@ An `xpub` is very generic and you need more info to go with it <to do what? - TB
 `Descriptor` is a very specific way of telling a wallet to derive these very specific keys, `xpub` is not specific at all and up for lots of interpretation with possibility of really messing it up.
 
 The coldcard export and the txt file are basically `descriptors`.... when you import an `xpub` into FN it gets converted onto a `descriptor`. When you create a multisig wallet it creates a `descriptor` for you and the wallet uses the `descriptor` to derive keys.
+
+#### Question : how to create a 2 of 2 multisig wallet with my Coldcard and FullyNoded?
+Video on how to easily create a 2 of 2 multisig wallet with your Coldcard and FullyNoded: https://m.youtube.com/watch?v=daXvAcHy8H0
