@@ -141,6 +141,29 @@ Update: Think it should be fixed now, please try again when next update goes liv
 
 ##Import
 
+#### Question : I got the zpub from electrum. I thought that if you use a bech32 wallet, you get a zpub not xpub?
+
+Fully Noded only takes `xpub` (from what i can tell you can not import `zpub` into bitcoin core)
+
+If you have the `xpub` just select `bip84` in settings and it will derive bip84 addresses (bc1). You can use an xpub to generate `bech32` addresses, electrum does things a bit differently...
+
+I think the reason electrum (and some wallets use zpub ypub etcc) is so the wallet knows which type of address to create, **at the end of the day what your are dealing with are private keys**, and there is only one type of private key, just different address types which are derived from the private key
+
+Unless you opted in to using `BIP39` in electrum, your electrum `xpub` will not work in Fully Noded for now. You can create a new wallet in electrum, opt in to BIP39 and then it should work.
+
+If you want to read about it from Peter Wuille [here](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md) it is (for what you can import into bitcoin core).
+
+I got a good answer from Andrew Chow [here](https://bitcoin.stackexchange.com/questions/89261/why-does-importmulti-not-support-zpub-and-ypub)
+
+#### Question : Why does importmulti not support zpub and ypub?
+
+As far as I can tell importmulti does not work with zpub/ypub.
+
+*Why not?*<br/>
+I prefer only to deal with xpubs, but I am curious. Basically zpub,ypub is not part of bitcoin but an add on for wallets
+
+Max: Lopp has a nice tool for switching an XPUB to a YPUB or ZUB and vice versa, [here](https://jlopp.github.io/xpub-converter/)
+
 #### Question : I am not sure, I forgot, So have I basically at some point imported a bunch of addresses?
 Your node(e.g. `nodl`) should see that too though.<br/>
 The best way to do it is create new wallets in the node<br/>
@@ -262,6 +285,7 @@ Javier: I think that option is in case your node is not running Tor. If your bit
 #### Question : I get a channel alocation error when I try to add a Xpub. What could go wrong?
 
 Means the ssh channel closed. Just go to home screen and pull to reconnect.<br/>
+It takes around 20-30 seconds when you import an xpub, so just wait for it to finish
 
 #### Question : In true airgapped situation: no need for a Coldcard? Just create signed TXs on the airgapped laptop?
 
