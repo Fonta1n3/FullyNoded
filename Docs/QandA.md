@@ -159,6 +159,10 @@ A `.txn` file is a signed raw transaction as exported by Coldcard. Fully Noded h
 
 You can only broadcast signed raw transactions. The only purpose of psbts is to end up with a signed raw transaction. e.g. The `.txn` file from Coldcard.
 
+#### Question : Hardware wallet support?
+<img src="https://i.ibb.co/F0R5Bvc/Hardware-wallets.jpg" alt="Hardware-wallets" border="0" width="200">
+They should all work with Fully Noded too. You can import your `xpub` directly into your node from your hardware wallets. I import my `coldcard` wallet xpub with Fully Noded, then build `PSBTs` with it.
+
 ## General
 
 #### Question : Why did you choose iOS to build on? Any advantage compared to Android?
