@@ -31,14 +31,52 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func getAddresses() {
-        let param = "\"\(wallet.receiveDescriptor)\", [\(0),\(wallet.maxIndex)]"
-        Reducer.makeCommand(command: .deriveaddresses, param: param) { [unowned vc = self] (response, errorMessage) in
-            if let addres = response as? NSArray {
-                for (i, address) in addres.enumerated() {
-                    vc.addresses += "#\(i): \(address)\n\n"
-                    if i + 1 == addres.count {
-                        DispatchQueue.main.async { [unowned vc = self] in
-                            vc.detailTable.reloadData()
+        var desc = wallet.receiveDescriptor
+        if wallet.type == "Single-Sig" {
+            let ud = UserDefaults.standard
+            let nativeSegwit = ud.object(forKey: "nativeSegwit") as? Bool ?? true
+            let p2shSegwit = ud.object(forKey: "p2shSegwit") as? Bool ?? false
+            let legacy = ud.object(forKey: "legacy") as? Bool ?? false
+            if nativeSegwit {
+                desc = desc.replacingOccurrences(of: "combo", with: "wpkh")
+            } else if legacy {
+                desc = desc.replacingOccurrences(of: "combo", with: "pkh")
+            } else if p2shSegwit {
+                desc = desc.replacingOccurrences(of: "combo", with: "sh(wpkh")
+                desc = desc.replacingOccurrences(of: "#", with: ")#")
+            }
+            let arr = desc.split(separator: "#")
+            let bareDesc = "\(arr[0])"
+            Reducer.makeCommand(command: .getdescriptorinfo, param: "\"\(bareDesc)\"") { [unowned vc = self] (response, errorMessage) in
+                if let dict = response as? NSDictionary {
+                    if let descriptor = dict["descriptor"] as? String {
+                        let param = "\"\(descriptor)\", [\(0),\(vc.wallet.maxIndex)]"
+                        Reducer.makeCommand(command: .deriveaddresses, param: param) { [unowned vc = self] (response, errorMessage) in
+                            if let addres = response as? NSArray {
+                                for (i, address) in addres.enumerated() {
+                                    vc.addresses += "#\(i): \(address)\n\n"
+                                    if i + 1 == addres.count {
+                                        DispatchQueue.main.async { [unowned vc = self] in
+                                            vc.detailTable.reloadData()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
+        } else {
+            let param = "\"\(wallet.receiveDescriptor)\", [\(0),\(wallet.maxIndex)]"
+            Reducer.makeCommand(command: .deriveaddresses, param: param) { [unowned vc = self] (response, errorMessage) in
+                if let addres = response as? NSArray {
+                    for (i, address) in addres.enumerated() {
+                        vc.addresses += "#\(i): \(address)\n\n"
+                        if i + 1 == addres.count {
+                            DispatchQueue.main.async { [unowned vc = self] in
+                                vc.detailTable.reloadData()
+                            }
                         }
                     }
                 }
