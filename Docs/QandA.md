@@ -259,6 +259,10 @@ Javier: I think that option is in case your node is not running Tor. If your bit
 
 ## Connection
 
+#### Question : I get a channel alocation error when I try to add a Xpub. What could go wrong?
+
+Means the ssh channel closed. Just go to home screen and pull to reconnect.<br/>
+
 #### Question : In true airgapped situation: no need for a Coldcard? Just create signed TXs on the airgapped laptop?
 
 Some people would argue that its more secure to create keys on the `coldcard`. Also getting software onto the airgapped laptop without compromising the security of it, is another factor.
