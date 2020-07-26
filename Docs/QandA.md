@@ -124,6 +124,13 @@ Just use the one you’ve got in the Fully Noded wallets, Delete the other one f
 #### Further elaboration on the answer
 TBW<br/>
 
+#### Question : Why is camera always active in the wallet?
+<img src="https://i.ibb.co/s2WSdn5/camera-active-wallet.jpg" alt="camera-active-wallet" border="0" width="200"><br/>
+should only be active when you are scanning a QR code...<br/>
+when you swipe down or close the QR scanner it dismisses all camera related code<br/>
+For now, i guess if you do not want it to use the camera just disable that in the devices settings<br/>
+I will look into it, give it more though and see what I can do<br/>
+If the camera is dismissed and not being used, it makes no sense that the light would stay on
 
 ##Import
 
@@ -192,7 +199,7 @@ If you airdrop FN gives a choice
 
 #### Question :  Does this imply that using my node is not private?
 
-<img src="https://i.ibb.co/7KF7h1p/use-my-node.jpg" alt="use-my-node" border="0" width="400"><br/>
+<img src="https://i.ibb.co/7KF7h1p/use-my-node.jpg" alt="use-my-node" border="0" width="200"><br/>
 *I think it should say third party service or use my own node. In fact this should be a setting that you opt in right?*<br/>
 Javier: I think that option is in case your node is not running Tor. If your bitcoind instance is not running over Tor each tx propagated is more likely to be desanonymized.   That’s the reason to choose propagate Esplora API. 
 
