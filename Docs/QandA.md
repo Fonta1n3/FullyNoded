@@ -81,8 +81,8 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 1. [General](#General)
 2. [Standup](#Standup)
 3. [Userinterface](#Userinterface)
-4. [Import](#Import from)
-5. [Export](#Export to)
+4. [Import](#Import)
+5. [Export](#Export)
 6. [Wallets](#Wallets)
 7. [Connection](#Connection)
 
