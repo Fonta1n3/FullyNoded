@@ -171,12 +171,6 @@ So its a true airgap.<br/>
 Then you create your qr codes on the airgapped laptop, and scan signed txs with the phone<br/>
 Build your unsigned transactions on your phone, and send them to airgapped laptop via QR code scanning.
 
-#### Question : In true airgapped situation: no need for a Coldcard? Just create signed TXs on the airgapped laptop?
-
-Some people would argue that its more secure to create keys on the `coldcard`. Also getting software onto the airgapped laptop without compromising the security of it, is another factor.
-
-Max: I wouldn’t be so worried about an air gapped laptop. As it’d only be handling transactions that had been signed.
-
 ## Export
 
 #### Question : Why doesn't broadcast work via my Node?
@@ -243,6 +237,12 @@ If you airdrop FN gives a choice
 Javier: I think that option is in case your node is not running Tor. If your bitcoind instance is not running over Tor each tx propagated is more likely to be desanonymized.   That’s the reason to choose propagate Esplora API. 
 
 ## Connection
+
+#### Question : In true airgapped situation: no need for a Coldcard? Just create signed TXs on the airgapped laptop?
+
+Some people would argue that its more secure to create keys on the `coldcard`. Also getting software onto the airgapped laptop without compromising the security of it, is another factor.
+
+Max: I wouldn’t be so worried about an air gapped laptop. As it’d only be handling transactions that had been signed.
 
 #### Question : How do we get the rpc credentials on the nodl?
 
