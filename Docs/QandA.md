@@ -138,6 +138,12 @@ Update: Think it should be fixed now, please try again when next update goes liv
 
 ##Import
 
+#### Question : I am not sure, I forgot, So have I basically at some point imported a bunch of addresses?
+Your node(e.g. `nodl`) should see that too though.<br/>
+The best way to do it is create new wallets in the node<br/>
+In the app you go to utilities and create new wallet, and you import your `xpub` then. That way you can have multiple wallets that are dedicated for individual xpubs. <br/>
+
+
 #### Question : How to import my BRD wallet?
 
 You can go to the “active wallet” tab > + button > recovery > input your BRD seed words and optional BIP39 passphrase, then tap recover or you can import the `xpub` via `Active Wallet` > `import` > `xpub`
