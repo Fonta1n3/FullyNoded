@@ -164,7 +164,18 @@ You have to take the sd-card and put it into a computer and create the qr.
 #### Further question : what the added benifit of going through the iPhone?
 *It is just that if someone is signing a tx on their coldcard, then going to SD, they may as well broadcast from their computer rather than move it to their phone?*
 
-Once you've done this, you can build `PSBT` and unsigned transactions and receive to your hw wallet.
+Once you've done this, you can build `PSBT` and unsigned transactions and receive to your hw wallet.<br/>
+My ideal setup is to have an airgapped laptop<br/>
+And that SD card only ever touches the coldard wallet and the airgapped laptop<br/>
+So its a true airgap.<br/>
+Then you create your qr codes on the airgapped laptop, and scan signed txs with the phone<br/>
+Build your unsigned transactions on your phone, and send them to airgapped laptop via QR code scanning.
+
+#### Question : In true airgapped situation: no need for a Coldcard? Just create signed TXs on the airgapped laptop?
+
+Some people would argue that its more secure to create keys on the `coldcard`. Also getting software onto the airgapped laptop without compromising the security of it, is another factor.
+
+Max: I wouldn’t be so worried about an air gapped laptop. As it’d only be handling transactions that had been signed.
 
 ## Export
 
