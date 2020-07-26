@@ -64,6 +64,7 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 - initial block download (IBD): TBW
 - Nodl: TBW
 - RPC: Remote Procedure Calls
+- bitcoind: Bitcoin Deamon, background process running a bitcoin node. Bitcoind is a program that implements the Bitcoin protocol for remote procedure call (RPC) use. It is also the second Bitcoin client in the network's history. It is available under the MIT license in 32-bit and 64-bit versions for Windows, GNU/Linux-based OSes, and Mac OS X. [Read more](https://en.bitcoin.it/wiki/Bitcoind)
 
 ## Knowledge you should be confidently applying
 - The definitions above
@@ -88,6 +89,7 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 6. [Wallets](#Wallets)
 7. [Connection](#Connection)
 8. [Transactions](#Transactions)
+9. [Node](#Node)
 
 # Q&A
 
@@ -402,3 +404,9 @@ Henk van Cann: it depends on the speed of the external drive, some can reach up 
 #### Question : How do I specify a fee rate in FN?
 
 You can just set the min relay fee (smallest possible amount) and if the transaction doesn't get confirmed, you can "bump" it, i.e. use Replace By Fee transaction. That is a new transaction with a higher fee using the same `UTXOs` as an input.
+
+## Node
+
+#### Question : I changed bitcoin.conf according to guideline, why is it still not working?
+
+Did you restart your node? If you change config file you need to restart `bitcoind`.
