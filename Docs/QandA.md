@@ -184,6 +184,10 @@ They should all work with Fully Noded too. You can import your `xpub` directly i
 
 ## General
 
+#### Question : What is your privacy policy and how to comply with GPDR?
+
+[Here](https://fonta1n3.github.io/privacy-policy/) is the privacy policy. It inherently complies with GDPR.
+
 #### Question : Why did you choose iOS to build on? Any advantage compared to Android?
 
 Only because that is what I know how to code with and what I am a user of.
