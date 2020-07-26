@@ -12,7 +12,7 @@ import LibWally
 class Keys {
     
     class func donationAddress() -> String? {
-        let randomInt = Int.random(in: 0..<5000)
+        let randomInt = Int.random(in: 0..<10000)
         if let hdKey = HDKey("xpub6C1DcRZo4RfYHE5F4yiA2m26wMBLr33qP4xpVdzY1EkHyUdaxwHhAvAUpohwT4ajjd1N9nt7npHrjd3CLqzgfbEYPknaRW8crT2C9xmAy3G") {
             if let path = BIP32Path("0/\(randomInt)") {
                 do {

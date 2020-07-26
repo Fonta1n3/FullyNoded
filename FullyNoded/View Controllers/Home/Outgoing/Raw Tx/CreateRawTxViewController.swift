@@ -69,6 +69,14 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
+    @IBAction func makeADonationAction(_ sender: Any) {
+        if let address = Keys.donationAddress() {
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.addressInput.text = address
+                showAlert(vc: vc, title: "Thank you!", message: "A donation address has automatically been added so you may build a transaction which will fund further development of Fully Noded.\n\nFully Noded is free but has cost an enormous amount of time, blood, sweat and tears to bring it to where it is today as well as a significant amount of money.\n\nPlease donate generously so that the app may remain free for all to use and so that new awesome features can continue to be added!")
+            }
+        }
+    }
     
     func configureScanner() {
         

@@ -4258,7 +4258,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                                 <nil key="highlightedColor"/>
                             </label>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="jXp-xP-J4h">
-                                <rect key="frame" x="16" y="184" width="343" height="305"/>
+                                <rect key="frame" x="16" y="278" width="343" height="305"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="343" id="dAH-4K-TTt"/>
@@ -4323,19 +4323,42 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                                     <action selector="scanNow:" destination="pUo-bf-sNm" eventType="touchUpInside" id="Ejm-mN-y6v"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="characterWrap" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9FE-8A-o8A">
+                                <rect key="frame" x="16" y="186" width="343" height="57"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="57" id="PpM-Vn-SHV"/>
+                                </constraints>
+                                <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <state key="normal">
+                                    <attributedString key="attributedTitle">
+                                        <fragment content="Make a donation to support continued development of Fully Noded!">
+                                            <attributes>
+                                                <font key="NSFont" metaFont="system" size="15"/>
+                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                            </attributes>
+                                        </fragment>
+                                    </attributedString>
+                                </state>
+                                <connections>
+                                    <action selector="makeADonationAction:" destination="pUo-bf-sNm" eventType="touchUpInside" id="uo8-Z3-Q5c"/>
+                                </connections>
+                            </button>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="hCl-Q8-hd5">
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                             </imageView>
                         </subviews>
                         <color key="backgroundColor" red="0.078040815889835358" green="0.090017892420291901" blue="0.1025182381272316" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
+                            <constraint firstItem="C0H-pw-RSl" firstAttribute="trailing" secondItem="9FE-8A-o8A" secondAttribute="trailing" constant="16" id="4cx-W1-ViO"/>
                             <constraint firstItem="C0H-pw-RSl" firstAttribute="trailing" secondItem="jXp-xP-J4h" secondAttribute="trailing" constant="16" id="561-gS-kW0"/>
                             <constraint firstItem="WP2-Zk-iPW" firstAttribute="top" secondItem="C0H-pw-RSl" secondAttribute="top" constant="12" id="8py-du-qbt"/>
                             <constraint firstItem="C0H-pw-RSl" firstAttribute="trailing" secondItem="DPZ-i4-CIL" secondAttribute="trailing" constant="19.5" id="9N5-Hf-qXF"/>
                             <constraint firstItem="hCl-Q8-hd5" firstAttribute="top" secondItem="DIN-Fg-EH6" secondAttribute="top" id="9aj-Tf-f3P"/>
                             <constraint firstItem="uIC-Eu-XZD" firstAttribute="top" secondItem="WBT-v4-ipz" secondAttribute="bottom" constant="8" id="DXs-Lg-hVd"/>
+                            <constraint firstItem="9FE-8A-o8A" firstAttribute="top" secondItem="vOa-19-8RX" secondAttribute="bottom" constant="8" id="DpV-Un-4TD"/>
                             <constraint firstItem="jXp-xP-J4h" firstAttribute="leading" secondItem="C0H-pw-RSl" secondAttribute="leading" constant="16" id="HMJ-p4-PHt"/>
                             <constraint firstItem="DWs-Qd-5JU" firstAttribute="leading" secondItem="vOa-19-8RX" secondAttribute="trailing" constant="8" id="IgC-e3-cIa"/>
+                            <constraint firstItem="9FE-8A-o8A" firstAttribute="leading" secondItem="C0H-pw-RSl" secondAttribute="leading" constant="16" id="Kd9-O1-M2j"/>
                             <constraint firstItem="uIC-Eu-XZD" firstAttribute="leading" secondItem="C0H-pw-RSl" secondAttribute="leading" constant="16" id="LUf-xe-94t"/>
                             <constraint firstItem="hCl-Q8-hd5" firstAttribute="leading" secondItem="C0H-pw-RSl" secondAttribute="leading" id="OxE-DM-w3a"/>
                             <constraint firstItem="WBT-v4-ipz" firstAttribute="top" secondItem="WP2-Zk-iPW" secondAttribute="bottom" constant="2" id="PVV-4W-qTm"/>
@@ -4347,9 +4370,9 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                             <constraint firstItem="vOa-19-8RX" firstAttribute="leading" secondItem="uIC-Eu-XZD" secondAttribute="leading" id="kHy-kf-yQ0"/>
                             <constraint firstItem="hCl-Q8-hd5" firstAttribute="bottom" secondItem="C0H-pw-RSl" secondAttribute="bottom" id="nv9-qL-otg"/>
                             <constraint firstItem="DWs-Qd-5JU" firstAttribute="centerY" secondItem="vOa-19-8RX" secondAttribute="centerY" id="oPo-KE-Pf3"/>
+                            <constraint firstItem="jXp-xP-J4h" firstAttribute="top" secondItem="9FE-8A-o8A" secondAttribute="bottom" constant="35" id="rLz-lO-0UG"/>
                             <constraint firstItem="hCl-Q8-hd5" firstAttribute="trailing" secondItem="C0H-pw-RSl" secondAttribute="trailing" id="sCh-Gb-jd7"/>
                             <constraint firstItem="DPZ-i4-CIL" firstAttribute="centerY" secondItem="WBT-v4-ipz" secondAttribute="centerY" id="tZK-Fs-Afh"/>
-                            <constraint firstItem="jXp-xP-J4h" firstAttribute="top" secondItem="vOa-19-8RX" secondAttribute="bottom" constant="6" id="vC1-SQ-Anu"/>
                             <constraint firstItem="vOa-19-8RX" firstAttribute="leading" secondItem="C0H-pw-RSl" secondAttribute="leading" constant="16" id="vVQ-E1-VyW"/>
                             <constraint firstItem="C0H-pw-RSl" firstAttribute="trailing" secondItem="uIC-Eu-XZD" secondAttribute="trailing" constant="228" id="zS0-Fa-vNX"/>
                         </constraints>
