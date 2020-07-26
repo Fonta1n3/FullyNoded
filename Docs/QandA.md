@@ -244,6 +244,10 @@ Some people would argue that its more secure to create keys on the `coldcard`. A
 
 Max: I wouldn’t be so worried about an air gapped laptop. As it’d only be handling transactions that had been signed.
 
+#### Question : Do I have to be in the same network?
+
+Best way to find out is try. FN over Tor v3 should allow you to access from anywhere.
+
 #### Question : How do we get the rpc credentials on the nodl?
 
 You have to log in like this [link](https://docs.lightning-solutions.eu/nodl-box/advanced/how-to-access-bitcoin-cli-and-lncli) shows you.
