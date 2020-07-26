@@ -87,6 +87,7 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 5. [Export](#Export)
 6. [Wallets](#Wallets)
 7. [Connection](#Connection)
+8. [Transactions](#Transactions)
 
 # Q&A
 
@@ -312,6 +313,7 @@ See [this](https://github.com/Fonta1n3/FullyNoded#importing-a-wallet-from-specte
 
 ## Wallets
 
+
 #### Question : How I can erase a wallet in Fullynoded? or modify a name?
 
 If your node is on a mac you will need to navigate to
@@ -395,3 +397,8 @@ yes, in settings youll see a `datadir` box where you can "choose" a new folder. 
 the benefit of that is you do not need an external drive, you can just use the external to back everything up. i think doing an initial block download (IBD) to an external drive slows it down quite a bit <br/>
 Henk van Cann: it depends on the speed of the external drive, some can reach up to 500 Mbit/sec, cheapies or oldies won't go beyond 50 Mbit/sec which will be a pain.
 
+## Transactions
+
+#### Question : How do I specify a fee rate in FN?
+
+You can just set the min relay fee (smallest possible amount) and if the transaction doesn't get confirmed, you can "bump" it, i.e. use Replace By Fee transaction. That is a new transaction with a higher fee using the same `UTXOs` as an input.
