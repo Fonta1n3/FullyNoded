@@ -79,16 +79,16 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 
 # Jump table to categories
 1. [General](#General)
-2. [Standup app](#Standup app)
-3. [FN User interface](#FN User interface)
-4. [Import from](#Import from)
-5. [Export to](#Export to)
-6. [External wallets and key management](#External wallets and key management)
+2. [Standup](#Standup)
+3. [Userinterface](#Userinterface)
+4. [Import](#Import from)
+5. [Export](#Export to)
+6. [Wallets](#Wallets)
 7. [Connection](#Connection)
 
 # Q&A
 
-## FN User interface
+## Userinterface
 
 #### Question : This button should bring up info and allow me to make changes?
 <img src="https://i.ibb.co/N1FKq50/refresh-info.jpg" alt="refresh-info" border="0" width="200">
@@ -125,7 +125,7 @@ Just use the one you’ve got in the Fully Noded wallets, Delete the other one f
 TBW<br/>
 
 
-##Import from
+##Import
 
 #### Question : How to import my BRD wallet?
 
@@ -136,7 +136,7 @@ You can go to the “active wallet” tab > + button > recovery > input your BRD
 
 A `.txn` file is a signed raw transaction as exported by Coldcard. Fully Noded has registered the file extension `.txn` so that when you airdrop or tap a .txn file in the iOS Files app FN will automatically launch a `Broadcaster` allowing you to broadcast that transaction with your node. You can always copy and paste the raw transaction and go to `Tools` > `Transactions` > `Broadcast` to do it manually.
 
-## Export to
+## Export
 
 #### Question : Why doesn't broadcast work via my Node?
 
@@ -239,7 +239,7 @@ python3 -m cryptoadvance.specter server
 ```
 See [this](https://github.com/Fonta1n3/FullyNoded#importing-a-wallet-from-specter) for instructions on exporting a wallet from Specter to FN.
 
-## External wallets and key management
+## Wallets
 
 #### Question : what is the recovery wallet?
 
@@ -288,7 +288,7 @@ Not really... its possible if you imported multisig descriptors manually though.
 We should discourage the re-use of receiving addresses for the sake of privacy protection.<br/>
 
 
-## Standup app
+## Standup
 
 #### Question : where can I download this? 
 
