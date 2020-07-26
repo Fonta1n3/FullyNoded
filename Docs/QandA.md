@@ -153,6 +153,15 @@ You can go to the “active wallet” tab > + button > recovery > input your BRD
 
 A `.txn` file is a signed raw transaction as exported by Coldcard. Fully Noded has registered the file extension `.txn` so that when you airdrop or tap a .txn file in the iOS Files app FN will automatically launch a `Broadcaster` allowing you to broadcast that transaction with your node. You can always copy and paste the raw transaction and go to `Tools` > `Transactions` > `Broadcast` to do it manually.
 
+#### Question : How are you transferring the txs from the Coldcard to the iPhone - microSD card reader?
+So on your coldcard you go to “dump wallet summary” in the sd card section<br/>
+And get either your bip44 or bip84 xpub<br/>
+Make a qr code with it or copy and paste it<br/>
+In Fully Noded you go to settings<br/>
+<img src="https://i.ibb.co/Yp1K1Qh/QR-settings.jpg" alt="QR-settings" border="0"><br/>
+Inout your master fingerprint and the correct settings, then scan the qr-code of the `xpub`, and it will import whatever range of addresses you specified<br/>
+You have to take the sd-card and put it into a computer and create the qr.
+
 ## Export
 
 #### Question : Why doesn't broadcast work via my Node?
@@ -160,7 +169,7 @@ A `.txn` file is a signed raw transaction as exported by Coldcard. Fully Noded h
 You can only broadcast signed raw transactions. The only purpose of psbts is to end up with a signed raw transaction. e.g. The `.txn` file from Coldcard.
 
 #### Question : Hardware wallet support?
-<img src="https://i.ibb.co/F0R5Bvc/Hardware-wallets.jpg" alt="Hardware-wallets" border="0" width="200">
+<img src="https://i.ibb.co/F0R5Bvc/Hardware-wallets.jpg" alt="Hardware-wallets" border="0" width="200"><br/>
 They should all work with Fully Noded too. You can import your `xpub` directly into your node from your hardware wallets. I import my `coldcard` wallet xpub with Fully Noded, then build `PSBTs` with it.
 
 ## General
