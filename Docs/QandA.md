@@ -251,6 +251,16 @@ And open up the bitcoin.conf file. You need to add RPC credentials. <br/>
 *Is it on the UI?*<br/>
 Jamie Lim: Ssh into the `nodl`, The ssh host user should be “bitcoin”
 
+#### Question : RPC credentials are mandatory. FN is forcing good behaviour?
+
+Just keep it in mind because if you have not added RPC credentials: the node won't connect. <br/>
+Honestly, just way better code wise. And allows you to connect over local network with no internet which is cool if you like doing stuff offline. Also should make connecting in general more robust and work on all systems even better.
+
+#### Question : Do you use a terminal app in iOS on the iPhone that you ssh into your network with?
+I use NMSSH framework in the app<br/>
+There are apps though, i think `iterm` has an app that also uses the same framework -> <br/>
+iTerminal - SSH Telnet Client by ComcSoft Corporation https://apps.apple.com/us/app/iterminal-ssh-telnet-client/id581455211<br/>
+
 #### Question : How do I troubleshoot connection issues over Tor between FN and Bitcoin Core Nodes on a Mac?
 
 Here are some [common issues and fixes](https://github.com/Fonta1n3/FullyNoded#troubleshooting). You can troubleshoot Tor issues on the mac by opening a terminal and running `open /usr/local/var/log/tor.log`, read the Tor log and make sure there is nothing obvious going wrong there. Most Tor issues revolve around permissions. Ensure your `HiddenServiceDir` has the correct permissions by running `chmod 700 <HiddenServiceDir>` where `<HiddenServiceDir>` represents the path to your `HiddenServiceDir` as specified in your `torrc` file which can be found at `/usr/local/etc/tor/torrc`. The Bitcoin Core log can be helpful too, however you must have the `debug=tor` line added to your `bitcoin.conf`. You can run `open ~/Library/Application\ Support/Bitcoin/debug.log`
