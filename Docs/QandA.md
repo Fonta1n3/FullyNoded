@@ -187,6 +187,20 @@ They should all work with Fully Noded too. You can import your `xpub` directly i
 
 ## General
 
+#### Question : Why is there no version for Android yet?
+
+It is a budget issue. Android has bigger security issues. Tor is easier on Android.
+
+#### Further question : Why would Apple not make Tor easier?
+I wouldn’t say its Apple intentionally making it difficult. Its just the go to tor framework for iOS is not easy to get working. 
+
+I have `Tor` running fine and you can make normal url requests over `Tor` in the app. But when it comes to making url requests to onion sites (eg your nodes hidden service) it only works on simulator. I know its possible but I also know i am not the only one who has had this issue, very frustrating bc using your node as a backend via a hidden service is badass.
+
+Onion Browser has the solution, worst case scenario I can fork it and include the entire codebase in Fully Noded, but I want to try and find a proper solution before I do that.
+
+On android they have `orbot` and the path to getting tor working to onion sites for devs is easier.
+
+
 #### Question : What is your privacy policy and how to comply with GPDR?
 
 [Here](https://fonta1n3.github.io/privacy-policy/) is the privacy policy. It inherently complies with GDPR.
