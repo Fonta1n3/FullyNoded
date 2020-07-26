@@ -161,6 +161,10 @@ In Fully Noded you go to settings<br/>
 <img src="https://i.ibb.co/Yp1K1Qh/QR-settings.jpg" alt="QR-settings" border="0"><br/>
 Inout your master fingerprint and the correct settings, then scan the qr-code of the `xpub`, and it will import whatever range of addresses you specified<br/>
 You have to take the sd-card and put it into a computer and create the qr.
+#### Further question : what the added benifit of going through the iPhone?
+*It is just that if someone is signing a tx on their coldcard, then going to SD, they may as well broadcast from their computer rather than move it to their phone?*
+
+Once you've done this, you can build `PSBT` and unsigned transactions and receive to your hw wallet.
 
 ## Export
 
@@ -170,6 +174,7 @@ You can only broadcast signed raw transactions. The only purpose of psbts is to 
 
 #### Question : Hardware wallet support?
 <img src="https://i.ibb.co/F0R5Bvc/Hardware-wallets.jpg" alt="Hardware-wallets" border="0" width="200"><br/>
+
 They should all work with Fully Noded too. You can import your `xpub` directly into your node from your hardware wallets. I import my `coldcard` wallet xpub with Fully Noded, then build `PSBTs` with it.
 
 ## General
