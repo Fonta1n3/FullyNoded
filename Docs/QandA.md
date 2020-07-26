@@ -78,13 +78,13 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 
 
 # Jump table to categories
-[General](#General)<br/>
-[Standup app](#Standup app) <br/>
-[FN User interface](#FN User interface)<br/>
-[Import from](#Import from)<br/>
-[Export to](#Export to)<br/>
-[External wallets and key management](#External wallets and key management)<br/>
-[Connection](#Connection)
+1. [General](#General)
+2. [Standup app](#Standup app)
+3. [FN User interface](#FN User interface)
+4. [Import from](#Import from)
+5. [Export to](#Export to)
+6. [External wallets and key management](#External wallets and key management)
+7. [Connection](#Connection)
 
 # Q&A
 
