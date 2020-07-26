@@ -177,6 +177,26 @@ public func rounded(number: Double) -> Double {
     
 }
 
+public extension Double {
+    func withCommas() -> String {
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = NumberFormatter.Style.decimal
+        return numberFormatter.string(from: NSNumber(value:self))!
+    }
+}
+
+public extension Double {
+    func withCommasNotRounded() -> String {
+        let arr = "\(self)".split(separator: ".")
+        let satoshis = "\(arr[1])"
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = .decimal
+        let arr1 = (numberFormatter.string(from: NSNumber(value:self))!).split(separator: ".")
+        let numberWithCommas = "\(arr1[0])"
+        return numberWithCommas + "." + satoshis
+    }
+}
+
 public func displayAlert(viewController: UIViewController, isError: Bool, message: String) {
     if isError {
         showAlert(vc: viewController, title: "Error", message: message)

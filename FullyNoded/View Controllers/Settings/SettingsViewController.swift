@@ -110,7 +110,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             icon.image = UIImage(systemName: "desktopcomputer")
             background.backgroundColor = .systemBlue
         case 1:
-            label.text = "Wallet Manager"
+            label.text = "Bitcoin Core Wallets"
             icon.image = UIImage(systemName: "square.stack.3d.down.right")
             background.backgroundColor = .systemGreen
         case 2:
@@ -183,7 +183,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             textLabel.text = "Nodes"
             
         case 1:
-            textLabel.text = "Wallets"
+            textLabel.text = "Bitcoin Core Wallets"
             
         case 2:
             textLabel.text = "Security"

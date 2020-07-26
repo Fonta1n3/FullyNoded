@@ -93,6 +93,7 @@ class QRScannerViewController: UIViewController {
     
     @objc func back() {
         DispatchQueue.main.async { [unowned vc = self] in
+            vc.qrScanner.avCaptureSession.stopRunning()
             vc.dismiss(animated: true, completion: nil)
         }
     }
@@ -106,6 +107,7 @@ class QRScannerViewController: UIViewController {
                     spinner.removeConnectingView()
                     DispatchQueue.main.async { [unowned vc = self] in
                         vc.dismiss(animated: true) {
+                            vc.qrScanner.avCaptureSession.stopRunning()
                             vc.onImportDoneBlock!(accountMap)
                         }
                     }
@@ -118,6 +120,7 @@ class QRScannerViewController: UIViewController {
             spinner.removeConnectingView()
             DispatchQueue.main.async { [unowned vc = self] in
                 vc.dismiss(animated: true) {
+                    vc.qrScanner.avCaptureSession.stopRunning()
                     vc.onQuickConnectDoneBlock!(text)
                 }
             }

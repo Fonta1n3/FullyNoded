@@ -602,8 +602,8 @@
                                     <constraint firstAttribute="height" constant="40" id="xjw-w8-5mK"/>
                                 </constraints>
                             </imageView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="$9,343 / btc" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yUJ-iQ-fjZ">
-                                <rect key="frame" x="264" y="0.0" width="95" height="20.5"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="$9,343 / btc" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yUJ-iQ-fjZ">
+                                <rect key="frame" x="16" y="0.0" width="343" height="20.5"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -617,11 +617,11 @@
                             <constraint firstItem="xuS-Az-tfm" firstAttribute="top" secondItem="F1S-br-LjG" secondAttribute="bottom" constant="14.5" id="BoS-wg-z7i"/>
                             <constraint firstItem="Bmh-eo-0G2" firstAttribute="trailing" secondItem="xR0-W6-ppZ" secondAttribute="trailing" constant="3" id="Gob-b5-4fS"/>
                             <constraint firstItem="xR0-W6-ppZ" firstAttribute="top" secondItem="xuS-Az-tfm" secondAttribute="bottom" constant="8" id="IbQ-ww-9dC"/>
+                            <constraint firstItem="yUJ-iQ-fjZ" firstAttribute="leading" secondItem="Bmh-eo-0G2" secondAttribute="leading" constant="16" id="KPV-kb-i26"/>
                             <constraint firstItem="kDg-8F-wzb" firstAttribute="leading" secondItem="Bmh-eo-0G2" secondAttribute="leading" constant="16" id="Mb6-lk-cww"/>
                             <constraint firstItem="yUJ-iQ-fjZ" firstAttribute="top" secondItem="Bmh-eo-0G2" secondAttribute="top" id="YXf-oY-lqg"/>
                             <constraint firstItem="Bmh-eo-0G2" firstAttribute="bottom" secondItem="xR0-W6-ppZ" secondAttribute="bottom" constant="12" id="bx8-Jr-2X8"/>
                             <constraint firstItem="kDg-8F-wzb" firstAttribute="top" secondItem="Bmh-eo-0G2" secondAttribute="top" constant="20" id="jJu-XC-BDe"/>
-                            <constraint firstItem="yUJ-iQ-fjZ" firstAttribute="leading" secondItem="F1S-br-LjG" secondAttribute="trailing" constant="34" id="mku-LJ-H6R"/>
                             <constraint firstItem="Bmh-eo-0G2" firstAttribute="trailing" secondItem="xuS-Az-tfm" secondAttribute="trailing" id="rgc-th-7NN"/>
                             <constraint firstItem="F1S-br-LjG" firstAttribute="top" secondItem="Bmh-eo-0G2" secondAttribute="top" constant="24" id="uDq-Ue-fnj"/>
                             <constraint firstItem="F1S-br-LjG" firstAttribute="leading" secondItem="kDg-8F-wzb" secondAttribute="trailing" constant="8" id="y6p-9o-9eV"/>
@@ -4387,7 +4387,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
             </objects>
             <point key="canvasLocation" x="-2791.1999999999998" y="375.56221889055473"/>
         </scene>
-        <!--v0.1.61-->
+        <!--v0.1.62-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -4534,7 +4534,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                         <viewLayoutGuide key="safeArea" id="Cze-jj-bFe"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="v0.1.61" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="v0.1.62" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
@@ -4707,8 +4707,8 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                                     <outlet property="delegate" destination="hL3-4s-vl7" id="7Yf-vA-Auo"/>
                                 </connections>
                             </tableView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Wallet Manager" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZZO-FM-7i6">
-                                <rect key="frame" x="16" y="58" width="197.5" height="33.5"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Bitcoin Core Wallets" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZZO-FM-7i6">
+                                <rect key="frame" x="16" y="58" width="254.5" height="33.5"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="28"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -4722,7 +4722,6 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                             <constraint firstItem="0lx-xC-W8X" firstAttribute="top" secondItem="ZZO-FM-7i6" secondAttribute="bottom" constant="29.5" id="m3G-er-Rnw"/>
                             <constraint firstItem="0lx-xC-W8X" firstAttribute="bottom" secondItem="QQa-Wb-bYJ" secondAttribute="bottom" id="nqr-QK-Y63"/>
                             <constraint firstItem="ZZO-FM-7i6" firstAttribute="leading" secondItem="QQa-Wb-bYJ" secondAttribute="leading" constant="16" id="oEq-oa-xgU"/>
-                            <constraint firstItem="QQa-Wb-bYJ" firstAttribute="trailing" secondItem="ZZO-FM-7i6" secondAttribute="trailing" constant="161.5" id="tTT-xI-o0V"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="QQa-Wb-bYJ"/>
                     </view>
@@ -6301,7 +6300,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="qed-hl-jG5"/>
         <segue reference="aQN-4W-cSW"/>
         <segue reference="CiB-VJ-HaC"/>
-        <segue reference="4UK-no-SgJ"/>
+        <segue reference="VU6-gc-B7y"/>
         <segue reference="RbT-dI-IvI"/>
         <segue reference="IVc-aG-8QZ"/>
         <segue reference="cvp-U1-bU5"/>
@@ -6309,9 +6308,9 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="Aim-ze-LVg"/>
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="HNI-HG-9ZQ"/>
-        <segue reference="oY9-Pq-H5b"/>
+        <segue reference="IAz-j1-Gq6"/>
         <segue reference="dK5-1r-ELX"/>
-        <segue reference="8MS-xS-DMP"/>
+        <segue reference="CLR-a1-fb0"/>
         <segue reference="Ikt-mc-dmE"/>
         <segue reference="G1i-Bv-OSl"/>
         <segue reference="qmy-fM-U4p"/>
