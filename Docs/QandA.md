@@ -62,6 +62,8 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 - Datadir: TBW
 - bitcoin.conf: TBW 
 - initial block download (IBD): TBW
+- Nodl: TBW
+- RPC: Remote Procedure Calls
 
 ## Knowledge you should be confidently applying
 - The definitions above
@@ -130,7 +132,9 @@ should only be active when you are scanning a QR code...<br/>
 when you swipe down or close the QR scanner it dismisses all camera related code<br/>
 For now, i guess if you do not want it to use the camera just disable that in the devices settings<br/>
 I will look into it, give it more though and see what I can do<br/>
-If the camera is dismissed and not being used, it makes no sense that the light would stay on
+If the camera is dismissed and not being used, it makes no sense that the light would stay on.
+
+Update: Think it should be fixed now, please try again when next update goes live.<br/>
 
 ##Import
 
@@ -204,6 +208,13 @@ If you airdrop FN gives a choice
 Javier: I think that option is in case your node is not running Tor. If your bitcoind instance is not running over Tor each tx propagated is more likely to be desanonymized.   That’s the reason to choose propagate Esplora API. 
 
 ## Connection
+
+#### Question : How do we get the rpc credentials on the nodl?
+
+You have to log in like this [link](https://docs.lightning-solutions.eu/nodl-box/advanced/how-to-access-bitcoin-cli-and-lncli) shows you.
+And open up the bitcoin.conf file. You need to add RPC credentials. <br/>
+*Is it on the UI?*<br/>
+Jamie Lim: Ssh into the `nodl`, The ssh host user should be “bitcoin”
 
 #### Question : How do I troubleshoot connection issues over Tor between FN and Bitcoin Core Nodes on a Mac?
 
