@@ -312,6 +312,19 @@ See [this](https://github.com/Fonta1n3/FullyNoded#importing-a-wallet-from-specte
 
 ## Wallets
 
+#### Question : How I can erase a wallet in Fullynoded? or modify a name?
+
+If your node is on a mac you will need to navigate to
+
+	⁨Root ▸ Users⁩ ▸ ⁨Arkad ▸ ⁨Library⁩ ▸ ⁨Application Support⁩ ▸ ⁨Bitcoin⁩ ▸ Wallets
+
+BUT as Satoshi says, you should never delete a wallet, instead much better to move it, just incase.
+
+On your `nodl` I am not 100% sure of the path to find the wallets, but it is in the main bitcoin directory, shouldnt be too difficult to find.
+To modify the name just right click the wallet on your mac and rename, in `nodl` you have to find the path to your wallet and use `mv` command, heres an example:
+
+	mv /home/user/oldname /home/user/newname
+
 #### Question : what is the recovery wallet?
 
 Read the manual [here](https://medium.com/@FullyNoded/introducing-fully-noded-wallets-9fc2e4837102)
