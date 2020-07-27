@@ -184,7 +184,7 @@ So on your coldcard you go to “dump wallet summary” in the sd card section<b
 And get either your bip44 or bip84 xpub<br/>
 Make a qr code with it or copy and paste it<br/>
 In Fully Noded you go to settings<br/>
-<img src="https://i.ibb.co/Yp1K1Qh/QR-settings.jpg" alt="QR-settings" border="0" width="200"><br/>
+<img src="https://i.ibb.co/Yp1K1Qh/QR-settings.jpg" alt="QR-settings" border="0"><br/>
 Inout your master fingerprint and the correct settings, then scan the qr-code of the `xpub`, and it will import whatever range of addresses you specified<br/>
 You have to take the sd-card and put it into a computer and create the qr.
 #### Further question : what the added benifit of going through the iPhone?
@@ -452,3 +452,8 @@ You can just set the min relay fee (smallest possible amount) and if the transac
 #### Question : I changed bitcoin.conf according to guideline, why is it still not working?
 
 Did you restart your node? If you change config file you need to restart `bitcoind`.
+
+#### Question : how to create a Tor V3 hidden service to control your node?
+
+I have updated the github with easy to follow instructions on how to create a Tor V3 hidden service to connect to and control your node with on a mac [here](https://github.com/FontaineDenton/FullyNoded/blob/master/Readme.md#connecting-over-tor-mac-edition).
+
