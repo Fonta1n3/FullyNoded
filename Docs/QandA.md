@@ -65,6 +65,7 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 - Nodl: TBW
 - RPC: Remote Procedure Calls
 - bitcoind: Bitcoin Deamon, background process running a bitcoin node. Bitcoind is a program that implements the Bitcoin protocol for remote procedure call (RPC) use. It is also the second Bitcoin client in the network's history. It is available under the MIT license in 32-bit and 64-bit versions for Windows, GNU/Linux-based OSes, and Mac OS X. [Read more](https://en.bitcoin.it/wiki/Bitcoind)
+- SSH: TBW
 
 ## Knowledge you should be confidently applying
 - The definitions above
@@ -282,6 +283,14 @@ Javier: I think that option is in case your node is not running Tor. If your bit
 
 ## Connection
 
+#### Question : how risky is to open port 22 to connect from anywhere outside my local lan?
+
+First off I am not a security expert. But from what I have read SSH is generally very secure. However there are some simple steps you can take to make it much more secure.  You can read more from the Fully Noded github [here](https://github.com/FontaineDenton/FullyNoded/blob/master/Readme.md#security) 
+
+The goal of this app is to avoid `SSH` altogether and use Tor so you can keep your node firewalled off completely, its working if you build the app from source, We've got mobile fixed by now.
+Its also more secure if you use an RSA public key / private key to authenticate SSH which is also possible in Fully Noded
+I would just do your own research on `SSH` security and see what you come up with, let me know what you find.
+
 #### Question : I get a channel alocation error when I try to add a Xpub. What could go wrong?
 
 Means the ssh channel closed. Just go to home screen and pull to reconnect.<br/>
@@ -456,4 +465,6 @@ Did you restart your node? If you change config file you need to restart `bitcoi
 #### Question : how to create a Tor V3 hidden service to control your node?
 
 I have updated the github with easy to follow instructions on how to create a Tor V3 hidden service to connect to and control your node with on a mac [here](https://github.com/FontaineDenton/FullyNoded/blob/master/Readme.md#connecting-over-tor-mac-edition).
+
+
 
