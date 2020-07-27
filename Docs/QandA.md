@@ -283,6 +283,17 @@ Javier: I think that option is in case your node is not running Tor. If your bit
 
 ## Connection
 
+#### Could not connect to the server... What to do?
+TBW
+
+#### "The internet connection appears to be offline..."" but I am online, what to do?
+TBW
+
+#### Can I connect FN  to my node over local wifi?
+
+FN only connects over Tor so its not possible in the app for now to connect over local wifi. It’s something that could be added fairly easily but is not there now (in July 2020).
+
+
 #### Question : how risky is to open port 22 to connect from anywhere outside my local lan?
 
 First off I am not a security expert. But from what I have read SSH is generally very secure. However there are some simple steps you can take to make it much more secure.  You can read more from the Fully Noded github [here](https://github.com/FontaineDenton/FullyNoded/blob/master/Readme.md#security) 
