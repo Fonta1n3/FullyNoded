@@ -52,6 +52,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         existingWallet = ud.object(forKey: "walletName") as? String ?? ""
         sectionZeroLoaded = false
         NotificationCenter.default.addObserver(self, selector: #selector(refreshWallet), name: .refreshWallet, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(addColdcard(_:)), name: .addColdCard, object: nil)
         addNavBarSpinner()
         loadTable()
     }
@@ -116,6 +117,24 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     @IBAction func goToUtxos(_ sender: Any) {
         DispatchQueue.main.async { [unowned vc = self] in
             vc.performSegue(withIdentifier: "segueToUtxos", sender: vc)
+        }
+    }
+    
+    @objc func addColdcard(_ notification: NSNotification) {
+        print("addColdcard")
+        let spinner = ConnectingView()
+        spinner.addConnectingView(vc: self, description: "creating your Coldcard wallet, this can take a minute...")
+        if let dict = notification.userInfo as? [String:Any] {
+            ImportWallet.coldcard(dict: dict) { [unowned vc = self] (success, errorDescription) in
+                if success {
+                    print("success")
+                    spinner.removeConnectingView()
+                    vc.refreshWallet()
+                } else {
+                    spinner.removeConnectingView()
+                    showAlert(vc: vc, title: "Error creating Coldcard wallet", message: errorDescription ?? "unknown")
+                }
+            }
         }
     }
     

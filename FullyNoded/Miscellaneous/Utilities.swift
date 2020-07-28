@@ -125,6 +125,7 @@ extension String {
 extension Notification.Name {
     public static let refreshNode = Notification.Name(rawValue: "refreshNode")
     public static let refreshWallet = Notification.Name(rawValue: "refreshWallet")
+    public static let addColdCard = Notification.Name(rawValue: "addColdcard")
 }
 
 public extension Data {

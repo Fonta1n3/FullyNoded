@@ -100,13 +100,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                                     presentMultisigCreator(zpub: zpub, fingerprint: fingerprint, xpub: xpub)
                                 }
                             }
-                        } else if let _ = dict["chain"] as? String {
-                            print("coldcard single sig")
                         }
+                    } else if let _ = dict["chain"] as? String {
+                        print("coldcard single sig")
+                        presentWalletCreator(coldCard: dict)
                     }
-                } catch {
-                    
-                }
+                } catch {}
                 if needTo {
                   url.stopAccessingSecurityScopedResource()
                 }
@@ -168,6 +167,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 multisigCreator.modalPresentationStyle = .fullScreen
                 currentController.present(multisigCreator, animated: true, completion: nil)
             }
+        }
+    }
+    
+    private func presentWalletCreator(coldCard: [String:Any]) {
+        if let tabBarController = self.window!.rootViewController as? UITabBarController {
+            tabBarController.selectedIndex = 1
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: .addColdCard, object: nil, userInfo: coldCard)
+            }
+            
         }
     }
     
