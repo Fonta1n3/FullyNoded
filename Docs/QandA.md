@@ -282,6 +282,17 @@ If you airdrop FN gives a choice
 *I think it should say third party service or use my own node. In fact this should be a setting that you opt in right?*<br/>
 Javier: I think that option is in case your node is not running Tor. If your bitcoind instance is not running over Tor each tx propagated is more likely to be desanonymized.   That’s the reason to choose propagate Esplora API. 
 
+#### Question : Do you have a lightning node? to send donations? The fees are currently high for a mainnet transaction.
+
+Nope, lightning not ideal for large transactions anyway. Joking joking :)
+I mean i can give you a lightning invoice if you’d like. I did get one set up with `electrum`
+
+##### Further question : About donations : how are the addresses generated?
+*does it fetch em? or are they hard coded in?*
+
+Random address generated from an `xpub`.
+
+
 ## Connection
 
 #### Could not connect to the server... What to do?
@@ -342,6 +353,11 @@ Here are some [common issues and fixes](https://github.com/Fonta1n3/FullyNoded#t
 **You are also better off launching Tor as a service**<br/>
 1. first ensure tor has stopped
 2. then open a terminal and paste in `brew services start tor`, this will ensure Tor always launches automatically when your mac starts, if you want to stop tor run `brew services stop tor`<br/>
+
+**Possible problems during installation and configuration**
+1. It may just not have permissions to create directories which would explain the lib folder not existing.
+2. Running without `brew`. You can defo do it without brew, its just more complicated.
+3. You really should *edit* the file and *save* it too. Double checked?
 
 
 #### Question : How can I test the network connection between them (FN and Node)?
