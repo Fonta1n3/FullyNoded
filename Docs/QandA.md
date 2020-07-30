@@ -437,6 +437,17 @@ Video on how to easily create a 2 of 2 multisig wallet with your Coldcard and Fu
 Not really... its possible if you imported multisig descriptors manually though.<br/>
 We should discourage the re-use of receiving addresses for the sake of privacy protection.<br/>
 
+#### Question : I recovered from Greenwallet and didn't get a balance, Iim wondering if FN scans all the BIP lines?
+*Green is a compatibility wallet in default. Am I missing some between BIP 32 and 49?*
+
+Green wallet is a 2 of 2.The recovery wallet is for single sig. You can recover any multisig with the FN multisig wallet “creator” just add your own seeds or xpubs.
+
+##### Further question : So the wallet I recovered is a single sig based on same multi seed? Given that fact...best to create a fresh FN wallet and go from there? I don't want to confuse myself any further. I like the privacy of FN. I basically want to switch from Green Wallet to FN for my daily driver.
+
+Yes, i think you are very locked into their wallet (Green Wallet) and can only really recover with them? Not sure though. 
+Also, you can not recover any multisig with the multisig creator, currently it keeps the derivation hard coded. We will definitely update that in the future. It is a start for now.
+Nice that you want to use Fn on a dally bases, yea for simplicity id recommend the single sig!
+
 
 ## Standup
 
