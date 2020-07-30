@@ -141,6 +141,24 @@ If the camera is dismissed and not being used, it makes no sense that the light 
 
 Update: Think it should be fixed now, please try again when next update goes live.<br/>
 
+#### Question : Why might the app be crashing for me?
+
+MD: What is your node setup like? And what is the last thing you are doing before it crashes?
+
+Matt Hill: Please make sure you are running `Bitcoin 0.20.0` on the `Embassy`. And that you have the "wallet" feature in your config file enabled.
+
+Fonta1n3: Looks like you never actually connected? If your connection is successful you’ll see the home screen look like this:<br/>
+<img src="https://i.ibb.co/HrsmwBd/opening-screen.jpg" alt="opening-screen" border="0" width="200">
+
+Occasionally you’ll get a crash if you race around the app not allowing things to finish loading or if you put it into background before tor connects and back into foreground very quickly and vice versa. Important to let things load and go slow. Other then that there really should not be crashes, only way i can troubleshoot that is release on Testflight again and ask that you share the crash report.
+For starters ensure you are connected to your node, can you confirm it successfully connects? Actually connecting is only successful when the home screen has loaded.
+
+**Problemsolving**
+1. Are you absolutely sure the rpc password and username and onion are 100% correct?
+2. Have you tried rebooting the node?
+3. Are there any special characters in the RPC password? Only alphanumeric is allowed but the app should warn you about that.
+4. Generally rebooting Tor on the node would solve this issue if everything else is correct.
+
 ##Import
 
 #### Question : I got the zpub from electrum. I thought that if you use a bech32 wallet, you get a zpub not xpub?
@@ -186,7 +204,7 @@ So on your coldcard you go to “dump wallet summary” in the sd card section<b
 And get either your bip44 or bip84 xpub<br/>
 Make a qr code with it or copy and paste it<br/>
 In Fully Noded you go to settings<br/>
-<img src="https://i.ibb.co/Yp1K1Qh/QR-settings.jpg" alt="QR-settings" border="0"><br/>
+<img src="https://i.ibb.co/Yp1K1Qh/QR-settings.jpg" alt="QR-settings" border="0" width="200"><br/>
 Inout your master fingerprint and the correct settings, then scan the qr-code of the `xpub`, and it will import whatever range of addresses you specified<br/>
 You have to take the sd-card and put it into a computer and create the qr.
 #### Further question : what the added benifit of going through the iPhone?
