@@ -66,6 +66,7 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 - RPC: Remote Procedure Calls
 - bitcoind: Bitcoin Deamon, background process running a bitcoin node. Bitcoind is a program that implements the Bitcoin protocol for remote procedure call (RPC) use. It is also the second Bitcoin client in the network's history. It is available under the MIT license in 32-bit and 64-bit versions for Windows, GNU/Linux-based OSes, and Mac OS X. [Read more](https://en.bitcoin.it/wiki/Bitcoind)
 - SSH: TBW
+- Nano : famous text GUI editor to start from commandline, not to be confused with Ledger Nano S/X, which is a cold storage.
 
 ## Knowledge you should be confidently applying
 - The definitions above
