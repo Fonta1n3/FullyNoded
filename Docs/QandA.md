@@ -375,6 +375,23 @@ python3 -m cryptoadvance.specter server
 ```
 See [this](https://github.com/Fonta1n3/FullyNoded#importing-a-wallet-from-specter) for instructions on exporting a wallet from Specter to FN.
 
+
+#### Question : Can't seem to locate the torrc file to connect via Tor using Nano. What's wrong?
+*I did try directly entering the nano in cmd but it is blank. Okay, I  realised that the file name is torrc.sample instead. Weird. nothing inside this nano as well.*
+
+When you make the nano command what exactly are you typing? the torrc.sample is just that a sample, it's possible when Tor has not yet been started that it does not auto generate the torrc? You can always use the torrc.sample to create a torrc, just copy and paste it and delete the .sample extension and then follow the guide to edit it.
+
+When you use nano you either need to be in the directory of the file you are trying to use nano on or include the path nano `/usr/local/etc/tor/torcc.sample` for example. If nano is not working just use whatever text editor youd like to.
+Try starting Tor, it'll generate the `torrc` then. 
+
+	brew services start tor
+	
+To be honest this makes it really easy and works with your existing node: [Gordian](https://github.com/BlockchainCommons/GordianNode-macOS/blob/master/GordianNode_0.1.1.dmg) 
+
+You can download the dmg right on the link, just open it and it does everything for you.
+
+If you want to do it manually that works too :)
+
 ## Wallets
 
 
@@ -487,6 +504,10 @@ Did you restart your node? If you change config file you need to restart `bitcoi
 #### Question : how to create a Tor V3 hidden service to control your node?
 
 I have updated the github with easy to follow instructions on how to create a Tor V3 hidden service to connect to and control your node with on a mac [here](https://github.com/FontaineDenton/FullyNoded/blob/master/Readme.md#connecting-over-tor-mac-edition).
+
+#### Question : Anyway to connect node via bitcoin core QT? Can't get to find any QR code from the QT core on Mac OS.
+
+This is a good guide this is a good guide : https://github.com/Fonta1n3/FullyNoded#connecting-over-tor-mac
 
 
 
