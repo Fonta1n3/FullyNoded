@@ -538,13 +538,30 @@ Green wallet is a 2 of 2.The recovery wallet is for single sig. You can recover 
 
 ##### Further question : So the wallet I recovered is a single sig based on same multi seed? Given that fact...best to create a fresh FN wallet and go from there? I don't want to confuse myself any further. I like the privacy of FN. I basically want to switch from Green Wallet to FN for my daily driver.
 
-Yes, i think you are very locked into their wallet (Green Wallet) and can only really recover with them? Not sure though. 
-Also, you can not recover any multisig with the multisig creator, currently it keeps the derivation hard coded. We will definitely update that in the future. It is a start for now.
+Yes, i think you are very locked into their wallet (Green Wallet) and can only really recover with them? Not sure though. <br/>
+Also, you can not recover any multisig with the multisig creator, currently it keeps the derivation hard coded. We will definitely update that in the future. It is a start for now.<br/>
 Nice that you want to use Fn on a dally bases, yea for simplicity id recommend the single sig!
 
 #### Question : Are wallets enabled on the config page of bitcoin in the Embassy App?
 
 FN works with walletdisabled=1, home screen doesn’t include any wallet rpc calls.
+
+
+#### Question : I clicked on the file again and now I have 2 cold cars records in the FN app. Would I see 2 wallets in FN that showed the same exact info?
+*Each is appended with some sort of unique code. I would think that they should say the same thing, but one "has" the 10 bucks i sent to it and the other has nothing. shouldn't they match exactly since they are the same?*
+
+No. When you import a wallet it first creates a new wallet on your node with a random string at the end, if that import fails as yours did (it happens rarely) `the wallet.dat` filename in your nodes.<br/>
+`.bitcoin` directory will hold different wallets, also if it fails you can not have any idea what was actually imported. <br/>
+
+So you should tap the "squares" and only ever work with that wallet.<br/>
+If the wallet is there in the "Fully Noded Wallets" section then you know it is all good.
+
+##### Further Answer: 
+You should really completely ignore your "Bitcoin Core Wallets", unless you are a bitcoin-cli expert and know exactly what you are doing and why.
+
+It's really just there to help people recover wallets that exist on their node. Really need to make some tutorials and add an "advanced" button in settings that shows and hides some features, like accessing non Fully Noded Wallets.
+
+By far the best way to use the app is stick 100% with FN wallets.
 
 ## Standup
 
