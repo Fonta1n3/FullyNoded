@@ -577,5 +577,8 @@ I have updated the github with easy to follow instructions on how to create a To
 
 This is a good guide this is a good guide : https://github.com/Fonta1n3/FullyNoded#connecting-over-tor-mac
 
+#### Question : Is there currently a way to execute bitcoin-cli rescanblockchain with the start/stop height parameters from within fully Noded?
+*especially with some slick autocomplete for commands and parameters. rpc syntax can be a pain sometimes.*
 
+No, need to add that. It should automatically rescan from prune height though *if* your pruned.
 
