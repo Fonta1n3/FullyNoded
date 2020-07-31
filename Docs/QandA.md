@@ -580,5 +580,18 @@ This is a good guide this is a good guide : https://github.com/Fonta1n3/FullyNod
 #### Question : Is there currently a way to execute bitcoin-cli rescanblockchain with the start/stop height parameters from within fully Noded?
 *especially with some slick autocomplete for commands and parameters. rpc syntax can be a pain sometimes.*
 
-No, need to add that. It should automatically rescan from prune height though *if* your pruned.
+No, I need to add that to FN app. It should automatically rescan from prune height though *if* your pruned.<br/>
+Anyway, doing it the way Fully Noded does it adds a layer of complexity too. Extra need for escaping characters, absolutely stuff that’s not needed, if doing it straight via terminal. 
+
+Definitely something to be said about a cool UX where it autosuggests the rpc call and then shows a UI for the params with explainers.
+
+#### Question : Is there an ability to add peers and remove peers
+Not yet, but I think it is an important thing to add as far as "direct rpc calls" are concerned.<br/>
+There’s a cool project that lists a bunch of trusted tor nodes, so you can add them if you want to use your node 100% behind tor without getting attacked by chain analysis.
+
+
+Would need to start simple and expand... sigh so much to do so little time. Wish there were other swift devs who would help out.
+
+
+
 
