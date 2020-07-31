@@ -160,6 +160,11 @@ For starters ensure you are connected to your node, can you confirm it successfu
 4. Generally rebooting Tor on the node would solve this issue if everything else is correct.
 5. is there any possibility your isp is blocking `tor` (On your phone)?
 
+#### Question : Is airdropping a requirement? 
+*I dont have a mac but i have saved the file on my iphone. is there a way to tell fully noded about that file?*
+
+Airdrop is not a must. You can save the files in `iphone` using the native file application.
+
 #### Question : How to export your single sig wallet from Coldcard to Fully Noded using your own node?
 
 See this instruction of 33 secs [here](https://www.youtube.com/watch?v=W0vwgzIrPoY). This is super cool, super easy. <br/>
