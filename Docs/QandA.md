@@ -162,8 +162,8 @@ For starters ensure you are connected to your node, can you confirm it successfu
 
 #### Question : How to export your single sig wallet from Coldcard to Fully Noded using your own node?
 
-See this instruction of 33 secs [here](https://www.youtube.com/watch?v=W0vwgzIrPoY). This is super cool, super easy.
-
+See this instruction of 33 secs [here](https://www.youtube.com/watch?v=W0vwgzIrPoY). This is super cool, super easy. <br/>
+Video is obviously edited, the spinner will take longer then that, just wait a bit
 
 
 ##Import
