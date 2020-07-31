@@ -585,12 +585,15 @@ Anyway, doing it the way Fully Noded does it adds a layer of complexity too. Ext
 
 Definitely something to be said about a cool UX where it autosuggests the rpc call and then shows a UI for the params with explainers.
 
-#### Question : Is there an ability to add peers and remove peers
+#### Question : Is there an ability to add peers and remove peers?
 Not yet, but I think it is an important thing to add as far as "direct rpc calls" are concerned.<br/>
 There’s a cool project that lists a bunch of trusted tor nodes, so you can add them if you want to use your node 100% behind tor without getting attacked by chain analysis.
 
-
 Would need to start simple and expand... sigh so much to do so little time. Wish there were other swift devs who would help out.
+
+#### Question : So the order of fully noded is 1. Node 2. Wallet? Correct? Without a node, you can't scan in a wallet?
+
+You **can not do anything in FN without connecting to your node** first.
 
 
 
