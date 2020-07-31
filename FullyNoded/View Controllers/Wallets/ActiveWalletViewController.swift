@@ -33,7 +33,6 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     var window: UIWindow?
     @IBOutlet weak var sendView: UIView!
     @IBOutlet weak var invoiceView: UIView!
-    @IBOutlet weak var importView: UIView!
     @IBOutlet weak var utxosView: UIView!
     @IBOutlet weak var advancedView: UIView!
     @IBOutlet weak var fxRateLabel: UILabel!
@@ -45,7 +44,6 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         walletTable.dataSource = self
         sendView.layer.cornerRadius = 5
         invoiceView.layer.cornerRadius = 5
-        importView.layer.cornerRadius = 5
         utxosView.layer.cornerRadius = 5
         advancedView.layer.cornerRadius = 5
         fxRateLabel.text = ""
@@ -99,12 +97,6 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     @IBAction func invoiceAction(_ sender: Any) {
         DispatchQueue.main.async { [unowned vc = self] in
             vc.performSegue(withIdentifier: "segueToInvoice", sender: vc)
-        }
-    }
-    
-    @IBAction func importAction(_ sender: Any) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "segueToImport", sender: vc)
         }
     }
     
@@ -452,7 +444,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         fx.getFxRate { [unowned vc = self] rate in
             if rate != nil {
                 DispatchQueue.main.async { [unowned vc = self] in
-                    vc.fxRateLabel.text = "$\(String(describing: rate!)) / btc"
+                    vc.fxRateLabel.text = "$\(rate!.withCommas()) / btc"
                 }
                 if let btcHotBalance = Double(vc.hotBalance) {
                     let hotBalanceFiat = btcHotBalance * rate!

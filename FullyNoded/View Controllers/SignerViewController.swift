@@ -17,6 +17,7 @@ class SignerViewController: UIViewController {
     var psbt = ""
     var txn = ""
     var broadcast = false
+    var export = false
     @IBOutlet weak var textView: UITextView!
     @IBOutlet weak var signOutlet: UIButton!
     @IBOutlet weak var titleLabel: UILabel!
@@ -28,30 +29,41 @@ class SignerViewController: UIViewController {
         textView.layer.borderWidth = 0.5
         if psbt != "" {
             textView.text = psbt
+            if export {
+                titleLabel.text = "Export PSBT"
+                signOutlet.setTitle("export", for: .normal)
+                analyzeOutlet.alpha = 1
+                decodeOutlet.alpha = 1
+            } else {
+                spinner.addConnectingView(vc: self, description: "checking which network the node is on...")
+            }
         } else if txn != "" {
             titleLabel.text = "Broadcaster"
             broadcast = true
             textView.text = (txn.replacingOccurrences(of: "\n", with: "")).condenseWhitespace()
             signOutlet.setTitle("broadcast", for: .normal)
             analyzeOutlet.alpha = 0
-            decodeOutlet.alpha = 0
+            decodeOutlet.alpha = 1
+            spinner.addConnectingView(vc: self, description: "checking which network the node is on...")
         }
-        spinner.addConnectingView(vc: self, description: "checking which network the node is on...")
+        
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        Reducer.makeCommand(command: .getblockchaininfo, param: "") { [unowned vc = self] (response, errorMessage) in
-            if let dict = response as? NSDictionary {
-                if let network = dict["chain"] as? String {
-                    var chain:Network!
-                    if network == "main" {
-                        chain = .mainnet
+        if !export {
+            Reducer.makeCommand(command: .getblockchaininfo, param: "") { [unowned vc = self] (response, errorMessage) in
+                if let dict = response as? NSDictionary {
+                    if let network = dict["chain"] as? String {
+                        var chain:Network!
+                        if network == "main" {
+                            chain = .mainnet
+                        } else {
+                            chain = .testnet
+                        }
+                        vc.getPsbt(chain: chain)
                     } else {
-                        chain = .testnet
+                        vc.showError(error: "error getting network type: \(errorMessage ?? "unknown")")
                     }
-                    vc.getPsbt(chain: chain)
-                } else {
-                    vc.showError(error: "error getting network type: \(errorMessage ?? "unknown")")
                 }
             }
         }
@@ -64,30 +76,10 @@ class SignerViewController: UIViewController {
     }
     
     private func getPsbt(chain: Network) {
-        updateLabel(text: "checking if psbt is already complete...")
         if psbt != "" {
-            do {
-                var psbtToSign = try PSBT(psbt, chain)
-                if psbtToSign.finalize() {
-                    if psbtToSign.complete {
-                        DispatchQueue.main.async { [unowned vc = self] in
-                            vc.textView.text = psbtToSign.transactionFinal?.description ?? "error finalizing psbt"
-                            vc.titleLabel.text = "Broadcaster"
-                            vc.broadcast = true
-                            vc.signOutlet.setTitle("broadcast", for: .normal)
-                            vc.analyzeOutlet.alpha = 0
-                            vc.decodeOutlet.alpha = 0
-                            vc.spinner.removeConnectingView()
-                        }
-                    } else {
-                        process()
-                    }
-                } else {
-                    process()
-                }
-            } catch {
-                process()
-            }
+            process()
+        } else {
+            spinner.removeConnectingView()
         }
     }
     
@@ -118,15 +110,29 @@ class SignerViewController: UIViewController {
     }
     
     @IBAction func decodePsbt(_ sender: Any) {
-        spinner.addConnectingView(vc: self, description: "decoding psbt...")
-        Reducer.makeCommand(command: .decodepsbt, param: "\"\(psbt)\"") { [unowned vc = self] (response, errorMessage) in
-            if let dict = response as? NSDictionary {
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.textView.text = "\(dict)"
-                    vc.spinner.removeConnectingView()
+        if txn != "" {
+            spinner.addConnectingView(vc: self, description: "decoding raw...")
+            Reducer.makeCommand(command: .decoderawtransaction, param: "\"\(txn)\"") { [unowned vc = self] (response, errorMessage) in
+                if let dict = response as? NSDictionary {
+                    DispatchQueue.main.async { [unowned vc = self] in
+                        vc.textView.text = "\(dict)"
+                        vc.spinner.removeConnectingView()
+                    }
+                } else {
+                    vc.showError(error: "error decoding raw: \(errorMessage ?? "unknown")")
                 }
-            } else {
-                vc.showError(error: "error decoding psbt: \(errorMessage ?? "unknown")")
+            }
+        } else if psbt != "" {
+            spinner.addConnectingView(vc: self, description: "decoding psbt...")
+            Reducer.makeCommand(command: .decodepsbt, param: "\"\(psbt)\"") { [unowned vc = self] (response, errorMessage) in
+                if let dict = response as? NSDictionary {
+                    DispatchQueue.main.async { [unowned vc = self] in
+                        vc.textView.text = "\(dict)"
+                        vc.spinner.removeConnectingView()
+                    }
+                } else {
+                    vc.showError(error: "error decoding psbt: \(errorMessage ?? "unknown")")
+                }
             }
         }
     }
@@ -146,7 +152,9 @@ class SignerViewController: UIViewController {
     }
     
     @IBAction func signNow(_ sender: Any) {
-        if !broadcast {
+        if export {
+            exportPsbt(psbt: psbt)
+        } else if !broadcast {
             spinner.addConnectingView(vc: self, description: "signing psbt...")
             Signer.sign(psbt: psbt) { [unowned vc = self] (psbt, rawTx, errorMessage) in
                 if psbt != nil {
@@ -171,15 +179,15 @@ class SignerViewController: UIViewController {
                 }
             }
         } else {
-            broadcastNow(tx: textView.text!)
+            broadcastNow(tx: (txn.replacingOccurrences(of: "\n", with: "")).condenseWhitespace())
         }
         
     }
     
     private func exportPsbt(psbt: String) {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Share as raw data or text?", message: "Sharing as raw data allows you to send the unsigned psbt directly to your Coldcard Wallets SD card for signing or to Electrum 4.0", preferredStyle: .actionSheet)
-            alert.addAction(UIAlertAction(title: "Raw Data", style: .default, handler: { [unowned vc = self] action in
+            let alert = UIAlertController(title: "Share as a .psbt file, text or QR?", message: "Sharing as a .psbt file allows you to send the unsigned psbt directly to your Coldcard or to Electrum 4.0 for signing", preferredStyle: .actionSheet)
+            alert.addAction(UIAlertAction(title: ".psbt file", style: .default, handler: { [unowned vc = self] action in
                 vc.convertPSBTtoData(string: psbt)
             }))
             alert.addAction(UIAlertAction(title: "Text", style: .default, handler: { action in
@@ -188,6 +196,11 @@ class SignerViewController: UIViewController {
                     let activityViewController = UIActivityViewController(activityItems: textToShare, applicationActivities: nil)
                     activityViewController.popoverPresentationController?.sourceView = vc.view
                     vc.present(activityViewController, animated: true) {}
+                }
+            }))
+            alert.addAction(UIAlertAction(title: "QR", style: .default, handler: { action in
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.performSegue(withIdentifier: "segueToExportPsbtAsQr", sender: vc)
                 }
             }))
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
@@ -216,7 +229,9 @@ class SignerViewController: UIViewController {
                 Broadcaster.sharedInstance.send(rawTx: tx) { [unowned vc = self] (txid) in
                     if txid != nil {
                         DispatchQueue.main.async { [unowned vc = self] in
+                            NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                             vc.textView.text = "txid: " + txid!
+                            vc.decodeOutlet.alpha = 0
                             vc.spinner.removeConnectingView()
                             showAlert(vc: vc, title: "Success! ✅", message: "Transaction sent.")
                         }
@@ -230,8 +245,10 @@ class SignerViewController: UIViewController {
                 Reducer.makeCommand(command: .sendrawtransaction, param: "\"\(tx)\"") { [unowned vc = self] (response, errorMesage) in
                     if let txid = response as? String {
                         DispatchQueue.main.async { [unowned vc = self] in
+                            NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                             vc.textView.text = "txid: " + txid
                             vc.spinner.removeConnectingView()
+                            vc.decodeOutlet.alpha = 0
                             showAlert(vc: vc, title: "Success! ✅", message: "Transaction sent.")
                         }
                     } else {
@@ -245,14 +262,20 @@ class SignerViewController: UIViewController {
         }
     }
     
-    /*
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destination.
         // Pass the selected object to the new view controller.
+        if segue.identifier == "segueToExportPsbtAsQr" {
+            if let vc = segue.destination as? QRDisplayerViewController {
+                if psbt != "" {
+                    vc.text = psbt
+                } else if txn != "" {
+                    vc.text = txn
+                }
+            }
+        }
     }
-    */
-
 }

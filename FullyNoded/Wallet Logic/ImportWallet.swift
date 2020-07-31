@@ -256,13 +256,16 @@ class ImportWallet {
         func importMulti(isChange: Bool, isKeypool: Bool, label: String, descriptor: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
             getDescriptorInfo(descriptor: descriptor) { (desc, errorMessage) in
                 if desc != nil {
-                    let params = "[{ \"desc\": \"\(desc!)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"label\": \"\(label)\", \"keypool\": \(isKeypool), \"internal\": \(isChange) }], {\"rescan\": false}"
+                    var params = "[{ \"desc\": \"\(desc!)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"label\": \"\(label)\", \"keypool\": \(isKeypool), \"internal\": \(isChange) }], {\"rescan\": false}"
                     
                     if isChange {
+                        params = "[{ \"desc\": \"\(desc!)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"keypool\": \(isKeypool), \"internal\": \(isChange) }], {\"rescan\": false}"
                         wallet["changeDescriptor"] = desc!
-                    } else if isKeypool && !isChange {
+                    }
+                    
+                    if isKeypool && !isChange {
                         wallet["receiveDescriptor"] = desc!
-                    } else {
+                    } else if !isKeypool && !isChange {
                         watching.append(desc!)
                     }
                     

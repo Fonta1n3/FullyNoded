@@ -86,7 +86,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     @objc func setFee(_ sender: UISlider) {
         
-        let cell = settingsTable.cellForRow(at: IndexPath.init(row: 0, section: 4))
+        let cell = settingsTable.cellForRow(at: IndexPath.init(row: 0, section: 3))
         let label = cell?.viewWithTag(1) as! UILabel
         let numberOfBlocks = Int(sender.value) * -1
         updateFeeLabel(label: label, numberOfBlocks: numberOfBlocks)
@@ -110,14 +110,10 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             icon.image = UIImage(systemName: "desktopcomputer")
             background.backgroundColor = .systemBlue
         case 1:
-            label.text = "Bitcoin Core Wallets"
-            icon.image = UIImage(systemName: "square.stack.3d.down.right")
-            background.backgroundColor = .systemGreen
-        case 2:
             label.text = "Security Center"
             icon.image = UIImage(systemName: "lock.shield")
             background.backgroundColor = .systemOrange
-        case 3:
+        case 2:
             label.text = "Kill Switch ☠️"
             icon.image = UIImage(systemName: "exclamationmark.triangle")
             background.backgroundColor = .systemRed
@@ -156,10 +152,10 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch indexPath.section {
-        case 0, 1, 2, 3:
+        case 0, 1, 2:
             return settingsCell(indexPath)
             
-        case 4:
+        case 3:
             return miningFeeCell(indexPath)
             
         default:
@@ -183,15 +179,12 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             textLabel.text = "Nodes"
             
         case 1:
-            textLabel.text = "Bitcoin Core Wallets"
-            
-        case 2:
             textLabel.text = "Security"
             
-        case 3:
+        case 2:
             textLabel.text = "Reset"
             
-        case 4:
+        case 3:
             textLabel.text = "Mining Fee"
             
         default:
@@ -202,7 +195,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 5
+        return 4
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -210,7 +203,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        if indexPath.section == 4 {
+        if indexPath.section == 3 {
             return 78
         } else {
             return 54
@@ -238,32 +231,17 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
         case 1:
             
-            //Wallet manager
-            switch indexPath.row {
-                
-            case 0:
-                
-                self.goToWalletManager()
-                
-            default:
-                
-                break
-                
-            }
-            
-        case 2:
-            
             DispatchQueue.main.async {
                 
                 self.performSegue(withIdentifier: "goToSecurity", sender: self)
                 
             }
             
-        case 3:
+        case 2:
             
             kill()
             
-        case 4:
+        case 3:
             
             //mining fee
             print("do nothing")
@@ -310,34 +288,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         self.present(alert, animated: true, completion: nil)
         
     }
-    
-    func goToWalletManager() {
         
-        DispatchQueue.main.async {
-            
-            self.performSegue(withIdentifier: "goManageWallets", sender: self)
-            
-        }
-        
-    }
-        
-}
-
-public extension Int {
-    
-    func withCommas() -> String {
-        
-        let numberFormatter = NumberFormatter()
-        numberFormatter.numberStyle = NumberFormatter.Style.decimal
-        return numberFormatter.string(from: NSNumber(value:self))!
-    }
-    
-}
-
-extension SettingsViewController  {
-    func tabBarController(_ tabBarController: UITabBarController, animationControllerForTransitionFrom fromVC: UIViewController, to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-        return MyTransition(viewControllers: tabBarController.viewControllers)
-    }
 }
 
 

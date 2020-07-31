@@ -13,7 +13,9 @@ class QRScannerViewController: UIViewController {
     var onImportDoneBlock : (([String:Any]?) -> Void)?
     var isAccountMap = Bool()
     var isQuickConnect = Bool()
+    var isScanningAddress = Bool()
     var onQuickConnectDoneBlock : ((String?) -> Void)?
+    var onAddressDoneBlock : ((String?) -> Void)?
     let spinner = ConnectingView()
     let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     let qrImageView = UIImageView()
@@ -107,6 +109,7 @@ class QRScannerViewController: UIViewController {
                     spinner.removeConnectingView()
                     DispatchQueue.main.async { [unowned vc = self] in
                         vc.dismiss(animated: true) {
+                            vc.qrScanner.stopScanner()
                             vc.qrScanner.avCaptureSession.stopRunning()
                             vc.onImportDoneBlock!(accountMap)
                         }
@@ -120,8 +123,25 @@ class QRScannerViewController: UIViewController {
             spinner.removeConnectingView()
             DispatchQueue.main.async { [unowned vc = self] in
                 vc.dismiss(animated: true) {
+                    vc.qrScanner.stopScanner()
                     vc.qrScanner.avCaptureSession.stopRunning()
                     vc.onQuickConnectDoneBlock!(text)
+                }
+            }
+        } else if isScanningAddress {
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.dismiss(animated: true) {
+                    vc.qrScanner.stopScanner()
+                    vc.qrScanner.avCaptureSession.stopRunning()
+                    vc.onAddressDoneBlock!(text)
+                }
+            }
+        } else {
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.dismiss(animated: true) {
+                    vc.qrScanner.stopScanner()
+                    vc.qrScanner.avCaptureSession.stopRunning()
+                    vc.onAddressDoneBlock!(text)
                 }
             }
         }

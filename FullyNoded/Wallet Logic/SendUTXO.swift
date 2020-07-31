@@ -20,32 +20,28 @@ class SendUTXO {
     var utxoVout = Int()
     var changeAmount = Double()
     var inputs = ""
-    var signedRawTx = ""
-    var errorBool = Bool()
-    var errorDescription = ""
     
-    func createRawTransaction(completion: @escaping () -> Void) {
+    func createRawTransaction(completion: @escaping ((signedTx: String?, psbt: String?, errorDescription: String?)) -> Void) {
+        
         func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
-            Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+            Reducer.makeCommand(command: method, param: param) { (response, errorMessage) in
                 if errorMessage == nil {
+                    
                     switch method {
-                    case .signrawtransactionwithwallet:
-                        if let dict = response as? NSDictionary {
-                            vc.signedRawTx = dict["hex"] as! String
-                            completion()
-                        }
-                    case .createrawtransaction:
-                        if let unsignedRawTx = response as? String {
-                            executeNodeCommand(method: .signrawtransactionwithwallet, param: "\"\(unsignedRawTx)\"")
+                        
+                    case .createpsbt:
+                        if let psbt = response as? String {
+                            Signer.sign(psbt: psbt) { (psbt, rawTx, errorMessage) in
+                                completion((rawTx, psbt, errorMessage))
+                            }
                         }
                         
                     default:
                         break
                     }
+                    
                 } else {
-                    vc.errorBool = true
-                    vc.errorDescription = errorMessage!
-                    completion()
+                    completion((nil, nil, errorMessage ?? "error creating tx with utxo"))
                 }
             }
         }
@@ -80,7 +76,7 @@ class SendUTXO {
             
         }
         
-        executeNodeCommand(method: .createrawtransaction, param: param)
+        executeNodeCommand(method: .createpsbt, param: param)
         
     }
     

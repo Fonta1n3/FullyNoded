@@ -12,21 +12,21 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
 
     var psbtArray = [""]
     var index = Int()
-    var isTorchOn = Bool()
-    var scannerShowing = Bool()
-    var blurArray = [UIVisualEffectView]()
-    var isFirstTime = Bool()
+    //var isTorchOn = Bool()
+    //var scannerShowing = Bool()
+    //var blurArray = [UIVisualEffectView]()
+    //var isFirstTime = Bool()
     var psbt = ""
     
-    var tapQRGesture = UITapGestureRecognizer()
-    var tapTextViewGesture = UITapGestureRecognizer()
+    //var tapQRGesture = UITapGestureRecognizer()
+    //var tapTextViewGesture = UITapGestureRecognizer()
     
-    let qrGenerator = QRGenerator()
-    let scanner = QRScanner()
+    //let qrGenerator = QRGenerator()
+    //let scanner = QRScanner()
     let connectingView = ConnectingView()
-    let rawDisplayer = RawDisplayer()
+    //let rawDisplayer = RawDisplayer()
     
-    @IBOutlet var imageView: UIImageView!
+    //@IBOutlet var imageView: UIImageView!
     @IBOutlet var joinTable: UITableView!
     
     var combinePSBT = Bool()
@@ -121,25 +121,25 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
         
-        scanner.uploadButton.addTarget(self,
-                                       action: #selector(chooseQRCodeFromLibrary),
-                                       for: .touchUpInside)
-        
-        scanner.torchButton.addTarget(self,
-                                      action: #selector(toggleTorch),
-                                      for: .touchUpInside)
-        
-        imageView.alpha = 0
-        imageView.backgroundColor = UIColor.black
-        imageView.isUserInteractionEnabled = true
-        scanner.imageView = imageView
-        scanner.vc = self
-        scanner.textField.alpha = 0
-        scanner.completion = { self.getQRCode() }
-        scanner.didChooseImage = { self.didPickImage() }
-        scanner.downSwipeAction = { self.closeScanner() }
-        
-        isFirstTime = true
+//        scanner.uploadButton.addTarget(self,
+//                                       action: #selector(chooseQRCodeFromLibrary),
+//                                       for: .touchUpInside)
+//        
+//        scanner.torchButton.addTarget(self,
+//                                      action: #selector(toggleTorch),
+//                                      for: .touchUpInside)
+//        
+//        imageView.alpha = 0
+//        imageView.backgroundColor = UIColor.black
+//        imageView.isUserInteractionEnabled = true
+//        scanner.imageView = imageView
+//        scanner.vc = self
+//        scanner.textField.alpha = 0
+//        scanner.completion = { self.getQRCode() }
+//        scanner.didChooseImage = { self.didPickImage() }
+//        scanner.downSwipeAction = { self.closeScanner() }
+//        
+//        isFirstTime = true
         
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(keyboardWillShow),
@@ -167,110 +167,110 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
         
         DispatchQueue.main.async {
             
-            self.joinTable.removeFromSuperview()
-            self.rawDisplayer.rawString = raw
-            self.rawDisplayer.vc = self
-            var titleString = "Joined PSBT"
-            
-            if self.combinePSBT {
-                
-                titleString = "Combined PSBT"
-                
-            }
-            
-            self.navigationController?.navigationBar.topItem?.title = titleString
-            self.rawDisplayer.qrView.addGestureRecognizer(self.tapQRGesture)
-            
-            self.tapTextViewGesture = UITapGestureRecognizer(target: self,
-                                                             action: #selector(self.shareRawText(_:)))
-            
-            self.rawDisplayer.textView.addGestureRecognizer(self.tapTextViewGesture)
-            
-            let newView = UIView()
-            newView.backgroundColor = self.view.backgroundColor
-            newView.frame = self.view.frame
-            self.view.addSubview(newView)
-            self.scanner.removeFromSuperview()
-            self.connectingView.removeConnectingView()
-            self.rawDisplayer.addRawDisplay()
-            
-        }
-        
-    }
-    
-    @objc func shareQRCode(_ sender: UITapGestureRecognizer) {
-        print("shareQRCode")
-        
-        DispatchQueue.main.async {
-            
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                self.rawDisplayer.qrView.alpha = 0
-                
-            }) { _ in
-                
-                UIView.animate(withDuration: 0.2, animations: {
-                    
-                    self.rawDisplayer.qrView.alpha = 1
-                    
-                })
-                
-            }
-            
-            self.qrGenerator.textInput = self.rawDisplayer.rawString
-            let qrImage = self.qrGenerator.getQRCode()
-            let objectsToShare = [qrImage]
-            
-            let activityController = UIActivityViewController(activityItems: objectsToShare,
-                                                              applicationActivities: nil)
-            
-            activityController.completionWithItemsHandler = { (type,completed,items,error) in }
-            activityController.popoverPresentationController?.sourceView = self.view
-            self.present(activityController, animated: true) {}
+//            self.joinTable.removeFromSuperview()
+//            self.rawDisplayer.rawString = raw
+//            self.rawDisplayer.vc = self
+//            var titleString = "Joined PSBT"
+//
+//            if self.combinePSBT {
+//
+//                titleString = "Combined PSBT"
+//
+//            }
+//
+//            self.navigationController?.navigationBar.topItem?.title = titleString
+//            self.rawDisplayer.qrView.addGestureRecognizer(self.tapQRGesture)
+//
+//            self.tapTextViewGesture = UITapGestureRecognizer(target: self,
+//                                                             action: #selector(self.shareRawText(_:)))
+//
+//            self.rawDisplayer.textView.addGestureRecognizer(self.tapTextViewGesture)
+//
+//            let newView = UIView()
+//            newView.backgroundColor = self.view.backgroundColor
+//            newView.frame = self.view.frame
+//            self.view.addSubview(newView)
+//            self.scanner.removeFromSuperview()
+//            self.connectingView.removeConnectingView()
+//            self.rawDisplayer.addRawDisplay()
             
         }
         
     }
     
-    @objc func shareRawText(_ sender: UITapGestureRecognizer) {
-        
-        DispatchQueue.main.async {
-            
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                self.rawDisplayer.textView.alpha = 0
-                
-            }) { _ in
-                
-                UIView.animate(withDuration: 0.2, animations: {
-                    
-                    self.rawDisplayer.textView.alpha = 1
-                    
-                })
-                
-            }
-            
-            let textToShare = [self.rawDisplayer.rawString]
-            
-            let activityViewController = UIActivityViewController(activityItems: textToShare,
-                                                                  applicationActivities: nil)
-            
-            activityViewController.popoverPresentationController?.sourceView = self.view
-            self.present(activityViewController, animated: true) {}
-            
-        }
-        
-    }
-    
-    @objc func close() {
-        
-        DispatchQueue.main.async {
-            
-            self.dismiss(animated: true, completion: nil)
-            
-        }
-        
-    }
+//    @objc func shareQRCode(_ sender: UITapGestureRecognizer) {
+//        print("shareQRCode")
+//
+//        DispatchQueue.main.async {
+//
+//            UIView.animate(withDuration: 0.2, animations: {
+//
+//                self.rawDisplayer.qrView.alpha = 0
+//
+//            }) { _ in
+//
+//                UIView.animate(withDuration: 0.2, animations: {
+//
+//                    self.rawDisplayer.qrView.alpha = 1
+//
+//                })
+//
+//            }
+//
+//            self.qrGenerator.textInput = self.rawDisplayer.rawString
+//            let qrImage = self.qrGenerator.getQRCode()
+//            let objectsToShare = [qrImage]
+//
+//            let activityController = UIActivityViewController(activityItems: objectsToShare,
+//                                                              applicationActivities: nil)
+//
+//            activityController.completionWithItemsHandler = { (type,completed,items,error) in }
+//            activityController.popoverPresentationController?.sourceView = self.view
+//            self.present(activityController, animated: true) {}
+//
+//        }
+//
+//    }
+//
+//    @objc func shareRawText(_ sender: UITapGestureRecognizer) {
+//
+//        DispatchQueue.main.async {
+//
+//            UIView.animate(withDuration: 0.2, animations: {
+//
+//                self.rawDisplayer.textView.alpha = 0
+//
+//            }) { _ in
+//
+//                UIView.animate(withDuration: 0.2, animations: {
+//
+//                    self.rawDisplayer.textView.alpha = 1
+//
+//                })
+//
+//            }
+//
+//            let textToShare = [self.rawDisplayer.rawString]
+//
+//            let activityViewController = UIActivityViewController(activityItems: textToShare,
+//                                                                  applicationActivities: nil)
+//
+//            activityViewController.popoverPresentationController?.sourceView = self.view
+//            self.present(activityViewController, animated: true) {}
+//
+//        }
+//
+//    }
+//
+//    @objc func close() {
+//
+//        DispatchQueue.main.async {
+//
+//            self.dismiss(animated: true, completion: nil)
+//
+//        }
+//
+//    }
     
     @objc func keyboardWillShow(_ notification:Notification) {
         
@@ -378,32 +378,32 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
-    func addBlurView(frame: CGRect, button: UIButton) {
-        
-        button.removeFromSuperview()
-        let blur = UIVisualEffectView()
-        blur.effect = UIBlurEffect(style: UIBlurEffect.Style.dark)
-        blur.frame = frame
-        blur.clipsToBounds = true
-        blur.layer.cornerRadius = frame.width / 2
-        blur.contentView.addSubview(button)
-        view.addSubview(blur)
-        blurArray.append(blur)
-        
-    }
-    
-    func getQRCode() {
-        
-        let stringURL = scanner.stringToReturn
-        addPSBT(url: stringURL)
-        
-    }
-    
-    @objc func chooseQRCodeFromLibrary() {
-        
-        scanner.chooseQRCodeFromLibrary()
-        
-    }
+//    func addBlurView(frame: CGRect, button: UIButton) {
+//
+//        button.removeFromSuperview()
+//        let blur = UIVisualEffectView()
+//        blur.effect = UIBlurEffect(style: UIBlurEffect.Style.dark)
+//        blur.frame = frame
+//        blur.clipsToBounds = true
+//        blur.layer.cornerRadius = frame.width / 2
+//        blur.contentView.addSubview(button)
+//        view.addSubview(blur)
+//        blurArray.append(blur)
+//
+//    }
+//
+//    func getQRCode() {
+//
+//        let stringURL = scanner.stringToReturn
+//        addPSBT(url: stringURL)
+//
+//    }
+//
+//    @objc func chooseQRCodeFromLibrary() {
+//
+//        scanner.chooseQRCodeFromLibrary()
+//
+//    }
     
     @objc func scanNow(sender: UIButton) {
         
@@ -411,117 +411,117 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
         
         index = Int(sender.accessibilityLabel!)!
         
-        if isFirstTime {
-            
-            DispatchQueue.main.async {
-                
-                self.addScannerButtons()
-                self.scanner.scanQRCode()
-                self.isFirstTime = false
-                self.imageView.addSubview(self.scanner.closeButton)
-                
-                DispatchQueue.main.async {
-                    
-                    UIView.animate(withDuration: 0.3, animations: {
-                        
-                        self.imageView.alpha = 1
-                        
-                    })
-                    
-                }
-                
-            }
-            
-        } else {
-            
-            scanner.startScanner()
-            
-            self.addScannerButtons()
-            
-            DispatchQueue.main.async {
-                
-                UIView.animate(withDuration: 0.3, animations: {
-                    
-                    self.imageView.alpha = 1
-                    
-                })
-                
-            }
-            
-            
-        }
-        
-        scannerShowing = true
-        
-    }
-    
-    func addScannerButtons() {
-        
-        self.addBlurView(frame: CGRect(x: self.imageView.frame.maxX - 80,
-                                       y: self.imageView.frame.maxY - 80,
-                                       width: 70,
-                                       height: 70), button: self.scanner.uploadButton)
-        
-        self.addBlurView(frame: CGRect(x: 10,
-                                       y: self.imageView.frame.maxY - 80,
-                                       width: 70,
-                                       height: 70), button: self.scanner.torchButton)
+//        if isFirstTime {
+//
+//            DispatchQueue.main.async {
+//
+//                self.addScannerButtons()
+//                self.scanner.scanQRCode()
+//                self.isFirstTime = false
+//                self.imageView.addSubview(self.scanner.closeButton)
+//
+//                DispatchQueue.main.async {
+//
+//                    UIView.animate(withDuration: 0.3, animations: {
+//
+//                        self.imageView.alpha = 1
+//
+//                    })
+//
+//                }
+//
+//            }
+//
+//        } else {
+//
+//            scanner.startScanner()
+//
+//            self.addScannerButtons()
+//
+//            DispatchQueue.main.async {
+//
+//                UIView.animate(withDuration: 0.3, animations: {
+//
+//                    self.imageView.alpha = 1
+//
+//                })
+//
+//            }
+//
+//
+//        }
+//
+//        scannerShowing = true
         
     }
     
-    func hideScanner() {
-        print("hideScanner")
-        
-        DispatchQueue.main.async {
-            
-            self.scanner.stopScanner()
-            
-            UIView.animate(withDuration: 0.3, animations: {
-                
-                self.imageView.alpha = 0
-                
-            })
-            
-        }
-        
-        for blur in blurArray {
-            
-            blur.removeFromSuperview()
-            
-        }
-        
-        self.scannerShowing = false
-        
-    }
-    
-    @objc func closeScanner() {
-        
-        hideScanner()
-        
-    }
-    
-    func didPickImage() {
-        
-        let qrString = scanner.qrString
-        addPSBT(url: qrString)
-        
-    }
-    
-    @objc func toggleTorch() {
-        
-        if isTorchOn {
-            
-            scanner.toggleTorch(on: false)
-            isTorchOn = false
-            
-        } else {
-            
-            scanner.toggleTorch(on: true)
-            isTorchOn = true
-            
-        }
-        
-    }
+//    func addScannerButtons() {
+//
+//        self.addBlurView(frame: CGRect(x: self.imageView.frame.maxX - 80,
+//                                       y: self.imageView.frame.maxY - 80,
+//                                       width: 70,
+//                                       height: 70), button: self.scanner.uploadButton)
+//
+//        self.addBlurView(frame: CGRect(x: 10,
+//                                       y: self.imageView.frame.maxY - 80,
+//                                       width: 70,
+//                                       height: 70), button: self.scanner.torchButton)
+//
+//    }
+//
+//    func hideScanner() {
+//        print("hideScanner")
+//
+//        DispatchQueue.main.async {
+//
+//            self.scanner.stopScanner()
+//
+//            UIView.animate(withDuration: 0.3, animations: {
+//
+//                self.imageView.alpha = 0
+//
+//            })
+//
+//        }
+//
+//        for blur in blurArray {
+//
+//            blur.removeFromSuperview()
+//
+//        }
+//
+//        self.scannerShowing = false
+//
+//    }
+//
+//    @objc func closeScanner() {
+//
+//        hideScanner()
+//
+//    }
+//
+//    func didPickImage() {
+//
+//        let qrString = scanner.qrString
+//        addPSBT(url: qrString)
+//
+//    }
+//
+//    @objc func toggleTorch() {
+//
+//        if isTorchOn {
+//
+//            scanner.toggleTorch(on: false)
+//            isTorchOn = false
+//
+//        } else {
+//
+//            scanner.toggleTorch(on: true)
+//            isTorchOn = true
+//
+//        }
+//
+//    }
     
     func addPSBT(url: String) {
         
@@ -532,16 +532,16 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
             
             textView.text = url
             self.psbtArray[self.index] = url
-            self.hideScanner()
+            //self.hideScanner()
             
             
         }
         
-        if isTorchOn {
-            
-            toggleTorch()
-            
-        }
+//        if isTorchOn {
+//
+//            toggleTorch()
+//
+//        }
         
         DispatchQueue.main.async {
             

@@ -103,14 +103,6 @@ class RescanViewController: UIViewController {
                 
             }
             
-        case "importMusig":
-            
-            if let vc = segue.destination as? ImportMultiSigViewController {
-                
-                vc.dict = dict
-                
-            }
-            
         default:
             
             break

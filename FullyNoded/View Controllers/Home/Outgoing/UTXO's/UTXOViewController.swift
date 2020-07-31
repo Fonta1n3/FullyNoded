@@ -14,9 +14,8 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     var amountToSend = String()
     let amountInput = UITextField()
     let amountView = UIView()
-    var tapQRGesture = UITapGestureRecognizer()
-    var tapTextViewGesture = UITapGestureRecognizer()
-    var rawSigned = String()
+    var rawSigned = ""
+    var psbt = ""
     var amountTotal = 0.0
     let refresher = UIRefreshControl()
     var utxoArray = [Any]()
@@ -29,27 +28,18 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     var p2shSegwit = Bool()
     var legacy = Bool()
     var selectedArray = [Bool]()
-    var scannerShowing = false
-    var blurArray = [UIVisualEffectView]()
-    var isFirstTime = Bool()
     var isUnsigned = false
     var utxo = NSDictionary()
     let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     let blurView2 = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
-    let qrGenerator = QRGenerator()
-    var isTorchOn = Bool()
-    let qrScanner = QRScanner()
-    let rawDisplayer = RawDisplayer()
     let sweepButtonView = Bundle.main.loadNibNamed("KeyPadButtonView", owner: self, options: nil)?.first as! UIView?
     @IBOutlet weak var utxoTable: UITableView!
-    @IBOutlet weak var imageView: UIImageView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationController?.delegate = self
         utxoTable.delegate = self
         utxoTable.dataSource = self
-        configureScanner()
         configureAmountView()
         utxoTable.tableFooterView = UIView(frame: .zero)
         refresher.tintColor = UIColor.white
@@ -228,9 +218,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     @objc func closeAmount() {
         
         if self.amountInput.text != "" {
-            
-            self.creatingView.addConnectingView(vc: self, description: "")
-            
+                        
             self.amountToSend = self.amountInput.text!
             
             let amount = Double(self.amountToSend)!
@@ -240,29 +228,17 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                 self.amountInput.resignFirstResponder()
                 
                 UIView.animate(withDuration: 0.2, animations: {
-                    
-                    self.amountView.frame = CGRect(x: 0,
-                                                   y: -200,
-                                                   width: self.view.frame.width,
-                                                   height: -200)
-                    
+                    self.amountView.frame = CGRect(x: 0, y: -200, width: self.view.frame.width, height: -200)
                 }) { _ in
-                    
                     self.amountView.removeFromSuperview()
                     self.amountInput.removeFromSuperview()
                     self.getAddress()
-                    
                 }
                 
             } else {
-                
-                creatingView.removeConnectingView()
-                
+                                
                 let available = amountAvailable(amount: amount).1
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "That UTXO only has \(available) BTC")
+                displayAlert(viewController: self, isError: true, message: "That UTXO only has \(available) BTC")
                 
             }
             
@@ -296,10 +272,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         
         let label = UILabel()
         
-        label.frame = CGRect(x: 0,
-                             y: 15,
-                             width: amountView.frame.width,
-                             height: 20)
+        label.frame = CGRect(x: 0, y: 15, width: amountView.frame.width, height: 20)
         
         label.font = UIFont.init(name: "HiraginoSans-W3", size: 20)
         label.textColor = UIColor.darkGray
@@ -381,59 +354,30 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         }
     }
     
-    @objc func dismissAddressKeyboard(_ sender: UITapGestureRecognizer) {
-     
-        DispatchQueue.main.async {
-            
-            self.qrScanner.textField.resignFirstResponder()
-            
-        }
-        
-    }
-    
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
-        
         self.amountInput.resignFirstResponder()
-        
         UIView.animate(withDuration: 0.2, animations: {
-            
-            self.amountView.frame = CGRect(x: 0,
-                                           y: -200,
-                                           width: self.view.frame.width,
-                                           height: -200)
-            
+            self.amountView.frame = CGRect(x: 0, y: -200, width: self.view.frame.width, height: -200)
             self.blurView2.alpha = 0
-            
         }) { _ in
-            
             self.blurView2.removeFromSuperview()
             self.amountView.removeFromSuperview()
             self.amountInput.removeFromSuperview()
-            
         }
-        
     }
     
     @objc func refresh() {
-        
         addSpinner()
         utxoArray.removeAll()
-        
-        executeNodeCommand(method: .listunspent,
-                           param: "0")
-        
+        executeNodeCommand(method: .listunspent, param: "0")
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        
         return utxoArray.count
-        
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
         return 1
-        
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -751,16 +695,16 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                         rawTransaction.sweep = true
                         rawTransaction.amount = roundedAmount
                         rawTransaction.inputArray = self.inputArray
-                        rawTransaction.createRawTransaction { [unowned vc = self] in
-                            if !rawTransaction.errorBool {
-                                let rawTxSigned = rawTransaction.signedRawTx
-                                DispatchQueue.main.async { [unowned vc = self] in
-                                    vc.rawSigned = rawTxSigned
-                                    vc.displayRaw(raw: vc.rawSigned)
-                                }
+                        rawTransaction.createRawTransaction { [unowned vc = self] (signedTx, psbt, errorMessage) in
+                            if signedTx != nil {
+                                vc.rawSigned = signedTx!
+                                vc.displayRaw(raw: vc.rawSigned)
+                            } else if psbt != nil {
+                                vc.psbt = psbt!
+                                vc.displayRaw(raw: vc.psbt)
                             } else {
                                 vc.creatingView.removeConnectingView()
-                                displayAlert(viewController: self, isError: true, message: rawTransaction.errorDescription)
+                                displayAlert(viewController: self, isError: true, message: errorMessage ?? "unknown error")
                             }
                         }
                     }
@@ -799,184 +743,19 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     }
     
     func addSpinner() {
-        
         DispatchQueue.main.async {
-            
-            self.creatingView.addConnectingView(vc: self,
-                                                description: "Getting UTXOs")
-            
+            self.creatingView.addConnectingView(vc: self, description: "Getting UTXOs")
         }
-        
-    }
-    
-    // MARK: QR SCANNER METHODS
-    
-    func configureScanner() {
-        
-        isFirstTime = true
-        
-        imageView.isUserInteractionEnabled = true
-        blurView.isUserInteractionEnabled = true
-        
-        blurView.frame = CGRect(x: view.frame.minX + 10,
-                                y: 100,
-                                width: view.frame.width - 20,
-                                height: 50)
-        
-        blurView.layer.cornerRadius = 10
-        blurView.clipsToBounds = true
-        
-        imageView.alpha = 0
-        imageView.frame = view.frame
-        imageView.backgroundColor = UIColor.black
-        
-        qrScanner.uploadButton.addTarget(self, action: #selector(chooseQRCodeFromLibrary), for: .touchUpInside)
-        
-        qrScanner.textField.delegate = self
-        qrScanner.keepRunning = false
-        qrScanner.vc = self
-        qrScanner.imageView = imageView
-        qrScanner.textFieldPlaceholder = "scan address QR or type/paste here"
-        qrScanner.closeButton.alpha = 0
-        
-        qrScanner.completion = { self.getQRCode() }
-        qrScanner.didChooseImage = { self.didPickImage() }
-        
-        qrScanner.uploadButton.addTarget(self,
-                                         action: #selector(self.chooseQRCodeFromLibrary),
-                                         for: .touchUpInside)
-        
-        qrScanner.torchButton.addTarget(self,
-                                        action: #selector(toggleTorch),
-                                        for: .touchUpInside)
-        
-        isTorchOn = false
-        
-        let tapGesture2 = UITapGestureRecognizer(target: self,
-                                                action: #selector(self.dismissAddressKeyboard (_:)))
-        
-        tapGesture2.numberOfTapsRequired = 1
-        self.imageView.addGestureRecognizer(tapGesture2)
-        
     }
     
     func getAddress() {
-        
-        self.utxoTable.isUserInteractionEnabled = false
-        scannerShowing = true
-        
-        if isFirstTime {
-            
-            DispatchQueue.main.async {
-                
-                self.qrScanner.scanQRCode()
-                self.addScannerButtons()
-                self.imageView.addSubview(self.qrScanner.closeButton)
-                self.isFirstTime = false
-                self.imageView.alpha = 1
-                self.blurView2.removeFromSuperview()
-                self.creatingView.removeConnectingView()
-                
-            }
-            
-        } else {
-            
-            self.qrScanner.startScanner()
-            self.addScannerButtons()
-            
-            DispatchQueue.main.async {
-                
-                UIView.animate(withDuration: 0.3, animations: {
-                    
-                    self.imageView.alpha = 1
-                    
-                })
-                
-            }
-            
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.blurView2.removeFromSuperview()
+            vc.amountView.removeFromSuperview()
+            vc.amountInput.removeFromSuperview()
+            vc.performSegue(withIdentifier: "segueToGetAddressFromUtxos", sender: vc)
         }
-        
     }
-    
-    func addScannerButtons() {
-        
-        imageView.addSubview(blurView)
-        blurView.contentView.addSubview(qrScanner.textField)
-        
-        self.addBlurView(frame: CGRect(x: self.imageView.frame.maxX - 80,
-                                       y: self.imageView.frame.maxY - 80,
-                                       width: 70,
-                                       height: 70), button: self.qrScanner.uploadButton)
-        
-        self.addBlurView(frame: CGRect(x: 10,
-                                       y: self.imageView.frame.maxY - 80,
-                                       width: 70,
-                                       height: 70), button: self.qrScanner.torchButton)
-        
-    }
-    
-    func getQRCode() {
-        
-        let stringURL = qrScanner.stringToReturn
-        self.address = stringURL
-        processBIP21(url: stringURL)
-        
-    }
-    
-    @objc func goBack() {
-        print("goBack")
-        
-        DispatchQueue.main.async {
-            
-            self.imageView.alpha = 0
-            self.scannerShowing = false
-            
-        }
-        
-    }
-    
-    @objc func toggleTorch() {
-        
-        if isTorchOn {
-            
-            qrScanner.toggleTorch(on: false)
-            isTorchOn = false
-            
-        } else {
-            
-            qrScanner.toggleTorch(on: true)
-            isTorchOn = true
-            
-        }
-        
-    }
-    
-    func addBlurView(frame: CGRect, button: UIButton) {
-        
-        button.removeFromSuperview()
-        let blur = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
-        blur.frame = frame
-        blur.clipsToBounds = true
-        blur.layer.cornerRadius = frame.width / 2
-        blur.contentView.addSubview(button)
-        self.imageView.addSubview(blur)
-        
-    }
-    
-    func didPickImage() {
-        
-        let qrString = qrScanner.qrString
-        self.address = qrString
-        processBIP21(url: qrString)
-        
-    }
-    
-    @objc func chooseQRCodeFromLibrary() {
-        
-        qrScanner.chooseQRCodeFromLibrary()
-        
-    }
-
     
     func getRawTx(changeAddress: String) {
         let dbl = Double(amountToSend)!
@@ -997,23 +776,45 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         rawTransaction.changeAmount = rounded(number: changeAmount)
         rawTransaction.sweep = self.isSweeping
         rawTransaction.inputArray = self.inputArray
-        rawTransaction.createRawTransaction { [unowned vc = self] in
-            if !rawTransaction.errorBool {
-                let rawTxSigned = rawTransaction.signedRawTx
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.rawSigned = rawTxSigned
-                    vc.displayRaw(raw: vc.rawSigned)
-                }
+        rawTransaction.createRawTransaction { [unowned vc = self] (signedTx, psbt, errorMessage) in
+            if signedTx != nil {
+                vc.rawSigned = signedTx!
+                vc.displayRaw(raw: vc.rawSigned)
+            } else if psbt != nil {
+                vc.psbt = psbt!
+                vc.displayRaw(raw: vc.psbt)
             } else {
                 vc.creatingView.removeConnectingView()
-                displayAlert(viewController: self, isError: true, message: rawTransaction.errorDescription)
+                displayAlert(viewController: self, isError: true, message: errorMessage ?? "unknown error")
             }
         }
     }
     
    func createRawNow() {
         if !isSweeping {
-            executeNodeCommand(method: .getrawchangeaddress, param: "")
+            activeWallet { [unowned vc = self] (wallet) in
+                if wallet != nil {
+                    if wallet!.type == "Multi-Sig" {
+                        let index = Int(wallet!.index) + 1
+                        CoreDataService.update(id: wallet!.id, keyToUpdate: "index", newValue: Int64(index), entity: .wallets) { (success) in
+                            if success {
+                                Reducer.makeCommand(command: .deriveaddresses, param: "\"\(wallet!.changeDescriptor)\", [\(index),\(index)]") { (response, errorMessage) in
+                                    if let result = response as? NSArray {
+                                        if let changeAddress = result[0] as? String {
+                                            vc.getRawTx(changeAddress: changeAddress)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        vc.executeNodeCommand(method: .getrawchangeaddress, param: "")
+                    }
+                } else {
+                    vc.executeNodeCommand(method: .getrawchangeaddress, param: "")
+                }
+            }
+            
         } else {
             var total = Double()
             var miningFee = 0.00000100//No good way to do fee estimation when manually selecting utxos (for now), if the wallet knows about the utxo's we can set a low ball fee and always use rbf. For now we hardcode 100 sats per input as the fee.
@@ -1029,229 +830,102 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
             rawTransaction.sweep = true
             rawTransaction.amount = roundedAmount
             rawTransaction.inputArray = self.inputArray
-            rawTransaction.createRawTransaction { [unowned vc = self] in
-                if !rawTransaction.errorBool {
-                    let rawTxSigned = rawTransaction.signedRawTx
-                    DispatchQueue.main.async { [unowned vc = self] in
-                        vc.rawSigned = rawTxSigned
-                        vc.displayRaw(raw: vc.rawSigned)
-                    }
+            rawTransaction.createRawTransaction { [unowned vc = self] (signedTx, psbt, errorMessage) in
+                if signedTx != nil {
+                    vc.rawSigned = signedTx!
+                    vc.displayRaw(raw: vc.rawSigned)
+                } else if psbt != nil {
+                    vc.psbt = psbt!
+                    vc.displayRaw(raw: psbt!)
                 } else {
                     vc.creatingView.removeConnectingView()
-                    displayAlert(viewController: self, isError: true, message: rawTransaction.errorDescription)
+                    displayAlert(viewController: self, isError: true, message: errorMessage ?? "unknown error")
                 }
             }
         }
     }
     
-    @objc func shareRawText(_ sender: UITapGestureRecognizer) {
-        
-        DispatchQueue.main.async {
-            
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                self.rawDisplayer.textView.alpha = 0
-                
-            }) { _ in
-                
-                UIView.animate(withDuration: 0.2, animations: {
-                    
-                    self.rawDisplayer.textView.alpha = 1
-                    
-                })
-                
-            }
-            
-            let textToShare = [self.rawDisplayer.rawString]
-            
-            let activityViewController = UIActivityViewController(activityItems: textToShare,
-                                                                  applicationActivities: nil)
-            
-            activityViewController.popoverPresentationController?.sourceView = self.view
-            self.present(activityViewController, animated: true) {}
-        }
-        
-    }
-    
-    @objc func shareQRCode(_ sender: UITapGestureRecognizer) {
-        print("shareQRCode")
-        
-        DispatchQueue.main.async {
-            
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                self.rawDisplayer.qrView.alpha = 0
-                
-            }) { _ in
-                
-                UIView.animate(withDuration: 0.2, animations: {
-                    
-                    self.rawDisplayer.qrView.alpha = 1
-                    
-                })
-                
-            }
-            
-            self.qrGenerator.textInput = self.rawDisplayer.rawString
-            let qrImage = self.qrGenerator.getQRCode()
-            let objectsToShare = [qrImage]
-            
-            let activityController = UIActivityViewController(activityItems: objectsToShare,
-                                                              applicationActivities: nil)
-            
-            activityController.completionWithItemsHandler = { (type,completed,items,error) in }
-            activityController.popoverPresentationController?.sourceView = self.view
-            self.present(activityController, animated: true) {}
-            
-        }
-        
-    }
-    
     func displayRaw(raw: String) {
-        print("displayRaw")
         DispatchQueue.main.async { [unowned vc = self] in
-            vc.utxoTable.removeFromSuperview()
-            vc.rawDisplayer.rawString = raw
-            vc.rawDisplayer.vc = vc
-            if vc.isUnsigned {
-                vc.navigationController?.navigationBar.topItem?.title = "Unsigned Tx"
-            } else {
-                vc.navigationController?.navigationBar.topItem?.title = "Signed Tx"
-            }
-            vc.tapQRGesture = UITapGestureRecognizer(target: vc, action: #selector(vc.shareQRCode(_:)))
-            vc.tapTextViewGesture = UITapGestureRecognizer(target: vc, action: #selector(vc.shareRawText(_:)))
-            vc.rawDisplayer.qrView.addGestureRecognizer(vc.tapQRGesture)
-            vc.rawDisplayer.textView.addGestureRecognizer(vc.tapTextViewGesture)
-            vc.qrScanner.removeFromSuperview()
-            vc.imageView.removeFromSuperview()
-            vc.rawDisplayer.addRawDisplay()
-            vc.creatingView.removeConnectingView()
+            vc.performSegue(withIdentifier: "segueToBroadcasterFromUtxo", sender: vc)
         }
     }
     
     // MARK: TEXTFIELD METHODS
     
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        print("textFieldShouldReturn")
-        
-        if textField == qrScanner.textField && qrScanner.textField.text != "" {
-            
-            processBIP21(url: qrScanner.textField.text!)
-            
-        } else if textField == self.qrScanner.textField && self.qrScanner.textField.text == "" {
-            
-            shakeAlert(viewToShake: self.qrScanner.textField)
-            
-        }
-        
-        return true
-    }
-    
     func processBIP21(url: String) {
-        
-        creatingView.addConnectingView(vc: self, description: "")
-        
         let addressParser = AddressParser()
         let errorBool = addressParser.parseAddress(url: url).errorBool
         let errorDescription = addressParser.parseAddress(url: url).errorDescription
-        
         if !errorBool {
-            
             self.address = addressParser.parseAddress(url: url).address
-            
-            DispatchQueue.main.async {
-                
-                self.qrScanner.textField.resignFirstResponder()
-                
-                for blur in self.blurArray {
-                    
-                    blur.removeFromSuperview()
-                    
-                }
-                
-                self.blurView.removeFromSuperview()
-                self.qrScanner.removeScanner()
-                self.createRawNow()
-                
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.blurView.removeFromSuperview()
+                vc.createRawNow()
             }
-            
-            if isTorchOn {
-                
-                toggleTorch()
-                
-            }
-            
-            impact()
-            
         } else {
-            
-            displayAlert(viewController: self,
-                         isError: true,
-                         message: errorDescription)
-            
+            displayAlert(viewController: self, isError: true, message: errorDescription)
         }
-        
     }
     
     func textFieldDidBeginEditing(_ textField: UITextField) {
-        
         if textField != amountInput {
-            
             if textField.text != "" {
-                
                 textField.becomeFirstResponder()
-                
             } else {
-                
                 if let string = UIPasteboard.general.string {
-                    
                     textField.resignFirstResponder()
                     textField.text = string
                     self.processBIP21(url: string)
-                    
                 } else {
-                    
                     textField.becomeFirstResponder()
-                    
                 }
-                
             }
-            
         }
-        
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
-        
         if textField != amountInput {
-            
             if textField.text != "" {
-                
                 self.processBIP21(url: textField.text!)
-                
             }
-            
         }
-        
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        
         switch segue.identifier {
             
         case "getUTXOinfo":
-            
             if let vc = segue.destination as? GetInfoViewController {
-             
                 vc.utxo = utxo
                 vc.isUtxo = true
-                
+            }
+            
+        case "segueToGetAddressFromUtxos":
+            if let vc = segue.destination as? QRScannerViewController {
+                vc.isScanningAddress = true
+                vc.onAddressDoneBlock = { [unowned thisVc = self] address in
+                    if address != nil {
+                        thisVc.creatingView.addConnectingView(vc: thisVc, description: "building psbt...")
+                        thisVc.processBIP21(url: address!)
+                    }
+                }
+            }
+            
+        case "segueToBroadcasterFromUtxo":
+            if let vc = segue.destination as? SignerViewController {
+                creatingView.removeConnectingView()
+                if rawSigned != "" {
+                    vc.txn = rawSigned
+                    vc.broadcast = true
+                } else if psbt != "" {
+                    vc.psbt = psbt
+                    vc.export = true
+                }
             }
             
         default:
-            
             break
-            
         }
         
     }

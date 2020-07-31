@@ -116,6 +116,14 @@ public extension Dictionary {
     }
 }
 
+public extension Int {
+    func withCommas() -> String {
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = NumberFormatter.Style.decimal
+        return numberFormatter.string(from: NSNumber(value:self))!
+    }
+}
+
 extension String {
     var isAlphanumeric: Bool {
         return !isEmpty && range(of: "[^a-zA-Z0-9]", options: .regularExpression) == nil
