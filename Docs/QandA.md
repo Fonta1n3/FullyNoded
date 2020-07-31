@@ -156,7 +156,7 @@ For starters ensure you are connected to your node, can you confirm it successfu
 **Problemsolving**
 1. Are you absolutely sure the rpc password and username and onion are 100% correct? rpcpassword that's in your `bitcoin.conf`.
 2. Have you tried rebooting the node?
-3. Are there any special characters in the RPC password? Only alphanumeric is allowed but the app should warn you about that.
+3. Are there any special characters in the RPC password? Only alphanumeric is allowed but the app should warn you about that. Make sure your rpc credentials do not have any special characters
 4. Generally rebooting Tor on the node would solve this issue if everything else is correct.
 5. is there any possibility your isp is blocking `tor` (On your phone)?
 
@@ -170,6 +170,13 @@ Airdrop is not a must. You can save the files in `iphone` using the native file 
 See this instruction of 33 secs [here](https://www.youtube.com/watch?v=W0vwgzIrPoY). This is super cool, super easy. <br/>
 Video is obviously edited, the spinner will take longer then that, just wait a bit
 
+#### Question : I experience crashes, and I want it fixed. How?
+
+I will be be keeping the testflight up to date for you [here](https://testflight.apple.com/join/a6GWxet2), so that they can be shared and investigated.
+
+**For sure tor will crash occasionally.** If you *race around the app* and put it into foreground and background quickly, actually a guaranteed way to make the app crash is quickly backgroundning it and quickly foregrounding it as `Tor` needs about 10 seconds to bootstrap and if it is does not complete that process before getting backgrounded `tor` will crash, just something to keep in mind. 
+
+Go slow, `tor` is not meant for speed. `Tor` does not stay alive in the background so every time the app does go (crash) there we have to force `tor` to quit, then when the app reappears it has to bootstrap tor again every time.
 
 ##Import
 
