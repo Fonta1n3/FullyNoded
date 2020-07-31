@@ -150,14 +150,21 @@ Matt Hill: Please make sure you are running `Bitcoin 0.20.0` on the `Embassy`. A
 Fonta1n3: Looks like you never actually connected? If your connection is successful you’ll see the home screen look like this:<br/>
 <img src="https://i.ibb.co/HrsmwBd/opening-screen.jpg" alt="opening-screen" border="0" width="200">
 
-Occasionally you’ll get a crash if you race around the app not allowing things to finish loading or if you put it into background before tor connects and back into foreground very quickly and vice versa. Important to let things load and go slow. Other then that there really should not be crashes, only way i can troubleshoot that is release on Testflight again and ask that you share the crash report.
+Occasionally you’ll get a crash if you race around the app not allowing things to finish loading or if you put it into background before `tor` connects and back into foreground very quickly and vice versa. Important to let things load and go slow. Other then that there really should not be crashes, only way i can troubleshoot that is release on Testflight again and ask that you share the crash report.
 For starters ensure you are connected to your node, can you confirm it successfully connects? Actually connecting is only successful when the home screen has loaded.
 
 **Problemsolving**
-1. Are you absolutely sure the rpc password and username and onion are 100% correct?
+1. Are you absolutely sure the rpc password and username and onion are 100% correct? rpcpassword that's in your `bitcoin.conf`.
 2. Have you tried rebooting the node?
 3. Are there any special characters in the RPC password? Only alphanumeric is allowed but the app should warn you about that.
 4. Generally rebooting Tor on the node would solve this issue if everything else is correct.
+5. is there any possibility your isp is blocking `tor` (On your phone)?
+
+#### Question : How to export your single sig wallet from Coldcard to Fully Noded using your own node?
+
+See this instruction of 33 secs [here](https://www.youtube.com/watch?v=W0vwgzIrPoY). This is super cool, super easy.
+
+
 
 ##Import
 
@@ -427,6 +434,29 @@ You can download the dmg right on the link, just open it and it does everything 
 
 If you want to do it manually that works too :)
 
+#### Question : Looks like I'm connected. But no homescreen, what's wrong?
+
+*It says it connects successfully but no matter how long i let the app run it never looks like your pic.*<br/>
+<img src="https://i.ibb.co/qB40KYQ/node-added.jpg" alt="node-added" border="0" width="200">
+<img src="https://i.ibb.co/Y0prvk0/node-added2.jpg" alt="node-added2" border="0" width="200">
+
+It says successfully **added**. Actually connecting is only successful when the home screen has loaded.<br/>
+Are you absolutely sure the rpc password and username and onion are 100% correct?<br/>
+Have you tried rebooting the node?<br/>
+Are there any special characters in the RPC password? Only alphanumeric is allowed but the app should warn you about that now..<br/>
+Generally rebooting Tor on the node would solve this issue if everything else is correct<br/>
+
+I definitely need to reboot tor on my MacBook sometimes but only after it is asleep... servers should not have that issue, occasionally I’ve had users (and myself) need to reboot tor on the initial connection attempt.<br/>
+W is there any possibility your isp is blocking tor? That has also been an issue before. (On your phone i mean)<br/>
+
+For starters ensure you are connected to your node, can you confirm it successfully connects?
+
+If your connection is successful you’ll see the home screen look like this:<br/>
+<img src="https://i.ibb.co/HrsmwBd/opening-screen.jpg" alt="opening-screen" border="0" width="200"><br/>
+
+
+
+
 ## Wallets
 
 
@@ -500,6 +530,9 @@ Yes, i think you are very locked into their wallet (Green Wallet) and can only r
 Also, you can not recover any multisig with the multisig creator, currently it keeps the derivation hard coded. We will definitely update that in the future. It is a start for now.
 Nice that you want to use Fn on a dally bases, yea for simplicity id recommend the single sig!
 
+#### Question : Are wallets enabled on the config page of bitcoin in the Embassy App?
+
+FN works with walletdisabled=1, home screen doesn’t include any wallet rpc calls.
 
 ## Standup
 
