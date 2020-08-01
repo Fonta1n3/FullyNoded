@@ -217,10 +217,9 @@ class IdentityViewController: UIViewController, UITextViewDelegate {
     }
     
     func scanNow() {
-        print("scanNow")
-        
-        
-        
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "segueToScannerFromIdentity", sender: vc)
+        }
     }
     
     func addText(text: String) {
@@ -303,6 +302,19 @@ class IdentityViewController: UIViewController, UITextViewDelegate {
             }
         }
         
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "segueToScannerFromIdentity" {
+            if let vc = segue.destination as? QRScannerViewController {
+                vc.isScanningAddress = true
+                vc.onAddressDoneBlock = { text in
+                    if text != nil {
+                        self.addText(text: text!)
+                    }
+                }
+            }
+        }
     }
     
 }

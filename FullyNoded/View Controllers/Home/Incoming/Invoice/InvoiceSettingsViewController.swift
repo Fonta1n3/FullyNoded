@@ -20,6 +20,7 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
     var isPruned = Bool()
     var isTestnet = Bool()
     var isExtendedKey = Bool()
+    var isDescriptor = Bool()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -133,35 +134,25 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
             
         case 1:
             print("segue to import things")
-            DispatchQueue.main.async {
+            switch indexPath.row {
                 
-                var segueString = ""
+            case 0, 1:
+                isSingleKey = true
                 
-                switch indexPath.row {
-                    
-                case 2:
-                    
-                    segueString = "importAKey"
-                    self.isPrivKey = true
-                    self.isSingleKey = true
-                    
-                case 3, 4:
-                    
-                    segueString = "goImportExtendedKeys"
-                    
-                case 5:
-                    
-                    segueString = "importDescriptor"
-                    
-                default:
-                    
-                    segueString = "importAKey"
-                    self.isSingleKey = true
-                    
-                }
+            case 2:
+                isPrivKey = true
                 
-                self.performSegue(withIdentifier: segueString,
-                                  sender: self)
+            case 3, 4:
+                isExtendedKey = true
+                
+            case 5:
+                isDescriptor = true
+                
+            default:
+                break
+            }
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.performSegue(withIdentifier: "segueToImportFromAdvanced", sender: vc)
             }
             
         case 2:
@@ -260,31 +251,12 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         switch segue.identifier {
-            case "importAKey":
+            case "segueToImportFromAdvanced":
                 
                 if let vc = segue.destination as? AddLabelViewController {
-                    
+                    vc.isDescriptor = isDescriptor
                     vc.isSingleKey = isSingleKey
                     vc.isPrivKey = isPrivKey
-                }
-                
-            case "importMultiSig":
-                
-                if let vc = segue.destination as? AddLabelViewController {
-                    
-                    vc.isSingleKey = false
-                    vc.isPrivKey = false
-                    vc.isMultisig = true
-                }
-                
-            case "importDescriptor":
-                
-                if let vc = segue.destination as? AddLabelViewController {
-                    
-                    vc.isDescriptor = true
-                    vc.isSingleKey = false
-                    vc.isMultisig = false
-                    
                 }
 
         default:

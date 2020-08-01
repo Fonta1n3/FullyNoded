@@ -16,6 +16,7 @@ class SignerViewController: UIViewController {
     var spinner = ConnectingView()
     var psbt = ""
     var txn = ""
+    var txnUnsigned = ""
     var broadcast = false
     var export = false
     @IBOutlet weak var textView: UITextView!
@@ -45,12 +46,17 @@ class SignerViewController: UIViewController {
             analyzeOutlet.alpha = 0
             decodeOutlet.alpha = 1
             spinner.addConnectingView(vc: self, description: "checking which network the node is on...")
+        } else if txnUnsigned != "" {
+            textView.text = txnUnsigned
+            titleLabel.text = "Export Unsigned Tx"
+            signOutlet.setTitle("export", for: .normal)
+            decodeOutlet.alpha = 1
         }
         
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        if !export {
+        if !export && txnUnsigned == "" {
             Reducer.makeCommand(command: .getblockchaininfo, param: "") { [unowned vc = self] (response, errorMessage) in
                 if let dict = response as? NSDictionary {
                     if let network = dict["chain"] as? String {
@@ -152,7 +158,9 @@ class SignerViewController: UIViewController {
     }
     
     @IBAction func signNow(_ sender: Any) {
-        if export {
+        if txnUnsigned != "" {
+            exportUnisgned(txnUnsigned: txnUnsigned)
+        } else if export {
             exportPsbt(psbt: psbt)
         } else if !broadcast {
             spinner.addConnectingView(vc: self, description: "signing psbt...")
@@ -182,6 +190,28 @@ class SignerViewController: UIViewController {
             broadcastNow(tx: (txn.replacingOccurrences(of: "\n", with: "")).condenseWhitespace())
         }
         
+    }
+    
+    private func exportUnisgned(txnUnsigned: String) {
+        DispatchQueue.main.async { [unowned vc = self] in
+            let alert = UIAlertController(title: "Export as text or QR?", message: "", preferredStyle: .actionSheet)
+            alert.addAction(UIAlertAction(title: "Text", style: .default, handler: { action in
+                DispatchQueue.main.async { [unowned vc = self] in
+                    let textToShare = [txnUnsigned]
+                    let activityViewController = UIActivityViewController(activityItems: textToShare, applicationActivities: nil)
+                    activityViewController.popoverPresentationController?.sourceView = vc.view
+                    vc.present(activityViewController, animated: true) {}
+                }
+            }))
+            alert.addAction(UIAlertAction(title: "QR", style: .default, handler: { action in
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.performSegue(withIdentifier: "segueToExportPsbtAsQr", sender: vc)
+                }
+            }))
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = vc.view
+            vc.present(alert, animated: true) {}
+        }
     }
     
     private func exportPsbt(psbt: String) {
@@ -274,6 +304,8 @@ class SignerViewController: UIViewController {
                     vc.text = psbt
                 } else if txn != "" {
                     vc.text = txn
+                } else if txnUnsigned != "" {
+                    vc.text = txnUnsigned
                 }
             }
         }

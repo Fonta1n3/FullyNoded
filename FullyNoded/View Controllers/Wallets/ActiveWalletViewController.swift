@@ -75,7 +75,6 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         }
     }
     
-    
     @IBAction func goToFullyNodedWallets(_ sender: Any) {
         DispatchQueue.main.async { [unowned vc = self] in
             vc.performSegue(withIdentifier: "segueToWallets", sender: vc)
@@ -403,7 +402,18 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
                 if errorMessage!.contains("Wallet file not specified (must request wallet RPC through") {
                     vc.removeSpinner()
                     vc.existingWallet = "multiple wallets"
-                    vc.promptToChooseWallet()
+                    CoreDataService.retrieveEntity(entityName: .wallets) { (wallets) in
+                        if wallets != nil {
+                            if wallets!.count > 0 {
+                                vc.promptToChooseWallet()
+                            } else {
+                                vc.promptToCreateWallet()
+                            }
+                        } else {
+                            vc.promptToCreateWallet()
+                        }
+                    }
+                    
                 } else {
                     vc.removeSpinner()
                     displayAlert(viewController: vc, isError: true, message: errorMessage!)
@@ -470,9 +480,23 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         }
     }
     
+    private func promptToCreateWallet() {
+        DispatchQueue.main.async { [unowned vc = self] in
+            let alert = UIAlertController(title: "Looks like you have not yet created a Fully Noded wallet, tap create to get started, if you are not yet ready you can always tap the + button in the top left.", message: "", preferredStyle: .actionSheet)
+            alert.addAction(UIAlertAction(title: "Create", style: .default, handler: { action in
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.performSegue(withIdentifier: "createFullyNodedWallet", sender: vc)
+                }
+            }))
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = vc.view
+            vc.present(alert, animated: true, completion: nil)
+        }
+    }
+    
     private func promptToChooseWallet() {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Your node has multiple wallets that are currently loaded, you need to choose which one you want to work with.", message: "", preferredStyle: .actionSheet)
+            let alert = UIAlertController(title: "None of your wallets seem to be toggled on, please choose which wallet you want to use.", message: "", preferredStyle: .actionSheet)
             alert.addAction(UIAlertAction(title: "Choose", style: .default, handler: { [unowned vc = self] action in
                 vc.goChooseWallet()
             }))
@@ -484,7 +508,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     
     private func goChooseWallet() {
         DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "segueToChooseWallet", sender: vc)
+            vc.performSegue(withIdentifier: "segueToWallets", sender: vc)
         }
     }
     

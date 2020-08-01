@@ -86,6 +86,7 @@
                         <outlet property="table" destination="dgY-D7-U76" id="X69-1u-M7s"/>
                         <segue destination="Xxg-Pp-vvN" kind="show" identifier="getHDmusigAddress" id="mRa-gP-mZ0"/>
                         <segue destination="hL3-4s-vl7" kind="show" identifier="segueToBitcoinCoreWallets" id="2cS-RS-Ttc"/>
+                        <segue destination="AU8-j7-403" kind="show" identifier="segueToImportFromAdvanced" id="nfO-IM-Ce0"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Oke-B8-Go2" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -788,11 +789,11 @@
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="gtC-x0-wli" customClass="ImportExtendedKeysViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="6LS-Dn-P9n">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="AHi-sk-wZC">
-                                <rect key="frame" x="0.0" y="0.0" width="375" height="589"/>
+                                <rect key="frame" x="0.0" y="44" width="375" height="565"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="separatorColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
@@ -817,7 +818,7 @@
                                 </prototypes>
                             </tableView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="0gk-sp-OBF">
-                                <rect key="frame" x="0.0" y="590" width="375" height="57"/>
+                                <rect key="frame" x="0.0" y="610" width="375" height="57"/>
                                 <color key="backgroundColor" systemColor="systemBlueColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="57" id="O6g-sf-lPq"/>
@@ -1128,6 +1129,7 @@
                         <outlet property="keyOutlet" destination="4Il-Nr-ixk" id="74y-jh-jQt"/>
                         <outlet property="messageOutlet" destination="cjt-8H-hgo" id="IeV-Qs-FA3"/>
                         <outlet property="sigOutlet" destination="9HW-CT-WFe" id="nDa-EL-TeG"/>
+                        <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScannerFromIdentity" id="j8G-Ef-7de"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="xud-mg-Nni" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -2681,11 +2683,11 @@
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="pBU-jm-875" customClass="ImportPrivKeyViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Upe-qb-TZs">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="6B1-3x-KdI">
-                                <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                             </imageView>
                         </subviews>
                         <color key="backgroundColor" red="0.078040815890000004" green="0.090017892419999995" blue="0.10251823810000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -2860,7 +2862,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Give the addresses a label so you can easily look them up" lineBreakMode="tailTruncation" numberOfLines="7" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="41X-LM-mml">
-                                <rect key="frame" x="16" y="20" width="343" height="73"/>
+                                <rect key="frame" x="16" y="64" width="343" height="73"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="73" id="xtY-Ka-kVA"/>
                                 </constraints>
@@ -2869,13 +2871,13 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Top-LU-ubL">
-                                <rect key="frame" x="16" y="101" width="343" height="34"/>
+                                <rect key="frame" x="16" y="145" width="343" height="34"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="19"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                             </textField>
                             <button opaque="NO" tag="8" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="I35-cn-vrC">
-                                <rect key="frame" x="16" y="143" width="343" height="53"/>
+                                <rect key="frame" x="16" y="187" width="343" height="53"/>
                                 <color key="backgroundColor" red="0.12791608967551313" green="0.14715240112100464" blue="0.16878568733857868" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="53" id="hFf-GN-Eg5"/>
@@ -2924,11 +2926,11 @@
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="cZc-Ap-mkZ" customClass="ExtendedKeysParentViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="aiL-VL-6Mn">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="7" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ED9-fa-OLo">
-                                <rect key="frame" x="16" y="29" width="343" height="72"/>
+                                <rect key="frame" x="16" y="73" width="343" height="72"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="72" id="GpO-Bi-WLw"/>
                                 </constraints>
@@ -2942,7 +2944,7 @@ BIP32 = yourXpub/*
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="7" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4f9-Ha-Ltc">
-                                <rect key="frame" x="16" y="136" width="343" height="24"/>
+                                <rect key="frame" x="16" y="180" width="343" height="24"/>
                                 <string key="text">P2PKH (pay to public key hash)
 address prefix: 1</string>
                                 <fontDescription key="fontDescription" type="system" pointSize="10"/>
@@ -2950,25 +2952,25 @@ address prefix: 1</string>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="BIP44" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="SZL-a5-K2x">
-                                <rect key="frame" x="93" y="171" width="45" height="14"/>
+                                <rect key="frame" x="93" y="215" width="45" height="14"/>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="BIP49" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KW6-Gq-UW2">
-                                <rect key="frame" x="95" y="311" width="45" height="14"/>
+                                <rect key="frame" x="95" y="355" width="45" height="14"/>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="BIP32" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ouj-Ww-Exb">
-                                <rect key="frame" x="237" y="311" width="45" height="14"/>
+                                <rect key="frame" x="237" y="355" width="45" height="14"/>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Legacy:" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NU2-An-8bM">
-                                <rect key="frame" x="16" y="117" width="343" height="19"/>
+                                <rect key="frame" x="16" y="161" width="343" height="19"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="19" id="O1s-sQ-bda"/>
                                 </constraints>
@@ -2977,31 +2979,31 @@ address prefix: 1</string>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="BIP32" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WQO-Qm-Z94">
-                                <rect key="frame" x="236" y="440" width="45" height="14"/>
+                                <rect key="frame" x="236" y="484" width="45" height="14"/>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qse-4H-E6X">
-                                <rect key="frame" x="91" y="189" width="51" height="31"/>
+                                <rect key="frame" x="91" y="233" width="51" height="31"/>
                                 <connections>
                                     <action selector="bip44Action:" destination="cZc-Ap-mkZ" eventType="valueChanged" id="eZG-aO-HHK"/>
                                 </connections>
                             </switch>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="BIP84" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yGN-Mr-yad">
-                                <rect key="frame" x="94" y="440" width="45" height="14"/>
+                                <rect key="frame" x="94" y="484" width="45" height="14"/>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="aAK-60-l9D">
-                                <rect key="frame" x="92" y="458" width="51" height="31"/>
+                                <rect key="frame" x="92" y="502" width="51" height="31"/>
                                 <connections>
                                     <action selector="bip84Action:" destination="cZc-Ap-mkZ" eventType="valueChanged" id="ex1-9q-cTs"/>
                                 </connections>
                             </switch>
                             <button opaque="NO" tag="8" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Txl-uD-Les">
-                                <rect key="frame" x="0.0" y="594" width="375" height="53"/>
+                                <rect key="frame" x="0.0" y="614" width="375" height="53"/>
                                 <color key="backgroundColor" red="0.084890075029999998" green="0.3978849351" blue="0.86794960499999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="53" id="EAm-ab-Wgl"/>
@@ -3015,7 +3017,7 @@ address prefix: 1</string>
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Choose the derivation scheme" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="7" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2kN-0r-8Jh">
-                                <rect key="frame" x="58" y="2" width="259" height="28"/>
+                                <rect key="frame" x="58" y="46" width="259" height="28"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="28" id="Mg6-jP-JzN"/>
                                     <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="259" id="wmX-3K-E0e"/>
@@ -3025,37 +3027,37 @@ address prefix: 1</string>
                                 <nil key="highlightedColor"/>
                             </label>
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qFJ-Kv-e8W">
-                                <rect key="frame" x="234" y="458" width="51" height="31"/>
+                                <rect key="frame" x="234" y="502" width="51" height="31"/>
                                 <connections>
                                     <action selector="bip32SegwitAction:" destination="cZc-Ap-mkZ" eventType="valueChanged" id="6GH-RJ-2QF"/>
                                 </connections>
                             </switch>
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ZyV-c5-XmE">
-                                <rect key="frame" x="93" y="329" width="51" height="31"/>
+                                <rect key="frame" x="93" y="373" width="51" height="31"/>
                                 <connections>
                                     <action selector="bip49Action:" destination="cZc-Ap-mkZ" eventType="valueChanged" id="QTU-4b-lC0"/>
                                 </connections>
                             </switch>
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="uz3-GO-Wz6">
-                                <rect key="frame" x="235" y="329" width="51" height="31"/>
+                                <rect key="frame" x="235" y="373" width="51" height="31"/>
                                 <connections>
                                     <action selector="segwitWrappedAction:" destination="cZc-Ap-mkZ" eventType="valueChanged" id="wJR-cE-YMu"/>
                                 </connections>
                             </switch>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="BIP32" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YdG-3S-2uf">
-                                <rect key="frame" x="237" y="171" width="45" height="14"/>
+                                <rect key="frame" x="237" y="215" width="45" height="14"/>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="YWY-ot-2Yv">
-                                <rect key="frame" x="235" y="189" width="51" height="31"/>
+                                <rect key="frame" x="235" y="233" width="51" height="31"/>
                                 <connections>
                                     <action selector="bip32LegacyAction:" destination="cZc-Ap-mkZ" eventType="valueChanged" id="q1r-7Q-WA5"/>
                                 </connections>
                             </switch>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Segwit wrapped:" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VfS-6F-iG4">
-                                <rect key="frame" x="16" y="247" width="343" height="19"/>
+                                <rect key="frame" x="16" y="291" width="343" height="19"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="19" id="xH6-2E-OtH"/>
                                 </constraints>
@@ -3064,7 +3066,7 @@ address prefix: 1</string>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Native Segwit:" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="t1T-KI-wMg">
-                                <rect key="frame" x="16" y="387" width="343" height="19"/>
+                                <rect key="frame" x="16" y="431" width="343" height="19"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="19" id="DMk-gb-yWJ"/>
                                 </constraints>
@@ -3073,7 +3075,7 @@ address prefix: 1</string>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="7" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Pwi-XC-bCq">
-                                <rect key="frame" x="16" y="266" width="343" height="36"/>
+                                <rect key="frame" x="16" y="310" width="343" height="36"/>
                                 <string key="text">P2SH-P2WSH
 (pay to witness script hash wrapped in pay to script hash)
 address prefix: 3</string>
@@ -3082,7 +3084,7 @@ address prefix: 3</string>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="7" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EAu-L8-B8A">
-                                <rect key="frame" x="16" y="405" width="343" height="24"/>
+                                <rect key="frame" x="16" y="449" width="343" height="24"/>
                                 <string key="text">P2WSH (pay to witness script hash)
 address prefix: 1</string>
                                 <fontDescription key="fontDescription" type="system" pointSize="10"/>
@@ -3171,11 +3173,11 @@ address prefix: 1</string>
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="g4K-ZQ-445" customClass="ChooseRangeViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="wwm-FP-XCK">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Choose a range of keys to be imported" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="x3z-VN-55A">
-                                <rect key="frame" x="39" y="20" width="297" height="49"/>
+                                <rect key="frame" x="39" y="64" width="297" height="49"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="49" id="Xba-Mq-RZI"/>
                                 </constraints>
@@ -3184,7 +3186,7 @@ address prefix: 1</string>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" tag="8" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Nh9-GE-lKI">
-                                <rect key="frame" x="0.0" y="594" width="375" height="53"/>
+                                <rect key="frame" x="0.0" y="614" width="375" height="53"/>
                                 <color key="backgroundColor" red="0.084890075029999998" green="0.3978849351" blue="0.86794960499999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="53" id="CCH-nn-Th0"/>
@@ -3198,7 +3200,7 @@ address prefix: 1</string>
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="7" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cod-Ht-fNQ">
-                                <rect key="frame" x="16" y="77" width="343" height="105"/>
+                                <rect key="frame" x="16" y="121" width="343" height="105"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="105" id="lzx-yo-LLc"/>
                                 </constraints>
@@ -3240,11 +3242,11 @@ The range represents the index of the derived addresses</string>
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="YCs-N7-5az" customClass="AddToKeypoolViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="LJv-zM-azM">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" tag="8" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="RsN-wp-34E">
-                                <rect key="frame" x="0.0" y="594" width="375" height="53"/>
+                                <rect key="frame" x="0.0" y="614" width="375" height="53"/>
                                 <color key="backgroundColor" red="0.084890075029999998" green="0.3978849351" blue="0.86794960499999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="53" id="lz6-CV-rjt"/>
@@ -3258,7 +3260,7 @@ The range represents the index of the derived addresses</string>
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Would you like to add these keys to the keypool?" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="10" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="j0D-7N-Dwz">
-                                <rect key="frame" x="16" y="20" width="343" height="41"/>
+                                <rect key="frame" x="16" y="64" width="343" height="41"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="41" id="Gui-xt-mW5"/>
                                 </constraints>
@@ -3267,7 +3269,7 @@ The range represents the index of the derived addresses</string>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="10" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0Ms-xm-eBZ">
-                                <rect key="frame" x="16" y="77" width="343" height="64"/>
+                                <rect key="frame" x="16" y="121" width="343" height="64"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="64" id="LZa-KX-oOS"/>
                                 </constraints>
@@ -3277,13 +3279,13 @@ The range represents the index of the derived addresses</string>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="YES" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tQw-JJ-blT">
-                                <rect key="frame" x="172.5" y="245" width="30.5" height="14"/>
+                                <rect key="frame" x="172.5" y="289" width="30.5" height="14"/>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="am4-bp-wWS">
-                                <rect key="frame" x="163" y="263" width="51" height="31"/>
+                                <rect key="frame" x="163" y="307" width="51" height="31"/>
                                 <color key="onTintColor" red="0.0" green="0.97680455450000003" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <connections>
                                     <action selector="sshSwitchAction:" destination="bdZ-xF-GZ9" eventType="valueChanged" id="zwg-5W-tDa"/>
@@ -3325,11 +3327,11 @@ The range represents the index of the derived addresses</string>
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="Of4-yh-0Y6" customClass="AddAsChangeViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="OZ9-Rx-Drz">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Would you like to import these addresses as change addresses?" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="12" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wQ1-Bd-CMl">
-                                <rect key="frame" x="16" y="20" width="343" height="50"/>
+                                <rect key="frame" x="16" y="64" width="343" height="50"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="50" id="zri-lj-iny"/>
                                 </constraints>
@@ -3338,7 +3340,7 @@ The range represents the index of the derived addresses</string>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="12" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Wc5-Xe-eJc">
-                                <rect key="frame" x="16" y="84" width="343" height="117"/>
+                                <rect key="frame" x="16" y="128" width="343" height="117"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="117" id="iFq-CR-qbH"/>
                                 </constraints>
@@ -3348,7 +3350,7 @@ The range represents the index of the derived addresses</string>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" tag="8" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6qa-Vq-CtQ">
-                                <rect key="frame" x="0.0" y="594" width="375" height="53"/>
+                                <rect key="frame" x="0.0" y="614" width="375" height="53"/>
                                 <color key="backgroundColor" red="0.084890075029999998" green="0.3978849351" blue="0.86794960499999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="53" id="JZx-PY-xqc"/>
@@ -3362,13 +3364,13 @@ The range represents the index of the derived addresses</string>
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="YES" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kh7-AA-EPW">
-                                <rect key="frame" x="172.5" y="246" width="30.5" height="14"/>
+                                <rect key="frame" x="172.5" y="290" width="30.5" height="14"/>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="14"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0Uq-zd-kfj">
-                                <rect key="frame" x="163" y="264" width="51" height="31"/>
+                                <rect key="frame" x="163" y="308" width="51" height="31"/>
                                 <color key="onTintColor" red="0.0" green="0.97680455450000003" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <connections>
                                     <action selector="sshSwitchAction:" destination="bdZ-xF-GZ9" eventType="valueChanged" id="rYN-cA-PS1"/>
@@ -3410,11 +3412,11 @@ The range represents the index of the derived addresses</string>
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="VYc-9a-4kI" customClass="RescanViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="j9f-VA-TBJ">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Choose a date to rescan the blockchain from." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="11" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cuA-jy-GEG">
-                                <rect key="frame" x="16" y="20" width="343" height="45"/>
+                                <rect key="frame" x="16" y="64" width="343" height="45"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="45" id="TDg-sP-kSE"/>
                                 </constraints>
@@ -3423,7 +3425,7 @@ The range represents the index of the derived addresses</string>
                                 <nil key="highlightedColor"/>
                             </label>
                             <datePicker contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" datePickerMode="date" useCurrentDate="NO" translatesAutoresizingMaskIntoConstraints="NO" id="INN-r0-DiZ">
-                                <rect key="frame" x="0.0" y="196" width="375" height="216"/>
+                                <rect key="frame" x="0.0" y="240" width="375" height="216"/>
                                 <date key="date" timeIntervalSinceReferenceDate="589009561.46770203">
                                     <!--2019-09-01 05:46:01 +0000-->
                                 </date>
@@ -3435,7 +3437,7 @@ The range represents the index of the derived addresses</string>
                                 </date>
                             </datePicker>
                             <button opaque="NO" tag="8" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rXN-gh-h77">
-                                <rect key="frame" x="0.0" y="594" width="375" height="53"/>
+                                <rect key="frame" x="0.0" y="614" width="375" height="53"/>
                                 <color key="backgroundColor" red="0.084890075029999998" green="0.3978849351" blue="0.86794960499999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="53" id="KAG-eT-XIP"/>
@@ -3449,7 +3451,7 @@ The range represents the index of the derived addresses</string>
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="11" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BYf-oB-nGS">
-                                <rect key="frame" x="16" y="73" width="343" height="115"/>
+                                <rect key="frame" x="16" y="117" width="343" height="115"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="115" id="Mi0-kS-Aeo"/>
                                 </constraints>
@@ -3497,11 +3499,11 @@ A full rescan will take around an hour to complete.</string>
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="wkl-tO-L4u" customClass="AddFingerprintViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="dfh-5D-C6v">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" tag="8" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="k6o-pk-IXJ">
-                                <rect key="frame" x="0.0" y="594" width="375" height="53"/>
+                                <rect key="frame" x="0.0" y="614" width="375" height="53"/>
                                 <color key="backgroundColor" red="0.084890075029999998" green="0.3978849351" blue="0.86794960499999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="53" id="dQO-y8-sc4"/>
@@ -3515,7 +3517,7 @@ A full rescan will take around an hour to complete.</string>
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="21" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Q7f-As-DVO">
-                                <rect key="frame" x="16" y="75" width="343" height="152"/>
+                                <rect key="frame" x="16" y="119" width="343" height="152"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="152" id="4go-kb-e3a"/>
                                 </constraints>
@@ -3529,7 +3531,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Add a master key fingerprint (optional)" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="21" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hAA-9t-YKW">
-                                <rect key="frame" x="16" y="20" width="343" height="47"/>
+                                <rect key="frame" x="16" y="64" width="343" height="47"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="47" id="AnM-tq-d6d"/>
                                 </constraints>
@@ -3538,7 +3540,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                                 <nil key="highlightedColor"/>
                             </label>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="master key fingerprint" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Co3-1a-1h1">
-                                <rect key="frame" x="16" y="254" width="343" height="34"/>
+                                <rect key="frame" x="16" y="298" width="343" height="34"/>
                                 <color key="backgroundColor" red="0.14745168808727591" green="0.16962580709298913" blue="0.1945629716025381" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
@@ -3577,11 +3579,11 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="rjW-uh-Wra" customClass="ScanExtendedKeyViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="fXd-e7-EVK">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="07o-7z-HG1">
-                                <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                             </imageView>
                         </subviews>
                         <color key="backgroundColor" red="0.078040815890000004" green="0.090017892419999995" blue="0.10251823810000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -5305,6 +5307,8 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <outlet property="recOutlet" destination="y0W-2S-QQO" id="j0n-1U-h6t"/>
                         <outlet property="receivingField" destination="S8M-5W-w3U" id="wHY-tR-v1i"/>
                         <outlet property="spendingField" destination="8rW-K0-HkR" id="AzZ-ug-t07"/>
+                        <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScannerFromUnsigned" id="lXT-j3-Pov"/>
+                        <segue destination="nyf-66-vKN" kind="show" identifier="segueToExporterFromUnsigned" id="g7x-oO-Buw"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="hWu-22-Vt9" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -5467,6 +5471,9 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <outlet property="switchOutlet" destination="Ruh-Jd-QXM" id="GFj-n8-3V3"/>
                         <outlet property="unsignOutlet" destination="NEN-oP-8fX" id="txc-oh-pJ5"/>
                         <outlet property="unsignedTextView" destination="xcj-ZD-du1" id="akD-Z0-dzr"/>
+                        <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScannerFromTxSigner" id="9m9-PM-uRL"/>
+                        <segue destination="nyf-66-vKN" kind="show" identifier="segueToBroadcastFromTxSigner" id="qEx-f1-FOS"/>
+                        <segue destination="nyf-66-vKN" kind="show" id="VPR-U4-zLl"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="QLf-jx-ZWR" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -5666,12 +5673,12 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="IVc-aG-8QZ"/>
         <segue reference="cvp-U1-bU5"/>
         <segue reference="AYh-di-V7O"/>
-        <segue reference="kq8-dj-bJ2"/>
+        <segue reference="mRa-gP-mZ0"/>
         <segue reference="HNI-HG-9ZQ"/>
         <segue reference="IAz-j1-Gq6"/>
-        <segue reference="nyo-So-jGt"/>
+        <segue reference="9m9-PM-uRL"/>
         <segue reference="CLR-a1-fb0"/>
-        <segue reference="0zM-0B-b0r"/>
+        <segue reference="qEx-f1-FOS"/>
         <segue reference="Ikt-mc-dmE"/>
         <segue reference="G1i-Bv-OSl"/>
         <segue reference="qmy-fM-U4p"/>
