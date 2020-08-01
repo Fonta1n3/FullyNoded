@@ -497,7 +497,6 @@ class ProcessPSBTViewController: UIViewController {
             }
         }
         
-        
     }
     
     func parseInputs(inputs: NSArray, completion: @escaping () -> Void) {

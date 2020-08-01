@@ -1457,11 +1457,11 @@
                                     <action selector="signNow:" destination="nyf-66-vKN" eventType="touchUpInside" id="RdE-Vg-D2Z"/>
                                 </connections>
                             </button>
-                            <stackView opaque="NO" contentMode="scaleToFill" spacing="238" translatesAutoresizingMaskIntoConstraints="NO" id="I0t-xT-ih4">
+                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="93" translatesAutoresizingMaskIntoConstraints="NO" id="I0t-xT-ih4">
                                 <rect key="frame" x="16" y="73" width="343" height="30"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="yRk-fp-pB8">
-                                        <rect key="frame" x="0.0" y="0.0" width="52" height="30"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="125" height="30"/>
                                         <state key="normal" title="decode">
                                             <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         </state>
@@ -1470,7 +1470,10 @@
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OL6-Lq-U52">
-                                        <rect key="frame" x="290" y="0.0" width="53" height="30"/>
+                                        <rect key="frame" x="218" y="0.0" width="125" height="30"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="53" id="TsJ-Nz-HKw"/>
+                                        </constraints>
                                         <state key="normal" title="analyze">
                                             <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         </state>
@@ -1492,10 +1495,10 @@
                             <constraint firstItem="gvm-av-mkc" firstAttribute="leading" secondItem="adl-yx-dXq" secondAttribute="leading" constant="16" id="CzL-kO-XOc"/>
                             <constraint firstItem="WrC-5O-YmB" firstAttribute="leading" secondItem="adl-yx-dXq" secondAttribute="leading" constant="16" id="DRD-kZ-4el"/>
                             <constraint firstItem="I0t-xT-ih4" firstAttribute="top" secondItem="cgu-5V-2yM" secondAttribute="bottom" constant="8" id="NGm-Hu-gk9"/>
-                            <constraint firstItem="adl-yx-dXq" firstAttribute="trailing" secondItem="I0t-xT-ih4" secondAttribute="trailing" constant="16" id="RVR-oR-2Wu"/>
                             <constraint firstItem="cgu-5V-2yM" firstAttribute="top" secondItem="adl-yx-dXq" secondAttribute="top" constant="30" id="fsI-1t-AjK"/>
                             <constraint firstItem="I0t-xT-ih4" firstAttribute="leading" secondItem="adl-yx-dXq" secondAttribute="leading" constant="16" id="gR8-4a-q1Z"/>
                             <constraint firstItem="cgu-5V-2yM" firstAttribute="leading" secondItem="adl-yx-dXq" secondAttribute="leading" constant="16" id="iab-jw-nMZ"/>
+                            <constraint firstItem="adl-yx-dXq" firstAttribute="trailing" secondItem="I0t-xT-ih4" secondAttribute="trailing" constant="16" id="luE-9Y-b1Z"/>
                             <constraint firstItem="gvm-av-mkc" firstAttribute="top" secondItem="WrC-5O-YmB" secondAttribute="bottom" constant="29" id="siv-7q-hfz"/>
                             <constraint firstItem="adl-yx-dXq" firstAttribute="trailing" secondItem="WrC-5O-YmB" secondAttribute="trailing" constant="16" id="uMx-sE-FUj"/>
                             <constraint firstItem="adl-yx-dXq" firstAttribute="bottom" secondItem="gvm-av-mkc" secondAttribute="bottom" constant="20" id="zMn-pJ-Vao"/>
@@ -3634,11 +3637,10 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                                 <nil key="highlightedColor"/>
                             </label>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="jXp-xP-J4h">
-                                <rect key="frame" x="16" y="278" width="343" height="305"/>
+                                <rect key="frame" x="16" y="243" width="343" height="340"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="343" id="dAH-4K-TTt"/>
-                                    <constraint firstAttribute="height" constant="305" id="jss-0D-LlS"/>
                                 </constraints>
                                 <color key="separatorColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
@@ -3699,34 +3701,75 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                                     <action selector="scanNow:" destination="pUo-bf-sNm" eventType="touchUpInside" id="Ejm-mN-y6v"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="characterWrap" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9FE-8A-o8A">
-                                <rect key="frame" x="16" y="186" width="343" height="57"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="57" id="PpM-Vn-SHV"/>
-                                </constraints>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="characterWrap" translatesAutoresizingMaskIntoConstraints="NO" id="9FE-8A-o8A">
+                                <rect key="frame" x="16" y="186" width="343" height="22"/>
                                 <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <state key="normal">
-                                    <attributedString key="attributedTitle">
-                                        <fragment content="get a donation address to support Fully Noded">
-                                            <attributes>
-                                                <color key="NSColor" red="0.3076552749" green="0.54753154520000002" blue="0.66032952069999995" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                <font key="NSFont" metaFont="system" size="15"/>
-                                                <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                            </attributes>
-                                        </fragment>
-                                    </attributedString>
+                                <state key="normal" title="  donation address" image="heart" catalog="system">
+                                    <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <connections>
                                     <action selector="makeADonationAction:" destination="pUo-bf-sNm" eventType="touchUpInside" id="uo8-Z3-Q5c"/>
                                 </connections>
                             </button>
+                            <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Rmu-y9-w5v">
+                                <rect key="frame" x="16" y="591" width="343" height="71"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Confirmation target 2 blocks (20 minutes)" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ynD-gu-Xre">
+                                        <rect key="frame" x="8" y="8" width="319" height="18"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="18" id="cR5-SM-iBa"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                        <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="X4T-PA-gul">
+                                        <rect key="frame" x="8" y="28" width="35" height="35"/>
+                                        <subviews>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="timer" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="Xyt-Vb-mgk">
+                                                <rect key="frame" x="5" y="5.5" width="25" height="24"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="25" id="6SN-fy-zLS"/>
+                                                    <constraint firstAttribute="height" constant="25" id="AE6-VG-IvI"/>
+                                                </constraints>
+                                            </imageView>
+                                        </subviews>
+                                        <color key="backgroundColor" systemColor="systemOrangeColor" red="1" green="0.58431372550000005" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <constraints>
+                                            <constraint firstItem="Xyt-Vb-mgk" firstAttribute="centerY" secondItem="X4T-PA-gul" secondAttribute="centerY" id="36f-Cc-G6w"/>
+                                            <constraint firstAttribute="width" constant="35" id="LZM-2l-6sH"/>
+                                            <constraint firstItem="Xyt-Vb-mgk" firstAttribute="centerX" secondItem="X4T-PA-gul" secondAttribute="centerX" id="PuB-wh-pGh"/>
+                                            <constraint firstAttribute="height" constant="35" id="bps-oR-Pum"/>
+                                        </constraints>
+                                    </view>
+                                    <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="Nls-an-9n9">
+                                        <rect key="frame" x="49" y="30.5" width="280" height="31"/>
+                                        <color key="minimumTrackTintColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="thumbTintColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    </slider>
+                                </subviews>
+                                <color key="backgroundColor" red="0.17720891497461932" green="0.17720891497461932" blue="0.17720891497461932" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstItem="ynD-gu-Xre" firstAttribute="leading" secondItem="Rmu-y9-w5v" secondAttribute="leading" constant="8" id="1O1-xF-Mpc"/>
+                                    <constraint firstItem="Nls-an-9n9" firstAttribute="leading" secondItem="X4T-PA-gul" secondAttribute="trailing" constant="8" id="Az7-eM-7zG"/>
+                                    <constraint firstAttribute="height" constant="71" id="PTA-tG-P4O"/>
+                                    <constraint firstAttribute="bottom" secondItem="X4T-PA-gul" secondAttribute="bottom" constant="8" id="TOg-fh-S61"/>
+                                    <constraint firstAttribute="trailing" secondItem="Nls-an-9n9" secondAttribute="trailing" constant="16" id="WEf-aC-cwQ"/>
+                                    <constraint firstAttribute="trailing" secondItem="ynD-gu-Xre" secondAttribute="trailing" constant="16" id="ca8-Y2-HCb"/>
+                                    <constraint firstItem="ynD-gu-Xre" firstAttribute="top" secondItem="Rmu-y9-w5v" secondAttribute="top" constant="8" id="fSH-jw-CW3"/>
+                                    <constraint firstItem="Nls-an-9n9" firstAttribute="centerY" secondItem="X4T-PA-gul" secondAttribute="centerY" id="gI4-fN-zHs"/>
+                                    <constraint firstItem="X4T-PA-gul" firstAttribute="leading" secondItem="Rmu-y9-w5v" secondAttribute="leading" constant="8" id="hBN-R7-e8l"/>
+                                </constraints>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" red="0.078040815889835358" green="0.090017892420291901" blue="0.1025182381272316" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="C0H-pw-RSl" firstAttribute="trailing" secondItem="9FE-8A-o8A" secondAttribute="trailing" constant="16" id="4cx-W1-ViO"/>
                             <constraint firstItem="C0H-pw-RSl" firstAttribute="trailing" secondItem="jXp-xP-J4h" secondAttribute="trailing" constant="16" id="561-gS-kW0"/>
+                            <constraint firstItem="Rmu-y9-w5v" firstAttribute="leading" secondItem="C0H-pw-RSl" secondAttribute="leading" constant="16" id="6J8-oK-50Q"/>
                             <constraint firstItem="WP2-Zk-iPW" firstAttribute="top" secondItem="C0H-pw-RSl" secondAttribute="top" constant="12" id="8py-du-qbt"/>
                             <constraint firstItem="C0H-pw-RSl" firstAttribute="trailing" secondItem="DPZ-i4-CIL" secondAttribute="trailing" constant="19.5" id="9N5-Hf-qXF"/>
+                            <constraint firstItem="C0H-pw-RSl" firstAttribute="bottom" secondItem="Rmu-y9-w5v" secondAttribute="bottom" constant="5" id="CRh-Cp-nyq"/>
                             <constraint firstItem="uIC-Eu-XZD" firstAttribute="top" secondItem="WBT-v4-ipz" secondAttribute="bottom" constant="8" id="DXs-Lg-hVd"/>
                             <constraint firstItem="9FE-8A-o8A" firstAttribute="top" secondItem="vOa-19-8RX" secondAttribute="bottom" constant="8" id="DpV-Un-4TD"/>
                             <constraint firstItem="jXp-xP-J4h" firstAttribute="leading" secondItem="C0H-pw-RSl" secondAttribute="leading" constant="16" id="HMJ-p4-PHt"/>
@@ -3734,6 +3777,8 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                             <constraint firstItem="9FE-8A-o8A" firstAttribute="leading" secondItem="C0H-pw-RSl" secondAttribute="leading" constant="16" id="Kd9-O1-M2j"/>
                             <constraint firstItem="uIC-Eu-XZD" firstAttribute="leading" secondItem="C0H-pw-RSl" secondAttribute="leading" constant="16" id="LUf-xe-94t"/>
                             <constraint firstItem="WBT-v4-ipz" firstAttribute="top" secondItem="WP2-Zk-iPW" secondAttribute="bottom" constant="2" id="PVV-4W-qTm"/>
+                            <constraint firstItem="C0H-pw-RSl" firstAttribute="trailing" secondItem="Rmu-y9-w5v" secondAttribute="trailing" constant="16" id="Uee-90-U9t"/>
+                            <constraint firstItem="Rmu-y9-w5v" firstAttribute="top" secondItem="jXp-xP-J4h" secondAttribute="bottom" constant="8" id="Umw-iO-y4J"/>
                             <constraint firstItem="DPZ-i4-CIL" firstAttribute="leading" secondItem="WBT-v4-ipz" secondAttribute="trailing" constant="12" id="X4s-4S-HxI"/>
                             <constraint firstItem="vOa-19-8RX" firstAttribute="top" secondItem="uIC-Eu-XZD" secondAttribute="bottom" constant="8" id="XdM-fy-Al5"/>
                             <constraint firstItem="C0H-pw-RSl" firstAttribute="trailing" secondItem="DWs-Qd-5JU" secondAttribute="trailing" constant="16" id="hC7-it-XUd"/>
@@ -3769,10 +3814,14 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                         <outlet property="addressInput" destination="vOa-19-8RX" id="p5c-LC-6xw"/>
                         <outlet property="amountInput" destination="WBT-v4-ipz" id="4zO-8O-Q8c"/>
                         <outlet property="amountLabel" destination="WP2-Zk-iPW" id="fVP-up-4Ws"/>
+                        <outlet property="feeIconBackground" destination="X4T-PA-gul" id="Gas-HE-S15"/>
+                        <outlet property="miningTargetLabel" destination="ynD-gu-Xre" id="0oU-ba-c3n"/>
                         <outlet property="outputsTable" destination="jXp-xP-J4h" id="y02-Rq-oD9"/>
                         <outlet property="playButtonOutlet" destination="I94-Cm-0jw" id="Omf-yi-VMq"/>
                         <outlet property="receivingLabel" destination="uIC-Eu-XZD" id="wYg-jj-lxo"/>
                         <outlet property="scanOutlet" destination="DWs-Qd-5JU" id="zHM-yQ-elN"/>
+                        <outlet property="slider" destination="Nls-an-9n9" id="6lh-uo-HLc"/>
+                        <outlet property="sliderViewBackground" destination="Rmu-y9-w5v" id="KqB-tO-aFv"/>
                         <segue destination="nyf-66-vKN" kind="show" identifier="segueToBroadcaster" id="h0D-Od-IZu"/>
                         <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScannerToGetAddress" id="CQp-9r-70w"/>
                     </connections>
@@ -3781,7 +3830,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
             </objects>
             <point key="canvasLocation" x="-2791.1999999999998" y="375.56221889055473"/>
         </scene>
-        <!--v0.1.62-->
+        <!--v0.1.64-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -3928,7 +3977,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                         <viewLayoutGuide key="safeArea" id="Cze-jj-bFe"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="v0.1.62" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="v0.1.64" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
@@ -5607,7 +5656,6 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                                 </button>
                                             </subviews>
                                             <constraints>
-                                                <constraint firstItem="p5r-cE-KDZ" firstAttribute="leading" secondItem="ruM-It-dpO" secondAttribute="trailing" constant="104" id="0lo-1M-LaI"/>
                                                 <constraint firstItem="pEc-lY-NmX" firstAttribute="leading" secondItem="ruM-It-dpO" secondAttribute="leading" id="24Y-jV-oVd"/>
                                                 <constraint firstItem="pEc-lY-NmX" firstAttribute="top" secondItem="ruM-It-dpO" secondAttribute="bottom" constant="8" id="5zq-By-Hja"/>
                                                 <constraint firstAttribute="bottomMargin" secondItem="pEc-lY-NmX" secondAttribute="bottom" constant="5" id="8oR-UX-vsa"/>
@@ -5678,9 +5726,9 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="mRa-gP-mZ0"/>
         <segue reference="HNI-HG-9ZQ"/>
         <segue reference="IAz-j1-Gq6"/>
-        <segue reference="hWt-Pf-vqK"/>
-        <segue reference="CLR-a1-fb0"/>
-        <segue reference="vxK-yE-HH1"/>
+        <segue reference="CQp-9r-70w"/>
+        <segue reference="NXO-q1-wEG"/>
+        <segue reference="h0D-Od-IZu"/>
         <segue reference="Ikt-mc-dmE"/>
         <segue reference="G1i-Bv-OSl"/>
         <segue reference="qmy-fM-U4p"/>
@@ -5695,6 +5743,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <image name="chevron.right" catalog="system" width="96" height="128"/>
         <image name="desktopcomputer" catalog="system" width="128" height="101"/>
         <image name="gear" catalog="system" width="128" height="119"/>
+        <image name="heart" catalog="system" width="128" height="109"/>
         <image name="iTunesArtwork.png" width="512" height="512"/>
         <image name="info.circle" catalog="system" width="128" height="121"/>
         <image name="lock" catalog="system" width="128" height="128"/>
@@ -5709,6 +5758,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <image name="questionmark.circle" catalog="system" width="128" height="121"/>
         <image name="square.and.arrow.up" catalog="system" width="115" height="128"/>
         <image name="square.stack.3d.down.right" catalog="system" width="124" height="128"/>
+        <image name="timer" catalog="system" width="128" height="121"/>
         <image name="trash.circle" catalog="system" width="128" height="121"/>
         <image name="tray.and.arrow.up" catalog="system" width="128" height="114"/>
         <image name="whiteCheck.png" width="2048" height="2048"/>

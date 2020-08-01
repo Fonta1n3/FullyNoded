@@ -20,7 +20,12 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     var amount = String()
     var outputs = [Any]()
     var outputsString = ""
+    let ud = UserDefaults.standard
     
+    @IBOutlet weak var sliderViewBackground: UIView!
+    @IBOutlet weak var feeIconBackground: UIView!
+    @IBOutlet weak var miningTargetLabel: UILabel!
+    @IBOutlet weak var slider: UISlider!
     @IBOutlet weak var addOutputOutlet: UIBarButtonItem!
     @IBOutlet weak var playButtonOutlet: UIBarButtonItem!
     @IBOutlet var amountInput: UITextField!
@@ -44,6 +49,23 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         outputsTable.tableFooterView = UIView(frame: .zero)
         outputsTable.alpha = 0
         addTapGesture()
+        sliderViewBackground.layer.cornerRadius = 8
+        sliderViewBackground.layer.borderColor = UIColor.lightGray.cgColor
+        sliderViewBackground.layer.borderWidth = 0.5
+        feeIconBackground.layer.cornerRadius = 5
+        slider.addTarget(self, action: #selector(setFee), for: .allEvents)
+        slider.maximumValue = 2 * -1
+        slider.minimumValue = 432 * -1
+        
+        if ud.object(forKey: "feeTarget") != nil {
+            let numberOfBlocks = ud.object(forKey: "feeTarget") as! Int
+            slider.value = Float(numberOfBlocks) * -1
+            updateFeeLabel(label: miningTargetLabel, numberOfBlocks: numberOfBlocks)
+        } else {
+            miningTargetLabel.text = "Minimum fee set (you can always bump it)"
+            slider.value = 432 * -1
+            ud.set(432, forKey: "feeTarget")
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -88,6 +110,42 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             }
         } else {
             displayAlert(viewController: self, isError: true, message: "You need to fill out a recipient and amount first then tap this button, this button is used for adding multiple recipients aka \"batching\".")
+        }
+    }
+    
+    @objc func setFee(_ sender: UISlider) {
+        let numberOfBlocks = Int(sender.value) * -1
+        updateFeeLabel(label: miningTargetLabel, numberOfBlocks: numberOfBlocks)
+    }
+    
+    func updateFeeLabel(label: UILabel, numberOfBlocks: Int) {
+        let seconds = ((numberOfBlocks * 10) * 60)
+        
+        func updateFeeSetting() {
+            ud.set(numberOfBlocks, forKey: "feeTarget")
+        }
+        
+        DispatchQueue.main.async {
+            if seconds < 86400 {
+                //less then a day
+                if seconds < 3600 {
+                    DispatchQueue.main.async {
+                        //less then an hour
+                        label.text = "Confirmation target \(numberOfBlocks) blocks (\(seconds / 60) minutes)"
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        //more then an hour
+                        label.text = "Confirmation target \(numberOfBlocks) blocks (\(seconds / 3600) hours)"
+                    }
+                }
+            } else {
+                DispatchQueue.main.async {
+                    //more then a day
+                    label.text = "Confirmation target \(numberOfBlocks) blocks (\(seconds / 86400) days)"
+                }
+            }
+            updateFeeSetting()
         }
     }
     
