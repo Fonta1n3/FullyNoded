@@ -5658,6 +5658,8 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                     </navigationItem>
                     <connections>
                         <outlet property="joinTable" destination="CpH-9k-GbC" id="QEv-22-0Sm"/>
+                        <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScannerFromPsbtJoiner" id="hWt-Pf-vqK"/>
+                        <segue destination="nyf-66-vKN" kind="show" identifier="segueToSignerFromCombiner" id="vxK-yE-HH1"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dmd-XR-2PE" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -5676,9 +5678,9 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="mRa-gP-mZ0"/>
         <segue reference="HNI-HG-9ZQ"/>
         <segue reference="IAz-j1-Gq6"/>
-        <segue reference="9m9-PM-uRL"/>
+        <segue reference="hWt-Pf-vqK"/>
         <segue reference="CLR-a1-fb0"/>
-        <segue reference="qEx-f1-FOS"/>
+        <segue reference="vxK-yE-HH1"/>
         <segue reference="Ikt-mc-dmE"/>
         <segue reference="G1i-Bv-OSl"/>
         <segue reference="qmy-fM-U4p"/>
