@@ -591,6 +591,10 @@ Henk van Cann: it depends on the speed of the external drive, some can reach up 
 
 You can just set the min relay fee (smallest possible amount) and if the transaction doesn't get confirmed, you can "bump" it, i.e. use Replace By Fee transaction. That is a new transaction with a higher fee using the same `UTXOs` as an input.
 
+#### Question : Can I create transactions in USD? 
+Yes, you can create transactions which are denominated in USD, this video shows the new look for the transaction builder, how to switch to fiat denominations and then how to confirm the transaction before you broadcast it:<br/>
+<a href="https://github.com/Fonta1n3/FullyNoded/blob/master/Videos/IMG_3025.MP4" target="_blank"><img src="https://i.ibb.co/GW1vwsP/fiat-curr-transaction.png" alt="fiat-curr-transaction" border="0" width="200"></a>
+
 ## Node
 
 #### Question : I changed bitcoin.conf according to guideline, why is it still not working?
