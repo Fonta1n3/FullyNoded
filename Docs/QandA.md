@@ -59,13 +59,13 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 - Tor:Tor is free and open-source software for enabling anonymous communication. The name derived from the acronym for the original software project name "The Onion Router". [Read more in Wikipedia](https://en.wikipedia.org/wiki/Tor_(anonymity_network))
 - Node: A bitcoin full Node is a independent entity in a peer to peer ecosystem. A Node independently checks and verifies all protocol rules for incoming broadcasted transactions. A full node does not trust, but verifies. Technically speaking a *node* is a computer connected to other computers which follows rules and shares information. A *'full node'* is a computer in Bitcoin's peer-to-peer network which hosts and synchronises a copy of the entire Bitcoin blockchain. [Here](https://medium.com/@gloriazhao/map-of-the-bitcoin-network-c6f2619a76f3) is an excellent read on nodes, what they are and the differences between types of nodes.
 - Standup app: is a personal one-click Mac OS installer for Bitcoin Core and Tor that will present a QuickConnect QR code that can be used to pair mobile wallets for remote use over Tor V3. [Read more](https://github.com/BlockchainCommons/GordianSystem)
-- Datadir: TBW
-- bitcoin.conf: TBW 
-- initial block download (IBD): TBW
-- Nodl: TBW
+- Datadir: The data directory is the location where Bitcoin's data files are stored, including the wallet data file.
+- bitcoin.conf: The bitcoin configuration file is a list of 'setting=value' pairs, one per line, with optional comments starting with the '#' character. 
+- initial block download (IBD): The Bitcoin Core initial block download code makes sure that the block headers you are downloading (from a single peer) passes certain, hard-coded "checkpoints.
+- Nodl: A hardware box with to run a non-preloaded bitcoin node on it, [commercial site](https://www.nodl.it/). 
 - RPC: Remote Procedure Calls
 - bitcoind: Bitcoin Deamon, background process running a bitcoin node. Bitcoind is a program that implements the Bitcoin protocol for remote procedure call (RPC) use. It is also the second Bitcoin client in the network's history. It is available under the MIT license in 32-bit and 64-bit versions for Windows, GNU/Linux-based OSes, and Mac OS X. [Read more](https://en.bitcoin.it/wiki/Bitcoind)
-- SSH: TBW
+- SSH: Secure Shell (SSH) is a cryptographic network protocol for operating network services securely over an unsecured network.[1] Typical applications include remote command-line, login, and remote command execution, but any network service can be secured with SSH.
 - Nano : famous text GUI editor to start from commandline, not to be confused with Ledger Nano S/X, which is a cold storage.
 
 ## Knowledge you should be confidently applying
@@ -396,7 +396,6 @@ Here are some [common issues and fixes](https://github.com/Fonta1n3/FullyNoded#t
 2. Running without `brew`. You can defo do it without brew, its just more complicated.
 3. You really should *edit* the file and *save* it too. Double checked?
 
-
 #### Question : How can I test the network connection between them (FN and Node)?
 
 ***Big Disclaimer:***
@@ -405,7 +404,6 @@ Here are some [common issues and fixes](https://github.com/Fonta1n3/FullyNoded#t
 > Before doing the below, try rebooting Tor on the node server side, force quitting FN and see if it connects, double check you added your tor v3 url correctly with the right port at the end, typically `:8332` for mainnet.
 
 Recreate your hidden service url like so: `http://rpcuser:rpcpassword@xxx.onion:8332`, paste it in to a Tor browser as if you were visiting a website, if your connection is alive and functioning properly you will get a `server only responds to POST requests` error in the Tor browser. If you do not get that error then something is wrong, again check the Tor and Bitcoin Core logs to debug the issue.
-
 
 #### Question: What is the best of breed desktop wallet to connect to your node?
 
@@ -466,11 +464,7 @@ For starters ensure you are connected to your node, can you confirm it successfu
 If your connection is successful you’ll see the home screen look like this:<br/>
 <img src="https://i.ibb.co/HrsmwBd/opening-screen.jpg" alt="opening-screen" border="0" width="200"><br/>
 
-
-
-
 ## Wallets
-
 
 #### Question : How I can erase a wallet in Fullynoded? or modify a name?
 
@@ -562,6 +556,11 @@ You should really completely ignore your "Bitcoin Core Wallets", unless you are 
 It's really just there to help people recover wallets that exist on their node. Really need to make some tutorials and add an "advanced" button in settings that shows and hides some features, like accessing non Fully Noded Wallets.
 
 By far the best way to use the app is stick 100% with FN wallets.
+
+Aka use these two buttons to create and switch between wallets<br/>
+<img src="https://i.ibb.co/VSKHWwF/switch-buttons-wallets.jpg" alt="switch-buttons-wallets" border="0" width="200"><br/>
+FN wallets will always show as COLD because your node never holds a private key<br/>
+<img src="https://i.ibb.co/m9mMMWT/switch-wallets2.jpg" alt="switch-wallets2" border="0" width="200">
 
 ## Standup
 
