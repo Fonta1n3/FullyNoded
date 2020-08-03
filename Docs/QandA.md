@@ -344,13 +344,17 @@ Returns a segwit multisig address to send btc to<br/>
 Does not matter where the btc comes from, as far as I can tell<br/>
 I sent from my onchain wallet in FN and it worked.
 
+#### How could I connect Casa Node and FN? 
+
+You have to enable ssh on the node (using keyboard and monitor), tehn ssh in, and setup a v3 hidden service.<br/>
+More info on enabling ssh on Casa Node 1 [here](https://support.keys.casa/hc/en-us/articles/360045445811-Enabling-SSH-Casa-Node-1-) and 2 [here](https://support.keys.casa/hc/en-us/articles/360045007012-Enabling-SSH-Casa-Node-2-).
 
 ## Connection
 
 #### Could not connect to the server... What to do?
 TBW
 
-#### "The internet connection appears to be offline..."" but I am online, what to do?
+#### "The internet connection appears to be offline..." but I am online, what to do?
 TBW
 
 #### Can I connect FN  to my node over local wifi?
