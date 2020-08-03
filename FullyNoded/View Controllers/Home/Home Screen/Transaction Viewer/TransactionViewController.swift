@@ -178,21 +178,15 @@ class TransactionViewController: UIViewController {
         }
     }
     
-    func convertPSBTtoData(string: String) {
-     
+    private func convertPSBTtoData(string: String) {
         if let data = Data(base64Encoded: string) {
-         
-            DispatchQueue.main.async {
-                
-                let activityViewController = UIActivityViewController(activityItems: [data],
-                                                                      applicationActivities: nil)
-                
-                activityViewController.popoverPresentationController?.sourceView = self.view
-                self.present(activityViewController, animated: true) {}
-                
+            if let url = exportPsbtToURL(data: data) {
+                DispatchQueue.main.async { [unowned vc = self] in
+                    let activityViewController = UIActivityViewController(activityItems: ["Fully Noded PSBT", url], applicationActivities: nil)
+                    activityViewController.popoverPresentationController?.sourceView = vc.view
+                    vc.present(activityViewController, animated: true) {}
+                }
             }
-            
         }
-        
     }
 }

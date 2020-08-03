@@ -10,18 +10,7 @@ import UIKit
 
 class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDelegate {
     
-    var isTorchOn = Bool()
-    var rawTxSigned = ""
-    var tapQRGesture = UITapGestureRecognizer()
-    var tapTextViewGesture = UITapGestureRecognizer()
-    var scannerShowing = false
-    var isFirstTime = Bool()
-    var blurArray = [UIVisualEffectView]()
-    let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
-    let qrGenerator = QRGenerator()
-    let scanner = QRScanner()
     let creatingView = ConnectingView()
-    let rawDisplayer = RawDisplayer()
     var scanUnsigned = Bool()
     var scanPrivateKey = Bool()
     var scanScript = Bool()
@@ -33,8 +22,9 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
     var inputsIndex = 0
     var outputTotalValue = Double()
     var inputTotalValue = Double()
+    var txn = ""
+    var unsignedTxn = ""
     
-    @IBOutlet var imageView: UIImageView!
     @IBOutlet var unsignedTextView: UITextView!
     @IBOutlet var privateKeyField: UITextField!
     @IBOutlet var unsignOutlet: UILabel!
@@ -48,91 +38,60 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
     @IBOutlet var scriptTextView: UITextView!
     
     @IBAction func switchAction(_ sender: Any) {
-        
         if switchOutlet.isOn {
-            
-            creatingView.addConnectingView(vc: self,
-                                           description: "fetching redeem script")
-            
+            creatingView.addConnectingView(vc: self, description: "fetching redeem script")
             DispatchQueue.main.async {
-                
                 UIView.animate(withDuration: 0.2) {
-                    
                     self.scanRedeemScriptOutlet.alpha = 1
                     self.scriptLabel.alpha = 1
                     self.scriptTextView.alpha = 1
-                    
                 }
-                
-                self.executeNodeCommand(method: .decoderawtransaction,
-                                        param: "\"\(self.unsignedTextView.text!)\"")
-                
+                self.executeNodeCommand(method: .decoderawtransaction, param: "\"\(self.unsignedTextView.text!)\"")
             }
             
         } else {
-            
             UIView.animate(withDuration: 0.2) {
-                
                 self.scanRedeemScriptOutlet.alpha = 0
                 self.scriptLabel.alpha = 0
                 self.scriptTextView.alpha = 0
-                
             }
-            
         }
-        
     }
     
     
     @IBAction func scanUnsigned(_ sender: Any) {
-        
         scanUnsigned = true
         scanScript = false
         scanPrivateKey = false
         scan()
-        
     }
     
     @IBAction func scanPrivKey(_ sender: Any) {
-        
         scanUnsigned = false
         scanScript = false
         scanPrivateKey = true
         scan()
-        
     }
     
     @IBAction func scanRedeemScript(_ sender: Any) {
-        
         scanUnsigned = false
         scanScript = true
         scanPrivateKey = false
         scan()
-        
     }
     
     @IBAction func signNow(_ sender: Any) {
-        
-        print("signNow")
-        
         if !switchOutlet.isOn {
             
             if privateKeyField.text != "" && unsignedTextView.text != "" {
-                
                 creatingView.addConnectingView(vc: self, description: "signing")
-                
-                signWithKey(key: privateKeyField.text!,
-                            tx: unsignedTextView.text!)
+                signWithKey(key: privateKeyField.text!, tx: unsignedTextView.text!)
                 
             } else if privateKeyField.text == "" && unsignedTextView.text != "" {
-                
                 creatingView.addConnectingView(vc: self, description: "signing")
-                
-                executeNodeCommand(method: .signrawtransactionwithwallet,
-                                   param: "\"\(unsignedTextView.text!)\"")
+                executeNodeCommand(method: .signrawtransactionwithwallet, param: "\"\(unsignedTextView.text!)\"")
                 
             } else if unsignedTextView.text == "" {
-                
                 shakeAlert(viewToShake: unsignedTextView)
                 
             }
@@ -140,65 +99,36 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
         } else {
             
             //sign multisig
-            
             if privateKeyField.text != "" && unsignedTextView.text != "" && scriptTextView.text != "" {
-                
                 creatingView.addConnectingView(vc: self, description: "signing")
-                
                 let unsigned = unsignedTextView.text!
                 let redeemScript = scriptTextView.text!
                 var privateKeys = privateKeyField.text!
-                
                 if privateKeys.contains(", ") {
-                    
                     //there is more then one, process the array
                     privateKeys = privateKeys.replacingOccurrences(of: ", ", with: "\", \"")
-                    
                 }
                 
                 var param = ""
                 
                 if !isWitness {
-                    
                     param = "\"\(unsigned)\", ''[\"\(privateKeys)\"]'', ''[{ \"txid\": \"\(self.prevTxID)\", \"vout\": \(vout), \"scriptPubKey\": \"\(scriptSigHex)\", \"redeemScript\": \"\(redeemScript)\", \"amount\": \(amount) }]''"
                     
                 } else {
-                    
                     param = "\"\(unsigned)\", ''[\"\(privateKeys)\"]'', ''[{ \"txid\": \"\(self.prevTxID)\", \"vout\": \(vout), \"scriptPubKey\": \"\(scriptSigHex)\", \"witnessScript\": \"\(redeemScript)\", \"amount\": \(amount) }]''"
                     
                 }
-                
-                
-                
-                self.executeNodeCommand(method: .signrawtransactionwithkey,
-                                        param: param)
+                self.executeNodeCommand(method: .signrawtransactionwithkey, param: param)
                 
             } else if unsignedTextView.text != "" {
-                
                 creatingView.addConnectingView(vc: self, description: "signing")
-                
                 self.executeNodeCommand(method: .signrawtransactionwithwallet, param: "\"\(unsignedTextView.text!)\"")
                 
             } else {
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "you need to fill out all the info")
+                displayAlert(viewController: self, isError: true, message: "you need to fill out all the info")
                 
             }
-            
         }
-        
-    }
-    
-    @IBAction func back(_ sender: Any) {
-        
-        DispatchQueue.main.async {
-            
-            self.dismiss(animated: true, completion: nil)
-            
-        }
-        
     }
     
     override func viewDidLoad() {
@@ -228,192 +158,33 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
         scriptTextView.layer.borderColor = UIColor.darkGray.cgColor
         
         switchOutlet.isOn = false
-        
-        let tapGesture = UITapGestureRecognizer(target: self,
-                                                action: #selector(self.dismissKeyboard (_:)))
-        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
-        
-        imageView.isUserInteractionEnabled = true
-        imageView.alpha = 0
-        
-        configureScanner()
-        
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        
         if let string = UIPasteboard.general.string {
-            
             unsignedTextView.text = string
             showOptionals()
-            
         }
-        
-    }
-    
-    func configureScanner() {
-        
-        isFirstTime = true
-        
-        imageView.alpha = 0
-        imageView.frame = view.frame
-        imageView.isUserInteractionEnabled = true
-        
-        scanner.uploadButton.addTarget(self, action: #selector(chooseQRCodeFromLibrary),
-                                       for: .touchUpInside)
-        
-        scanner.keepRunning = true
-        scanner.vc = self
-        scanner.imageView = imageView
-        scanner.textField.alpha = 0
-        
-        scanner.completion = { self.getQRCode() }
-        scanner.didChooseImage = { self.didPickImage() }
-        scanner.downSwipeAction = { self.closeScanner() }
-        
-        scanner.uploadButton.addTarget(self,
-                                       action: #selector(self.chooseQRCodeFromLibrary),
-                                       for: .touchUpInside)
-        
-        scanner.torchButton.addTarget(self,
-                                      action: #selector(toggleTorch),
-                                      for: .touchUpInside)
-        
-        isTorchOn = false
-        
-        scanner.closeButton.addTarget(self,
-                                      action: #selector(closeScanner),
-                                      for: .touchUpInside)
-        
-    }
-    
-    func addScannerButtons() {
-        
-        self.addBlurView(frame: CGRect(x: self.imageView.frame.maxX - 80,
-                                       y: self.imageView.frame.maxY - 80,
-                                       width: 70,
-                                       height: 70), button: self.scanner.uploadButton)
-        
-        self.addBlurView(frame: CGRect(x: 10,
-                                       y: self.imageView.frame.maxY - 80,
-                                       width: 70,
-                                       height: 70), button: self.scanner.torchButton)
-        
-    }
-    
-    @objc func closeScanner() {
-        print("back")
-        
-        DispatchQueue.main.async {
-            
-            for blur in self.blurArray{
-                
-                blur.removeFromSuperview()
-                
-            }
-            
-            self.imageView.alpha = 0
-            self.scannerShowing = false
-            
-        }
-        
     }
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
-        
         unsignedTextView.resignFirstResponder()
         privateKeyField.resignFirstResponder()
         scriptTextView.resignFirstResponder()
-        
     }
     
     func scan() {
-        
-        scannerShowing = true
-        privateKeyField.resignFirstResponder()
-        unsignedTextView.resignFirstResponder()
-        scriptTextView.resignFirstResponder()
-        
-        if isFirstTime {
-            
-            DispatchQueue.main.async {
-                
-                self.scanner.scanQRCode()
-                self.addScannerButtons()
-                self.imageView.addSubview(self.scanner.closeButton)
-                self.isFirstTime = false
-                
-                UIView.animate(withDuration: 0.3, animations: {
-                    
-                    self.imageView.alpha = 1
-                    
-                })
-                
-            }
-            
-        } else {
-            
-            self.scanner.startScanner()
-            self.addScannerButtons()
-            
-            DispatchQueue.main.async {
-                
-                UIView.animate(withDuration: 0.3, animations: {
-                    
-                    self.imageView.alpha = 1
-                    
-                })
-                
-            }
-            
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "segueToScannerFromTxSigner", sender: vc)
         }
-        
-    }
-    
-    func addBlurView(frame: CGRect, button: UIButton) {
-        
-        button.removeFromSuperview()
-        let blur = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
-        blur.frame = frame
-        blur.clipsToBounds = true
-        blur.layer.cornerRadius = frame.width / 2
-        blur.contentView.addSubview(button)
-        view.addSubview(blur)
-        blurArray.append(blur)
-        
     }
     
     func signWithKey(key: String, tx: String) {
-        
         let param = "\"\(tx)\", [\"\(key)\"]"
-        
-        executeNodeCommand(method: .signrawtransactionwithkey,
-                           param: param)
-        
-    }
-    
-    func getQRCode() {
-        
-        let stringURL = scanner.stringToReturn
-        parseText(text: stringURL)
-        closeScanner()
-        
-    }
-    
-    @objc func chooseQRCodeFromLibrary() {
-        
-        scanner.chooseQRCodeFromLibrary()
-        
-    }
-    
-    func didPickImage() {
-        
-        let qrString = scanner.qrString
-        parseText(text: qrString)
-        closeScanner()
-        
+        executeNodeCommand(method: .signrawtransactionwithkey, param: param)
     }
     
     func parseText(text: String) {
@@ -456,22 +227,6 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
         
     }
     
-    @objc func toggleTorch() {
-        
-        if isTorchOn {
-            
-            scanner.toggleTorch(on: false)
-            isTorchOn = false
-            
-        } else {
-            
-            scanner.toggleTorch(on: true)
-            isTorchOn = true
-            
-        }
-        
-    }
-    
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
         
         Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
@@ -484,13 +239,14 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                         if complete {
                             let hex = dict["hex"] as! String
                             vc.creatingView.removeConnectingView()
-                            self.showRaw(raw: hex)
+                            vc.txn = hex
+                            self.showRaw()
                             
                         } else if !complete {
                             let hex = dict["hex"] as! String
-                            self.showRaw(raw: hex)
+                            vc.unsignedTxn = hex
+                            self.showRaw()
                             vc.creatingView.removeConnectingView()
-                            showAlert(vc: self, title: "Transaction still incomplete!", message: "This transaction is still not fully signed.")
                             
                         } else if let errors = dict["errors"] as? NSArray {
                             vc.creatingView.removeConnectingView()
@@ -500,13 +256,8 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                                 let str = dic["error"] as! String
                                 errorStrings.append(str)
                             }
-                            
                             var err = errorStrings.description.replacingOccurrences(of: "]", with: "")
                             err = err.description.replacingOccurrences(of: "[", with: "")
-                            if let hex = dict["hex"] as? String {
-                                vc.creatingView.removeConnectingView()
-                                vc.showRaw(raw: hex)
-                            }
                             displayAlert(viewController: vc, isError: true, message: err)
                         }
                     }
@@ -558,13 +309,12 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                         let complete = dict["complete"] as! Bool
                         if complete {
                             let hex = dict["hex"] as! String
-                            vc.showRaw(raw: hex)
+                            vc.txn = hex
+                            vc.showRaw()
                             vc.creatingView.removeConnectingView()
-                            displayAlert(viewController: vc, isError: false, message: "Transaction Complete")
-                        } else {
-                            DispatchQueue.main.async { [unowned vc = self] in
+                            
+                        } else if let errors = dict["errors"] as? NSArray {
                                 vc.creatingView.removeConnectingView()
-                                let errors = dict["errors"] as! NSArray
                                 var errorStrings = [String]()
                                 for error in errors {
                                     let dic = error as! NSDictionary
@@ -573,16 +323,13 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                                 }
                                 var err = errorStrings.description.replacingOccurrences(of: "]", with: "")
                                 err = err.description.replacingOccurrences(of: "[", with: "")
-                                if vc.switchOutlet.isOn {
-                                    if let hex = dict["hex"] as? String {
-                                        vc.showRaw(raw: hex)
-                                        displayAlert(viewController: vc, isError: true, message: err)
-                                    } else {
-                                        displayAlert(viewController: vc, isError: true, message: err)
-                                    }
-                                } else {
-                                    displayAlert(viewController: vc, isError: true, message: err)
-                                }
+                                displayAlert(viewController: vc, isError: true, message: err)
+                            
+                        } else {
+                            if let hex = dict["hex"] as? String {
+                                vc.creatingView.removeConnectingView()
+                                vc.unsignedTxn = hex
+                                vc.showRaw()
                             }
                         }
                     }
@@ -598,279 +345,28 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
         }
     }
     
-    func removeViews() {
-        
-        DispatchQueue.main.async {
-            
-            self.unsignOutlet.removeFromSuperview()
-            self.pkeyOutlet.removeFromSuperview()
-            self.unsignedTextView.removeFromSuperview()
-            self.privateKeyField.removeFromSuperview()
-            self.scanUnsignedOutlet.removeFromSuperview()
-            self.scanPrivKeyOutlet.removeFromSuperview()
-            self.scanRedeemScriptOutlet.removeFromSuperview()
-            self.scriptLabel.removeFromSuperview()
-            self.switchOutlet.removeFromSuperview()
-            self.muSigLabel.removeFromSuperview()
-            self.scriptTextView.removeFromSuperview()
-            
+    func showRaw() {
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "segueToBroadcastFromTxSigner", sender: vc)
         }
-        
-    }
-    
-    func getSmartFee(raw: String) {
-        Reducer.makeCommand(command: .decoderawtransaction, param: "\"\(raw)\"") { [unowned vc = self] (response, errorMessage) in
-            if let dict = response as? NSDictionary {
-                let txSize = dict["vsize"] as! Int
-                let outputs = dict["vout"] as! NSArray
-                let inputs = dict["vin"] as! NSArray
-                let outputCount = outputs.count
-                for (i, outputDict) in outputs.enumerated() {
-                    let output = outputDict as! NSDictionary
-                    vc.amount = output["value"] as! Double
-                    vc.outputTotalValue += vc.amount
-                    if i == outputCount - 1 {
-                        vc.getInputTotal(inputs: inputs, txSize: txSize)
-                    }
-                }
-            } else {
-                displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
-            }
-        }
-    }
-    
-    func getInputTotal(inputs: NSArray, txSize: Int) {
-        let feeTarget = UserDefaults.standard.object(forKey: "feeTarget") as! Int
-        var inputsCount = inputs.count
-        func getSmartFee(method: BTC_CLI_COMMAND, param: String, vout: Int) {
-            Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
-                if errorMessage == nil {
-                    switch method {
-                    case .estimatesmartfee:
-                        if let dict = response as? NSDictionary {
-                            vc.displayFeeAlert(dict: dict, vsize: txSize, feeTarget: feeTarget)
-                        }
-                        
-                    case .getrawtransaction:
-                        if let result = response as? String {
-                            getSmartFee(method: .decoderawtransaction, param: "\"\(result)\"", vout: vout)
-                        }
-                        
-                    case .decoderawtransaction:
-                        if let dict = response as? NSDictionary {
-                            let outputs = dict["vout"] as! NSArray
-                            for outputDict in outputs {
-                                let output = outputDict as! NSDictionary
-                                let index = output["n"] as! Int
-                                if index == vout {
-                                    vc.inputTotalValue += output["value"] as! Double
-                                    if vc.inputsIndex < inputsCount - 1 {
-                                        vc.inputsIndex += 1
-                                        vc.getInputTotal(inputs: inputs, txSize: txSize)
-                                    } else if vc.inputsIndex == inputsCount - 1 {
-                                        //finished fetching all input values, can compare optimal fee to actual fee now
-                                        getSmartFee(method: .estimatesmartfee, param: "\(feeTarget)", vout: vout)
-                                    }
-                                }
-                            }
-                        }
-                        
-                    default:
-                        break
-                    }
-                } else {
-                    displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
-                }
-            }
-        }
-        let inputDict = inputs[inputsIndex] as! NSDictionary
-        let prevTxID = inputDict["txid"] as! String
-        let vout = inputDict["vout"] as! Int
-        getSmartFee(method: .getrawtransaction, param: "\"\(prevTxID)\"", vout: vout)
-    }
-    
-    func displayFeeAlert(dict: NSDictionary, vsize: Int, feeTarget: Int) {
-        
-        let feeInBTC = self.inputTotalValue - self.outputTotalValue
-        let feeInSats = feeInBTC * 100000000
-        let txSize = Double(vsize)
-        var btcPerKbyte = Double()
-        
-        if let btcPerKbyteCheck = dict["feerate"] as? Double {
-            
-            btcPerKbyte = btcPerKbyteCheck
-            
-        } else {
-            
-            // node is in regtest, hard coding the feerate
-            btcPerKbyte = 0.00000100
-            
-        }
-        
-        let btcPerByte = btcPerKbyte / 1000
-        let satsPerByte = btcPerByte * 100000000
-        let optimalFeeForSixBlocks = satsPerByte * txSize
-        let diff = optimalFeeForSixBlocks - feeInSats
-        
-        if diff < 0 {
-            
-            //overpaying
-            let percentageDifference = Int(((feeInSats / optimalFeeForSixBlocks) * 100) - 100).avoidNotation
-            
-            DispatchQueue.main.async {
-                
-                let alert = UIAlertController(title: NSLocalizedString("Fee Alert", comment: ""),
-                                              message: "The optimal fee to get this tx included in the next \(feeTarget) blocks is \(Int(optimalFeeForSixBlocks)) satoshis.\n\nYou are currently paying a fee of \(Int(feeInSats)) satoshis which is \(percentageDifference)% higher then necessary.", preferredStyle: UIAlertController.Style.alert)
-                
-                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""),
-                                              style: .default,
-                                              handler: { (action) in }))
-                
-                self.present(alert, animated: true)
-                
-            }
-            
-        } else {
-            
-            //underpaying
-            let percentageDifference = Int((((optimalFeeForSixBlocks - feeInSats) / optimalFeeForSixBlocks) * 100)).avoidNotation
-            
-            DispatchQueue.main.async {
-                
-                let alert = UIAlertController(title: NSLocalizedString("Fee Alert", comment: ""),
-                                              message: "The optimal fee to get this tx included in the next \(feeTarget) blocks is \(Int(optimalFeeForSixBlocks)) satoshis.\n\nYou are currently paying a fee of \(Int(feeInSats)) satoshis which is \(percentageDifference)% lower then necessary.", preferredStyle: UIAlertController.Style.alert)
-                
-                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""),
-                                              style: .default,
-                                              handler: { (action) in }))
-                
-                self.present(alert, animated: true)
-                
-            }
-            
-        }
-        
-    }
-    
-    func showRaw(raw: String) {
-        
-        DispatchQueue.main.async {
-            
-            self.removeViews()
-            self.rawDisplayer.rawString = raw
-            self.rawTxSigned = raw
-            self.rawDisplayer.vc = self
-            
-            self.tapQRGesture = UITapGestureRecognizer(target: self,
-                                                       action: #selector(self.shareQRCode(_:)))
-            
-            self.rawDisplayer.qrView.addGestureRecognizer(self.tapQRGesture)
-            
-            self.tapTextViewGesture = UITapGestureRecognizer(target: self,
-                                                             action: #selector(self.shareRawText(_:)))
-            
-            self.rawDisplayer.textView.addGestureRecognizer(self.tapTextViewGesture)
-            
-            let newView = UIView()
-            newView.backgroundColor = self.view.backgroundColor
-            newView.frame = self.view.frame
-            self.view.addSubview(newView)
-            self.scanner.removeFromSuperview()
-            self.creatingView.removeConnectingView()
-            self.rawDisplayer.addRawDisplay()
-            self.getSmartFee(raw: raw)
-            
-        }
-        
-    }
-    
-    @objc func shareQRCode(_ sender: UITapGestureRecognizer) {
-        print("shareQRCode")
-        
-        DispatchQueue.main.async {
-            
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                self.rawDisplayer.qrView.alpha = 0
-                
-            }) { _ in
-                
-                UIView.animate(withDuration: 0.2, animations: {
-                    
-                    self.rawDisplayer.qrView.alpha = 1
-                    
-                })
-                
-            }
-            
-            self.qrGenerator.textInput = self.rawDisplayer.rawString
-            let qrImage = self.qrGenerator.getQRCode()
-            let objectsToShare = [qrImage]
-            
-            let activityController = UIActivityViewController(activityItems: objectsToShare,
-                                                              applicationActivities: nil)
-            
-            activityController.popoverPresentationController?.sourceView = self.view
-            self.present(activityController, animated: true) {}
-            
-        }
-        
-    }
-    
-    @objc func shareRawText(_ sender: UITapGestureRecognizer) {
-        
-        DispatchQueue.main.async {
-            
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                self.rawDisplayer.textView.alpha = 0
-                
-            }) { _ in
-                
-                UIView.animate(withDuration: 0.2, animations: {
-                    
-                    self.rawDisplayer.textView.alpha = 1
-                    
-                })
-                
-            }
-            
-            let textToShare = [self.rawDisplayer.rawString]
-            
-            let activityViewController = UIActivityViewController(activityItems: textToShare,
-                                                                  applicationActivities: nil)
-            
-            activityViewController.popoverPresentationController?.sourceView = self.view
-            self.present(activityViewController, animated: true) {}
-            
-        }
-        
     }
     
     func showOptionals() {
-        
         DispatchQueue.main.async {
-            
-            UIView.animate(withDuration: 0.2) {
-                
-                self.switchOutlet.alpha = 1
-                self.muSigLabel.alpha = 1
-                self.scanPrivKeyOutlet.alpha = 1
-                self.privateKeyField.alpha = 1
-                self.pkeyOutlet.alpha = 1
-                
+            UIView.animate(withDuration: 0.2) { [unowned vc = self] in
+                vc.switchOutlet.alpha = 1
+                vc.muSigLabel.alpha = 1
+                vc.scanPrivKeyOutlet.alpha = 1
+                vc.privateKeyField.alpha = 1
+                vc.pkeyOutlet.alpha = 1
             }
-            
         }
-        
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        
         textField.resignFirstResponder()
         textField.endEditing(true)
         return true
-        
     }
     
     func textFieldDidBeginEditing(_ textField: UITextField) {
@@ -933,6 +429,24 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
             
         }
         
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "segueToScannerFromTxSigner" {
+            if let vc = segue.destination as? QRScannerViewController {
+                vc.isScanningAddress = true
+                vc.onAddressDoneBlock = { text in
+                    if text != nil {
+                        self.parseText(text: text!)
+                    }
+                }
+            }
+        } else if segue.identifier == "segueToBroadcastFromTxSigner" {
+            if let vc = segue.destination as? SignerViewController {
+                vc.txn = self.txn
+                vc.txnUnsigned = self.unsignedTxn
+            }
+        }
     }
     
 }

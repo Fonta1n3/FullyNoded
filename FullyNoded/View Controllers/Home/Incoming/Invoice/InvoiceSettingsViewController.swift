@@ -11,30 +11,41 @@ import UIKit
 class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     @IBOutlet weak var table: UITableView!
-    var wallets = [[String:Any]]()
-    var wallet = [String:Any]()
     var nativeSegwit = Bool()
     var p2shSegwit = Bool()
     var legacy = Bool()
     let ud = UserDefaults.standard
+    var isSingleKey = Bool()
+    var isPrivKey = Bool()
+    var isPruned = Bool()
+    var isTestnet = Bool()
+    var isExtendedKey = Bool()
+    var isDescriptor = Bool()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         table.delegate = self
         table.dataSource = self
         getSettings()
+        isPrivKey = false
+        isSingleKey = false
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if section == 0 {
+        switch section {
+        case 0:
             return 1
-        } else {
+        case 1:
+            return 6
+        case 2:
             return 3
+        default:
+            return 0
         }
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 2
+        return 3
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -43,12 +54,33 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
         let label = cell.viewWithTag(1) as! UILabel
         let check = cell.viewWithTag(2) as! UIImageView
         let chevron = cell.viewWithTag(3) as! UIImageView
+        
         switch indexPath.section {
+        
         case 0:
             check.alpha = 0
-            label.text = "HD Multisig"
+            label.text = "Bitcoin Core Wallets"
+            label.textColor = .white
+            chevron.alpha = 1
             return cell
+            
         case 1:
+            switch indexPath.row {
+            case 0:label.text = "Address"
+            case 1:label.text = "Public key"
+            case 2:label.text = "Private key"
+            case 3:label.text = "XPUB"
+            case 4:label.text = "XPRV"
+            case 5:label.text = "Descriptor"
+            default:
+                break
+            }
+            chevron.alpha = 1
+            label.textColor = .white
+            check.alpha = 0
+            return cell
+            
+        case 2:
             chevron.alpha = 0
             switch indexPath.row {
             case 0:
@@ -93,43 +125,42 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         switch indexPath.section {
-        case 0:
             
-            if self.wallets.count > 0 {
-                
-                if self.wallets.count > 1 {
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.performSegue(withIdentifier: "showWallets",
-                                          sender: self)
-                        
-                    }
-                    
-                } else {
-                    
-                    DispatchQueue.main.async {
-                        
-                        self.performSegue(withIdentifier: "getHDmusigAddress",
-                                          sender: self)
-                    }
-                    
-                }
-                
-            } else {
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "no hd musig wallets created yet")
-                
+        case 0:
+            print("segue to wallet manager")
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.performSegue(withIdentifier: "segueToBitcoinCoreWallets", sender: vc)
             }
             
         case 1:
+            print("segue to import things")
+            switch indexPath.row {
+                
+            case 0, 1:
+                isSingleKey = true
+                
+            case 2:
+                isPrivKey = true
+                
+            case 3, 4:
+                isExtendedKey = true
+                
+            case 5:
+                isDescriptor = true
+                
+            default:
+                break
+            }
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.performSegue(withIdentifier: "segueToImportFromAdvanced", sender: vc)
+            }
+            
+        case 2:
             
             //Address format
-            for row in 0 ..< tableView.numberOfRows(inSection: 1) {
+            for row in 0 ..< tableView.numberOfRows(inSection: 2) {
                 
-                if let cell = tableView.cellForRow(at: IndexPath(row: row, section: 1)) {
+                if let cell = tableView.cellForRow(at: IndexPath(row: row, section: 2)) {
                     
                     var key = ""
                     
@@ -149,7 +180,7 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
                         DispatchQueue.main.async {
                             
                             self.getSettings()
-                            tableView.reloadRows(at: [IndexPath(row: row, section: 1)], with: .none)
+                            tableView.reloadRows(at: [IndexPath(row: row, section: 2)], with: .none)
                             
                         }
                         
@@ -161,7 +192,7 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
                         DispatchQueue.main.async {
                             
                             self.getSettings()
-                            tableView.reloadRows(at: [IndexPath(row: row, section: 1)], with: .none)
+                            tableView.reloadRows(at: [IndexPath(row: row, section: 2)], with: .none)
                             
                         }
                         
@@ -186,10 +217,13 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
         textLabel.frame = CGRect(x: 0, y: 0, width: 200, height: 50)
         switch section {
         case 0:
-            textLabel.text = "Multisig invoice"
+            textLabel.text = "Bitcoin Core Wallets"
             
         case 1:
-            textLabel.text = "Invoice format"
+            textLabel.text = "Import"
+            
+        case 2:
+            textLabel.text = "Address script type"
             
         default:
             break
@@ -210,25 +244,6 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
         nativeSegwit = ud.object(forKey: "nativeSegwit") as? Bool ?? true
         p2shSegwit = ud.object(forKey: "p2shSegwit") as? Bool ?? false
         legacy = ud.object(forKey: "legacy") as? Bool ?? false
-        
-        CoreDataService.retrieveEntity(entityName: .newHdWallets) { [unowned vc = self] hdWallets in
-            
-            if hdWallets != nil {
-                
-                if hdWallets!.count > 0 {
-                    vc.wallets = hdWallets!
-                    if vc.wallets.count == 1 {
-                        vc.wallet = vc.wallets[0]
-                    }
-                }
-                
-            } else {
-                
-                displayAlert(viewController: vc, isError: true, message: "error getting hd wallets from coredata")
-                
-            }
-            
-        }
         DispatchQueue.main.async { [unowned vc = self] in
             vc.table.reloadData()
         }
@@ -236,16 +251,14 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         switch segue.identifier {
-        case "showWallets":
-            if let vc = segue.destination as? WalletsViewController {
-                vc.wallets = wallets
-                vc.isHDInvoice = true
-            }
-        case "getHDmusigAddress":
-            if let vc = segue.destination as? InvoiceViewController {
-                vc.isHDInvoice = true
-                vc.wallet = wallet
-            }
+            case "segueToImportFromAdvanced":
+                
+                if let vc = segue.destination as? AddLabelViewController {
+                    vc.isDescriptor = isDescriptor
+                    vc.isSingleKey = isSingleKey
+                    vc.isPrivKey = isPrivKey
+                }
+
         default:
             break
         }

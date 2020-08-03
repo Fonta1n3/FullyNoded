@@ -100,13 +100,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                                     presentMultisigCreator(zpub: zpub, fingerprint: fingerprint, xpub: xpub)
                                 }
                             }
-                        } else if let _ = dict["chain"] as? String {
-                            print("coldcard single sig")
                         }
+                    } else if let _ = dict["chain"] as? String {
+                        print("coldcard single sig")
+                        presentWalletCreator(coldCard: dict)
                     }
-                } catch {
-                    
-                }
+                } catch {}
                 if needTo {
                   url.stopAccessingSecurityScopedResource()
                 }
@@ -116,22 +115,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
     }
     
-    func addNode(url: String) {
-        if let myTabBar = self.window?.rootViewController as? UITabBarController {
-            let qc = QuickConnect()
-            func getResult() {
-                if !qc.errorBool {
-                    print("success adding quick connect")
-                } else {
-                    print("error adding quick connect = \(qc.errorDescription)")
+    private func addNode(url: String) {
+        QuickConnect.addNode(url: url) { (success, errorMessage) in
+            if success {
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
                 }
             }
-            qc.addNode(vc: myTabBar, url: url, completion: getResult)
-        } else {
-            print("error adding quick connect no access to tabbar")
         }
     }
-    
+        
     private func presentSigner(psbt: String) {
         let storyBoard = UIStoryboard(name: "Main", bundle: nil)
         if let signerVc = storyBoard.instantiateViewController(identifier: "signerVc") as? SignerViewController {
@@ -174,6 +167,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 multisigCreator.modalPresentationStyle = .fullScreen
                 currentController.present(multisigCreator, animated: true, completion: nil)
             }
+        }
+    }
+    
+    private func presentWalletCreator(coldCard: [String:Any]) {
+        if let tabBarController = self.window!.rootViewController as? UITabBarController {
+            tabBarController.selectedIndex = 1
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: .addColdCard, object: nil, userInfo: coldCard)
+            }
+            
         }
     }
     

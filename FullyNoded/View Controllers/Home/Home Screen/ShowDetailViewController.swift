@@ -28,6 +28,10 @@ class ShowDetailViewController: UIViewController, UITextViewDelegate, UINavigati
     let getblockchaininfo = "https://getblockchaininfo.com"
     let getnetworkinfo = "https://getnetworkinfo.com"
     let getpeerinfo = "https://getpeerinfo.com"
+    let gettxoutsetinfo = "https://gettxoutsetinfo.com"
+    var totalAmount:Double!
+    var utxoCount:Int!
+    let spinner = ConnectingView()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -44,7 +48,41 @@ class ShowDetailViewController: UIViewController, UITextViewDelegate, UINavigati
         textView.layer.cornerRadius = 8
         textView.layer.borderColor = UIColor.lightGray.cgColor
         textView.layer.borderWidth = 0.5
-        textView.addHyperLinksToText(originalText: textView.text, hyperLinks: ["releases": releases, "bitcoin-cli getnetworkinfo": getnetworkinfo, "bitcoin-cli getblockchaininfo": getblockchaininfo, "bitcoin-cli getpeerinfo": getpeerinfo, "Bitcoin p2p network": bitcoinp2pnetwork])
+        textView.addHyperLinksToText(originalText: textView.text, hyperLinks: ["releases": releases, "bitcoin-cli getnetworkinfo": getnetworkinfo, "bitcoin-cli getblockchaininfo": getblockchaininfo, "bitcoin-cli getpeerinfo": getpeerinfo, "Bitcoin p2p network": bitcoinp2pnetwork, "bitcoin-cli gettxoutsetinfo": gettxoutsetinfo])
+        if command == "gettxoutsetinfo" {
+            getTotalSupply()
+        }
+    }
+    
+    private func getTotalSupply() {
+        spinner.addConnectingView(vc: self, description: "checking total supply, this can take 30 seconds or so, be patient...")
+        Reducer.makeCommand(command: .gettxoutsetinfo, param: "") { [unowned vc = self] (response, errorMessage) in
+            if let dict = response as? NSDictionary {
+                if let total = dict["total_amount"] as? Double, let utxos = dict["txouts"] as? Int {
+                    vc.utxoCount = utxos
+                    vc.totalAmount = total
+                    vc.getFiatRate()
+                } else {
+                    vc.spinner.removeConnectingView()
+                }
+            } else {
+                vc.spinner.removeConnectingView()
+            }
+        }
+    }
+    
+    private func getFiatRate() {
+        let fx = FiatConverter.sharedInstance
+        fx.getFxRate { (fxRate) in
+            if fxRate != nil {
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.subHeaderLabel.text = vc.totalAmount.withCommasNotRounded()  + " " + "btc"
+                    vc.textView.text += "\n\nTotal supply in USD:\n$\((vc.totalAmount * fxRate!).withCommas())\n\nTotal number of utxos:\n\(Double(vc.utxoCount).withCommas())\n\nAverage value per utxo:\n \(rounded(number: (vc.totalAmount / Double(vc.utxoCount)))) btc - $\(((vc.totalAmount * fxRate!) / Double(vc.utxoCount)).withCommas())\n\nCurrent exchange rate:\n$\(fxRate!.withCommas()) USD / 1 btc"
+                    vc.textView.addHyperLinksToText(originalText: vc.textView.text, hyperLinks: ["bitcoin-cli gettxoutsetinfo": vc.gettxoutsetinfo])
+                    vc.spinner.removeConnectingView()
+                }
+            }
+        }
     }
     
     func textView(_ textView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {

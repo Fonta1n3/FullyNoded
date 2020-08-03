@@ -33,7 +33,6 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     var window: UIWindow?
     @IBOutlet weak var sendView: UIView!
     @IBOutlet weak var invoiceView: UIView!
-    @IBOutlet weak var importView: UIView!
     @IBOutlet weak var utxosView: UIView!
     @IBOutlet weak var advancedView: UIView!
     @IBOutlet weak var fxRateLabel: UILabel!
@@ -45,13 +44,13 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         walletTable.dataSource = self
         sendView.layer.cornerRadius = 5
         invoiceView.layer.cornerRadius = 5
-        importView.layer.cornerRadius = 5
         utxosView.layer.cornerRadius = 5
         advancedView.layer.cornerRadius = 5
         fxRateLabel.text = ""
         existingWallet = ud.object(forKey: "walletName") as? String ?? ""
         sectionZeroLoaded = false
         NotificationCenter.default.addObserver(self, selector: #selector(refreshWallet), name: .refreshWallet, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(addColdcard(_:)), name: .addColdCard, object: nil)
         addNavBarSpinner()
         loadTable()
     }
@@ -75,7 +74,6 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
             showAlert(vc: self, title: "Exporting only works for Fully Noded Wallets", message: "You can create a Fully Noded Wallet by tapping the plus button. Fully Noded allows you to access all your nodes wallets, if you created the wallet externally from the app then the app does not have the information it needs to export the wallet.")
         }
     }
-    
     
     @IBAction func goToFullyNodedWallets(_ sender: Any) {
         DispatchQueue.main.async { [unowned vc = self] in
@@ -101,12 +99,6 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         }
     }
     
-    @IBAction func importAction(_ sender: Any) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "segueToImport", sender: vc)
-        }
-    }
-    
     @IBAction func invoiceSettings(_ sender: Any) {
         DispatchQueue.main.async { [unowned vc = self] in
             vc.performSegue(withIdentifier: "goToInvoiceSetting", sender: vc)
@@ -116,6 +108,24 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     @IBAction func goToUtxos(_ sender: Any) {
         DispatchQueue.main.async { [unowned vc = self] in
             vc.performSegue(withIdentifier: "segueToUtxos", sender: vc)
+        }
+    }
+    
+    @objc func addColdcard(_ notification: NSNotification) {
+        print("addColdcard")
+        let spinner = ConnectingView()
+        spinner.addConnectingView(vc: self, description: "creating your Coldcard wallet, this can take a minute...")
+        if let dict = notification.userInfo as? [String:Any] {
+            ImportWallet.coldcard(dict: dict) { [unowned vc = self] (success, errorDescription) in
+                if success {
+                    print("success")
+                    spinner.removeConnectingView()
+                    vc.refreshWallet()
+                } else {
+                    spinner.removeConnectingView()
+                    showAlert(vc: vc, title: "Error creating Coldcard wallet", message: errorDescription ?? "unknown")
+                }
+            }
         }
     }
     
@@ -392,7 +402,18 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
                 if errorMessage!.contains("Wallet file not specified (must request wallet RPC through") {
                     vc.removeSpinner()
                     vc.existingWallet = "multiple wallets"
-                    vc.promptToChooseWallet()
+                    CoreDataService.retrieveEntity(entityName: .wallets) { (wallets) in
+                        if wallets != nil {
+                            if wallets!.count > 0 {
+                                vc.promptToChooseWallet()
+                            } else {
+                                vc.promptToCreateWallet()
+                            }
+                        } else {
+                            vc.promptToCreateWallet()
+                        }
+                    }
+                    
                 } else {
                     vc.removeSpinner()
                     displayAlert(viewController: vc, isError: true, message: errorMessage!)
@@ -433,7 +454,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         fx.getFxRate { [unowned vc = self] rate in
             if rate != nil {
                 DispatchQueue.main.async { [unowned vc = self] in
-                    vc.fxRateLabel.text = "$\(String(describing: rate!)) / btc"
+                    vc.fxRateLabel.text = "$\(rate!.withCommas()) / btc"
                 }
                 if let btcHotBalance = Double(vc.hotBalance) {
                     let hotBalanceFiat = btcHotBalance * rate!
@@ -459,9 +480,23 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         }
     }
     
+    private func promptToCreateWallet() {
+        DispatchQueue.main.async { [unowned vc = self] in
+            let alert = UIAlertController(title: "Looks like you have not yet created a Fully Noded wallet, tap create to get started, if you are not yet ready you can always tap the + button in the top left.", message: "", preferredStyle: .actionSheet)
+            alert.addAction(UIAlertAction(title: "Create", style: .default, handler: { action in
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.performSegue(withIdentifier: "createFullyNodedWallet", sender: vc)
+                }
+            }))
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = vc.view
+            vc.present(alert, animated: true, completion: nil)
+        }
+    }
+    
     private func promptToChooseWallet() {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Your node has multiple wallets that are currently loaded, you need to choose which one you want to work with.", message: "", preferredStyle: .actionSheet)
+            let alert = UIAlertController(title: "None of your wallets seem to be toggled on, please choose which wallet you want to use.", message: "", preferredStyle: .actionSheet)
             alert.addAction(UIAlertAction(title: "Choose", style: .default, handler: { [unowned vc = self] action in
                 vc.goChooseWallet()
             }))
@@ -473,7 +508,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     
     private func goChooseWallet() {
         DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "segueToChooseWallet", sender: vc)
+            vc.performSegue(withIdentifier: "segueToWallets", sender: vc)
         }
     }
     

@@ -16,6 +16,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     var signer = ""
     var spinner = ConnectingView()
     var coinType = "0"
+    var addresses = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,6 +30,104 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         showAlert(vc: self, title: "Fully Noded Wallets", message: message)
     }
     
+    private func getAddresses() {
+        var desc = wallet.receiveDescriptor
+        
+        if wallet.type == "Single-Sig" {
+            let ud = UserDefaults.standard
+            let nativeSegwit = ud.object(forKey: "nativeSegwit") as? Bool ?? true
+            let p2shSegwit = ud.object(forKey: "p2shSegwit") as? Bool ?? false
+            let legacy = ud.object(forKey: "legacy") as? Bool ?? false
+            
+            if desc.hasPrefix("combo") {
+                
+                if nativeSegwit {
+                    desc = desc.replacingOccurrences(of: "combo", with: "wpkh")
+                } else if legacy {
+                    desc = desc.replacingOccurrences(of: "combo", with: "pkh")
+                } else if p2shSegwit {
+                    desc = desc.replacingOccurrences(of: "combo", with: "sh(wpkh")
+                    desc = desc.replacingOccurrences(of: "#", with: ")#")
+                }
+                
+                let arr = desc.split(separator: "#")
+                let bareDesc = "\(arr[0])"
+                Reducer.makeCommand(command: .getdescriptorinfo, param: "\"\(bareDesc)\"") { [unowned vc = self] (response, errorMessage) in
+                    if let dict = response as? NSDictionary {
+                        if let descriptor = dict["descriptor"] as? String {
+                            let param = "\"\(descriptor)\", [\(0),\(vc.wallet.maxIndex)]"
+                            Reducer.makeCommand(command: .deriveaddresses, param: param) { [unowned vc = self] (response, errorMessage) in
+                                if let addres = response as? NSArray {
+                                    for (i, address) in addres.enumerated() {
+                                        vc.addresses += "#\(i): \(address)\n\n"
+                                        if i + 1 == addres.count {
+                                            DispatchQueue.main.async { [unowned vc = self] in
+                                                vc.detailTable.reloadData()
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+            } else if wallet.watching != nil && wallet.name.contains("Coldcard") {
+                let descriptors = wallet.watching!
+                var prefix = ""
+                var descriptorToUse = ""
+                if nativeSegwit {
+                    descriptorToUse = wallet.receiveDescriptor
+                    
+                } else if legacy {
+                    prefix = "pkh"
+                    for desc in descriptors {
+                        if desc.hasPrefix(prefix) && desc.contains("/0/*") {
+                            descriptorToUse = desc
+                        }
+                    }
+                    
+                } else if p2shSegwit {
+                    prefix = "sh(wpkh("
+                    for desc in descriptors {
+                        if desc.hasPrefix(prefix) && desc.contains("/0/*") {
+                            descriptorToUse = desc
+                        }
+                    }
+                }
+                
+                let param = "\"\(descriptorToUse)\", [\(0),\(wallet.maxIndex)]"
+                Reducer.makeCommand(command: .deriveaddresses, param: param) { [unowned vc = self] (response, errorMessage) in
+                    if let addres = response as? NSArray {
+                        for (i, address) in addres.enumerated() {
+                            vc.addresses += "#\(i): \(address)\n\n"
+                            if i + 1 == addres.count {
+                                DispatchQueue.main.async { [unowned vc = self] in
+                                    vc.detailTable.reloadData()
+                                }
+                            }
+                        }
+                    }
+                }
+                
+            }
+        } else {
+            
+            let param = "\"\(wallet.receiveDescriptor)\", [\(0),\(wallet.maxIndex)]"
+            Reducer.makeCommand(command: .deriveaddresses, param: param) { [unowned vc = self] (response, errorMessage) in
+                if let addres = response as? NSArray {
+                    for (i, address) in addres.enumerated() {
+                        vc.addresses += "#\(i): \(address)\n\n"
+                        if i + 1 == addres.count {
+                            DispatchQueue.main.async { [unowned vc = self] in
+                                vc.detailTable.reloadData()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
     
     private func setCoinType() {
         spinner.addConnectingView(vc: self, description: "fetching chain type...")
@@ -81,6 +180,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                         if walletStruct.id == vc.walletId {
                             vc.wallet = walletStruct
                             vc.findSigner()
+                            vc.getAddresses()
                         }
                     }
                 }
@@ -238,7 +338,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 1417
+        return 1761
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -256,11 +356,15 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         let maxIndexField = cell.viewWithTag(6) as! UITextField
         let signerTextField = cell.viewWithTag(7) as! UITextView
         let watchingTextView = cell.viewWithTag(8) as! UITextView
+        let addressExlorerTextView = cell.viewWithTag(9) as! UITextView
         labelField.delegate = self
         maxIndexField.delegate = self
         receiveDescTextView.layer.cornerRadius = 8
         receiveDescTextView.layer.borderWidth = 0.5
         receiveDescTextView.layer.borderColor = UIColor.darkGray.cgColor
+        addressExlorerTextView.layer.cornerRadius = 8
+        addressExlorerTextView.layer.borderWidth = 0.5
+        addressExlorerTextView.layer.borderColor = UIColor.darkGray.cgColor
         changeDescTextView.layer.cornerRadius = 8
         changeDescTextView.layer.borderWidth = 0.5
         changeDescTextView.layer.borderColor = UIColor.darkGray.cgColor
@@ -285,6 +389,11 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             maxIndexField.text = "\(wallet.maxIndex)"
             currentIndexField.text = "\(wallet.index)"
             signerTextField.text = signer
+            if addresses == "" {
+                addressExlorerTextView.text = "fetching addresses from your node..."
+            } else {
+                addressExlorerTextView.text = addresses
+            }
             if wallet.watching != nil {
                 var watching = ""
                 for watch in wallet.watching! {

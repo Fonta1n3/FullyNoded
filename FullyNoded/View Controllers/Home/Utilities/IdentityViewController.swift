@@ -15,17 +15,12 @@ class IdentityViewController: UIViewController, UITextViewDelegate {
     var scanKey = Bool()
     var scanMessage = Bool()
     var scanSig = Bool()
-    var scannerShowing = Bool()
-    var isFirstTime = Bool()
-    var isTorchOn = Bool()
     var sigFieldEditing = Bool()
     
-    @IBOutlet var imageView: UIImageView!
     @IBOutlet var keyOutlet: UITextView!
     @IBOutlet var messageOutlet: UITextView!
     @IBOutlet var sigOutlet: UITextView!
     
-    let qrScanner = QRScanner()
     let connectingView = ConnectingView()
     
     override func viewDidLoad() {
@@ -44,12 +39,8 @@ class IdentityViewController: UIViewController, UITextViewDelegate {
             sigOutlet.isSelectable = true
             
         }
-        
-        configureScanner()
-        
-        let tapGesture = UITapGestureRecognizer(target: self,
-                                                action: #selector(self.dismissKeyboard (_:)))
-        
+                
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
         
@@ -226,150 +217,14 @@ class IdentityViewController: UIViewController, UITextViewDelegate {
     }
     
     func scanNow() {
-        print("scanNow")
-        
-        scannerShowing = true
-        hideKeyboards()
-        
-        if isFirstTime {
-            
-            DispatchQueue.main.async {
-                
-                self.qrScanner.scanQRCode()
-                self.addScannerButtons()
-                self.imageView.addSubview(self.qrScanner.closeButton)
-                self.isFirstTime = false
-                
-                UIView.animate(withDuration: 0.3, animations: {
-                    
-                    self.imageView.alpha = 1
-                    
-                })
-                
-            }
-            
-        } else {
-            
-            self.qrScanner.startScanner()
-            self.addScannerButtons()
-            
-            DispatchQueue.main.async {
-                
-                UIView.animate(withDuration: 0.3, animations: {
-                    
-                    self.imageView.alpha = 1
-                    
-                })
-                
-            }
-            
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "segueToScannerFromIdentity", sender: vc)
         }
-        
-    }
-    
-    @objc func chooseQRCodeFromLibrary() {
-        
-        qrScanner.chooseQRCodeFromLibrary()
-        
-    }
-    
-    func configureScanner() {
-        
-        isFirstTime = true
-        
-        imageView.alpha = 0
-        imageView.frame = view.frame
-        imageView.isUserInteractionEnabled = true
-        
-        qrScanner.uploadButton.addTarget(self, action: #selector(chooseQRCodeFromLibrary),
-                                         for: .touchUpInside)
-        
-        qrScanner.keepRunning = false
-        qrScanner.vc = self
-        qrScanner.imageView = imageView
-        qrScanner.textField.alpha = 0
-        
-        qrScanner.completion = { self.getQRCode() }
-        qrScanner.didChooseImage = { self.didPickImage() }
-        qrScanner.downSwipeAction = { self.back() }
-        
-        qrScanner.uploadButton.addTarget(self,
-                                         action: #selector(self.chooseQRCodeFromLibrary),
-                                         for: .touchUpInside)
-        
-        qrScanner.torchButton.addTarget(self,
-                                        action: #selector(toggleTorch),
-                                        for: .touchUpInside)
-        
-        isTorchOn = false
-        
-        qrScanner.closeButton.addTarget(self,
-                                        action: #selector(back),
-                                        for: .touchUpInside)
-        
-    }
-    
-    func addScannerButtons() {
-        
-        self.addBlurView(frame: CGRect(x: self.imageView.frame.maxX - 80,
-                                       y: self.imageView.frame.maxY - 80,
-                                       width: 70,
-                                       height: 70), button: self.qrScanner.uploadButton)
-        
-        self.addBlurView(frame: CGRect(x: 10,
-                                       y: self.imageView.frame.maxY - 80,
-                                       width: 70,
-                                       height: 70), button: self.qrScanner.torchButton)
-        
-    }
-    
-    @objc func back() {
-        
-        DispatchQueue.main.async {
-            
-            self.imageView.alpha = 0
-            self.scannerShowing = false
-            
-        }
-        
-    }
-    
-    @objc func toggleTorch() {
-        
-        if isTorchOn {
-            
-            qrScanner.toggleTorch(on: false)
-            isTorchOn = false
-            
-        } else {
-            
-            qrScanner.toggleTorch(on: true)
-            isTorchOn = true
-            
-        }
-        
-    }
-    
-    func addBlurView(frame: CGRect, button: UIButton) {
-        
-        button.removeFromSuperview()
-        let blur = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
-        blur.frame = frame
-        blur.clipsToBounds = true
-        blur.layer.cornerRadius = frame.width / 2
-        blur.contentView.addSubview(button)
-        self.imageView.addSubview(blur)
-        
     }
     
     func addText(text: String) {
-        print("text = \(text)")
-        
-        print("scanSig = \(scanSig)")
-        
         DispatchQueue.main.async {
             
-            self.back()
             
             if self.scanKey {
                 
@@ -393,17 +248,17 @@ class IdentityViewController: UIViewController, UITextViewDelegate {
         
     }
     
-    func getQRCode() {
-        
-        addText(text: qrScanner.stringToReturn)
-        
-    }
-    
-    func didPickImage() {
-        
-        addText(text: qrScanner.qrString)
-        
-    }
+//    func getQRCode() {
+//
+//        addText(text: qrScanner.stringToReturn)
+//
+//    }
+//
+//    func didPickImage() {
+//
+//        addText(text: qrScanner.qrString)
+//
+//    }
     
     func textViewShouldBeginEditing(_ textView: UITextView) -> Bool {
         
@@ -447,6 +302,19 @@ class IdentityViewController: UIViewController, UITextViewDelegate {
             }
         }
         
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "segueToScannerFromIdentity" {
+            if let vc = segue.destination as? QRScannerViewController {
+                vc.isScanningAddress = true
+                vc.onAddressDoneBlock = { text in
+                    if text != nil {
+                        self.addText(text: text!)
+                    }
+                }
+            }
+        }
     }
     
 }

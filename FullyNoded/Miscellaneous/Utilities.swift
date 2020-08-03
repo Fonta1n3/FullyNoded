@@ -85,6 +85,23 @@ public func exportPsbtToURL(data: Data) -> URL? {
   }
 }
 
+public func exportMultisigWalletToURL(data: Data) -> URL? {
+  let documents = FileManager.default.urls(
+    for: .documentDirectory,
+    in: .userDomainMask
+  ).first
+  guard let path = documents?.appendingPathComponent("/FullyNodedMultisig.txt") else {
+    return nil
+  }
+  do {
+    try data.write(to: path, options: .atomicWrite)
+    return path
+  } catch {
+    print(error.localizedDescription)
+    return nil
+  }
+}
+
 public extension Dictionary {
     func json() -> String? {
         if let json = try? JSONSerialization.data(withJSONObject: self, options: []) {
@@ -99,6 +116,14 @@ public extension Dictionary {
     }
 }
 
+public extension Int {
+    func withCommas() -> String {
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = NumberFormatter.Style.decimal
+        return numberFormatter.string(from: NSNumber(value:self))!
+    }
+}
+
 extension String {
     var isAlphanumeric: Bool {
         return !isEmpty && range(of: "[^a-zA-Z0-9]", options: .regularExpression) == nil
@@ -108,6 +133,7 @@ extension String {
 extension Notification.Name {
     public static let refreshNode = Notification.Name(rawValue: "refreshNode")
     public static let refreshWallet = Notification.Name(rawValue: "refreshWallet")
+    public static let addColdCard = Notification.Name(rawValue: "addColdcard")
 }
 
 public extension Data {
@@ -158,6 +184,26 @@ public func randomString(length: Int) -> String {
 public func rounded(number: Double) -> Double {
     return Double(round(100000000*number)/100000000)
     
+}
+
+public extension Double {
+    func withCommas() -> String {
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = NumberFormatter.Style.decimal
+        return numberFormatter.string(from: NSNumber(value:self))!
+    }
+}
+
+public extension Double {
+    func withCommasNotRounded() -> String {
+        let arr = "\(self)".split(separator: ".")
+        let satoshis = "\(arr[1])"
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = .decimal
+        let arr1 = (numberFormatter.string(from: NSNumber(value:self))!).split(separator: ".")
+        let numberWithCommas = "\(arr1[0])"
+        return numberWithCommas + "." + satoshis
+    }
 }
 
 public func displayAlert(viewController: UIViewController, isError: Bool, message: String) {

@@ -14,23 +14,16 @@ class AddLabelViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet var textField: UITextField!
     var isSingleKey = Bool()
     var isPrivKey = Bool()
-    var isMultisig = Bool()
     var isDescriptor = Bool()
     @IBOutlet var labelOutlet: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
         textField.delegate = self
-        
-        let tapGesture = UITapGestureRecognizer(target: self,
-                                                action: #selector(self.dismissKeyboard (_:)))
-        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
-        
         labelOutlet.text = "Add a label"
-        
     }
     
     @objc func dismissKeyboard (_ sender: UITapGestureRecognizer) {
@@ -61,12 +54,6 @@ class AddLabelViewController: UIViewController, UITextFieldDelegate {
             if isPrivKey {
                 
                 segueString = "importPrivKey"
-                
-            }
-            
-            if isMultisig {
-                
-                segueString = "goImportMultiSig"
                 
             }
             
@@ -111,15 +98,6 @@ class AddLabelViewController: UIViewController, UITextFieldDelegate {
                 vc.dict = dict
                 vc.isSingleKey = isSingleKey
                 vc.isMultiSig = false
-                
-            }
-            
-        case "goImportMultiSig":
-            
-            if let vc = segue.destination as? RescanViewController {
-                
-                vc.dict = dict
-                vc.isMultisig = true
                 
             }
             

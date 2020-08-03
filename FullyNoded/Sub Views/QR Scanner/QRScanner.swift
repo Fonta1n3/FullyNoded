@@ -19,28 +19,20 @@ class QRScanner: UIView, AVCaptureMetadataOutputObjectsDelegate, UIImagePickerCo
     var didChooseImage = {}
     var keepRunning = Bool()
     var downSwipeAction = {}
-    
     var vc = UIViewController()
     let imagePicker = UIImagePickerController()
     var qrString = ""
-    
     let textField = UITextField()
     var textFieldPlaceholder = ""
-    
     let uploadButton = UIButton()
     let torchButton = UIButton()
-    
     let closeButton = UIButton()
-    
     let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
-    
     let downSwipe = UISwipeGestureRecognizer()
     
     @objc func handleSwipes(_ sender: UIGestureRecognizer) {
-        print("handleswipes")
-     
+        stopScanner()
         downSwipeAction()
-        
     }
     
     func configureCloseButton() {
@@ -309,35 +301,25 @@ let info = convertFromUIImagePickerControllerInfoKeyDictionary(info)
     }
     
     func removeScanner() {
-        
-        DispatchQueue.main.async {
-            
-            self.textField.removeFromSuperview()
-            self.torchButton.removeFromSuperview()
-            self.uploadButton.removeFromSuperview()
-            self.imageView.removeFromSuperview()
-            
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.avCaptureSession.stopRunning()
+            vc.textField.removeFromSuperview()
+            vc.torchButton.removeFromSuperview()
+            vc.uploadButton.removeFromSuperview()
+            vc.imageView.removeFromSuperview()
         }
-        
     }
     
     func stopScanner() {
-        
-        DispatchQueue.main.async {
-            
-            self.avCaptureSession.stopRunning()
-            
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.avCaptureSession.stopRunning()
         }
     }
     
     func startScanner() {
-        
-        DispatchQueue.main.async {
-            
-            self.avCaptureSession.startRunning()
-            
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.avCaptureSession.startRunning()
         }
-        
     }
     
 }

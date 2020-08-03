@@ -16,7 +16,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     var command = ""
     @IBOutlet var mainMenu: UITableView!
     var connectingView = ConnectingView()
-    let cd = CoreDataService()
     var nodes = [[String:Any]]()
     var activeNode:[String:Any]?
     var existingNodeID:UUID!
@@ -82,7 +81,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func torConnFinished() {
-        print("finished connecting")
         viewHasLoaded = true
         removeBackView()
         loadTable()
@@ -194,7 +192,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     //MARK: Tableview Methods
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 13
+        return 14
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -236,6 +234,14 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             }
             
         case 1:
+            if uptimeInfo != nil {
+                label.text = "Verify total supply"
+                icon.image = UIImage(systemName: "bitcoinsign.circle")
+                background.backgroundColor = .systemYellow
+                chevron.alpha = 1
+            }
+            
+        case 2:
             if networkInfo != nil {
                 label.text = "Bitcoin Core v\(networkInfo.version)"
                 icon.image = UIImage(systemName: "v.circle")
@@ -243,7 +249,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 chevron.alpha = 1
             }
             
-        case 2:
+        case 3:
             if blockchainInfo != nil {
                 label.text = blockchainInfo.network
                 icon.image = UIImage(systemName: "link")
@@ -257,7 +263,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 chevron.alpha = 1
             }
             
-        case 3:
+        case 4:
             if peerInfo != nil {
                 label.text = "\(peerInfo.outgoingCount) outgoing / \(peerInfo.incomingCount) incoming"
                 icon.image = UIImage(systemName: "person.3")
@@ -265,7 +271,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 chevron.alpha = 1
             }
             
-        case 4:
+        case 5:
             if blockchainInfo != nil {
                 if blockchainInfo.pruned {
                     label.text = "Pruned"
@@ -279,7 +285,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 chevron.alpha = 1
             }
             
-        case 5:
+        case 6:
             if miningInfo != nil {
                 label.text = miningInfo.hashrate + " " + "EH/s hashrate"
                 icon.image = UIImage(systemName: "speedometer")
@@ -287,7 +293,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 chevron.alpha = 0
             }
             
-        case 6:
+        case 7:
             if blockchainInfo != nil {
                 label.text = "\(blockchainInfo.blockheight.withCommas()) blocks"
                 icon.image = UIImage(systemName: "square.stack.3d.up")
@@ -295,7 +301,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 chevron.alpha = 0
             }
             
-        case 7:
+        case 8:
             if blockchainInfo != nil {
                 label.text = blockchainInfo.difficulty
                 icon.image = UIImage(systemName: "slider.horizontal.3")
@@ -303,7 +309,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 chevron.alpha = 0
             }
             
-        case 8:
+        case 9:
             if blockchainInfo != nil {
                 label.text = blockchainInfo.size
                 background.backgroundColor = .systemPink
@@ -311,7 +317,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 chevron.alpha = 0
             }
         
-        case 9:
+        case 10:
             if mempoolInfo != nil {
                 label.text = "\(mempoolInfo.mempoolCount.withCommas()) mempool"
                 icon.image = UIImage(systemName: "waveform.path.ecg")
@@ -319,7 +325,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 chevron.alpha = 0
             }
             
-        case 10:
+        case 11:
             if feeInfo != nil {
                 label.text = feeInfo.feeRate + " " + "fee rate"
                 icon.image = UIImage(systemName: "percent")
@@ -327,7 +333,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 chevron.alpha = 0
             }
             
-        case 11:
+        case 12:
             if networkInfo != nil {
                 if networkInfo.torReachable {
                     label.text = "tor hidden service on"
@@ -342,7 +348,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 chevron.alpha = 0
             }
             
-        case 12:
+        case 13:
             if uptimeInfo != nil {
                 label.text = "\(uptimeInfo.uptime / 86400) days \((uptimeInfo.uptime % 86400) / 3600) hours uptime"
                 icon.image = UIImage(systemName: "clock")
@@ -358,43 +364,43 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch indexPath.section {
-        case 0, 2, 4, 6, 7, 8:
+        case 0, 3, 5, 7, 8, 9:
             if blockchainInfo == nil {
                 return blankCell()
             } else {
                 return homeCell(indexPath)
             }
-        case 3:
+        case 4:
             if peerInfo == nil {
                 return blankCell()
             } else {
                 return homeCell(indexPath)
             }
-        case 1, 11:
+        case 2, 12:
             if networkInfo == nil {
                 return blankCell()
             } else {
                 return homeCell(indexPath)
             }
-        case 5:
+        case 6:
             if miningInfo == nil {
                 return blankCell()
             } else {
                 return homeCell(indexPath)
             }
-        case 12:
+        case 13, 1:
             if uptimeInfo == nil {
                 return blankCell()
             } else {
                 return homeCell(indexPath)
             }
-        case 9:
+        case 10:
             if mempoolInfo == nil {
                 return blankCell()
             } else {
                 return homeCell(indexPath)
             }
-        case 10:
+        case 11:
             if feeInfo == nil {
                 return blankCell()
             } else {
@@ -419,28 +425,30 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         case 0:
             textLabel.text = "Verification progress"
         case 1:
-            textLabel.text = "Node version"
+            textLabel.text = "Total supply"
         case 2:
-            textLabel.text = "Blockchain network"
+            textLabel.text = "Node version"
         case 3:
-            textLabel.text = "Peer connections"
+            textLabel.text = "Blockchain network"
         case 4:
-            textLabel.text = "Blockchain state"
+            textLabel.text = "Peer connections"
         case 5:
-            textLabel.text = "Mining hashrate"
+            textLabel.text = "Blockchain state"
         case 6:
-            textLabel.text = "Current blockheight"
+            textLabel.text = "Mining hashrate"
         case 7:
-            textLabel.text = "Mining difficulty"
+            textLabel.text = "Current blockheight"
         case 8:
-            textLabel.text = "Blockchain size on disc"
+            textLabel.text = "Mining difficulty"
         case 9:
-            textLabel.text = "Node's mempool"
+            textLabel.text = "Blockchain size on disc"
         case 10:
-            textLabel.text = "Fee rate"
+            textLabel.text = "Node's mempool"
         case 11:
-            textLabel.text = "P2P hidden service"
+            textLabel.text = "Fee rate"
         case 12:
+            textLabel.text = "P2P hidden service"
+        case 13:
             textLabel.text = "Node uptime"
         default:
             break
@@ -482,6 +490,19 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             """
             segueToShowDetail()
         case 1:
+            command = "gettxoutsetinfo"
+            detailHeaderText = "Total Supply"
+            detailSubheaderText = "Use your own node to verify total supply"
+            detailImage = UIImage(systemName: "bitcoinsign.circle")!
+            detailImageTint = .systemYellow
+            detailTextDescription = """
+            Fully Noded uses the bitcoin-cli gettxoutsetinfo command to determine the total amount of mined Bitcoins. This command can take considerable time to load, usually around 30 seconds so please be patient while it loads.
+            
+            With this command you can at anytime verify all the Bitcoins that have ever been issued without using any third parties at all.
+            """
+            segueToShowDetail()
+            
+        case 2:
             command = "getnetworkinfo"
             detailHeaderText = "Node version"
             detailImageTint = .systemBlue
@@ -495,7 +516,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             See the list of releases for each version along with detailed release notes.
             """
             segueToShowDetail()
-        case 2:
+        case 3:
             //"Blockchain network"
             command = "getblockchaininfo"
             detailHeaderText = "Blockchain network"
@@ -522,7 +543,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             Fully Noded talks to each node via a port. Generally mainnet uses the default port 8332, testnet 18332 and regtest 18443. However because Fully Noded works over Tor we actually use what are called virtual ports under the hood. The rpcports as just mentioned are only ever exposed to your nodes localhost meaning they are only accessible remotely via a Tor hidden service.
             """
             segueToShowDetail()
-        case 3:
+        case 4:
             //"Peer connections"
             command = "getpeerinfo"
             detailHeaderText = "Peer connections"
@@ -541,7 +562,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             Check out this link for a deeper dive into the Bitcoin p2p network.
             """
             segueToShowDetail()
-        case 4:
+        case 5:
             //"Blockchain state"
             command = "getblockchaininfo"
             detailHeaderText = "Blockchain state"
@@ -588,6 +609,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
 //        case 12:
 //            //"Node uptime"
 //            segueToShowDetail()
+        
         default:
             break
         }
@@ -605,7 +627,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             if response != nil {
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.blockchainInfo = BlockchainInfo(dictionary: response!)
-                    vc.mainMenu.reloadSections(IndexSet(arrayLiteral: 0, 2, 4, 6, 7, 8), with: .fade)
+                    vc.mainMenu.reloadSections(IndexSet(arrayLiteral: 0, 3, 5, 7, 8, 9), with: .fade)
                     vc.getPeerInfo()
                 }
             } else if errorMessage != nil {
@@ -621,7 +643,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             if response != nil {
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.peerInfo = PeerInfo(dictionary: response!)
-                    vc.mainMenu.reloadSections(IndexSet(arrayLiteral: 3), with: .fade)
+                    vc.mainMenu.reloadSections(IndexSet(arrayLiteral: 4), with: .fade)
                     vc.getNetworkInfo()
                 }
             } else {
@@ -637,7 +659,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             if response != nil {
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.networkInfo = NetworkInfo(dictionary: response!)
-                    vc.mainMenu.reloadSections(IndexSet(arrayLiteral: 1, 11), with: .fade)
+                    vc.mainMenu.reloadSections(IndexSet(arrayLiteral: 2, 12), with: .fade)
                     vc.getMiningInfo()
                 }
             } else {
@@ -653,7 +675,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             if response != nil {
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.miningInfo = MiningInfo(dictionary: response!)
-                    vc.mainMenu.reloadSections(IndexSet(arrayLiteral: 5), with: .fade)
+                    vc.mainMenu.reloadSections(IndexSet(arrayLiteral: 6), with: .fade)
                     vc.getUptime()
                 }
             } else {
@@ -669,7 +691,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             if response != nil {
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.uptimeInfo = Uptime(dictionary: response!)
-                    vc.mainMenu.reloadSections(IndexSet(arrayLiteral: 12), with: .fade)
+                    vc.mainMenu.reloadSections(IndexSet(arrayLiteral: 13), with: .fade)
                     vc.getMempoolInfo()
                 }
             } else {
@@ -685,7 +707,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             if response != nil {
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.mempoolInfo = MempoolInfo(dictionary: response!)
-                    vc.mainMenu.reloadSections(IndexSet(arrayLiteral: 9), with: .fade)
+                    vc.mainMenu.reloadSections(IndexSet(arrayLiteral: 10), with: .fade)
                     vc.getFeeInfo()
                 }
             } else {
@@ -701,7 +723,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             if response != nil {
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.feeInfo = FeeInfo(dictionary: response!)
-                    vc.mainMenu.reloadSections(IndexSet(arrayLiteral: 10), with: .fade)
+                    vc.mainMenu.reloadSections(IndexSet(arrayLiteral: 11, 1), with: .fade)
                     vc.removeLoader()
                 }
             } else {
@@ -839,18 +861,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         FirstTime.firstTimeHere() { success in
             completion(success)
         }
-    }
-    
-}
-
-extension Double {
-    
-    func withCommas() -> String {
-        
-        let numberFormatter = NumberFormatter()
-        numberFormatter.numberStyle = NumberFormatter.Style.decimal
-        return numberFormatter.string(from: NSNumber(value:self))!
-        
     }
     
 }

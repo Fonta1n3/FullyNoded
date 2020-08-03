@@ -10,19 +10,9 @@ import UIKit
 
 class ProcessPSBTViewController: UIViewController {
     
-    let rawDisplayer = RawDisplayer()
     var processedPSBT = ""
     let creatingView = ConnectingView()
-    let qrScanner = QRScanner()
-    let qrGenerator = QRGenerator()
-    var tapQRGesture = UITapGestureRecognizer()
-    var tapTextViewGesture = UITapGestureRecognizer()
-    var isFirstTime = Bool()
-    var isTorchOn = Bool()
-    var blurArray = [UIVisualEffectView]()
-    var scannerShowing = false
     var firstLink = ""
-    @IBOutlet var imageView: UIImageView!
     @IBOutlet var textView: UITextView!
     var process = Bool()
     var verify = Bool()
@@ -44,47 +34,13 @@ class ProcessPSBTViewController: UIViewController {
     var inputTotal = Double()
     var outputTotal = Double()
     
+    var psbt = ""
+    var signedTx = ""
+    
     @IBAction func scan(_ sender: Any) {
-        
-        print("scanNow")
-        
-        scannerShowing = true
-        textView.resignFirstResponder()
-        
-        if isFirstTime {
-            
-            DispatchQueue.main.async {
-                
-                self.qrScanner.scanQRCode()
-                self.addScannerButtons()
-                self.imageView.addSubview(self.qrScanner.closeButton)
-                self.isFirstTime = false
-                
-                UIView.animate(withDuration: 0.3, animations: {
-                    
-                    self.imageView.alpha = 1
-                    
-                })
-                
-            }
-            
-        } else {
-            
-            self.qrScanner.startScanner()
-            self.addScannerButtons()
-            
-            DispatchQueue.main.async {
-                
-                UIView.animate(withDuration: 0.3, animations: {
-                    
-                    self.imageView.alpha = 1
-                    
-                })
-                
-            }
-            
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "segueFromToolstoScan", sender: vc)
         }
-        
     }
     
     func configureView() {
@@ -274,7 +230,6 @@ class ProcessPSBTViewController: UIViewController {
         textView.layer.borderWidth = 0.5
         textView.clipsToBounds = true
         textView.layer.cornerRadius = 8
-        configureScanner()
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
@@ -352,6 +307,7 @@ class ProcessPSBTViewController: UIViewController {
             let isComplete = dict["complete"] as! Bool
             let processedPSBT = dict["psbt"] as! String
             creatingView.removeConnectingView()
+            psbt = processedPSBT
             displayRaw(raw: processedPSBT, title: "PSBT")
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [unowned vc = self] in
                 if isComplete {
@@ -369,9 +325,11 @@ class ProcessPSBTViewController: UIViewController {
             var finalizedPSBT = ""
             if let check = dict["hex"] as? String {
                 finalizedPSBT = check
+                signedTx = check
                 
             } else if let psbt = dict["psbt"] as? String {
                 finalizedPSBT = psbt
+                self.psbt = finalizedPSBT
                 
             } else {
                 finalizedPSBT = "error"
@@ -400,6 +358,7 @@ class ProcessPSBTViewController: UIViewController {
     private func parseConvertToPsbt(response: Any?) {
         if let psbt = response as? String {
             DispatchQueue.main.async { [unowned vc = self] in
+                vc.psbt = psbt
                 vc.displayRaw(raw: psbt, title: "PSBT")
                 vc.creatingView.removeConnectingView()
             }
@@ -538,7 +497,6 @@ class ProcessPSBTViewController: UIViewController {
             }
         }
         
-        
     }
     
     func parseInputs(inputs: NSArray, completion: @escaping () -> Void) {
@@ -619,37 +577,9 @@ class ProcessPSBTViewController: UIViewController {
     }
     
     func displayRaw(raw: String, title: String) {
-        
-        DispatchQueue.main.async {
-            
-            self.navigationController?.navigationBar.topItem?.title = title
-            self.rawDisplayer.rawString = raw
-            self.processedPSBT = raw
-            self.rawDisplayer.vc = self
-            
-            self.tapQRGesture = UITapGestureRecognizer(target: self,
-                                                       action: #selector(self.shareQRCode(_:)))
-            
-            self.rawDisplayer.qrView.addGestureRecognizer(self.tapQRGesture)
-            
-            self.tapTextViewGesture = UITapGestureRecognizer(target: self,
-                                                             action: #selector(self.shareRawText(_:)))
-            
-            self.rawDisplayer.textView.addGestureRecognizer(self.tapTextViewGesture)
-            
-            self.qrScanner.removeFromSuperview()
-            self.imageView.removeFromSuperview()
-            
-            
-            let backView = UIView()
-            backView.frame = self.view.frame
-            backView.backgroundColor = self.view.backgroundColor
-            self.view.addSubview(backView)
-            self.creatingView.removeConnectingView()
-            self.rawDisplayer.addRawDisplay()
-            
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "segueToBroadcasterFromTools", sender: vc)
         }
-        
     }
     
     @objc func close() {
@@ -662,111 +592,6 @@ class ProcessPSBTViewController: UIViewController {
         
     }
     
-    @objc func shareRawText(_ sender: UITapGestureRecognizer) {
-        
-        DispatchQueue.main.async {
-            
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                self.rawDisplayer.textView.alpha = 0
-                
-            }) { _ in
-                
-                UIView.animate(withDuration: 0.2, animations: {
-                    
-                    self.rawDisplayer.textView.alpha = 1
-                    
-                })
-                
-            }
-            
-            let alert = UIAlertController(title: "Share as raw data or text?", message: "Sharing as raw data allows you to send the unsigned psbt directly to your Coldcard Wallets SD card for signing", preferredStyle: .actionSheet)
-            
-            alert.addAction(UIAlertAction(title: "Raw Data", style: .default, handler: { action in
-                
-                self.convertPSBTtoData(string: self.processedPSBT)
-                
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Text", style: .default, handler: { action in
-                
-                DispatchQueue.main.async {
-                    
-                    let textToShare = [self.processedPSBT]
-                    
-                    let activityViewController = UIActivityViewController(activityItems: textToShare,
-                                                                          applicationActivities: nil)
-                    
-                    activityViewController.popoverPresentationController?.sourceView = self.view
-                    self.present(activityViewController, animated: true) {}
-                    
-                }
-                
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in
-                
-            }))
-            
-            alert.popoverPresentationController?.sourceView = self.view
-            self.present(alert, animated: true) {}
-            
-        }
-        
-    }
-    
-    func convertPSBTtoData(string: String) {
-        
-        if let data = Data(base64Encoded: string) {
-            
-            DispatchQueue.main.async {
-                
-                let activityViewController = UIActivityViewController(activityItems: [data],
-                                                                      applicationActivities: nil)
-                
-                activityViewController.popoverPresentationController?.sourceView = self.view
-                self.present(activityViewController, animated: true) {}
-                
-            }
-            
-        }
-        
-    }
-    
-    @objc func shareQRCode(_ sender: UITapGestureRecognizer) {
-        print("shareQRCode")
-        
-        DispatchQueue.main.async {
-            
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                self.rawDisplayer.qrView.alpha = 0
-                
-            }) { _ in
-                
-                UIView.animate(withDuration: 0.2, animations: {
-                    
-                    self.rawDisplayer.qrView.alpha = 1
-                    
-                })
-                
-            }
-            
-            self.qrGenerator.textInput = self.processedPSBT
-            let qrImage = self.qrGenerator.getQRCode()
-            let objectsToShare = [qrImage]
-            
-            let activityController = UIActivityViewController(activityItems: objectsToShare,
-                                                              applicationActivities: nil)
-            
-            activityController.completionWithItemsHandler = { (type,completed,items,error) in }
-            activityController.popoverPresentationController?.sourceView = self.view
-            self.present(activityController, animated: true) {}
-            
-        }
-        
-    }
-    
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
         
         DispatchQueue.main.async {
@@ -774,119 +599,6 @@ class ProcessPSBTViewController: UIViewController {
             self.textView.resignFirstResponder()
             
         }
-        
-    }
-    
-    func configureScanner() {
-        
-        isFirstTime = true
-        
-        imageView.alpha = 0
-        imageView.frame = view.frame
-        imageView.isUserInteractionEnabled = true
-        
-        qrScanner.uploadButton.addTarget(self, action: #selector(chooseQRCodeFromLibrary),
-                                         for: .touchUpInside)
-        
-        qrScanner.keepRunning = false
-        qrScanner.vc = self
-        qrScanner.imageView = imageView
-        qrScanner.textField.alpha = 0
-        
-        qrScanner.completion = { self.getQRCode() }
-        qrScanner.didChooseImage = { self.didPickImage() }
-        qrScanner.downSwipeAction = { self.back() }
-        
-        qrScanner.uploadButton.addTarget(self,
-                                         action: #selector(self.chooseQRCodeFromLibrary),
-                                         for: .touchUpInside)
-        
-        qrScanner.torchButton.addTarget(self,
-                                        action: #selector(toggleTorch),
-                                        for: .touchUpInside)
-        
-        isTorchOn = false
-        
-        
-        qrScanner.closeButton.addTarget(self,
-                                        action: #selector(back),
-                                        for: .touchUpInside)
-        
-    }
-    
-    @objc func chooseQRCodeFromLibrary() {
-        
-        qrScanner.chooseQRCodeFromLibrary()
-        
-    }
-    
-    func addScannerButtons() {
-        
-        self.addBlurView(frame: CGRect(x: self.imageView.frame.maxX - 80,
-                                       y: self.imageView.frame.maxY - 80,
-                                       width: 70,
-                                       height: 70), button: self.qrScanner.uploadButton)
-        
-        self.addBlurView(frame: CGRect(x: 10,
-                                       y: self.imageView.frame.maxY - 80,
-                                       width: 70,
-                                       height: 70), button: self.qrScanner.torchButton)
-        
-    }
-    
-    @objc func back() {
-        print("back")
-        
-        DispatchQueue.main.async {
-            
-            self.imageView.alpha = 0
-            self.scannerShowing = false
-            
-        }
-        
-    }
-    
-    @objc func toggleTorch() {
-        
-        if isTorchOn {
-            
-            qrScanner.toggleTorch(on: false)
-            isTorchOn = false
-            
-        } else {
-            
-            qrScanner.toggleTorch(on: true)
-            isTorchOn = true
-            
-        }
-        
-    }
-    
-    func addBlurView(frame: CGRect, button: UIButton) {
-        
-        button.removeFromSuperview()
-        let blur = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
-        blur.frame = frame
-        blur.clipsToBounds = true
-        blur.layer.cornerRadius = frame.width / 2
-        blur.contentView.addSubview(button)
-        self.imageView.addSubview(blur)
-        
-    }
-    
-    func getQRCode() {
-        
-        back()
-        let stringURL = qrScanner.stringToReturn
-        textView.text = stringURL
-        
-    }
-    
-    func didPickImage() {
-        
-        back()
-        let qrString = qrScanner.qrString
-        textView.text = qrString
         
     }
     
@@ -913,35 +625,35 @@ class ProcessPSBTViewController: UIViewController {
         
     }
     
-//    func addTXChainLink(psbt: String) {
-//
-//        let txChain = TXChain()
-//        txChain.tx = psbt
-//
-//        func getResult() {
-//
-//            if !txChain.errorBool {
-//
-//                creatingView.removeConnectingView()
-//
-//                let chain = txChain.chainToReturn
-//                displayRaw(raw: chain, title: "TXChain")
-//
-//                displayAlert(viewController: self,
-//                             isError: false,
-//                             message: "Link added to the TXChain!")
-//
-//            } else {
-//
-//                creatingView.removeConnectingView()
-//                showAlert(vc: self, title: "Error", message: txChain.errorDescription)
-//
-//            }
-//
-//        }
-//
-//        txChain.addALink(completion: getResult)
-//
-//    }
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        switch segue.identifier {
+            
+        case "segueToBroadcasterFromTools":
+            if let vc = segue.destination as? SignerViewController {
+                if psbt != "" {
+                    vc.psbt = psbt
+                    vc.export = true
+                } else if signedTx != "" {
+                    vc.txn = signedTx
+                    vc.broadcast = true
+                }
+            }
+            
+        case "segueFromToolstoScan":
+            if let vc = segue.destination as? QRScannerViewController {
+                vc.onAddressDoneBlock = { text in
+                    if text != nil {
+                        DispatchQueue.main.async { [unowned thisVc = self] in
+                            thisVc.textView.text = text!
+                        }
+                    }
+                }
+            }
+            
+        default:
+            break
+            
+        }
+    }
 
 }

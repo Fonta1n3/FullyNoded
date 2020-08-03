@@ -11,27 +11,14 @@ import UIKit
 class UnsignedViewController: UIViewController, UITextFieldDelegate {
     
     let addressParser = AddressParser()
-    let qrScanner = QRScanner()
-    let qrGenerator = QRGenerator()
-    let rawDisplayer = RawDisplayer()
     let creatingView = ConnectingView()
     let createUnsigned = CreateUnsigned()
-    
-    var isFirstTime = Bool()
-    var isTorchOn = Bool()
-    var blurArray = [UIVisualEffectView]()
-    
-    var tapQRGesture = UITapGestureRecognizer()
-    var tapTextViewGesture = UITapGestureRecognizer()
-    var scannerShowing = false
     var unsignedTx = ""
     var amount = Double()
     var isSpendingFrom = Bool()
     var isReceiving = Bool()
     var isChange = Bool()
     
-    let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
-
     @IBOutlet var changeField: UITextField!
     @IBOutlet var amountField: UITextField!
     @IBOutlet var spendingField: UITextField!
@@ -83,8 +70,7 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
         
         if receivingField.text != "" && amountField.text != "" && changeField.text != "" && spendingField.text != ""{
             
-            self.creatingView.addConnectingView(vc: self,
-                                                description: "Creating Unsigned")
+            self.creatingView.addConnectingView(vc: self, description: "creating unsigned...")
             
             createUnsigned.amount = Double(amountField.text!)!
             createUnsigned.changeAddress = changeField.text!
@@ -145,16 +131,10 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
         receivingField.delegate = self
         spendingField.delegate = self
 
-        let tapGesture = UITapGestureRecognizer(target: self,
-                                                action: #selector(self.dismissKeyboard (_:)))
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
-        
-        imageView.alpha = 0
-        imageView.backgroundColor = UIColor.black
-        
-        configureScanner()
         
     }
     
@@ -171,12 +151,6 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    func rounded(number: Double) -> Double {
-        
-        return Double(round(100000000*number)/100000000)
-        
-    }
-    
     func removeSpinner() {
         
         DispatchQueue.main.async {
@@ -189,151 +163,11 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
     
     // MARK: QR SCANNER METHODS
     
-    func scanNow() {
+    private func scanNow() {
         print("scanNow")
-        
-        scannerShowing = true
-        hideKeyboards()
-        
-        if isFirstTime {
-            
-            DispatchQueue.main.async {
-                    
-                self.qrScanner.scanQRCode()
-                self.addScannerButtons()
-                self.imageView.addSubview(self.qrScanner.closeButton)
-                self.isFirstTime = false
-                    
-                UIView.animate(withDuration: 0.3, animations: {
-                        
-                    self.imageView.alpha = 1
-                        
-                })
-                    
-            }
-            
-        } else {
-            
-            self.qrScanner.startScanner()
-            self.addScannerButtons()
-            
-            DispatchQueue.main.async {
-                
-                UIView.animate(withDuration: 0.3, animations: {
-                    
-                    self.imageView.alpha = 1
-                    
-                })
-                
-            }
-            
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "segueToScannerFromUnsigned", sender: vc)
         }
-        
-    }
-    
-    func configureScanner() {
-        
-        isFirstTime = true
-        
-        imageView.alpha = 0
-        imageView.frame = view.frame
-        imageView.isUserInteractionEnabled = true
-        
-        qrScanner.uploadButton.addTarget(self, action: #selector(chooseQRCodeFromLibrary),
-                                         for: .touchUpInside)
-        
-        qrScanner.keepRunning = false
-        qrScanner.vc = self
-        qrScanner.imageView = imageView
-        qrScanner.textField.alpha = 0
-        
-        qrScanner.completion = { self.getQRCode() }
-        qrScanner.didChooseImage = { self.didPickImage() }
-        qrScanner.downSwipeAction = { self.back() }
-        
-        qrScanner.uploadButton.addTarget(self,
-                                         action: #selector(self.chooseQRCodeFromLibrary),
-                                         for: .touchUpInside)
-        
-        qrScanner.torchButton.addTarget(self,
-                                        action: #selector(toggleTorch),
-                                        for: .touchUpInside)
-        
-        isTorchOn = false
-        
-        
-        qrScanner.closeButton.addTarget(self,
-                                        action: #selector(back),
-                                        for: .touchUpInside)
-        
-    }
-    
-    func addScannerButtons() {
-        
-        self.addBlurView(frame: CGRect(x: self.imageView.frame.maxX - 80,
-                                       y: self.imageView.frame.maxY - 80,
-                                       width: 70,
-                                       height: 70), button: self.qrScanner.uploadButton)
-        
-        self.addBlurView(frame: CGRect(x: 10,
-                                       y: self.imageView.frame.maxY - 80,
-                                       width: 70,
-                                       height: 70), button: self.qrScanner.torchButton)
-        
-    }
-    
-    @objc func back() {
-        print("back")
-        
-        DispatchQueue.main.async {
-            
-            self.imageView.alpha = 0
-            self.scannerShowing = false
-            
-        }
-        
-    }
-    
-    @objc func toggleTorch() {
-        
-        if isTorchOn {
-            
-            qrScanner.toggleTorch(on: false)
-            isTorchOn = false
-            
-        } else {
-            
-            qrScanner.toggleTorch(on: true)
-            isTorchOn = true
-            
-        }
-        
-    }
-    
-    func addBlurView(frame: CGRect, button: UIButton) {
-        
-        button.removeFromSuperview()
-        let blur = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
-        blur.frame = frame
-        blur.clipsToBounds = true
-        blur.layer.cornerRadius = frame.width / 2
-        blur.contentView.addSubview(button)
-        self.imageView.addSubview(blur)
-        
-    }
-    
-    func getQRCode() {
-        
-        let stringURL = qrScanner.stringToReturn
-        parseAddress(address: stringURL)
-        
-    }
-    
-    func didPickImage() {
-        
-        let qrString = qrScanner.qrString
-        parseAddress(address: qrString)
-        
     }
     
     func parseAddress(address: String) {
@@ -349,7 +183,7 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
                 
                 DispatchQueue.main.async {
                     
-                    self.back()
+                    //self.back()
                     self.spendingField.text = address
                     print("update spending")
                     
@@ -361,9 +195,7 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
                 
                 DispatchQueue.main.async {
                     
-                    self.back()
                     self.receivingField.text = address
-                    print("update receiving")
                     
                 }
                 
@@ -373,9 +205,7 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
                 
                 DispatchQueue.main.async {
                     
-                    self.back()
                     self.changeField.text = address
-                    print("update change")
                     
                 }
                 
@@ -391,116 +221,10 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    @objc func chooseQRCodeFromLibrary() {
-        
-        qrScanner.chooseQRCodeFromLibrary()
-        
-    }
-    
-    @objc func close() {
-        
-        DispatchQueue.main.async {
-            
-            self.dismiss(animated: true, completion: nil)
-            
-        }
-        
-    }
-    
-    @objc func shareRawText(_ sender: UITapGestureRecognizer) {
-        
-        DispatchQueue.main.async {
-            
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                self.rawDisplayer.textView.alpha = 0
-                
-            }) { _ in
-                
-                UIView.animate(withDuration: 0.2, animations: {
-                    
-                    self.rawDisplayer.textView.alpha = 1
-                    
-                })
-                
-            }
-            
-            let textToShare = [self.unsignedTx]
-            
-            let activityViewController = UIActivityViewController(activityItems: textToShare,
-                                                                  applicationActivities: nil)
-            
-            activityViewController.popoverPresentationController?.sourceView = self.view
-            self.present(activityViewController, animated: true) {}
-        }
-        
-    }
-    
-    @objc func shareQRCode(_ sender: UITapGestureRecognizer) {
-        print("shareQRCode")
-        
-        DispatchQueue.main.async {
-            
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                self.rawDisplayer.qrView.alpha = 0
-                
-            }) { _ in
-                
-                UIView.animate(withDuration: 0.2, animations: {
-                    
-                    self.rawDisplayer.qrView.alpha = 1
-                    
-                })
-                
-            }
-            
-            self.qrGenerator.textInput = self.unsignedTx
-            let qrImage = self.qrGenerator.getQRCode()
-            let objectsToShare = [qrImage]
-            
-            let activityController = UIActivityViewController(activityItems: objectsToShare,
-                                                              applicationActivities: nil)
-            
-            activityController.completionWithItemsHandler = { (type,completed,items,error) in }
-            activityController.popoverPresentationController?.sourceView = self.view
-            self.present(activityController, animated: true) {}
-            
-        }
-        
-    }
-    
     func displayRaw(raw: String) {
-        
-        DispatchQueue.main.async {
-            
-            self.navigationController?.navigationBar.topItem?.title = "Unsigned Tx"
-            self.rawDisplayer.rawString = raw
-            self.unsignedTx = raw
-            self.rawDisplayer.vc = self
-            
-            self.tapQRGesture = UITapGestureRecognizer(target: self,
-                                                       action: #selector(self.shareQRCode(_:)))
-            
-            self.rawDisplayer.qrView.addGestureRecognizer(self.tapQRGesture)
-            
-            self.tapTextViewGesture = UITapGestureRecognizer(target: self,
-                                                        action: #selector(self.shareRawText(_:)))
-            
-            self.rawDisplayer.textView.addGestureRecognizer(self.tapTextViewGesture)
-            
-            self.qrScanner.removeFromSuperview()
-            self.imageView.removeFromSuperview()
-            
-            let backView = UIView()
-            backView.frame = self.view.frame
-            backView.backgroundColor = self.view.backgroundColor
-            self.view.addSubview(backView)
-            self.creatingView.removeConnectingView()
-            self.rawDisplayer.addRawDisplay()
-            
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "segueToExporterFromUnsigned", sender: vc)
         }
-        
     }
     
     // MARK: TEXTFIELD METHODS
@@ -606,10 +330,6 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
                 
             }
             
-        } else {
-            
-            //shakeAlert(viewToShake: textField)
-            
         }
         
     }
@@ -639,6 +359,23 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
             
         }
         
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "segueToScannerFromUnsigned" {
+            if let vc = segue.destination as? QRScannerViewController {
+                vc.isScanningAddress = true
+                vc.onAddressDoneBlock = { text in
+                    if text != nil {
+                        self.parseAddress(address: text!)
+                    }
+                }
+            }
+        } else if segue.identifier == "segueToExporterFromUnsigned" {
+            if let vc = segue.destination as? SignerViewController {
+                vc.txnUnsigned = self.unsignedTx
+            }
+        }
     }
 
 }

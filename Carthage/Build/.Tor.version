@@ -2,7 +2,7 @@
   "Mac" : [
     {
       "name" : "Tor",
-      "hash" : "0a0e080a5b355c16c81f4d87f12f0cb8cd40de21745e4dc5ea4e6e84dcba0002",
+      "hash" : "32a058e8668aa222974ee34864acf31232bfaaaa60332258517ca9bff7862b75",
       "linking" : "dynamic"
     }
   ],
@@ -12,11 +12,11 @@
   "tvOS" : [
 
   ],
-  "commitish" : "403.5.1",
+  "commitish" : "403.6.1",
   "iOS" : [
     {
       "name" : "Tor",
-      "hash" : "73a087595ec6e6b56eb7f1bf4eee244e09188d67ed9951a8090d468d22f1e2c3",
+      "hash" : "45044f60041eef2f61986c02a0357983970df4584b3d923f265a6fd158bac3a9",
       "linking" : "dynamic"
     }
   ]
