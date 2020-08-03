@@ -383,21 +383,23 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "utxoCell", for: indexPath)
+        cell.clipsToBounds = true
+        cell.layer.cornerRadius = 8
+        cell.layer.borderColor = UIColor.lightGray.cgColor
+        cell.layer.borderWidth = 0.5
         
         if utxoArray.count > 0 {
             
             let dict = utxoArray[indexPath.section] as! NSDictionary
             let address = cell.viewWithTag(1) as! UILabel
-            let txId = cell.viewWithTag(2) as! UILabel
+            let txid = cell.viewWithTag(2) as! UILabel
             let amount = cell.viewWithTag(4) as! UILabel
             let vout = cell.viewWithTag(6) as! UILabel
             let solvable = cell.viewWithTag(7) as! UILabel
             let confs = cell.viewWithTag(8) as! UILabel
-            let safe = cell.viewWithTag(9) as! UILabel
             let spendable = cell.viewWithTag(10) as! UILabel
             let checkMark = cell.viewWithTag(13) as! UIImageView
             let label = cell.viewWithTag(11) as! UILabel
-            txId.adjustsFontSizeToFitWidth = true
             
             if !(selectedArray[indexPath.section]) {
                 
@@ -417,13 +419,12 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                 
                 switch keyString {
                     
+                case "txid":
+                    txid.text = "\(value)"
+                    
                 case "address":
                     
                     address.text = "\(value)"
-                    
-                case "txid":
-                    
-                    txId.text = "txid: \(value)"
                     
                 case "amount":
                     
@@ -462,21 +463,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                     
                     confs.text = "\(value) confs"
                     
-                case "safe":
-                    
-                    if (value as! Int) == 1 {
-                        
-                        safe.text = "Safe"
-                        safe.textColor = UIColor.green
-                        
-                    } else if (value as! Int) == 0 {
-                        
-                        safe.text = "Not Safe"
-                        safe.textColor = UIColor.red
-                        
-                    }
-                    
-                case "spendable":
+               case "spendable":
                     
                     if (value as! Int) == 1 {
                         

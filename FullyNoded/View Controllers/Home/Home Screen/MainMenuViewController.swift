@@ -469,122 +469,139 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         switch indexPath.section {
         case 0:
-            command = "getblockchaininfo"
-            detailHeaderText = "Verification progress"
-            if blockchainInfo.progress == "Fully verified" {
-                detailImageTint = .systemGreen
-                detailImage = UIImage(systemName: "checkmark.seal")!
-            } else {
-                detailImageTint = .systemRed
-                detailImage = UIImage(systemName: "exclamationmark.triangle")!
+            if blockchainInfo != nil {
+                command = "getblockchaininfo"
+                detailHeaderText = "Verification progress"
+                if blockchainInfo.progress == "Fully verified" {
+                    detailImageTint = .systemGreen
+                    detailImage = UIImage(systemName: "checkmark.seal")!
+                } else {
+                    detailImageTint = .systemRed
+                    detailImage = UIImage(systemName: "exclamationmark.triangle")!
+                }
+                detailSubheaderText = "\(blockchainInfo.actualProgress * 100)%"
+                detailTextDescription = """
+                Don't trust, verify!
+                
+                Simply put the "verification progress" field lets you know what percentage of the blockchain's transactions have been verified by your node. The value your node returns is a decimal number between 0.0 and 1.0. 1 meaning your node has verified 100% of the transactions on the blockchain. As new transactions and blocks are always being added to the blockchain your node is constantly catching up and this field will generally be a number such as "0.99999974646", never quite reaching 1 (although it is possible). Fully Noded checks if this number is greater than 0.99 (e.g. 0.999) and if it is we consider your node's copy of the blockchain to be "Fully Verified".
+                
+                Fully Noded makes the bitcoin-cli getblockchaininfo call to your node in order to get the "verification progress" of your node. Your node is always verifying each transaction that is broadcast onto the Bitcoin network. This is the fundamental reason to run your own node. If you use someone elses node you are trusting them to verify your utxo's which defeats the purpose of Bitcoin in the first place. Bitcoin was invented to disintermediate 3rd parties, removing trust from the foundation of our financial system, reintroducing that trust defeats Bitcoin's purpose. This is why it is so important to run your own node.
+                
+                During the initial block download your node proccesses each transaction starting from the genesis block, ensuring all the inputs and outputs of each transaction balance out with future transactions, this is possible because all transactions can be traced back to their coinbase transaction (also known as a "block reward"). This is true whether your node is pruned or not. In this way your node verifies all new transactions are valid, preventing double spending or inflation of the Bitcoin supply. You can think of it as preventing the counterfeiting of bitcoins as it would be impossible for an attacker to fake historic transactions in order to make the new one appear valid.
+                """
+                segueToShowDetail()
             }
-            detailSubheaderText = "\(blockchainInfo.actualProgress * 100)%"
-            detailTextDescription = """
-            Don't trust, verify!
             
-            Simply put the "verification progress" field lets you know what percentage of the blockchain's transactions have been verified by your node. The value your node returns is a decimal number between 0.0 and 1.0. 1 meaning your node has verified 100% of the transactions on the blockchain. As new transactions and blocks are always being added to the blockchain your node is constantly catching up and this field will generally be a number such as "0.99999974646", never quite reaching 1 (although it is possible). Fully Noded checks if this number is greater than 0.99 (e.g. 0.999) and if it is we consider your node's copy of the blockchain to be "Fully Verified".
-            
-            Fully Noded makes the bitcoin-cli getblockchaininfo call to your node in order to get the "verification progress" of your node. Your node is always verifying each transaction that is broadcast onto the Bitcoin network. This is the fundamental reason to run your own node. If you use someone elses node you are trusting them to verify your utxo's which defeats the purpose of Bitcoin in the first place. Bitcoin was invented to disintermediate 3rd parties, removing trust from the foundation of our financial system, reintroducing that trust defeats Bitcoin's purpose. This is why it is so important to run your own node.
-            
-            During the initial block download your node proccesses each transaction starting from the genesis block, ensuring all the inputs and outputs of each transaction balance out with future transactions, this is possible because all transactions can be traced back to their coinbase transaction (also known as a "block reward"). This is true whether your node is pruned or not. In this way your node verifies all new transactions are valid, preventing double spending or inflation of the Bitcoin supply. You can think of it as preventing the counterfeiting of bitcoins as it would be impossible for an attacker to fake historic transactions in order to make the new one appear valid.
-            """
-            segueToShowDetail()
         case 1:
-            command = "gettxoutsetinfo"
-            detailHeaderText = "Total Supply"
-            detailSubheaderText = "Use your own node to verify total supply"
-            detailImage = UIImage(systemName: "bitcoinsign.circle")!
-            detailImageTint = .systemYellow
-            detailTextDescription = """
-            Fully Noded uses the bitcoin-cli gettxoutsetinfo command to determine the total amount of mined Bitcoins. This command can take considerable time to load, usually around 30 seconds so please be patient while it loads.
-            
-            With this command you can at anytime verify all the Bitcoins that have ever been issued without using any third parties at all.
-            """
-            segueToShowDetail()
+            if feeInfo != nil {
+                command = "gettxoutsetinfo"
+                detailHeaderText = "Total Supply"
+                detailSubheaderText = "Use your own node to verify total supply"
+                detailImage = UIImage(systemName: "bitcoinsign.circle")!
+                detailImageTint = .systemYellow
+                detailTextDescription = """
+                Fully Noded uses the bitcoin-cli gettxoutsetinfo command to determine the total amount of mined Bitcoins. This command can take considerable time to load, usually around 30 seconds so please be patient while it loads.
+                
+                With this command you can at anytime verify all the Bitcoins that have ever been issued without using any third parties at all.
+                """
+                segueToShowDetail()
+            }
             
         case 2:
-            command = "getnetworkinfo"
-            detailHeaderText = "Node version"
-            detailImageTint = .systemBlue
-            detailImage = UIImage(systemName: "v.circle")!
-            detailSubheaderText = "Bitcoin Core v\(networkInfo.version)"
-            detailTextDescription = """
-            The current version number of your node's software.
+            if networkInfo != nil {
+                command = "getnetworkinfo"
+                detailHeaderText = "Node version"
+                detailImageTint = .systemBlue
+                detailImage = UIImage(systemName: "v.circle")!
+                detailSubheaderText = "Bitcoin Core v\(networkInfo.version)"
+                detailTextDescription = """
+                The current version number of your node's software.
+                
+                Fully Noded makes the bitcoin-cli getnetworkinfo command to your node in order to obtain information about your node's connection to the Bitcoin peer to peer network. The command returns your node's current version number along with other info regarding your connections. To get the version number Fully Noded looks specifically at the "subversion" field.
+                
+                See the list of releases for each version along with detailed release notes.
+                """
+                segueToShowDetail()
+            }
             
-            Fully Noded makes the bitcoin-cli getnetworkinfo command to your node in order to obtain information about your node's connection to the Bitcoin peer to peer network. The command returns your node's current version number along with other info regarding your connections. To get the version number Fully Noded looks specifically at the "subversion" field.
-            
-            See the list of releases for each version along with detailed release notes.
-            """
-            segueToShowDetail()
         case 3:
             //"Blockchain network"
-            command = "getblockchaininfo"
-            detailHeaderText = "Blockchain network"
-            detailSubheaderText = blockchainInfo.network
-            if blockchainInfo.network == "test chain" {
-                detailImageTint = .systemGreen
-            } else if blockchainInfo.network == "main chain" {
-                detailImageTint = .systemOrange
-            } else {
-                detailImageTint = .systemTeal
-            }
-            detailImage = UIImage(systemName: "link")!
-            detailTextDescription = """
-            Fully Noded makes the bitcoin-cli getblockchaininfo command to determine which network your node is running on. Your node can run three different chain's simultaneously; "main", "test" and "regtest". Fully Noded is capable of connecting to either one. To launch mutliple chains simultaneously you would want to run the "bitcoind" command with the "-chain=test", "-chain=regtest" arguments or omit the argument to run the main chain.
-            
-            It should be noted when running multiple chains simultaneously you can not specifiy the network in your bitcoin.conf file.
-            
-            The main chain is of course the real one, where real bitcoin can be spent and received.
-            
-            The test chain is called "testnet3" and is mostly for users who would like to test new functionality or get familiar with how bitcoin really works before commiting real funds. Its also usefull for developers and stress testing.
-            
-            The regtest chain is for developers who want to create their own personal blockchain, it is incredibly handy for developing bitcoin software as no internet is required and you can mine your own test bitcoins instantly. You may even setup multiple nodes and simulate specific kinds of network conditions.
-            
-            Fully Noded talks to each node via a port. Generally mainnet uses the default port 8332, testnet 18332 and regtest 18443. However because Fully Noded works over Tor we actually use what are called virtual ports under the hood. The rpcports as just mentioned are only ever exposed to your nodes localhost meaning they are only accessible remotely via a Tor hidden service.
-            """
-            segueToShowDetail()
-        case 4:
-            //"Peer connections"
-            command = "getpeerinfo"
-            detailHeaderText = "Peer connections"
-            detailSubheaderText = "\(peerInfo.outgoingCount) outgoing / \(peerInfo.incomingCount) incoming"
-            detailImage = UIImage(systemName: "person.3")!
-            detailImageTint = .systemIndigo
-            detailTextDescription = """
-            Fully Noded makes the bitcoin-cli getpeerinfo command to your node in order to find out how many peers you are connected to.
-                        
-            You can have a number of incoming and outgoing peers, these are other nodes which your node is connected to over the peer to peer network (p2p). In order to receive incoming connections you can either forward port 8333 from your router or (more easily) use bitcoin core's built in functionality to create a hidden service using Tor to get incoming connections on, that way you can get incoming connections but do not need to forward a port.
-            
-            The p2p network is where your node receives all the information it needs about historic transactions when carrying out its initial block download and verification as well as all newly broadcast transactions.
-            
-            All new potential transactions are broadcast to the p2p network and whenever a peer learns of a new transaction it immedietly validates it and lets all of its peers know about the transaction, this is how bitcoin transactions propogate across the network. This way all nodes can stay up to date on the latest blocks/transactions.
-            
-            Check out this link for a deeper dive into the Bitcoin p2p network.
-            """
-            segueToShowDetail()
-        case 5:
-            //"Blockchain state"
-            command = "getblockchaininfo"
-            detailHeaderText = "Blockchain state"
-            if blockchainInfo.pruned {
-                detailSubheaderText = "Pruned"
-                detailImage = UIImage(systemName: "rectangle.compress.vertical")!
+            if blockchainInfo != nil {
+                command = "getblockchaininfo"
+                detailHeaderText = "Blockchain network"
+                detailSubheaderText = blockchainInfo.network
+                if blockchainInfo.network == "test chain" {
+                    detailImageTint = .systemGreen
+                } else if blockchainInfo.network == "main chain" {
+                    detailImageTint = .systemOrange
+                } else {
+                    detailImageTint = .systemTeal
+                }
+                detailImage = UIImage(systemName: "link")!
+                detailTextDescription = """
+                Fully Noded makes the bitcoin-cli getblockchaininfo command to determine which network your node is running on. Your node can run three different chain's simultaneously; "main", "test" and "regtest". Fully Noded is capable of connecting to either one. To launch mutliple chains simultaneously you would want to run the "bitcoind" command with the "-chain=test", "-chain=regtest" arguments or omit the argument to run the main chain.
                 
-            } else if !blockchainInfo.pruned {
-                detailSubheaderText = "Not pruned"
-                detailImage = UIImage(systemName: "rectangle.expand.vertical")!
+                It should be noted when running multiple chains simultaneously you can not specifiy the network in your bitcoin.conf file.
+                
+                The main chain is of course the real one, where real bitcoin can be spent and received.
+                
+                The test chain is called "testnet3" and is mostly for users who would like to test new functionality or get familiar with how bitcoin really works before commiting real funds. Its also usefull for developers and stress testing.
+                
+                The regtest chain is for developers who want to create their own personal blockchain, it is incredibly handy for developing bitcoin software as no internet is required and you can mine your own test bitcoins instantly. You may even setup multiple nodes and simulate specific kinds of network conditions.
+                
+                Fully Noded talks to each node via a port. Generally mainnet uses the default port 8332, testnet 18332 and regtest 18443. However because Fully Noded works over Tor we actually use what are called virtual ports under the hood. The rpcports as just mentioned are only ever exposed to your nodes localhost meaning they are only accessible remotely via a Tor hidden service.
+                """
+                segueToShowDetail()
             }
-            detailImageTint = .systemPurple
-            detailTextDescription = """
-            Fully Noded makes the bitcoin-cli getblockchaininfo command to determine the blockchain's state. When configuring your node you can set "prune=1" or specifiy a size in mebibytes to prune the blockchain to.
             
-            In this way you can avoid having to keep an entire copy of the blockchain on your computer, the minimum size is 550 mebibytes and the full current size is around 320gb.
+        case 4:
+            if peerInfo != nil {
+                //"Peer connections"
+                command = "getpeerinfo"
+                detailHeaderText = "Peer connections"
+                detailSubheaderText = "\(peerInfo.outgoingCount) outgoing / \(peerInfo.incomingCount) incoming"
+                detailImage = UIImage(systemName: "person.3")!
+                detailImageTint = .systemIndigo
+                detailTextDescription = """
+                Fully Noded makes the bitcoin-cli getpeerinfo command to your node in order to find out how many peers you are connected to.
+                            
+                You can have a number of incoming and outgoing peers, these are other nodes which your node is connected to over the peer to peer network (p2p). In order to receive incoming connections you can either forward port 8333 from your router or (more easily) use bitcoin core's built in functionality to create a hidden service using Tor to get incoming connections on, that way you can get incoming connections but do not need to forward a port.
+                
+                The p2p network is where your node receives all the information it needs about historic transactions when carrying out its initial block download and verification as well as all newly broadcast transactions.
+                
+                All new potential transactions are broadcast to the p2p network and whenever a peer learns of a new transaction it immedietly validates it and lets all of its peers know about the transaction, this is how bitcoin transactions propogate across the network. This way all nodes can stay up to date on the latest blocks/transactions.
+                
+                Check out this link for a deeper dive into the Bitcoin p2p network.
+                """
+                segueToShowDetail()
+            }
             
-            Pruned nodes still verify and validate every single transaction so no trust is needed to prune your node, however you can lose some convenient functionality like restoring old wallets that you may want to migrate to your new node.
+        case 5:
+            if blockchainInfo != nil {
+                //"Blockchain state"
+                command = "getblockchaininfo"
+                detailHeaderText = "Blockchain state"
+                if blockchainInfo.pruned {
+                    detailSubheaderText = "Pruned"
+                    detailImage = UIImage(systemName: "rectangle.compress.vertical")!
+                    
+                } else if !blockchainInfo.pruned {
+                    detailSubheaderText = "Not pruned"
+                    detailImage = UIImage(systemName: "rectangle.expand.vertical")!
+                }
+                detailImageTint = .systemPurple
+                detailTextDescription = """
+                Fully Noded makes the bitcoin-cli getblockchaininfo command to determine the blockchain's state. When configuring your node you can set "prune=1" or specifiy a size in mebibytes to prune the blockchain to.
+                
+                In this way you can avoid having to keep an entire copy of the blockchain on your computer, the minimum size is 550 mebibytes and the full current size is around 320gb.
+                
+                Pruned nodes still verify and validate every single transaction so no trust is needed to prune your node, however you can lose some convenient functionality like restoring old wallets that you may want to migrate to your new node.
+                
+                Once your initial block download and verification completes you can not "rescan" the blockchain past your prune height which is the block at which have pruned from.
+                """
+                segueToShowDetail()
+            }
             
-            Once your initial block download and verification completes you can not "rescan" the blockchain past your prune height which is the block at which have pruned from.
-            """
-            segueToShowDetail()
 //        case 5:
 //            //"Mining hashrate"
 //            segueToShowDetail()
@@ -724,11 +741,23 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.feeInfo = FeeInfo(dictionary: response!)
                     vc.mainMenu.reloadSections(IndexSet(arrayLiteral: 11, 1), with: .fade)
+                    vc.tryLightning()
                     vc.removeLoader()
                 }
             } else {
                 vc.removeLoader()
                 displayAlert(viewController: self, isError: true, message: errorMessage!)
+            }
+        }
+    }
+    
+    private func tryLightning() {
+        let rpc = LightningRPC.sharedInstance
+        rpc.command(method: "getinfo", param: "") { (response, errorDesc) in
+            if let dict = response as? NSDictionary {
+                print("dict: \(dict)")
+            } else {
+                print("errorDesc: \(errorDesc)")
             }
         }
     }
