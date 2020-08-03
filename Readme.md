@@ -20,7 +20,7 @@ A feature rich Bitcoin app which is 100% powered by your own Full Node. Allows y
 
 ## Connect BTCPayServer
 - In BTCPay go to `Server Settings` > `Services` > click on `Full Node RPC`
-<img src="./Images/btcpay.png" alt="" width="250"/>
+<img src="./Images/btcpay.png" alt="" width="500"/>
 
 - In Fully Noded go to `Settings` > `Node Manager` > `+` > `Scan Quick Connect QR`
 - Once you have scanned the QR the app will automatically connect and start loading the home screen, to ensure its working go home and see the table load. To troubleshoot any connection issue reboot your BTCPayServer and force quit and reopen Fully Noded.
