@@ -59,9 +59,14 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 - Tor:Tor is free and open-source software for enabling anonymous communication. The name derived from the acronym for the original software project name "The Onion Router". [Read more in Wikipedia](https://en.wikipedia.org/wiki/Tor_(anonymity_network))
 - Node: A bitcoin full Node is a independent entity in a peer to peer ecosystem. A Node independently checks and verifies all protocol rules for incoming broadcasted transactions. A full node does not trust, but verifies. Technically speaking a *node* is a computer connected to other computers which follows rules and shares information. A *'full node'* is a computer in Bitcoin's peer-to-peer network which hosts and synchronises a copy of the entire Bitcoin blockchain. [Here](https://medium.com/@gloriazhao/map-of-the-bitcoin-network-c6f2619a76f3) is an excellent read on nodes, what they are and the differences between types of nodes.
 - Standup app: is a personal one-click Mac OS installer for Bitcoin Core and Tor that will present a QuickConnect QR code that can be used to pair mobile wallets for remote use over Tor V3. [Read more](https://github.com/BlockchainCommons/GordianSystem)
-- Datadir: TBW
-- bitcoin.conf: TBW 
-- initial block download (IBD): TBW
+- Datadir: The data directory is the location where Bitcoin's data files are stored, including the wallet data file.
+- bitcoin.conf: The bitcoin configuration file is a list of 'setting=value' pairs, one per line, with optional comments starting with the '#' character. 
+- initial block download (IBD): The Bitcoin Core initial block download code makes sure that the block headers you are downloading (from a single peer) passes certain, hard-coded "checkpoints.
+- Nodl: A hardware box with to run a non-preloaded bitcoin node on it, [commercial site](https://www.nodl.it/). 
+- RPC: Remote Procedure Calls
+- bitcoind: Bitcoin Deamon, background process running a bitcoin node. Bitcoind is a program that implements the Bitcoin protocol for remote procedure call (RPC) use. It is also the second Bitcoin client in the network's history. It is available under the MIT license in 32-bit and 64-bit versions for Windows, GNU/Linux-based OSes, and Mac OS X. [Read more](https://en.bitcoin.it/wiki/Bitcoind)
+- SSH: Secure Shell (SSH) is a cryptographic network protocol for operating network services securely over an unsecured network.[1] Typical applications include remote command-line, login, and remote command execution, but any network service can be secured with SSH.
+- Nano : famous text GUI editor to start from commandline, not to be confused with Ledger Nano S/X, which is a cold storage.
 
 ## Knowledge you should be confidently applying
 - The definitions above
@@ -85,6 +90,8 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 5. [Export](#Export)
 6. [Wallets](#Wallets)
 7. [Connection](#Connection)
+8. [Transactions](#Transactions)
+9. [Node](#Node)
 
 # Q&A
 
@@ -124,8 +131,83 @@ Just use the one you’ve got in the Fully Noded wallets, Delete the other one f
 #### Further elaboration on the answer
 TBW<br/>
 
+#### Question : Why is camera always active in the wallet?
+<img src="https://i.ibb.co/s2WSdn5/camera-active-wallet.jpg" alt="camera-active-wallet" border="0" width="200"><br/>
+should only be active when you are scanning a QR code...<br/>
+when you swipe down or close the QR scanner it dismisses all camera related code<br/>
+For now, i guess if you do not want it to use the camera just disable that in the devices settings<br/>
+I will look into it, give it more though and see what I can do<br/>
+If the camera is dismissed and not being used, it makes no sense that the light would stay on.
+
+Update: Think it should be fixed now, please try again when next update goes live.<br/>
+
+#### Question : Why might the app be crashing for me?
+
+MD: What is your node setup like? And what is the last thing you are doing before it crashes?
+
+Matt Hill: Please make sure you are running `Bitcoin 0.20.0` on the `Embassy`. And that you have the "wallet" feature in your config file enabled.
+
+Fonta1n3: Looks like you never actually connected? If your connection is successful you’ll see the home screen look like this:<br/>
+<img src="https://i.ibb.co/HrsmwBd/opening-screen.jpg" alt="opening-screen" border="0" width="200">
+
+Occasionally you’ll get a crash if you race around the app not allowing things to finish loading or if you put it into background before `tor` connects and back into foreground very quickly and vice versa. Important to let things load and go slow. Other then that there really should not be crashes, only way i can troubleshoot that is release on Testflight again and ask that you share the crash report.
+For starters ensure you are connected to your node, can you confirm it successfully connects? Actually connecting is only successful when the home screen has loaded.
+
+**Problemsolving**
+1. Are you absolutely sure the rpc password and username and onion are 100% correct? rpcpassword that's in your `bitcoin.conf`.
+2. Have you tried rebooting the node?
+3. Are there any special characters in the RPC password? Only alphanumeric is allowed but the app should warn you about that. Make sure your rpc credentials do not have any special characters
+4. Generally rebooting Tor on the node would solve this issue if everything else is correct.
+5. is there any possibility your isp is blocking `tor` (On your phone)?
+
+#### Question : Is airdropping a requirement? 
+*I dont have a mac but i have saved the file on my iphone. is there a way to tell fully noded about that file?*
+
+Airdrop is not a must. You can save the files in `iphone` using the native file application.
+
+#### Question : How to export your single sig wallet from Coldcard to Fully Noded using your own node?
+
+See this instruction of 33 secs [here](https://www.youtube.com/watch?v=W0vwgzIrPoY). This is super cool, super easy. <br/>
+Video is obviously edited, the spinner will take longer then that, just wait a bit
+
+#### Question : I experience crashes, and I want it fixed. How?
+
+I will be be keeping the testflight up to date for you [here](https://testflight.apple.com/join/a6GWxet2), so that they can be shared and investigated.
+
+**For sure tor will crash occasionally.** If you *race around the app* and put it into foreground and background quickly, actually a guaranteed way to make the app crash is quickly backgroundning it and quickly foregrounding it as `Tor` needs about 10 seconds to bootstrap and if it is does not complete that process before getting backgrounded `tor` will crash, just something to keep in mind. 
+
+Go slow, `tor` is not meant for speed. `Tor` does not stay alive in the background so every time the app does go (crash) there we have to force `tor` to quit, then when the app reappears it has to bootstrap tor again every time.
 
 ##Import
+
+#### Question : I got the zpub from electrum. I thought that if you use a bech32 wallet, you get a zpub not xpub?
+
+Fully Noded only takes `xpub` (from what i can tell you can not import `zpub` into bitcoin core)
+
+If you have the `xpub` just select `bip84` in settings and it will derive bip84 addresses (bc1). You can use an xpub to generate `bech32` addresses, electrum does things a bit differently...
+
+I think the reason electrum (and some wallets use zpub ypub etcc) is so the wallet knows which type of address to create, **at the end of the day what your are dealing with are private keys**, and there is only one type of private key, just different address types which are derived from the private key
+
+Unless you opted in to using `BIP39` in electrum, your electrum `xpub` will not work in Fully Noded for now. You can create a new wallet in electrum, opt in to BIP39 and then it should work.
+
+If you want to read about it from Peter Wuille [here](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md) it is (for what you can import into bitcoin core).
+
+I got a good answer from Andrew Chow [here](https://bitcoin.stackexchange.com/questions/89261/why-does-importmulti-not-support-zpub-and-ypub)
+
+#### Question : Why does importmulti not support zpub and ypub?
+
+As far as I can tell importmulti does not work with zpub/ypub.
+
+*Why not?*<br/>
+I prefer only to deal with xpubs, but I am curious. Basically zpub,ypub is not part of bitcoin but an add on for wallets
+
+Max: Lopp has a nice tool for switching an XPUB to a YPUB or ZUB and vice versa, [here](https://jlopp.github.io/xpub-converter/)
+
+#### Question : I am not sure, I forgot, So have I basically at some point imported a bunch of addresses?
+Your node(e.g. `nodl`) should see that too though.<br/>
+The best way to do it is create new wallets in the node<br/>
+In the app you go to utilities and create new wallet, and you import your `xpub` then. That way you can have multiple wallets that are dedicated for individual xpubs. <br/>
+
 
 #### Question : How to import my BRD wallet?
 
@@ -136,13 +218,54 @@ You can go to the “active wallet” tab > + button > recovery > input your BRD
 
 A `.txn` file is a signed raw transaction as exported by Coldcard. Fully Noded has registered the file extension `.txn` so that when you airdrop or tap a .txn file in the iOS Files app FN will automatically launch a `Broadcaster` allowing you to broadcast that transaction with your node. You can always copy and paste the raw transaction and go to `Tools` > `Transactions` > `Broadcast` to do it manually.
 
+#### Question : How are you transferring the txs from the Coldcard to the iPhone - microSD card reader?
+So on your coldcard you go to “dump wallet summary” in the sd card section<br/>
+And get either your bip44 or bip84 xpub<br/>
+Make a qr code with it or copy and paste it<br/>
+In Fully Noded you go to settings<br/>
+<img src="https://i.ibb.co/Yp1K1Qh/QR-settings.jpg" alt="QR-settings" border="0" width="200"><br/>
+Inout your master fingerprint and the correct settings, then scan the qr-code of the `xpub`, and it will import whatever range of addresses you specified<br/>
+You have to take the sd-card and put it into a computer and create the qr.
+#### Further question : what the added benifit of going through the iPhone?
+*It is just that if someone is signing a tx on their coldcard, then going to SD, they may as well broadcast from their computer rather than move it to their phone?*
+
+Once you've done this, you can build `PSBT` and unsigned transactions and receive to your hw wallet.<br/>
+My ideal setup is to have an airgapped laptop<br/>
+And that SD card only ever touches the coldard wallet and the airgapped laptop<br/>
+So its a true airgap.<br/>
+Then you create your qr codes on the airgapped laptop, and scan signed txs with the phone<br/>
+Build your unsigned transactions on your phone, and send them to airgapped laptop via QR code scanning.
+
 ## Export
 
 #### Question : Why doesn't broadcast work via my Node?
 
 You can only broadcast signed raw transactions. The only purpose of psbts is to end up with a signed raw transaction. e.g. The `.txn` file from Coldcard.
 
+#### Question : Hardware wallet support?
+<img src="https://i.ibb.co/F0R5Bvc/Hardware-wallets.jpg" alt="Hardware-wallets" border="0" width="200"><br/>
+
+They should all work with Fully Noded too. You can import your `xpub` directly into your node from your hardware wallets. I import my `coldcard` wallet xpub with Fully Noded, then build `PSBTs` with it.
+
 ## General
+
+#### Question : Why is there no version for Android yet?
+
+It is a budget issue. Android has bigger security issues. Tor is easier on Android.
+
+#### Further question : Why would Apple not make Tor easier?
+I wouldn’t say its Apple intentionally making it difficult. Its just the go to tor framework for iOS is not easy to get working. 
+
+I have `Tor` running fine and you can make normal url requests over `Tor` in the app. But when it comes to making url requests to onion sites (eg your nodes hidden service) it only works on simulator. I know its possible but I also know i am not the only one who has had this issue, very frustrating bc using your node as a backend via a hidden service is badass.
+
+Onion Browser has the solution, worst case scenario I can fork it and include the entire codebase in Fully Noded, but I want to try and find a proper solution before I do that.
+
+On android they have `orbot` and the path to getting tor working to onion sites for devs is easier.
+
+
+#### Question : What is your privacy policy and how to comply with GPDR?
+
+[Here](https://fonta1n3.github.io/privacy-policy/) is the privacy policy. It inherently complies with GDPR.
 
 #### Question : Why did you choose iOS to build on? Any advantage compared to Android?
 
@@ -192,11 +315,73 @@ If you airdrop FN gives a choice
 
 #### Question :  Does this imply that using my node is not private?
 
-<img src="https://i.ibb.co/7KF7h1p/use-my-node.jpg" alt="use-my-node" border="0" width="400"><br/>
+<img src="https://i.ibb.co/7KF7h1p/use-my-node.jpg" alt="use-my-node" border="0" width="200"><br/>
 *I think it should say third party service or use my own node. In fact this should be a setting that you opt in right?*<br/>
 Javier: I think that option is in case your node is not running Tor. If your bitcoind instance is not running over Tor each tx propagated is more likely to be desanonymized.   That’s the reason to choose propagate Esplora API. 
 
+#### Question : Do you have a lightning node? to send donations? The fees are currently high for a mainnet transaction.
+
+Nope, lightning not ideal for large transactions anyway. Joking joking :)
+I mean i can give you a lightning invoice if you’d like. I did get one set up with `electrum`
+
+##### Further question : About donations : how are the addresses generated?
+*does it fetch em? or are they hard coded in?*
+
+Random address generated from an `xpub`.
+
+
 ## Connection
+
+#### Could not connect to the server... What to do?
+TBW
+
+#### "The internet connection appears to be offline..."" but I am online, what to do?
+TBW
+
+#### Can I connect FN  to my node over local wifi?
+
+FN only connects over Tor so its not possible in the app for now to connect over local wifi. It’s something that could be added fairly easily but is not there now (in July 2020).
+
+
+#### Question : how risky is to open port 22 to connect from anywhere outside my local lan?
+
+First off I am not a security expert. But from what I have read SSH is generally very secure. However there are some simple steps you can take to make it much more secure.  You can read more from the Fully Noded github [here](https://github.com/FontaineDenton/FullyNoded/blob/master/Readme.md#security) 
+
+The goal of this app is to avoid `SSH` altogether and use Tor so you can keep your node firewalled off completely, its working if you build the app from source, We've got mobile fixed by now.
+Its also more secure if you use an RSA public key / private key to authenticate SSH which is also possible in Fully Noded
+I would just do your own research on `SSH` security and see what you come up with, let me know what you find.
+
+#### Question : I get a channel alocation error when I try to add a Xpub. What could go wrong?
+
+Means the ssh channel closed. Just go to home screen and pull to reconnect.<br/>
+It takes around 20-30 seconds when you import an xpub, so just wait for it to finish
+
+#### Question : In true airgapped situation: no need for a Coldcard? Just create signed TXs on the airgapped laptop?
+
+Some people would argue that its more secure to create keys on the `coldcard`. Also getting software onto the airgapped laptop without compromising the security of it, is another factor.
+
+Max: I wouldn’t be so worried about an air gapped laptop. As it’d only be handling transactions that had been signed.
+
+#### Question : Do I have to be in the same network?
+
+Best way to find out is try. FN over Tor v3 should allow you to access from anywhere.
+
+#### Question : How do we get the rpc credentials on the nodl?
+
+You have to log in like this [link](https://docs.lightning-solutions.eu/nodl-box/advanced/how-to-access-bitcoin-cli-and-lncli) shows you.
+And open up the bitcoin.conf file. You need to add RPC credentials. <br/>
+*Is it on the UI?*<br/>
+Jamie Lim: Ssh into the `nodl`, The ssh host user should be “bitcoin”
+
+#### Question : RPC credentials are mandatory. FN is forcing good behaviour?
+
+Just keep it in mind because if you have not added RPC credentials: the node won't connect. <br/>
+Honestly, just way better code wise. And allows you to connect over local network with no internet which is cool if you like doing stuff offline. Also should make connecting in general more robust and work on all systems even better.
+
+#### Question : Do you use a terminal app in iOS on the iPhone that you ssh into your network with?
+I use NMSSH framework in the app<br/>
+There are apps though, i think `iterm` has an app that also uses the same framework -> <br/>
+iTerminal - SSH Telnet Client by ComcSoft Corporation https://apps.apple.com/us/app/iterminal-ssh-telnet-client/id581455211<br/>
 
 #### Question : How do I troubleshoot connection issues over Tor between FN and Bitcoin Core Nodes on a Mac?
 
@@ -206,6 +391,10 @@ Here are some [common issues and fixes](https://github.com/Fonta1n3/FullyNoded#t
 1. first ensure tor has stopped
 2. then open a terminal and paste in `brew services start tor`, this will ensure Tor always launches automatically when your mac starts, if you want to stop tor run `brew services stop tor`<br/>
 
+**Possible problems during installation and configuration**
+1. It may just not have permissions to create directories which would explain the lib folder not existing.
+2. Running without `brew`. You can defo do it without brew, its just more complicated.
+3. You really should *edit* the file and *save* it too. Double checked?
 
 #### Question : How can I test the network connection between them (FN and Node)?
 
@@ -215,7 +404,6 @@ Here are some [common issues and fixes](https://github.com/Fonta1n3/FullyNoded#t
 > Before doing the below, try rebooting Tor on the node server side, force quitting FN and see if it connects, double check you added your tor v3 url correctly with the right port at the end, typically `:8332` for mainnet.
 
 Recreate your hidden service url like so: `http://rpcuser:rpcpassword@xxx.onion:8332`, paste it in to a Tor browser as if you were visiting a website, if your connection is alive and functioning properly you will get a `server only responds to POST requests` error in the Tor browser. If you do not get that error then something is wrong, again check the Tor and Bitcoin Core logs to debug the issue.
-
 
 #### Question: What is the best of breed desktop wallet to connect to your node?
 
@@ -239,7 +427,57 @@ python3 -m cryptoadvance.specter server
 ```
 See [this](https://github.com/Fonta1n3/FullyNoded#importing-a-wallet-from-specter) for instructions on exporting a wallet from Specter to FN.
 
+
+#### Question : Can't seem to locate the torrc file to connect via Tor using Nano. What's wrong?
+*I did try directly entering the nano in cmd but it is blank. Okay, I  realised that the file name is torrc.sample instead. Weird. nothing inside this nano as well.*
+
+When you make the nano command what exactly are you typing? the torrc.sample is just that a sample, it's possible when Tor has not yet been started that it does not auto generate the torrc? You can always use the torrc.sample to create a torrc, just copy and paste it and delete the .sample extension and then follow the guide to edit it.
+
+When you use nano you either need to be in the directory of the file you are trying to use nano on or include the path nano `/usr/local/etc/tor/torcc.sample` for example. If nano is not working just use whatever text editor youd like to.
+Try starting Tor, it'll generate the `torrc` then. 
+
+	brew services start tor
+	
+To be honest this makes it really easy and works with your existing node: [Gordian](https://github.com/BlockchainCommons/GordianNode-macOS/blob/master/GordianNode_0.1.1.dmg) 
+
+You can download the dmg right on the link, just open it and it does everything for you.
+
+If you want to do it manually that works too :)
+
+#### Question : Looks like I'm connected. But no homescreen, what's wrong?
+
+*It says it connects successfully but no matter how long i let the app run it never looks like your pic.*<br/>
+<img src="https://i.ibb.co/qB40KYQ/node-added.jpg" alt="node-added" border="0" width="200">
+<img src="https://i.ibb.co/Y0prvk0/node-added2.jpg" alt="node-added2" border="0" width="200">
+
+It says successfully **added**. Actually connecting is only successful when the home screen has loaded.<br/>
+Are you absolutely sure the rpc password and username and onion are 100% correct?<br/>
+Have you tried rebooting the node?<br/>
+Are there any special characters in the RPC password? Only alphanumeric is allowed but the app should warn you about that now..<br/>
+Generally rebooting Tor on the node would solve this issue if everything else is correct<br/>
+
+I definitely need to reboot tor on my MacBook sometimes but only after it is asleep... servers should not have that issue, occasionally I’ve had users (and myself) need to reboot tor on the initial connection attempt.<br/>
+W is there any possibility your isp is blocking tor? That has also been an issue before. (On your phone i mean)<br/>
+
+For starters ensure you are connected to your node, can you confirm it successfully connects?
+
+If your connection is successful you’ll see the home screen look like this:<br/>
+<img src="https://i.ibb.co/HrsmwBd/opening-screen.jpg" alt="opening-screen" border="0" width="200"><br/>
+
 ## Wallets
+
+#### Question : How I can erase a wallet in Fullynoded? or modify a name?
+
+If your node is on a mac you will need to navigate to
+
+	⁨Root ▸ Users⁩ ▸ ⁨Arkad ▸ ⁨Library⁩ ▸ ⁨Application Support⁩ ▸ ⁨Bitcoin⁩ ▸ Wallets
+
+BUT as Satoshi says, you should never delete a wallet, instead much better to move it, just incase.
+
+On your `nodl` I am not 100% sure of the path to find the wallets, but it is in the main bitcoin directory, shouldnt be too difficult to find.
+To modify the name just right click the wallet on your mac and rename, in `nodl` you have to find the path to your wallet and use `mv` command, heres an example:
+
+	mv /home/user/oldname /home/user/newname
 
 #### Question : what is the recovery wallet?
 
@@ -287,6 +525,42 @@ Video on how to easily create a 2 of 2 multisig wallet with your Coldcard and Fu
 Not really... its possible if you imported multisig descriptors manually though.<br/>
 We should discourage the re-use of receiving addresses for the sake of privacy protection.<br/>
 
+#### Question : I recovered from Greenwallet and didn't get a balance, Iim wondering if FN scans all the BIP lines?
+*Green is a compatibility wallet in default. Am I missing some between BIP 32 and 49?*
+
+Green wallet is a 2 of 2.The recovery wallet is for single sig. You can recover any multisig with the FN multisig wallet “creator” just add your own seeds or xpubs.
+
+##### Further question : So the wallet I recovered is a single sig based on same multi seed? Given that fact...best to create a fresh FN wallet and go from there? I don't want to confuse myself any further. I like the privacy of FN. I basically want to switch from Green Wallet to FN for my daily driver.
+
+Yes, i think you are very locked into their wallet (Green Wallet) and can only really recover with them? Not sure though. <br/>
+Also, you can not recover any multisig with the multisig creator, currently it keeps the derivation hard coded. We will definitely update that in the future. It is a start for now.<br/>
+Nice that you want to use Fn on a dally bases, yea for simplicity id recommend the single sig!
+
+#### Question : Are wallets enabled on the config page of bitcoin in the Embassy App?
+
+FN works with walletdisabled=1, home screen doesn’t include any wallet rpc calls.
+
+
+#### Question : I clicked on the file again and now I have 2 cold cars records in the FN app. Would I see 2 wallets in FN that showed the same exact info?
+*Each is appended with some sort of unique code. I would think that they should say the same thing, but one "has" the 10 bucks i sent to it and the other has nothing. shouldn't they match exactly since they are the same?*
+
+No. When you import a wallet it first creates a new wallet on your node with a random string at the end, if that import fails as yours did (it happens rarely) `the wallet.dat` filename in your nodes.<br/>
+`.bitcoin` directory will hold different wallets, also if it fails you can not have any idea what was actually imported. <br/>
+
+So you should tap the "squares" and only ever work with that wallet.<br/>
+If the wallet is there in the "Fully Noded Wallets" section then you know it is all good.
+
+##### Further Answer: 
+You should really completely ignore your "Bitcoin Core Wallets", unless you are a bitcoin-cli expert and know exactly what you are doing and why.
+
+It's really just there to help people recover wallets that exist on their node. Really need to make some tutorials and add an "advanced" button in settings that shows and hides some features, like accessing non Fully Noded Wallets.
+
+By far the best way to use the app is stick 100% with FN wallets.
+
+Aka use these two buttons to create and switch between wallets<br/>
+<img src="https://i.ibb.co/VSKHWwF/switch-buttons-wallets.jpg" alt="switch-buttons-wallets" border="0" width="200"><br/>
+FN wallets will always show as COLD because your node never holds a private key<br/>
+<img src="https://i.ibb.co/m9mMMWT/switch-wallets2.jpg" alt="switch-wallets2" border="0" width="200">
 
 ## Standup
 
@@ -310,4 +584,49 @@ yes, in settings youll see a `datadir` box where you can "choose" a new folder. 
 
 the benefit of that is you do not need an external drive, you can just use the external to back everything up. i think doing an initial block download (IBD) to an external drive slows it down quite a bit <br/>
 Henk van Cann: it depends on the speed of the external drive, some can reach up to 500 Mbit/sec, cheapies or oldies won't go beyond 50 Mbit/sec which will be a pain.
+
+## Transactions
+
+#### Question : How do I specify a fee rate in FN?
+
+You can just set the min relay fee (smallest possible amount) and if the transaction doesn't get confirmed, you can "bump" it, i.e. use Replace By Fee transaction. That is a new transaction with a higher fee using the same `UTXOs` as an input.
+
+#### Question : Can I create transactions in USD? 
+Yes, you can create transactions which are denominated in USD, this video shows the new look for the transaction builder, how to switch to fiat denominations and then how to confirm the transaction before you broadcast it:<br/>
+<a href="https://github.com/Fonta1n3/FullyNoded/blob/master/Videos/IMG_3025.MP4" target="_blank"><img src="https://i.ibb.co/GW1vwsP/fiat-curr-transaction.png" alt="fiat-curr-transaction" border="0" width="200"></a>
+
+## Node
+
+#### Question : I changed bitcoin.conf according to guideline, why is it still not working?
+
+Did you restart your node? If you change config file you need to restart `bitcoind`.
+
+#### Question : how to create a Tor V3 hidden service to control your node?
+
+I have updated the github with easy to follow instructions on how to create a Tor V3 hidden service to connect to and control your node with on a mac [here](https://github.com/FontaineDenton/FullyNoded/blob/master/Readme.md#connecting-over-tor-mac-edition).
+
+#### Question : Anyway to connect node via bitcoin core QT? Can't get to find any QR code from the QT core on Mac OS.
+
+This is a good guide this is a good guide : https://github.com/Fonta1n3/FullyNoded#connecting-over-tor-mac
+
+#### Question : Is there currently a way to execute bitcoin-cli rescanblockchain with the start/stop height parameters from within fully Noded?
+*especially with some slick autocomplete for commands and parameters. rpc syntax can be a pain sometimes.*
+
+No, I need to add that to FN app. It should automatically rescan from prune height though *if* your pruned.<br/>
+Anyway, doing it the way Fully Noded does it adds a layer of complexity too. Extra need for escaping characters, absolutely stuff that’s not needed, if doing it straight via terminal. 
+
+Definitely something to be said about a cool UX where it autosuggests the rpc call and then shows a UI for the params with explainers.
+
+#### Question : Is there an ability to add peers and remove peers?
+Not yet, but I think it is an important thing to add as far as "direct rpc calls" are concerned.<br/>
+There’s a cool project that lists a bunch of trusted tor nodes, so you can add them if you want to use your node 100% behind tor without getting attacked by chain analysis.
+
+Would need to start simple and expand... sigh so much to do so little time. Wish there were other swift devs who would help out.
+
+#### Question : So the order of fully noded is 1. Node 2. Wallet? Correct? Without a node, you can't scan in a wallet?
+
+You **can not do anything in FN without connecting to your node** first.
+
+
+
 
