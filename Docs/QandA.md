@@ -329,6 +329,21 @@ I mean i can give you a lightning invoice if you’d like. I did get one set up 
 
 Random address generated from an `xpub`.
 
+#### Question : How to do c-lightning on mac with pruned node?
+
+As long as you have bitcoin core already running and have brew installed (properly). C-lightning is pretty cool, you do not even to to "deposit" btc to your node anymore, you can fund any channel direct from any btc wallet.
+
+##### Further Question: As far as I know c-lightning doesn’t fully support pruned nodes.   
+*If bitcoind prunes a block that c-lightning has not processed yet, e.g., c-lightning was not running for a prolonged period, then bitcoind will not be able to serve the missing blocks, hence c-lightning will not be able to synchronize anymore and will be stuck)?*
+
+C-lighting does support pruned nodes with this: https://github.com/Start9Labs/c-lightning-pruning-plugin. Works well and easy to setup, c-lightning does support pruned nodes out of the box, but this plug makes it very reliable, can be any pruned size as far as I know.
+
+	lightning-cli fundchannel_start <node_id> <satoshi_amount>
+
+Returns a segwit multisig address to send btc to<br/>
+Does not matter where the btc comes from, as far as I can tell<br/>
+I sent from my onchain wallet in FN and it worked.
+
 
 ## Connection
 
