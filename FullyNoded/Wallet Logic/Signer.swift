@@ -96,6 +96,7 @@ class Signer {
                     let inputs = psbtToSign.inputs
                     print("inputs.count: \(inputs.count)")
                     for (x, input) in inputs.enumerated() {
+                        print("input issegwit: \(input.isSegWit)")
                         /// Create an array of child keys that we know can sign our inputs.
                         if let origins: [PubKey : KeyOrigin] = input.canSign(key) {
                             for origin in origins {
