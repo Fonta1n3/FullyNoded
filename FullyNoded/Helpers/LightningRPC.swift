@@ -21,7 +21,7 @@ class LightningRPC {
     
     private init() {}
     
-    func command(method: String, param: Any, completion: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
+    func command(method: LIGHTNING_CLI, param: Any, completion: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
         attempts += 1
         
         //CoreDataService.retrieveEntity(entityName: .newNodes) { [unowned vc = self] nodes in
@@ -100,11 +100,11 @@ class LightningRPC {
         request.addValue("Basic \(base64LoginString)", forHTTPHeaderField: "Authorization")
                 request.httpMethod = "POST"
                 request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
-                request.httpBody = "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"\(method)\",\"params\":[\(param)]}".data(using: .utf8)
+        request.httpBody = "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"\(method.rawValue)\",\"params\":[\(param)]}".data(using: .utf8)
                 
                 #if DEBUG
                 print("url = \(url)")
-                print("request: \("{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"\(method)\",\"params\":[\(param)]}")")
+        print("request: \("{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"\(method.rawValue)\",\"params\":[\(param)]}")")
                 #endif
                 
                 let task = torClient.session.dataTask(with: request as URLRequest) { [unowned vc = self] (data, response, error) in
@@ -132,9 +132,6 @@ class LightningRPC {
                             if let urlContent = data {
                                 
                                 vc.attempts = 0
-                                
-                                print("data: \(data?.utf8)")
-                                print("reponse: \(response)")
                                 
                                 do {
                                     

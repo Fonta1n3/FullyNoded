@@ -45,7 +45,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     @IBOutlet var receivingLabel: UILabel!
     @IBOutlet var outputsTable: UITableView!
     
-    var creatingView = ConnectingView()
+    var spinner = ConnectingView()
     var spendableBalance = Double()
     var outputArray = [[String:String]]()
     
@@ -98,8 +98,26 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         outputArray.removeAll()
     }
     
+    @IBAction func fundLightning(_ sender: Any) {
+        spinner.addConnectingView(vc: self, description: "fetching lightning funding address...")
+        let rpc = LightningRPC.sharedInstance
+        rpc.command(method: .newaddr, param: "") { (response, errorDesc) in
+            if let dict = response as? NSDictionary {
+                if let address = dict["address"] as? String {
+                    DispatchQueue.main.async { [unowned vc = self] in
+                        vc.addressInput.text = address
+                        vc.spinner.removeConnectingView()
+                        showAlert(vc: vc, title: "⚡️ Nice! ⚡️", message: "This is an address you can use to fund your lightning node with, its your first step in transacting on the lightning network.")
+                    }
+                }
+            } else {
+                print("errorDesc: \(errorDesc ?? "unknown")")
+            }
+        }
+    }
+    
     @IBAction func denominationAction(_ sender: Any) {
-        creatingView.addConnectingView(vc: self, description: "getting fx rate...")
+        spinner.addConnectingView(vc: self, description: "getting fx rate...")
         let fx = FiatConverter.sharedInstance
         fx.getFxRate { [unowned vc = self] (fxrate) in
             if fxrate != nil {
@@ -111,7 +129,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                         vc.denominationImage.image = UIImage(systemName: "dollarsign.circle")
                         vc.amountIcon.backgroundColor = .systemBlue
                         vc.fiatButtonOutlet.setImage(UIImage(systemName: "dollarsign.circle"), for: .normal)
-                        vc.creatingView.removeConnectingView()
+                        vc.spinner.removeConnectingView()
                         showAlert(vc: vc, title: "Fiat denomination", message: "You may enter an amount denominated in USD, we will calculate the equivalent amount in btc based on the current exchange rate of $\(fxrate!.withCommas()) / btc, always confirm the amounts before broadcasting by tapping the \"verify\" button.\n\nBitcoin's exchange rate can be volatile so always double check the amounts using the \"verify\" tool when the broadcaster presents itself.")
                     }
                 } else {
@@ -120,12 +138,12 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                         vc.denominationImage.image = UIImage(systemName: "bitcoinsign.circle")
                         vc.fiatButtonOutlet.setImage(UIImage(systemName: "bitcoinsign.circle"), for: .normal)
                         vc.amountIcon.backgroundColor = .systemIndigo
-                        vc.creatingView.removeConnectingView()
+                        vc.spinner.removeConnectingView()
                         showAlert(vc: vc, title: "BTC denomination", message: "You may enter an amount denominated in BTC, to switch back to fiat denominations tap the currency button.")
                     }
                 }
             } else {
-                vc.creatingView.removeConnectingView()
+                vc.spinner.removeConnectingView()
                 showAlert(vc: vc, title: "Error", message: "Could not get current fx rate")
             }
         }
@@ -246,7 +264,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     @IBAction func sweep(_ sender: Any) {
         if addressInput.text != "" {
-            creatingView.addConnectingView(vc: self, description: "sweeping...")
+            spinner.addConnectingView(vc: self, description: "sweeping...")
             let receivingAddress = addressInput.text!
             Reducer.makeCommand(command: .listunspent, param: "0") { [unowned vc = self] (response, errorMessage) in
                 if let resultArray = response as? NSArray {
@@ -286,30 +304,30 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                                         Signer.sign(psbt: processedPSBT) { (psbt, rawTx, errorMessage) in
                                             if psbt != nil {
                                                 vc.rawTxUnsigned = psbt!
-                                                vc.creatingView.removeConnectingView()
+                                                vc.spinner.removeConnectingView()
                                                 vc.showRaw(raw: psbt!)
                                             } else if rawTx != nil {
                                                 vc.rawTxSigned = rawTx!
-                                                vc.creatingView.removeConnectingView()
+                                                vc.spinner.removeConnectingView()
                                                 vc.showRaw(raw: rawTx!)
                                             } else if errorMessage != nil {
-                                                vc.creatingView.removeConnectingView()
+                                                vc.spinner.removeConnectingView()
                                                 showAlert(vc: vc, title: "Error", message: errorMessage!)
                                             }
                                         }
                                     }
                                 } else {
-                                    vc.creatingView.removeConnectingView()
+                                    vc.spinner.removeConnectingView()
                                     displayAlert(viewController: vc, isError: true, message: errorMessage ?? "")
                                 }
                             }
                         } else {
-                            vc.creatingView.removeConnectingView()
+                            vc.spinner.removeConnectingView()
                             displayAlert(viewController: vc, isError: true, message: errorMessage ?? "")
                         }
                     }
                 } else {
-                    vc.creatingView.removeConnectingView()
+                    vc.spinner.removeConnectingView()
                     displayAlert(viewController: vc, isError: true, message: errorMessage ?? "")
                 }
             }
@@ -333,7 +351,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     @objc func tryRaw() {
-        creatingView.addConnectingView(vc: self, description: "creating psbt...")
+        spinner.addConnectingView(vc: self, description: "creating psbt...")
         
         func convertOutputs() {
             for output in outputArray {
@@ -366,12 +384,12 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 outputArray.append(dict)
                 convertOutputs()
             } else {
-                creatingView.removeConnectingView()
+                spinner.removeConnectingView()
                 displayAlert(viewController: self, isError: true, message: "You need to fill out an amount and a recipient")
             }
             
         } else if outputArray.count > 0 && self.amountInput.text != "" || self.amountInput.text != "0.0" && self.addressInput.text != "" {
-            creatingView.removeConnectingView()
+            spinner.removeConnectingView()
             displayAlert(viewController: self, isError: true, message: "If you want to add multiple recipients please tap the \"+\" and add them all first.")
             
         } else if outputArray.count > 0 {
@@ -441,14 +459,14 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         CreatePSBT.create(outputs: outputsString) { [unowned vc = self] (psbt, rawTx, errorMessage) in
             if psbt != nil {
                 vc.rawTxUnsigned = psbt!
-                vc.creatingView.removeConnectingView()
+                vc.spinner.removeConnectingView()
                 vc.showRaw(raw: psbt!)
             } else if rawTx != nil {
                 vc.rawTxSigned = rawTx!
-                vc.creatingView.removeConnectingView()
+                vc.spinner.removeConnectingView()
                 vc.showRaw(raw: rawTx!)
             } else if errorMessage != nil {
-                vc.creatingView.removeConnectingView()
+                vc.spinner.removeConnectingView()
                 showAlert(vc: vc, title: "Error", message: errorMessage!)
             }
         }

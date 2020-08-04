@@ -741,7 +741,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.feeInfo = FeeInfo(dictionary: response!)
                     vc.mainMenu.reloadSections(IndexSet(arrayLiteral: 11, 1), with: .fade)
-                    vc.tryLightning()
                     vc.removeLoader()
                 }
             } else {
@@ -751,16 +750,31 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         }
     }
     
-    private func tryLightning() {
-        let rpc = LightningRPC.sharedInstance
-        rpc.command(method: "getinfo", param: "") { (response, errorDesc) in
-            if let dict = response as? NSDictionary {
-                print("dict: \(dict)")
-            } else {
-                print("errorDesc: \(errorDesc)")
-            }
-        }
-    }
+//    private func getInfo() {
+//        let rpc = LightningRPC.sharedInstance
+//        rpc.command(method: .getinfo, param: "") { [unowned vc = self] (response, errorDesc) in
+//            if let dict = response as? NSDictionary {
+//
+//            } else {
+//                print("errorDesc: \(errorDesc ?? "unknown")")
+//            }
+//        }
+//    }
+    
+    //invoice 10000000 fullynoded test 86400
+//    private func invoice() {
+//        let rpc = LightningRPC.sharedInstance
+//        let params = "10000000, \"\(randomString(length: 10))\", \"testing\", 86400"
+//        rpc.command(method: .invoice, param: params) { [unowned vc = self] (response, errorDesc) in
+//            if let _ = response as? NSDictionary {
+//
+//            } else {
+//                print("errorDesc: \(errorDesc ?? "unknown")")
+//            }
+//        }
+//    }
+    
+    
     
     //MARK: User Interface
     

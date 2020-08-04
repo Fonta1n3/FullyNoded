@@ -97,7 +97,16 @@ class SignerViewController: UIViewController {
     
     private func getPsbt(chain: Network) {
         if psbt != "" {
-            process()
+            do {
+                let psbtTocheck = try PSBT(psbt, chain)
+                if psbtTocheck.complete {
+                    finalizePsbt()
+                } else {
+                    process()
+                }
+            } catch {
+                showError(error: "error processing psbt")
+            }
         } else {
             spinner.removeConnectingView()
         }
@@ -107,6 +116,24 @@ class SignerViewController: UIViewController {
         DispatchQueue.main.async { [unowned vc = self] in
             vc.spinner.removeConnectingView()
             showAlert(vc: vc, title: "Error", message: error)
+        }
+    }
+    
+    private func finalizePsbt() {
+        updateLabel(text: "finalizing psbt...")
+        Reducer.makeCommand(command: .finalizepsbt, param: "\"\(psbt)\"") { [unowned vc = self] (object, errorDescription) in
+            if let result = object as? NSDictionary {
+                if let complete = result["complete"] as? Bool {
+                    if complete {
+                        let hex = result["hex"] as! String
+                        vc.txn = hex
+                    }
+                } else {
+                    vc.showError(error: errorDescription ?? "")
+                }
+            } else {
+                vc.showError(error: errorDescription ?? "")
+            }
         }
     }
     

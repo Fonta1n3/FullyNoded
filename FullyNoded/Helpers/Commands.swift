@@ -74,3 +74,13 @@ public enum BTC_CLI_COMMAND: String {
     case gettxoutsetinfo = "gettxoutsetinfo"
     case help = "help"
 }
+
+public enum LIGHTNING_CLI: String {
+    case getinfo = "getinfo"
+    case invoice = "invoice"
+    case newaddr = "newaddr"
+    case listfunds = "listfunds"
+    case listtransactions = "listtransactions"
+    case txprepare = "txprepare"
+    case txsend = "txsend"
+}

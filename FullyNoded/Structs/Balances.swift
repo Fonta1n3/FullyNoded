@@ -10,16 +10,16 @@ import Foundation
 
 public struct Balances: CustomStringConvertible {
     
-    let coldBalance:String
-    let unconfirmedBalance:String
-    let hotBalance:String
+    let onchainBalance:String
+    let offchainBalance:String
     
     init(dictionary: [String: Any]) {
-        self.coldBalance = dictionary["coldBalance"] as? String ?? "0.00000000"
-        self.unconfirmedBalance = dictionary["unconfirmedBalance"] as? String ?? "0.00000000"
-        self.hotBalance = dictionary["hotBalance"] as? String ?? "0.00000000"
+        onchainBalance = dictionary["onchainBalance"] as? String ?? "0.00000000"
+        offchainBalance = dictionary["offchainBalance"] as? String ?? "0.00000000"
     }
+    
     public var description: String {
         return ""
     }
+    
 }
