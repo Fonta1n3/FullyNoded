@@ -29,6 +29,7 @@
 		D0233F242361EA090041FFBA /* Base32.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0233F232361EA090041FFBA /* Base32.swift */; };
 		D0233F262361EA380041FFBA /* StringExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0233F252361EA380041FFBA /* StringExtension.swift */; };
 		D0233F282361EA5F0041FFBA /* shim.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0233F272361EA5F0041FFBA /* shim.swift */; };
+		D0257E6524D6C5F5000EB854 /* LightningRPC.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0257E6424D6C5F5000EB854 /* LightningRPC.swift */; };
 		D02958D3234F82E000ED8F72 /* IdentityViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02958D2234F82E000ED8F72 /* IdentityViewController.swift */; };
 		D02958D5235053B300ED8F72 /* SecurityCenterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02958D4235053B300ED8F72 /* SecurityCenterViewController.swift */; };
 		D02FE43323136A600048F8C4 /* NodeLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02FE43223136A600048F8C4 /* NodeLogic.swift */; };
@@ -187,6 +188,7 @@
 		D0233F232361EA090041FFBA /* Base32.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Base32.swift; sourceTree = "<group>"; };
 		D0233F252361EA380041FFBA /* StringExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtension.swift; sourceTree = "<group>"; };
 		D0233F272361EA5F0041FFBA /* shim.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = shim.swift; sourceTree = "<group>"; };
+		D0257E6424D6C5F5000EB854 /* LightningRPC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LightningRPC.swift; sourceTree = "<group>"; };
 		D02958D2234F82E000ED8F72 /* IdentityViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityViewController.swift; sourceTree = "<group>"; };
 		D02958D4235053B300ED8F72 /* SecurityCenterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityCenterViewController.swift; sourceTree = "<group>"; };
 		D02FE43223136A600048F8C4 /* NodeLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeLogic.swift; sourceTree = "<group>"; };
@@ -511,6 +513,7 @@
 				D09A330C24A9B10E009FA0B2 /* BIP39WordList.swift */,
 				D09A331024AC4BF6009FA0B2 /* DescriptorParser.swift */,
 				D0F3918F24BFE48600EA8A2A /* AccountMap.swift */,
+				D0257E6424D6C5F5000EB854 /* LightningRPC.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1133,6 +1136,7 @@
 				D05D972C2264104D0035F1DE /* QRScanner.swift in Sources */,
 				D0C20ED824A6E2FF00C62AA4 /* MiningInfo.swift in Sources */,
 				D0560EE92277F75900C3E909 /* UTXOViewController.swift in Sources */,
+				D0257E6524D6C5F5000EB854 /* LightningRPC.swift in Sources */,
 				D00F851D2494A616008D7CD3 /* TorAuthViewController.swift in Sources */,
 				D09A330F24A9B853009FA0B2 /* RecoveryViewController.swift in Sources */,
 				D0C20EDA24A6E46E00C62AA4 /* Uptime.swift in Sources */,
@@ -1316,8 +1320,8 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 194;
-				DEVELOPMENT_TEAM = 8JHDU5M9KD;
+				CURRENT_PROJECT_VERSION = 195;
+				DEVELOPMENT_TEAM = 69FR345CDA;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
@@ -1329,7 +1333,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.274;
+				MARKETING_VERSION = 1.275;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1352,9 +1356,9 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 194;
+				CURRENT_PROJECT_VERSION = 195;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 8JHDU5M9KD;
+				DEVELOPMENT_TEAM = 69FR345CDA;
 				ENABLE_TESTABILITY = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1367,7 +1371,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.274;
+				MARKETING_VERSION = 1.275;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";

@@ -14,12 +14,10 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     let ud = UserDefaults.standard
     var existingWallet = ""
     var walletDisabled = Bool()
-    var hotBalance = ""
-    var coldBalance = ""
-    var unconfirmedBalance = ""
-    var hotFiat = ""
-    var coldFiat = ""
-    var uncomfirmedFiat = ""
+    var onchainBalance = ""
+    var offchainBalance = ""
+    var onchainFiat = ""
+    var offchainFiat = ""
     var sectionZeroLoaded = Bool()
     var wallets = NSArray()
     var transactionArray = [[String:Any]]()
@@ -30,13 +28,11 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     var id:UUID!
     var walletLabel:String!
     var wallet:Wallet?
-    var window: UIWindow?
     @IBOutlet weak var sendView: UIView!
     @IBOutlet weak var invoiceView: UIView!
     @IBOutlet weak var utxosView: UIView!
     @IBOutlet weak var advancedView: UIView!
     @IBOutlet weak var fxRateLabel: UILabel!
-    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -161,29 +157,28 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     
     private func balancesCell(_ indexPath: IndexPath) -> UITableViewCell {
         let cell = walletTable.dequeueReusableCell(withIdentifier: "BalancesCell", for: indexPath)
-        let hotBalanceLabel = cell.viewWithTag(1) as! UILabel
-        let coldBalanceLabel = cell.viewWithTag(2) as! UILabel
-        let unconfirmedLabel = cell.viewWithTag(3) as! UILabel
-        let hotFiatLabel = cell.viewWithTag(4) as! UILabel
-        let coldFiatLabel = cell.viewWithTag(5) as! UILabel
-        let unconfirmedFiatLabel = cell.viewWithTag(6) as! UILabel
+        let onchainBalanceLabel = cell.viewWithTag(1) as! UILabel
+        let offchainBalanceLabel = cell.viewWithTag(2) as! UILabel
+        let onchainFiatLabel = cell.viewWithTag(4) as! UILabel
+        let offchainFiatLabel = cell.viewWithTag(5) as! UILabel
+        let onchainIconBackground = cell.viewWithTag(7)!
+        let offchainIconBackground = cell.viewWithTag(8)!
+        onchainIconBackground.layer.cornerRadius = 5
+        offchainIconBackground.layer.cornerRadius = 5
         cell.layer.borderColor = UIColor.lightGray.cgColor
         cell.layer.borderWidth = 0.5
-        if hotBalance == "" {
-            hotBalance = "0.00000000"
+        if onchainBalance == "" {
+            onchainBalance = "0.00000000"
         }
-        if coldBalance == "" {
-            coldBalance = "0.00000000"
+        if offchainBalance == "" {
+            offchainBalance = "0.00000000"
         }
-        hotFiatLabel.text = hotFiat
-        coldFiatLabel.text = coldFiat
-        unconfirmedFiatLabel.text = uncomfirmedFiat
-        hotBalanceLabel.text = hotBalance
-        coldBalanceLabel.text = coldBalance
-        unconfirmedLabel.text = unconfirmedBalance
-        hotBalanceLabel.adjustsFontSizeToFitWidth = true
-        coldBalanceLabel.adjustsFontSizeToFitWidth = true
-        unconfirmedLabel.adjustsFontSizeToFitWidth = true
+        onchainFiatLabel.text = onchainFiat
+        offchainFiatLabel.text = offchainFiat
+        onchainBalanceLabel.text = onchainBalance
+        offchainBalanceLabel.text = offchainBalance
+        onchainBalanceLabel.adjustsFontSizeToFitWidth = true
+        offchainBalanceLabel.adjustsFontSizeToFitWidth = true
         return cell
     }
     
@@ -202,6 +197,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         let labelLabel = cell.viewWithTag(4) as! UILabel
         let dateLabel = cell.viewWithTag(5) as! UILabel
         let watchOnlyLabel = cell.viewWithTag(6) as! UILabel
+        let lightningImage = cell.viewWithTag(7) as! UIImageView
         
         amountLabel.alpha = 1
         confirmationsLabel.alpha = 1
@@ -223,6 +219,14 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
             
             labelLabel.text = ""
             
+        }
+        
+        let isLightning = dict["isLightning"] as? Bool ?? false
+        
+        if isLightning {
+            lightningImage.alpha = 1
+        } else {
+            lightningImage.alpha = 0
         }
         
         dateLabel.text = dict["date"] as? String
@@ -420,9 +424,8 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
                 }
             } else if response != nil {
                 let str = Balances(dictionary: response!)
-                vc.hotBalance = str.hotBalance
-                vc.coldBalance = str.coldBalance
-                vc.unconfirmedBalance = str.unconfirmedBalance
+                vc.onchainBalance = str.onchainBalance
+                vc.offchainBalance = str.offchainBalance
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.sectionZeroLoaded = true
                     vc.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
@@ -456,22 +459,17 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.fxRateLabel.text = "$\(rate!.withCommas()) / btc"
                 }
-                if let btcHotBalance = Double(vc.hotBalance) {
-                    let hotBalanceFiat = btcHotBalance * rate!
-                    vc.hotFiat = "$\(round(hotBalanceFiat).withCommas())"
+                if let onchainBalance = Double(vc.onchainBalance) {
+                    let onchainBalanceFiat = onchainBalance * rate!
+                    vc.onchainFiat = "$\(round(onchainBalanceFiat).withCommas())"
                 }
-                if let btcColdBalance = Double(vc.coldBalance) {
-                    let coldBalanceFiat = btcColdBalance * rate!
-                    vc.coldFiat = "$\(round(coldBalanceFiat).withCommas())"
-                }
-                if let btcUncomfirmedBalance = Double(vc.unconfirmedBalance) {
-                    let unconfirmedBalanceFiat = btcUncomfirmedBalance * rate!
-                    vc.uncomfirmedFiat = "$\(round(unconfirmedBalanceFiat).withCommas())"
+                if let offchainBalance = Double(vc.offchainBalance) {
+                    let offchainBalanceFiat = offchainBalance * rate!
+                    vc.offchainFiat = "$\(round(offchainBalanceFiat).withCommas())"
                 }
             } else {
-                vc.hotFiat = ""
-                vc.coldFiat = ""
-                vc.uncomfirmedFiat = ""
+                vc.onchainFiat = ""
+                vc.offchainFiat = ""
             }
             DispatchQueue.main.async { [unowned vc = self] in
                 vc.walletTable.reloadSections(IndexSet(arrayLiteral: 0), with: .none)
@@ -521,9 +519,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
                 displayAlert(viewController: vc, isError: true, message: errorMessage!)
             } else if response != nil {
                 let str = Balances(dictionary: response!)
-                vc.hotBalance = str.hotBalance
-                vc.coldBalance = (str.coldBalance)
-                vc.unconfirmedBalance = (str.unconfirmedBalance)
+                vc.onchainBalance = str.onchainBalance
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.sectionZeroLoaded = true
                     vc.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .none)

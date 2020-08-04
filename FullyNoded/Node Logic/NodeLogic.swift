@@ -17,31 +17,46 @@ class NodeLogic {
     
     class func loadBalances(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         if !walletDisabled {
-            getBalance(completion: completion)
+            listUnspent(completion: completion)
         } else {
-            dictToReturn["coldBalance"] = "disabled"
             dictToReturn["unconfirmedBalance"] = "disabled"
-            dictToReturn["hotBalance"] = "disabled"
+            dictToReturn["onchainBalance"] = "disabled"
             completion((dictToReturn, nil))
         }
     }
     
-    class func getUnconfirmedBalance(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        Reducer.makeCommand(command: .getunconfirmedbalance, param: "") { (response, errorMessage) in
-            if let unconfirmedBalance = response as? Double {
-                parseUncomfirmedBalance(unconfirmedBalance: unconfirmedBalance)
-                listUnspent(completion: completion)
-            } else {
-                completion((nil, errorMessage ?? ""))
-            }
-        }
-    }
+//    class func getUnconfirmedBalance(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+//        Reducer.makeCommand(command: .getunconfirmedbalance, param: "") { (response, errorMessage) in
+//            if let unconfirmedBalance = response as? Double {
+//                parseUncomfirmedBalance(unconfirmedBalance: unconfirmedBalance)
+//                listUnspent(completion: completion)
+//            } else {
+//                completion((nil, errorMessage ?? ""))
+//            }
+//        }
+//    }
     
-    class func getBalance(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        Reducer.makeCommand(command: .getbalance, param: "\"*\", 0, false") { (response, errorMessage) in
-            if let balanceCheck = response as? Double {
-                parseBalance(balance: balanceCheck)
-                getUnconfirmedBalance(completion: completion)
+//    class func getBalance(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+//        Reducer.makeCommand(command: .getbalance, param: "\"*\", 0, false") { (response, errorMessage) in
+//            if let balanceCheck = response as? Double {
+//                parseBalance(balance: balanceCheck)
+//                getUnconfirmedBalance(completion: completion)
+//            } else if errorMessage != nil {
+//                if errorMessage!.contains("Method not found") {
+//                    walletDisabled = true
+//                    completion((nil, "wallet disabled"))
+//                } else {
+//                    completion((nil, errorMessage ?? ""))
+//                }
+//            }
+//        }
+//    }
+    
+    class func listUnspent(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        Reducer.makeCommand(command: .listunspent, param: "0") { (response, errorMessage) in
+            if let utxos = response as? NSArray {
+                parseUtxos(utxos: utxos)
+                getOffChainBalance(completion: completion)
             } else if errorMessage != nil {
                 if errorMessage!.contains("Method not found") {
                     walletDisabled = true
@@ -53,13 +68,39 @@ class NodeLogic {
         }
     }
     
-    class func listUnspent(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        Reducer.makeCommand(command: .listunspent, param: "0") { (response, errorMessage) in
-            if let utxos = response as? NSArray {
-                parseUtxos(utxos: utxos)
-                completion((dictToReturn, nil))
+    class func getOffChainBalance(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        let rpc = LightningRPC.sharedInstance
+        rpc.command(method: .listfunds, param: "") { (response, errorDesc) in
+            if let dict = response as? NSDictionary {
+                if let outputs = dict["outputs"] as? NSArray {
+                    if outputs.count > 0 {
+                        var offchainBalance = 0.0
+                        for (i, output) in outputs.enumerated() {
+                            if let outputDict = output as? NSDictionary {
+                                if let sats = outputDict["value"] as? Int {
+                                    print("sats: \(sats)")
+                                    let btc = Double(sats) / 100000000.0
+                                    print("btc: \(btc)")
+                                    offchainBalance += btc
+                                }
+                            }
+                            if i + 1 == outputs.count {
+                                print("offchainBalance: \(offchainBalance)")
+                                dictToReturn["offchainBalance"] = "\(rounded(number: offchainBalance))"
+                                completion((dictToReturn, nil))
+                            }
+                        }
+                    } else {
+                        dictToReturn["offchainBalance"] = "0.00000000"
+                        completion((dictToReturn, errorDesc ?? ""))
+                    }
+                } else {
+                    dictToReturn["offchainBalance"] = "0.00000000"
+                    completion((dictToReturn, errorDesc ?? ""))
+                }
             } else {
-                completion((nil, errorMessage ?? ""))
+                dictToReturn["offchainBalance"] = "0.00000000"
+                completion((dictToReturn, errorDesc ?? ""))
             }
         }
     }
@@ -154,7 +195,8 @@ class NodeLogic {
             Reducer.makeCommand(command: .listtransactions, param: "\"*\", 50, 0, true") { (response, errorMessage) in
                 if let transactions = response as? NSArray {
                     parseTransactions(transactions: transactions)
-                    completion((arrayToReturn, nil))
+                    //completion((arrayToReturn, nil))
+                    getOffchainTransactions(completion: completion)
                 }
             }
         } else {
@@ -163,21 +205,45 @@ class NodeLogic {
         }
     }
     
+    class func getOffchainTransactions(completion: @escaping ((response: [[String:Any]]?, errorMessage: String?)) -> Void) {
+        let rpc = LightningRPC.sharedInstance
+        rpc.command(method: .listtransactions, param: "") { (response, errorDesc) in
+            if let dict = response as? NSDictionary {
+                if let transactions = dict["transactions"] as? NSArray {
+                    for (t, transaction) in transactions.enumerated() {
+                        if let txDict = transaction as? NSDictionary {
+                            if let hash = txDict["hash"] as? String {
+                                for (o, onchainTx) in arrayToReturn.enumerated() {
+                                    if onchainTx["txID"] as! String == hash {
+                                        arrayToReturn[o]["isLightning"] = true
+                                    }
+                                }
+                            }
+                            if t + 1 == transactions.count {
+                                completion((arrayToReturn, nil))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     // MARK: Section 0 parsers
     
-    class func parseBalance(balance: Double) {
-        
-        if balance == 0.0 {
-            
-            dictToReturn["hotBalance"] = "0.00000000"
-            
-        } else {
-            
-            dictToReturn["hotBalance"] = "\((round(100000000*balance)/100000000).avoidNotation)"
-            
-        }
-        
-    }
+//    class func parseBalance(balance: Double) {
+//
+//        if balance == 0.0 {
+//
+//            dictToReturn["hotBalance"] = "0.00000000"
+//
+//        } else {
+//
+//            dictToReturn["hotBalance"] = "\((round(100000000*balance)/100000000).avoidNotation)"
+//
+//        }
+//
+//    }
     
     class func parseUncomfirmedBalance(unconfirmedBalance: Double) {
         
@@ -201,11 +267,8 @@ class NodeLogic {
         for (x, utxo) in utxos.enumerated() {
             
             let utxoDict = utxo as! NSDictionary
-            let spendable = utxoDict["spendable"] as! Bool
-            if !spendable {
-                let balance = utxoDict["amount"] as! Double
-                amount += balance
-            }
+            let balance = utxoDict["amount"] as! Double
+            amount += balance
             if let desc = utxoDict["desc"] as? String {
                 let p = DescriptorParser()
                 let str = p.descriptor(desc)
@@ -248,11 +311,11 @@ class NodeLogic {
         
         if amount == 0.0 {
             
-            dictToReturn["coldBalance"] = "0.00000000"
+            dictToReturn["onchainBalance"] = "0.00000000"
             
         } else {
             
-            dictToReturn["coldBalance"] = "\(round(100000000*amount)/100000000)"
+            dictToReturn["onchainBalance"] = "\(round(100000000*amount)/100000000)"
             
         }
         
@@ -300,14 +363,12 @@ class NodeLogic {
         }
         
         if let chain = blockchainInfo["chain"] as? String {
-            
             blockchainInfoToReturn["chain"] = "\(chain) chain"
             UserDefaults.standard.set(chain, forKey: "chain")
             
         }
         
         if let pruned = blockchainInfo["pruned"] as? Bool {
-            
             blockchainInfoToReturn["pruned"] = pruned
             
         }
@@ -380,7 +441,6 @@ class NodeLogic {
                 
                 var label = String()
                 var replaced_by_txid = String()
-                var isCold = false
                 
                 let address = transaction["address"] as? String ?? ""
                 let amount = transaction["amount"] as? Double ?? 0.0
@@ -424,12 +484,6 @@ class NodeLogic {
                 dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
                 let dateString = dateFormatter.string(from: date)
                 
-                if let boolCheck = transaction["involvesWatchonly"] as? Bool {
-                    
-                    isCold = boolCheck
-                    
-                }
-                
                 transactionArray.append(["address": address,
                                          "amount": amountString,
                                          "confirmations": confirmations,
@@ -438,9 +492,10 @@ class NodeLogic {
                                          "rbf": rbf,
                                          "txID": txID,
                                          "replacedBy": replaced_by_txid,
-                                         "involvesWatchonly":isCold,
                                          "selfTransfer":false,
-                                         "remove":false
+                                         "remove":false,
+                                         "onchain":true,
+                                         "isLightning":false
                 ])
                 
             }
