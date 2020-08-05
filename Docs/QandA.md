@@ -357,6 +357,9 @@ I sent from my onchain wallet in FN and it worked.
 You have to enable ssh on the node (using keyboard and monitor), tehn ssh in, and setup a v3 hidden service.<br/>
 More info on enabling ssh on Casa Node 1 [here](https://support.keys.casa/hc/en-us/articles/360045445811-Enabling-SSH-Casa-Node-1-) and 2 [here](https://support.keys.casa/hc/en-us/articles/360045007012-Enabling-SSH-Casa-Node-2-).
 
+HenkvanCann: Be aware that Casa is no longer supporting their node. On social media like Reddit, it becomes clear that people move away from Casa node 1+2, and sometimes use the old Casa node to convert it into a myNode. <br/>
+In the Casa site the Casa Node 2 is "sold out" ...
+
 ## Connection
 
 #### Could not connect to the server... What to do?
