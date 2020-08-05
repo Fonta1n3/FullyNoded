@@ -87,7 +87,7 @@ Non premium users can simply get their Tor V3 url for the RPC port add `:8332` t
 ## Troubleshooting
 - `Unknown error`: restart your node, restart Fully Noded, if that does not work make sure your `rpcpassword` and `rpcuser` do not have any special characters, only alphanumeric is allowed, otherwise you will not connect as it breaks the url to your node.
 - `Internet connection appears offline`: reboot Tor on your node, force quit and reopen Fully Noded, this works every single time.
-- If you can not connect and you have added Tor V3 auth to your node then ensure you added the public key correctly as Fully Noded exports it, reboot Tor, force wuit Fully Noded and reopen.
+- If you can not connect and you have added Tor V3 auth to your node then ensure you added the public key correctly as Fully Noded exports it, reboot Tor, force quit Fully Noded and reopen.
 - The way Fully Noded works is very robust and reliable, if you have a connection issue there is a reason, don't lose hope :)
 
 ## What can Fully Noded do?
@@ -304,13 +304,13 @@ The private key is for Fully Noded (paste it or scan it as a QR code when you ad
 
 To be saved in a file called `fullynoded.auth`
 
-Go to your hidden services driectory that you added to your torrc:
+Go to your hidden services driectory that you added to your torrc (/var/lib/tor/**theNodlTorDirectoryName**/authorized_clients/fullynoded.auth):
 
 ```
-HiddenServiceDir /var/lib/tor/FullyNodedV3/
+HiddenServiceDir /var/lib/tor/FullyNodedV3/  (**theNodlTorDirectoryName** is FullyNodedV3 in this example)
 ```
 
-as an example:
+Open the example file:
 
 `sudo nano /var/lib/tor/FullyNodedV3/authorized_clients/fullynoded.auth`
 
