@@ -196,6 +196,8 @@ HiddenServicePort 8332 127.0.0.1:18443
 ⋅⋅*`chmod 700 /usr/local/var/lib/tor/fullynoded/test`
 ⋅⋅*`chmod 700 /usr/local/var/lib/tor/fullynoded/regtest`
 
+- A ready to use `torrc` file that conforms to the guidelines above is available [here](./Docs/torrc-tailored.md).
+
 - Now in Fully Noded go to `Settings` > `Node Manager` > `+` and add a new node by inputting your RPC credentials and copy and paste your onion address with the port at the end `qndoiqnwoiquf713y8731783rgd.onion:8332`. Add *mainnet*, *testnet*, and / or *regtest net* at your convenience. You can run all three and connect to all three.
 
 - Restart Tor on your nodes computer `brew services restart tor` and you should be able to connect to your V3 hidden service from anywhere in the world with your node completely behind a firewall and no port forwarding
