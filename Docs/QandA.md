@@ -501,9 +501,7 @@ Tor V3 hidden services have the ability for “out of band” authentication. Me
 It means only your device can ever access your node even if someone go that RPC QR code. Highly recommended to do that.<br/>
 
 In order to add the auth key you need to use the following command:<br/>
-
 `sudo nano /var/lib/tor/theNodlTorDirectoryName/authorized_clients/fullynoded.auth`<br/>
-
 Then paste the pubkey and save the file (type ctrl X and enter)
 
 `StandUp.app` makes it super easy if you have a mac or the StandUp scripts also make it incredibly easy.
