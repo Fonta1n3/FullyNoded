@@ -1,4 +1,4 @@
-A sample torrc file that conforms to the guideline for [Connection over Tor V3](https://github.com/Fonta1n3/FullyNoded#connecting-over-tor-mac)
+A sample torrc file that is tailored to the guideline for [Connection over Tor V3](https://github.com/Fonta1n3/FullyNoded#connecting-over-tor-mac)
 
 Copy-paste the following code into an empty `torrc` file and save the file. Be sure to prudently to copy an existing torrc-file into a safe location first, I you're not sure about the consequences.
 
