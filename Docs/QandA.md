@@ -178,6 +178,14 @@ I will be be keeping the testflight up to date for you [here](https://testflight
 
 Go slow, `tor` is not meant for speed. `Tor` does not stay alive in the background so every time the app does go (crash) there we have to force `tor` to quit, then when the app reappears it has to bootstrap tor again every time.
 
+#### Question : What are the assurances that the developer cant push out software that will steal my seed say in a single sig wallet?
+
+There isn’t any, that’s why you should use multisig or build the app from source.
+
+##### Further question:  how can I load that code directly to my iOS device without the appstore? What assurances are there that the github code is exactly what is sent and installed via apple appstore?
+
+Again there isn’t any, the code is open sourced so you can build it yourself. Its actually not very difficult to do.
+
 ##Import
 
 #### Question : I got the zpub from electrum. I thought that if you use a bech32 wallet, you get a zpub not xpub?
