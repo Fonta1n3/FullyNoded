@@ -494,6 +494,20 @@ For starters ensure you are connected to your node, can you confirm it successfu
 If your connection is successful you’ll see the home screen look like this:<br/>
 <img src="https://i.ibb.co/HrsmwBd/opening-screen.jpg" alt="opening-screen" border="0" width="200"><br/>
 
+
+####  Question : what's this about *Tor V3 Authentication Public key* in settings > security center > Tor V3 Authentication?
+
+Tor V3 hidden services have the ability for “out of band” authentication. Meaning you FullyNoded can create a private key offline and you can export the pub key to your node to authorize your device. It makes the connection super secure and in the words of the tor devs “superencrypted”<br/>
+It means only your device can ever access your node even if someone go that RPC QR code. Highly recommended to do that.<br/>
+
+In order to add the auth key you need to use the following command:<br/>
+
+`sudo nano /var/lib/tor/theNodlTorDirectoryName/authorized_clients/fullynoded.auth`<br/>
+
+Then paste the pubkey and save the file (type ctrl X and enter)
+
+`StandUp.app` makes it super easy if you have a mac or the StandUp scripts also make it incredibly easy.
+
 ## Wallets
 
 #### Question : How I can erase a wallet in Fullynoded? or modify a name?
