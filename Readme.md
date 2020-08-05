@@ -166,7 +166,7 @@ mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar 
 
 ```
 
-- And below it add:
+- And below it add one Hidden Service for each port:
 
 ```
 HiddenServiceDir /usr/local/var/lib/tor/fullynoded/main
@@ -195,7 +195,8 @@ All three `HiddenServiceDir`'s in `main`, `test` and `regtest` subdirectories of
 ⋅⋅*`chmod 700 /usr/local/var/lib/tor/fullynoded/test/HiddenServiceDir`
 ⋅⋅*`chmod 700 /usr/local/var/lib/tor/fullynoded/regtest/HiddenServiceDir`
 
-- Now in Fully Noded go to `Settings` > `Node Manager` > `+` and add a new node by inputting your RPC credentials and copy and paste your onion address with the port at the end `qndoiqnwoiquf713y8731783rgd.onion:8332`. Add 
+- Now in Fully Noded go to `Settings` > `Node Manager` > `+` and add a new node by inputting your RPC credentials and copy and paste your onion address with the port at the end `qndoiqnwoiquf713y8731783rgd.onion:8332`. Add *mainnet*, *testnet*, and / or *regtest net* at your convenience. You can run all three and connect to all three.
+
 - Restart Tor on your nodes computer `brew services restart tor` and you should be able to connect to your V3 hidden service from anywhere in the world with your node completely behind a firewall and no port forwarding
 
 
