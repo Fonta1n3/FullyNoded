@@ -190,10 +190,11 @@ HiddenServicePort 8332 127.0.0.1:18443
 ⋅⋅* `/usr/local/var/lib/tor/fullynoded/regtest` (the directory for *regtest net* we added to the torrc file) and see a file called `hostname`, open it and that is the onion address you need for Fully Noded.
 
 - The `HiddenServicePort` needs to control your nodes rpcport, by default for mainnet that is 8332, for testnet 18332 and for regtest 18443.
-All three `HiddenServiceDir`'s in `main`, `test` and `regtest` subdirectories of `/usr/local/var/lib/tor/fullynoded` must be chmod 700:
-⋅⋅*`chmod 700 /usr/local/var/lib/tor/fullynoded/main/HiddenServiceDir`
-⋅⋅*`chmod 700 /usr/local/var/lib/tor/fullynoded/test/HiddenServiceDir`
-⋅⋅*`chmod 700 /usr/local/var/lib/tor/fullynoded/regtest/HiddenServiceDir`
+
+- All three `HiddenServiceDir`'s in `main`, `test` and `regtest` subdirectories of `/usr/local/var/lib/tor/fullynoded` need to have permission 700, You can check this yourself ([How to interpret file permissions](https://askubuntu.com/a/528433))If not, they must be changed to 700 with `chmod 700` command:
+⋅⋅*`chmod 700 /usr/local/var/lib/tor/fullynoded/main`
+⋅⋅*`chmod 700 /usr/local/var/lib/tor/fullynoded/test`
+⋅⋅*`chmod 700 /usr/local/var/lib/tor/fullynoded/regtest`
 
 - Now in Fully Noded go to `Settings` > `Node Manager` > `+` and add a new node by inputting your RPC credentials and copy and paste your onion address with the port at the end `qndoiqnwoiquf713y8731783rgd.onion:8332`. Add *mainnet*, *testnet*, and / or *regtest net* at your convenience. You can run all three and connect to all three.
 
