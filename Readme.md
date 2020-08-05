@@ -147,6 +147,7 @@ Run `brew --version` in a terminal, if you get a valid response you have brew in
 ```cd /usr/local
 mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew
 ```
+
 - run `brew install tor` in a terminal
 - Once Tor is installed you will need to create a Hidden Service.
 - Now first locate your `torrc` file, this is Tor's configuration file. Open Finder and type `shift command h` to navigate to your home folder and  `shift command .` to show hidden files.
@@ -164,17 +165,31 @@ mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar 
 ## address y:z.
 
 ```
+
 - And below it add:
+
 ```
-HiddenServiceDir /usr/local/var/lib/tor/fullynoded
+HiddenServiceDir /usr/local/var/lib/tor/fullynoded/main
 HiddenServiceVersion 3
 HiddenServicePort 8332 127.0.0.1:8332
+
+HiddenServiceDir /usr/local/var/lib/tor/fullynoded/test
+HiddenServiceVersion 3
+HiddenServicePort 8332 127.0.0.1:18332
+
+HiddenServiceDir /usr/local/var/lib/tor/fullynoded/regtest
+HiddenServiceVersion 3
+HiddenServicePort 8332 127.0.0.1:18443
 ```
 
 - Save and close nano with `ctrl x` + `y` + `enter` to save and exit nano (follow the prompts)
 - Start Tor by opening a terminal and running `brew services start tor`
-- Tor should start and you should be able to open Finder and navigate to your `/usr/local/var/lib/tor/fullynoded` (the directory we added to the torrc file) and see a file called `hostname`, open it and that is the onion address you need for Fully Noded.
-- The `HiddenServicePort` needs to control your nodes rpcport, by default for mainnet that is 8332 or for testnet 18332.
+- Tor should start and you should be able to open Finder and **navigate to** your 
+⋅⋅* `/usr/local/var/lib/tor/fullynoded/main` (the directory for *main net* we added to the torrc file) and see a file called `hostname`, open it and that is the onion address you need for Fully Noded.
+⋅⋅* `/usr/local/var/lib/tor/fullynoded/test` (the directory for *test net* we added to the torrc file) and see a file called `hostname`, open it and that is the onion address you need for Fully Noded.
+⋅⋅* `/usr/local/var/lib/tor/fullynoded/regtest` (the directory for *regtest net* we added to the torrc file) and see a file called `hostname`, open it and that is the onion address you need for Fully Noded.
+
+- The `HiddenServicePort` needs to control your nodes rpcport, by default for mainnet that is 8332, for testnet 18332 and for regtest 18443.
 - Now in Fully Noded go to `Settings` > `Node Manager` > `+` and add a new node by inputting your RPC credentials and copy and paste your onion address with the port at the end `qndoiqnwoiquf713y8731783rgd.onion:8332`
 - Restart Tor on your nodes computer `brew services restart tor` and you should be able to connect to your V3 hidden service from anywhere in the world with your node completely behind a firewall and no port forwarding
 
