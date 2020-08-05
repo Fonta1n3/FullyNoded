@@ -185,16 +185,16 @@ HiddenServicePort 8332 127.0.0.1:18443
 - Save and close nano with `ctrl x` + `y` + `enter` to save and exit nano (follow the prompts)
 - Start Tor by opening a terminal and running `brew services start tor`
 - Tor should start and you should be able to open Finder and **navigate to** your 
-    ⋅⋅* `/usr/local/var/lib/tor/fullynoded/main` (the directory for *main net* we added to the torrc file) and see a file called `hostname`, open it and that is the onion address you need for Fully Noded.
-    ⋅⋅* `/usr/local/var/lib/tor/fullynoded/test` (the directory for *test net* we added to the torrc file) and see a file called `hostname`, open it and that is the onion address you need for Fully Noded.
-    ⋅⋅* `/usr/local/var/lib/tor/fullynoded/regtest` (the directory for *regtest net* we added to the torrc file) and see a file called `hostname`, open it and that is the onion address you need for Fully Noded.
+    * `/usr/local/var/lib/tor/fullynoded/main` (the directory for *main net* we added to the torrc file) and see a file called `hostname`, open it and that is the onion address you need for Fully Noded.
+    * `/usr/local/var/lib/tor/fullynoded/test` (the directory for *test net* we added to the torrc file) and see a file called `hostname`, open it and that is the onion address you need for Fully Noded.
+    * `/usr/local/var/lib/tor/fullynoded/regtest` (the directory for *regtest net* we added to the torrc file) and see a file called `hostname`, open it and that is the onion address you need for Fully Noded.
 
 - The `HiddenServicePort` needs to control your nodes rpcport, by default for mainnet that is 8332, for testnet 18332 and for regtest 18443.
 
 - All three `HiddenServiceDir`'s in `main`, `test` and `regtest` subdirectories of `/usr/local/var/lib/tor/fullynoded` need to have permission 700, You can check this yourself ([How to interpret file permissions](https://askubuntu.com/a/528433))If not, they must be changed to 700 with `chmod 700` command:
-    ⋅⋅*`chmod 700 /usr/local/var/lib/tor/fullynoded/main`
-    ⋅⋅*`chmod 700 /usr/local/var/lib/tor/fullynoded/test
-    ⋅⋅*`chmod 700 /usr/local/var/lib/tor/fullynoded/regtest`
+    *`chmod 700 /usr/local/var/lib/tor/fullynoded/main`
+    *`chmod 700 /usr/local/var/lib/tor/fullynoded/test
+    *`chmod 700 /usr/local/var/lib/tor/fullynoded/regtest`
 
 - A ready to use `torrc` file that conforms to the guidelines above is available [here](./Docs/torrc-tailored.md).
 
