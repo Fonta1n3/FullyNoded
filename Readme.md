@@ -1,6 +1,13 @@
 # Fully Noded™️
 [https://fullynoded.app](https://fullynoded.app) (work in progress)
 
+🙏🏼 Lightning donation to support development of Fully Noded: http://56uo4htoxdt2tgh6zui5v2q7c4ax43dd3fwueiurgqdw7lpunn2cikqd.onion:5599/donation
+
+## Requirements
+- [Bitcoin Core 0.20.0](https://bitcoincore.org/bin/bitcoin-core-0.20.0/) 
+⚠️ There is a known bug with Fully Noded & Bitcoin Core 0.20.1 which breaks psbt finalizing, until the bug is resolved use 0.20.0 ⚠️
+- [Tor](https://www.torproject.org/download/)
+
 A feature rich Bitcoin app which is 100% powered by your own Full Node. Allows you to connect to - and control multiple nodes using a client side native Tor thread making calls to your nodes rpcport via a V3 hidden service with optional Tor V3 authentication, whereby the app can either create a key for you (out of band) or you may supply your own private key.
 
 ## Supported Nodes

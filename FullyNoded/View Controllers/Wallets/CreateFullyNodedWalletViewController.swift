@@ -70,7 +70,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                         }
                     } else {
                         self.spinner.removeConnectingView()
-                        showAlert(vc: self, title: "Error", message: "There was an error importing your wallet")
+                        showAlert(vc: self, title: "Error", message: "There was an error importing your wallet: \(errorDescription)")
                     }
                 }
             }

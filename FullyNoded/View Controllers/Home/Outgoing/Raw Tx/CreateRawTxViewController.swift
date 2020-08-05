@@ -10,6 +10,8 @@ import UIKit
 
 class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource {
     
+    var isFiat = false
+    var fxRate = Double()
     var stringToExport = ""
     var spendable = Double()
     var rawTxUnsigned = String()
@@ -22,6 +24,13 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     var outputsString = ""
     let ud = UserDefaults.standard
     
+    @IBOutlet weak var fiatButtonOutlet: UIButton!
+    @IBOutlet weak var fxRateLabel: UILabel!
+    @IBOutlet weak var denominationImage: UIImageView!
+    @IBOutlet weak var amountIcon: UIView!
+    @IBOutlet weak var addressIcon: UIView!
+    @IBOutlet weak var recipientBackground: UIView!
+    @IBOutlet weak var amountBackground: UIView!
     @IBOutlet weak var sliderViewBackground: UIView!
     @IBOutlet weak var feeIconBackground: UIView!
     @IBOutlet weak var miningTargetLabel: UILabel!
@@ -36,7 +45,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     @IBOutlet var receivingLabel: UILabel!
     @IBOutlet var outputsTable: UITableView!
     
-    var creatingView = ConnectingView()
+    var spinner = ConnectingView()
     var spendableBalance = Double()
     var outputArray = [[String:String]]()
     
@@ -49,10 +58,23 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         outputsTable.tableFooterView = UIView(frame: .zero)
         outputsTable.alpha = 0
         addTapGesture()
+        
         sliderViewBackground.layer.cornerRadius = 8
-        sliderViewBackground.layer.borderColor = UIColor.lightGray.cgColor
+        sliderViewBackground.layer.borderColor = UIColor.darkGray.cgColor
         sliderViewBackground.layer.borderWidth = 0.5
+        
+        amountBackground.layer.cornerRadius = 8
+        amountBackground.layer.borderColor = UIColor.darkGray.cgColor
+        amountBackground.layer.borderWidth = 0.5
+        
+        recipientBackground.layer.cornerRadius = 8
+        recipientBackground.layer.borderColor = UIColor.darkGray.cgColor
+        recipientBackground.layer.borderWidth = 0.5
+        
+        amountIcon.layer.cornerRadius = 5
         feeIconBackground.layer.cornerRadius = 5
+        addressIcon.layer.cornerRadius = 5
+        
         slider.addTarget(self, action: #selector(setFee), for: .allEvents)
         slider.maximumValue = 2 * -1
         slider.minimumValue = 432 * -1
@@ -76,6 +98,57 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         outputArray.removeAll()
     }
     
+    @IBAction func fundLightning(_ sender: Any) {
+        spinner.addConnectingView(vc: self, description: "fetching lightning funding address...")
+        let rpc = LightningRPC.sharedInstance
+        rpc.command(method: .newaddr, param: "") { (response, errorDesc) in
+            if let dict = response as? NSDictionary {
+                if let address = dict["address"] as? String {
+                    DispatchQueue.main.async { [unowned vc = self] in
+                        vc.addressInput.text = address
+                        vc.spinner.removeConnectingView()
+                        showAlert(vc: vc, title: "⚡️ Nice! ⚡️", message: "This is an address you can use to fund your lightning node with, its your first step in transacting on the lightning network.")
+                    }
+                }
+            } else {
+                print("errorDesc: \(errorDesc ?? "unknown")")
+            }
+        }
+    }
+    
+    @IBAction func denominationAction(_ sender: Any) {
+        spinner.addConnectingView(vc: self, description: "getting fx rate...")
+        let fx = FiatConverter.sharedInstance
+        fx.getFxRate { [unowned vc = self] (fxrate) in
+            if fxrate != nil {
+                vc.fxRate = fxrate!
+                vc.isFiat = !vc.isFiat
+                if vc.isFiat {
+                    DispatchQueue.main.async { [unowned vc = self] in
+                        vc.fxRateLabel.text = "$\(fxrate!.withCommas()) / btc"
+                        vc.denominationImage.image = UIImage(systemName: "dollarsign.circle")
+                        vc.amountIcon.backgroundColor = .systemBlue
+                        vc.fiatButtonOutlet.setImage(UIImage(systemName: "dollarsign.circle"), for: .normal)
+                        vc.spinner.removeConnectingView()
+                        showAlert(vc: vc, title: "Fiat denomination", message: "You may enter an amount denominated in USD, we will calculate the equivalent amount in btc based on the current exchange rate of $\(fxrate!.withCommas()) / btc, always confirm the amounts before broadcasting by tapping the \"verify\" button.\n\nBitcoin's exchange rate can be volatile so always double check the amounts using the \"verify\" tool when the broadcaster presents itself.")
+                    }
+                } else {
+                    DispatchQueue.main.async { [unowned vc = self] in
+                        vc.fxRateLabel.text = "$\(fxrate!) / btc"
+                        vc.denominationImage.image = UIImage(systemName: "bitcoinsign.circle")
+                        vc.fiatButtonOutlet.setImage(UIImage(systemName: "bitcoinsign.circle"), for: .normal)
+                        vc.amountIcon.backgroundColor = .systemIndigo
+                        vc.spinner.removeConnectingView()
+                        showAlert(vc: vc, title: "BTC denomination", message: "You may enter an amount denominated in BTC, to switch back to fiat denominations tap the currency button.")
+                    }
+                }
+            } else {
+                vc.spinner.removeConnectingView()
+                showAlert(vc: vc, title: "Error", message: "Could not get current fx rate")
+            }
+        }
+    }
+    
     @IBAction func createPsbt(_ sender: Any) {
         DispatchQueue.main.async { [unowned vc = self] in
             vc.performSegue(withIdentifier: "segueToCreatePsbt", sender: vc)
@@ -86,7 +159,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         if let address = Keys.donationAddress() {
             DispatchQueue.main.async { [unowned vc = self] in
                 vc.addressInput.text = address
-                showAlert(vc: vc, title: "Thank you!", message: "A donation address has automatically been added so you may build a transaction which will fund further development of Fully Noded.\n\nFully Noded is free but has cost an enormous amount of time, blood, sweat and tears to bring it to where it is today as well as a significant amount of money.\n\nPlease donate generously so that the app may remain free for all to use and so that new awesome features can continue to be added!")
+                showAlert(vc: vc, title: "Thank you!", message: "A donation address has automatically been added so you may build a transaction which will fund further development of Fully Noded.")
             }
         }
     }
@@ -100,7 +173,13 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     @IBAction func addOutput(_ sender: Any) {
         if amountInput.text != "" && addressInput.text != "" && amountInput.text != "0.0" {
-            let dict = ["address":addressInput.text!, "amount":amountInput.text!] as [String : String]
+            var amount = amountInput.text!
+            if isFiat {
+                if let dblAmount = Double(amountInput.text!) {
+                    amount = "\(rounded(number: dblAmount / fxRate))"
+                }
+            }
+            let dict = ["address":addressInput.text!, "amount":amount] as [String : String]
             outputArray.append(dict)
             DispatchQueue.main.async { [unowned vc = self] in
                 vc.outputsTable.alpha = 1
@@ -149,21 +228,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return "Outputs:"
-    }
-    
-    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 30
-    }
-    
-    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
-        (view as! UITableViewHeaderFooterView).backgroundView?.backgroundColor = UIColor.clear
-        (view as! UITableViewHeaderFooterView).textLabel?.textAlignment = .left
-        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.init(name: "System", size: 17)
-        (view as! UITableViewHeaderFooterView).textLabel?.textColor = UIColor.darkGray
-    }
-    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return outputArray.count
     }
@@ -177,12 +241,13 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         cell.backgroundColor = view.backgroundColor
         if outputArray.count > 0 {
             if outputArray.count > 1 {
-                tableView.separatorColor = UIColor.white
+                tableView.separatorColor = .darkGray
                 tableView.separatorStyle = .singleLine
             }
             let address = outputArray[indexPath.row]["address"]!
             let amount = outputArray[indexPath.row]["amount"]!
             cell.textLabel?.text = "\n#\(indexPath.row + 1)\n\nSending: \(String(describing: amount))\n\nTo: \(String(describing: address))"
+            cell.textLabel?.textColor = .lightGray
         } else {
            cell.textLabel?.text = ""
         }
@@ -199,7 +264,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     @IBAction func sweep(_ sender: Any) {
         if addressInput.text != "" {
-            creatingView.addConnectingView(vc: self, description: "sweeping...")
+            spinner.addConnectingView(vc: self, description: "sweeping...")
             let receivingAddress = addressInput.text!
             Reducer.makeCommand(command: .listunspent, param: "0") { [unowned vc = self] (response, errorMessage) in
                 if let resultArray = response as? NSArray {
@@ -239,30 +304,30 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                                         Signer.sign(psbt: processedPSBT) { (psbt, rawTx, errorMessage) in
                                             if psbt != nil {
                                                 vc.rawTxUnsigned = psbt!
-                                                vc.creatingView.removeConnectingView()
+                                                vc.spinner.removeConnectingView()
                                                 vc.showRaw(raw: psbt!)
                                             } else if rawTx != nil {
                                                 vc.rawTxSigned = rawTx!
-                                                vc.creatingView.removeConnectingView()
+                                                vc.spinner.removeConnectingView()
                                                 vc.showRaw(raw: rawTx!)
                                             } else if errorMessage != nil {
-                                                vc.creatingView.removeConnectingView()
+                                                vc.spinner.removeConnectingView()
                                                 showAlert(vc: vc, title: "Error", message: errorMessage!)
                                             }
                                         }
                                     }
                                 } else {
-                                    vc.creatingView.removeConnectingView()
+                                    vc.spinner.removeConnectingView()
                                     displayAlert(viewController: vc, isError: true, message: errorMessage ?? "")
                                 }
                             }
                         } else {
-                            vc.creatingView.removeConnectingView()
+                            vc.spinner.removeConnectingView()
                             displayAlert(viewController: vc, isError: true, message: errorMessage ?? "")
                         }
                     }
                 } else {
-                    vc.creatingView.removeConnectingView()
+                    vc.spinner.removeConnectingView()
                     displayAlert(viewController: vc, isError: true, message: errorMessage ?? "")
                 }
             }
@@ -286,7 +351,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     @objc func tryRaw() {
-        creatingView.addConnectingView(vc: self, description: "creating psbt...")
+        spinner.addConnectingView(vc: self, description: "creating psbt...")
         
         func convertOutputs() {
             for output in outputArray {
@@ -309,16 +374,22 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         
         if outputArray.count == 0 {
             if self.amountInput.text != "" && self.amountInput.text != "0.0" && self.addressInput.text != "" {
-                let dict = ["address":addressInput.text!, "amount":amountInput.text!] as [String : String]
+                var amount = amountInput.text!
+                if isFiat {
+                    if let dblAmount = Double(amountInput.text!) {
+                        amount = "\(rounded(number: dblAmount / fxRate))"
+                    }
+                }
+                let dict = ["address":addressInput.text!, "amount":amount] as [String : String]
                 outputArray.append(dict)
                 convertOutputs()
             } else {
-                creatingView.removeConnectingView()
+                spinner.removeConnectingView()
                 displayAlert(viewController: self, isError: true, message: "You need to fill out an amount and a recipient")
             }
             
         } else if outputArray.count > 0 && self.amountInput.text != "" || self.amountInput.text != "0.0" && self.addressInput.text != "" {
-            creatingView.removeConnectingView()
+            spinner.removeConnectingView()
             displayAlert(viewController: self, isError: true, message: "If you want to add multiple recipients please tap the \"+\" and add them all first.")
             
         } else if outputArray.count > 0 {
@@ -388,14 +459,14 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         CreatePSBT.create(outputs: outputsString) { [unowned vc = self] (psbt, rawTx, errorMessage) in
             if psbt != nil {
                 vc.rawTxUnsigned = psbt!
-                vc.creatingView.removeConnectingView()
+                vc.spinner.removeConnectingView()
                 vc.showRaw(raw: psbt!)
             } else if rawTx != nil {
                 vc.rawTxSigned = rawTx!
-                vc.creatingView.removeConnectingView()
+                vc.spinner.removeConnectingView()
                 vc.showRaw(raw: rawTx!)
             } else if errorMessage != nil {
-                vc.creatingView.removeConnectingView()
+                vc.spinner.removeConnectingView()
                 showAlert(vc: vc, title: "Error", message: errorMessage!)
             }
         }

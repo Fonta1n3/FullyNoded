@@ -11,6 +11,7 @@ import LibWally
 
 class SignerViewController: UIViewController {
     
+    @IBOutlet weak var fxRateLabel: UILabel!
     @IBOutlet weak var analyzeOutlet: UIButton!
     @IBOutlet weak var decodeOutlet: UIButton!
     var fxRate = Double()
@@ -36,6 +37,7 @@ class SignerViewController: UIViewController {
         textView.layer.borderColor = UIColor.lightGray.cgColor
         textView.layer.borderWidth = 0.5
         if psbt != "" {
+            psbt = (psbt.replacingOccurrences(of: "\n", with: "")).condenseWhitespace()
             textView.text = psbt
             if export {
                 titleLabel.text = "Export PSBT"
@@ -46,6 +48,7 @@ class SignerViewController: UIViewController {
                 spinner.addConnectingView(vc: self, description: "checking which network the node is on...")
             }
         } else if txn != "" {
+            txn = (txn.replacingOccurrences(of: "\n", with: "")).condenseWhitespace()
             titleLabel.text = "Broadcaster"
             broadcast = true
             textView.text = (txn.replacingOccurrences(of: "\n", with: "")).condenseWhitespace()
@@ -55,6 +58,7 @@ class SignerViewController: UIViewController {
             decodeOutlet.alpha = 1
             spinner.addConnectingView(vc: self, description: "checking which network the node is on...")
         } else if txnUnsigned != "" {
+            txnUnsigned = (txnUnsigned.replacingOccurrences(of: "\n", with: "")).condenseWhitespace()
             analyzeOutlet.setTitle("verify", for: .normal)
             analyzeOutlet.alpha = 1
             textView.text = txnUnsigned
@@ -93,7 +97,16 @@ class SignerViewController: UIViewController {
     
     private func getPsbt(chain: Network) {
         if psbt != "" {
-            process()
+            do {
+                let psbtTocheck = try PSBT(psbt, chain)
+                if psbtTocheck.complete {
+                    finalizePsbt()
+                } else {
+                    process()
+                }
+            } catch {
+                showError(error: "error processing psbt")
+            }
         } else {
             spinner.removeConnectingView()
         }
@@ -103,6 +116,24 @@ class SignerViewController: UIViewController {
         DispatchQueue.main.async { [unowned vc = self] in
             vc.spinner.removeConnectingView()
             showAlert(vc: vc, title: "Error", message: error)
+        }
+    }
+    
+    private func finalizePsbt() {
+        updateLabel(text: "finalizing psbt...")
+        Reducer.makeCommand(command: .finalizepsbt, param: "\"\(psbt)\"") { [unowned vc = self] (object, errorDescription) in
+            if let result = object as? NSDictionary {
+                if let complete = result["complete"] as? Bool {
+                    if complete {
+                        let hex = result["hex"] as! String
+                        vc.txn = hex
+                    }
+                } else {
+                    vc.showError(error: errorDescription ?? "")
+                }
+            } else {
+                vc.showError(error: errorDescription ?? "")
+            }
         }
     }
     
@@ -311,6 +342,9 @@ class SignerViewController: UIViewController {
             fx.getFxRate { [unowned vc = self] (fx) in
                 if fx != nil {
                     vc.fxRate = fx!
+                    DispatchQueue.main.async { [unowned vc = self] in
+                        vc.fxRateLabel.text = "$\(fx!.withCommas()) / btc"
+                    }
                 }
                 if vc.txn != "" {
                     vc.decodeRaw(raw: vc.txn)
