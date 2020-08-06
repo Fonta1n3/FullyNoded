@@ -195,10 +195,10 @@ The syntax is `HiddenServicePort xxxx 127.0.0.1:18332`, `xxxx` represents a synt
 
 - Save and close nano with `ctrl x` + `y` + `enter` to save and exit nano (follow the prompts)
 - Start Tor by opening a terminal and running `brew services start tor`
-- Tor should start and you should be able to open Finder and **navigate to** your 
-    * `/usr/local/var/lib/tor/fullynoded/main` (the directory for *mainnet* we added to the torrc file) and see a file called `hostname`, open it and that is the onion address you need for Fully Noded.
-    * `/usr/local/var/lib/tor/fullynoded/test` (the directory for *testnet* we added to the torrc file) and see a file called `hostname`, open it and that is the onion address you need for Fully Noded.
-    * `/usr/local/var/lib/tor/fullynoded/regtest` (the directory for *regtest net* we added to the torrc file) and see a file called `hostname`, open it and that is the onion address you need for Fully Noded.
+- Tor should start and you should be able to open Finder and **navigate to** your onion address(es) you need for Fully Noded:
+    * `/usr/local/var/lib/tor/fullynoded/main` (the directory for *mainnet* we added to the torrc file) and see a file called `hostname`, open it and copy the onion address, that you need for Fully Noded.
+    * `/usr/local/var/lib/tor/fullynoded/test` (the directory for *testnet* we added to the torrc file), same: there is file called `hostname`, open it etc.
+    * `/usr/local/var/lib/tor/fullynoded/regtest` (the directory for *regtest net* we added to the torrc file); same as `main` and `test`.
 
 - The `HiddenServicePort` needs to control your nodes rpcport, by default for mainnet that is 8332, for testnet 18332 and for regtest 18443.
 
@@ -248,7 +248,7 @@ dbcache=4000
 
 ##### Preparatory work: 
 
-First get your connection going. **Resolve the connection issue first then add the keypair**, to keep things simple. Some double checks [Extensive guide here](./Readme.md#connecting-over-tor-mac):
+First get your connection going. **Resolve the connection issue first then add the keypair**, to keep things simple. Some double checks ( A more extensive guide [here](./Readme.md#connecting-over-tor-mac)):
 ###### On your device running node
 - Your node is running either mainnet, testnet or regtest
 - You've made the appropriate HiddenService -Dir, -Version and -Port declaration in your torrc file for at least the matching port (respectively 8332, 18332 and/or 18443).
