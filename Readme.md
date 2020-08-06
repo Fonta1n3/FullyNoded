@@ -245,7 +245,7 @@ dbcache=4000
 
 ##### Preparatory work: 
 
-First get your connection going. **Resolve the connection issue first then add the keypair**, to keep things simple. Some double checks [Extensive guide here](#Connecting over Tor (mac)):
+First get your connection going. **Resolve the connection issue first then add the keypair**, to keep things simple. Some double checks [Extensive guide here](./#Connecting over Tor (mac)):
 ###### On your device running node
 - Your node is running either mainnet, testnet or regtest
 - You've made the appropriate HiddenService -Dir, -Version and -Port declaration in your torrc file for at least the matching port (respectively 8332, 18332 and/or 18443).
