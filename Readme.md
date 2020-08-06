@@ -162,7 +162,6 @@ mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar 
 - The torrc file should be located at `‎⁨/usr⁩/local⁩/etc⁩/tor⁩/torrc`, to edit it you can open terminal and run `sudo nano /usr⁩/local⁩/etc⁩/tor⁩/torrc`
 - Find the line that looks like: `#ControlPort 9051` and delete the `#`
 - Find the line that looks like: `#CookieAuthentication 1` and delete the `#`
-CookieAuthentication 1
 - Then locate the section that looks like:
 
 ```
@@ -240,6 +239,16 @@ dbcache=4000
 ```
 
 ## V3 Auth Keypair generation (optional)
+
+##### Preparatory work: 
+
+First get your connection going. **Resolve the connection issue first then add the keypair**, to keep things simple. Some double checks [Extensive guide here](#Connecting over Tor (mac)):
+
+ - Your node is running either mainnet, testnet or regtest
+ - You've made the appropriate HiddenService -Dir, -Version and -Port declaration in your torrc file for at least the matching port (respectively 8332, 18332 and/or 18443).
+ - You've force quit and reopened FN to connect again, you've had to `brew services restart tor`, for the auth to take effect.
+  
+  As long as your `authorized _clients` dir of the matching `HiddenServiceDir` decalration in your `torrc` is empty you won’t need to add a keypair to connect. That's why V3 Auth Keypair generation is optional.
 
 #### The easy way:
 
@@ -321,6 +330,9 @@ and paste in:
 `descriptor:x25519:PHK2DFSCNNJ75U3GUA3SHCVEGPEJMZAPEKQGL5YLVM2GV6NORB6Q`
 
 Save and exit and you have one of the most secure node/light client set ups possible. (assuming your server is firewalled off)
+
+#### Final thoughts on security
+I will happily share my enitre RPC-url and -password with anyone, there is no way they can hack this Tor V3 auth, granted they can not get the private key obviously. Fully Noded creates the private key offline, encrypts it heavily and stores it in the most secure way possible.
 
 ## QuickConnect URL Scheme
 Fully Noded has a deep link registered with the following prefixes  `btcstandup://` and `btcrpc://` either prefix will work.
