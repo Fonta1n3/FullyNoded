@@ -363,10 +363,16 @@ In the Casa site the Casa Node 2 is "sold out" ...
 ## Connection
 
 #### Could not connect to the server... What to do?
-TBW
+
+Follow the steps [here](https://github.com/Fonta1n3/FullyNoded#connecting-over-tor-mac). Always remember you will have to brew services restart tor, you will have to force quit and reopen FN to connect again, for the authentication to take effect.
 
 #### "The internet connection appears to be offline..." but I am online, what to do?
-TBW
+Some double checks [Extensive guide here](../Readme.md#Connecting over Tor (mac)):
+
+ - Your node is running either mainnet, testnet or regtest
+ - You've made the appropriate HiddenService -Dir, -Version and -Port declaration in your torrc file for at least the matching port (respectively 8332, 18332 and/or 18443).
+ - You've force quit and reopened FN to connect again, and you've had to `brew services restart tor`, for the auth to take effect.
+
 
 #### Can I connect FN  to my node over local wifi?
 
