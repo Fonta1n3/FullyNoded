@@ -63,7 +63,7 @@ ControlPort 9051
 ## If you enable the controlport, be sure to enable one of these
 ## authentication methods, to prevent attackers from accessing it.
 #HashedControlPassword 16:872860B76453A77D60CA2BB8C1A7042072093276A3D701AD684053EC4C
-#CookieAuthentication 1
+CookieAuthentication 1
 
 ############### This section is just for location-hidden services ###
 
@@ -87,11 +87,11 @@ HiddenServicePort 8332 127.0.0.1:8332
 
 HiddenServiceDir /usr/local/var/lib/tor/fullynoded/test
 HiddenServiceVersion 3
-HiddenServicePort 8332 127.0.0.1:18332
+HiddenServicePort 18332 127.0.0.1:18332
 
 HiddenServiceDir /usr/local/var/lib/tor/fullynoded/regtest
 HiddenServiceVersion 3
-HiddenServicePort 8332 127.0.0.1:18443
+HiddenServicePort 18443 127.0.0.1:18443
 
 ################ This section is just for relays #####################
 #
