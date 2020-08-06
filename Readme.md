@@ -193,8 +193,8 @@ HiddenServicePort 18443 127.0.0.1:18443
 - Save and close nano with `ctrl x` + `y` + `enter` to save and exit nano (follow the prompts)
 - Start Tor by opening a terminal and running `brew services start tor`
 - Tor should start and you should be able to open Finder and **navigate to** your 
-    * `/usr/local/var/lib/tor/fullynoded/main` (the directory for *main net* we added to the torrc file) and see a file called `hostname`, open it and that is the onion address you need for Fully Noded.
-    * `/usr/local/var/lib/tor/fullynoded/test` (the directory for *test net* we added to the torrc file) and see a file called `hostname`, open it and that is the onion address you need for Fully Noded.
+    * `/usr/local/var/lib/tor/fullynoded/main` (the directory for *mainnet* we added to the torrc file) and see a file called `hostname`, open it and that is the onion address you need for Fully Noded.
+    * `/usr/local/var/lib/tor/fullynoded/test` (the directory for *testnet* we added to the torrc file) and see a file called `hostname`, open it and that is the onion address you need for Fully Noded.
     * `/usr/local/var/lib/tor/fullynoded/regtest` (the directory for *regtest net* we added to the torrc file) and see a file called `hostname`, open it and that is the onion address you need for Fully Noded.
 
 - The `HiddenServicePort` needs to control your nodes rpcport, by default for mainnet that is 8332, for testnet 18332 and for regtest 18443.
@@ -246,12 +246,21 @@ dbcache=4000
 ##### Preparatory work: 
 
 First get your connection going. **Resolve the connection issue first then add the keypair**, to keep things simple. Some double checks [Extensive guide here](#Connecting over Tor (mac)):
+###### On your device running node
+- Your node is running either mainnet, testnet or regtest
+- You've made the appropriate HiddenService -Dir, -Version and -Port declaration in your torrc file for at least the matching port (respectively 8332, 18332 and/or 18443).
+- You've started Tor for the changes to take effect
+- You've looked up the hostname files
+###### On your device running FN
+- in Fully Noded, make sure you have added a node with this type of onion url: 
 
- - Your node is running either mainnet, testnet or regtest
- - You've made the appropriate HiddenService -Dir, -Version and -Port declaration in your torrc file for at least the matching port (respectively 8332, 18332 and/or 18443).
- - You've force quit and reopened FN to connect again, you've had to `brew services restart tor`, for the auth to take effect.
+	qsctzvoadnehtt5tpjtprudxrrx2b76kra7e2lkbyjpdksncbclrdk5l.onion:18332 (testnet example)
+
+- You've force quit and reopened FN to connect again, you've had to `brew services restart tor`, for the authentication to take effect.
   
   As long as your `authorized _clients` dir of the matching `HiddenServiceDir` decalration in your `torrc` is empty you won’t need to add a keypair to connect. That's why V3 Auth Keypair generation is optional.
+  
+### How to add extra security by adding a V3 Auth Keypair to a already established (Tor Hidden Services) connection?
 
 #### The easy way:
 
