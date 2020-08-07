@@ -178,6 +178,14 @@ I will be be keeping the testflight up to date for you [here](https://testflight
 
 Go slow, `tor` is not meant for speed. `Tor` does not stay alive in the background so every time the app does go (crash) there we have to force `tor` to quit, then when the app reappears it has to bootstrap tor again every time.
 
+#### Question : What are the assurances that the developer cant push out software that will steal my seed say in a single sig wallet?
+
+There isn’t any, that’s why you should use multisig or build the app from source.
+
+##### Further question:  how can I load that code directly to my iOS device without the appstore? What assurances are there that the github code is exactly what is sent and installed via apple appstore?
+
+Again there isn’t any, the code is open sourced so you can build it yourself. Its actually not very difficult to do.
+
 ##Import
 
 #### Question : I got the zpub from electrum. I thought that if you use a bech32 wallet, you get a zpub not xpub?
@@ -329,14 +337,38 @@ I mean i can give you a lightning invoice if you’d like. I did get one set up 
 
 Random address generated from an `xpub`.
 
+#### Question : How to do c-lightning on mac with pruned node?
+
+As long as you have bitcoin core already running and have brew installed (properly). C-lightning is pretty cool, you do not even to to "deposit" btc to your node anymore, you can fund any channel direct from any btc wallet.
+
+##### Further Question: As far as I know c-lightning doesn’t fully support pruned nodes.   
+*If bitcoind prunes a block that c-lightning has not processed yet, e.g., c-lightning was not running for a prolonged period, then bitcoind will not be able to serve the missing blocks, hence c-lightning will not be able to synchronize anymore and will be stuck)?*
+
+C-lighting does support pruned nodes with this: https://github.com/Start9Labs/c-lightning-pruning-plugin. Works well and easy to setup, c-lightning does support pruned nodes out of the box, but this plug makes it very reliable, can be any pruned size as far as I know.
+
+	lightning-cli fundchannel_start <node_id> <satoshi_amount>
+
+Returns a segwit multisig address to send btc to<br/>
+Does not matter where the btc comes from, as far as I can tell<br/>
+I sent from my onchain wallet in FN and it worked.
+
+#### How could I connect Casa Node and FN? 
+
+You have to enable ssh on the node (using keyboard and monitor), tehn ssh in, and setup a v3 hidden service.<br/>
+More info on enabling ssh on Casa Node 1 [here](https://support.keys.casa/hc/en-us/articles/360045445811-Enabling-SSH-Casa-Node-1-) and 2 [here](https://support.keys.casa/hc/en-us/articles/360045007012-Enabling-SSH-Casa-Node-2-).
+
+HenkvanCann: Be aware that Casa is no longer supporting their node. On social media like Reddit, it becomes clear that people move away from Casa node 1+2, and sometimes use the old Casa node to convert it into a myNode. <br/>
+In the Casa site the Casa Node 2 is "sold out" ...
 
 ## Connection
 
 #### Could not connect to the server... What to do?
-TBW
 
-#### "The internet connection appears to be offline..."" but I am online, what to do?
-TBW
+Follow the steps [here](../Readme.md#connecting-over-tor-mac). Always remember you will have to brew services restart tor, you will have to force quit and reopen FN to connect again, for the authentication to take effect.
+
+#### "The internet connection appears to be offline..." but I am online, what to do?
+
+This response is often related to failing authentication. Have a look at [this section](../Readme.md#connecting-over-tor-mac) in the *Readme.md* for an extensive guide and a double check section [here](../Readme.md#preparatory-work)
 
 #### Can I connect FN  to my node over local wifi?
 
@@ -403,7 +435,7 @@ Here are some [common issues and fixes](https://github.com/Fonta1n3/FullyNoded#t
 
 > Before doing the below, try rebooting Tor on the node server side, force quitting FN and see if it connects, double check you added your tor v3 url correctly with the right port at the end, typically `:8332` for mainnet.
 
-Recreate your hidden service url like so: `http://rpcuser:rpcpassword@xxx.onion:8332`, paste it in to a Tor browser as if you were visiting a website, if your connection is alive and functioning properly you will get a `server only responds to POST requests` error in the Tor browser. If you do not get that error then something is wrong, again check the Tor and Bitcoin Core logs to debug the issue.
+Recreate your hidden service url like so: `http://rpcuser:rpcpassword@xxx.onion:8332`, paste it in to a Tor browser as if you were visiting a website, if your connection is alive and functioning properly you will get a `server only responds to POST requests` error or `JSONRPC server handles only POST requests` error in the Tor browser. If you do not get that error then something is wrong, again check the Tor and Bitcoin Core logs to debug the issue.
 
 #### Question: What is the best of breed desktop wallet to connect to your node?
 
@@ -463,6 +495,18 @@ For starters ensure you are connected to your node, can you confirm it successfu
 
 If your connection is successful you’ll see the home screen look like this:<br/>
 <img src="https://i.ibb.co/HrsmwBd/opening-screen.jpg" alt="opening-screen" border="0" width="200"><br/>
+
+
+####  Question : what's this about *Tor V3 Authentication Public key* in settings > security center > Tor V3 Authentication?
+
+Tor V3 hidden services have the ability for “out of band” authentication. Meaning you FullyNoded can create a private key offline and you can export the pub key to your node to authorize your device. It makes the connection super secure and in the words of the tor devs “superencrypted”<br/>
+It means only your device can ever access your node even if someone go that RPC QR code. Highly recommended to do that.<br/>
+
+In order to add the auth key you need to use the following command:<br/>
+`sudo nano /var/lib/tor/theNodlTorDirectoryName/authorized_clients/fullynoded.auth`<br/>
+Then paste the pubkey and save the file (type ctrl X and enter)
+
+`StandUp.app` makes it super easy if you have a mac or the StandUp scripts also make it incredibly easy.
 
 ## Wallets
 

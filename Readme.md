@@ -87,7 +87,7 @@ Non premium users can simply get their Tor V3 url for the RPC port add `:8332` t
 ## Troubleshooting
 - `Unknown error`: restart your node, restart Fully Noded, if that does not work make sure your `rpcpassword` and `rpcuser` do not have any special characters, only alphanumeric is allowed, otherwise you will not connect as it breaks the url to your node.
 - `Internet connection appears offline`: reboot Tor on your node, force quit and reopen Fully Noded, this works every single time.
-- If you can not connect and you have added Tor V3 auth to your node then ensure you added the public key correctly as Fully Noded exports it, reboot Tor, force wuit Fully Noded and reopen.
+- If you can not connect and you have added Tor V3 auth to your node then ensure you added the public key correctly as Fully Noded exports it, reboot Tor, force quit Fully Noded and reopen.
 - The way Fully Noded works is very robust and reliable, if you have a connection issue there is a reason, don't lose hope :)
 
 ## What can Fully Noded do?
@@ -154,11 +154,14 @@ Run `brew --version` in a terminal, if you get a valid response you have brew in
 ```cd /usr/local
 mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew
 ```
+### On the device running your node:
 - run `brew install tor` in a terminal
 - Once Tor is installed you will need to create a Hidden Service.
-- First locate your `torrc` file, this is Tor's configuration file. Open Finder and type `shift command h` to navigate to your home folder and  `shift command .` to show hidden files.
+- Now first locate your `torrc` file, this is Tor's configuration file. Open Finder and type `shift command h` to navigate to your home folder and  `shift command .` to show hidden files.
+-  If you've not been able to locate the torrc file, you might have to create the torrc file manually first. Do this by copying the torrc.sample -file: `cp /usr⁩/local⁩/etc⁩/tor⁩/torrc.sample /usr⁩/local⁩/etc⁩/tor⁩/torrc` and give the file it's right permission `chmod 700 /usr⁩/local⁩/etc⁩/tor⁩/torrc`
 - The torrc file should be located at `‎⁨/usr⁩/local⁩/etc⁩/tor⁩/torrc`, to edit it you can open terminal and run `sudo nano /usr⁩/local⁩/etc⁩/tor⁩/torrc`
 - Find the line that looks like: `#ControlPort 9051` and delete the `#`
+- Find the line that looks like: `#CookieAuthentication 1` and delete the `#`
 - Then locate the section that looks like:
 
 ```
@@ -170,19 +173,49 @@ mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar 
 ## address y:z.
 
 ```
-- And below it add:
+
+- And below it add one Hidden Service for each port:
+
 ```
-HiddenServiceDir /usr/local/var/lib/tor/fullynoded
+HiddenServiceDir /usr/local/var/lib/tor/fullynoded/main
 HiddenServiceVersion 3
 HiddenServicePort 8332 127.0.0.1:8332
+
+HiddenServiceDir /usr/local/var/lib/tor/fullynoded/test
+HiddenServiceVersion 3
+HiddenServicePort 18332 127.0.0.1:18332
+
+HiddenServiceDir /usr/local/var/lib/tor/fullynoded/regtest
+HiddenServiceVersion 3
+HiddenServicePort 18443 127.0.0.1:18443
 ```
+
+The syntax is `HiddenServicePort xxxx 127.0.0.1:18332`, `xxxx` represents a synthetic port (virtual port), that means it doesn't matter what number you assign to `xxxx`. However, to make it simple just keep the ports the same.
+
 
 - Save and close nano with `ctrl x` + `y` + `enter` to save and exit nano (follow the prompts)
 - Start Tor by opening a terminal and running `brew services start tor`
-- Tor should start and you should be able to open Finder and navigate to your `/usr/local/var/lib/tor/fullynoded` (the directory we added to the torrc file) and see a file called `hostname`, open it and that is the onion address you need for Fully Noded.
-- The `HiddenServicePort` needs to control your nodes rpcport, by default for mainnet that is 8332 or for testnet 18332.
-- Now in Fully Noded go to `Settings` > `Node Manager` > `+` and add a new node by inputting your RPC credentials and copy and paste your onion address with the port at the end `qndoiqnwoiquf713y8731783rgd.onion:8332`
+- Tor should start and you should be able to open Finder and **navigate to** your onion address(es) you need for Fully Noded:
+    * `/usr/local/var/lib/tor/fullynoded/main` (the directory for *mainnet* we added to the torrc file) and see a file called `hostname`, open it and copy the onion address, that you need for Fully Noded.
+    * `/usr/local/var/lib/tor/fullynoded/test` (the directory for *testnet* we added to the torrc file), same: there is file called `hostname`, open it etc.
+    * `/usr/local/var/lib/tor/fullynoded/regtest` (the directory for *regtest net* we added to the torrc file); same as `main` and `test`.
+
+- The `HiddenServicePort` needs to control your nodes rpcport, by default for mainnet that is 8332, for testnet 18332 and for regtest 18443.
+
+- All three `HiddenServiceDir`'s in `main`, `test` and `regtest` subdirectories of `/usr/local/var/lib/tor/fullynoded` need to have permission 700, You can check this yourself ([How to interpret file permissions](https://askubuntu.com/a/528433))If not, they must be changed to 700 with `chmod 700` command:
+    * `chmod 700 /usr/local/var/lib/tor/fullynoded/main`
+    * `chmod 700 /usr/local/var/lib/tor/fullynoded/test`
+    * `chmod 700 /usr/local/var/lib/tor/fullynoded/regtest`
+
+- A ready to use `torrc` file that conforms to the guidelines above is available [here](./Docs/torrc-tailored.md).
+
+### On the device running  FN:
+- Now in Fully Noded go to `Settings` > `Node Manager` > `+` and add a new node by inputting your RPC credentials and copy and paste your onion address with the port at the end `qndoiqnwoiquf713y8731783rgd.onion:8332`.
+- You should never type (password) fields manually, just copy and paste between devices. Between Apple Mac, iphone and iPad, the clipboard will be synced as soon as you *put on bluetooth* on at least two of the devices. Once bluetooth is on on your mac and ipad then it should automatically paste over from the computer to iPad and back. Same should work for iPhone.
+- Add *mainnet*, *testnet*, and / or *regtest net* at your convenience. You can run all three and connect to all three.
+
 - Restart Tor on your nodes computer `brew services restart tor` and you should be able to connect to your V3 hidden service from anywhere in the world with your node completely behind a firewall and no port forwarding
+
 
 ## bitcoin.conf settings
 - Here is an example bitcoin.conf file best suited for Fully Noded:
@@ -212,6 +245,25 @@ dbcache=4000
 ```
 
 ## V3 Auth Keypair generation (optional)
+
+##### Preparatory work: 
+
+First get your connection going. **Resolve the connection issue first then add the keypair**, to keep things simple. Some double checks ( A more extensive guide [here](./Readme.md#connecting-over-tor-mac)):
+###### On your device running node
+- Your node is running either mainnet, testnet or regtest
+- You've made the appropriate HiddenService -Dir, -Version and -Port declaration in your torrc file for at least the matching port (respectively 8332, 18332 and/or 18443).
+- You've started Tor for the changes to take effect
+- You've looked up the hostname files
+###### On your device running FN
+- in Fully Noded, make sure you have added a node with this type of onion url: 
+
+	qsctzvoadnehtt5tpjtprudxrrx2b76kra7e2lkbyjpdksncbclrdk5l.onion:18332 (testnet example)
+
+- You've force quit and reopened FN to connect again, you've had to `brew services restart tor`, for the authentication to take effect.
+  
+  As long as your `authorized _clients` dir of the matching `HiddenServiceDir` decalration in your `torrc` is empty you won’t need to add a keypair to connect. That's why V3 Auth Keypair generation is optional.
+  
+### How to add extra security by adding a V3 Auth Keypair to a already established (Tor Hidden Services) connection?
 
 #### The easy way:
 
@@ -278,13 +330,13 @@ The private key is for Fully Noded (paste it or scan it as a QR code when you ad
 
 To be saved in a file called `fullynoded.auth`
 
-Go to your hidden services driectory that you added to your torrc:
+Go to your hidden services driectory that you added to your torrc (/var/lib/tor/**theNodlTorDirectoryName**/authorized_clients/fullynoded.auth):
 
 ```
-HiddenServiceDir /var/lib/tor/FullyNodedV3/
+HiddenServiceDir /var/lib/tor/FullyNodedV3/  (**theNodlTorDirectoryName** is FullyNodedV3 in this example)
 ```
 
-as an example:
+Open the example file:
 
 `sudo nano /var/lib/tor/FullyNodedV3/authorized_clients/fullynoded.auth`
 
@@ -293,6 +345,9 @@ and paste in:
 `descriptor:x25519:PHK2DFSCNNJ75U3GUA3SHCVEGPEJMZAPEKQGL5YLVM2GV6NORB6Q`
 
 Save and exit and you have one of the most secure node/light client set ups possible. (assuming your server is firewalled off)
+
+#### Final thoughts on security
+I will happily share my enitre RPC-url and -password with anyone, there is no way they can hack this Tor V3 auth, granted they can not get the private key obviously. Fully Noded creates the private key offline, encrypts it heavily and stores it in the most secure way possible.
 
 ## QuickConnect URL Scheme
 Fully Noded has a deep link registered with the following prefixes  `btcstandup://` and `btcrpc://` either prefix will work.
