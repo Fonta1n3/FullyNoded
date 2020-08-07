@@ -113,22 +113,30 @@ Thats it, Fully Noded will now automatically use those credentials for any light
 
 In Fully Noded you will see lightning bolt ⚡️ buttons in a few places, tap them to see what they do.
 
+### Invoices
 For invoices, Fully Noded by default creates on-chain invoice's from your Bitcoin Core node, tap the lightning bolt to create a lightning invoice, you can add optional amount (btc) and label for the bolt11 invoices.
 
+### Balances
 Fully Noded no longer differentiates between hot and cold balances. Your balances now shows an on-chain 🔗 balance and a lightning ⚡️ balance.
 
+### Transaction history
 The transaction history will automatically show any lightning related on-chain transactions (deposits/withdraws to your lightning wallet) as well as your Bitcoin Core wallet's on-chain transaction.
 
 Any lightning related transaction will have a ⚡️ icon and any on-chain transactions will have a 🔗 icon, you will see funding and withdraw transactions with both a ⚡️ and 🔗icon because they are related to both your on-chain and lightning wallet. On-chain transactions are always denominated in btc, off-chain transactions always denominated in sats.
 
+### Sending transactions
 On the "send" view you will see some new lightning ⚡️ buttons.
 
+### Deposit to your lightning wallet
 Just above the address text input field there is a lightning ⚡️button, this will fetch a deposit address from your lightning node so you can easily deposit to it from your on-chain node's wallet.
 
+### Withdraw from lightning wallet
 There is a lightning ⚡️in the top right too, that is for withdrawing from your lightning node to whatever address you provide, amounts will be denominated in btc or USD depending on which currency you have selected (you can tap the coin button to toggle currency types).
 
+### Paying invoices
 In this view you can always paste in or scan a bolt11 invoice with an optional amount filled in, if the bolt11 invoice does not specify an amount you must fill one out in the amount input text field.
 
+### Channel management
 For creating channels go to "settings" > "node manager" > ⚡️ > ⚙️:
 This will fetch all your peers and display their ID's. You can tap each one to see the raw json data from your c-lightning node.
 
