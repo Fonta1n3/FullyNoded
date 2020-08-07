@@ -1,5 +1,7 @@
 # ⚡️⚡️⚡️Lightning ⚡️⚡️⚡️
 
+### This is #Reckless, please use it on testnet for now as it is brand new
+
 This document explains how to use Fully Noded to remotely connect to and control your c-lightning node via a Tor V3 hidden service.
 
 First you need to install c-lightning, to do that follow [this](https://github.com/ElementsProject/lightning/blob/master/doc/INSTALL.md) guide for whichever OS you are on.
