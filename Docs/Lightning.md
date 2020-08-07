@@ -11,21 +11,22 @@ If you have c-lightning running already you can stop it. `cli/lightning-cli stop
 You will need Tor running on the node. On linux `sudo apt install tor` works, on macOS `brew install tor` does the trick.
 
 Boot tor as a service:
-mac `brew services start tor`
+mac: `brew services start tor`<br/>
 Linux: `systemctl start tor`
 
 Create a hidden service that we will use later:
-macOS:
-`nano /usr/local/etc/tor/torrc` (if it does not yet exist duplicate the torrc.sample in the same directory and delete the .sample extension, saving it as a new file)
+macOS:<br/>
+`nano /usr/local/etc/tor/torrc`<br/>
+(if it does not yet exist duplicate the torrc.sample in the same directory and delete the .sample extension, saving it as a new file)
 
-On Linux:
-`nano /etc/tor/torrc`
+On Linux:<br/>
+`nano /etc/tor/torrc`<br/>
 
-Ensure you uncomment these lines:
-`ControlPort 9051`
-`CookieAuthentication 1`
+Ensure you uncomment these lines:<br/>
+`ControlPort 9051`<br/>
+`CookieAuthentication 1`<br/>
 
-and find the hidden services section:
+and find the hidden services section:<br/>
 ```
 ############### This section is just for location-hidden services ###
 
@@ -37,29 +38,29 @@ and find the hidden services section:
 ## address y:z.
 ```
 
-Below it add the hidden service we will use to control our lightning node:
+Below it add the hidden service we will use to control our lightning node:<br/>
 ```
 HiddenServiceDir /usr/local/var/lib/tor/lightning/
 HiddenServiceVersion 3
 HiddenServicePort 1312 127.0.0.1:1312
 ```
-`ctlr x` > `y` > `return` to save the changes and quit nano test editor
+`ctlr x` > `y` > `return` to save the changes and quit nano text editor
 
-You will then need to create the hidden service directory:
+You will then need to create the hidden service directory:<br/>
 `mkdir /usr/local/var/lib/tor/lightning/`
 
-On linux assign the owner (brew should do this automatically on macOS):
+On linux assign the owner (brew should do this automatically on macOS):<br/>
 `chown -R debian-tor:debian-tor /usr/local/var/lib/tor/lightning/`
 
-On both linux and mac:
+On both linux and mac:<br/>
 `chmod 700 /usr/local/var/lib/tor/lightning/`
 
-Restart Tor
-macOS `brew services restart tor`
+Restart Tor<br/>
+macOS `brew services restart tor`<br/>
 linux `systemctl restart tor`
 
-Ensure all went well by running:
-`cat /usr/local/var/lib/tor/lightning/hostname`
+Ensure all went well by running:<br/>
+`cat /usr/local/var/lib/tor/lightning/hostname`<br/>
 If it prints something like `ndfiuhfh2fu23ufh21u3bfd.onion` then all is well, if not message me on the Fully Noded Telegram and I can help (maybe).
 
 Save the above hostname, you will need it soon!
@@ -83,27 +84,27 @@ http-pass=aPassWordYouWillSoonCreate
 http-port=1312
 ```
 
-Create a directory for the plugins we need:
+Create a directory for the plugins we need:<br/>
 `mkdir /home/you/.lightning/plugins/`
 
-Download the plugin:
-`git clone https://github.com/Start9Labs/c-lightning-http-plugin.git`
+Download the plugin:<br/>
+`git clone https://github.com/Start9Labs/c-lightning-http-plugin.git`<br/>
 
-Compile the plugin (it's built in Rust so first install Rust):
-`curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
-Close the terminal and reopen it so that the Rust command `cargo` is automatically added to your `path`
+Compile the plugin (it's built in Rust so first install Rust):<br/>
+`curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`<br/>
+Close the terminal and reopen it so that the Rust command `cargo` is automatically added to your `path`<br/>
 ```
 cd /home/you/.lightning/plugins/c-lightning-http-plugin
 cargo build --release
 ```
-When it finishes building give it permissions:
-`chmod a+x /home/you/.lightning/plugins/c-lightning-http-plugin/target/release/c-lightning-http-plugin`
+When it finishes building give it permissions:<br/>
+`chmod a+x /home/you/.lightning/plugins/c-lightning-http-plugin/target/release/c-lightning-http-plugin`<br/>
 
-Start lightning:
-`cd /home/you/lightning`
-`./lightningd/lightningd`
+Start lightning:<br/>
+`cd /home/you/lightning`<br/>
+`./lightningd/lightningd`<br/>
 
-In Fully Noded go to "Settings" > "Node Manager" > ⚡️:
+In Fully Noded go to "Settings" > "Node Manager" > ⚡️:<br/>
 - add the rpcuser: `lightning`
 - add the rpc password which is the `http-pass` you added to the config from above: `aPassWordYouWillSoonCreate`
 - add the onion address (hostname) we created earlier, in the config it is the value for `announce-addr`, ensure you add the port at the end: `theHostnameYouJustSavedFromThePreviousSteps.onion:1312`
