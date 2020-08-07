@@ -447,7 +447,11 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
     
     private func signerAdded() {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Signer successfully encrypted and saved securely to your device.", message: "Tap done", preferredStyle: .actionSheet)
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "Signer successfully encrypted and saved securely to your device.", message: "Tap done", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.navigationController?.popViewController(animated: true)

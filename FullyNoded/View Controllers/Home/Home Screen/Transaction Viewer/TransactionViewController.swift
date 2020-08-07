@@ -10,57 +10,50 @@ import UIKit
 
 class TransactionViewController: UIViewController {
     
+    var isBolt11 = Bool()
     var txid = ""
-    let creatingView = ConnectingView()
-    
+    let spinner = ConnectingView()
     @IBOutlet var textView: UITextView!
-    
     @IBOutlet var bumpButtonOutlet: UIButton!
-    @IBAction func back(_ sender: Any) {
-        DispatchQueue.main.async {
-            self.dismiss(animated: true, completion: nil)
-        }
-    }
-    
-    @IBAction func bumpFee(_ sender: Any) {
-        creatingView.addConnectingView(vc: self, description: "bumping")
-        executeNodeCommand(method: .bumpfee, param: "\"\(txid)\"")
-        
-    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         bumpButtonOutlet.alpha = 0
         textView.layer.borderColor = UIColor.lightGray.cgColor
         textView.layer.borderWidth = 0.5
         textView.clipsToBounds = true
         textView.layer.cornerRadius = 8
-        creatingView.addConnectingView(vc: self, description: "getting transaction")
-        
+        spinner.addConnectingView(vc: self, description: "getting transaction")
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        
-        executeNodeCommand(method: .gettransaction, param: "\"\(txid)\", true")
-        
+        if isBolt11 {
+            decodeBolt11(bolt11: txid)
+        } else {
+            executeNodeCommand(method: .gettransaction, param: "\"\(txid)\", true")
+        }
     }
     
+    @IBAction func bumpFee(_ sender: Any) {
+        spinner.addConnectingView(vc: self, description: "bumping")
+        executeNodeCommand(method: .bumpfee, param: "\"\(txid)\"")
+    }
+        
     func bumpFee(result: NSDictionary) {
         let originalFee = result["origfee"] as! Double
         let newFee = result["fee"] as! Double
         if let psbt = result["psbt"] as? String {
             Signer.sign(psbt: psbt) { [unowned vc = self] (psbt, rawTx, errorMessage) in
                 if psbt != nil {
-                    vc.creatingView.removeConnectingView()
+                    vc.spinner.removeConnectingView()
                     vc.exportPsbt(psbt: psbt!)
                     
                 } else if rawTx != nil {
-                    vc.creatingView.removeConnectingView()
+                    vc.spinner.removeConnectingView()
                     vc.broadcastNow(tx: rawTx!)
                     
                 } else if errorMessage != nil {
-                    vc.creatingView.removeConnectingView()
+                    vc.spinner.removeConnectingView()
                     showAlert(vc: vc, title: "Error", message: errorMessage!)
                 }
             }
@@ -82,7 +75,7 @@ class TransactionViewController: UIViewController {
                     if let dict = response as? NSDictionary {
                         DispatchQueue.main.async { [unowned vc = self] in
                             vc.textView.text = "\(dict)"
-                            vc.creatingView.removeConnectingView()
+                            vc.spinner.removeConnectingView()
                             let replaceable = dict["bip125-replaceable"] as? String ?? ""
                             if replaceable == "yes" {
                                 vc.bumpButtonOutlet.alpha = 1
@@ -93,7 +86,7 @@ class TransactionViewController: UIViewController {
                     break
                 }
             } else {
-                vc.creatingView.removeConnectingView()
+                vc.spinner.removeConnectingView()
                 displayAlert(viewController: vc, isError: true, message: errorMessage!)
             }
         }
@@ -101,30 +94,34 @@ class TransactionViewController: UIViewController {
     
     private func broadcastNow(tx: String) {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Broadcast with your node?", message: "You can optionally broadcast this transaction using Blockstream's esplora API over Tor V3 for improved privacy.", preferredStyle: .actionSheet)
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "Broadcast with your node?", message: "You can optionally broadcast this transaction using Blockstream's esplora API over Tor V3 for improved privacy.", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "Privately", style: .default, handler: { action in
-                vc.creatingView.addConnectingView(vc: vc, description: "broadcasting...")
+                vc.spinner.addConnectingView(vc: vc, description: "broadcasting...")
                 Broadcaster.sharedInstance.send(rawTx: tx) { [unowned vc = self] (txid) in
                     if txid != nil {
                         DispatchQueue.main.async { [unowned vc = self] in
-                            vc.creatingView.removeConnectingView()
+                            vc.spinner.removeConnectingView()
                             displayAlert(viewController: vc, isError: false, message: "Fee bumped ✓")
                             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                                 NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                             }
                         }
                     } else {
-                        vc.creatingView.removeConnectingView()
+                        vc.spinner.removeConnectingView()
                         displayAlert(viewController: vc, isError: true, message: "error broadcasting")
                     }
                 }
             }))
             alert.addAction(UIAlertAction(title: "Use my node", style: .default, handler: { [unowned vc = self] action in
-                vc.creatingView.addConnectingView(vc: vc, description: "broadcasting...")
+                vc.spinner.addConnectingView(vc: vc, description: "broadcasting...")
                 Reducer.makeCommand(command: .sendrawtransaction, param: "\"\(tx)\"") { (response, errorMesage) in
                     if let _ = response as? String {
                         DispatchQueue.main.async { [unowned vc = self] in
-                            vc.creatingView.removeConnectingView()
+                            vc.spinner.removeConnectingView()
                             displayAlert(viewController: vc, isError: false, message: "Fee bumped ✓")
                             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                                 NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
@@ -143,8 +140,11 @@ class TransactionViewController: UIViewController {
     
     private func exportPsbt(psbt: String) {
         DispatchQueue.main.async {
-            
-            let alert = UIAlertController(title: "Share as raw data or text?", message: "Sharing as raw data allows you to send the unsigned psbt directly to your Coldcard Wallets SD card for signing or to Electrum 4.0", preferredStyle: .actionSheet)
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "Share as raw data or text?", message: "Sharing as raw data allows you to send the unsigned psbt directly to your Coldcard Wallets SD card for signing or to Electrum 4.0", preferredStyle: alertStyle)
             
             alert.addAction(UIAlertAction(title: "Raw Data", style: .default, handler: { action in
                 
@@ -186,6 +186,20 @@ class TransactionViewController: UIViewController {
                     activityViewController.popoverPresentationController?.sourceView = vc.view
                     vc.present(activityViewController, animated: true) {}
                 }
+            }
+        }
+    }
+    
+    private func decodeBolt11(bolt11: String) {
+        LightningRPC.command(method: .decodepay, param: "\"\(bolt11)\"") { [unowned vc = self] (response, errorDesc) in
+            if let dict = response as? NSDictionary {
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.bumpButtonOutlet.alpha = 0
+                    vc.textView.text = "\(dict)"
+                    vc.spinner.removeConnectingView()
+                }
+            } else {
+                vc.spinner.removeConnectingView()
             }
         }
     }

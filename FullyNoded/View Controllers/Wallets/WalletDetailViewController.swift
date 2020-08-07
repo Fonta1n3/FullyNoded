@@ -270,7 +270,11 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     
     private func promptToDeleteWallet() {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Remove this wallet?", message: "Removing the wallet hides it from your \"Fully Noded Wallets\". The wallet will still exist on your node and be accessed via the \"Wallet Manager\" or via bitcoin-cli and bitcoin-qt. In order to completely delete the wallet you need to find the \"Filename\" as listed above on your nodes machine in the .bitcoin directory and manually delete it there.", preferredStyle: .actionSheet)
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "Remove this wallet?", message: "Removing the wallet hides it from your \"Fully Noded Wallets\". The wallet will still exist on your node and be accessed via the \"Wallet Manager\" or via bitcoin-cli and bitcoin-qt. In order to completely delete the wallet you need to find the \"Filename\" as listed above on your nodes machine in the .bitcoin directory and manually delete it there.", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "Remove", style: .destructive, handler: { [unowned vc = self] action in
                 vc.deleteNow()
             }))
@@ -298,7 +302,11 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     
     private func walletDeleted() {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Fully Noded wallet removed", message: "It will no longer appear in your list of \"Fully Noded Wallets\".", preferredStyle: .actionSheet)
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "Fully Noded wallet removed", message: "It will no longer appear in your list of \"Fully Noded Wallets\".", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.navigationController?.popViewController(animated: true)
@@ -311,7 +319,11 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     
     private func promptToEditLabel(newLabel: String) {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Update wallet label?", message: "Selecting yes will update this wallets label.", preferredStyle: .actionSheet)
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "Update wallet label?", message: "Selecting yes will update this wallets label.", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { action in
                 vc.updateLabel(newLabel: newLabel)
             }))
@@ -421,7 +433,11 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     
     private func promptToUpdateMaxIndex(max: Int) {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Import index \(vc.wallet.maxIndex + 1) to \(max) public keys?", message: "Selecting yes will trigger a series of calls to your node to import \(max - (Int(vc.wallet.maxIndex) + 1)) additional keys for each descriptor your wallet holds. This can take a bit of time so please be patient and wait for the spinner to dismiss.", preferredStyle: .actionSheet)
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "Import index \(vc.wallet.maxIndex + 1) to \(max) public keys?", message: "Selecting yes will trigger a series of calls to your node to import \(max - (Int(vc.wallet.maxIndex) + 1)) additional keys for each descriptor your wallet holds. This can take a bit of time so please be patient and wait for the spinner to dismiss.", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { action in
                 vc.importUpdatedIndex(maxRange: max)
             }))

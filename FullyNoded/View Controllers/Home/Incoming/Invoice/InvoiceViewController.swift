@@ -19,7 +19,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     var nativeSegwit = Bool()
     var p2shSegwit = Bool()
     var legacy = Bool()
-    let connectingView = ConnectingView()
+    let spinner = ConnectingView()
     let qrGenerator = QRGenerator()
     var isHDMusig = Bool()
     var isHDInvoice = Bool()
@@ -36,39 +36,9 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet var indexDisplay: UILabel!
     @IBOutlet var indexLabel: UILabel!
     
-    @IBAction func minusAction(_ sender: Any) {
-        if indexDisplay.text != "" {
-            let index = Int(indexDisplay.text!)!
-            if index != 0 {
-                //fetch new address then save the updated index
-                connectingView.addConnectingView(vc: self, description: "fetching address index \(index - 1)")
-                DispatchQueue.main.async {
-                    self.indexDisplay.text = "\(index - 1)"
-                }
-                let param = "\(descriptor), [\(index - 1),\(index - 1)]"
-                self.executeNodeCommand(method: .deriveaddresses, param: param)
-            }
-        }
-    }
-    
-    @IBAction func plusAction(_ sender: Any) {
-        if indexDisplay.text != "" {
-            let index = Int(indexDisplay.text!)!
-            if index >= 0 {
-                //fetch new address then save the updated index
-                connectingView.addConnectingView(vc: self, description: "fetching address index \(index + 1)")
-                DispatchQueue.main.async {
-                    self.indexDisplay.text = "\(index + 1)"
-                }
-                let param = "\(descriptor), [\(index + 1),\(index + 1)]"
-                self.executeNodeCommand(method: .deriveaddresses, param: param)
-            }
-        }
-    }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-        connectingView.addConnectingView(vc: self, description: "fetching address...")
+        spinner.addConnectingView(vc: self, description: "fetching address...")
         addressOutlet.isUserInteractionEnabled = true
         addressOutlet.text = ""
         minusOutlet.alpha = 0
@@ -85,6 +55,76 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         addDoneButtonOnKeyboard()
         load()
     }
+    
+    @IBAction func lightningInvoice(_ sender: Any) {
+        spinner.addConnectingView(vc: self, description: "creating lightning invoice...")
+        // invoice msatoshi label description
+        var millisats = "\"any\""
+        var label = "Fully-Noded-\(randomString(length: 5))"
+        if amountField.text != nil {
+            if let int = Int(amountField.text!) {
+                millisats = "\(int * 1000)"
+            }
+        }
+        if labelField.text != "" {
+            label = labelField.text!
+        }
+        let param = "\(millisats), \"\(label)\", \"\(Date())\", \(86400)"
+        LightningRPC.command(method: .invoice, param: param) { [unowned vc = self] (response, errorDesc) in
+            if let dict = response as? NSDictionary {
+                if let bolt11 = dict["bolt11"] as? String {
+                    DispatchQueue.main.async { [unowned vc = self] in
+                        vc.addressOutlet.alpha = 1
+                        vc.addressString = bolt11
+                        vc.addressOutlet.text = bolt11
+                        vc.showAddress(address: bolt11)
+                        vc.spinner.removeConnectingView()
+                    }
+                }
+                if let warning = dict["warning_capacity"] as? String {
+                    if warning != "" {
+                        showAlert(vc: vc, title: "Warning", message: warning)
+                    }
+                }
+            } else {
+                vc.spinner.removeConnectingView()
+                showAlert(vc: vc, title: "Error", message: errorDesc ?? "we had an issue getting your lightning invoice")
+            }
+        }
+    }
+    
+    
+    @IBAction func minusAction(_ sender: Any) {
+        if indexDisplay.text != "" {
+            let index = Int(indexDisplay.text!)!
+            if index != 0 {
+                //fetch new address then save the updated index
+                spinner.addConnectingView(vc: self, description: "fetching address index \(index - 1)")
+                DispatchQueue.main.async {
+                    self.indexDisplay.text = "\(index - 1)"
+                }
+                let param = "\(descriptor), [\(index - 1),\(index - 1)]"
+                self.executeNodeCommand(method: .deriveaddresses, param: param)
+            }
+        }
+    }
+    
+    @IBAction func plusAction(_ sender: Any) {
+        if indexDisplay.text != "" {
+            let index = Int(indexDisplay.text!)!
+            if index >= 0 {
+                //fetch new address then save the updated index
+                spinner.addConnectingView(vc: self, description: "fetching address index \(index + 1)")
+                DispatchQueue.main.async {
+                    self.indexDisplay.text = "\(index + 1)"
+                }
+                let param = "\(descriptor), [\(index + 1),\(index + 1)]"
+                self.executeNodeCommand(method: .deriveaddresses, param: param)
+            }
+        }
+    }
+    
+    
     
     func load() {
         addressOutlet.text = ""
@@ -164,7 +204,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                             }
                         }
                     } else {
-                        vc.connectingView.removeConnectingView()
+                        vc.spinner.removeConnectingView()
                         displayAlert(viewController: self, isError: true, message: errorMessage ?? "error deriving addresses")
                     }
                 }
@@ -182,7 +222,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     func showAddress() {
         if isHDMusig {
             showAddress(address: addressString)
-            connectingView.removeConnectingView()
+            spinner.removeConnectingView()
             DispatchQueue.main.async { [unowned vc = self] in
                 vc.addressOutlet.text = vc.addressString
             }
@@ -220,7 +260,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             vc.addressString = address
             vc.tapQRGesture = UITapGestureRecognizer(target: vc, action: #selector(vc.shareQRCode(_:)))
             vc.qrView.addGestureRecognizer(vc.tapQRGesture)
-            vc.connectingView.removeConnectingView()
+            vc.spinner.removeConnectingView()
             UIView.animate(withDuration: 0.3, animations: { [unowned vc = self] in
                 vc.descriptionLabel.alpha = 1
                 vc.qrView.alpha = 1
@@ -294,7 +334,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 if let result = response as? NSArray {
                     if let addressToReturn = result[0] as? String {
                         DispatchQueue.main.async { [unowned vc = self] in
-                            vc.connectingView.removeConnectingView()
+                            vc.spinner.removeConnectingView()
                             vc.addressString = addressToReturn
                             vc.addressOutlet.text = addressToReturn
                             vc.showAddress(address: addressToReturn)
@@ -309,7 +349,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                         }
                     }
                 } else {
-                    vc.connectingView.removeConnectingView()
+                    vc.spinner.removeConnectingView()
                     displayAlert(viewController: vc, isError: true, message: errorMessage ?? "error deriving addresses")
                 }
             }
@@ -319,13 +359,13 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             Reducer.makeCommand(command: .getnewaddress, param: param) { [unowned vc = self] (response, errorMessage) in
                 if let address = response as? String {
                     DispatchQueue.main.async { [unowned vc = self] in
-                        vc.connectingView.removeConnectingView()
+                        vc.spinner.removeConnectingView()
                         vc.addressString = address
                         vc.addressOutlet.text = address
                         vc.showAddress(address: address)
                     }
                 } else {
-                    vc.connectingView.removeConnectingView()
+                    vc.spinner.removeConnectingView()
                     showAlert(vc: vc, title: "Error", message: errorMessage ?? "error fecthing address")
                 }
             }

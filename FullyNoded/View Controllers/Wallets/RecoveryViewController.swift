@@ -114,7 +114,11 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
     
     private func promptRecoveryOptions() {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Would you like to include Samourai Wallet/Mixing derivation paths?", message: "Selecting yes will ensure all Samourai paths are recovered however will double the amount of time it takes to create the Recovery Wallet.", preferredStyle: .actionSheet)
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "Would you like to include Samourai Wallet/Mixing derivation paths?", message: "Selecting yes will ensure all Samourai paths are recovered however will double the amount of time it takes to create the Recovery Wallet.", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "Yes, include", style: .default, handler: { [unowned vc = self] action in
                 vc.recoverSamourai = true
                 vc.recoverNow()

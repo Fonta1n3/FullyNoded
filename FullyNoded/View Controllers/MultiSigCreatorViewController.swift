@@ -72,7 +72,10 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
         if let url = exportMultisigWalletToURL(data: text.dataUsingUTF8StringEncoding) {
             DispatchQueue.main.async { [unowned vc = self] in
                 let activityViewController = UIActivityViewController(activityItems: ["Multisig Export", url], applicationActivities: nil)
-                activityViewController.popoverPresentationController?.sourceView = vc.view
+                if UIDevice.current.userInterfaceIdiom == .pad {
+                    activityViewController.popoverPresentationController?.sourceView = self.view
+                    activityViewController.popoverPresentationController?.sourceRect = CGRect(x: 0, y: 0, width: 100, height: 100)
+                }
                 vc.present(activityViewController, animated: true) {}
             }
         }
@@ -93,7 +96,11 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
     
     private func promptToCreate() {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "How many signers are required to spend funds?", message: "", preferredStyle: .actionSheet)
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "How many signers are required to spend funds?", message: "", preferredStyle: alertStyle)
             for (i, _) in vc.signers.enumerated() {
                 alert.addAction(UIAlertAction(title: "\(i + 1)", style: .default, handler: { action in
                     vc.create(m: i + 1)
@@ -182,7 +189,11 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
             vc.spinner.removeConnectingView()
             vc.createOutlet.setTitle("Done", for: .normal)
             NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-            let alert = UIAlertController(title: "\(m) of \(vc.signers.count) successfully created ✓", message: "Your active wallet tab is refreshing, tap done to go back, tap export to get a text file which holds all necessary info to export your multisig wallet to other apps, this txt file can be directly imported to a Coldcard via the SD card to import it.", preferredStyle: .actionSheet)
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "\(m) of \(vc.signers.count) successfully created ✓", message: "Your active wallet tab is refreshing, tap done to go back, tap export to get a text file which holds all necessary info to export your multisig wallet to other apps, this txt file can be directly imported to a Coldcard via the SD card to import it.", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "Export", style: .default, handler: { [unowned vc = self] action in
                 vc.export()
             }))
@@ -411,6 +422,7 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
     private func updateXpub(xpub: String, index: Int) {
         if xpub != "" {
             if let zpub = XpubConverter.zpub(xpub: xpub) {
+                signers[index]["fingerprint"] = ""
                 signers[index]["signer"] = ""
                 signers[index]["xpub"] = xpub
                 signers[index]["zpub"] = zpub
@@ -423,6 +435,7 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
     private func updateZpub(zpub: String, index: Int) {
         if zpub != "" {
             if let xpub = XpubConverter.convert(extendedKey: zpub) {
+                signers[index]["fingerprint"] = ""
                 signers[index]["signer"] = ""
                 signers[index]["xpub"] = xpub
                 signers[index]["zpub"] = zpub

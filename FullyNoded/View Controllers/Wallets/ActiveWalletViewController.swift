@@ -28,6 +28,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     var id:UUID!
     var walletLabel:String!
     var wallet:Wallet?
+    var isBolt11 = false
     @IBOutlet weak var sendView: UIView!
     @IBOutlet weak var invoiceView: UIView!
     @IBOutlet weak var utxosView: UIView!
@@ -198,6 +199,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         let dateLabel = cell.viewWithTag(5) as! UILabel
         let watchOnlyLabel = cell.viewWithTag(6) as! UILabel
         let lightningImage = cell.viewWithTag(7) as! UIImageView
+        let onchainImage = cell.viewWithTag(8) as! UIImageView
         
         amountLabel.alpha = 1
         confirmationsLabel.alpha = 1
@@ -207,9 +209,18 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         
         let dict = self.transactionArray[indexPath.section - 1]
         let selfTransfer = dict["selfTransfer"] as! Bool
-                        
-        confirmationsLabel.text = (dict["confirmations"] as! String) + " " + "confs"
-        let label = dict["label"] as? String
+        let confs = dict["confirmations"] as! String
+        if confs.contains("complete") {
+            confirmationsLabel.text = confs
+        } else if confs.contains("incomplete") || confs.contains("unpaid") || confs.contains("expired") || confs.contains("paid") {
+            confirmationsLabel.text = confs
+        } else {
+            confirmationsLabel.text = (dict["confirmations"] as! String) + " " + "confs"
+        }
+        
+        let trimToCharacter = 20
+        let labelLong = dict["label"] as? String ?? ""
+        let label = String(labelLong.prefix(trimToCharacter))
         
         if label != "," {
             
@@ -222,11 +233,17 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         }
         
         let isLightning = dict["isLightning"] as? Bool ?? false
-        
         if isLightning {
             lightningImage.alpha = 1
         } else {
             lightningImage.alpha = 0
+        }
+        
+        let isOnchain = dict["onchain"] as? Bool ?? false
+        if isOnchain {
+            onchainImage.alpha = 1
+        } else {
+            onchainImage.alpha = 0
         }
         
         dateLabel.text = dict["date"] as? String
@@ -355,7 +372,15 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         if transactionArray.count > 0 {
             if indexPath.section > 0 {
                 let selectedTx = self.transactionArray[indexPath.section - 1]
-                tx = selectedTx["txID"] as! String
+                let isOnchain = selectedTx["onchain"] as? Bool ?? true
+                let isLightning = selectedTx["isLightning"] as? Bool ?? false
+                if !isOnchain && isLightning {
+                    isBolt11 = true
+                    tx = selectedTx["address"] as! String
+                } else {
+                    tx = selectedTx["txID"] as! String
+                }
+                
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.performSegue(withIdentifier: "getTransaction", sender: vc)
                 }
@@ -402,7 +427,17 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     private func loadBalances() {
         NodeLogic.walletDisabled = walletDisabled
         NodeLogic.loadBalances { [unowned vc = self] (response, errorMessage) in
-            if errorMessage != nil {
+            
+            if response != nil {
+                let str = Balances(dictionary: response!)
+                vc.onchainBalance = str.onchainBalance
+                vc.offchainBalance = str.offchainBalance
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.sectionZeroLoaded = true
+                    vc.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
+                    vc.loadSectionOne()
+                }
+            } else if errorMessage != nil {
                 if errorMessage!.contains("Wallet file not specified (must request wallet RPC through") {
                     vc.removeSpinner()
                     vc.existingWallet = "multiple wallets"
@@ -422,15 +457,6 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
                     vc.removeSpinner()
                     displayAlert(viewController: vc, isError: true, message: errorMessage!)
                 }
-            } else if response != nil {
-                let str = Balances(dictionary: response!)
-                vc.onchainBalance = str.onchainBalance
-                vc.offchainBalance = str.offchainBalance
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.sectionZeroLoaded = true
-                    vc.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
-                    vc.loadSectionOne()
-                }
             }
         }
     }
@@ -439,15 +465,15 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         transactionArray.removeAll()
         NodeLogic.walletDisabled = walletDisabled
         NodeLogic.loadSectionTwo { [unowned vc = self] (response, errorMessage) in
-            if errorMessage != nil {
-                vc.removeSpinner()
-                displayAlert(viewController: vc, isError: true, message: errorMessage!)
-            } else if response != nil {
+            if response != nil {
                 DispatchQueue.main.async { [unowned vc = self] in
-                    vc.transactionArray = response!.reversed()
+                    vc.transactionArray = response!
                     vc.walletTable.reloadData()
+                    vc.getFiatBalances()
                 }
-                vc.getFiatBalances()
+            } else {
+                vc.removeSpinner()
+                displayAlert(viewController: vc, isError: true, message: errorMessage ?? "unknown error loading transactions")
             }
         }
     }
@@ -480,7 +506,11 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     
     private func promptToCreateWallet() {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Looks like you have not yet created a Fully Noded wallet, tap create to get started, if you are not yet ready you can always tap the + button in the top left.", message: "", preferredStyle: .actionSheet)
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "Looks like you have not yet created a Fully Noded wallet, tap create to get started, if you are not yet ready you can always tap the + button in the top left.", message: "", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "Create", style: .default, handler: { action in
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.performSegue(withIdentifier: "createFullyNodedWallet", sender: vc)
@@ -494,7 +524,11 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     
     private func promptToChooseWallet() {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "None of your wallets seem to be toggled on, please choose which wallet you want to use.", message: "", preferredStyle: .actionSheet)
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "None of your wallets seem to be toggled on, please choose which wallet you want to use.", message: "", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "Choose", style: .default, handler: { [unowned vc = self] action in
                 vc.goChooseWallet()
             }))
@@ -587,6 +621,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         case "getTransaction":
             
             if let vc = segue.destination as? TransactionViewController {
+                vc.isBolt11 = isBolt11
                 vc.txid = tx
             }
             

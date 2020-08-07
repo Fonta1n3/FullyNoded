@@ -65,7 +65,11 @@ class ActiveWalletsViewController: UIViewController, UITableViewDelegate, UITabl
     
     private func unloadedSuccess() {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "All wallets unloaded!", message: "You may now work with the default wallet, we are now refreshing the wallet screen. Tap Done to go back.", preferredStyle: .actionSheet)
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "All wallets unloaded!", message: "You may now work with the default wallet, we are now refreshing the wallet screen. Tap Done to go back.", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.navigationController?.popToRootViewController(animated: true)

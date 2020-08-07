@@ -178,7 +178,11 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
     private func promptToUnloadWallets() {
         connectingView.removeConnectingView()
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "In order to use the default wallet you need to unload all loaded wallets.", message: "In the next view you can tap each wallet to unload them, ensure you unload them all.", preferredStyle: .actionSheet)
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "In order to use the default wallet you need to unload all loaded wallets.", message: "In the next view you can tap each wallet to unload them, ensure you unload them all.", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { [unowned vc = self] action in
                 vc.wallets.removeAll()
                 vc.walletTable.reloadData()
