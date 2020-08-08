@@ -615,6 +615,10 @@ Aka use these two buttons to create and switch between wallets<br/>
 FN wallets will always show as COLD because your node never holds a private key<br/>
 <img src="https://i.ibb.co/m9mMMWT/switch-wallets2.jpg" alt="switch-wallets2" border="0" width="200">
 
+#### Question : Does fully noded need the wallet from bitcoin core?
+
+It should work with it disabled. But it’s been awhile since i tested that.
+
 ## Standup
 
 #### Question : where can I download this? 
