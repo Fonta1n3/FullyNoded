@@ -8,11 +8,15 @@ First you need to install c-lightning, to do that follow [this](https://github.c
 
 If you have c-lightning running already you can stop it. `cli/lightning-cli stop`
 
+### Install Tor
+
 You will need Tor running on the node. On linux `sudo apt install tor` works, on macOS `brew install tor` does the trick.
 
 Boot tor as a service:
 mac: `brew services start tor`<br/>
 Linux: `systemctl start tor`
+
+### Configure Tor
 
 Create a hidden service that we will use later:
 macOS:<br/>
@@ -22,11 +26,7 @@ macOS:<br/>
 On Linux:<br/>
 `nano /etc/tor/torrc`<br/>
 
-Ensure you uncomment these lines:<br/>
-`ControlPort 9051`<br/>
-`CookieAuthentication 1`<br/>
-
-and find the hidden services section:<br/>
+Find the hidden services section:<br/>
 ```
 ############### This section is just for location-hidden services ###
 
@@ -59,11 +59,15 @@ Restart Tor<br/>
 macOS `brew services restart tor`<br/>
 linux `systemctl restart tor`
 
+### Get your hostname
+
 Ensure all went well by running:<br/>
 `cat /usr/local/var/lib/tor/lightning/hostname`<br/>
 If it prints something like `ndfiuhfh2fu23ufh21u3bfd.onion` then all is well, if not message me on the Fully Noded Telegram and I can help (maybe).
 
 Save the above hostname, you will need it soon!
+
+### Create lightning config
 
 If you haven't created a lightning config file now is a good time to do that.
 ```
@@ -84,6 +88,8 @@ http-pass=aPassWordYouWillSoonCreate
 http-port=1312
 ```
 
+### Setup c-lightning-http-plugin
+
 Create a directory for the plugins we need:<br/>
 `mkdir /home/you/.lightning/plugins/`
 
@@ -100,9 +106,13 @@ cargo build --release
 When it finishes building give it permissions:<br/>
 `chmod a+x /home/you/.lightning/plugins/c-lightning-http-plugin/target/release/c-lightning-http-plugin`<br/>
 
+### Start lightningd
+
 Start lightning:<br/>
 `cd /home/you/lightning`<br/>
 `./lightningd/lightningd`<br/>
+
+### Connect Fully Noded
 
 In Fully Noded go to "Settings" > "Node Manager" > ⚡️:<br/>
 - add the rpcuser: `lightning`
