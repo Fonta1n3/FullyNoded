@@ -51,20 +51,20 @@ Find the hidden services section:<br/>
 
 Below it add the hidden service we will use to control our lightning node:<br/>
 ```
-HiddenServiceDir /usr/local/var/lib/tor/lightning/
+HiddenServiceDir /usr/local/var/lib/tor/lightning-rpc/
 HiddenServiceVersion 3
 HiddenServicePort 1312 127.0.0.1:1312
 ```
 `ctlr x` > `y` > `return` to save the changes and quit nano text editor
 
 You will then need to create the hidden service directory:<br/>
-`mkdir /usr/local/var/lib/tor/lightning/`
+`mkdir /usr/local/var/lib/tor/lightning-rpc/`
 
 On linux assign the owner (brew should do this automatically on macOS):<br/>
-`chown -R debian-tor:debian-tor /usr/local/var/lib/tor/lightning/`
+`chown -R debian-tor:debian-tor /usr/local/var/lib/tor/lightning-rpc/`
 
 On both linux and mac:<br/>
-`chmod 700 /usr/local/var/lib/tor/lightning/`
+`chmod 700 /usr/local/var/lib/tor/lightning-rpc/`
 
 Restart Tor<br/>
 macOS `brew services restart tor`<br/>
@@ -73,7 +73,7 @@ linux `systemctl restart tor`
 ### Get your hostname
 
 Ensure all went well by running:<br/>
-`cat /usr/local/var/lib/tor/lightning/hostname`<br/>
+`cat /usr/local/var/lib/tor/lightning-rpc/hostname`<br/>
 If it prints something like `ndfiuhfh2fu23ufh21u3bfd.onion` then all is well, if not message me on the Fully Noded Telegram and I can help (maybe).
 
 Save the above hostname, you will need it soon!
@@ -92,7 +92,7 @@ network=testnet
 log-file=/home/you/.lightning/lightning.log
 plugin=/home/you/.lightning/plugins/c-lightning-http-plugin/target/release/c-lightning-http-plugin
 log-level=debug:plugin
-http-pass=aPassWordYouWillSoonCreate
+http-pass=aPasswordYouWillSoonCreate
 http-port=1312
 ```
 
@@ -127,8 +127,8 @@ Start lightning:<br/>
 
 In Fully Noded go to "Settings" > "Node Manager" > ⚡️:<br/>
 - add the rpcuser: `lightning`
-- add the rpc password which is the `http-pass` you added to the config from above: `aPassWordYouWillSoonCreate`
-- add the onion address (hostname) we created earlier, in the config it is the value for `announce-addr`, ensure you add the port at the end: `theHostnameYouJustSavedFromThePreviousSteps.onion:1312`
+- add the rpc password which is the `http-pass` you added to the config from above: `aPasswordYouWillSoonCreate`
+- add the onion address (hostname) we created earlier, ensure you add the port at the end: `theHostnameYouJustSavedFromThePreviousSteps.onion:1312`
 
 Thats it, Fully Noded will now automatically use those credentials for any lightning related functionality. You can only have one lightning node at a a time, to add a new one just overwrite the existing credentials.
 
