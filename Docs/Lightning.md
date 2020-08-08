@@ -88,6 +88,9 @@ http-pass=aPassWordYouWillSoonCreate
 http-port=1312
 ```
 
+### Create the log file
+`mkdir /home/you/.lightning/lightning.log`
+
 ### Setup c-lightning-http-plugin
 
 Create a directory for the plugins we need:<br/>
