@@ -81,9 +81,6 @@ network=testnet
 log-file=/home/you/.lightning/lightning.log
 plugin=/home/you/.lightning/plugins/c-lightning-http-plugin/target/release/c-lightning-http-plugin
 log-level=debug:plugin
-bind-addr=127.0.0.1:9735
-proxy=127.0.0.1:9050
-announce-addr=theHostnameYouJustSavedFromThePreviousSteps.onion:1312
 http-pass=aPassWordYouWillSoonCreate
 http-port=1312
 ```
