@@ -344,6 +344,7 @@ and paste in:
 
 `descriptor:x25519:PHK2DFSCNNJ75U3GUA3SHCVEGPEJMZAPEKQGL5YLVM2GV6NORB6Q`
 
+No space, no newline.<br/>
 Save and exit and you have one of the most secure node/light client set ups possible. (assuming your server is firewalled off)
 
 #### Final thoughts on security
