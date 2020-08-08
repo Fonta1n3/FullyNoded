@@ -4,6 +4,17 @@
 
 This document explains how to use Fully Noded to remotely connect to and control your c-lightning node via a Tor V3 hidden service.
 
+### TLDR
+You need an http server that exposes the lightning-rpc unix domain socket to a port which you must expose to a Tor V3 hidden service.
+Add the hostname `jeifeif.onion:port` to Fully Noded > Node Manager > ⚡️ along with the http user and http password you configure with the http server. Thats it. In this guide we use `https://github.com/Start9Labs/c-lightning-http-plugin`, there are others, feel free to try whatever works for you.
+
+### Security
+You should take advanatge of Tor V3 auth by exporting the V3 authentication key from Fully Noded > Settings > Security Center > Tor V3 Authentication and add the pubkey to your lightning-rpc `HiddenServiceDir` authorized_clients.
+
+You should disable allowing any incoming connections to the lightning-rpc port and only allow `localhost` to access it. Following these suggestions will go a very long way in ensureing your remote connection to your lightning node is highly secure.
+
+### Step by step
+
 First you need to install c-lightning, to do that follow [this](https://github.com/ElementsProject/lightning/blob/master/doc/INSTALL.md) guide for whichever OS you are on.
 
 If you have c-lightning running already you can stop it. `cli/lightning-cli stop`
