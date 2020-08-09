@@ -90,6 +90,14 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        if let item = UIPasteboard.general.string {
+            if item.hasPrefix("lntb") || item.hasPrefix("lightning:") || item.hasPrefix("lnbc") || item.hasPrefix("lnbcrt") {
+                decodeLighnting(invoice: item.replacingOccurrences(of: "lightning:", with: ""))
+            }
+        }
+    }
+    
     override func viewWillDisappear(_ animated: Bool) {
         amountInput.text = ""
         addressInput.text = ""
@@ -99,7 +107,16 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     @IBAction func withdrawalFromLightningAction(_ sender: Any) {
-         promptToWithdrawalFromLightning()
+        if addressInput.text != "" {
+            let item = addressInput.text!
+            if item.hasPrefix("lntb") || item.hasPrefix("lightning:") || item.hasPrefix("lnbc") || item.hasPrefix("lnbcrt") {
+                decodeLighnting(invoice: item.replacingOccurrences(of: "lightning:", with: ""))
+            } else {
+                promptToWithdrawalFromLightning()
+            }
+        } else {
+            promptToWithdrawalFromLightning()
+        }
     }
     
     private func promptToWithdrawalFromLightning() {
