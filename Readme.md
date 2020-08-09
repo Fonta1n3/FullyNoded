@@ -208,13 +208,15 @@ The syntax is `HiddenServicePort xxxx 127.0.0.1:18332`, `xxxx` represents a synt
     * `chmod 700 /usr/local/var/lib/tor/fullynoded/regtest`
 
 - A ready to use `torrc` file that conforms to the guidelines above is available [here](./Docs/torrc-tailored.md).
+- Check that your node is **on**, that it's really running.
 
 ### On the device running  FN:
 - Now in Fully Noded go to `Settings` > `Node Manager` > `+` and add a new node by inputting your RPC credentials and copy and paste your onion address with the port at the end `qndoiqnwoiquf713y8731783rgd.onion:8332`.
 - You should never type (password) fields manually, just copy and paste between devices. Between Apple Mac, iphone and iPad, the clipboard will be synced as soon as you *put on bluetooth* on at least two of the devices. Once bluetooth is on on your mac and ipad then it should automatically paste over from the computer to iPad and back. Same should work for iPhone.
 - Add *mainnet*, *testnet*, and / or *regtest net* at your convenience. You can run all three and connect to all three.
 
-- Restart Tor on your nodes computer `brew services restart tor` and you should be able to connect to your V3 hidden service from anywhere in the world with your node completely behind a firewall and no port forwarding
+- Restart Tor on your nodes computer `brew services restart tor, and check that your node is **on**; that it's really running. Hard stop FN app on your device and reopen FN. 
+- And you should be able to connect to your V3 hidden service from anywhere in the world with your node completely behind a firewall and no port forwarding
 
 
 ## bitcoin.conf settings
@@ -251,6 +253,7 @@ dbcache=4000
 First get your connection going. **Resolve the connection issue first then add the keypair**, to keep things simple. Some double checks ( A more extensive guide [here](./Readme.md#connecting-over-tor-mac)):
 ###### On your device running node
 - Your node is running either mainnet, testnet or regtest
+- Your node is **on**, it's really running (check that it's running)
 - You've made the appropriate HiddenService -Dir, -Version and -Port declaration in your torrc file for at least the matching port (respectively 8332, 18332 and/or 18443).
 - You've started Tor for the changes to take effect
 - You've looked up the hostname files
@@ -344,6 +347,7 @@ and paste in:
 
 `descriptor:x25519:PHK2DFSCNNJ75U3GUA3SHCVEGPEJMZAPEKQGL5YLVM2GV6NORB6Q`
 
+No space, no newline.<br/>
 Save and exit and you have one of the most secure node/light client set ups possible. (assuming your server is firewalled off)
 
 #### Final thoughts on security

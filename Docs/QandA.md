@@ -360,6 +360,15 @@ More info on enabling ssh on Casa Node 1 [here](https://support.keys.casa/hc/en-
 HenkvanCann: Be aware that Casa is no longer supporting their node. On social media like Reddit, it becomes clear that people move away from Casa node 1+2, and sometimes use the old Casa node to convert it into a myNode. <br/>
 In the Casa site the Casa Node 2 is "sold out" ...
 
+
+#### Can I turn on my LND server on MyNode to use FN as a lightning wallet in conjunction with an onchain wallet?
+
+LND won’t work, And no, I won’t add it.
+
+LND is written in Go code, which is owned by google, to talk to it remotely you need to use GRPC which also is also owned by google, you can not simply run a hidden service and speak to a LND node via http post request if i understand correctly, not great for ease of use.
+
+Instead, c-lightning is built in C (an open language not owned by google), and is highly modular and flexible, super easy to build on top of with python plugins, very easy to talk to remotely and add powerful plugins to adapt to your needs. Fits into the Fully Noded architecture seamlessly.
+
 ## Connection
 
 #### Could not connect to the server... What to do?
@@ -605,6 +614,10 @@ Aka use these two buttons to create and switch between wallets<br/>
 <img src="https://i.ibb.co/VSKHWwF/switch-buttons-wallets.jpg" alt="switch-buttons-wallets" border="0" width="200"><br/>
 FN wallets will always show as COLD because your node never holds a private key<br/>
 <img src="https://i.ibb.co/m9mMMWT/switch-wallets2.jpg" alt="switch-wallets2" border="0" width="200">
+
+#### Question : Does fully noded need the wallet from bitcoin core?
+
+It should work with it disabled. But it’s been awhile since i tested that.
 
 ## Standup
 
