@@ -255,6 +255,25 @@ You can only broadcast signed raw transactions. The only purpose of psbts is to 
 
 They should all work with Fully Noded too. You can import your `xpub` directly into your node from your hardware wallets. I import my `coldcard` wallet xpub with Fully Noded, then build `PSBTs` with it.
 
+#### Question : Is there  a way to export the multisig.txt file anytime after the initial prompt when exiting the Multisig Creator flow?
+
+Not right now... if you tap the `export` button from the `active wallet` tab you’ll get a wallet export QR, it holds all the info you need to manually create that txt. 
+
+I can add a .txt button there that converts it, that would prob make the most sense. To do it manually you'll need to tap that `export` button and extract the xpubs and fingerprints and put them into this format:
+```
+Name: Fully Noded
+Policy: 2 of 3
+Derivation: m/48'/0'/0'/2'
+Format: P2WSH
+
+fingerprint:xpub
+fingerprint:xpub
+fingerprint:xpub
+```
+
+You can also get that info by tapping the info button on the active wallet tab. You will see your "receive keypool descriptor" it also holds all xpubs/fingerprints needed.
+
+
 ## General
 
 #### Question : Why is there no version for Android yet?
