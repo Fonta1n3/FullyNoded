@@ -157,10 +157,12 @@ class SignerViewController: UIViewController {
     }
     
     private func decodeRaw(raw: String) {
-        spinner.addConnectingView(vc: self, description: "verifying...")
         Reducer.makeCommand(command: .decoderawtransaction, param: "\"\(raw)\"") { [unowned vc = self] (response, errorMessage) in
             if let dict = response as? NSDictionary {
                 vc.parseDecodedTx(response: dict)
+            } else {
+                vc.spinner.removeConnectingView()
+                showAlert(vc: vc, title: "Error", message: errorMessage ?? "error decoding raw transaction")
             }
         }
     }
@@ -338,6 +340,7 @@ class SignerViewController: UIViewController {
                 }
             }
         } else {
+            spinner.addConnectingView(vc: self, description: "verifying...")
             let fx = FiatConverter.sharedInstance
             fx.getFxRate { [unowned vc = self] (fx) in
                 if fx != nil {

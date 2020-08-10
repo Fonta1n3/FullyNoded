@@ -11,6 +11,8 @@ import UIKit
 class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource {
     
     var isFiat = false
+    var isBtc = true
+    var isSats = false
     var fxRate = Double()
     var stringToExport = ""
     var spendable = Double()
@@ -24,6 +26,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     var outputsString = ""
     let ud = UserDefaults.standard
     
+    
+    @IBOutlet weak var segmentedControlOutlet: UISegmentedControl!
     @IBOutlet weak var fiatButtonOutlet: UIButton!
     @IBOutlet weak var fxRateLabel: UILabel!
     @IBOutlet weak var denominationImage: UIImageView!
@@ -87,6 +91,44 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             miningTargetLabel.text = "Minimum fee set (you can always bump it)"
             slider.value = 432 * -1
             ud.set(432, forKey: "feeTarget")
+        }
+        
+        if ud.object(forKey: "unit") != nil {
+            let unit = ud.object(forKey: "unit") as! String
+            var index = 0
+            switch unit {
+            case "btc":
+                index = 0
+                isBtc = true
+                isFiat = false
+                isSats = false
+                btcEnabled()
+            case "sats":
+                index = 1
+                isSats = true
+                isFiat = false
+                isBtc = false
+                satsSelected()
+            case "fiat":
+                index = 2
+                isFiat = true
+                isBtc = false
+                isSats = false
+                fiatEnabled()
+            default:
+                break
+            }
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.segmentedControlOutlet.selectedSegmentIndex = index
+            }
+        } else {
+            isBtc = true
+            isFiat = false
+            isSats = false
+            btcEnabled()
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.segmentedControlOutlet.selectedSegmentIndex = 0
+            }
         }
     }
     
@@ -160,6 +202,11 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 sats = Int(btcamount * 100000000.0)
                 title = "Withdraw $\(dblAmount) USD (\(sats) sats) from lightning wallet to \(address)?"
             }
+        } else if isSats {
+            if let dblAmount = Double(amountInput.text!) {
+                sats = Int(dblAmount)
+                title = "Withdraw \(dblAmount) sats from lightning wallet to \(address)?"
+            }
         } else {
             sats = Int(amount * 100000000.0)
             title = "Withdraw \(amount.avoidNotation) btc (\(sats) sats) from lightning wallet to \(address)?"
@@ -218,31 +265,66 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
-    @IBAction func denominationAction(_ sender: Any) {
+    
+    @IBAction func denominationChanged(_ sender: UISegmentedControl) {
+        switch sender.selectedSegmentIndex
+        {
+        case 0:
+            print("btc selected")
+            isFiat = false
+            isBtc = true
+            isSats = false
+            ud.set("btc", forKey: "unit")
+            btcEnabled()
+        case 1:
+            print("sats selected")
+            isFiat = false
+            isBtc = false
+            isSats = true
+            ud.set("sats", forKey: "unit")
+            satsSelected()
+        case 2:
+            print("fiat selected")
+            isFiat = true
+            isBtc = false
+            isSats = false
+            ud.set("fiat", forKey: "unit")
+            fiatEnabled()
+        default:
+            break
+        }
+    }
+    
+    private func satsSelected() {
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.denominationImage.image = UIImage(systemName: "s.circle")
+            vc.amountIcon.backgroundColor = .systemIndigo
+            vc.spinner.removeConnectingView()
+            showAlert(vc: vc, title: "sats denomination", message: "You may enter an amount denominated in sats")
+        }
+    }
+    
+    private func btcEnabled() {
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.denominationImage.image = UIImage(systemName: "bitcoinsign.circle")
+            vc.amountIcon.backgroundColor = .systemIndigo
+            vc.spinner.removeConnectingView()
+            showAlert(vc: vc, title: "btc denomination", message: "You may enter an amount denominated in btc")
+        }
+    }
+    
+    private func fiatEnabled() {
         spinner.addConnectingView(vc: self, description: "getting fx rate...")
         let fx = FiatConverter.sharedInstance
         fx.getFxRate { [unowned vc = self] (fxrate) in
             if fxrate != nil {
                 vc.fxRate = fxrate!
-                vc.isFiat = !vc.isFiat
-                if vc.isFiat {
-                    DispatchQueue.main.async { [unowned vc = self] in
-                        vc.fxRateLabel.text = "$\(fxrate!.withCommas()) / btc"
-                        vc.denominationImage.image = UIImage(systemName: "dollarsign.circle")
-                        vc.amountIcon.backgroundColor = .systemBlue
-                        vc.fiatButtonOutlet.setImage(UIImage(systemName: "dollarsign.circle"), for: .normal)
-                        vc.spinner.removeConnectingView()
-                        showAlert(vc: vc, title: "Fiat denomination", message: "You may enter an amount denominated in USD, we will calculate the equivalent amount in btc based on the current exchange rate of $\(fxrate!.withCommas()) / btc, always confirm the amounts before broadcasting by tapping the \"verify\" button.\n\nBitcoin's exchange rate can be volatile so always double check the amounts using the \"verify\" tool when the broadcaster presents itself.")
-                    }
-                } else {
-                    DispatchQueue.main.async { [unowned vc = self] in
-                        vc.fxRateLabel.text = "$\(fxrate!) / btc"
-                        vc.denominationImage.image = UIImage(systemName: "bitcoinsign.circle")
-                        vc.fiatButtonOutlet.setImage(UIImage(systemName: "bitcoinsign.circle"), for: .normal)
-                        vc.amountIcon.backgroundColor = .systemIndigo
-                        vc.spinner.removeConnectingView()
-                        showAlert(vc: vc, title: "BTC denomination", message: "You may enter an amount denominated in BTC, to switch back to fiat denominations tap the currency button.")
-                    }
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.fxRateLabel.text = "$\(fxrate!.withCommas()) / btc"
+                    vc.denominationImage.image = UIImage(systemName: "dollarsign.circle")
+                    vc.amountIcon.backgroundColor = .systemBlue
+                    vc.spinner.removeConnectingView()
+                    showAlert(vc: vc, title: "Fiat denomination", message: "You may enter an amount denominated in USD, we will calculate the equivalent amount in btc based on the current exchange rate of $\(fxrate!.withCommas()) / btc, always confirm the amounts before broadcasting by tapping the \"verify\" button.\n\nBitcoin's exchange rate can be volatile so always double check the amounts using the \"verify\" tool when the broadcaster presents itself.")
                 }
             } else {
                 vc.spinner.removeConnectingView()
@@ -275,9 +357,11 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     @IBAction func addOutput(_ sender: Any) {
         if amountInput.text != "" && addressInput.text != "" && amountInput.text != "0.0" {
             var amount = amountInput.text!
-            if isFiat {
-                if let dblAmount = Double(amountInput.text!) {
+            if let dblAmount = Double(amountInput.text!) {
+                if isFiat {
                     amount = "\(rounded(number: dblAmount / fxRate))"
+                } else if isSats {
+                    amount = "\(rounded(number: dblAmount / 100000000.0))"
                 }
             }
             let dict = ["address":addressInput.text!, "amount":amount] as [String : String]
@@ -476,9 +560,11 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         if outputArray.count == 0 {
             if self.amountInput.text != "" && self.amountInput.text != "0.0" && self.addressInput.text != "" {
                 var amount = amountInput.text!
-                if isFiat {
-                    if let dblAmount = Double(amountInput.text!) {
+                if let dblAmount = Double(amountInput.text!) {
+                    if isFiat {
                         amount = "\(rounded(number: dblAmount / fxRate))"
+                    } else if isSats {
+                        amount = "\(rounded(number: dblAmount / 100000000))"
                     }
                 }
                 let dict = ["address":addressInput.text!, "amount":amount] as [String : String]
@@ -550,6 +636,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                                     if vc.isFiat {
                                         let btcamount = rounded(number: dblAmount / vc.fxRate)
                                         let msats = Int(btcamount * 100000000000.0)
+                                        vc.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: msats)
+                                    } else if vc.isSats {
+                                        let msats = Int(dblAmount * 1000.0)
                                         vc.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: msats)
                                     } else {
                                         let msats = Int(dblAmount * 100000000000.0)

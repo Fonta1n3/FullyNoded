@@ -10,19 +10,31 @@ import UIKit
 
 class LightningNodeManagerViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
-    
     @IBOutlet weak var iconBackground: UIView!
     let spinner = ConnectingView()
     var peerArray = [[String:Any]]()
     var selectedPeer:[String:Any]?
+    var url = ""
     @IBOutlet weak var channelTable: UITableView!
+    @IBOutlet weak var aliasLabel: UILabel!
+    @IBOutlet weak var numPeersLabel: UILabel!
+    @IBOutlet weak var numActiveChannelsLabel: UILabel!
+    @IBOutlet weak var numInactiveChannelsLabel: UILabel!
+    @IBOutlet weak var numPendingChannelsLabel: UILabel!
+    @IBOutlet weak var feesCollectedLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         channelTable.delegate = self
         channelTable.dataSource = self
         iconBackground.layer.cornerRadius = 5
-        loadPeers()
+        getInfo()
+    }
+    
+    @IBAction func shareNodeUrlAction(_ sender: Any) {
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "segueToShareLightningUrl", sender: vc)
+        }
     }
     
     @IBAction func addChannelAction(_ sender: Any) {
@@ -31,8 +43,42 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDelegate,
         }
     }
     
+    private func getInfo() {
+        spinner.addConnectingView(vc: self, description: "loading...")
+        LightningRPC.command(method: .getinfo, param: "") { [unowned vc = self] (response, errorDesc) in
+            if let dict = response as? NSDictionary {
+                let alias = dict["alias"] as? String ?? ""
+                let num_peers = dict["num_peers"] as? Int ?? 0
+                let num_pending_channels = dict["num_pending_channels"] as? Int ?? 0
+                let num_active_channels = dict["num_active_channels"] as? Int ?? 0
+                let num_inactive_channels = dict["num_inactive_channels"] as? Int ?? 0
+                let addresses = dict["address"] as? NSArray ?? []
+                var ip = ""
+                var port = 9735
+                if addresses.count > 0 {
+                    ip = (addresses[0] as! NSDictionary)["address"] as? String ?? ""
+                    port = (addresses[0] as! NSDictionary)["port"] as? Int ?? 9735
+                }
+                let id = dict["id"] as? String ?? ""
+                let feesCollected = dict["fees_collected_msat"] as? String ?? "0msat"
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.aliasLabel.text = alias
+                    vc.feesCollectedLabel.text = feesCollected
+                    vc.numActiveChannelsLabel.text = "\(num_active_channels)"
+                    vc.numInactiveChannelsLabel.text = "\(num_inactive_channels)"
+                    vc.numPendingChannelsLabel.text = "\(num_pending_channels)"
+                    vc.numPeersLabel.text = "\(num_peers)"
+                    vc.url = "\(id)@\(ip):\(port)"
+                    vc.loadPeers()
+                }
+            } else {
+                vc.spinner.removeConnectingView()
+                showAlert(vc: vc, title: "Error", message: errorDesc ?? "error getting info from lightning node")
+            }
+        }
+    }
+    
     private func loadPeers() {
-        spinner.addConnectingView(vc: self, description: "getting peers...")
         LightningRPC.command(method: .listpeers, param: "") { [unowned vc = self] (response, errorDesc) in
             if let dict = response as? NSDictionary {
                 if let peers = dict["peers"] as? NSArray {
@@ -104,6 +150,12 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDelegate,
                 if selectedPeer != nil {
                     vc.peer = selectedPeer
                 }
+            }
+        }
+        
+        if segue.identifier == "segueToShareLightningUrl" {
+            if let vc = segue.destination as? QRDisplayerViewController {
+                vc.text = url
             }
         }
     }

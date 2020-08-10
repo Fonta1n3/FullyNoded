@@ -312,8 +312,8 @@ class NodeLogic {
                                     let date = Date(timeIntervalSince1970: Double(created))
                                     dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
                                     let dateString = dateFormatter.string(from: date)
-                                    
-                                    arrayToReturn.append([
+                                    if status != "failed" {
+                                        arrayToReturn.append([
                                         "address": bolt11,
                                         "amount": "-\(Double(amountMsat) / 1000.0) sats",
                                         "confirmations": status,
@@ -327,23 +327,19 @@ class NodeLogic {
                                         "onchain":false,
                                         "isLightning":true,
                                         "sortDate":date])
-                                    
+                                    }                                    
                                     if i + 1 == payments.count {
-                                        //completion((arrayToReturn, nil))
                                         getPaid()
                                     }
                                 }
                             }
                         } else {
-                            //completion((arrayToReturn, nil))
                             getPaid()
                         }
                     } else {
-                        //completion((arrayToReturn, nil))
                         getPaid()
                     }
                 } else {
-                    //completion((arrayToReturn, nil))
                     getPaid()
                 }
             }
@@ -362,7 +358,6 @@ class NodeLogic {
                                                 arrayToReturn[o]["isLightning"] = true
                                             }
                                             if t + 1 == transactions.count && o + 1 == arrayToReturn.count {
-                                                //completion((arrayToReturn, nil))
                                                 getSent()
                                             }
                                         }
@@ -373,58 +368,10 @@ class NodeLogic {
                     }
                 }
             } else {
-                //completion((arrayToReturn, nil))
                 getSent()
             }
         }
-        
-        
-        
-//        if offchainTxids.count > 0 {
-//            for (t, txid) in offchainTxids.enumerated() {
-//                if arrayToReturn.count > 0 {
-//                    for (o, onchainTx) in arrayToReturn.enumerated() {
-//                        if onchainTx["txID"] as! String == txid {
-//                            arrayToReturn[o]["isLightning"] = true
-//                        }
-//                        if t + 1 == offchainTxids.count && o + 1 == arrayToReturn.count {
-//                            completion((arrayToReturn, nil))
-//                        }
-//                    }
-//                }
-//            }
-//        }
     }
-    
-    // MARK: Section 0 parsers
-    
-//    class func parseBalance(balance: Double) {
-//
-//        if balance == 0.0 {
-//
-//            dictToReturn["hotBalance"] = "0.00000000"
-//
-//        } else {
-//
-//            dictToReturn["hotBalance"] = "\((round(100000000*balance)/100000000).avoidNotation)"
-//
-//        }
-//
-//    }
-    
-//    class func parseUncomfirmedBalance(unconfirmedBalance: Double) {
-//        
-//        if unconfirmedBalance != 0.0 || unconfirmedBalance != 0 {
-//            
-//            dictToReturn["unconfirmedBalance"] = "unconfirmed \(unconfirmedBalance.avoidNotation)"
-//            
-//        } else {
-//            
-//            dictToReturn["unconfirmedBalance"] = "unconfirmed 0.00000000"
-//            
-//        }
-//        
-//    }
     
     class func parseUtxos(utxos: NSArray) {
         

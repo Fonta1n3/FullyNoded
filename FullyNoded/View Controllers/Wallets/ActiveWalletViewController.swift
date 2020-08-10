@@ -215,7 +215,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         } else if confs.contains("incomplete") || confs.contains("unpaid") || confs.contains("expired") || confs.contains("paid") {
             confirmationsLabel.text = confs
         } else {
-            confirmationsLabel.text = (dict["confirmations"] as! String) + " " + "confs"
+            confirmationsLabel.text = confs + " " + "confs"
         }
         
         let trimToCharacter = 20

@@ -10,6 +10,7 @@ import UIKit
 
 class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
+    @IBOutlet weak var segmentedControlOutlet: UISegmentedControl!
     var textToShareViaQRCode = String()
     var addressString = String()
     var qrCode = UIImage()
@@ -26,6 +27,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     let cd = CoreDataService()
     var descriptor = ""
     var wallet = [String:Any]()
+    let ud = UserDefaults.standard
     
     @IBOutlet var amountField: UITextField!
     @IBOutlet var labelField: UITextField!
@@ -35,6 +37,8 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet var plusOutlet: UIButton!
     @IBOutlet var indexDisplay: UILabel!
     @IBOutlet var indexLabel: UILabel!
+    var isBtc = false
+    var isSats = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -54,16 +58,53 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         getAddressSettings()
         addDoneButtonOnKeyboard()
         load()
+        if ud.object(forKey: "invoiceUnit") != nil {
+            let unit = ud.object(forKey: "invoiceUnit") as! String
+            if unit == "btc" {
+                segmentedControlOutlet.selectedSegmentIndex = 0
+                isBtc = true
+                isSats = false
+            } else {
+                segmentedControlOutlet.selectedSegmentIndex = 1
+                isSats = true
+                isBtc = false
+            }
+        } else {
+            segmentedControlOutlet.selectedSegmentIndex = 0
+        }
     }
+    
+    @IBAction func denominationChanged(_ sender: UISegmentedControl) {
+        switch sender.selectedSegmentIndex {
+        case 0:
+            ud.set("btc", forKey: "invoiceUnit")
+            isBtc = true
+            isSats = false
+        case 1:
+            ud.set("sats", forKey: "invoiceUnit")
+            isSats = true
+            isBtc = false
+        default:
+            break
+        }
+    }
+    
     
     @IBAction func lightningInvoice(_ sender: Any) {
         spinner.addConnectingView(vc: self, description: "creating lightning invoice...")
         // invoice msatoshi label description
         var millisats = "\"any\""
         var label = "Fully-Noded-\(randomString(length: 5))"
-        if amountField.text != nil {
-            if let int = Int(amountField.text!) {
-                millisats = "\(int * 1000)"
+        if amountField.text != "" {
+            if isBtc {
+                if let dbl = Double(amountField.text!) {
+                    let int = Int(dbl * 100000000000.0)
+                    millisats = "\(int)"
+                }
+            } else if isSats {
+                if let int = Int(amountField.text!) {
+                    millisats = "\(int * 1000)"
+                }
             }
         }
         if labelField.text != "" {
@@ -123,8 +164,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             }
         }
     }
-    
-    
     
     func load() {
         addressOutlet.text = ""
@@ -400,43 +439,42 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
     
     func updateQRImage() {
-        
         var newImage = UIImage()
-        
-        if self.amountField.text == "" && self.labelField.text == "" {
-            
-            newImage = self.generateQrCode(key:"bitcoin:\(self.addressString)")
-            textToShareViaQRCode = "bitcoin:\(self.addressString)"
-            
-        } else if self.amountField.text != "" && self.labelField.text != "" {
-            
-            newImage = self.generateQrCode(key:"bitcoin:\(self.addressString)?amount=\(self.amountField.text!)&label=\(self.labelField.text!)")
-            textToShareViaQRCode = "bitcoin:\(self.addressString)?amount=\(self.amountField.text!)&label=\(self.labelField.text!)"
-            
-        } else if self.amountField.text != "" && self.labelField.text == "" {
-            
-            newImage = self.generateQrCode(key:"bitcoin:\(self.addressString)?amount=\(self.amountField.text!)")
-            textToShareViaQRCode = "bitcoin:\(self.addressString)?amount=\(self.amountField.text!)"
-            
-        } else if self.amountField.text == "" && self.labelField.text != "" {
-            
-            newImage = self.generateQrCode(key:"bitcoin:\(self.addressString)?label=\(self.labelField.text!)")
-            textToShareViaQRCode = "bitcoin:\(self.addressString)?label=\(self.labelField.text!)"
-            
+        var amount = self.amountField.text ?? ""
+        if isSats {
+            if amount != "" {
+                if let int = Int(amount) {
+                    amount = "\(Double(int) * 100000000.0)"
+                }
+            }
         }
-        
-        DispatchQueue.main.async {
+        if !addressString.hasPrefix("lntb") && !addressString.hasPrefix("lightning:") && !addressString.hasPrefix("lnbc") && !addressString.hasPrefix("lnbcrt") {
+            if self.amountField.text == "" && self.labelField.text == "" {
+                newImage = self.generateQrCode(key:"bitcoin:\(self.addressString)")
+                textToShareViaQRCode = "bitcoin:\(self.addressString)"
+                
+            } else if self.amountField.text != "" && self.labelField.text != "" {
+                newImage = self.generateQrCode(key:"bitcoin:\(self.addressString)?amount=\(amount)&label=\(self.labelField.text!)")
+                textToShareViaQRCode = "bitcoin:\(self.addressString)?amount=\(self.amountField.text!)&label=\(self.labelField.text!)"
+                
+            } else if self.amountField.text != "" && self.labelField.text == "" {
+                newImage = self.generateQrCode(key:"bitcoin:\(self.addressString)?amount=\(amount)")
+                textToShareViaQRCode = "bitcoin:\(self.addressString)?amount=\(self.amountField.text!)"
+                
+            } else if self.amountField.text == "" && self.labelField.text != "" {
+                newImage = self.generateQrCode(key:"bitcoin:\(self.addressString)?label=\(self.labelField.text!)")
+                textToShareViaQRCode = "bitcoin:\(self.addressString)?label=\(self.labelField.text!)"
+                
+            }
             
-            UIView.transition(with: self.qrView,
-                              duration: 0.75,
-                              options: .transitionCrossDissolve,
-                              animations: { self.qrView.image = newImage },
-                              completion: nil)
-            
-            impact()
-            
+            DispatchQueue.main.async {
+                UIView.transition(with: self.qrView,
+                                  duration: 0.75,
+                                  options: .transitionCrossDissolve,
+                                  animations: { self.qrView.image = newImage },
+                                  completion: nil)
+            }
         }
-        
     }
     
     @objc func doneButtonAction() {
