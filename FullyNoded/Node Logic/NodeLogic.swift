@@ -26,33 +26,6 @@ class NodeLogic {
         }
     }
     
-//    class func getUnconfirmedBalance(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-//        Reducer.makeCommand(command: .getunconfirmedbalance, param: "") { (response, errorMessage) in
-//            if let unconfirmedBalance = response as? Double {
-//                parseUncomfirmedBalance(unconfirmedBalance: unconfirmedBalance)
-//                listUnspent(completion: completion)
-//            } else {
-//                completion((nil, errorMessage ?? ""))
-//            }
-//        }
-//    }
-    
-//    class func getBalance(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-//        Reducer.makeCommand(command: .getbalance, param: "\"*\", 0, false") { (response, errorMessage) in
-//            if let balanceCheck = response as? Double {
-//                parseBalance(balance: balanceCheck)
-//                getUnconfirmedBalance(completion: completion)
-//            } else if errorMessage != nil {
-//                if errorMessage!.contains("Method not found") {
-//                    walletDisabled = true
-//                    completion((nil, "wallet disabled"))
-//                } else {
-//                    completion((nil, errorMessage ?? ""))
-//                }
-//            }
-//        }
-//    }
-    
     class func listUnspent(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         Reducer.makeCommand(command: .listunspent, param: "0") { (response, errorMessage) in
             if let utxos = response as? NSArray {
@@ -230,18 +203,7 @@ class NodeLogic {
     class func getOffchainTransactions(completion: @escaping ((response: [[String:Any]]?, errorMessage: String?)) -> Void) {
         
         func getPaid() {
-            /*
-             {
-                "label": "ln-plugin-donation-0.15220240733598833",
-                "bolt11": "lntb10u1p0jjgdxpp5enltq775hp6sggr8ca6826m5phzd08ctntum87rnmf5ku0pzz20sdqqxqyjw5qcqp2sp5700edqtmj948q3fgyd0mn43g8j02qjyf6zy8uxwf8fqu70cunees9qy9qsqtwgysnf3pnyj969lg9jejg7pfe7sfkrusx2lg62vmuegs596gusrdkg86guf029chqmr97vaztquanqvkmjz42gcu3ussh6k6ganf3qpas2fpk",
-                "payment_hash": "ccfeb07bd4b875042067c774756b740dc4d79f0b9af9b3f873da696e3c22129f",
-                "msatoshi": 1000000,
-                "amount_msat": "1000000msat",
-                "status": "unpaid",
-                "description": "",
-                "expires_at": 1597135910
-             }
-             */
+            
             LightningRPC.command(method: .listinvoices, param: "") { (response, errorDesc) in
                 if let dict = response as? NSDictionary {
                     if let payments = dict["invoices"] as? NSArray {
@@ -598,19 +560,20 @@ class NodeLogic {
                 dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
                 let dateString = dateFormatter.string(from: date)
                 
-                transactionArray.append(["address": address,
-                                         "amount": amountString,
-                                         "confirmations": confirmations,
-                                         "label": label,
-                                         "date": dateString,
-                                         "rbf": rbf,
-                                         "txID": txID,
-                                         "replacedBy": replaced_by_txid,
-                                         "selfTransfer":false,
-                                         "remove":false,
-                                         "onchain":true,
-                                         "isLightning":false,
-                                         "sortDate":date
+                transactionArray.append([
+                    "address": address,
+                    "amount": amountString,
+                    "confirmations": confirmations,
+                    "label": label,
+                    "date": dateString,
+                    "rbf": rbf,
+                    "txID": txID,
+                    "replacedBy": replaced_by_txid,
+                    "selfTransfer":false,
+                    "remove":false,
+                    "onchain":true,
+                    "isLightning":false,
+                    "sortDate":date
                 ])
                 
             }

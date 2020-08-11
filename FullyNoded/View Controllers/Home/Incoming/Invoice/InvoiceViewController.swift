@@ -111,25 +111,25 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             label = labelField.text!
         }
         let param = "\(millisats), \"\(label)\", \"\(Date())\", \(86400)"
-        LightningRPC.command(method: .invoice, param: param) { [unowned vc = self] (response, errorDesc) in
+        LightningRPC.command(method: .invoice, param: param) { [weak self] (response, errorDesc) in
             if let dict = response as? NSDictionary {
                 if let bolt11 = dict["bolt11"] as? String {
-                    DispatchQueue.main.async { [unowned vc = self] in
-                        vc.addressOutlet.alpha = 1
-                        vc.addressString = bolt11
-                        vc.addressOutlet.text = bolt11
-                        vc.showAddress(address: bolt11)
-                        vc.spinner.removeConnectingView()
+                    DispatchQueue.main.async { [weak self] in
+                        self?.addressOutlet.alpha = 1
+                        self?.addressString = bolt11
+                        self?.addressOutlet.text = bolt11
+                        self?.showAddress(address: bolt11)
+                        self?.spinner.removeConnectingView()
                     }
                 }
                 if let warning = dict["warning_capacity"] as? String {
                     if warning != "" {
-                        showAlert(vc: vc, title: "Warning", message: warning)
+                        showAlert(vc: self, title: "Warning", message: warning)
                     }
                 }
             } else {
-                vc.spinner.removeConnectingView()
-                showAlert(vc: vc, title: "Error", message: errorDesc ?? "we had an issue getting your lightning invoice")
+                self?.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Error", message: errorDesc ?? "we had an issue getting your lightning invoice")
             }
         }
     }
@@ -179,17 +179,17 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 }
             }
         } else {
-            activeWallet { [unowned vc = self] (wallet) in
+            activeWallet { [weak self] (wallet) in
                 if wallet != nil {
                     let descriptorParser = DescriptorParser()
                     let descriptorStruct = descriptorParser.descriptor(wallet!.receiveDescriptor)
                     if descriptorStruct.isMulti {
-                        vc.getReceieveAddressForFullyNodedMultiSig(wallet!)
+                        self?.getReceieveAddressForFullyNodedMultiSig(wallet!)
                     } else {
-                        vc.showAddress()
+                        self?.showAddress()
                     }
                 } else {
-                    vc.showAddress()
+                    self?.showAddress()
                 }
             }
         }
@@ -203,11 +203,11 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 Reducer.makeCommand(command: .deriveaddresses, param: param) { (response, errorMessage) in
                     if let addresses = response as? NSArray {
                         if let address = addresses[0] as? String {
-                            DispatchQueue.main.async { [unowned vc = self] in
-                                vc.addressOutlet.alpha = 1
-                                vc.addressString = address
-                                vc.addressOutlet.text = address
-                                vc.showAddress(address: address)
+                            DispatchQueue.main.async { [weak self] in
+                                self?.addressOutlet.alpha = 1
+                                self?.addressString = address
+                                self?.addressOutlet.text = address
+                                self?.showAddress(address: address)
                             }
                         }
                     }
@@ -217,33 +217,33 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
     
     @IBAction func getAddressInfo(_ sender: Any) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "getAddressInfo", sender: vc)
+        DispatchQueue.main.async { [weak self] in
+            self?.performSegue(withIdentifier: "getAddressInfo", sender: self)
         }
     }
     
     func getHDMusigAddress() {
         let walletStr = WalletOld(dictionary: wallet)
-        Crypto.decryptData(dataToDecrypt: walletStr.descriptor!) { [unowned vc = self] (desc) in
+        Crypto.decryptData(dataToDecrypt: walletStr.descriptor!) { [weak self] (desc) in
             if desc != nil {
-                vc.descriptor = desc!.utf8
+                self?.descriptor = desc!.utf8
                 let label = walletStr.label
                 let addressIndex = "\(walletStr.index)"
-                let param = "\(vc.descriptor), [\(addressIndex),\(addressIndex)]"
+                let param = "\(self?.descriptor), [\(addressIndex),\(addressIndex)]"
                 Reducer.makeCommand(command: .deriveaddresses, param: param) { (response, errorMessage) in
                     if let result = response as? NSArray {
                         if let addressToReturn = result[0] as? String {
-                            DispatchQueue.main.async { [unowned vc = self] in
-                                vc.indexDisplay.text = addressIndex
-                                vc.addressOutlet.text = addressToReturn
-                                vc.navigationController?.navigationBar.topItem?.title = label
-                                vc.addressString = addressToReturn
-                                vc.isHDMusig = true
-                                vc.showAddress()
+                            DispatchQueue.main.async { [weak self] in
+                                self?.indexDisplay.text = addressIndex
+                                self?.addressOutlet.text = addressToReturn
+                                self?.navigationController?.navigationBar.topItem?.title = label
+                                self?.addressString = addressToReturn
+                                self?.isHDMusig = true
+                                self?.showAddress()
                             }
                         }
                     } else {
-                        vc.spinner.removeConnectingView()
+                        self?.spinner.removeConnectingView()
                         displayAlert(viewController: self, isError: true, message: errorMessage ?? "error deriving addresses")
                     }
                 }
@@ -262,8 +262,8 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         if isHDMusig {
             showAddress(address: addressString)
             spinner.removeConnectingView()
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.addressOutlet.text = vc.addressString
+            DispatchQueue.main.async { [weak self] in
+                self?.addressOutlet.text = self?.addressString
             }
         } else {
             var params = ""
@@ -279,32 +279,34 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
     
     func showAddress(address: String) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.qrCode = vc.generateQrCode(key: address)
-            vc.qrView.image = vc.qrCode
-            vc.qrView.isUserInteractionEnabled = true
-            vc.qrView.alpha = 0
-            vc.view.addSubview(vc.qrView)
-            vc.descriptionLabel.frame = CGRect(x: 10, y: vc.view.frame.maxY - 30, width: vc.view.frame.width - 20, height: 20)
-            vc.descriptionLabel.textAlignment = .center
-            vc.descriptionLabel.font = UIFont.init(name: "HelveticaNeue-Light", size: 12)
-            vc.descriptionLabel.textColor = UIColor.white
-            vc.descriptionLabel.text = "Tap the QR Code or text to copy/save/share"
-            vc.descriptionLabel.adjustsFontSizeToFitWidth = true
-            vc.descriptionLabel.alpha = 0
-            vc.view.addSubview(vc.descriptionLabel)
-            vc.tapAddressGesture = UITapGestureRecognizer(target: vc, action: #selector(vc.shareAddressText(_:)))
-            vc.addressOutlet.addGestureRecognizer(vc.tapAddressGesture)
-            vc.addressOutlet.text = address
-            vc.addressString = address
-            vc.tapQRGesture = UITapGestureRecognizer(target: vc, action: #selector(vc.shareQRCode(_:)))
-            vc.qrView.addGestureRecognizer(vc.tapQRGesture)
-            vc.spinner.removeConnectingView()
-            UIView.animate(withDuration: 0.3, animations: { [unowned vc = self] in
-                vc.descriptionLabel.alpha = 1
-                vc.qrView.alpha = 1
-                vc.addressOutlet.alpha = 1
-            })
+        DispatchQueue.main.async { [weak self] in
+            if self != nil {
+                self!.qrCode = self!.generateQrCode(key: address)
+                self!.qrView.image = self?.qrCode
+                self!.qrView.isUserInteractionEnabled = true
+                self!.qrView.alpha = 0
+                self!.view.addSubview(self!.qrView)
+                self!.descriptionLabel.frame = CGRect(x: 10, y: self!.view.frame.maxY - 30, width: self!.view.frame.width - 20, height: 20)
+                self!.descriptionLabel.textAlignment = .center
+                self!.descriptionLabel.font = UIFont.init(name: "HelveticaNeue-Light", size: 12)
+                self!.descriptionLabel.textColor = UIColor.white
+                self!.descriptionLabel.text = "Tap the QR Code or text to copy/save/share"
+                self!.descriptionLabel.adjustsFontSizeToFitWidth = true
+                self!.descriptionLabel.alpha = 0
+                self!.view.addSubview(self!.descriptionLabel)
+                self!.tapAddressGesture = UITapGestureRecognizer(target: self!, action: #selector(self!.shareAddressText(_:)))
+                self!.addressOutlet.addGestureRecognizer(self!.tapAddressGesture)
+                self!.addressOutlet.text = address
+                self!.addressString = address
+                self!.tapQRGesture = UITapGestureRecognizer(target: self!, action: #selector(self?.shareQRCode(_:)))
+                self!.qrView.addGestureRecognizer(self!.tapQRGesture)
+                self!.spinner.removeConnectingView()
+                UIView.animate(withDuration: 0.3, animations: { [weak self] in
+                    self?.descriptionLabel.alpha = 1
+                    self?.qrView.alpha = 1
+                    self?.addressOutlet.alpha = 1
+                })
+            }
         }
     }
     
@@ -369,43 +371,49 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         print("executeNodeCommand")
         
         func deriveAddresses() {
-            Reducer.makeCommand(command: .deriveaddresses, param: param) { [unowned vc = self] (response, errorMessage) in
+            Reducer.makeCommand(command: .deriveaddresses, param: param) { [weak self] (response, errorMessage) in
                 if let result = response as? NSArray {
                     if let addressToReturn = result[0] as? String {
-                        DispatchQueue.main.async { [unowned vc = self] in
-                            vc.spinner.removeConnectingView()
-                            vc.addressString = addressToReturn
-                            vc.addressOutlet.text = addressToReturn
-                            vc.showAddress(address: addressToReturn)
-                            let id = vc.wallet["id"] as! UUID
-                            CoreDataService.update(id: id, keyToUpdate: "index", newValue: Int32(vc.indexDisplay.text!)!, entity: .newHdWallets) { success in
-                                if success {
-                                    print("updated index")
-                                } else {
-                                    print("index update failed")
+                        DispatchQueue.main.async { [weak self] in
+                            self?.spinner.removeConnectingView()
+                            self?.addressString = addressToReturn
+                            self?.addressOutlet.text = addressToReturn
+                            self?.showAddress(address: addressToReturn)
+                            let id = self?.wallet["id"] as! UUID
+                            if self != nil {
+                                if self?.indexDisplay.text != nil {
+                                    CoreDataService.update(id: id, keyToUpdate: "index", newValue: Int32(self!.indexDisplay.text!)!, entity: .newHdWallets) { success in
+                                        if success {
+                                            print("updated index")
+                                        } else {
+                                            print("index update failed")
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
                 } else {
-                    vc.spinner.removeConnectingView()
-                    displayAlert(viewController: vc, isError: true, message: errorMessage ?? "error deriving addresses")
+                    self?.spinner.removeConnectingView()
+                    displayAlert(viewController: self, isError: true, message: errorMessage ?? "error deriving addresses")
                 }
             }
         }
         
         func getAddress() {
-            Reducer.makeCommand(command: .getnewaddress, param: param) { [unowned vc = self] (response, errorMessage) in
+            Reducer.makeCommand(command: .getnewaddress, param: param) { [weak self] (response, errorMessage) in
                 if let address = response as? String {
-                    DispatchQueue.main.async { [unowned vc = self] in
-                        vc.spinner.removeConnectingView()
-                        vc.addressString = address
-                        vc.addressOutlet.text = address
-                        vc.showAddress(address: address)
+                    DispatchQueue.main.async { [weak self] in
+                        self?.spinner.removeConnectingView()
+                        self?.addressString = address
+                        self?.addressOutlet.text = address
+                        self?.showAddress(address: address)
                     }
                 } else {
-                    vc.spinner.removeConnectingView()
-                    showAlert(vc: vc, title: "Error", message: errorMessage ?? "error fecthing address")
+                    if self != nil {
+                        self!.spinner.removeConnectingView()
+                        showAlert(vc: self!, title: "Error", message: errorMessage ?? "error fecthing address")
+                    }
                 }
             }
         }

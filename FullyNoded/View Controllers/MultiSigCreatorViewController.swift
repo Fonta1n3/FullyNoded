@@ -91,7 +91,6 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
         } else {
             walletSuccessfullyCreated(m: m)
         }
-        
     }
     
     private func promptToCreate() {
@@ -294,6 +293,7 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
             cell.selectionStyle = .none
             let fingerprint = cell.viewWithTag(1) as! UITextField
             fingerprint.delegate = self
+            fingerprint.restorationIdentifier = "\(indexPath.section)"
             let signer = cell.viewWithTag(2) as! UITextView
             signer.layer.borderWidth = 0.5
             signer.layer.borderColor = UIColor.darkGray.cgColor
@@ -340,6 +340,7 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
         let header = UIView()
         header.backgroundColor = UIColor.clear
         header.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 50)
+        
         let textLabel = UILabel()
         textLabel.textAlignment = .left
         textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
@@ -347,9 +348,28 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
         textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
         if signers.count > 0 {
             textLabel.text = "#\(section + 1)"
+            let clearButton = UIButton()
+            clearButton.tintColor = .white
+            clearButton.tag = section
+            clearButton.setTitle("clear", for: .normal)
+            clearButton.addTarget(self, action: #selector(clearSection(_:)), for: .touchUpInside)
+            let clearButtonX = header.frame.maxX - 100
+            clearButton.frame = CGRect(x: clearButtonX, y: 0, width: 80, height: 18)
+            clearButton.center.y = textLabel.center.y
+            
+            header.addSubview(textLabel)
+            header.addSubview(clearButton)
         }
-        header.addSubview(textLabel)
         return header
+    }
+    
+    @objc func clearSection(_ sender: UIButton) {
+        let section = sender.tag
+        signers[section]["fingerprint"] = ""
+        signers[section]["xpub"] = ""
+        signers[section]["zpub"] = ""
+        signers[section]["signer"] = ""
+        reloadIndex(index: section)
     }
     
     func textViewDidEndEditing(_ textView: UITextView) {
@@ -368,6 +388,16 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
                 }
             }
         }
+    }
+    
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        print("shouldChangeCharactersIn: \(string)")
+        if textField.restorationIdentifier != nil {
+            if let index = Int(textField.restorationIdentifier!) {
+                signers[index]["fingerprint"] = textField.text ?? ""
+            }
+        }
+        return true
     }
     
     private func updateWords(words: String, index: Int) {
@@ -422,7 +452,6 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
     private func updateXpub(xpub: String, index: Int) {
         if xpub != "" {
             if let zpub = XpubConverter.zpub(xpub: xpub) {
-                signers[index]["fingerprint"] = ""
                 signers[index]["signer"] = ""
                 signers[index]["xpub"] = xpub
                 signers[index]["zpub"] = zpub
@@ -435,7 +464,6 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
     private func updateZpub(zpub: String, index: Int) {
         if zpub != "" {
             if let xpub = XpubConverter.convert(extendedKey: zpub) {
-                signers[index]["fingerprint"] = ""
                 signers[index]["signer"] = ""
                 signers[index]["xpub"] = xpub
                 signers[index]["zpub"] = zpub

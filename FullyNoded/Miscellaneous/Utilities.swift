@@ -56,16 +56,14 @@ public extension UITextView {
   }
 }
 
-public func showAlert(vc: UIViewController, title: String, message: String) {
-    
-    DispatchQueue.main.async {
-        
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in }))
-        vc.present(alert, animated: true, completion: nil)
-        
+public func showAlert(vc: UIViewController?, title: String, message: String) {
+    if vc != nil {
+        DispatchQueue.main.async {
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in }))
+            vc!.present(alert, animated: true, completion: nil)
+        }
     }
-    
 }
 
 public func exportPsbtToURL(data: Data) -> URL? {
@@ -206,14 +204,16 @@ public extension Double {
     }
 }
 
-public func displayAlert(viewController: UIViewController, isError: Bool, message: String) {
-    if isError {
-        showAlert(vc: viewController, title: "Error", message: message)
-    } else {
-        DispatchQueue.main.async {
-            let errorView = ErrorView()
-            errorView.isUserInteractionEnabled = true
-            errorView.showErrorView(vc: viewController,text: message,isError: isError)
+public func displayAlert(viewController: UIViewController?, isError: Bool, message: String) {
+    if viewController != nil {
+        if isError {
+            showAlert(vc: viewController, title: "Error", message: message)
+        } else {
+            DispatchQueue.main.async {
+                let errorView = ErrorView()
+                errorView.isUserInteractionEnabled = true
+                errorView.showErrorView(vc: viewController!, text: message, isError: isError)
+            }
         }
     }
 }
