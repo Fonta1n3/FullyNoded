@@ -392,9 +392,9 @@ Instead, c-lightning is built in C (an open language not owned by google), and i
 
 If your using multisig but only use one codebase you're doing it wrong, in my opinion.
 
+<img src="./Images/SingleSign.png" alt="Common Single Sign situation" border="0" width="500">
+<img src="./Images/FNmutlisign.png" alt="Intermediate FN multisig" border="0" width="700"><br/>
 <img src="./Images/FinalSolution.png" alt="Final FN multisig solution" border="0" width="500">
-
-![Final Solution](./Images/FinalSolution.png)
 
 HvC: This example is of course a 1 of 3, a 2 of 3 or 3 of 3, but in general it could be anything m out of n. The idea is that the CREATE diagram leaves an "unfinished / unsafe" state, THe EDIT is the final solution and "Proper FN multisign".
 
