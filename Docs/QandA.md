@@ -642,7 +642,7 @@ By far the best way to use the app is stick 100% with FN wallets.
 Aka use these two buttons to create and switch between wallets<br/>
 <img src="./Images/switch-buttons-wallets.jpg" alt="switch-buttons-wallets" border="0" width="200"><br/>
 FN wallets will always show as COLD because your node never holds a private key<br/>
-<img src="./Images/m9mMMWT/switch-wallets2.jpg" alt="switch-wallets2" border="0" width="200">
+<img src="./Images/switch-wallets2.jpg" alt="switch-wallets2" border="0" width="200">
 
 #### Question : Does fully noded need the wallet from bitcoin core?
 
