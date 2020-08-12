@@ -388,6 +388,16 @@ LND is written in Go code, which is owned by google, to talk to it remotely you 
 
 Instead, c-lightning is built in C (an open language not owned by google), and is highly modular and flexible, super easy to build on top of with python plugins, very easy to talk to remotely and add powerful plugins to adapt to your needs. Fits into the Fully Noded architecture seamlessly.
 
+#### How should I organise my signing with devices and multisigs?
+
+If your using multisig but only use one codebase you're doing it wrong, in my opinion.
+
+<img src="./Images/FinalSolution.png" alt="Final FN multisig solution" border="0" width="500">
+
+![Final Solution](./Images/FinalSolution.png)
+
+HvC: This example is of course a 1 of 3, a 2 of 3 or 3 of 3, but in general it could be anything m out of n. The idea is that the CREATE diagram leaves an "unfinished / unsafe" state, THe EDIT is the final solution and "Proper FN multisign".
+
 ## Connection
 
 #### Could not connect to the server... What to do?
