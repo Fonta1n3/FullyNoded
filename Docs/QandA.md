@@ -98,7 +98,7 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 ## Userinterface
 
 #### Question : This button should bring up info and allow me to make changes?
-<img src="./Images/refresh-info.jpg" alt="refresh-info" border="0" width="200">
+<img src="./Images/refresh-info.png" alt="refresh-info" border="0" width="200">
 
 It does, but only for Fully Noded wallets. It does not do anything for wallets created on your node externally from FN. FN allows you to manually create wallets and access all your nodes wallets. It is only possible for FN to show wallet details when the wallet was created via the `+` button on the `Active Wallet` tab. With FN wallets the app will remember the public key descriptors that were used to create the wallet, it's derivation, it's keypool range, the wallet label, the wallet filename, and a unique identifier.
 
@@ -121,7 +121,7 @@ Nowhere, will add it to the header of settings
 
 #### Question : Made 2 single sig wallets in FN.  Both have same signer words?
 
-<img src="./Images/double-same-sig-wallets-FN.jpg" alt="double-same-sig-wallets-FN" border="0" width="200"><br/>
+<img src="./Images/double-same-sig-wallets-FN.png" alt="double-same-sig-wallets-FN" border="0" width="200"><br/>
 Ignore wallet manager<br/>
 Tap the squares button on the active wallet view<br/>
 Use your Fully Noded wallets from there<br/>
@@ -132,7 +132,7 @@ Just use the one you’ve got in the Fully Noded wallets, Delete the other one f
 TBW<br/>
 
 #### Question : Why is camera always active in the wallet?
-<img src="./Images/camera-active-wallet.jpg" alt="camera-active-wallet" border="0" width="200"><br/>
+<img src="./Images/camera-active-wallet.png" alt="camera-active-wallet" border="0" width="200"><br/>
 should only be active when you are scanning a QR code...<br/>
 when you swipe down or close the QR scanner it dismisses all camera related code<br/>
 For now, i guess if you do not want it to use the camera just disable that in the devices settings<br/>
@@ -148,7 +148,7 @@ MD: What is your node setup like? And what is the last thing you are doing befor
 Matt Hill: Please make sure you are running `Bitcoin 0.20.0` on the `Embassy`. And that you have the "wallet" feature in your config file enabled.
 
 Fonta1n3: Looks like you never actually connected? If your connection is successful you’ll see the home screen look like this:<br/>
-<img src="./Images/opening-screen.jpg" alt="opening-screen" border="0" width="200">
+<img src="./Images/opening-screen.png" alt="opening-screen" border="0" width="200">
 
 Occasionally you’ll get a crash if you race around the app not allowing things to finish loading or if you put it into background before `tor` connects and back into foreground very quickly and vice versa. Important to let things load and go slow. Other then that there really should not be crashes, only way i can troubleshoot that is release on Testflight again and ask that you share the crash report.
 For starters ensure you are connected to your node, can you confirm it successfully connects? Actually connecting is only successful when the home screen has loaded.
@@ -231,7 +231,7 @@ So on your coldcard you go to “dump wallet summary” in the sd card section<b
 And get either your bip44 or bip84 xpub<br/>
 Make a qr code with it or copy and paste it<br/>
 In Fully Noded you go to settings<br/>
-<img src="./Images/QR-settings.jpg" alt="QR-settings" border="0" width="200"><br/>
+<img src="./Images/QR-settings.png" alt="QR-settings" border="0" width="200"><br/>
 Inout your master fingerprint and the correct settings, then scan the qr-code of the `xpub`, and it will import whatever range of addresses you specified<br/>
 You have to take the sd-card and put it into a computer and create the qr.
 #### Further question : what the added benifit of going through the iPhone?
@@ -251,7 +251,7 @@ Build your unsigned transactions on your phone, and send them to airgapped lapto
 You can only broadcast signed raw transactions. The only purpose of psbts is to end up with a signed raw transaction. e.g. The `.txn` file from Coldcard.
 
 #### Question : Hardware wallet support?
-<img src="./Images/Hardware-wallets.jpg" alt="Hardware-wallets" border="0" width="200"><br/>
+<img src="./Images/Hardware-wallets.png" alt="Hardware-wallets" border="0" width="200"><br/>
 
 They should all work with Fully Noded too. You can import your `xpub` directly into your node from your hardware wallets. I import my `coldcard` wallet xpub with Fully Noded, then build `PSBTs` with it.
 
@@ -320,7 +320,7 @@ We then loop through each signer on the device, decrypting them and seeing if it
 You can set a mining fee target in `settings`, if you want it to be confirmed quickly adjust this setting accordingly. Otherwise all transactions are `replace by fee` enabled in FN. To bump the fee simply tap the transaction and you will see a button for bumping the fee. If FN does not hold a signer for the wallet and the node can not sign then FN will allow you to export the new transaction as a `psbt` which you will need to pass back to your signer and broadcast again as utilizing `rbf` means you create an entirely new transaction.
 
 #### Question : Any suggestion about this problem? All the username, password, and onion address are OK<br/>
-<img src="./Images/err-network-conn.jpg" alt="err-network-conn" border="0" width="200">
+<img src="./Images/err-network-conn.png" alt="err-network-conn" border="0" width="200">
 
 Force quitting FN and rebooting `tor` on your `node` usually works. Sometimes Tor can get "stuck" especially if your node's machine has gone offline or been put to sleep. This issue may also be encountered if you connect to multiple nodes and switch between them, simply force quitting FN and reopening it resolves the issue and force refreshes the connection to the new node.
 
@@ -342,7 +342,7 @@ If you airdrop FN gives a choice
 
 #### Question :  Does this imply that using my node is not private?
 
-<img src="./Images/use-my-node.jpg" alt="use-my-node" border="0" width="200"><br/>
+<img src="./Images/use-my-node.png" alt="use-my-node" border="0" width="200"><br/>
 *I think it should say third party service or use my own node. In fact this should be a setting that you opt in right?*<br/>
 Javier: I think that option is in case your node is not running Tor. If your bitcoind instance is not running over Tor each tx propagated is more likely to be desanonymized.   That’s the reason to choose propagate Esplora API. 
 
@@ -517,8 +517,8 @@ If you want to do it manually that works too :)
 #### Question : Looks like I'm connected. But no homescreen, what's wrong?
 
 *It says it connects successfully but no matter how long i let the app run it never looks like your pic.*<br/>
-<img src="./Images/node-added.jpg" alt="node-added" border="0" width="200">
-<img src="./Images/node-added2.jpg" alt="node-added2" border="0" width="200">
+<img src="./Images/node-added.png" alt="node-added" border="0" width="200">
+<img src="./Images/node-added2.png" alt="node-added2" border="0" width="200">
 
 It says successfully **added**. Actually connecting is only successful when the home screen has loaded.<br/>
 Are you absolutely sure the rpc password and username and onion are 100% correct?<br/>
@@ -532,7 +532,7 @@ W is there any possibility your isp is blocking tor? That has also been an issue
 For starters ensure you are connected to your node, can you confirm it successfully connects?
 
 If your connection is successful you’ll see the home screen look like this:<br/>
-<img src="./Images/opening-screen.jpg" alt="opening-screen" border="0" width="200"><br/>
+<img src="./Images/opening-screen.png" alt="opening-screen" border="0" width="200"><br/>
 
 
 ####  Question : what's this about *Tor V3 Authentication Public key* in settings > security center > Tor V3 Authentication?
@@ -640,9 +640,9 @@ It's really just there to help people recover wallets that exist on their node. 
 By far the best way to use the app is stick 100% with FN wallets.
 
 Aka use these two buttons to create and switch between wallets<br/>
-<img src="./Images/switch-buttons-wallets.jpg" alt="switch-buttons-wallets" border="0" width="200"><br/>
+<img src="./Images/switch-buttons-wallets.png" alt="switch-buttons-wallets" border="0" width="200"><br/>
 FN wallets will always show as COLD because your node never holds a private key<br/>
-<img src="./Images/switch-wallets2.jpg" alt="switch-wallets2" border="0" width="200">
+<img src="./Images/switch-wallets2.png" alt="switch-wallets2" border="0" width="200">
 
 #### Question : Does fully noded need the wallet from bitcoin core?
 
@@ -652,7 +652,7 @@ It should work with it disabled. But it’s been awhile since i tested that.
 
 #### Question : where can I download this? 
 
-<img src="./Images/standup-screen.jpg" alt="standup-screen" border="0" width="200"><br/>
+<img src="./Images/standup-screen.png" alt="standup-screen" border="0" width="200"><br/>
 [here](https://github.com/BlockchainCommons/Bitcoin-Standup-MacOS/blob/master/Standup_0.1.1.dmg) is the notarized and pgp signed dmg
 Just click download and then open it<br/>
 
