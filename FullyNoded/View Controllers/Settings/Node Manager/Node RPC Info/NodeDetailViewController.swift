@@ -10,11 +10,12 @@ import UIKit
 
 class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
     
-    var selectedNode = [String:Any]()
+    var selectedNode:[String:Any]?
     let cd = CoreDataService()
     var createNew = Bool()
     var newNode = [String:Any]()
     var isInitialLoad = Bool()
+    var isLightning = Bool()
     
     @IBOutlet var nodeLabel: UITextField!
     @IBOutlet var rpcUserField: UITextField!
@@ -22,6 +23,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     @IBOutlet var rpcLabel: UILabel!
     @IBOutlet var saveButton: UIButton!
     @IBOutlet weak var onionAddressField: UITextField!
+    @IBOutlet weak var lightnginSettingsOutet: UIBarButtonItem!
+    @IBOutlet weak var deleteLightningOutlet: UIButton!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,10 +38,49 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         onionAddressField.isSecureTextEntry = true
         saveButton.clipsToBounds = true
         saveButton.layer.cornerRadius = 8
+        if isLightning {
+            if selectedNode != nil {
+                deleteLightningOutlet.alpha = 1
+            }
+            lightnginSettingsOutet.tintColor = UIColor.lightGray.withAlphaComponent(1)
+        } else {
+            deleteLightningOutlet.alpha = 0
+            lightnginSettingsOutet.tintColor = UIColor.clear.withAlphaComponent(0)
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
         loadValues()
+    }
+    
+    @IBAction func deleteLightningNode(_ sender: Any) {
+        if selectedNode != nil {
+            let nodestr = NodeStruct(dictionary: selectedNode!)
+            let id = nodestr.id
+            CoreDataService.deleteEntity(id: id!, entityName: .newNodes) { [unowned vc = self] (success) in
+                if success {
+                    showAlert(vc: vc, title: "Deleted", message: "Your lightning node has been deleted, you can always add another by tapping the bolt on node manager.")
+                    vc.selectedNode = nil
+                    vc.createNew = true
+                    DispatchQueue.main.async { [unowned vc = self] in
+                        vc.nodeLabel.text = ""
+                        vc.onionAddressField.text = ""
+                        vc.rpcPassword.text = ""
+                        vc.rpcUserField.text = ""
+                        vc.loadValues()
+                    }
+                }
+            }
+        }
+    }
+    
+    
+    @IBAction func goManageLightning(_ sender: Any) {
+        if isLightning {
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.performSegue(withIdentifier: "segueToLightningSettings", sender: vc)
+            }
+        }
     }
     
     @IBAction func exportNode(_ sender: Any) {
@@ -59,9 +101,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             return encryptedValue
         }
         
-        if createNew {
+        if createNew || selectedNode == nil {
             
             newNode["id"] = UUID()
+            newNode["isLightning"] = isLightning
             
             if nodeLabel.text != "" {
                 newNode["label"] = nodeLabel.text!
@@ -97,11 +140,16 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             if nodeLabel.text != "" && rpcPassword.text != "" && rpcUserField.text != "" && onionAddressField.text != "" {
                 CoreDataService.retrieveEntity(entityName: .newNodes) { [unowned vc = self] nodes in
                     if nodes != nil {
-                        if nodes!.count == 0 {
-                            vc.newNode["isActive"] = true
+                        if !vc.isLightning {
+                            if nodes!.count == 0 {
+                                vc.newNode["isActive"] = true
+                            } else {
+                                vc.newNode["isActive"] = false
+                            }
                         } else {
                             vc.newNode["isActive"] = false
                         }
+                        
                         CoreDataService.saveEntity(dict: vc.newNode, entityName: .newNodes) { [unowned vc = self] success in
                             if success {
                                 vc.nodeAddedSuccess()
@@ -124,7 +172,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             
             //updating
             
-            let id = selectedNode["id"] as! UUID
+            let id = selectedNode!["id"] as! UUID
             
             if nodeLabel.text != "" {
                 CoreDataService.update(id: id, keyToUpdate: "label", newValue: nodeLabel.text!, entity: .newNodes) { success in
@@ -232,52 +280,65 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             return decryptedValue
         }
         
-        let node = NodeStruct(dictionary: selectedNode)
-        
-        if node.id != nil {
+        if selectedNode != nil {
+            let node = NodeStruct(dictionary: selectedNode!)
             
-            if node.label != "" {
+            if node.id != nil {
                 
-                nodeLabel.text = node.label
+                if node.label != "" {
+                    
+                    nodeLabel.text = node.label
+                    
+                } else {
+                    
+                    nodeLabel.attributedPlaceholder = NSAttributedString(string: "Give your node a label",
+                                                                         attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
+                    
+                }
+                
+                if node.rpcuser != nil {
+                    
+                    rpcUserField.text = decryptedValue(node.rpcuser!)
+                    
+                } else {
+                    
+                    rpcUserField.attributedPlaceholder = NSAttributedString(string: "rpcuser",
+                                                                            attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
+                    
+                }
+                
+                if node.rpcpassword != nil {
+                    
+                    rpcPassword.text = decryptedValue(node.rpcpassword!)
+                    
+                } else {
+                    
+                    rpcPassword.attributedPlaceholder = NSAttributedString(string: "rpcpassword",
+                                                                           attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
+                    
+                }
+                
+                if let enc = node.onionAddress {
+                    onionAddressField.text = decryptedValue(enc)
+                } else {
+                    onionAddressField.attributedPlaceholder = NSAttributedString(string: "83nd8e93djh.onion:8332",
+                                                                                 attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
+                }
                 
             } else {
-                
-                nodeLabel.attributedPlaceholder = NSAttributedString(string: "Give your node a label",
-                                                                     attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
-                
-            }
-            
-            if node.rpcuser != nil {
-                
-                rpcUserField.text = decryptedValue(node.rpcuser!)
-                
-            } else {
+                rpcPassword.attributedPlaceholder = NSAttributedString(string: "rpcpassword",
+                                                                       attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
                 
                 rpcUserField.attributedPlaceholder = NSAttributedString(string: "rpcuser",
                                                                         attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
                 
-            }
-            
-            if node.rpcpassword != nil {
+                nodeLabel.attributedPlaceholder = NSAttributedString(string: "Give your node a label",
+                                                                     attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
                 
-                rpcPassword.text = decryptedValue(node.rpcpassword!)
-                
-            } else {
-                
-                rpcPassword.attributedPlaceholder = NSAttributedString(string: "rpcpassword",
-                                                                       attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
-                
-            }
-            
-            if let enc = node.onionAddress {
-                onionAddressField.text = decryptedValue(enc)
-            } else {
                 onionAddressField.attributedPlaceholder = NSAttributedString(string: "83nd8e93djh.onion:8332",
                                                                              attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
             }
-            
         } else {
-                        
             rpcPassword.attributedPlaceholder = NSAttributedString(string: "rpcpassword",
                                                                    attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
             
@@ -289,9 +350,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             
             onionAddressField.attributedPlaceholder = NSAttributedString(string: "83nd8e93djh.onion:8332",
                                                                          attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
-            
         }
-        
     }
     
     @objc func dismissKeyboard (_ sender: UITapGestureRecognizer) {
@@ -309,27 +368,79 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     private func nodeAddedSuccess() {
         CoreDataService.retrieveEntity(entityName: .newNodes) { [unowned vc = self] nodes in
             if nodes != nil {
-                if nodes!.count > 1 {
-                    vc.deActivateNodes(nodes: nodes!) {
-                        DispatchQueue.main.async { [unowned vc = self] in
-                            let alert = UIAlertController(title: "Node saved successfully", message: "Your node has been saved and activated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection to your new node.", preferredStyle: .actionSheet)
-                            alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
-                                DispatchQueue.main.async { [unowned vc = self] in
-                                    NotificationCenter.default.post(name: .refreshNode, object: nil)
-                                    vc.navigationController?.popToRootViewController(animated: true)
+                if !vc.isLightning {
+                    if nodes!.count > 1 {
+                        vc.deActivateNodes(nodes: nodes!) {
+                            DispatchQueue.main.async { [unowned vc = self] in
+                                var alertStyle = UIAlertController.Style.actionSheet
+                                if (UIDevice.current.userInterfaceIdiom == .pad) {
+                                  alertStyle = UIAlertController.Style.alert
                                 }
-                            }))
-                            alert.popoverPresentationController?.sourceView = vc.view
-                            vc.present(alert, animated: true) {}
+                                let alert = UIAlertController(title: "Node saved successfully", message: "Your node has been saved and activated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection to your new node.", preferredStyle: alertStyle)
+                                alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
+                                    DispatchQueue.main.async { [unowned vc = self] in
+                                        if !vc.isLightning {
+                                            NotificationCenter.default.post(name: .refreshNode, object: nil)
+                                        }
+                                        vc.navigationController?.popToRootViewController(animated: true)
+                                    }
+                                }))
+                                alert.popoverPresentationController?.sourceView = vc.view
+                                vc.present(alert, animated: true) {}
+                            }
+                        }
+                    } else {
+                        if !vc.createNew {
+                            DispatchQueue.main.async { [unowned vc = self] in
+                                var alertStyle = UIAlertController.Style.actionSheet
+                                if (UIDevice.current.userInterfaceIdiom == .pad) {
+                                  alertStyle = UIAlertController.Style.alert
+                                }
+                                let alert = UIAlertController(title: "Node updated successfully", message: "Your node has been updated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection using your updated node credentials.", preferredStyle: alertStyle)
+                                alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
+                                    DispatchQueue.main.async { [unowned vc = self] in
+                                        if !vc.isLightning {
+                                            NotificationCenter.default.post(name: .refreshNode, object: nil)
+                                        }
+                                        vc.navigationController?.popToRootViewController(animated: true)
+                                    }
+                                }))
+                                alert.popoverPresentationController?.sourceView = vc.view
+                                vc.present(alert, animated: true) {}
+                            }
+                        } else {
+                           DispatchQueue.main.async { [unowned vc = self] in
+                            var alertStyle = UIAlertController.Style.actionSheet
+                            if (UIDevice.current.userInterfaceIdiom == .pad) {
+                              alertStyle = UIAlertController.Style.alert
+                            }
+                                let alert = UIAlertController(title: "Node added successfully", message: "Your node has been added and activated. The home screen is automatically refreshing. Tap Done to go back.", preferredStyle: alertStyle)
+                                alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
+                                    DispatchQueue.main.async { [unowned vc = self] in
+                                        if !vc.isLightning {
+                                            NotificationCenter.default.post(name: .refreshNode, object: nil)
+                                        }
+                                        vc.navigationController?.popToRootViewController(animated: true)
+                                    }
+                                }))
+                                alert.popoverPresentationController?.sourceView = vc.view
+                                vc.present(alert, animated: true) {}
+                            }
                         }
                     }
                 } else {
                     if !vc.createNew {
                         DispatchQueue.main.async { [unowned vc = self] in
-                            let alert = UIAlertController(title: "Node updated successfully", message: "Your node has been updated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection using your updated node credentials.", preferredStyle: .actionSheet)
+                            var alertStyle = UIAlertController.Style.actionSheet
+                            if (UIDevice.current.userInterfaceIdiom == .pad) {
+                              alertStyle = UIAlertController.Style.alert
+                            }
+                            let alert = UIAlertController(title: "Node updated successfully", message: "Your node has been updated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection using your updated node credentials.", preferredStyle: alertStyle)
                             alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                                 DispatchQueue.main.async { [unowned vc = self] in
-                                    NotificationCenter.default.post(name: .refreshNode, object: nil)
+                                    if !vc.isLightning {
+                                        NotificationCenter.default.post(name: .refreshNode, object: nil)
+                                    }
                                     vc.navigationController?.popToRootViewController(animated: true)
                                 }
                             }))
@@ -338,10 +449,16 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                         }
                     } else {
                        DispatchQueue.main.async { [unowned vc = self] in
-                            let alert = UIAlertController(title: "Node added successfully", message: "Your node has been added and activated. The home screen is automatically refreshing. Tap Done to go back.", preferredStyle: .actionSheet)
+                        var alertStyle = UIAlertController.Style.actionSheet
+                        if (UIDevice.current.userInterfaceIdiom == .pad) {
+                          alertStyle = UIAlertController.Style.alert
+                        }
+                            let alert = UIAlertController(title: "Node added successfully", message: "Your node has been added and activated. The home screen is automatically refreshing. Tap Done to go back.", preferredStyle: alertStyle)
                             alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                                 DispatchQueue.main.async { [unowned vc = self] in
-                                    NotificationCenter.default.post(name: .refreshNode, object: nil)
+                                    if !vc.isLightning {
+                                        NotificationCenter.default.post(name: .refreshNode, object: nil)
+                                    }
                                     vc.navigationController?.popToRootViewController(animated: true)
                                 }
                             }))
@@ -368,9 +485,12 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                         completion()
                     }
                 } else {
-                    let id = selectedNode["id"] as! UUID
-                    CoreDataService.update(id: id, keyToUpdate: "isActive", newValue: true, entity: .newNodes) { success in
-                        completion()
+                    if selectedNode != nil {
+                        if let id = selectedNode!["id"] as? UUID {
+                            CoreDataService.update(id: id, keyToUpdate: "isActive", newValue: true, entity: .newNodes) { success in
+                                completion()
+                            }
+                        }
                     }
                 }
             }

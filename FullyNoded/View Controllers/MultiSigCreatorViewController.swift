@@ -72,7 +72,10 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
         if let url = exportMultisigWalletToURL(data: text.dataUsingUTF8StringEncoding) {
             DispatchQueue.main.async { [unowned vc = self] in
                 let activityViewController = UIActivityViewController(activityItems: ["Multisig Export", url], applicationActivities: nil)
-                activityViewController.popoverPresentationController?.sourceView = vc.view
+                if UIDevice.current.userInterfaceIdiom == .pad {
+                    activityViewController.popoverPresentationController?.sourceView = self.view
+                    activityViewController.popoverPresentationController?.sourceRect = CGRect(x: 0, y: 0, width: 100, height: 100)
+                }
                 vc.present(activityViewController, animated: true) {}
             }
         }
@@ -88,12 +91,15 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
         } else {
             walletSuccessfullyCreated(m: m)
         }
-        
     }
     
     private func promptToCreate() {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "How many signers are required to spend funds?", message: "", preferredStyle: .actionSheet)
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "How many signers are required to spend funds?", message: "", preferredStyle: alertStyle)
             for (i, _) in vc.signers.enumerated() {
                 alert.addAction(UIAlertAction(title: "\(i + 1)", style: .default, handler: { action in
                     vc.create(m: i + 1)
@@ -182,7 +188,11 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
             vc.spinner.removeConnectingView()
             vc.createOutlet.setTitle("Done", for: .normal)
             NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-            let alert = UIAlertController(title: "\(m) of \(vc.signers.count) successfully created ✓", message: "Your active wallet tab is refreshing, tap done to go back, tap export to get a text file which holds all necessary info to export your multisig wallet to other apps, this txt file can be directly imported to a Coldcard via the SD card to import it.", preferredStyle: .actionSheet)
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "\(m) of \(vc.signers.count) successfully created ✓", message: "Your active wallet tab is refreshing, tap done to go back, tap export to get a text file which holds all necessary info to export your multisig wallet to other apps, this txt file can be directly imported to a Coldcard via the SD card to import it.", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "Export", style: .default, handler: { [unowned vc = self] action in
                 vc.export()
             }))
@@ -283,6 +293,7 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
             cell.selectionStyle = .none
             let fingerprint = cell.viewWithTag(1) as! UITextField
             fingerprint.delegate = self
+            fingerprint.restorationIdentifier = "\(indexPath.section)"
             let signer = cell.viewWithTag(2) as! UITextView
             signer.layer.borderWidth = 0.5
             signer.layer.borderColor = UIColor.darkGray.cgColor
@@ -329,6 +340,7 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
         let header = UIView()
         header.backgroundColor = UIColor.clear
         header.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 50)
+        
         let textLabel = UILabel()
         textLabel.textAlignment = .left
         textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
@@ -336,9 +348,28 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
         textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
         if signers.count > 0 {
             textLabel.text = "#\(section + 1)"
+            let clearButton = UIButton()
+            clearButton.tintColor = .white
+            clearButton.tag = section
+            clearButton.setTitle("clear", for: .normal)
+            clearButton.addTarget(self, action: #selector(clearSection(_:)), for: .touchUpInside)
+            let clearButtonX = header.frame.maxX - 100
+            clearButton.frame = CGRect(x: clearButtonX, y: 0, width: 80, height: 18)
+            clearButton.center.y = textLabel.center.y
+            
+            header.addSubview(textLabel)
+            header.addSubview(clearButton)
         }
-        header.addSubview(textLabel)
         return header
+    }
+    
+    @objc func clearSection(_ sender: UIButton) {
+        let section = sender.tag
+        signers[section]["fingerprint"] = ""
+        signers[section]["xpub"] = ""
+        signers[section]["zpub"] = ""
+        signers[section]["signer"] = ""
+        reloadIndex(index: section)
     }
     
     func textViewDidEndEditing(_ textView: UITextView) {
@@ -357,6 +388,16 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
                 }
             }
         }
+    }
+    
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        print("shouldChangeCharactersIn: \(string)")
+        if textField.restorationIdentifier != nil {
+            if let index = Int(textField.restorationIdentifier!) {
+                signers[index]["fingerprint"] = textField.text ?? ""
+            }
+        }
+        return true
     }
     
     private func updateWords(words: String, index: Int) {

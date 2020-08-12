@@ -35,7 +35,10 @@ class QRDisplayerViewController: UIViewController {
     @objc func shareQRCode(_ sender: UITapGestureRecognizer) {
         let objectsToShare = [imageView.image]
         let activityController = UIActivityViewController(activityItems: objectsToShare as [Any], applicationActivities: nil)
-        activityController.popoverPresentationController?.sourceView = self.view
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            activityController.popoverPresentationController?.sourceView = self.view
+            activityController.popoverPresentationController?.sourceRect = CGRect(x: 0, y: 0, width: 100, height: 100)
+        }
         self.present(activityController, animated: true) {}
     }
     

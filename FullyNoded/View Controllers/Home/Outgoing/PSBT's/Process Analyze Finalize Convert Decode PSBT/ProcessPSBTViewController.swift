@@ -36,6 +36,8 @@ class ProcessPSBTViewController: UIViewController {
     
     var psbt = ""
     var signedTx = ""
+    var peer:[String:Any]?
+    var showPeer = Bool()
     
     @IBAction func scan(_ sender: Any) {
         DispatchQueue.main.async { [unowned vc = self] in
@@ -44,6 +46,13 @@ class ProcessPSBTViewController: UIViewController {
     }
     
     func configureView() {
+        
+        if showPeer {
+            navBarTitle = "Peer"
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.textView.text = "\(vc.peer!)"
+            }
+        }
         
         if verify {
             
@@ -237,25 +246,17 @@ class ProcessPSBTViewController: UIViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        
         if firstLink != "" {
-            
             displayRaw(raw: firstLink, title: "First Link")
-            
         } else {
-            
             if let string = UIPasteboard.general.string {
-                
-                textView.text = string
-                
+                if !showPeer {
+                    textView.text = string
+                }
             } else {
-                
                 textView.becomeFirstResponder()
-                
             }
-            
         }
-        
     }
     
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {

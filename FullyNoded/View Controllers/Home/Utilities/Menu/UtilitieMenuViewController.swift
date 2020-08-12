@@ -330,13 +330,45 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
     }
     
     private func rescan() {
-        Reducer.makeCommand(command: .rescanblockchain, param: "") { [unowned vc = self] (response, errorMessage) in
-            if errorMessage == nil {
-                displayAlert(viewController: vc, isError: false, message: "Rescanning completed")
-            } else {
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.connectingView.removeConnectingView()
-                    displayAlert(viewController: vc, isError: true, message: "Error rescanning: \(errorMessage!)")
+        connectingView.addConnectingView(vc: self, description: "starting rescan...")
+        Reducer.makeCommand(command: .getblockchaininfo, param: "") { (response, errorMessage) in
+            if let dict = response as? NSDictionary {
+                if let pruned = dict["pruned"] as? Bool {
+                    if pruned {
+                        if let pruneheight = dict["pruneheight"] as? Int {
+                            Reducer.makeCommand(command: .rescanblockchain, param: "\(pruneheight)") { [unowned vc = self] (response, errorMessage) in
+                                if errorMessage != nil {
+                                    if errorMessage!.contains("Wallet is currently rescanning. Abort existing rescan or wait.") {
+                                        DispatchQueue.main.async { [unowned vc = self] in
+                                            vc.connectingView.removeConnectingView()
+                                        }
+                                        displayAlert(viewController: vc, isError: false, message: "Rescan started")
+                                    } else {
+                                        DispatchQueue.main.async { [unowned vc = self] in
+                                            vc.connectingView.removeConnectingView()
+                                            displayAlert(viewController: vc, isError: true, message: "Error rescanning: \(errorMessage!)")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        Reducer.makeCommand(command: .rescanblockchain, param: "") { [unowned vc = self] (response, errorMessage) in
+                            if errorMessage != nil {
+                                if errorMessage!.contains("Wallet is currently rescanning. Abort existing rescan or wait.") {
+                                    DispatchQueue.main.async { [unowned vc = self] in
+                                        vc.connectingView.removeConnectingView()
+                                    }
+                                    displayAlert(viewController: vc, isError: false, message: "Rescan started")
+                                } else {
+                                    DispatchQueue.main.async { [unowned vc = self] in
+                                        vc.connectingView.removeConnectingView()
+                                        displayAlert(viewController: vc, isError: true, message: "Error rescanning: \(errorMessage!)")
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

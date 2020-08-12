@@ -154,14 +154,21 @@ class TorAuthViewController: UIViewController, UITextFieldDelegate {
         DispatchQueue.main.async { [unowned vc = self] in
             let textToShare = [vc.publickKeyLabel.text!]
             let activityViewController = UIActivityViewController(activityItems: textToShare, applicationActivities: nil)
-            activityViewController.popoverPresentationController?.sourceView = vc.view
+            if UIDevice.current.userInterfaceIdiom == .pad {
+                activityViewController.popoverPresentationController?.sourceView = self.view
+                activityViewController.popoverPresentationController?.sourceRect = CGRect(x: 0, y: 0, width: 100, height: 100)
+            }
             vc.present(activityViewController, animated: true) {}
         }
     }
     
     private func promptToRefreshAuth() {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "\(vc.text) Tor v3 auth keys?", message: "For authentication to take effect you will need to add the public key to your node's Tor \"authorized_clients\" directory. If you do not have access to your node you may LOSE access by doing this!", preferredStyle: .actionSheet)
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "\(vc.text) Tor v3 auth keys?", message: "For authentication to take effect you will need to add the public key to your node's Tor \"authorized_clients\" directory. If you do not have access to your node you may LOSE access by doing this!", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "\(vc.text)", style: .default, handler: { [unowned vc = self] action in
                 vc.generateNewKeyPair()
             }))
@@ -173,7 +180,11 @@ class TorAuthViewController: UIViewController, UITextFieldDelegate {
     
     private func promptToAddUserSuppliedAuth() {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Add user supplied Tor v3 auth keys?", message: "Make sure you know what you are doing! It needs to be base32, you can see our github for details. We do not derive the public key for you just yet... Consider donating to see more comprehensive features.", preferredStyle: .actionSheet)
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "Add user supplied Tor v3 auth keys?", message: "Make sure you know what you are doing! It needs to be base32, you can see our github for details. We do not derive the public key for you just yet... Consider donating to see more comprehensive features.", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "Add", style: .default, handler: { [unowned vc = self] action in
                 vc.addUserSuppliedPrivKey()
             }))

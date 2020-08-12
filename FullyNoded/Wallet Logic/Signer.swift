@@ -76,7 +76,6 @@ class Signer {
         }
         
         func attemptToSignLocally() {
-            print("attemptToSignLocally")
             /// Need to ensure similiar seeds do not sign mutliple times. This can happen if a user adds the same seed multiple times.
             var xprvStrings = [String]()
             for xprv in xprvsToSignWith {
@@ -94,15 +93,12 @@ class Signer {
                 var signableKeys = [String]()
                 for (i, key) in xprvsToSignWith.enumerated() {
                     let inputs = psbtToSign.inputs
-                    print("inputs.count: \(inputs.count)")
                     for (x, input) in inputs.enumerated() {
-                        print("input issegwit: \(input.isSegWit)")
                         /// Create an array of child keys that we know can sign our inputs.
                         if let origins: [PubKey : KeyOrigin] = input.canSign(key) {
                             for origin in origins {
                                 if let childKey = try? key.derive(origin.value.path) {
                                     if let privKey = childKey.privKey {
-                                        print("privKey: \(privKey.wif)")
                                         precondition(privKey.pubKey == origin.key)
                                         signableKeys.append(privKey.wif)
                                     }
@@ -115,9 +111,7 @@ class Signer {
                             if uniqueSigners.count > 0 {
                                 for (s, signer) in uniqueSigners.enumerated() {
                                     if let signingKey = Key(signer, chain) {
-                                        print("signingKey: \(signingKey.wif)")
                                         psbtToSign.sign(signingKey)
-                                        print("psbtToSign: \(psbtToSign.description)")
                                         /// Once we completed the signing loop we finalize with our node.
                                         if s + 1 == uniqueSigners.count {
                                             finalizeWithBitcoind()
@@ -135,7 +129,6 @@ class Signer {
         
         /// Fetch keys to sign with
         func getKeysToSignWith() {
-            print("getKeysToSignWith")
             xprvsToSignWith.removeAll()
             for (i, s) in seedsToSignWith.enumerated() {
                 let encryptedSeed = s["words"] as! Data
@@ -175,7 +168,6 @@ class Signer {
         
         /// Fetch wallets on the same network
         func getSeeds() {
-            print("getSeeds")
             seedsToSignWith.removeAll()
             CoreDataService.retrieveEntity(entityName: .signers) { seeds in
                 if seeds != nil {

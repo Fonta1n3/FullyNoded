@@ -157,10 +157,12 @@ class SignerViewController: UIViewController {
     }
     
     private func decodeRaw(raw: String) {
-        spinner.addConnectingView(vc: self, description: "verifying...")
         Reducer.makeCommand(command: .decoderawtransaction, param: "\"\(raw)\"") { [unowned vc = self] (response, errorMessage) in
             if let dict = response as? NSDictionary {
                 vc.parseDecodedTx(response: dict)
+            } else {
+                vc.spinner.removeConnectingView()
+                showAlert(vc: vc, title: "Error", message: errorMessage ?? "error decoding raw transaction")
             }
         }
     }
@@ -338,6 +340,7 @@ class SignerViewController: UIViewController {
                 }
             }
         } else {
+            spinner.addConnectingView(vc: self, description: "verifying...")
             let fx = FiatConverter.sharedInstance
             fx.getFxRate { [unowned vc = self] (fx) in
                 if fx != nil {
@@ -392,12 +395,19 @@ class SignerViewController: UIViewController {
     
     private func exportUnisgned(txnUnsigned: String) {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Export as text or QR?", message: "", preferredStyle: .actionSheet)
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "Export as text or QR?", message: "", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "Text", style: .default, handler: { action in
                 DispatchQueue.main.async { [unowned vc = self] in
                     let textToShare = [txnUnsigned]
                     let activityViewController = UIActivityViewController(activityItems: textToShare, applicationActivities: nil)
-                    activityViewController.popoverPresentationController?.sourceView = vc.view
+                    if UIDevice.current.userInterfaceIdiom == .pad {
+                        activityViewController.popoverPresentationController?.sourceView = self.view
+                        activityViewController.popoverPresentationController?.sourceRect = CGRect(x: 0, y: 0, width: 100, height: 100)
+                    }
                     vc.present(activityViewController, animated: true) {}
                 }
             }))
@@ -414,7 +424,11 @@ class SignerViewController: UIViewController {
     
     private func exportPsbt(psbt: String) {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Share as a .psbt file, text or QR?", message: "Sharing as a .psbt file allows you to send the unsigned psbt directly to your Coldcard or to Electrum 4.0 for signing", preferredStyle: .actionSheet)
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "Share as a .psbt file, text or QR?", message: "Sharing as a .psbt file allows you to send the unsigned psbt directly to your Coldcard or to Electrum 4.0 for signing", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: ".psbt file", style: .default, handler: { [unowned vc = self] action in
                 vc.convertPSBTtoData(string: psbt)
             }))
@@ -422,7 +436,10 @@ class SignerViewController: UIViewController {
                 DispatchQueue.main.async { [unowned vc = self] in
                     let textToShare = [psbt]
                     let activityViewController = UIActivityViewController(activityItems: textToShare, applicationActivities: nil)
-                    activityViewController.popoverPresentationController?.sourceView = vc.view
+                    if UIDevice.current.userInterfaceIdiom == .pad {
+                        activityViewController.popoverPresentationController?.sourceView = self.view
+                        activityViewController.popoverPresentationController?.sourceRect = CGRect(x: 0, y: 0, width: 100, height: 100)
+                    }
                     vc.present(activityViewController, animated: true) {}
                 }
             }))
@@ -442,7 +459,10 @@ class SignerViewController: UIViewController {
             if let url = exportPsbtToURL(data: data) {
                 DispatchQueue.main.async { [unowned vc = self] in
                     let activityViewController = UIActivityViewController(activityItems: ["Fully Noded PSBT", url], applicationActivities: nil)
-                    activityViewController.popoverPresentationController?.sourceView = vc.view
+                    if UIDevice.current.userInterfaceIdiom == .pad {
+                        activityViewController.popoverPresentationController?.sourceView = self.view
+                        activityViewController.popoverPresentationController?.sourceRect = CGRect(x: 0, y: 0, width: 100, height: 100)
+                    }
                     vc.present(activityViewController, animated: true) {}
                 }
             }
@@ -451,7 +471,11 @@ class SignerViewController: UIViewController {
     
     private func broadcastNow(tx: String) {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Broadcast with your node?", message: "You can optionally broadcast this transaction using Blockstream's esplora API over Tor V3 for improved privacy.", preferredStyle: .actionSheet)
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "Broadcast with your node?", message: "You can optionally broadcast this transaction using Blockstream's esplora API over Tor V3 for improved privacy.", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "Privately", style: .default, handler: { action in
                 vc.spinner.addConnectingView(vc: vc, description: "broadcasting...")
                 Broadcaster.sharedInstance.send(rawTx: tx) { [unowned vc = self] (txid) in

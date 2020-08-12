@@ -150,7 +150,11 @@ class WalletCreatorViewController: UIViewController, UITextFieldDelegate, UINavi
     private func walletCreatedSuccess() {
         DispatchQueue.main.async { [unowned vc = self] in
             vc.connectingView.removeConnectingView()
-            let alert = UIAlertController(title: "Wallet created successfully", message: "Your wallet is automatically activated, the Wallet tab is now refreshing, tap Done to go back", preferredStyle: .actionSheet)
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "Wallet created successfully", message: "Your wallet is automatically activated, the Wallet tab is now refreshing, tap Done to go back", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.navigationController?.popToRootViewController(animated: true)

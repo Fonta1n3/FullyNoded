@@ -41,10 +41,8 @@ class XpubConverter {
         ]
         
         for (key, value) in possibleXpubPrefixes {
-            
             if extendedKey.hasPrefix(key) {
                 providedPrefix = value
-                
             }
         }
         
@@ -92,10 +90,6 @@ class XpubConverter {
     }
     
     class func zpub(xpub: String) -> String? {
-//        let mainnetXpubPrefix = ["xpub":"0488b21e"]
-//        let testnetTpubPrefix = ["tpub":"043587cf"]
-//        let mainnetZpubPrefix = "02aa7ed3"
-//        let testnetVpubPrefix = "02575483"
         var providedPrefix = ""
         var returnedPrefix = "02aa7ed3"
         let possibleXpubPrefixes = [

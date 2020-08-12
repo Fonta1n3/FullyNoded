@@ -83,4 +83,13 @@ public enum LIGHTNING_CLI: String {
     case listtransactions = "listtransactions"
     case txprepare = "txprepare"
     case txsend = "txsend"
+    case pay = "pay"
+    case decodepay = "decodepay"
+    case connect = "connect"
+    case fundchannel_start = "fundchannel_start"
+    case fundchannel_complete = "fundchannel_complete"
+    case listpeers = "listpeers"
+    case listsendpays = "listsendpays"
+    case listinvoices = "listinvoices"
+    case withdraw = "withdraw"
 }

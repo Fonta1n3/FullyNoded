@@ -29,10 +29,14 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        
         nodeArray.removeAll()
         getNodes()
-        
+    }
+    
+    @IBAction func addLightningNode(_ sender: Any) {
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "segueToAddLightningNode", sender: vc)
+        }
     }
     
     func getNodes() {
@@ -41,7 +45,8 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             if nodes != nil {
                 vc.nodeArray.removeAll()
                 for node in nodes! {
-                    if node["id"] != nil {
+                    let nodeStr = NodeStruct(dictionary: node)
+                    if nodeStr.id != nil && !nodeStr.isLightning {
                         vc.nodeArray.append(node)
                     }
                 }
@@ -101,13 +106,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         button.addTarget(self, action: #selector(editNode(_:)), for: .touchUpInside)
         background.clipsToBounds = true
         background.layer.cornerRadius = 8
-        icon.tintColor = .white
-        icon.image = UIImage(systemName: "desktopcomputer")
-        if nodeArray.count < 7 {
-            background.backgroundColor = colors[indexPath.section]
-        } else {
-            background.backgroundColor = colors.randomElement()
-        }
+        
         let nodeStruct = NodeStruct.init(dictionary: nodeArray[indexPath.section])
         let dec = decryptedValue(nodeStruct.onionAddress!)
         let abbreviated = reduced(label: dec)
@@ -119,6 +118,13 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             label.textColor = .darkGray
         } else {
             label.textColor = .white
+        }
+        icon.tintColor = .white
+        icon.image = UIImage(systemName: "desktopcomputer")
+        if nodeArray.count < 7 {
+            background.backgroundColor = colors[indexPath.section]
+        } else {
+            background.backgroundColor = colors.randomElement()
         }
         return cell
     }
@@ -307,24 +313,35 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
         if segue.identifier == "updateNode" {
-            
             if let vc = segue.destination as? NodeDetailViewController {
-                
                 vc.selectedNode = self.nodeArray[selectedIndex]
                 vc.createNew = false
-                
+                vc.isLightning = false
             }
-            
         }
         
         if segue.identifier == "addNewNode" {
-            
             if let vc = segue.destination as? ChooseConnectionTypeViewController {
-                
                 vc.isUpdating = false
-                
             }
-            
+        }
+        
+        if segue.identifier == "segueToAddLightningNode" {
+            if let vc = segue.destination as? NodeDetailViewController {
+                vc.isLightning = true
+                vc.createNew = true
+                CoreDataService.retrieveEntity(entityName: .newNodes) { (nodes) in
+                    if nodes != nil {
+                        for node in nodes! {
+                            let str = NodeStruct(dictionary: node)
+                            if str.isLightning {
+                                vc.createNew = false
+                                vc.selectedNode = node
+                            }
+                        }
+                    }
+                }
+            }
         }
         
     }

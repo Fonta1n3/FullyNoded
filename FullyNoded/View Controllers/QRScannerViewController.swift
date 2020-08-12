@@ -28,6 +28,10 @@ class QRScannerViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         configureScanner()
+        spinner.addConnectingView(vc: self, description: "")
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
         scanNow()
     }
     
@@ -36,6 +40,7 @@ class QRScannerViewController: UIViewController {
             vc.qrScanner.scanQRCode()
             vc.addScannerButtons()
             vc.scannerView.addSubview(vc.qrScanner.closeButton)
+            vc.spinner.removeConnectingView()
         }
     }
     
