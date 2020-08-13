@@ -178,7 +178,7 @@ I will be be keeping the testflight up to date for you [here](https://testflight
 
 Go slow, `tor` is not meant for speed. `Tor` does not stay alive in the background so every time the app does go (crash) there we have to force `tor` to quit, then when the app reappears it has to bootstrap tor again every time.
 
-#### Question : What are the assurances that the developer cant push out software that will steal my seed say in a single sig wallet?
+#### Question : What are the assurances that the developer can't push out software that will steal my seed say in a single sig wallet?
 
 There isn’t any, that’s why you should use multisig or build the app from source.
 
@@ -193,7 +193,7 @@ If you'd like to build the app from source and heads-up compare the build follow
   
 Instead of cloning the repo you can just download that tarball, I think it automatically unpacks and I will add my `pgp` key to the `readme`.
 
-##Import
+## Import
 
 #### Question : I got the zpub from electrum. I thought that if you use a bech32 wallet, you get a zpub not xpub?
 
