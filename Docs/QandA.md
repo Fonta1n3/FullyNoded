@@ -569,6 +569,12 @@ You’ll need to ask `mynode` to implement it, nodl, BTCPay etc...
 
 I’ll write a script that makes it easy but you will still need to be comfortable with a script. If you’ve already got `clightning` running its quite simple: [guide](https://github.com/Fonta1n3/FullyNoded/blob/master/Docs/Lightning.md).
 
+
+#### Question : App gets backgrounded and then when I foreground it a few times it eventually crashes. What is wrong?
+
+Thats `Tor` being responsible, it'll happen occassionally. I will eventually get this fixed by keeping `tor` alive for 3 minutes would go a long way to prevent that crash.
+
+
 ## Wallets
 
 #### Question : How I can erase a wallet in Fullynoded? or modify a name?
