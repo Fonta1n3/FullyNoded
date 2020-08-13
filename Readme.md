@@ -1,6 +1,8 @@
 # Fully Noded™️
 [https://fullynoded.app](https://fullynoded.app) (work in progress)
 
+My pgp: 3B3797FA0AE84BE5B4406591856401D7121C32FC
+
 🙏🏼 Lightning donation to support development of Fully Noded: http://56uo4htoxdt2tgh6zui5v2q7c4ax43dd3fwueiurgqdw7lpunn2cikqd.onion:5599/donation
 
 ## Requirements
