@@ -398,6 +398,20 @@ If your using multisig but only use one codebase you're doing it wrong, in my op
 
 HvC: This example is of course a 1 of 3, a 2 of 3 or 3 of 3, but in general it could be anything m out of n. The idea is that the CREATE diagram leaves an "unfinished / unsafe" state, THe EDIT is the final solution and "Proper FN multisign".
 
+#### Question : Checking total supply. This is taking an inordinate amount of time for me and my screen eventually turns off. 
+<img src="./Images/Loading-data.png" alt="node-added" border="0" width="200">
+
+*Can I return to this after the data has been fetched from the node or FullyNoded must remain active during the process? Also, my node is pruned so not sure if that’s contributing to the long delay.*
+
+It should take about 3 minutes.
+
+##### Further question : I do wish the app would cache the reply so that you can come back and tell you when it was cached...
+
+Depends on the ram on your node, for me 8gb takes a minute, 2gb ram can take 7 min i heard. node must be on, prune doesnt matter.
+
+The whole point is it changes every ten minutes. Tor gets killed immediately when the app goes into background. However, I have seen we can keep it alive for 3 minutes in the background though, will get around to taking advantage of that, would be nice for when quickly switching between apps to get invoices and stuff.
+
+
 ## Connection
 
 #### Could not connect to the server... What to do?
