@@ -186,6 +186,13 @@ There isn’t any, that’s why you should use multisig or build the app from so
 
 Again there isn’t any, the code is open sourced so you can build it yourself. Its actually not very difficult to do.
 
+If you'd like to build the app from source and heads-up compare the build follow the instruction: 
+ - Download the signed and tagged tarball, compare versions in github, App Store and Testflight 0.1.69
+ - Verify the signature with the developers public PGP key : all you have to do is import @Fonta1n3's key to gpg on mac then `gpg --verify fullynoded.tar.gz.asc`
+ - Untar and build
+  
+Instead of cloning the repo you can just download that tarball, I think it automatically unpacks and I will add my `pgp` key to the `readme`.
+
 ##Import
 
 #### Question : I got the zpub from electrum. I thought that if you use a bech32 wallet, you get a zpub not xpub?
