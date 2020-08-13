@@ -190,7 +190,13 @@ If you'd like to build the app from source and heads-up compare the build follow
  - Download the signed and tagged tarball, compare versions in github, App Store and Testflight 0.1.69
  - Verify the signature with the developers public PGP key : all you have to do is import @Fonta1n3's key to gpg on mac then `gpg --verify fullynoded.tar.gz.asc`
  - Untar and build
-  
+    1. `brew install carthage automake autoconf libtool gnu-sed` (if you have not already)
+    2. untar the tarball
+    3. `cd <untarred dir>/XCode`
+    4. `carthage build`
+	5. open `FullyNoded.xcodeproj`
+	6. run the project in a simulator or device
+ 
 Instead of cloning the repo you can just download that tarball, I think it automatically unpacks and I will add my `pgp` key to the `readme`.
 
 ## Import
