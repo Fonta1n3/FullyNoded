@@ -127,6 +127,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     }
     
     private func loadTable() {
+        existingWallet = ""
         activeWallet { [unowned vc = self] (wallet) in
             if wallet != nil {
                 vc.wallet = wallet!
@@ -396,24 +397,25 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     }
     
     @objc func refreshWallet() {
-        existingWallet = ""
-        activeWallet { [unowned vc = self] (wallet) in
-            if wallet != nil {
-                vc.wallet = wallet!
-                vc.id = wallet!.id
-                vc.walletLabel = wallet!.label
-            } else {
-                vc.walletLabel = nil
-            }
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.addNavBarSpinner()
-                NodeLogic.walletDisabled = false
-                vc.sectionZeroLoaded = false
-                vc.transactionArray.removeAll()
-                vc.walletTable.reloadData()
-                vc.reloadWalletData()
-            }
-        }
+        refreshAll()
+//        existingWallet = ""
+//        activeWallet { [unowned vc = self] (wallet) in
+//            if wallet != nil {
+//                vc.wallet = wallet!
+//                vc.id = wallet!.id
+//                vc.walletLabel = wallet!.label
+//            } else {
+//                vc.walletLabel = nil
+//            }
+//            DispatchQueue.main.async { [unowned vc = self] in
+//                vc.addNavBarSpinner()
+//                NodeLogic.walletDisabled = false
+//                vc.sectionZeroLoaded = false
+//                vc.transactionArray.removeAll()
+//                vc.walletTable.reloadData()
+//                vc.reloadWalletData()
+//            }
+//        }
     }
     
     private func checkIfWalletsChanged() {
@@ -427,7 +429,6 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     private func loadBalances() {
         NodeLogic.walletDisabled = walletDisabled
         NodeLogic.loadBalances { [unowned vc = self] (response, errorMessage) in
-            
             if response != nil {
                 let str = Balances(dictionary: response!)
                 vc.onchainBalance = str.onchainBalance
@@ -595,10 +596,14 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         }
     }
     
-    @objc func refreshData(_ sender: Any) {
+    private func refreshAll() {
         existingWallet = ""
         addNavBarSpinner()
         loadTable()
+    }
+    
+    @objc func refreshData(_ sender: Any) {
+        refreshAll()
     }
     
     private func goToDetail() {

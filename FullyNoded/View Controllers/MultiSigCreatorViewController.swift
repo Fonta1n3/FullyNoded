@@ -356,7 +356,6 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
             let clearButtonX = header.frame.maxX - 100
             clearButton.frame = CGRect(x: clearButtonX, y: 0, width: 80, height: 18)
             clearButton.center.y = textLabel.center.y
-            
             header.addSubview(textLabel)
             header.addSubview(clearButton)
         }
@@ -391,7 +390,6 @@ class MultiSigCreatorViewController: UIViewController, UITableViewDelegate, UITa
     }
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        print("shouldChangeCharactersIn: \(string)")
         if textField.restorationIdentifier != nil {
             if let index = Int(textField.restorationIdentifier!) {
                 signers[index]["fingerprint"] = textField.text ?? ""

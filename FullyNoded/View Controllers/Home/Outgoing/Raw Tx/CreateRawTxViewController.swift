@@ -230,18 +230,18 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         spinner.addConnectingView(vc: self, description: "withdrawing from lightning wallet...")
         // withdraw destination satoshi
         let param = "\"\(address)\", \(sats)"
-        LightningRPC.command(method: .withdraw, param: param) { [unowned vc = self] (response, errorDesc) in
+        LightningRPC.command(method: .withdraw, param: param) { [weak self] (response, errorDesc) in
             if let dict = response as? NSDictionary {
                 if let _ = dict["txid"] as? String {
-                    vc.spinner.removeConnectingView()
-                    showAlert(vc: vc, title: "Success ✅", message: "⚡️ Lightning wallet withdraw to \(address) completed ⚡️")
+                    self?.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "Success ✅", message: "⚡️ Lightning wallet withdraw to \(address) completed ⚡️")
                 } else if let message = dict["message"] as? String {
-                    vc.spinner.removeConnectingView()
-                    showAlert(vc: vc, title: "Uh oh, somehting is not right", message: message)
+                    self?.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "Uh oh, somehting is not right", message: message)
                 }
             } else {
-                vc.spinner.removeConnectingView()
-                showAlert(vc: vc, title: "Uh oh, somehting is not right", message: errorDesc ?? "unknow error")
+                self?.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Uh oh, somehting is not right", message: errorDesc ?? "unknow error")
             }
         }
     }
@@ -249,18 +249,20 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     @IBAction func fundLightning(_ sender: Any) {
         spinner.addConnectingView(vc: self, description: "fetching lightning funding address...")
-        LightningRPC.command(method: .newaddr, param: "") { [unowned vc = self] (response, errorDesc) in
+        LightningRPC.command(method: .newaddr, param: "") { [weak self] (response, errorDesc) in
             if let dict = response as? NSDictionary {
                 if let address = dict["address"] as? String {
-                    DispatchQueue.main.async { [unowned vc = self] in
-                        vc.addressInput.text = address
-                        vc.spinner.removeConnectingView()
-                        showAlert(vc: vc, title: "⚡️ Nice! ⚡️", message: "This is an address you can use to fund your lightning node with, its your first step in transacting on the lightning network.")
+                    DispatchQueue.main.async { [weak self] in
+                        if self != nil {
+                            self!.addressInput.text = address
+                            self?.spinner.removeConnectingView()
+                            showAlert(vc: self, title: "⚡️ Nice! ⚡️", message: "This is an address you can use to fund your lightning node with, its your first step in transacting on the lightning network.")
+                        }
                     }
                 }
             } else {
-                vc.spinner.removeConnectingView()
-                showAlert(vc: vc, title: "Error", message: errorDesc ?? "unknown error fetching lightning wallet address")
+                self?.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error fetching lightning wallet address")
             }
         }
     }
@@ -298,9 +300,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     private func satsSelected() {
         DispatchQueue.main.async { [unowned vc = self] in
             vc.denominationImage.image = UIImage(systemName: "s.circle")
-            vc.amountIcon.backgroundColor = .systemIndigo
+            vc.amountIcon.backgroundColor = .systemPurple
             vc.spinner.removeConnectingView()
-            showAlert(vc: vc, title: "sats denomination", message: "You may enter an amount denominated in sats")
         }
     }
     
@@ -309,26 +310,29 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             vc.denominationImage.image = UIImage(systemName: "bitcoinsign.circle")
             vc.amountIcon.backgroundColor = .systemIndigo
             vc.spinner.removeConnectingView()
-            showAlert(vc: vc, title: "btc denomination", message: "You may enter an amount denominated in btc")
         }
     }
     
     private func fiatEnabled() {
         spinner.addConnectingView(vc: self, description: "getting fx rate...")
         let fx = FiatConverter.sharedInstance
-        fx.getFxRate { [unowned vc = self] (fxrate) in
+        fx.getFxRate { [weak self] (fxrate) in
             if fxrate != nil {
-                vc.fxRate = fxrate!
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.fxRateLabel.text = "$\(fxrate!.withCommas()) / btc"
-                    vc.denominationImage.image = UIImage(systemName: "dollarsign.circle")
-                    vc.amountIcon.backgroundColor = .systemBlue
-                    vc.spinner.removeConnectingView()
-                    showAlert(vc: vc, title: "Fiat denomination", message: "You may enter an amount denominated in USD, we will calculate the equivalent amount in btc based on the current exchange rate of $\(fxrate!.withCommas()) / btc, always confirm the amounts before broadcasting by tapping the \"verify\" button.\n\nBitcoin's exchange rate can be volatile so always double check the amounts using the \"verify\" tool when the broadcaster presents itself.")
+                if self != nil {
+                    DispatchQueue.main.async { [weak self] in
+                        if self != nil {
+                            self!.fxRate = fxrate!
+                            self!.fxRateLabel.text = "$\(fxrate!.withCommas()) / btc"
+                            self!.denominationImage.image = UIImage(systemName: "dollarsign.circle")
+                            self!.amountIcon.backgroundColor = .systemBlue
+                            self!.spinner.removeConnectingView()
+                            showAlert(vc: self, title: "Fiat denomination", message: "You may enter an amount denominated in USD, we will calculate the equivalent amount in btc based on the current exchange rate of $\(fxrate!.withCommas()) / btc, always confirm the amounts before broadcasting by tapping the \"verify\" button.\n\nBitcoin's exchange rate can be volatile so always double check the amounts using the \"verify\" tool when the broadcaster presents itself.")
+                        }
+                    }
                 }
             } else {
-                vc.spinner.removeConnectingView()
-                showAlert(vc: vc, title: "Error", message: "Could not get current fx rate")
+                self?.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Error", message: "Could not get current fx rate")
             }
         }
     }
@@ -451,7 +455,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         if addressInput.text != "" {
             spinner.addConnectingView(vc: self, description: "sweeping...")
             let receivingAddress = addressInput.text!
-            Reducer.makeCommand(command: .listunspent, param: "0") { [unowned vc = self] (response, errorMessage) in
+            Reducer.makeCommand(command: .listunspent, param: "0") { [weak self] (response, errorMessage) in
                 if let resultArray = response as? NSArray {
                     var inputArray = [Any]()
                     var inputs = ""
@@ -483,37 +487,37 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                     Reducer.makeCommand(command: .walletcreatefundedpsbt, param: param) { (response, errorMessage) in
                         if let result = response as? NSDictionary {
                             let psbt1 = result["psbt"] as! String
-                            Reducer.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt1)\"") { [unowned vc = self] (response, errorMessage) in
+                            Reducer.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt1)\"") { [weak self] (response, errorMessage) in
                                 if let dict = response as? NSDictionary {
                                     if let processedPSBT = dict["psbt"] as? String {
-                                        Signer.sign(psbt: processedPSBT) { (psbt, rawTx, errorMessage) in
-                                            if psbt != nil {
-                                                vc.rawTxUnsigned = psbt!
-                                                vc.spinner.removeConnectingView()
-                                                vc.showRaw(raw: psbt!)
-                                            } else if rawTx != nil {
-                                                vc.rawTxSigned = rawTx!
-                                                vc.spinner.removeConnectingView()
-                                                vc.showRaw(raw: rawTx!)
-                                            } else if errorMessage != nil {
-                                                vc.spinner.removeConnectingView()
-                                                showAlert(vc: vc, title: "Error", message: errorMessage!)
+                                        Signer.sign(psbt: processedPSBT) { [weak self] (psbt, rawTx, errorMessage) in
+                                            if self != nil {
+                                                self?.spinner.removeConnectingView()
+                                                if psbt != nil {
+                                                    self!.rawTxUnsigned = psbt!
+                                                    self!.showRaw(raw: psbt!)
+                                                } else if rawTx != nil {
+                                                    self!.rawTxSigned = rawTx!
+                                                    self!.showRaw(raw: rawTx!)
+                                                } else if errorMessage != nil {
+                                                    showAlert(vc: self, title: "Error", message: errorMessage!)
+                                                }
                                             }
                                         }
                                     }
                                 } else {
-                                    vc.spinner.removeConnectingView()
-                                    displayAlert(viewController: vc, isError: true, message: errorMessage ?? "")
+                                    self?.spinner.removeConnectingView()
+                                    displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
                                 }
                             }
                         } else {
-                            vc.spinner.removeConnectingView()
-                            displayAlert(viewController: vc, isError: true, message: errorMessage ?? "")
+                            self?.spinner.removeConnectingView()
+                            displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
                         }
                     }
                 } else {
-                    vc.spinner.removeConnectingView()
-                    displayAlert(viewController: vc, isError: true, message: errorMessage ?? "")
+                    self?.spinner.removeConnectingView()
+                    displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
                 }
             }
         }
@@ -622,44 +626,48 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     private func decodeLighnting(invoice: String) {
         spinner.addConnectingView(vc: self, description: "decoding lightning invoice...")
-        LightningRPC.command(method: .decodepay, param: "\"\(invoice)\"") { [unowned vc = self] (response, errorDesc) in
+        LightningRPC.command(method: .decodepay, param: "\"\(invoice)\"") { [weak self] (response, errorDesc) in
             if let dict = response as? NSDictionary {
                 if let _ = dict["msatoshi"] as? Int {
-                    vc.spinner.removeConnectingView()
-                    vc.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: nil)
+                    if self != nil {
+                        self!.spinner.removeConnectingView()
+                        self!.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: nil)
+                    }
                 } else {
-                    DispatchQueue.main.async { [unowned vc = self] in
-                        vc.spinner.removeConnectingView()
-                        if vc.amountInput.text != "" {
-                            if let dblAmount = Double(vc.amountInput.text!) {
-                                if dblAmount > 0.0 {
-                                    if vc.isFiat {
-                                        let btcamount = rounded(number: dblAmount / vc.fxRate)
-                                        let msats = Int(btcamount * 100000000000.0)
-                                        vc.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: msats)
-                                    } else if vc.isSats {
-                                        let msats = Int(dblAmount * 1000.0)
-                                        vc.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: msats)
+                    DispatchQueue.main.async { [weak self] in
+                        self?.spinner.removeConnectingView()
+                        if self?.amountInput.text != "" {
+                            if self != nil {
+                                if let dblAmount = Double(self!.amountInput.text!) {
+                                    if dblAmount > 0.0 {
+                                        if self!.isFiat {
+                                            let btcamount = rounded(number: dblAmount / self!.fxRate)
+                                            let msats = Int(btcamount * 100000000000.0)
+                                            self!.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: msats)
+                                        } else if self!.isSats {
+                                            let msats = Int(dblAmount * 1000.0)
+                                            self!.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: msats)
+                                        } else {
+                                            let msats = Int(dblAmount * 100000000000.0)
+                                            self!.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: msats)
+                                        }
                                     } else {
-                                        let msats = Int(dblAmount * 100000000000.0)
-                                        vc.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: msats)
+                                        self?.spinner.removeConnectingView()
+                                        showAlert(vc: self, title: "Oops", message: "You need to enter an amount to send for an invoice that does not include one.")
                                     }
                                 } else {
-                                    vc.spinner.removeConnectingView()
-                                    showAlert(vc: vc, title: "Oops", message: "You need to enter an amount to send for an invoice that does not include one.")
+                                    self?.spinner.removeConnectingView()
+                                    showAlert(vc: self, title: "Oops", message: "You need to enter an amount to send for an invoice that does not include one.")
                                 }
-                            } else {
-                                vc.spinner.removeConnectingView()
-                                showAlert(vc: vc, title: "Oops", message: "You need to enter an amount to send for an invoice that does not include one.")
                             }
                         } else {
-                            vc.spinner.removeConnectingView()
-                            showAlert(vc: vc, title: "Oops", message: "You need to enter an amount to send for an invoice that does not include one.")
+                            self?.spinner.removeConnectingView()
+                            showAlert(vc: self, title: "Oops", message: "You need to enter an amount to send for an invoice that does not include one.")
                         }
                     }
                 }
             } else {
-                showAlert(vc: vc, title: "Error", message: errorDesc ?? "unknown error")
+                showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error")
             }
         }
     }
@@ -688,21 +696,21 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         } else {
             params = "\"\(invoice)\""
         }
-        LightningRPC.command(method: .pay, param: params) { [unowned vc = self] (response, errorDesc) in
+        LightningRPC.command(method: .pay, param: params) { [weak self] (response, errorDesc) in
             if let dict = response as? NSDictionary {
-                vc.spinner.removeConnectingView()
+                self?.spinner.removeConnectingView()
                 if let message = dict["message"] as? String {
-                    showAlert(vc: vc, title: "Message", message: message)
+                    showAlert(vc: self, title: "Message", message: message)
                 } else if let status = dict["status"] as? String {
                     if status == "complete" {
                         let msatoshi = dict["msatoshi"] as! Int
                         let msatoshi_sent = dict["msatoshi_sent"] as! Int
-                        showAlert(vc: vc, title: "Success ✅", message: "Lightning payment completed!\n\nAmount paid \(msatoshi / 1000) sats for a fee of \(Double((msatoshi_sent - msatoshi)) / 1000.0) sats")
+                        showAlert(vc: self, title: "Success ✅", message: "Lightning payment completed!\n\nAmount paid \(msatoshi / 1000) sats for a fee of \(Double((msatoshi_sent - msatoshi)) / 1000.0) sats")
                     }
                 }
             } else {
-                vc.spinner.removeConnectingView()
-                showAlert(vc: vc, title: "Error", message: errorDesc ?? "unknown error")
+                self?.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error")
             }
         }
     }
@@ -730,18 +738,16 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     func getRawTx() {
-        CreatePSBT.create(outputs: outputsString) { [unowned vc = self] (psbt, rawTx, errorMessage) in
+        CreatePSBT.create(outputs: outputsString) { [weak self] (psbt, rawTx, errorMessage) in
+            self?.spinner.removeConnectingView()
             if psbt != nil {
-                vc.rawTxUnsigned = psbt!
-                vc.spinner.removeConnectingView()
-                vc.showRaw(raw: psbt!)
+                self?.rawTxUnsigned = psbt!
+                self?.showRaw(raw: psbt!)
             } else if rawTx != nil {
-                vc.rawTxSigned = rawTx!
-                vc.spinner.removeConnectingView()
-                vc.showRaw(raw: rawTx!)
+                self?.rawTxSigned = rawTx!
+                self?.showRaw(raw: rawTx!)
             } else if errorMessage != nil {
-                vc.spinner.removeConnectingView()
-                showAlert(vc: vc, title: "Error", message: errorMessage!)
+                showAlert(vc: self, title: "Error", message: errorMessage!)
             }
         }
     }

@@ -51,20 +51,20 @@ Find the hidden services section:<br/>
 
 Below it add the hidden service we will use to control our lightning node:<br/>
 ```
-HiddenServiceDir /usr/local/var/lib/tor/lightning-rpc/
+HiddenServiceDir /usr/local/var/lib/tor/fullynoded/lightning/
 HiddenServiceVersion 3
 HiddenServicePort 1312 127.0.0.1:1312
 ```
 `ctlr x` > `y` > `return` to save the changes and quit nano text editor
 
 You will then need to create the hidden service directory:<br/>
-`mkdir /usr/local/var/lib/tor/lightning-rpc/`
+`mkdir /usr/local/var/lib/tor/fullynoded/lightning/`
 
 On linux assign the owner (brew should do this automatically on macOS):<br/>
-`chown -R debian-tor:debian-tor /usr/local/var/lib/tor/lightning-rpc/`
+`chown -R debian-tor:debian-tor /usr/local/var/lib/tor/fullynoded/lightning/`
 
 On both linux and mac:<br/>
-`chmod 700 /usr/local/var/lib/tor/lightning-rpc/`
+`chmod 700 /usr/local/var/lib/tor/fullynoded/lightning/`
 
 Restart Tor<br/>
 macOS `brew services restart tor`<br/>
@@ -73,7 +73,7 @@ linux `systemctl restart tor`
 ### Get your hostname
 
 Ensure all went well by running:<br/>
-`cat /usr/local/var/lib/tor/lightning-rpc/hostname`<br/>
+`cat /usr/local/var/lib/tor/fullynoded/lightning/hostname`<br/>
 If it prints something like `ndfiuhfh2fu23ufh21u3bfd.onion` then all is well, if not message me on the Fully Noded Telegram and I can help (maybe).
 
 Save the above hostname, you will need it soon!

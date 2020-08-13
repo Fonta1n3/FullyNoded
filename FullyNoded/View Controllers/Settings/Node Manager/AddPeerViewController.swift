@@ -28,11 +28,11 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
                 }
             } else {
                 spinner.removeConnectingView()
-                showAlert(vc: self, title: "Invalid committment amount", message: "")
+                showAlert(vc: self, title: "Invalid commitment amount", message: "")
             }
         } else {
             spinner.removeConnectingView()
-            showAlert(vc: self, title: "Add a valid committment amount", message: "")
+            showAlert(vc: self, title: "Add a valid commitment amount", message: "")
         }
     }
     
@@ -50,19 +50,19 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
         spinner.addConnectingView(vc: self, description: "creating a channel...")
         if amountField.text != nil {
             if let int = Int(amountField.text!) {
-                Lightning.connect(amount: int, id: id, ip: ip, port: port ?? "9735") { [unowned vc = self] (result, errorMessage) in
+                Lightning.connect(amount: int, id: id, ip: ip, port: port ?? "9735") { [weak self] (result, errorMessage) in
                     if result != nil {
-                        vc.spinner.removeConnectingView()
+                        self?.spinner.removeConnectingView()
                         if let success = result!["commitments_secured"] as? Bool {
                             if success {
-                                showAlert(vc: vc, title: "⚡️⚡️⚡️⚡️⚡️⚡️", message: "Peer connected, channel created, channel started, channel funded and channel commitment secured! That wasn't hard now was it?")
+                                showAlert(vc: self, title: "⚡️⚡️⚡️⚡️⚡️⚡️", message: "Peer connected, channel created, channel started, channel funded and channel commitment secured! That wasn't hard now was it?")
                             } else {
-                                showAlert(vc: vc, title: "Uh oh", message: "So close yet so far! The channel is connected yet we did not seem to get our commitment secured...")
+                                showAlert(vc: self, title: "Uh oh", message: "So close yet so far! The channel is connected yet we did not seem to get our commitment secured...")
                             }
                         }
                     } else {
-                        vc.spinner.removeConnectingView()
-                        showAlert(vc: vc, title: "Ooops something did not go quite right", message: errorMessage ?? "unknown error connecting and funding that peer/channel")
+                        self?.spinner.removeConnectingView()
+                        showAlert(vc: self, title: "Ooops something did not go quite right", message: errorMessage ?? "unknown error connecting and funding that peer/channel")
                     }
                 }
             } else {
