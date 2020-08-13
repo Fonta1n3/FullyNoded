@@ -546,6 +546,15 @@ Then paste the pubkey and save the file (type ctrl X and enter)
 
 `StandUp.app` makes it super easy if you have a mac or the StandUp scripts also make it incredibly easy.
 
+#### Question : C-lightning - I added details of node. Clicked gear icon - got 'method not found' error. What to do?
+
+Did you install the http plugin In lightningd?
+
+Follow this guide. It is a new way of connecting and controlling `clightning`
+You’ll need to ask `mynode` to implement it, nodl, BTCPay etc...
+
+I’ll write a script that makes it easy but you will still need to be comfortable with a script. If you’ve already got `clightning` running its quite simple: [guide](https://github.com/Fonta1n3/FullyNoded/blob/master/Docs/Lightning.md).
+
 ## Wallets
 
 #### Question : How I can erase a wallet in Fullynoded? or modify a name?
