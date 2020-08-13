@@ -411,6 +411,12 @@ Depends on the ram on your node, for me 8gb takes a minute, 2gb ram can take 7 m
 
 The whole point is it changes every ten minutes. Tor gets killed immediately when the app goes into background. However, I have seen we can keep it alive for 3 minutes in the background though, will get around to taking advantage of that, would be nice for when quickly switching between apps to get invoices and stuff.
 
+#### Question : I’m trying to connect to a ‘mynode` *community edition*. Is that still an option? 
+
+I dont know, better to ask on `mynode` group for a definitive answer, not sure exactly how `mynode` operates.
+
+Have a feeling its a paywalled feature on mynode. i think all mynode does it puts a paywall around the convenience of automatically showing the `QR`, but again I am not sure. If they block you from `ssh`'ing and creating your Hidden services, that would be lame.
+
 
 ## Connection
 
