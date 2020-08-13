@@ -186,16 +186,21 @@ There isn’t any, that’s why you should use multisig or build the app from so
 
 Again there isn’t any, the code is open sourced so you can build it yourself. Its actually not very difficult to do.
 
-If you'd like to build the app from source and heads-up compare the build follow the instruction: 
- - Download the signed and tagged tarball, compare versions in github, App Store and Testflight 0.1.69
- - Verify the signature with the developers public PGP key : all you have to do is import @Fonta1n3's key to gpg on mac then `gpg --verify fullynoded.tar.gz.asc`
- - Untar and build
-    1. `brew install carthage automake autoconf libtool gnu-sed` (if you have not already)
-    2. untar the tarball
-    3. `cd <untarred dir>/XCode`
-    4. `carthage build`
-	5. open `FullyNoded.xcodeproj`
-	6. run the project in a simulator or device
+ If you'd like to build the app from source and heads-up compare the build follow the instruction:<br/> 
+ - Download the signed and tagged tarball (in this example `fullynoded.tar.gz`), and compare versions in github, App Store and Testflight 0.1.69
+  - Verify the signature with the developers public PGP key : all you have to do is
+ 	`gpg --verify fullynoded.tar.gz.asc` (or whatever exact signature filename you downloaded)
+  - Untar and build
+     1. `brew install carthage automake autoconf libtool gnu-sed` (if you have not already)
+     2. untar the tarball
+     3. `cd <untarred dir>/XCode`
+     4. `carthage build`
+ 	5. open `FullyNoded.xcodeproj`
+ 	6. run the project in a simulator or device
+	
+ If you'd like to import @Fonta1n3's [public key](https://github.com/Fonta1n3/FullyNoded#fully-noded%EF%B8%8F) to send encrypted messages follow the instruction: 
+    1. import @Fonta1n3's [public key](https://github.com/Fonta1n3/FullyNoded#fully-noded%EF%B8%8F) to gpg on mac: `gpg --import key.asc` (make sure `key.asc` contains the full pub key)
+	2. If you don't have the full public key: try to use gpg --recv-keys \<fingerprint\> whether it'll be found depends on the keyserver configured on a local machine.
  
 Instead of cloning the repo you can just download that tarball, I think it automatically unpacks and I will add my `pgp` key to the `readme`.
 
