@@ -508,6 +508,10 @@ Here are some [common issues and fixes](https://github.com/Fonta1n3/FullyNoded#t
 2. Running without `brew`. You can defo do it without brew, its just more complicated.
 3. You really should *edit* the file and *save* it too. Double checked?
 
+##### Further question : Maybe I need to do some changes on my firewall due to the tor service?
+
+The beauty of tor is your node can be 100% behind a firewall
+
 #### Question : How can I test the network connection between them (FN and Node)?
 
 ***Big Disclaimer:***
