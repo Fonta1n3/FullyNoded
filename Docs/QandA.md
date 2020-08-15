@@ -614,6 +614,9 @@ To modify the name just right click the wallet on your mac and rename, in `nodl`
 
 	mv /home/user/oldname /home/user/newname
 
+More info in the site's [FAQ](https://fullynoded.app/faq/#How-Do-I-Delete-a-Wallet)
+
+
 #### Question : what is the recovery wallet?
 
 Read the manual [here](https://medium.com/@FullyNoded/introducing-fully-noded-wallets-9fc2e4837102)
