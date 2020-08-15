@@ -438,6 +438,10 @@ Have a feeling its a paywalled feature on mynode. i think all mynode does it put
 
 ## Connection
 
+#### Question : How do I connect my node?
+
+Click to look up the answer in [the FAQ](https://fullynoded.app/faq/#How-Do-I-Connect-My-Node)
+
 #### Could not connect to the server... What to do?
 
 Follow the steps [here](../Readme.md#connecting-over-tor-mac). Always remember you will have to brew services restart tor, you will have to force quit and reopen FN to connect again, for the authentication to take effect.
