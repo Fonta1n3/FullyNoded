@@ -701,6 +701,10 @@ FN wallets will always show as COLD because your node never holds a private key<
 
 It should work with it disabled. But it’s been awhile since i tested that.
 
+#### Question : How do I delete a wallet?
+
+Look up the answer in [the FAQ] (https://fullynoded.app/faq/#How-Do-I-Delete-a-Wallet)
+
 ## Standup
 
 #### Question : where can I download this? 
