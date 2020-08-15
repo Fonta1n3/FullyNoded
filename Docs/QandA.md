@@ -712,7 +712,15 @@ FN wallets will always show as COLD because your node never holds a private key<
 
 It should work with it disabled. But it’s been awhile since i tested that.
 
-#### Question : How do I delete a wallet?
+#### Question : This wallet was created on FullyNoded why would I be getting this error.   I want to delete via “I” button
+<img src="./Images/Oops-wallet.jpg" alt="standup-screen" border="0" width="200"><br/>
+
+Please stop using the "Bitcoin Core Wallets" and use the "Fully Noded Wallets"<br/>
+You need to tap the *squares* button, from *active wallet* tab. those are your fully noded wallets<br/>
+There is a huge difference between a `wallet.dat` file that exists on your node and a "Fully Noded Wallet"<br/>
+You can only delete` wallet.dat` wallets, by going onto your node and deleting them.
+
+#### Question : How do I delete a (FN) wallet?
 
 Look up the answer in [the FAQ] (https://fullynoded.app/faq/#How-Do-I-Delete-a-Wallet)
 
