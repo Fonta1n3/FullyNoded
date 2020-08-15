@@ -605,6 +605,10 @@ Thats `Tor` being responsible, it'll happen occassionally. I will eventually get
 
 ## Wallets
 
+#### Question : How do I create a wallet in FN?
+
+Lookup the answer in the FAQ [here](https://fullynoded.app/faq/#How-Do-I-Create-a-Wallet)
+
 #### Question : How I can erase a wallet in Fullynoded? or modify a name?
 
 If your node is on a mac you will need to navigate to
