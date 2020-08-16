@@ -614,6 +614,8 @@ Thats `Tor` being responsible, it'll happen occassionally. I will eventually get
 
 The auth has nothing to do with wallet creation. [Here](https://matt.traudt.xyz/posts/creating-private-v3-FgbdRTFr.html) is a decent explainer by Matt Traudt.
 
+If you'd like to deepdive into the subject: [here](https://github.com/torproject/torspec/blob/master/rend-spec-v3.txt) the *Tor Rendezvous Specification - Version 3*
+
 #### Question :  FN requires RPC creds inputted in order to create a hot wallet that will then provide Tor v3 auth, is that correct? 
 
 `Rpc` has nothing to do with `tor auth`. Rpc credentials are needed to make commands to your `node`.
