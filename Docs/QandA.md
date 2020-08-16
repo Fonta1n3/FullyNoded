@@ -621,7 +621,7 @@ The auth has nothing to do with wallet creation. [Here](https://matt.traudt.xyz/
 FN just generates a public private key pair that adheres to Tor V3 auth spec. Totally independently of anything on your node. It’s purely tor Hidden service related. Hidden service just happens to control bitcoin core rpcport.
 
 HowTo: <br/>
-<a href="https://github.com/Fonta1n3/FullyNoded/blob/master/Videos/IMG_3130.MP4" target="_blank"><img src="./Images/Video3130-screen.png" alt="fiat-curr-transaction" border="0" width="200"></a>
+<a href="../Videos/IMG_3130.MP4" target="_blank"><img src="./Images/Video3130-screen.png" alt="Tor-Hidden-Service-configuration" border="0" width="200"></a>
 
 FN never creates a hot wallet on your node unless you explicitly go to `“advanced” > “bitcoin core wallets” > + > hot`. The Tor auth has nothing to do with wallet creation.
 
