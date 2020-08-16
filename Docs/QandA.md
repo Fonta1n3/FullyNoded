@@ -5,7 +5,7 @@ Beware: A Q&A is always *work in progress*. Tips & help welcome.
 
 
 ### Disclaimer
-None of the respondents in the **open** Telegram group have been explicitly named as a source, except for ***@Fonta1n3***. For practical reasons educational images uploaded by Telegram group members have been downloaded to [Imgbb](http://imgbb.com), we de-personalised them by giving images a new name. Under these new names these images have been used in the Q&A to clarify the questions and answers.
+None of the respondents in the **open** Telegram group have been explicitly named as a source, except for ***@Fonta1n3***. For practical reasons educational images uploaded by Telegram group members have been downloaded. We de-personalised them by giving images a new name. Under these new names these images have been uploaded to github and used in the Q&A to clarify the questions and answers.
 
 > We've done our best to protect the privacy of the Telegram group members by investigating the images we used. We haven't come across personal identifiable information (pii). However, should we have made a mistake after all, please let us know and we'll correct this immediately.
 
@@ -36,7 +36,7 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 ## Definitions
 
 - FN : Fully Noded app
-- FN2 : Fully Noded 2 app, misnaming because it is a different app than FN. [This comparison](./Docs/FN2_Comparison.md) tries to explain the differences. A new name for FN2 will be invented in the future.
+- FN2 : Fully Noded 2 app, new name is Gordian Wallet, The original name FN2 was a misnaming because it is a different app than FN from its inception. [This comparison](./Docs/FN2_Comparison.md) tries to explain the differences between Fully Noded and Gordian Wallet. 
 - satoshi: 0.000000001 BTC. A satoshi is the smallest unit of a bitcoin, equivalent to 100 millionth of a bitcoin.
 - UTXO's: Unspend transaction Outputs; UTXO stands for the unspent output from bitcoin transactions. Each bitcoin transaction begins with coins used to balance the ledger. UTXOs are processed continuously and are responsible for beginning and ending each transaction. Confirmation of transaction results in the removal of spent coins from the UTXO database. But a record of the spent coins still exists on the ledger. **for newbies**: UTXO is unspent bitcoin that you can "see" in your wallet and on the blockchain. It is an address and amount of sathosis. As soon as you spend the money, it won't add to your wallet balance anymore and therefore will only.
 - signed raw transaction : [Wikipage](https://en.bitcoin.it/wiki/Raw_Transactions) explains it all
@@ -327,7 +327,7 @@ says the *Introduction to FN psbt signers* a week later [Link Medium post](https
 It's not contradictory, it does sign 100% offline. FN makes other commands that require an internet connection though, it's possible to enhance that in the future. The 'online' commands that the signing process generates, do not reveal any sensitive data.
 
 #### Further elaboration on the answer / issue
-In order to make the signing functionality work as reliably as possible the app first checks if the psbt is fully signed, if it is it will finalize it right away and allow you to broadcast, if not then it passes the psbt to your node for processing with `bitcoin-cli walletprocesspsbt`, if for some reason the `psbt` you passed to the app does not hold all the `bip32_derivs` then that command will get your node to fill out the `bip32_derivs` (our offline signer needs the `bip32_derivs` in order to sign as they tell us what derivation path the private key needs to be derived with). The process command also gets your node to sign the psbt if it can, it is always possible a user has imported an `xprv` themselves into their node without FN knowing about it (FN2 for example makes your node a signer), so that command accounts for that possibility.
+In order to make the signing functionality work as reliably as possible the app first checks if the psbt is fully signed, if it is it will finalize it right away and allow you to broadcast, if not then it passes the psbt to your node for processing with `bitcoin-cli walletprocesspsbt`, if for some reason the `psbt` you passed to the app does not hold all the `bip32_derivs` then that command will get your node to fill out the `bip32_derivs` (our offline signer needs the `bip32_derivs` in order to sign as they tell us what derivation path the private key needs to be derived with). The process command also gets your node to sign the psbt if it can, it is always possible a user has imported an `xprv` themselves into their node without FN knowing about it (FN2, now called Gordian Wallet, for example makes your node a signer), so that command accounts for that possibility.
 
 All of the above can not be done offline, if it is going to be 100% offline we can't sign with your node and cant fill the `bip32_derivs` with your node.
 
@@ -438,6 +438,10 @@ Have a feeling its a paywalled feature on mynode. i think all mynode does it put
 
 ## Connection
 
+#### Question : How do I connect my node?
+
+Click to look up the answer in [the FAQ](https://fullynoded.app/faq/#How-Do-I-Connect-My-Node)
+
 #### Could not connect to the server... What to do?
 
 Follow the steps [here](../Readme.md#connecting-over-tor-mac). Always remember you will have to brew services restart tor, you will have to force quit and reopen FN to connect again, for the authentication to take effect.
@@ -503,6 +507,10 @@ Here are some [common issues and fixes](https://github.com/Fonta1n3/FullyNoded#t
 1. It may just not have permissions to create directories which would explain the lib folder not existing.
 2. Running without `brew`. You can defo do it without brew, its just more complicated.
 3. You really should *edit* the file and *save* it too. Double checked?
+
+##### Further question : Maybe I need to do some changes on my firewall due to the tor service?
+
+The beauty of tor is your node can be 100% behind a firewall
 
 #### Question : How can I test the network connection between them (FN and Node)?
 
@@ -582,7 +590,11 @@ In order to add the auth key you need to use the following command:<br/>
 `sudo nano /var/lib/tor/theNodlTorDirectoryName/authorized_clients/fullynoded.auth`<br/>
 Then paste the pubkey and save the file (type ctrl X and enter)
 
+##### Troubleshooting
+A user had to create the HS directories manually first, then change the DIR owner to toranon user. Reportedly, reading the tor log files helped a lot.<br/>
 `StandUp.app` makes it super easy if you have a mac or the StandUp scripts also make it incredibly easy.
+
+You can confirm the authentication is in effect by looking at your hiddenservicedir authorized_client dir and see if any files are in there which will end in `.auth` and contain your pubkey descriptor. To remove `auth` -> remove all files from that dir.
 
 #### Question : C-lightning - I added details of node. Clicked gear icon - got 'method not found' error. What to do?
 
@@ -598,8 +610,28 @@ I’ll write a script that makes it easy but you will still need to be comfortab
 
 Thats `Tor` being responsible, it'll happen occassionally. I will eventually get this fixed by keeping `tor` alive for 3 minutes would go a long way to prevent that crash.
 
+#### Question : I get confused when reading pubkey and privkey in Tor context; an onion address consists of tor public and private keys?
+
+The auth has nothing to do with wallet creation. [Here](https://matt.traudt.xyz/posts/creating-private-v3-FgbdRTFr.html) is a decent explainer by Matt Traudt.
+
+If you'd like to deepdive into the subject: [here](https://github.com/torproject/torspec/blob/master/rend-spec-v3.txt) the *Tor Rendezvous Specification - Version 3*
+
+#### Question :  FN requires RPC creds inputted in order to create a hot wallet that will then provide Tor v3 auth, is that correct? 
+
+`Rpc` has nothing to do with `tor auth`. Rpc credentials are needed to make commands to your `node`.
+
+FN just generates a public private key pair that adheres to Tor V3 auth spec. Totally independently of anything on your node. It’s purely tor Hidden service related. Hidden service just happens to control bitcoin core rpcport.
+
+HowTo: <br/>
+<a href="../Videos/IMG_3130.MP4" target="_blank"><img src="./Images/Video3130-screen.png" alt="Tor-Hidden-Service-configuration" border="0" width="200"></a>
+
+FN never creates a hot wallet on your node unless you explicitly go to `“advanced” > “bitcoin core wallets” > + > hot`. The Tor auth has nothing to do with wallet creation.
 
 ## Wallets
+
+#### Question : How do I create a wallet in FN?
+
+Lookup the answer in the FAQ [here](https://fullynoded.app/faq/#How-Do-I-Create-a-Wallet)
 
 #### Question : How I can erase a wallet in Fullynoded? or modify a name?
 
@@ -613,6 +645,9 @@ On your `nodl` I am not 100% sure of the path to find the wallets, but it is in 
 To modify the name just right click the wallet on your mac and rename, in `nodl` you have to find the path to your wallet and use `mv` command, heres an example:
 
 	mv /home/user/oldname /home/user/newname
+
+More info in the site's [FAQ](https://fullynoded.app/faq/#How-Do-I-Delete-a-Wallet)
+
 
 #### Question : what is the recovery wallet?
 
@@ -639,7 +674,7 @@ The worst malware i can find are adware where an app gets you to click invisible
 #### Question : The keychain encryption key is stored on the secure enclave? 
 *So its very hard to crack that open once you have the device, which bricks itself without the icloud password?*<br/>
 
-On FN its stored on the local keychain (secure enclave) only, no icloud support. FN2 account xprv can be synced to icloud. But again its encrypted three times by then.
+On FN its stored on the local keychain (secure enclave) only, no icloud support. Gordian Wallet (formerly known as 'FN2') account `xprv` can be synced to icloud. But again its encrypted three times by then.
 
 #### Question : What’s the diff in importing Xpub and import descriptor under wallet? 
 
@@ -701,6 +736,18 @@ FN wallets will always show as COLD because your node never holds a private key<
 
 It should work with it disabled. But it’s been awhile since i tested that.
 
+#### Question : This wallet was created on FullyNoded why would I be getting this error.   I want to delete via “I” button
+<img src="./Images/Oops-wallet.jpg" alt="standup-screen" border="0" width="200"><br/>
+
+Please stop using the "Bitcoin Core Wallets" and use the "Fully Noded Wallets"<br/>
+You need to tap the *squares* button, from *active wallet* tab. those are your fully noded wallets<br/>
+There is a huge difference between a `wallet.dat` file that exists on your node and a "Fully Noded Wallet"<br/>
+You can only delete` wallet.dat` wallets, by going onto your node and deleting them.
+
+#### Question : How do I delete a (FN) wallet?
+
+Look up the answer in [the FAQ] (https://fullynoded.app/faq/#How-Do-I-Delete-a-Wallet)
+
 ## Standup
 
 #### Question : where can I download this? 
@@ -732,7 +779,7 @@ You can just set the min relay fee (smallest possible amount) and if the transac
 
 #### Question : Can I create transactions in USD? 
 Yes, you can create transactions which are denominated in USD, this video shows the new look for the transaction builder, how to switch to fiat denominations and then how to confirm the transaction before you broadcast it:<br/>
-<a href="https://github.com/Fonta1n3/FullyNoded/blob/master/Videos/IMG_3025.MP4" target="_blank"><img src="./Images/fiat-curr-transaction.png" alt="fiat-curr-transaction" border="0" width="200"></a>
+<a href="../Videos/IMG_3025.MP4" target="_blank"><img src="./Images/fiat-curr-transaction.png" alt="fiat-curr-transaction" border="0" width="200"></a>
 
 ## Node
 
