@@ -590,6 +590,9 @@ In order to add the auth key you need to use the following command:<br/>
 `sudo nano /var/lib/tor/theNodlTorDirectoryName/authorized_clients/fullynoded.auth`<br/>
 Then paste the pubkey and save the file (type ctrl X and enter)
 
+##### Troubleshooting
+A user had to create the HS directories manually first, then change the DIR owner to toranon user. Reportedly, reading the tor log files helped a lot.
+
 `StandUp.app` makes it super easy if you have a mac or the StandUp scripts also make it incredibly easy.
 
 #### Question : C-lightning - I added details of node. Clicked gear icon - got 'method not found' error. What to do?
@@ -606,6 +609,7 @@ I’ll write a script that makes it easy but you will still need to be comfortab
 
 Thats `Tor` being responsible, it'll happen occassionally. I will eventually get this fixed by keeping `tor` alive for 3 minutes would go a long way to prevent that crash.
 
+#### Question : I get confused when reading pubkey and privkey in Tor context; an onion address consists of tor public and private keys?
 
 ## Wallets
 
