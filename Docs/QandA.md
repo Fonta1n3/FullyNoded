@@ -612,7 +612,7 @@ Thats `Tor` being responsible, it'll happen occassionally. I will eventually get
 
 #### Question : I get confused when reading pubkey and privkey in Tor context; an onion address consists of tor public and private keys?
 
-The auth has nothing to do with wallet creation. [Here](https://matt.traudt.xyz/posts/creating-private-v3-FgbdRTFr.html) is a decent explainer.
+The auth has nothing to do with wallet creation. [Here](https://matt.traudt.xyz/posts/creating-private-v3-FgbdRTFr.html) is a decent explainer by Matt Traudt.
 
 #### Question :  FN requires RPC creds inputted in order to create a hot wallet that will then provide Tor v3 auth, is that correct? 
 
