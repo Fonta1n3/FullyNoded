@@ -591,9 +591,10 @@ In order to add the auth key you need to use the following command:<br/>
 Then paste the pubkey and save the file (type ctrl X and enter)
 
 ##### Troubleshooting
-A user had to create the HS directories manually first, then change the DIR owner to toranon user. Reportedly, reading the tor log files helped a lot.
-
+A user had to create the HS directories manually first, then change the DIR owner to toranon user. Reportedly, reading the tor log files helped a lot.<br/>
 `StandUp.app` makes it super easy if you have a mac or the StandUp scripts also make it incredibly easy.
+
+You can confirm the authentication is in effect by looking at your hiddenservicedir authorized_client dir and see if any files are in there which will end in `.auth` and contain your pubkey descriptor. To remove `auth` -> remove all files from that dir.
 
 #### Question : C-lightning - I added details of node. Clicked gear icon - got 'method not found' error. What to do?
 
@@ -610,6 +611,12 @@ I’ll write a script that makes it easy but you will still need to be comfortab
 Thats `Tor` being responsible, it'll happen occassionally. I will eventually get this fixed by keeping `tor` alive for 3 minutes would go a long way to prevent that crash.
 
 #### Question : I get confused when reading pubkey and privkey in Tor context; an onion address consists of tor public and private keys?
+
+#### Question :  FN requires RPC creds inputted in order to create a hot wallet that will then provide Tor v3 auth, is that correct? 
+
+`Rpc` has nothing to do with `tor auth`. Rpc credentials are needed to make commands to your `node`.
+
+FN just generates a public private key pair that adheres to Tor V3 auth spec. Totally independently of anything on your node. It’s purely tor Hidden service related. Hidden service just happens to control bitcoin core rpcport.
 
 ## Wallets
 
