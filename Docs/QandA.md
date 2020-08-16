@@ -327,7 +327,7 @@ says the *Introduction to FN psbt signers* a week later [Link Medium post](https
 It's not contradictory, it does sign 100% offline. FN makes other commands that require an internet connection though, it's possible to enhance that in the future. The 'online' commands that the signing process generates, do not reveal any sensitive data.
 
 #### Further elaboration on the answer / issue
-In order to make the signing functionality work as reliably as possible the app first checks if the psbt is fully signed, if it is it will finalize it right away and allow you to broadcast, if not then it passes the psbt to your node for processing with `bitcoin-cli walletprocesspsbt`, if for some reason the `psbt` you passed to the app does not hold all the `bip32_derivs` then that command will get your node to fill out the `bip32_derivs` (our offline signer needs the `bip32_derivs` in order to sign as they tell us what derivation path the private key needs to be derived with). The process command also gets your node to sign the psbt if it can, it is always possible a user has imported an `xprv` themselves into their node without FN knowing about it (FN2 for example makes your node a signer), so that command accounts for that possibility.
+In order to make the signing functionality work as reliably as possible the app first checks if the psbt is fully signed, if it is it will finalize it right away and allow you to broadcast, if not then it passes the psbt to your node for processing with `bitcoin-cli walletprocesspsbt`, if for some reason the `psbt` you passed to the app does not hold all the `bip32_derivs` then that command will get your node to fill out the `bip32_derivs` (our offline signer needs the `bip32_derivs` in order to sign as they tell us what derivation path the private key needs to be derived with). The process command also gets your node to sign the psbt if it can, it is always possible a user has imported an `xprv` themselves into their node without FN knowing about it (FN2, now called Gordian Wallet, for example makes your node a signer), so that command accounts for that possibility.
 
 All of the above can not be done offline, if it is going to be 100% offline we can't sign with your node and cant fill the `bip32_derivs` with your node.
 
@@ -674,7 +674,7 @@ The worst malware i can find are adware where an app gets you to click invisible
 #### Question : The keychain encryption key is stored on the secure enclave? 
 *So its very hard to crack that open once you have the device, which bricks itself without the icloud password?*<br/>
 
-On FN its stored on the local keychain (secure enclave) only, no icloud support. FN2 account xprv can be synced to icloud. But again its encrypted three times by then.
+On FN its stored on the local keychain (secure enclave) only, no icloud support. Gordian Wallet (formerly known as 'FN2') account `xprv` can be synced to icloud. But again its encrypted three times by then.
 
 #### Question : What’s the diff in importing Xpub and import descriptor under wallet? 
 
