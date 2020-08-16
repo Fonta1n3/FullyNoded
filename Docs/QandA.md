@@ -5,7 +5,7 @@ Beware: A Q&A is always *work in progress*. Tips & help welcome.
 
 
 ### Disclaimer
-None of the respondents in the **open** Telegram group have been explicitly named as a source, except for ***@Fonta1n3***. For practical reasons educational images uploaded by Telegram group members have been downloaded to [Imgbb](http://imgbb.com), we de-personalised them by giving images a new name. Under these new names these images have been used in the Q&A to clarify the questions and answers.
+None of the respondents in the **open** Telegram group have been explicitly named as a source, except for ***@Fonta1n3***. For practical reasons educational images uploaded by Telegram group members have been downloaded. We de-personalised them by giving images a new name. Under these new names these images have been uploaded to github and used in the Q&A to clarify the questions and answers.
 
 > We've done our best to protect the privacy of the Telegram group members by investigating the images we used. We haven't come across personal identifiable information (pii). However, should we have made a mistake after all, please let us know and we'll correct this immediately.
 
@@ -779,7 +779,7 @@ You can just set the min relay fee (smallest possible amount) and if the transac
 
 #### Question : Can I create transactions in USD? 
 Yes, you can create transactions which are denominated in USD, this video shows the new look for the transaction builder, how to switch to fiat denominations and then how to confirm the transaction before you broadcast it:<br/>
-<a href="https://github.com/Fonta1n3/FullyNoded/blob/master/Videos/IMG_3025.MP4" target="_blank"><img src="./Images/fiat-curr-transaction.png" alt="fiat-curr-transaction" border="0" width="200"></a>
+<a href="../Videos/IMG_3025.MP4" target="_blank"><img src="./Images/fiat-curr-transaction.png" alt="fiat-curr-transaction" border="0" width="200"></a>
 
 ## Node
 
