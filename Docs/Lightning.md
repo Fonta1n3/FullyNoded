@@ -1,6 +1,6 @@
 # ⚡️⚡️⚡️Lightning ⚡️⚡️⚡️
 
-### This is #Reckless, please use it on testnet for now as it is brand new
+### #Reckless
 
 This document explains how to use Fully Noded to remotely connect to and control your c-lightning node via a Tor V3 hidden service.
 
