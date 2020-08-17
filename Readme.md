@@ -1,3 +1,6 @@
+
+<img src="./Images/logo.png" alt="" width="100"/>
+
 # Fully Noded™️
 [https://fullynoded.app](https://fullynoded.app) (work in progress)
 
