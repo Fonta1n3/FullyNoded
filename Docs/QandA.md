@@ -5,7 +5,7 @@ Beware: A Q&A is always *work in progress*. Tips & help welcome.
 
 
 ### Disclaimer
-None of the respondents in the **open** Telegram group have been explicitly named as a source, except for ***@Fonta1n3***. For practical reasons educational images uploaded by Telegram group members have been downloaded to [Imgbb](http://imgbb.com), we de-personalised them by giving images a new name. Under these new names these images have been used in the Q&A to clarify the questions and answers.
+None of the respondents in the **open** Telegram group have been explicitly named as a source, except for ***@Fonta1n3***. For practical reasons educational images uploaded by Telegram group members have been downloaded. We de-personalised them by giving images a new name. Under these new names these images have been uploaded to github and used in the Q&A to clarify the questions and answers.
 
 > We've done our best to protect the privacy of the Telegram group members by investigating the images we used. We haven't come across personal identifiable information (pii). However, should we have made a mistake after all, please let us know and we'll correct this immediately.
 
@@ -36,7 +36,7 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 ## Definitions
 
 - FN : Fully Noded app
-- FN2 : Fully Noded 2 app, misnaming because it is a different app than FN. [This comparison](./Docs/FN2_Comparison.md) tries to explain the differences. A new name for FN2 will be invented in the future.
+- FN2 : Fully Noded 2 app, new name is Gordian Wallet, The original name FN2 was a misnaming because it is a different app than FN from its inception. [This comparison](./Docs/FN2_Comparison.md) tries to explain the differences between Fully Noded and Gordian Wallet. 
 - satoshi: 0.000000001 BTC. A satoshi is the smallest unit of a bitcoin, equivalent to 100 millionth of a bitcoin.
 - UTXO's: Unspend transaction Outputs; UTXO stands for the unspent output from bitcoin transactions. Each bitcoin transaction begins with coins used to balance the ledger. UTXOs are processed continuously and are responsible for beginning and ending each transaction. Confirmation of transaction results in the removal of spent coins from the UTXO database. But a record of the spent coins still exists on the ledger. **for newbies**: UTXO is unspent bitcoin that you can "see" in your wallet and on the blockchain. It is an address and amount of sathosis. As soon as you spend the money, it won't add to your wallet balance anymore and therefore will only.
 - signed raw transaction : [Wikipage](https://en.bitcoin.it/wiki/Raw_Transactions) explains it all
@@ -98,7 +98,7 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 ## Userinterface
 
 #### Question : This button should bring up info and allow me to make changes?
-<img src="https://i.ibb.co/N1FKq50/refresh-info.jpg" alt="refresh-info" border="0" width="200">
+<img src="./Images/refresh-info.png" alt="refresh-info" border="0" width="200">
 
 It does, but only for Fully Noded wallets. It does not do anything for wallets created on your node externally from FN. FN allows you to manually create wallets and access all your nodes wallets. It is only possible for FN to show wallet details when the wallet was created via the `+` button on the `Active Wallet` tab. With FN wallets the app will remember the public key descriptors that were used to create the wallet, it's derivation, it's keypool range, the wallet label, the wallet filename, and a unique identifier.
 
@@ -121,7 +121,7 @@ Nowhere, will add it to the header of settings
 
 #### Question : Made 2 single sig wallets in FN.  Both have same signer words?
 
-<img src="https://i.ibb.co/bv2hjH2/double-same-sig-wallets-FN.jpg" alt="double-same-sig-wallets-FN" border="0" width="200"><br/>
+<img src="./Images/double-same-sig-wallets-FN.png" alt="double-same-sig-wallets-FN" border="0" width="200"><br/>
 Ignore wallet manager<br/>
 Tap the squares button on the active wallet view<br/>
 Use your Fully Noded wallets from there<br/>
@@ -132,7 +132,7 @@ Just use the one you’ve got in the Fully Noded wallets, Delete the other one f
 TBW<br/>
 
 #### Question : Why is camera always active in the wallet?
-<img src="https://i.ibb.co/s2WSdn5/camera-active-wallet.jpg" alt="camera-active-wallet" border="0" width="200"><br/>
+<img src="./Images/camera-active-wallet.png" alt="camera-active-wallet" border="0" width="200"><br/>
 should only be active when you are scanning a QR code...<br/>
 when you swipe down or close the QR scanner it dismisses all camera related code<br/>
 For now, i guess if you do not want it to use the camera just disable that in the devices settings<br/>
@@ -148,7 +148,7 @@ MD: What is your node setup like? And what is the last thing you are doing befor
 Matt Hill: Please make sure you are running `Bitcoin 0.20.0` on the `Embassy`. And that you have the "wallet" feature in your config file enabled.
 
 Fonta1n3: Looks like you never actually connected? If your connection is successful you’ll see the home screen look like this:<br/>
-<img src="https://i.ibb.co/HrsmwBd/opening-screen.jpg" alt="opening-screen" border="0" width="200">
+<img src="./Images/opening-screen.png" alt="opening-screen" border="0" width="200">
 
 Occasionally you’ll get a crash if you race around the app not allowing things to finish loading or if you put it into background before `tor` connects and back into foreground very quickly and vice versa. Important to let things load and go slow. Other then that there really should not be crashes, only way i can troubleshoot that is release on Testflight again and ask that you share the crash report.
 For starters ensure you are connected to your node, can you confirm it successfully connects? Actually connecting is only successful when the home screen has loaded.
@@ -178,7 +178,7 @@ I will be be keeping the testflight up to date for you [here](https://testflight
 
 Go slow, `tor` is not meant for speed. `Tor` does not stay alive in the background so every time the app does go (crash) there we have to force `tor` to quit, then when the app reappears it has to bootstrap tor again every time.
 
-#### Question : What are the assurances that the developer cant push out software that will steal my seed say in a single sig wallet?
+#### Question : What are the assurances that the developer can't push out software that will steal my seed say in a single sig wallet?
 
 There isn’t any, that’s why you should use multisig or build the app from source.
 
@@ -186,7 +186,25 @@ There isn’t any, that’s why you should use multisig or build the app from so
 
 Again there isn’t any, the code is open sourced so you can build it yourself. Its actually not very difficult to do.
 
-##Import
+ If you'd like to build the app from source and heads-up compare the build follow the instruction:<br/> 
+ - Download the signed and tagged tarball (in this example `fullynoded.tar.gz`), and compare versions in github, App Store and Testflight 0.1.69
+  - Verify the signature with the developers public PGP key : all you have to do is
+ 	`gpg --verify fullynoded.tar.gz.asc` (or whatever exact signature filename you downloaded)
+  - Untar and build
+     1. `brew install carthage automake autoconf libtool gnu-sed` (if you have not already)
+     2. untar the tarball
+     3. `cd <untarred dir>/XCode`
+     4. `carthage build`
+ 	5. open `FullyNoded.xcodeproj`
+ 	6. run the project in a simulator or device
+	
+ If you'd like to import @Fonta1n3's [public key](https://github.com/Fonta1n3/FullyNoded#fully-noded%EF%B8%8F) to send encrypted messages follow the instruction: 
+    1. import @Fonta1n3's [public key](https://github.com/Fonta1n3/FullyNoded#fully-noded%EF%B8%8F) to gpg on mac: `gpg --import key.asc` (make sure `key.asc` contains the full pub key)
+	2. If you don't have the full public key: try to use gpg --recv-keys \<fingerprint\> whether it'll be found depends on the keyserver configured on a local machine.
+ 
+Instead of cloning the repo you can just download that tarball, I think it automatically unpacks and I will add my `pgp` key to the `readme`.
+
+## Import
 
 #### Question : I got the zpub from electrum. I thought that if you use a bech32 wallet, you get a zpub not xpub?
 
@@ -231,7 +249,7 @@ So on your coldcard you go to “dump wallet summary” in the sd card section<b
 And get either your bip44 or bip84 xpub<br/>
 Make a qr code with it or copy and paste it<br/>
 In Fully Noded you go to settings<br/>
-<img src="https://i.ibb.co/Yp1K1Qh/QR-settings.jpg" alt="QR-settings" border="0" width="200"><br/>
+<img src="./Images/QR-settings.png" alt="QR-settings" border="0" width="200"><br/>
 Inout your master fingerprint and the correct settings, then scan the qr-code of the `xpub`, and it will import whatever range of addresses you specified<br/>
 You have to take the sd-card and put it into a computer and create the qr.
 #### Further question : what the added benifit of going through the iPhone?
@@ -251,9 +269,28 @@ Build your unsigned transactions on your phone, and send them to airgapped lapto
 You can only broadcast signed raw transactions. The only purpose of psbts is to end up with a signed raw transaction. e.g. The `.txn` file from Coldcard.
 
 #### Question : Hardware wallet support?
-<img src="https://i.ibb.co/F0R5Bvc/Hardware-wallets.jpg" alt="Hardware-wallets" border="0" width="200"><br/>
+<img src="./Images/Hardware-wallets.png" alt="Hardware-wallets" border="0" width="200"><br/>
 
 They should all work with Fully Noded too. You can import your `xpub` directly into your node from your hardware wallets. I import my `coldcard` wallet xpub with Fully Noded, then build `PSBTs` with it.
+
+#### Question : Is there  a way to export the multisig.txt file anytime after the initial prompt when exiting the Multisig Creator flow?
+
+Not right now... if you tap the `export` button from the `active wallet` tab you’ll get a wallet export QR, it holds all the info you need to manually create that txt. 
+
+I can add a .txt button there that converts it, that would prob make the most sense. To do it manually you'll need to tap that `export` button and extract the xpubs and fingerprints and put them into this format:
+```
+Name: Fully Noded
+Policy: 2 of 3
+Derivation: m/48'/0'/0'/2'
+Format: P2WSH
+
+fingerprint:xpub
+fingerprint:xpub
+fingerprint:xpub
+```
+
+You can also get that info by tapping the info button on the active wallet tab. You will see your "receive keypool descriptor" it also holds all xpubs/fingerprints needed.
+
 
 ## General
 
@@ -290,7 +327,7 @@ says the *Introduction to FN psbt signers* a week later [Link Medium post](https
 It's not contradictory, it does sign 100% offline. FN makes other commands that require an internet connection though, it's possible to enhance that in the future. The 'online' commands that the signing process generates, do not reveal any sensitive data.
 
 #### Further elaboration on the answer / issue
-In order to make the signing functionality work as reliably as possible the app first checks if the psbt is fully signed, if it is it will finalize it right away and allow you to broadcast, if not then it passes the psbt to your node for processing with `bitcoin-cli walletprocesspsbt`, if for some reason the `psbt` you passed to the app does not hold all the `bip32_derivs` then that command will get your node to fill out the `bip32_derivs` (our offline signer needs the `bip32_derivs` in order to sign as they tell us what derivation path the private key needs to be derived with). The process command also gets your node to sign the psbt if it can, it is always possible a user has imported an `xprv` themselves into their node without FN knowing about it (FN2 for example makes your node a signer), so that command accounts for that possibility.
+In order to make the signing functionality work as reliably as possible the app first checks if the psbt is fully signed, if it is it will finalize it right away and allow you to broadcast, if not then it passes the psbt to your node for processing with `bitcoin-cli walletprocesspsbt`, if for some reason the `psbt` you passed to the app does not hold all the `bip32_derivs` then that command will get your node to fill out the `bip32_derivs` (our offline signer needs the `bip32_derivs` in order to sign as they tell us what derivation path the private key needs to be derived with). The process command also gets your node to sign the psbt if it can, it is always possible a user has imported an `xprv` themselves into their node without FN knowing about it (FN2, now called Gordian Wallet, for example makes your node a signer), so that command accounts for that possibility.
 
 All of the above can not be done offline, if it is going to be 100% offline we can't sign with your node and cant fill the `bip32_derivs` with your node.
 
@@ -301,7 +338,7 @@ We then loop through each signer on the device, decrypting them and seeing if it
 You can set a mining fee target in `settings`, if you want it to be confirmed quickly adjust this setting accordingly. Otherwise all transactions are `replace by fee` enabled in FN. To bump the fee simply tap the transaction and you will see a button for bumping the fee. If FN does not hold a signer for the wallet and the node can not sign then FN will allow you to export the new transaction as a `psbt` which you will need to pass back to your signer and broadcast again as utilizing `rbf` means you create an entirely new transaction.
 
 #### Question : Any suggestion about this problem? All the username, password, and onion address are OK<br/>
-<img src="https://i.ibb.co/WFpFtXm/err-network-conn.jpg" alt="err-network-conn" border="0" width="200">
+<img src="./Images/err-network-conn.png" alt="err-network-conn" border="0" width="200">
 
 Force quitting FN and rebooting `tor` on your `node` usually works. Sometimes Tor can get "stuck" especially if your node's machine has gone offline or been put to sleep. This issue may also be encountered if you connect to multiple nodes and switch between them, simply force quitting FN and reopening it resolves the issue and force refreshes the connection to the new node.
 
@@ -323,7 +360,7 @@ If you airdrop FN gives a choice
 
 #### Question :  Does this imply that using my node is not private?
 
-<img src="https://i.ibb.co/7KF7h1p/use-my-node.jpg" alt="use-my-node" border="0" width="200"><br/>
+<img src="./Images/use-my-node.png" alt="use-my-node" border="0" width="200"><br/>
 *I think it should say third party service or use my own node. In fact this should be a setting that you opt in right?*<br/>
 Javier: I think that option is in case your node is not running Tor. If your bitcoind instance is not running over Tor each tx propagated is more likely to be desanonymized.   That’s the reason to choose propagate Esplora API. 
 
@@ -369,7 +406,41 @@ LND is written in Go code, which is owned by google, to talk to it remotely you 
 
 Instead, c-lightning is built in C (an open language not owned by google), and is highly modular and flexible, super easy to build on top of with python plugins, very easy to talk to remotely and add powerful plugins to adapt to your needs. Fits into the Fully Noded architecture seamlessly.
 
+#### How should I organise my signing with devices and multisigs?
+
+If your using multisig but only use one codebase you're doing it wrong, in my opinion.
+
+<img src="./Images/SingleSign.png" alt="Common Single Sign situation" border="0" width="500">
+<img src="./Images/FNmutlisign.png" alt="Intermediate FN multisig" border="0" width="700"><br/>
+<img src="./Images/FinalSolution.png" alt="Final FN multisig solution" border="0" width="1000">
+
+HvC: This example is of course a 1 of 3, a 2 of 3 or 3 of 3, but in general it could be anything m out of n. The idea is that the CREATE diagram leaves an "unfinished / unsafe" state, THe EDIT is the final solution and "Proper FN multisign".
+
+#### Question : Checking total supply. This is taking an inordinate amount of time for me and my screen eventually turns off. 
+<img src="./Images/Loading-data.png" alt="node-added" border="0" width="200">
+
+*Can I return to this after the data has been fetched from the node or FullyNoded must remain active during the process? Also, my node is pruned so not sure if that’s contributing to the long delay.*
+
+It should take about 3 minutes.
+
+##### Further question : I do wish the app would cache the reply so that you can come back and tell you when it was cached...
+
+Depends on the ram on your node, for me 8gb takes a minute, 2gb ram can take 7 min i heard. node must be on, prune doesnt matter.
+
+The whole point is it changes every ten minutes. Tor gets killed immediately when the app goes into background. However, I have seen we can keep it alive for 3 minutes in the background though, will get around to taking advantage of that, would be nice for when quickly switching between apps to get invoices and stuff.
+
+#### Question : I’m trying to connect to a ‘mynode` *community edition*. Is that still an option? 
+
+I dont know, better to ask on `mynode` group for a definitive answer, not sure exactly how `mynode` operates.
+
+Have a feeling its a paywalled feature on mynode. i think all mynode does it puts a paywall around the convenience of automatically showing the `QR`, but again I am not sure. If they block you from `ssh`'ing and creating your Hidden services, that would be lame.
+
+
 ## Connection
+
+#### Question : How do I connect my node?
+
+Click to look up the answer in [the FAQ](https://fullynoded.app/faq/#How-Do-I-Connect-My-Node)
 
 #### Could not connect to the server... What to do?
 
@@ -437,6 +508,10 @@ Here are some [common issues and fixes](https://github.com/Fonta1n3/FullyNoded#t
 2. Running without `brew`. You can defo do it without brew, its just more complicated.
 3. You really should *edit* the file and *save* it too. Double checked?
 
+##### Further question : Maybe I need to do some changes on my firewall due to the tor service?
+
+The beauty of tor is your node can be 100% behind a firewall
+
 #### Question : How can I test the network connection between them (FN and Node)?
 
 ***Big Disclaimer:***
@@ -488,8 +563,8 @@ If you want to do it manually that works too :)
 #### Question : Looks like I'm connected. But no homescreen, what's wrong?
 
 *It says it connects successfully but no matter how long i let the app run it never looks like your pic.*<br/>
-<img src="https://i.ibb.co/qB40KYQ/node-added.jpg" alt="node-added" border="0" width="200">
-<img src="https://i.ibb.co/Y0prvk0/node-added2.jpg" alt="node-added2" border="0" width="200">
+<img src="./Images/node-added.png" alt="node-added" border="0" width="200">
+<img src="./Images/node-added2.png" alt="node-added2" border="0" width="200">
 
 It says successfully **added**. Actually connecting is only successful when the home screen has loaded.<br/>
 Are you absolutely sure the rpc password and username and onion are 100% correct?<br/>
@@ -503,7 +578,7 @@ W is there any possibility your isp is blocking tor? That has also been an issue
 For starters ensure you are connected to your node, can you confirm it successfully connects?
 
 If your connection is successful you’ll see the home screen look like this:<br/>
-<img src="https://i.ibb.co/HrsmwBd/opening-screen.jpg" alt="opening-screen" border="0" width="200"><br/>
+<img src="./Images/opening-screen.png" alt="opening-screen" border="0" width="200"><br/>
 
 
 ####  Question : what's this about *Tor V3 Authentication Public key* in settings > security center > Tor V3 Authentication?
@@ -515,9 +590,48 @@ In order to add the auth key you need to use the following command:<br/>
 `sudo nano /var/lib/tor/theNodlTorDirectoryName/authorized_clients/fullynoded.auth`<br/>
 Then paste the pubkey and save the file (type ctrl X and enter)
 
+##### Troubleshooting
+A user had to create the HS directories manually first, then change the DIR owner to toranon user. Reportedly, reading the tor log files helped a lot.<br/>
 `StandUp.app` makes it super easy if you have a mac or the StandUp scripts also make it incredibly easy.
 
+You can confirm the authentication is in effect by looking at your hiddenservicedir authorized_client dir and see if any files are in there which will end in `.auth` and contain your pubkey descriptor. To remove `auth` -> remove all files from that dir.
+
+#### Question : C-lightning - I added details of node. Clicked gear icon - got 'method not found' error. What to do?
+
+Did you install the http plugin In lightningd?
+
+Follow this guide. It is a new way of connecting and controlling `clightning`
+You’ll need to ask `mynode` to implement it, nodl, BTCPay etc...
+
+I’ll write a script that makes it easy but you will still need to be comfortable with a script. If you’ve already got `clightning` running its quite simple: [guide](https://github.com/Fonta1n3/FullyNoded/blob/master/Docs/Lightning.md).
+
+
+#### Question : App gets backgrounded and then when I foreground it a few times it eventually crashes. What is wrong?
+
+Thats `Tor` being responsible, it'll happen occassionally. I will eventually get this fixed by keeping `tor` alive for 3 minutes would go a long way to prevent that crash.
+
+#### Question : I get confused when reading pubkey and privkey in Tor context; an onion address consists of tor public and private keys?
+
+The auth has nothing to do with wallet creation. [Here](https://matt.traudt.xyz/posts/creating-private-v3-FgbdRTFr.html) is a decent explainer by Matt Traudt.
+
+If you'd like to deepdive into the subject: [here](https://github.com/torproject/torspec/blob/master/rend-spec-v3.txt) the *Tor Rendezvous Specification - Version 3*
+
+#### Question :  FN requires RPC creds inputted in order to create a hot wallet that will then provide Tor v3 auth, is that correct? 
+
+`Rpc` has nothing to do with `tor auth`. Rpc credentials are needed to make commands to your `node`.
+
+FN just generates a public private key pair that adheres to Tor V3 auth spec. Totally independently of anything on your node. It’s purely tor Hidden service related. Hidden service just happens to control bitcoin core rpcport.
+
+HowTo: <br/>
+<a href="../Videos/IMG_3130.MP4" target="_blank"><img src="./Images/Video3130-screen.png" alt="Tor-Hidden-Service-configuration" border="0" width="200"></a>
+
+FN never creates a hot wallet on your node unless you explicitly go to `“advanced” > “bitcoin core wallets” > + > hot`. The Tor auth has nothing to do with wallet creation.
+
 ## Wallets
+
+#### Question : How do I create a wallet in FN?
+
+Lookup the answer in the FAQ [here](https://fullynoded.app/faq/#How-Do-I-Create-a-Wallet)
 
 #### Question : How I can erase a wallet in Fullynoded? or modify a name?
 
@@ -531,6 +645,9 @@ On your `nodl` I am not 100% sure of the path to find the wallets, but it is in 
 To modify the name just right click the wallet on your mac and rename, in `nodl` you have to find the path to your wallet and use `mv` command, heres an example:
 
 	mv /home/user/oldname /home/user/newname
+
+More info in the site's [FAQ](https://fullynoded.app/faq/#How-Do-I-Delete-a-Wallet)
+
 
 #### Question : what is the recovery wallet?
 
@@ -557,7 +674,7 @@ The worst malware i can find are adware where an app gets you to click invisible
 #### Question : The keychain encryption key is stored on the secure enclave? 
 *So its very hard to crack that open once you have the device, which bricks itself without the icloud password?*<br/>
 
-On FN its stored on the local keychain (secure enclave) only, no icloud support. FN2 account xprv can be synced to icloud. But again its encrypted three times by then.
+On FN its stored on the local keychain (secure enclave) only, no icloud support. Gordian Wallet (formerly known as 'FN2') account `xprv` can be synced to icloud. But again its encrypted three times by then.
 
 #### Question : What’s the diff in importing Xpub and import descriptor under wallet? 
 
@@ -611,19 +728,31 @@ It's really just there to help people recover wallets that exist on their node. 
 By far the best way to use the app is stick 100% with FN wallets.
 
 Aka use these two buttons to create and switch between wallets<br/>
-<img src="https://i.ibb.co/VSKHWwF/switch-buttons-wallets.jpg" alt="switch-buttons-wallets" border="0" width="200"><br/>
+<img src="./Images/switch-buttons-wallets.png" alt="switch-buttons-wallets" border="0" width="200"><br/>
 FN wallets will always show as COLD because your node never holds a private key<br/>
-<img src="https://i.ibb.co/m9mMMWT/switch-wallets2.jpg" alt="switch-wallets2" border="0" width="200">
+<img src="./Images/switch-wallets2.png" alt="switch-wallets2" border="0" width="200">
 
 #### Question : Does fully noded need the wallet from bitcoin core?
 
 It should work with it disabled. But it’s been awhile since i tested that.
 
+#### Question : This wallet was created on FullyNoded why would I be getting this error.   I want to delete via “I” button
+<img src="./Images/Oops-wallet.jpg" alt="standup-screen" border="0" width="200"><br/>
+
+Please stop using the "Bitcoin Core Wallets" and use the "Fully Noded Wallets"<br/>
+You need to tap the *squares* button, from *active wallet* tab. those are your fully noded wallets<br/>
+There is a huge difference between a `wallet.dat` file that exists on your node and a "Fully Noded Wallet"<br/>
+You can only delete` wallet.dat` wallets, by going onto your node and deleting them.
+
+#### Question : How do I delete a (FN) wallet?
+
+Look up the answer in [the FAQ] (https://fullynoded.app/faq/#How-Do-I-Delete-a-Wallet)
+
 ## Standup
 
 #### Question : where can I download this? 
 
-<img src="https://i.ibb.co/0CRPVkt/standup-screen.jpg" alt="standup-screen" border="0" width="200"><br/>
+<img src="./Images/standup-screen.png" alt="standup-screen" border="0" width="200"><br/>
 [here](https://github.com/BlockchainCommons/Bitcoin-Standup-MacOS/blob/master/Standup_0.1.1.dmg) is the notarized and pgp signed dmg
 Just click download and then open it<br/>
 
@@ -650,7 +779,7 @@ You can just set the min relay fee (smallest possible amount) and if the transac
 
 #### Question : Can I create transactions in USD? 
 Yes, you can create transactions which are denominated in USD, this video shows the new look for the transaction builder, how to switch to fiat denominations and then how to confirm the transaction before you broadcast it:<br/>
-<a href="https://github.com/Fonta1n3/FullyNoded/blob/master/Videos/IMG_3025.MP4" target="_blank"><img src="https://i.ibb.co/GW1vwsP/fiat-curr-transaction.png" alt="fiat-curr-transaction" border="0" width="200"></a>
+<a href="../Videos/IMG_3025.MP4" target="_blank"><img src="./Images/fiat-curr-transaction.png" alt="fiat-curr-transaction" border="0" width="200"></a>
 
 ## Node
 
