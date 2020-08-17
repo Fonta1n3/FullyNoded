@@ -1,15 +1,21 @@
 # Fully Noded™️
 [https://fullynoded.app](https://fullynoded.app) (work in progress)
 
-My pgp: 3B3797FA0AE84BE5B4406591856401D7121C32FC
+pgp: 3B37 97FA 0AE8 4BE5 B440 6591 8564 01D7 121C 32FC
 
-🙏🏼 Lightning donation to support development of Fully Noded: http://56uo4htoxdt2tgh6zui5v2q7c4ax43dd3fwueiurgqdw7lpunn2cikqd.onion:5599/donation
+Lightning donation to support development of Fully Noded:<br/>
+http://56uo4htoxdt2tgh6zui5v2q7c4ax43dd3fwueiurgqdw7lpunn2cikqd.onion:5599/donation
+
+# Table of Contents
+1. [Requirements](#requirements)
+2. [Supported Nodes](#supported-nodes)
+3. [Connect your own node](#connect-your-own-node)
+4. [Connect BTCPayServer](#connect-btcpayserver)
 
 ## Requirements
 - At least [Bitcoin Core 0.20.0](https://bitcoincore.org/bin/bitcoin-core-0.20.0/) for "Fully Noded Multisig" wallet compatibility, Bitcoin Core wallets will of course work with any version.
 - [Tor](https://www.torproject.org/download/)
 
-A feature rich Bitcoin app which is 100% powered by your own Full Node. Allows you to connect to - and control multiple nodes using a client side native Tor thread making calls to your nodes rpcport via a V3 hidden service with optional Tor V3 authentication, whereby the app can either create a key for you (out of band) or you may supply your own private key.
 
 ## Supported Nodes
 - Bitcoin Core (minimum 0.20.0 is recommended for full functionality)
