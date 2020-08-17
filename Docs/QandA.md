@@ -257,6 +257,10 @@ So its a true airgap.<br/>
 Then you create your qr codes on the airgapped laptop, and scan signed txs with the phone<br/>
 Build your unsigned transactions on your phone, and send them to airgapped laptop via QR code scanning.
 
+#### Question : Gordian wallet. There is no “add manually” like in FullyNoded?
+
+You can view node details in FN, there is an export button, it gives you a QR that you can scan or upload with Gordian Wallet.
+
 ## Export
 
 #### Question : Why doesn't broadcast work via my Node?
