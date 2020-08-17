@@ -3,7 +3,7 @@
 
 pgp: 3B37 97FA 0AE8 4BE5 B440 6591 8564 01D7 121C 32FC
 
-Lightning donation to support development of Fully Noded:<br/>
+⚡️donation to support development of Fully Noded:<br/>
 http://56uo4htoxdt2tgh6zui5v2q7c4ax43dd3fwueiurgqdw7lpunn2cikqd.onion:5599/donation
 
 # Table of Contents
