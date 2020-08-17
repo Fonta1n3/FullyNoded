@@ -2,6 +2,9 @@
 
 
 # <img src="./Images/fn_logo.png" alt="" width="100"/> Fully Noded™️
+
+Self sovereign, secure, powerful, easy to use wallet that utilizes your own node as a backend. Powered by PSBT's and descriptors. Acts as an offline signer using your node as a watch-only wallet. C-Lightning compatible for instant, unfairly cheap payments.
+
 [https://fullynoded.app](https://fullynoded.app) (work in progress)
 
 pgp: 3B37 97FA 0AE8 4BE5 B440 6591 8564 01D7 121C 32FC
