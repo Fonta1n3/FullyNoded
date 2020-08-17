@@ -309,6 +309,10 @@ Tap it and save that QR, if you need to recover the wallet just tap the `+ > "im
 
 Loss of privacy. Not loss of funds. It holds pubkeys only. More info [here](https://github.com/Fonta1n3/FullyNoded/blob/master/Docs/Wallet-Export-Import.md)
 
+##### Further question : No need to touch my external signing device again? So then FullyNoded would be the signer??
+
+No, signers are seperate, the QR is pubkey only. You have to add signer manually as words, if you'd like to spend the funds involved.
+
 ## General
 
 #### Question : Why is there no version for Android yet?
