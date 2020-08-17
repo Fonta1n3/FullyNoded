@@ -11,6 +11,28 @@ http://56uo4htoxdt2tgh6zui5v2q7c4ax43dd3fwueiurgqdw7lpunn2cikqd.onion:5599/donat
 2. [Supported Nodes](#supported-nodes)
 3. [Connect your own node](#connect-your-own-node)
 4. [Connect BTCPayServer](#connect-btcpayserver)
+5. [Connect Nodl](#connect-nodl)
+6. [Connect Raspiblitz](#connect-raspiblitz)
+7. [Connect Embassy](#connect-embassy)
+8. [Connect myNode](#connect-mynode)
+9. [Importing a wallet from Specter](#importing-a-wallet-from-specter)
+10. [Troubleshooting](#troubleshooting)
+11. [What can Fully Noded do?](#what-can-fully-noded-do?)
+12. [Download from App Store](#download-from-app-store)
+13. [Telegram](#telegram)
+14. [Q&A](#q&a)
+15. [Tutorials](#tutorials)
+16. [Build From Source](#build-from-source)
+17. [Connecting over Tor macOS](#connecting-over-tor-macos)
+18. [Connecting over Tor Windows 10](#connecting-over-tor-windows-10)
+18. [bitcoin.conf settings](#bitcoin.conf-settings)
+19. [Tor V3 Authentication](#tor-v3-authentication)
+20. [QuickConnect URL Scheme](#quickconnect-url-scheme)
+21. [Security & Privacy](#security-&-privacy)
+22. [How does it work?](#how-does-it-work?)
+23. [Contributing](#contributing)
+24. [Built With](#built-with)
+25. [The docs](#docs)
 
 ## Requirements
 - At least [Bitcoin Core 0.20.0](https://bitcoincore.org/bin/bitcoin-core-0.20.0/) for "Fully Noded Multisig" wallet compatibility, Bitcoin Core wallets will of course work with any version.
@@ -133,29 +155,24 @@ For a more in depth Q&A inspired by discussions on the telegram group check out 
 2. [Introducing Fully Noded PSBT Signers](https://medium.com/@FullyNoded/introducing-fully-noded-psbt-signers-8f259c1ec558?sk=fa56fa3939136f269f0ca2a4fcdeee38)
 - Also going through the [questions & answers](./QuestionsAnswersFN.md) might be an instructional experience.
 
-
-## Build From Source - Mac
-Run `brew --version` in a terminal, if you get a valid response you have brew installed already. If not, install brew:
-
-```cd /usr/local
-mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew
-```
-
-Wait for brew to finish.
-
+## Build From Source
+- Install `Xcode command line tools`, in terminal: `xcode-select --install`
+- Ensure you have Homebrew installed:
+  - `brew --version`, if you get a valid response you have brew installed already. If not, install brew:
+  ```
+  cd /usr/local
+  mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew
+  ```
 - Install carthage and libwally dependencies:  `brew install automake autoconf libtool gnu-sed carthage`
 - Install [Xcode](https://itunes.apple.com/id/app/xcode/id497799835?mt=12)
-- You will need a free Apple developer account create one [here](https://developer.apple.com/programs/enroll/)
-- In Xcode, click "Xcode" > "preferences" > "Accounts" > add your github account
-- Go to [Fully Noded in GitHub](https://github.com/Fonta1n3/FullyNoded) click "Code" -> "Open in Xcode"
-- Once open quit Xcode
-- Open Terminal
-- `cd FullyNoded`
-- `carthage build libwally-swift` and let carthage do its thing
+- Create a free Apple developer account [here](https://developer.apple.com/programs/enroll/)
+- In Terminal:
+  - `git clone https://github.com/Fonta1n3/FullyNoded.git --recurse-submodules`
+  - `cd FullyNoded`
+  - `carthage build --platform iOS`, let it finish.
+- That's it, you can now open `FullyNoded.xcodeproj` in Xcode and run it in a simulator or on your device.
 
-That's it, you can now run the app in XCode.
-
-## Connecting over Tor (mac)
+## Connecting over Tor macOS
 Run `brew --version` in a terminal, if you get a valid response you have brew installed already. If not, install brew:
 
 ```cd /usr/local
@@ -215,20 +232,20 @@ The syntax is `HiddenServicePort xxxx 127.0.0.1:18332`, `xxxx` represents a synt
 - A ready to use `torrc` file that conforms to the guidelines above is available [here](./Docs/torrc-tailored.md).
 - Check that your node is **on**, that it's really running.
 
-### On the device running  FN:
+### On the device running FN:
 - Now in Fully Noded go to `Settings` > `Node Manager` > `+` and add a new node by inputting your RPC credentials and copy and paste your onion address with the port at the end `qndoiqnwoiquf713y8731783rgd.onion:8332`.
 - You should never type (password) fields manually, just copy and paste between devices. Between Apple Mac, iphone and iPad, the clipboard will be synced as soon as you *put on bluetooth* on at least two of the devices. Once bluetooth is on on your mac and ipad then it should automatically paste over from the computer to iPad and back. Same should work for iPhone.
 - Add *mainnet*, *testnet*, and / or *regtest net* at your convenience. You can run all three and connect to all three.
 
-- Restart Tor on your nodes computer `brew services restart tor, and check that your node is **on**; that it's really running. Hard stop FN app on your device and reopen FN.
+- Restart Tor on your nodes computer `brew services restart tor`, and check that your node is **on**; that it's really running. Hard stop FN app on your device and reopen FN.
 - And you should be able to connect to your V3 hidden service from anywhere in the world with your node completely behind a firewall and no port forwarding
 
-Skip the Windows section to see the ideal `bitcoin.conf` settings for FN.
+Skip the Windows section to see the suggested `bitcoin.conf` settings for FN.
 
-## Connecting over Tor (Windows 10)
+## Connecting over Tor Windows 10
 If you already have the Tor Expert Bundle installed you can skip the first 3 steps.
 
-## On the device running your node
+### On the device running your node
 - Download the Tor Expert Bundle [here](https://www.torproject.org/download/tor/)
 - Unpack the "Tor" folder onto your C: drive.
 - Open PowerShell as admin (Press Windows Key + X and then select PowerShell (Admin))
@@ -236,23 +253,23 @@ If you already have the Tor Expert Bundle installed you can skip the first 3 ste
 Now we have Tor on our drive, but we still have configure and install it.
 
 Let's enter the directory in Powershell:
-```cd C:\Tor```
+`cd C:\Tor`
 Now we're in the Tor directory.
 In order to configure Tor we'll have to generate a configuration file:
-```echo > torrc```
+`echo > torrc`
 Now we launch notepad and edit the file to fit our needs:
-```notepad torrc```
+`notepad torrc`
 Enter the following into the file:
 ```
-HiddenServiceDir "C:/Tor/fullynoded/main"
+HiddenServiceDir "C:/Tor/fullynoded/main/"
 HiddenServiceVersion 3
 HiddenServicePort 8332 127.0.0.1:8332
 
-HiddenServiceDir "C:/Tor/fullynoded/test"
+HiddenServiceDir "C:/Tor/fullynoded/test/"
 HiddenServiceVersion 3
 HiddenServicePort 18332 127.0.0.1:18332
 
-HiddenServiceDir "C:/Tor/fullynoded/regnet"
+HiddenServiceDir "C:/Tor/fullynoded/regtest/"
 HiddenServiceVersion 3
 HiddenServicePort 18443 127.0.0.1:18443
 ```
@@ -260,27 +277,35 @@ HiddenServicePort 18443 127.0.0.1:18443
 Save and exit the file.
 
 Now we have to create the directories:
-```cd C:\Tor```
-```mkdir fullynoded```
-```mkdir fullynoded\main```
-```mkdir fullynoded\test```
-```mkdir fullynoded\regnet```
+```
+cd C:\Tor
+mkdir fullynoded
+mkdir fullynoded\main
+mkdir fullynoded\test
+mkdir fullynoded\regtest
+```
 
 Save and exit the file.
 Now we install Tor as a service:
-```C:\Tor\tor.exe --service install -options -f "C:\Tor\torrc"```
+`C:\Tor\tor.exe --service install -options -f "C:\Tor\torrc"`
 
 Now we can enable the service by typing:
-```C:\Tor\tor.exe --service start```
+`C:\Tor\tor.exe --service start`
 
-After you start the service the hostname files will be generated in C:\Tor\fullynoded\main, C:\Tor\fullynoded\test, and C:\Tor\fullynoded\regnet,
-you can view them by typing:
-```cat C:\Tor\fullynoded\main```
-```cat C:\Tor\fullynoded\test```
-or
-```cat C:\Tor\fullynoded\regnet```
+After you start the service the hostname files will be generated in `C:\Tor\fullynoded\main`, `C:\Tor\fullynoded\test`, and `C:\Tor\fullynoded\regtest`, you can view them by typing:
+`cat C:\Tor\fullynoded\main`<br/>
+`cat C:\Tor\fullynoded\test`<br/>
+`cat C:\Tor\fullynoded\regtest`<br/>
 
-Next you need to ensure your `bitcoin.conf` has rpc credentials added:
+Next you need to ensure your `bitcoin.conf` has rpc credentials added (see next section).
+
+Once you have rpc credentials added to your `bitcoin.conf` you can reboot Bitcoin-Core.
+
+### On the device running FN:
+- Now in Fully Noded go to `Settings` > `Node Manager` > `+` and add a new node by inputting your RPC credentials and copy and paste your onion address with the port at the end `qndoiqnwoiquf713y8731783rgd.onion:8332`.
+- You should never type (password) fields manually, just copy and paste between devices. Between Apple Mac, iphone and iPad, the clipboard will be synced as soon as you *put on bluetooth* on at least two of the devices. Once bluetooth is on on your mac and ipad then it should automatically paste over from the computer to iPad and back. Same should work for iPhone.
+- Add *mainnet*, *testnet*, and / or *regtest net* at your convenience. You can run all three and connect to all three.
+
 
 ## bitcoin.conf settings
 - Here is an example bitcoin.conf file best suited for Fully Noded:
@@ -289,18 +314,13 @@ Next you need to ensure your `bitcoin.conf` has rpc credentials added:
 #forces your node to accept rpc commands
 server=1
 
-# Up to you if you want to prune or not
+# Up to you if you want to prune or not, FN will work just the same. A pruned node is a Full Node!
+# 1000 means the node will only take up around 1gb of space
 prune=1000
 
-#Choose any username or password, make the password very strong
+#Choose any username or password, make the password very strong **DO NOT USE SPECIAL CHARACTERS**, it will break the uri to your node that FN uses.
 rpcuser=yourUserName
 rpcpassword=aVeryStrongPasswordSuchAs128dnc849vn9n7gSS
-
-#if you only want to accept connections over tor the following settings are needed
-bind=127.0.0.1
-proxy=127.0.0.1:9050
-listen=1
-debug=tor
 
 # This is redundant but only allows your computer to access your node
 rpcallowip=127.0.0.1
@@ -309,31 +329,32 @@ rpcallowip=127.0.0.1
 dbcache=4000
 ```
 
-## V3 Auth Keypair generation (optional)
+## Tor V3 Authentication
+
+**THIS IS OPTIONAL** It ensures that even if an attacker got your `rpcport` hidden service's hostname and `bitcoin.conf` rpc creds (the quick connect QR) they would still not be able to access your node. For an explainer on how this generally works read [this](https://matt.traudt.xyz/p/FgbdRTFr.html)
 
 ##### Preparatory work:
+First get your connection going. **Resolve the connection issue first then add the keypair**, to keep things simple. Some double checks ( A more extensive guide [here](./Readme.md#connecting-over-tor-macos)).
 
-First get your connection going. **Resolve the connection issue first then add the keypair**, to keep things simple. Some double checks ( A more extensive guide [here](./Readme.md#connecting-over-tor-mac)):
 ###### On your device running node
 - Your node is running either mainnet, testnet or regtest
 - Your node is **on**, it's really running (check that it's running)
-- You've made the appropriate HiddenService -Dir, -Version and -Port declaration in your torrc file for at least the matching port (respectively 8332, 18332 and/or 18443).
+- You've made the appropriate HiddenService -Dir, -Version and -Port declaration in your `torrc` file for at least the matching port (respectively 8332, 18332 and/or 18443).
 - You've started Tor for the changes to take effect
 - You've looked up the hostname files
+
 ###### On your device running FN
 - in Fully Noded, make sure you have added a node with this type of onion url:
-
 	qsctzvoadnehtt5tpjtprudxrrx2b76kra7e2lkbyjpdksncbclrdk5l.onion:18332 (testnet example)
 
 - You've force quit and reopened FN to connect again, you've had to `brew services restart tor`, for the authentication to take effect.
-
-  As long as your `authorized _clients` dir of the matching `HiddenServiceDir` decalration in your `torrc` is empty you won’t need to add a keypair to connect. That's why V3 Auth Keypair generation is optional.
+  As long as your `authorized _clients` dir of the matching `HiddenServiceDir` declaration in your `torrc` is empty you won’t need to add a keypair to connect. That's why V3 Auth Keypair generation is optional.
 
 ### How to add extra security by adding a V3 Auth Keypair to a already established (Tor Hidden Services) connection?
 
 #### The easy way:
 
-- Do it in FullyNoded
+- Do it in FullyNoded: "settings" > "security center" > "tor v3 authentication" > "tap the refresh button" > export the pubkey to your nodes `HiddenServiceDir`/`authorized_clients` as a `FullyNoded.auth` file which contains the pubkey exactly as FN exports it.
 
 #### From scratch:
 
@@ -441,7 +462,7 @@ Fully Noded is compatible with V3 authenticated hidden services, the user has th
 
 - All network traffic is encrypted by default using Tor.
 - Fully Noded NEVER uses another server or uploads data or requires any data (KYC/AML) from you whatsoever, your node is the only back end to the app.
-- Any information the app saves onto the device locally is encrypted to AES standards and the encryption key is stored on the secure enclave. DYOR regarding iPhone security.
+- Any sensitive data (seed words, credentials) the app saves onto the device locally is encrypted to AES standards and the encryption key is stored on the devices secure enclave (iCloud sync disabled). DYOR regarding iPhone security.
 
 ## How does it work?
 
@@ -478,4 +499,8 @@ PR's welcome.
 ## Built With
 
 - [Tor](https://github.com/iCepa/Tor.framework) for connecting to your node more privately and securely.
-- [LibWally-Swift](https://github.com/blockchain/libwally-swift) for generating BIP39 seed words, deriving keys and signing psbt's.
+- [Libwally-Swift](https://github.com/Fonta1n3/libwally-swift) which relies on [Libwally-Core v0.7.7](https://github.com/Fonta1n3/libwally-swift/tree/master/CLibWally/libwally-core) for converting cryptographically secure entropy to BIP39 words, deriving HD keys and most importantly signing psbt's.
+
+## Docs
+
+For more relevant reading see the [docs](./Docs)
