@@ -41,7 +41,7 @@ Client side software needs to deduce the how the change keys will be derived fro
 ```
 
 - QR (json serialized):
-<img src="../Images/single_sig_map.jpeg" alt="" width="400"/>
+<img src="../Images/single_sig_map.png" alt="" width="400"/>
 
 2. Multi sig, testnet, BIP67, m48', p2wsh, 2 of 3 account
 
@@ -64,7 +64,7 @@ Client side software needs to deduce the how the change keys will be derived fro
 ```
 
 - QR (json serialized):
-<img src="../Images/msig_map.jpeg" alt="" width="400"/>
+<img src="../Images/msig_map.png" alt="" width="400"/>
 
 ### Supported by
 - [Gordian Wallet](https://testflight.apple.com/join/RNvBmjB3)

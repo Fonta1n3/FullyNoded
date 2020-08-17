@@ -441,7 +441,7 @@ No space, no newline.<br/>
 Save and exit and you have one of the most secure node/light client set ups possible. (assuming your server is firewalled off)
 
 #### Final thoughts on security
-I will happily share my enitre RPC-url and -password with anyone, there is no way they can hack this Tor V3 auth, granted they can not get the private key obviously. Fully Noded creates the private key offline, encrypts it heavily and stores it in the most secure way possible.
+I will happily share my entire RPC-url and -password with anyone, there is no way they can hack this Tor V3 auth, granted they can not get the private key obviously. Fully Noded creates the private key offline, encrypts it heavily and stores it in the most secure way possible.
 
 ## QuickConnect URL Scheme
 Fully Noded has uri deep links registered with the following prefixes  `btcstandup://`, `btcrpc://` for connecting Bitcoin Core and `clightning-rpc://` for you guessed it C-Lightning.
@@ -463,7 +463,7 @@ Example without node label:
 `btcrpc://rpcuser:rpcpassword@kjhfefe.onion:8332?`
 
 For C-Lightning simply specify the correct prefix and FN will do the rest:
-`clightning-rpc://rpcuser:rpcpassword@kjhfefe.onion:1312?label=Your%20Nodes%20Name`
+`clightning-rpc://rpcuser:rpcpassword@kjhfefe.onion:1312?label=BTCPay%20C-Lightning`
 
 **The rpcuser and rpcpassword are the http-user (lightning by default) and http-pass you specify in the clightning config when using the supported c-lightning http [plugin](https://github.com/Start9Labs/c-lightning-http-plugin), 1312 is the HS port, again you may customize the port with http-port in the lightning config in conjunction with the http plugin.**
 
