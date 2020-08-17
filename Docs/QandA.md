@@ -328,7 +328,6 @@ Onion Browser has the solution, worst case scenario I can fork it and include th
 
 On android they have `orbot` and the path to getting tor working to onion sites for devs is easier.
 
-
 #### Question : What is your privacy policy and how to comply with GPDR?
 
 [Here](https://fonta1n3.github.io/privacy-policy/) is the privacy policy. It inherently complies with GDPR.
@@ -358,7 +357,7 @@ We then loop through each signer on the device, decrypting them and seeing if it
 
 You can set a mining fee target in `settings`, if you want it to be confirmed quickly adjust this setting accordingly. Otherwise all transactions are `replace by fee` enabled in FN. To bump the fee simply tap the transaction and you will see a button for bumping the fee. If FN does not hold a signer for the wallet and the node can not sign then FN will allow you to export the new transaction as a `psbt` which you will need to pass back to your signer and broadcast again as utilizing `rbf` means you create an entirely new transaction.
 
-#### Question : Any suggestion about this problem? All the username, password, and onion address are OK<br/>
+#### Question : Any suggestion about this problem? All the username, password, and onion address are OK
 <img src="./Images/err-network-conn.png" alt="err-network-conn" border="0" width="200">
 
 Force quitting FN and rebooting `tor` on your `node` usually works. Sometimes Tor can get "stuck" especially if your node's machine has gone offline or been put to sleep. This issue may also be encountered if you connect to multiple nodes and switch between them, simply force quitting FN and reopening it resolves the issue and force refreshes the connection to the new node.
