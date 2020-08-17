@@ -291,6 +291,17 @@ fingerprint:xpub
 
 You can also get that info by tapping the info button on the active wallet tab. You will see your "receive keypool descriptor" it also holds all xpubs/fingerprints needed.
 
+#### Question : How export and backup my wallet into a QR code?
+
+To make your life easier, you should save your wallet export QR code <br/>
+Then if you delete the app you can always easily recreate the wallet from the QR<br/>
+No need to touch your external signing device (like CC) again<br/>
+In wallet details you'll see the export button in the top right corner.<br/>
+Tap it and save that QR, if you need to recover the wallet just tap the `+ > "import" > scan said QR`
+
+#### Question : Are there any security risks associated with export / backup? Loss of privacy (watch only), loss of funds?
+
+Loss of privacy. Not loss of funds. It holds pubkeys only. More info [here](https://github.com/Fonta1n3/FullyNoded/blob/master/Docs/Wallet-Export-Import.md)
 
 ## General
 
