@@ -20,7 +20,7 @@ http://56uo4htoxdt2tgh6zui5v2q7c4ax43dd3fwueiurgqdw7lpunn2cikqd.onion:5599/donat
 11. [What can Fully Noded do?](#what-can-fully-noded-do)
 12. [Download from App Store](#download-from-app-store)
 13. [Telegram](#telegram)
-14. [Q&A](#q&a)
+14. [Q and A](#q-and-a)
 15. [Tutorials](#tutorials)
 16. [Build From Source](#build-from-source)
 17. [Connecting over Tor macOS](#connecting-over-tor-macos)
@@ -144,7 +144,7 @@ Non premium users can simply get their Tor V3 url for the RPC port add `:8332` t
 ## Telegram
 [here](https://t.me/FullyNoded) is the open Telegram group.
 
-## Q&A
+## Q and A
 For basic usage check out the website QA [here](https://fullynoded.app/faq/).
 
 For a more in depth Q&A inspired by discussions on the telegram group check out our [Question and Answers](./Docs/QandA.md)
