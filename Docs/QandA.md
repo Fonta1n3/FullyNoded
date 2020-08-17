@@ -177,6 +177,8 @@ Go slow, `tor` is not meant for speed. `Tor` does not stay alive in the backgrou
 
 There isn’t any, that’s why you should use multisig or build the app from source.
 
+HvC: Only if we are able to containerize the build environment (for example with Docker) then a hash of that "authenticity test" container proofs that the container has not been altered and will therefore most likely produce the exactly the same executable of FN + dito hash.
+
 ##### Further question:  how can I load that code directly to my iOS device without the appstore? What assurances are there that the github code is exactly what is sent and installed via apple appstore?
 
 Again there isn’t any, the code is open sourced so you can build it yourself. Its actually not very difficult to do.
