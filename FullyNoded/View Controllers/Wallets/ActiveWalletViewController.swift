@@ -62,16 +62,6 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         }
     }
     
-    @IBAction func exportWalletAction(_ sender: Any) {
-        if wallet != nil {
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.performSegue(withIdentifier: "segueToAccountMap", sender: vc)
-            }
-        } else {
-            showAlert(vc: self, title: "Exporting only works for Fully Noded Wallets", message: "You can create a Fully Noded Wallet by tapping the plus button. Fully Noded allows you to access all your nodes wallets, if you created the wallet externally from the app then the app does not have the information it needs to export the wallet.")
-        }
-    }
-    
     @IBAction func goToFullyNodedWallets(_ sender: Any) {
         DispatchQueue.main.async { [unowned vc = self] in
             vc.performSegue(withIdentifier: "segueToWallets", sender: vc)

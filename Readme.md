@@ -20,7 +20,7 @@ A feature rich Bitcoin app which is 100% powered by your own Full Node. Allows y
 - Embassy
 
 ## Connect your own node
-- Create a hidden service that controls your nodes rpcport (there is a mac guide below on how to do that). 
+- Create a hidden service that controls your nodes rpcport (there is a mac guide below on how to do that).
 - Go to `settings` > `node manager` > `+` > `manually`
 - Find your bitcoin.conf and input your rpcuser and rpcpassword and a label into the app. See "bitcoin.conf settings" below. **No special characters allowed! Only alphanumeric**
 - Input the hidden services hostname with the port at the end (njcnewicnweiun.onion:8332)
@@ -119,13 +119,13 @@ Non premium users can simply get their Tor V3 url for the RPC port add `:8332` t
 ## Q&A
 For basic usage check out the website QA [here](https://fullynoded.app/faq/).
 
-For a more in depth Q&A inspired by discussions on the telegram group check out our [Question and Answers](./Docs/QandA.md) 
+For a more in depth Q&A inspired by discussions on the telegram group check out our [Question and Answers](./Docs/QandA.md)
 
 ## Tutorials
 - Soon ™️, for now read these medium posts which go over some basics:
 1. [Intoducing Fully Noded Wallets](https://medium.com/@FullyNoded/introducing-fully-noded-wallets-9fc2e4837102)
 2. [Introducing Fully Noded PSBT Signers](https://medium.com/@FullyNoded/introducing-fully-noded-psbt-signers-8f259c1ec558?sk=fa56fa3939136f269f0ca2a4fcdeee38)
-- Also going through the [questions & answers](./QuestionsAnswersFN.md) might be an instructional experience. 
+- Also going through the [questions & answers](./QuestionsAnswersFN.md) might be an instructional experience.
 
 
 ## Build From Source - Mac
@@ -216,9 +216,71 @@ The syntax is `HiddenServicePort xxxx 127.0.0.1:18332`, `xxxx` represents a synt
 - You should never type (password) fields manually, just copy and paste between devices. Between Apple Mac, iphone and iPad, the clipboard will be synced as soon as you *put on bluetooth* on at least two of the devices. Once bluetooth is on on your mac and ipad then it should automatically paste over from the computer to iPad and back. Same should work for iPhone.
 - Add *mainnet*, *testnet*, and / or *regtest net* at your convenience. You can run all three and connect to all three.
 
-- Restart Tor on your nodes computer `brew services restart tor, and check that your node is **on**; that it's really running. Hard stop FN app on your device and reopen FN. 
+- Restart Tor on your nodes computer `brew services restart tor, and check that your node is **on**; that it's really running. Hard stop FN app on your device and reopen FN.
 - And you should be able to connect to your V3 hidden service from anywhere in the world with your node completely behind a firewall and no port forwarding
 
+Skip the Windows section to see the ideal `bitcoin.conf` settings for FN.
+
+## Connecting over Tor (Windows 10)
+If you already have the Tor Expert Bundle installed you can skip the first 3 steps.
+
+## On the device running your node
+- Download the Tor Expert Bundle [here](https://www.torproject.org/download/tor/)
+- Unpack the "Tor" folder onto your C: drive.
+- Open PowerShell as admin (Press Windows Key + X and then select PowerShell (Admin))
+
+Now we have Tor on our drive, but we still have configure and install it.
+
+Let's enter the directory in Powershell:
+```cd C:\Tor```
+Now we're in the Tor directory.
+In order to configure Tor we'll have to generate a configuration file:
+```echo > torrc```
+Now we launch notepad and edit the file to fit our needs:
+```notepad torrc```
+Enter the following into the file:
+```
+ControlPort 9051
+CookieAuthentication 1
+CookieAuthFileGroupReadable 1
+
+HiddenServiceDir "C:/Tor/fullynoded/main"
+HiddenServiceVersion 3
+HiddenServicePort 8332 127.0.0.1:8332
+
+HiddenServiceDir "C:/Tor/fullynoded/test"
+HiddenServiceVersion 3
+HiddenServicePort 18332 127.0.0.1:18332
+
+HiddenServiceDir "C:/Tor/fullynoded/regnet"
+HiddenServiceVersion 3
+HiddenServicePort 18443 127.0.0.1:18443
+```
+
+Save and exit the file.
+
+Now we have to create the directories:
+```cd C:\Tor```
+```mkdir fullynoded```
+```mkdir fullynoded\main```
+```mkdir fullynoded\test```
+```mkdir fullynoded\regnet```
+
+Save and exit the file.
+Now we install Tor as a service:
+```C:\Tor\tor.exe --service install -options -f "C:\Tor\torrc"```
+
+Now we can enable the service by typing:
+```C:\Tor\tor.exe --service start```
+
+After you start the service the hostname files will be generated in C:\Tor\fullynoded\main, C:\Tor\fullynoded\test, and C:\Tor\fullynoded\regnet,
+you can view them by typing:
+```cat C:\Tor\fullynoded\main```
+```cat C:\Tor\fullynoded\test```
+or
+```cat C:\Tor\fullynoded\regnet```
+
+Next you need to ensure your `bitcoin.conf` has rpc credentials added:
 
 ## bitcoin.conf settings
 - Here is an example bitcoin.conf file best suited for Fully Noded:
@@ -249,7 +311,7 @@ dbcache=4000
 
 ## V3 Auth Keypair generation (optional)
 
-##### Preparatory work: 
+##### Preparatory work:
 
 First get your connection going. **Resolve the connection issue first then add the keypair**, to keep things simple. Some double checks ( A more extensive guide [here](./Readme.md#connecting-over-tor-mac)):
 ###### On your device running node
@@ -259,14 +321,14 @@ First get your connection going. **Resolve the connection issue first then add t
 - You've started Tor for the changes to take effect
 - You've looked up the hostname files
 ###### On your device running FN
-- in Fully Noded, make sure you have added a node with this type of onion url: 
+- in Fully Noded, make sure you have added a node with this type of onion url:
 
 	qsctzvoadnehtt5tpjtprudxrrx2b76kra7e2lkbyjpdksncbclrdk5l.onion:18332 (testnet example)
 
 - You've force quit and reopened FN to connect again, you've had to `brew services restart tor`, for the authentication to take effect.
-  
+
   As long as your `authorized _clients` dir of the matching `HiddenServiceDir` decalration in your `torrc` is empty you won’t need to add a keypair to connect. That's why V3 Auth Keypair generation is optional.
-  
+
 ### How to add extra security by adding a V3 Auth Keypair to a already established (Tor Hidden Services) connection?
 
 #### The easy way:
@@ -330,7 +392,7 @@ public:  PHK2DFSCNNJ75U3GUA3SHCVEGPEJMZAPEKQGL5YLVM2GV6NORB6Q
 private: DARUBG4CIQ4FMPTGUOE36P7DYCKHRBCCNPU5QWCSYBFPWBCA5RCQ
 ```
 
-The private key is for Fully Noded (paste it or scan it as a QR code when you add your node). The public key is for your servers `authorized_clients` directory. 
+The private key is for Fully Noded (paste it or scan it as a QR code when you add your node). The public key is for your servers `authorized_clients` directory.
 
 To be saved in a file called `fullynoded.auth`
 
@@ -387,7 +449,7 @@ Bitcoin Core includes a ton of functionality that is not shown to the user in th
 
 Fully Noded needs to connect to the computer that your node is running on in order to issue commands to your node. It does this using [Tor](https://lifehacker.com/what-is-tor-and-should-i-use-it-1527891029).
 
-Connecting to your nodes computer is the first part, once connected Fully Noded then needs to be able to issue [RPC commands](https://en.bitcoin.it/wiki/API_reference_(JSON-RPC)) to your node. It issues these commands to your [local host](https://whatismyipaddress.com/localhost) over [curl](https://curl.haxx.se). In order to be able to do that Fully Noded needs to know your RPC credentials,  `rpcusername` and  `rpcpassword`. 
+Connecting to your nodes computer is the first part, once connected Fully Noded then needs to be able to issue [RPC commands](https://en.bitcoin.it/wiki/API_reference_(JSON-RPC)) to your node. It issues these commands to your [local host](https://whatismyipaddress.com/localhost) over [curl](https://curl.haxx.se). In order to be able to do that Fully Noded needs to know your RPC credentials,  `rpcusername` and  `rpcpassword`.
 
 Once Fully Noded is connected it will start issuing commands one at a time, here are some from the home table:
 

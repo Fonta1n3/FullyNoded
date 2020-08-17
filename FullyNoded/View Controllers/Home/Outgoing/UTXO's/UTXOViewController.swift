@@ -404,7 +404,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
             if !(selectedArray[indexPath.section]) {
                 
                 checkMark.alpha = 0
-                cell.backgroundColor = #colorLiteral(red: 0.1333139837, green: 0.1333444417, blue: 0.1333120763, alpha: 1)
+                cell.backgroundColor = #colorLiteral(red: 0.07831101865, green: 0.08237650245, blue: 0.08238270134, alpha: 1)
                 
             } else {
                 
@@ -440,12 +440,12 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                     if (value as! Int) == 1 {
                         
                         solvable.text = "Solvable"
-                        solvable.textColor = UIColor.green
+                        solvable.textColor = .systemGreen
                         
                     } else if (value as! Int) == 0 {
                         
                         solvable.text = "Not Solvable"
-                        solvable.textColor = UIColor.blue
+                        solvable.textColor = .systemBlue
                         
                     }
                     
@@ -453,11 +453,11 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                     
                     if (value as! Int) == 0 {
                      
-                        confs.textColor = UIColor.red
+                        confs.textColor = .systemRed
                         
                     } else {
                         
-                        confs.textColor = UIColor.green
+                        confs.textColor = .systemGreen
                         
                     }
                     
@@ -468,12 +468,12 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                     if (value as! Int) == 1 {
                         
                         spendable.text = "Spendable"
-                        spendable.textColor = UIColor.green
+                        spendable.textColor = .systemGreen
                         
                     } else if (value as! Int) == 0 {
                         
                         spendable.text = "COLD"
-                        spendable.textColor = UIColor.blue
+                        spendable.textColor = .systemBlue
                         
                     }
                     
@@ -509,7 +509,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         let lock = UIContextualAction(style: .destructive, title: "Lock") {  (contextualAction, view, boolValue) in
             self.lockUTXO(txid: txid, vout: vout)
         }
-        lock.backgroundColor = .red
+        lock.backgroundColor = .systemRed
         let swipeActions = UISwipeActionsConfiguration(actions: [lock])
         return swipeActions
     }
@@ -597,7 +597,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                     UIView.animate(withDuration: 0.2, animations: {
                         
                         cell.alpha = 1
-                        cell.backgroundColor = #colorLiteral(red: 0.1333139837, green: 0.1333444417, blue: 0.1333120763, alpha: 1)
+                        cell.backgroundColor = #colorLiteral(red: 0.07831101865, green: 0.08237650245, blue: 0.08238270134, alpha: 1)
                         
                     }, completion: { _ in
                         

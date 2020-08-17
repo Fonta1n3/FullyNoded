@@ -67,13 +67,14 @@ class NodeLogic {
                                                 if let funding_txid = channelDict["funding_txid"] as? String {
                                                     offchainTxids.append(funding_txid)
                                                 }
-                                                if let channel_total_sat = channelDict["channel_total_sat"] as? Int {
-                                                    let btc = Double(channel_total_sat) / 100000000.0
-                                                    offchainBalance += btc
-                                                    if c + 1 == channels.count {
-                                                        print("offchainBalance: \(offchainBalance)")
-                                                        dictToReturn["offchainBalance"] = "\(rounded(number: offchainBalance))"
-                                                        completion((dictToReturn, nil))
+                                                if let our_amount_msat = channelDict["our_amount_msat"] as? String {
+                                                    if let our_msats = Int(our_amount_msat.replacingOccurrences(of: "msat", with: "")) {
+                                                        let btc = Double(our_msats) / 100000000000.0
+                                                        offchainBalance += btc
+                                                        if c + 1 == channels.count {
+                                                            dictToReturn["offchainBalance"] = "\(rounded(number: offchainBalance))"
+                                                            completion((dictToReturn, nil))
+                                                        }
                                                     }
                                                 }
                                             }
@@ -323,40 +324,7 @@ class NodeLogic {
                                                 getSent()
                                             }
                                         }
-                                    } else {
-                                        // Onchain node does not have any transactions, we simply do not show these transactions if the user does not have their onchain bitcoind wallet connected. Need to get a better understanding of what is actually happening under the hood first.
-                                        /*
-                                        let outputs = txDict["outputs"] as! NSArray
-                                        let blockheight = txDict["blockheight"] as! Int
-                                        let locktime = txDict["locktime"] as! Int
-                                        let date = Date(timeIntervalSince1970: Double(locktime))
-                                        dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
-                                        let dateString = dateFormatter.string(from: date)
-                                        var isLocked:Bool
-                                        if blockheight == 0 {
-                                            
-                                        }
-                                         let date = Date(timeIntervalSince1970: secondsSince)
-                                         dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
-                                         let dateString = dateFormatter.string(from: date)
-                                         
-                                         arrayToReturn.append([
-                                             "address": address,
-                                             "amount": amountString,
-                                             "confirmations": confirmations,
-                                             "label": label,
-                                             "date": dateString,
-                                             "rbf": false,
-                                             "txID": hash,
-                                             "replacedBy": "",
-                                             "selfTransfer":false,
-                                             "remove":false,
-                                             "onchain":true,
-                                             "isLightning":true,
-                                             "sortDate":date
-                                         ])
-                                         */
-                                        
+                                    } else {                                        
                                         if t + 1 == transactions.count {
                                             getSent()
                                         }
@@ -364,6 +332,8 @@ class NodeLogic {
                                 }
                             }
                         }
+                    } else {
+                        getSent()
                     }
                 }
             } else {
