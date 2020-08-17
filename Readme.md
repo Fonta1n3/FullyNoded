@@ -28,7 +28,7 @@ http://56uo4htoxdt2tgh6zui5v2q7c4ax43dd3fwueiurgqdw7lpunn2cikqd.onion:5599/donat
 18. [Bitcoin Core settings](#bitcoin-core-settings)
 19. [Tor V3 Authentication](#tor-v3-authentication)
 20. [QuickConnect URL Scheme](#quickconnect-url-scheme)
-21. [Security & Privacy](#security-&-privacy)
+21. [Security and Privacy](#security-and-privacy)
 22. [How does it work?](#how-does-it-work)
 23. [Contributing](#contributing)
 24. [Built With](#built-with)
@@ -292,7 +292,7 @@ Now we install Tor as a service:
 Now we can enable the service by typing:
 `C:\Tor\tor.exe --service start`
 
-After you start the service the hostname files will be generated in `C:\Tor\fullynoded\main`, `C:\Tor\fullynoded\test`, and `C:\Tor\fullynoded\regtest`, you can view them by typing:
+After you start the service the hostname files will be generated in `C:\Tor\fullynoded\main`, `C:\Tor\fullynoded\test`, and `C:\Tor\fullynoded\regtest`, you can view them by typing:<br/>
 `cat C:\Tor\fullynoded\main`<br/>
 `cat C:\Tor\fullynoded\test`<br/>
 `cat C:\Tor\fullynoded\regtest`<br/>
@@ -458,7 +458,7 @@ Example without node label:
 
 Fully Noded is compatible with V3 authenticated hidden services, the user has the option in the app to add a V3 private key for authentication.
 
-## Security & Privacy
+## Security and Privacy
 
 - All network traffic is encrypted by default using Tor.
 - Fully Noded NEVER uses another server or uploads data or requires any data (KYC/AML) from you whatsoever, your node is the only back end to the app.
