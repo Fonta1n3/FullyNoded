@@ -165,11 +165,6 @@ For starters ensure you are connected to your node, can you confirm it successfu
 
 Airdrop is not a must. You can save the files in `iphone` using the native file application.
 
-#### Question : How to export your single sig wallet from Coldcard to Fully Noded using your own node?
-
-See this instruction of 33 secs [here](https://www.youtube.com/watch?v=W0vwgzIrPoY). This is super cool, super easy. <br/>
-Video is obviously edited, the spinner will take longer then that, just wait a bit
-
 #### Question : I experience crashes, and I want it fixed. How?
 
 I will be be keeping the testflight up to date for you [here](https://testflight.apple.com/join/a6GWxet2), so that they can be shared and investigated.
@@ -272,6 +267,11 @@ You can only broadcast signed raw transactions. The only purpose of psbts is to 
 <img src="./Images/Hardware-wallets.png" alt="Hardware-wallets" border="0" width="200"><br/>
 
 They should all work with Fully Noded too. You can import your `xpub` directly into your node from your hardware wallets. I import my `coldcard` wallet xpub with Fully Noded, then build `PSBTs` with it.
+
+#### Question : How to export your single sig wallet from Coldcard to Fully Noded using your own node?
+
+See this instruction of 33 secs [here](https://www.youtube.com/watch?v=W0vwgzIrPoY). This is super cool, super easy. <br/>
+Video is obviously edited, the spinner will take longer then that, just wait a bit
 
 #### Question : Is there  a way to export the multisig.txt file anytime after the initial prompt when exiting the Multisig Creator flow?
 
