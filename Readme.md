@@ -25,7 +25,7 @@ http://56uo4htoxdt2tgh6zui5v2q7c4ax43dd3fwueiurgqdw7lpunn2cikqd.onion:5599/donat
 16. [Build From Source](#build-from-source)
 17. [Connecting over Tor macOS](#connecting-over-tor-macos)
 18. [Connecting over Tor Windows 10](#connecting-over-tor-windows-10)
-18. [bitcoin.conf settings](#bitcoin.conf-settings)
+18. [Bitcoin Core settings](#bitcoin-core-settings)
 19. [Tor V3 Authentication](#tor-v3-authentication)
 20. [QuickConnect URL Scheme](#quickconnect-url-scheme)
 21. [Security & Privacy](#security-&-privacy)
@@ -307,8 +307,8 @@ Once you have rpc credentials added to your `bitcoin.conf` you can reboot Bitcoi
 - Add *mainnet*, *testnet*, and / or *regtest net* at your convenience. You can run all three and connect to all three.
 
 
-## bitcoin.conf settings
-- Here is an example bitcoin.conf file best suited for Fully Noded:
+## Bitcoin Core settings
+- Here is an example `bitcoin.conf` file best suited for Fully Noded:
 
 ```
 #forces your node to accept rpc commands
