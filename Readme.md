@@ -3,7 +3,7 @@
 
 # <img src="./Images/fn_logo.png" alt="" width="100"/> Fully Noded™️
 
-Self sovereign, secure, powerful, easy to use wallet that utilizes your own node as a backend. Powered by PSBT's and descriptors. Acts as an offline signer using your node as a watch-only wallet. C-Lightning compatible for instant, unfairly cheap payments.
+Self sovereign, secure, powerful, easy to use wallet that utilizes your own node as a backend. Powered by PSBT's and descriptors. Acts as an offline signer using your node as a watch-only wallet. [C-Lightning](https://github.com/ElementsProject/lightning) compatible for instant, unfairly cheap payments.
 
 [https://fullynoded.app](https://fullynoded.app) (work in progress)
 
@@ -43,7 +43,7 @@ http://56uo4htoxdt2tgh6zui5v2q7c4ax43dd3fwueiurgqdw7lpunn2cikqd.onion:5599/donat
 ## Requirements
 - At least [Bitcoin Core 0.20.0](https://bitcoincore.org/bin/bitcoin-core-0.20.0/) for "Fully Noded Multisig" wallet compatibility, Bitcoin Core wallets will of course work with any version.
 - [Tor](https://www.torproject.org/download/)
-
+- [C-Lightning](https://github.com/ElementsProject/lightning) (optional, currently built to work with v0.9.0-1)
 
 ## Supported Nodes
 - Bitcoin Core (minimum 0.20.0 is recommended for full functionality)
