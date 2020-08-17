@@ -161,9 +161,7 @@ mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar 
 - Now first locate your `torrc` file, this is Tor's configuration file. Open Finder and type `shift command h` to navigate to your home folder and  `shift command .` to show hidden files.
 -  If you've not been able to locate the torrc file, you might have to create the torrc file manually first. Do this by copying the torrc.sample -file: `cp /usr⁩/local⁩/etc⁩/tor⁩/torrc.sample /usr⁩/local⁩/etc⁩/tor⁩/torrc` and give the file it's right permission `chmod 700 /usr⁩/local⁩/etc⁩/tor⁩/torrc`
 - The torrc file should be located at `‎⁨/usr⁩/local⁩/etc⁩/tor⁩/torrc`, to edit it you can open terminal and run `sudo nano /usr⁩/local⁩/etc⁩/tor⁩/torrc`
-- Find the line that looks like: `#ControlPort 9051` and delete the `#`
-- Find the line that looks like: `#CookieAuthentication 1` and delete the `#`
-- Then locate the section that looks like:
+- Locate the section that looks like:
 
 ```
 ## Once you have configured a hidden service, you can look at the
@@ -240,10 +238,6 @@ Now we launch notepad and edit the file to fit our needs:
 ```notepad torrc```
 Enter the following into the file:
 ```
-ControlPort 9051
-CookieAuthentication 1
-CookieAuthFileGroupReadable 1
-
 HiddenServiceDir "C:/Tor/fullynoded/main"
 HiddenServiceVersion 3
 HiddenServicePort 8332 127.0.0.1:8332
