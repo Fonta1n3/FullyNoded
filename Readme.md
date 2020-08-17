@@ -1,7 +1,7 @@
 
 
 
-# <img src="./Images/logo.png" alt="" width="100"/> Fully Noded™️
+# <img src="./Images/fn_logo.png" alt="" width="100"/> Fully Noded™️
 [https://fullynoded.app](https://fullynoded.app) (work in progress)
 
 pgp: 3B37 97FA 0AE8 4BE5 B440 6591 8564 01D7 121C 32FC
