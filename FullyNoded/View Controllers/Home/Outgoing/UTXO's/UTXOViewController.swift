@@ -52,8 +52,8 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     }
     
     @IBAction func lockAction(_ sender: Any) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "goToLocked", sender: vc)
+        DispatchQueue.main.async { [weak self] in
+            self?.performSegue(withIdentifier: "goToLocked", sender: self)
         }
     }
     
@@ -404,7 +404,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
             if !(selectedArray[indexPath.section]) {
                 
                 checkMark.alpha = 0
-                cell.backgroundColor = #colorLiteral(red: 0.1333139837, green: 0.1333444417, blue: 0.1333120763, alpha: 1)
+                cell.backgroundColor = #colorLiteral(red: 0.07831101865, green: 0.08237650245, blue: 0.08238270134, alpha: 1)
                 
             } else {
                 
@@ -440,12 +440,12 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                     if (value as! Int) == 1 {
                         
                         solvable.text = "Solvable"
-                        solvable.textColor = UIColor.green
+                        solvable.textColor = .systemGreen
                         
                     } else if (value as! Int) == 0 {
                         
                         solvable.text = "Not Solvable"
-                        solvable.textColor = UIColor.blue
+                        solvable.textColor = .systemBlue
                         
                     }
                     
@@ -453,11 +453,11 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                     
                     if (value as! Int) == 0 {
                      
-                        confs.textColor = UIColor.red
+                        confs.textColor = .systemRed
                         
                     } else {
                         
-                        confs.textColor = UIColor.green
+                        confs.textColor = .systemGreen
                         
                     }
                     
@@ -468,12 +468,12 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                     if (value as! Int) == 1 {
                         
                         spendable.text = "Spendable"
-                        spendable.textColor = UIColor.green
+                        spendable.textColor = .systemGreen
                         
                     } else if (value as! Int) == 0 {
                         
                         spendable.text = "COLD"
-                        spendable.textColor = UIColor.blue
+                        spendable.textColor = .systemBlue
                         
                     }
                     
@@ -509,7 +509,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         let lock = UIContextualAction(style: .destructive, title: "Lock") {  (contextualAction, view, boolValue) in
             self.lockUTXO(txid: txid, vout: vout)
         }
-        lock.backgroundColor = .red
+        lock.backgroundColor = .systemRed
         let swipeActions = UISwipeActionsConfiguration(actions: [lock])
         return swipeActions
     }
@@ -597,7 +597,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                     UIView.animate(withDuration: 0.2, animations: {
                         
                         cell.alpha = 1
-                        cell.backgroundColor = #colorLiteral(red: 0.1333139837, green: 0.1333444417, blue: 0.1333120763, alpha: 1)
+                        cell.backgroundColor = #colorLiteral(red: 0.07831101865, green: 0.08237650245, blue: 0.08238270134, alpha: 1)
                         
                     }, completion: { _ in
                         
@@ -650,69 +650,73 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
         
-        Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+        Reducer.makeCommand(command: method, param: param) { [weak self] (response, errorMessage) in
             if errorMessage == nil {
                 switch method {
                     
                 case .lockunspent:
-                    if let result = response as? Double {
-                        vc.removeSpinner()
-                        if result == 1 {
-                            displayAlert(viewController: vc, isError: false, message: "UTXO is locked and will not be selected for spends unless your node restarts, tap the lock button to unlock it")
-                            vc.creatingView.removeConnectingView()
-                            vc.refresh()
-                        } else {
-                            displayAlert(viewController: vc, isError: true, message: "Unable to lock that UTXO")
+                    if self != nil {
+                        if let result = response as? Double {
+                            self!.removeSpinner()
+                            if result == 1 {
+                                displayAlert(viewController: self, isError: false, message: "UTXO is locked and will not be selected for spends unless your node restarts, tap the lock button to unlock it")
+                                self!.creatingView.removeConnectingView()
+                                self!.refresh()
+                            } else {
+                                displayAlert(viewController: self, isError: true, message: "Unable to lock that UTXO")
+                            }
                         }
                     }
                     
                 case .getnewaddress:
-                    if let address = response as? String {
-                        var total = Double()
-                        var miningFee = 0.00000100//No good way to do fee estimation when manually selecting utxos (for now), if the wallet knows about the utxo's we can set a low ball fee and always use rbf. For now we hardcode 100 sats per input as the fee.
-                        for utxoDict in self.utxoToSpendArray {
-                            let utxo = utxoDict as! NSDictionary
-                            let amount = utxo["amount"] as! Double
-                            miningFee += 0.00000100
-                            total += amount
-                        }
-                        let roundedAmount = rounded(number: total - miningFee)
-                        let rawTransaction = SendUTXO()
-                        rawTransaction.addressToPay = address
-                        rawTransaction.sweep = true
-                        rawTransaction.amount = roundedAmount
-                        rawTransaction.inputArray = self.inputArray
-                        rawTransaction.createRawTransaction { [unowned vc = self] (signedTx, psbt, errorMessage) in
-                            if signedTx != nil {
-                                vc.rawSigned = signedTx!
-                                vc.displayRaw(raw: vc.rawSigned)
-                            } else if psbt != nil {
-                                vc.psbt = psbt!
-                                vc.displayRaw(raw: vc.psbt)
-                            } else {
-                                vc.creatingView.removeConnectingView()
-                                displayAlert(viewController: self, isError: true, message: errorMessage ?? "unknown error")
+                    if self != nil {
+                        if let address = response as? String {
+                            var total = Double()
+                            var miningFee = 0.00000100//No good way to do fee estimation when manually selecting utxos (for now), if the wallet knows about the utxo's we can set a low ball fee and always use rbf. For now we hardcode 100 sats per input as the fee.
+                            for utxoDict in self!.utxoToSpendArray {
+                                let utxo = utxoDict as! NSDictionary
+                                let amount = utxo["amount"] as! Double
+                                miningFee += 0.00000100
+                                total += amount
+                            }
+                            let roundedAmount = rounded(number: total - miningFee)
+                            let rawTransaction = SendUTXO()
+                            rawTransaction.addressToPay = address
+                            rawTransaction.sweep = true
+                            rawTransaction.amount = roundedAmount
+                            rawTransaction.inputArray = self!.inputArray
+                            rawTransaction.createRawTransaction { [weak self] (signedTx, psbt, errorMessage) in
+                                if signedTx != nil {
+                                    self!.rawSigned = signedTx!
+                                    self!.displayRaw(raw: self!.rawSigned)
+                                } else if psbt != nil {
+                                    self!.psbt = psbt!
+                                    self!.displayRaw(raw: self!.psbt)
+                                } else {
+                                    self!.creatingView.removeConnectingView()
+                                    displayAlert(viewController: self, isError: true, message: errorMessage ?? "unknown error")
+                                }
                             }
                         }
                     }
                     
                 case .listunspent:
                     if let resultArray = response as? NSArray {
-                        vc.parseUnspent(utxos: resultArray)
+                        self?.parseUnspent(utxos: resultArray)
                     }
                     
                 case .getrawchangeaddress:
                     if let changeAddress = response as? String {
-                        vc.getRawTx(changeAddress: changeAddress)
+                        self?.getRawTx(changeAddress: changeAddress)
                     }
                     
                 default:
                     break
                 }
             } else {
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.removeSpinner()
-                    displayAlert(viewController: vc, isError: true, message: errorMessage!)
+                DispatchQueue.main.async { [weak self] in
+                    self?.removeSpinner()
+                    displayAlert(viewController: self, isError: true, message: errorMessage!)
                 }
             }
         }
@@ -736,11 +740,11 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     }
     
     func getAddress() {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.blurView2.removeFromSuperview()
-            vc.amountView.removeFromSuperview()
-            vc.amountInput.removeFromSuperview()
-            vc.performSegue(withIdentifier: "segueToGetAddressFromUtxos", sender: vc)
+        DispatchQueue.main.async { [weak self] in
+            self?.blurView2.removeFromSuperview()
+            self?.amountView.removeFromSuperview()
+            self?.amountInput.removeFromSuperview()
+            self?.performSegue(withIdentifier: "segueToGetAddressFromUtxos", sender: self)
         }
     }
     
@@ -763,42 +767,52 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         rawTransaction.changeAmount = rounded(number: changeAmount)
         rawTransaction.sweep = self.isSweeping
         rawTransaction.inputArray = self.inputArray
-        rawTransaction.createRawTransaction { [unowned vc = self] (signedTx, psbt, errorMessage) in
-            if signedTx != nil {
-                vc.rawSigned = signedTx!
-                vc.displayRaw(raw: vc.rawSigned)
-            } else if psbt != nil {
-                vc.psbt = psbt!
-                vc.displayRaw(raw: vc.psbt)
-            } else {
-                vc.creatingView.removeConnectingView()
-                displayAlert(viewController: self, isError: true, message: errorMessage ?? "unknown error")
+        rawTransaction.createRawTransaction { [weak self] (signedTx, psbt, errorMessage) in
+            if self != nil {
+                if signedTx != nil {
+                    self!.rawSigned = signedTx!
+                    self!.displayRaw(raw: self!.rawSigned)
+                } else if psbt != nil {
+                    self!.psbt = psbt!
+                    self!.displayRaw(raw: self!.psbt)
+                } else {
+                    self!.creatingView.removeConnectingView()
+                    displayAlert(viewController: self, isError: true, message: errorMessage ?? "unknown error")
+                }
             }
         }
     }
     
    func createRawNow() {
         if !isSweeping {
-            activeWallet { [unowned vc = self] (wallet) in
+            activeWallet { [weak self] (wallet) in
                 if wallet != nil {
                     if wallet!.type == "Multi-Sig" {
                         let index = Int(wallet!.index) + 1
                         CoreDataService.update(id: wallet!.id, keyToUpdate: "index", newValue: Int64(index), entity: .wallets) { (success) in
                             if success {
                                 Reducer.makeCommand(command: .deriveaddresses, param: "\"\(wallet!.changeDescriptor)\", [\(index),\(index)]") { (response, errorMessage) in
-                                    if let result = response as? NSArray {
-                                        if let changeAddress = result[0] as? String {
-                                            vc.getRawTx(changeAddress: changeAddress)
+                                    if self != nil {
+                                        if let result = response as? NSArray {
+                                            if let changeAddress = result[0] as? String {
+                                                self!.getRawTx(changeAddress: changeAddress)
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
                     } else {
-                        vc.executeNodeCommand(method: .getrawchangeaddress, param: "")
+                        if self != nil {
+                            self!.executeNodeCommand(method: .getrawchangeaddress, param: "")
+                        }
+                        
                     }
                 } else {
-                    vc.executeNodeCommand(method: .getrawchangeaddress, param: "")
+                    if self != nil {
+                        self!.executeNodeCommand(method: .getrawchangeaddress, param: "")
+                    }
+                    
                 }
             }
             
@@ -817,24 +831,26 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
             rawTransaction.sweep = true
             rawTransaction.amount = roundedAmount
             rawTransaction.inputArray = self.inputArray
-            rawTransaction.createRawTransaction { [unowned vc = self] (signedTx, psbt, errorMessage) in
-                if signedTx != nil {
-                    vc.rawSigned = signedTx!
-                    vc.displayRaw(raw: vc.rawSigned)
-                } else if psbt != nil {
-                    vc.psbt = psbt!
-                    vc.displayRaw(raw: psbt!)
-                } else {
-                    vc.creatingView.removeConnectingView()
-                    displayAlert(viewController: self, isError: true, message: errorMessage ?? "unknown error")
+            rawTransaction.createRawTransaction { [weak self] (signedTx, psbt, errorMessage) in
+                if self != nil {
+                    if signedTx != nil {
+                        self!.rawSigned = signedTx!
+                        self!.displayRaw(raw: self!.rawSigned)
+                    } else if psbt != nil {
+                        self!.psbt = psbt!
+                        self!.displayRaw(raw: psbt!)
+                    } else {
+                        self!.creatingView.removeConnectingView()
+                        displayAlert(viewController: self, isError: true, message: errorMessage ?? "unknown error")
+                    }
                 }
             }
         }
     }
     
     func displayRaw(raw: String) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "segueToBroadcasterFromUtxo", sender: vc)
+        DispatchQueue.main.async { [weak self] in
+            self?.performSegue(withIdentifier: "segueToBroadcasterFromUtxo", sender: self)
         }
     }
     
@@ -846,9 +862,11 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         let errorDescription = addressParser.parseAddress(url: url).errorDescription
         if !errorBool {
             self.address = addressParser.parseAddress(url: url).address
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.blurView.removeFromSuperview()
-                vc.createRawNow()
+            DispatchQueue.main.async { [weak self] in
+                if self != nil {
+                    self!.blurView.removeFromSuperview()
+                    self!.createRawNow()
+                }
             }
         } else {
             displayAlert(viewController: self, isError: true, message: errorDescription)

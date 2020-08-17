@@ -26,6 +26,8 @@ class Reducer {
         func handleError(errorDesc: String) {
             if errorDesc.contains("Requested wallet does not exist or is not loaded") {
                 handleWalletNotLoaded()
+            } else if errorDesc.contains("Duplicate -wallet filename specified") {
+                makeTorCommand()
             } else {
                 completion((nil, errorDesc))
             }

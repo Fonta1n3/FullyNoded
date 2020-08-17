@@ -261,7 +261,7 @@
                                                 <constraint firstItem="F96-CJ-s9x" firstAttribute="top" secondItem="wWn-KW-eW3" secondAttribute="topMargin" constant="9" id="eJY-g7-csQ"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" red="0.1333139837" green="0.13334444170000001" blue="0.1333120763" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="backgroundColor" red="0.079790320506365128" green="0.080580323679695476" blue="0.080580323679695476" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="TransactionCell" rowHeight="62" id="4ho-jk-IbG">
                                         <rect key="frame" x="15" y="171.5" width="345" height="62"/>
@@ -344,7 +344,7 @@
                                                 <constraint firstItem="NOo-Kv-MdB" firstAttribute="leading" secondItem="UZl-0k-oWM" secondAttribute="leadingMargin" id="yiu-fX-fE2"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" red="0.1333139837" green="0.13334444170000001" blue="0.1333120763" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="backgroundColor" red="0.079790320506365128" green="0.080580323679695476" blue="0.080580323679695476" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     </tableViewCell>
                                 </prototypes>
                                 <connections>
@@ -506,12 +506,6 @@
                                     <action selector="getDetails:" destination="Dwu-lj-4IN" id="k5S-fX-wFj"/>
                                 </connections>
                             </barButtonItem>
-                            <barButtonItem image="square.and.arrow.up" catalog="system" id="rT4-pp-cpv">
-                                <color key="tintColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <connections>
-                                    <action selector="exportWalletAction:" destination="Dwu-lj-4IN" id="RQ5-xz-8X4"/>
-                                </connections>
-                            </barButtonItem>
                         </leftBarButtonItems>
                     </navigationItem>
                     <connections>
@@ -529,7 +523,6 @@
                         <segue destination="0gR-Gj-FSR" kind="show" identifier="createFullyNodedWallet" id="e0d-Zp-a29"/>
                         <segue destination="TDC-7I-IgK" kind="show" identifier="segueToWallets" id="vi7-1c-2H7"/>
                         <segue destination="l8t-Do-K11" kind="show" identifier="segueToActiveWalletDetail" id="IAz-j1-Gq6"/>
-                        <segue destination="GlR-4A-eAx" kind="presentation" identifier="segueToAccountMap" id="CLR-a1-fb0"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="jDi-KB-cQL" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -634,7 +627,7 @@
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EBH-pQ-wYC">
-                                <rect key="frame" x="65" y="105" width="294" height="24"/>
+                                <rect key="frame" x="16" y="105" width="343" height="24"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="20"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -645,11 +638,11 @@
                             <constraint firstItem="AqB-PP-XsS" firstAttribute="bottom" secondItem="Wwb-2Q-ja4" secondAttribute="bottom" constant="20" id="0Fr-Xt-em4"/>
                             <constraint firstItem="EBH-pQ-wYC" firstAttribute="top" secondItem="f4n-Bc-OMv" secondAttribute="bottom" constant="6" id="3Vh-Xe-Asa"/>
                             <constraint firstItem="AqB-PP-XsS" firstAttribute="trailing" secondItem="Wwb-2Q-ja4" secondAttribute="trailing" constant="16" id="DiG-eD-L5z"/>
-                            <constraint firstItem="EBH-pQ-wYC" firstAttribute="leading" secondItem="Vqg-Pg-9UZ" secondAttribute="leading" id="IPE-at-9gJ"/>
                             <constraint firstItem="Vqg-Pg-9UZ" firstAttribute="centerY" secondItem="f4n-Bc-OMv" secondAttribute="centerY" id="Igs-Iu-8bn"/>
                             <constraint firstItem="Vqg-Pg-9UZ" firstAttribute="leading" secondItem="f4n-Bc-OMv" secondAttribute="trailing" constant="14" id="JQC-cF-Gbh"/>
                             <constraint firstItem="f4n-Bc-OMv" firstAttribute="leading" secondItem="AqB-PP-XsS" secondAttribute="leading" constant="16" id="ZHi-qb-xw8"/>
                             <constraint firstItem="AqB-PP-XsS" firstAttribute="trailing" secondItem="EBH-pQ-wYC" secondAttribute="trailing" constant="16" id="eAG-az-joh"/>
+                            <constraint firstItem="EBH-pQ-wYC" firstAttribute="leading" secondItem="AqB-PP-XsS" secondAttribute="leading" constant="16" id="itd-qc-eSN"/>
                             <constraint firstItem="Wwb-2Q-ja4" firstAttribute="top" secondItem="EBH-pQ-wYC" secondAttribute="bottom" constant="31" id="lGq-9L-8cR"/>
                             <constraint firstItem="Wwb-2Q-ja4" firstAttribute="leading" secondItem="AqB-PP-XsS" secondAttribute="leading" constant="16" id="mVm-ji-z0A"/>
                             <constraint firstItem="AqB-PP-XsS" firstAttribute="trailing" secondItem="Vqg-Pg-9UZ" secondAttribute="trailing" constant="16" id="yIX-gj-gWL"/>
@@ -737,7 +730,7 @@
                                                 <constraint firstItem="LY5-z0-p5c" firstAttribute="leading" secondItem="IAf-G5-glw" secondAttribute="trailing" constant="8" id="w8z-xr-VWZ"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" red="0.1332883883" green="0.1332883883" blue="0.1332883883" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="backgroundColor" red="0.078311018649999994" green="0.08237650245" blue="0.082382701340000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     </tableViewCell>
                                 </prototypes>
                                 <sections/>
@@ -1444,14 +1437,14 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="WrC-5O-YmB">
-                                <rect key="frame" x="16" y="153" width="199" height="421"/>
+                                <rect key="frame" x="16" y="153" width="343" height="421"/>
                                 <color key="backgroundColor" red="0.090418781725888353" green="0.090418781725888353" blue="0.090418781725888353" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gvm-av-mkc">
-                                <rect key="frame" x="16" y="603" width="199" height="44"/>
+                                <rect key="frame" x="16" y="603" width="343" height="44"/>
                                 <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="44" id="x0l-kc-OI3"/>
@@ -1464,10 +1457,10 @@
                                 </connections>
                             </button>
                             <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="93" translatesAutoresizingMaskIntoConstraints="NO" id="I0t-xT-ih4">
-                                <rect key="frame" x="16" y="117" width="199" height="30"/>
+                                <rect key="frame" x="16" y="117" width="343" height="30"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="yRk-fp-pB8">
-                                        <rect key="frame" x="0.0" y="0.0" width="53" height="30"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="125" height="30"/>
                                         <state key="normal" title="decode">
                                             <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         </state>
@@ -1476,7 +1469,7 @@
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OL6-Lq-U52">
-                                        <rect key="frame" x="146" y="0.0" width="53" height="30"/>
+                                        <rect key="frame" x="218" y="0.0" width="125" height="30"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="53" id="TsJ-Nz-HKw"/>
                                         </constraints>
@@ -1494,7 +1487,7 @@
                                 </constraints>
                             </stackView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="   " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2C0-Qi-YJ6">
-                                <rect key="frame" x="201.5" y="74" width="13.5" height="20.5"/>
+                                <rect key="frame" x="345.5" y="74" width="13.5" height="20.5"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -2479,10 +2472,17 @@
                                     <action selector="showHelp:" destination="l8t-Do-K11" id="DTm-NX-OZB"/>
                                 </connections>
                             </barButtonItem>
+                            <barButtonItem image="square.and.arrow.up" catalog="system" id="ila-cA-sRd">
+                                <color key="tintColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <connections>
+                                    <action selector="showAccountMap:" destination="l8t-Do-K11" id="ak7-cv-QcF"/>
+                                </connections>
+                            </barButtonItem>
                         </rightBarButtonItems>
                     </navigationItem>
                     <connections>
                         <outlet property="detailTable" destination="hgF-Hw-8pz" id="I28-3h-wBF"/>
+                        <segue destination="GlR-4A-eAx" kind="presentation" identifier="segueToAccountMap" id="zi9-mK-A5a"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="y6X-dL-UYm" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -2728,7 +2728,7 @@
             </objects>
             <point key="canvasLocation" x="-5089" y="4146"/>
         </scene>
-        <!--Address-->
+        <!--Invoice-->
         <scene sceneID="aU3-2L-A1l">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="Xxg-Pp-vvN" customClass="InvoiceViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -2861,7 +2861,7 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="luY-Vj-OjD"/>
                     </view>
-                    <navigationItem key="navigationItem" title="Address" id="fge-ux-yT6">
+                    <navigationItem key="navigationItem" title="Invoice" id="fge-ux-yT6">
                         <rightBarButtonItems>
                             <barButtonItem image="info.circle" catalog="system" id="6on-Oa-u9D">
                                 <color key="tintColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -3724,7 +3724,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad" keyboardAppearance="alert"/>
                                             </textField>
                                         </subviews>
-                                        <color key="backgroundColor" red="0.078040815890000004" green="0.090017892419999995" blue="0.10251823810000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="backgroundColor" red="0.078311018649999994" green="0.08237650245" blue="0.082382701340000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
                                             <constraint firstAttribute="bottom" secondItem="AXR-UZ-1lO" secondAttribute="bottom" constant="29" id="B6g-UL-7ZX"/>
                                             <constraint firstAttribute="trailing" secondItem="WBT-v4-ipz" secondAttribute="trailing" constant="8" id="Bfw-2T-alt"/>
@@ -3804,7 +3804,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                                             </textField>
                                         </subviews>
-                                        <color key="backgroundColor" red="0.078040815890000004" green="0.090017892419999995" blue="0.10251823810000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="backgroundColor" red="0.078311018649999994" green="0.08237650245" blue="0.082382701340000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
                                             <constraint firstItem="PFC-7A-3Gn" firstAttribute="top" secondItem="yzj-3l-LdC" secondAttribute="top" constant="8" id="3GM-1R-EGG"/>
                                             <constraint firstAttribute="trailing" secondItem="vOa-19-8RX" secondAttribute="trailing" constant="8" id="BrB-xG-8eV"/>
@@ -3855,7 +3855,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                                                 <color key="thumbTintColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             </slider>
                                         </subviews>
-                                        <color key="backgroundColor" red="0.078040815890000004" green="0.090017892419999995" blue="0.10251823810000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="backgroundColor" red="0.078311018649999994" green="0.08237650245" blue="0.082382701340000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
                                             <constraint firstAttribute="trailing" secondItem="ynD-gu-Xre" secondAttribute="trailing" constant="16" id="22G-Bf-vpC"/>
                                             <constraint firstItem="Nls-an-9n9" firstAttribute="leading" secondItem="X4T-PA-gul" secondAttribute="trailing" constant="8" id="Az7-eM-7zG"/>
@@ -3976,7 +3976,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
             </objects>
             <point key="canvasLocation" x="-2791.1999999999998" y="375.56221889055473"/>
         </scene>
-        <!--v0.1.67-->
+        <!--v0.1.71-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -4123,7 +4123,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                         <viewLayoutGuide key="safeArea" id="Cze-jj-bFe"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="v0.1.67" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="v0.1.71" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
@@ -4543,6 +4543,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                         <outlet property="scanButtonOutlet" destination="kR8-sm-Ak0" id="U47-ZT-sh0"/>
                         <segue destination="B99-yZ-naR" kind="show" identifier="goToNodeDetails" id="sOC-xM-b3f"/>
                         <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScanQuickConnect" id="dK5-1r-ELX"/>
+                        <segue destination="u3j-cd-FEG" kind="show" identifier="segueToLightningNodeView" id="qAC-bJ-s15"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="jVs-su-0Tn" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -5419,21 +5420,24 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="qwg-wi-sdY">
-                                                    <rect key="frame" x="282" y="66" width="47.5" height="29"/>
+                                                    <rect key="frame" x="23" y="66" width="306.5" height="29"/>
                                                     <subviews>
                                                         <label opaque="NO" userInteractionEnabled="NO" tag="6" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="vout #0" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="HNy-qF-B63">
-                                                            <rect key="frame" x="0.0" y="0.0" width="47.5" height="14.5"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="306.5" height="14.5"/>
                                                             <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="12"/>
                                                             <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="address" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="Y9S-lq-c8o">
-                                                            <rect key="frame" x="0.0" y="14.5" width="47.5" height="14.5"/>
+                                                            <rect key="frame" x="0.0" y="14.5" width="306.5" height="14.5"/>
                                                             <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="12"/>
                                                             <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                     </subviews>
+                                                    <constraints>
+                                                        <constraint firstAttribute="height" constant="29" id="yDk-yO-T92"/>
+                                                    </constraints>
                                                 </stackView>
                                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="fVe-1E-AcY">
                                                     <rect key="frame" x="262" y="11" width="68" height="43.5"/>
@@ -5441,19 +5445,19 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                                         <label opaque="NO" userInteractionEnabled="NO" tag="8" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="1600 Confs" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="Q8x-DH-TJf">
                                                             <rect key="frame" x="0.0" y="0.0" width="68" height="14.5"/>
                                                             <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="12"/>
-                                                            <color key="textColor" red="0.0" green="0.97680455450000003" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                            <color key="textColor" systemColor="systemGreenColor" red="0.20392156859999999" green="0.78039215689999997" blue="0.34901960780000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" tag="10" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Spendable" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="Mnt-Ze-aJh">
                                                             <rect key="frame" x="0.0" y="14.5" width="68" height="14.5"/>
                                                             <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="12"/>
-                                                            <color key="textColor" red="0.0" green="0.97680455450000003" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                            <color key="textColor" systemColor="systemGreenColor" red="0.20392156859999999" green="0.78039215689999997" blue="0.34901960780000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" tag="7" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Solvable" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="xqP-qB-AkM">
                                                             <rect key="frame" x="0.0" y="29" width="68" height="14.5"/>
                                                             <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="12"/>
-                                                            <color key="textColor" red="0.0" green="0.97680455450000003" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                            <color key="textColor" systemColor="systemGreenColor" red="0.20392156859999999" green="0.78039215689999997" blue="0.34901960780000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                     </subviews>
@@ -5461,7 +5465,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="hEF-dt-mIk">
                                                     <rect key="frame" x="15" y="20" width="200" height="49.5"/>
                                                     <subviews>
-                                                        <label opaque="NO" userInteractionEnabled="NO" tag="11" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="     " textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="LPG-PJ-EKW">
+                                                        <label opaque="NO" userInteractionEnabled="NO" tag="11" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="     " lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="LPG-PJ-EKW">
                                                             <rect key="frame" x="0.0" y="0.0" width="200" height="14.5"/>
                                                             <constraints>
                                                                 <constraint firstAttribute="height" constant="14.5" id="rgd-Jw-cue"/>
@@ -5470,13 +5474,13 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                                             <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
-                                                        <label opaque="NO" userInteractionEnabled="NO" tag="4" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0.00047656" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="w18-jG-wzu">
+                                                        <label opaque="NO" userInteractionEnabled="NO" tag="4" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0.00047656" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="w18-jG-wzu">
                                                             <rect key="frame" x="0.0" y="14.5" width="200" height="35"/>
                                                             <constraints>
                                                                 <constraint firstAttribute="width" constant="200" id="JR6-Uo-gn0"/>
                                                                 <constraint firstAttribute="height" constant="35" id="PLV-v3-qXl"/>
                                                             </constraints>
-                                                            <fontDescription key="fontDescription" type="system" pointSize="41"/>
+                                                            <fontDescription key="fontDescription" type="system" pointSize="29"/>
                                                             <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
@@ -5502,7 +5506,9 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                                 <constraint firstItem="hEF-dt-mIk" firstAttribute="leading" secondItem="vwn-lY-2nZ" secondAttribute="leadingMargin" id="29x-IB-MQ1"/>
                                                 <constraint firstItem="fVe-1E-AcY" firstAttribute="top" secondItem="vwn-lY-2nZ" secondAttribute="topMargin" id="87i-5Z-hJ1"/>
                                                 <constraint firstItem="rht-6f-BG5" firstAttribute="top" secondItem="vwn-lY-2nZ" secondAttribute="top" constant="6" id="9eq-qA-pqN"/>
+                                                <constraint firstAttribute="trailingMargin" secondItem="qwg-wi-sdY" secondAttribute="trailing" id="OpJ-0D-1FQ"/>
                                                 <constraint firstItem="rht-6f-BG5" firstAttribute="leading" secondItem="vwn-lY-2nZ" secondAttribute="leading" constant="15" id="Yy5-vZ-sZD"/>
+                                                <constraint firstItem="qwg-wi-sdY" firstAttribute="leading" secondItem="vwn-lY-2nZ" secondAttribute="leadingMargin" constant="8" id="ZUP-Co-Fe6"/>
                                                 <constraint firstAttribute="bottom" secondItem="6KH-PD-EAR" secondAttribute="bottom" constant="29" id="gub-y5-qtO"/>
                                                 <constraint firstAttribute="trailingMargin" secondItem="qwg-wi-sdY" secondAttribute="trailing" constant="0.5" id="m57-8P-4PJ"/>
                                                 <constraint firstItem="hEF-dt-mIk" firstAttribute="leading" secondItem="vwn-lY-2nZ" secondAttribute="leadingMargin" id="sKs-Re-fmr"/>
@@ -5510,7 +5516,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                                 <constraint firstItem="hEF-dt-mIk" firstAttribute="top" secondItem="vwn-lY-2nZ" secondAttribute="topMargin" constant="9" id="xff-AY-Njl"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" red="0.1333139837" green="0.13334444170000001" blue="0.1333120763" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="backgroundColor" red="0.078311018649999994" green="0.08237650245" blue="0.082382701340000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     </tableViewCell>
                                 </prototypes>
                             </tableView>
@@ -6167,8 +6173,9 @@ COLD means no keys will be generated and no private keys can be imported.</strin
     <inferredMetricsTieBreakers>
         <segue reference="sGU-zZ-Y4f"/>
         <segue reference="qed-hl-jG5"/>
-        <segue reference="PqA-D7-XxX"/>
-        <segue reference="CiB-VJ-HaC"/>
+        <segue reference="qAC-bJ-s15"/>
+        <segue reference="sOC-xM-b3f"/>
+        <segue reference="jzM-oI-Kmu"/>
         <segue reference="RbT-dI-IvI"/>
         <segue reference="IVc-aG-8QZ"/>
         <segue reference="cvp-U1-bU5"/>
@@ -6176,8 +6183,8 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="HNI-HG-9ZQ"/>
         <segue reference="IAz-j1-Gq6"/>
-        <segue reference="CQp-9r-70w"/>
-        <segue reference="7UD-TA-0Dv"/>
+        <segue reference="dK5-1r-ELX"/>
+        <segue reference="zi9-mK-A5a"/>
         <segue reference="h0D-Od-IZu"/>
         <segue reference="j10-wi-hpr"/>
         <segue reference="G1i-Bv-OSl"/>

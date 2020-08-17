@@ -55,18 +55,18 @@ class ShowDetailViewController: UIViewController, UITextViewDelegate, UINavigati
     }
     
     private func getTotalSupply() {
-        spinner.addConnectingView(vc: self, description: "checking total supply, this can take 30 seconds or so, be patient...")
-        Reducer.makeCommand(command: .gettxoutsetinfo, param: "") { [unowned vc = self] (response, errorMessage) in
+        spinner.addConnectingView(vc: self, description: "Auditing every single utxo with your node. This requires a low time preference...")
+        Reducer.makeCommand(command: .gettxoutsetinfo, param: "") { [weak self] (response, errorMessage) in
             if let dict = response as? NSDictionary {
                 if let total = dict["total_amount"] as? Double, let utxos = dict["txouts"] as? Int {
-                    vc.utxoCount = utxos
-                    vc.totalAmount = total
-                    vc.getFiatRate()
+                    self?.utxoCount = utxos
+                    self?.totalAmount = total
+                    self?.getFiatRate()
                 } else {
-                    vc.spinner.removeConnectingView()
+                    self?.spinner.removeConnectingView()
                 }
             } else {
-                vc.spinner.removeConnectingView()
+                self?.spinner.removeConnectingView()
             }
         }
     }
@@ -75,11 +75,13 @@ class ShowDetailViewController: UIViewController, UITextViewDelegate, UINavigati
         let fx = FiatConverter.sharedInstance
         fx.getFxRate { (fxRate) in
             if fxRate != nil {
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.subHeaderLabel.text = vc.totalAmount.withCommasNotRounded()  + " " + "btc"
-                    vc.textView.text += "\n\nTotal supply in USD:\n$\((vc.totalAmount * fxRate!).withCommas())\n\nTotal number of utxos:\n\(Double(vc.utxoCount).withCommas())\n\nAverage value per utxo:\n \(rounded(number: (vc.totalAmount / Double(vc.utxoCount)))) btc - $\(((vc.totalAmount * fxRate!) / Double(vc.utxoCount)).withCommas())\n\nCurrent exchange rate:\n$\(fxRate!.withCommas()) USD / 1 btc"
-                    vc.textView.addHyperLinksToText(originalText: vc.textView.text, hyperLinks: ["bitcoin-cli gettxoutsetinfo": vc.gettxoutsetinfo])
-                    vc.spinner.removeConnectingView()
+                DispatchQueue.main.async { [weak self] in
+                    if self != nil {
+                        self!.subHeaderLabel.text = self!.totalAmount.withCommasNotRounded()  + " " + "btc"
+                        self!.textView.text += "\n\nTotal supply in USD:\n$\((self!.totalAmount * fxRate!).withCommas())\n\nTotal number of utxos:\n\(Double(self!.utxoCount).withCommas())\n\nAverage value per utxo:\n \(rounded(number: (self!.totalAmount / Double(self!.utxoCount)))) btc - $\(((self!.totalAmount * fxRate!) / Double(self!.utxoCount)).withCommas())\n\nCurrent exchange rate:\n$\(fxRate!.withCommas()) USD / 1 btc"
+                        self!.textView.addHyperLinksToText(originalText: self!.textView.text, hyperLinks: ["bitcoin-cli gettxoutsetinfo": self!.gettxoutsetinfo])
+                        self!.spinner.removeConnectingView()
+                    }
                 }
             }
         }
@@ -95,19 +97,19 @@ class ShowDetailViewController: UIViewController, UITextViewDelegate, UINavigati
     }
     
     private func showHelp() {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "showHelpSegue", sender: vc)
+        DispatchQueue.main.async { [weak self] in
+            self?.performSegue(withIdentifier: "showHelpSegue", sender: self)
         }
     }
     
     private func getInfoHelpText() {
         let connectingView = ConnectingView()
         connectingView.addConnectingView(vc: self, description: "help \(command)...")
-        Reducer.makeCommand(command: .help, param: "\"\(command)\"") { [unowned vc = self] (response, errorMessage) in
+        Reducer.makeCommand(command: .help, param: "\"\(command)\"") { [weak self] (response, errorMessage) in
             if let helpCheck = response as? String {
                 connectingView.removeConnectingView()
-                vc.helpText = helpCheck
-                vc.showHelp()
+                self?.helpText = helpCheck
+                self?.showHelp()
             }
         }
     }

@@ -15,6 +15,7 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDelegate,
     var peerArray = [[String:Any]]()
     var selectedPeer:[String:Any]?
     var url = ""
+    var newlyAdded = Bool()
     @IBOutlet weak var channelTable: UITableView!
     @IBOutlet weak var aliasLabel: UILabel!
     @IBOutlet weak var numPeersLabel: UILabel!
@@ -31,6 +32,13 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDelegate,
         getInfo()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        if newlyAdded {
+            newlyAdded = false
+            showAlert(vc: self, title: "⚡️ Lightning Node added ⚡️", message: "We are fetching info from your lightning node now... Usually to get here you need to go to \"settings\" > \"node manager\" > ⚡️ > ⚙️\n\nFrom here you can see stats about your lightning node, see your peers, tap the plus button to add a new peer and create a channel with them. For others to connect to you tap the export button to share your nodes URI.")
+        }
+    }
+    
     @IBAction func shareNodeUrlAction(_ sender: Any) {
         DispatchQueue.main.async { [unowned vc = self] in
             vc.performSegue(withIdentifier: "segueToShareLightningUrl", sender: vc)
@@ -45,7 +53,7 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDelegate,
     
     private func getInfo() {
         spinner.addConnectingView(vc: self, description: "loading...")
-        LightningRPC.command(method: .getinfo, param: "") { [unowned vc = self] (response, errorDesc) in
+        LightningRPC.command(method: .getinfo, param: "") { [weak self] (response, errorDesc) in
             if let dict = response as? NSDictionary {
                 let alias = dict["alias"] as? String ?? ""
                 let num_peers = dict["num_peers"] as? Int ?? 0
@@ -61,37 +69,39 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDelegate,
                 }
                 let id = dict["id"] as? String ?? ""
                 let feesCollected = dict["fees_collected_msat"] as? String ?? "0msat"
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.aliasLabel.text = alias
-                    vc.feesCollectedLabel.text = feesCollected
-                    vc.numActiveChannelsLabel.text = "\(num_active_channels)"
-                    vc.numInactiveChannelsLabel.text = "\(num_inactive_channels)"
-                    vc.numPendingChannelsLabel.text = "\(num_pending_channels)"
-                    vc.numPeersLabel.text = "\(num_peers)"
-                    vc.url = "\(id)@\(ip):\(port)"
-                    vc.loadPeers()
+                DispatchQueue.main.async { [weak self] in
+                    if self != nil {
+                        self!.aliasLabel.text = alias
+                        self!.feesCollectedLabel.text = feesCollected
+                        self!.numActiveChannelsLabel.text = "\(num_active_channels)"
+                        self!.numInactiveChannelsLabel.text = "\(num_inactive_channels)"
+                        self!.numPendingChannelsLabel.text = "\(num_pending_channels)"
+                        self!.numPeersLabel.text = "\(num_peers)"
+                        self!.url = "\(id)@\(ip):\(port)"
+                        self!.loadPeers()
+                    }
                 }
             } else {
-                vc.spinner.removeConnectingView()
-                showAlert(vc: vc, title: "Error", message: errorDesc ?? "error getting info from lightning node")
+                self?.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Error", message: errorDesc ?? "error getting info from lightning node")
             }
         }
     }
     
     private func loadPeers() {
-        LightningRPC.command(method: .listpeers, param: "") { [unowned vc = self] (response, errorDesc) in
+        LightningRPC.command(method: .listpeers, param: "") { [weak self] (response, errorDesc) in
             if let dict = response as? NSDictionary {
                 if let peers = dict["peers"] as? NSArray {
                     if peers.count > 0 {
-                        vc.parsePeers(peers: peers)
+                        self?.parsePeers(peers: peers)
                     } else {
-                        vc.spinner.removeConnectingView()
-                        showAlert(vc: vc, title: "No peers yet", message: "Tap the + button to connect to a peer and start a channel")
+                        self?.spinner.removeConnectingView()
+                        showAlert(vc: self, title: "No peers yet", message: "Tap the + button to connect to a peer and start a channel")
                     }
                 }
             } else {
-                vc.spinner.removeConnectingView()
-                showAlert(vc: vc, title: "Error", message: errorDesc ?? "unknown error fetching peers")
+                self?.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error fetching peers")
             }
         }
     }

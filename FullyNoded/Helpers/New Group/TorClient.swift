@@ -68,7 +68,7 @@ class TorClient {
                         
                         "DNSPort": "12345",
                         "AutomapHostsOnResolve": "1",
-                        "SocksPort": "19050",
+                        "SocksPort": "19050 OnionTrafficOnly",
                         "AvoidDiskWrites": "1",
                         "ClientOnionAuthDir": "\(self.authDirPath)",
                         "LearnCircuitBuildTimeout": "1",
@@ -77,9 +77,9 @@ class TorClient {
                         "LongLivedPorts": "80,443",
                         "NumCPUs": "2",
                         "DisableDebuggerAttachment": "1",
-                        "SafeLogging": "1"/*,
+                        "SafeLogging": "1",
                         "ExcludeExitNodes": "1",
-                        "StrictNodes": "1"*/
+                        "StrictNodes": "1"
                         
                     ]
                     

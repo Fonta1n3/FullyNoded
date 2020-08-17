@@ -99,13 +99,21 @@ class QuickConnect {
             newNode["label"] = label
             newNode["rpcuser"] = torNodeRPCUser
             newNode["rpcpassword"] = torNodeRPCPass
-            newNode["isActive"] = true
+            if !url.hasPrefix("clightning-rpc") {
+                newNode["isActive"] = true
+                newNode["isLightning"] = false
+            } else {
+                newNode["isLightning"] = true
+                newNode["isActive"] = false
+            }
             
             func addNode() {
                 CoreDataService.saveEntity(dict: newNode, entityName: .newNodes) { success in
                     if success {
-                        let ud = UserDefaults.standard
-                        ud.removeObject(forKey: "walletName")
+                        if !url.hasPrefix("clightning-rpc") {
+                            let ud = UserDefaults.standard
+                            ud.removeObject(forKey: "walletName")
+                        }
                         completion((true, nil))
                     } else {
                         completion((false, "error saving your node to core data"))
@@ -113,26 +121,30 @@ class QuickConnect {
                 }
             }
             
-            CoreDataService.retrieveEntity(entityName: .newNodes) { (nodes) in
-                if nodes != nil {
-                    if nodes!.count > 0 {
-                        for (i, node) in nodes!.enumerated() {
-                            let nodeStruct = NodeStruct(dictionary: node)
-                            if nodeStruct.id != nil {
-                                CoreDataService.update(id: nodeStruct.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in
-                                    if i + 1 == nodes!.count {
-                                        addNode()
+            if url.hasPrefix("clightning-rpc") {
+                addNode()
+            } else {
+                CoreDataService.retrieveEntity(entityName: .newNodes) { (nodes) in
+                    if nodes != nil {
+                        if nodes!.count > 0 {
+                            for (i, node) in nodes!.enumerated() {
+                                let nodeStruct = NodeStruct(dictionary: node)
+                                if nodeStruct.id != nil {
+                                    CoreDataService.update(id: nodeStruct.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in
+                                        if i + 1 == nodes!.count {
+                                            addNode()
+                                        }
                                     }
                                 }
                             }
+                        } else {
+                            addNode()
                         }
                     } else {
                         addNode()
                     }
-                } else {
-                    addNode()
                 }
-            }
+            }            
         } else {
             completion((false, "Only alphanumeric characters allowed in the rpcuser and rpcpassword fields. Edit your bitcoin.conf so that no special characters are included in your rpc credentials."))
         }

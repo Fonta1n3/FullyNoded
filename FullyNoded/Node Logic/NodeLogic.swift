@@ -67,13 +67,14 @@ class NodeLogic {
                                                 if let funding_txid = channelDict["funding_txid"] as? String {
                                                     offchainTxids.append(funding_txid)
                                                 }
-                                                if let channel_total_sat = channelDict["channel_total_sat"] as? Int {
-                                                    let btc = Double(channel_total_sat) / 100000000.0
-                                                    offchainBalance += btc
-                                                    if c + 1 == channels.count {
-                                                        print("offchainBalance: \(offchainBalance)")
-                                                        dictToReturn["offchainBalance"] = "\(rounded(number: offchainBalance))"
-                                                        completion((dictToReturn, nil))
+                                                if let our_amount_msat = channelDict["our_amount_msat"] as? String {
+                                                    if let our_msats = Int(our_amount_msat.replacingOccurrences(of: "msat", with: "")) {
+                                                        let btc = Double(our_msats) / 100000000000.0
+                                                        offchainBalance += btc
+                                                        if c + 1 == channels.count {
+                                                            dictToReturn["offchainBalance"] = "\(rounded(number: offchainBalance))"
+                                                            completion((dictToReturn, nil))
+                                                        }
                                                     }
                                                 }
                                             }
@@ -323,10 +324,16 @@ class NodeLogic {
                                                 getSent()
                                             }
                                         }
+                                    } else {                                        
+                                        if t + 1 == transactions.count {
+                                            getSent()
+                                        }
                                     }
                                 }
                             }
                         }
+                    } else {
+                        getSent()
                     }
                 }
             } else {
@@ -386,13 +393,9 @@ class NodeLogic {
         }
         
         if amount == 0.0 {
-            
             dictToReturn["onchainBalance"] = "0.00000000"
-            
         } else {
-            
-            dictToReturn["onchainBalance"] = "\(round(100000000*amount)/100000000)"
-            
+            dictToReturn["onchainBalance"] = "\((round(100000000*amount)/100000000).avoidNotation)"
         }
         
     }
