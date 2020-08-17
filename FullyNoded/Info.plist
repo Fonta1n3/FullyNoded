@@ -95,6 +95,18 @@
 				<string>btcstandup</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleURLIconFile</key>
+			<string>ItunesArtwork@2x</string>
+			<key>CFBundleURLName</key>
+			<string>com.fonatine.fullynoded</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>clightning-rpc</string>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>

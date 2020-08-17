@@ -4543,6 +4543,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                         <outlet property="scanButtonOutlet" destination="kR8-sm-Ak0" id="U47-ZT-sh0"/>
                         <segue destination="B99-yZ-naR" kind="show" identifier="goToNodeDetails" id="sOC-xM-b3f"/>
                         <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScanQuickConnect" id="dK5-1r-ELX"/>
+                        <segue destination="u3j-cd-FEG" kind="show" identifier="segueToLightningNodeView" id="qAC-bJ-s15"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="jVs-su-0Tn" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -6172,7 +6173,8 @@ COLD means no keys will be generated and no private keys can be imported.</strin
     <inferredMetricsTieBreakers>
         <segue reference="sGU-zZ-Y4f"/>
         <segue reference="qed-hl-jG5"/>
-        <segue reference="PqA-D7-XxX"/>
+        <segue reference="qAC-bJ-s15"/>
+        <segue reference="sOC-xM-b3f"/>
         <segue reference="jzM-oI-Kmu"/>
         <segue reference="RbT-dI-IvI"/>
         <segue reference="IVc-aG-8QZ"/>
@@ -6181,7 +6183,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="HNI-HG-9ZQ"/>
         <segue reference="IAz-j1-Gq6"/>
-        <segue reference="CQp-9r-70w"/>
+        <segue reference="dK5-1r-ELX"/>
         <segue reference="zi9-mK-A5a"/>
         <segue reference="h0D-Od-IZu"/>
         <segue reference="j10-wi-hpr"/>

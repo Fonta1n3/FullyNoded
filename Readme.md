@@ -444,13 +444,13 @@ Save and exit and you have one of the most secure node/light client set ups poss
 I will happily share my enitre RPC-url and -password with anyone, there is no way they can hack this Tor V3 auth, granted they can not get the private key obviously. Fully Noded creates the private key offline, encrypts it heavily and stores it in the most secure way possible.
 
 ## QuickConnect URL Scheme
-Fully Noded has a deep link registered with the following prefixes  `btcstandup://` and `btcrpc://` either prefix will work.
+Fully Noded has uri deep links registered with the following prefixes  `btcstandup://`, `btcrpc://` for connecting Bitcoin Core and `clightning-rpc://` for you guessed it C-Lightning.
 
 If you are a node manufacturer you can embed such a link to your web based UI that allows a user who has Fully Noded installed on their device to add and connect to their node with a single tap from the web based UI.
 
 The url can also be displayed as a QR Code and a user can simply scan it when they go to add a node in Fully Noded.
 
-The format of the URL is:
+The format of the URI is:
 
 `btcrpc://<rpcuser>:<rpcpassword>@<hidden service hostname>:<hidden service port>?label=<optional node label>`
 
@@ -461,6 +461,11 @@ Example with node label:
 Example without node label:
 
 `btcrpc://rpcuser:rpcpassword@kjhfefe.onion:8332?`
+
+For C-Lightning simply specify the correct prefix and FN will do the rest:
+`clightning-rpc://rpcuser:rpcpassword@kjhfefe.onion:1312?label=Your%20Nodes%20Name`
+
+**The rpcuser and rpcpassword are the http-user (lightning by default) and http-pass you specify in the clightning config when using the supported c-lightning http [plugin](https://github.com/Start9Labs/c-lightning-http-plugin), 1312 is the HS port, again you may customize the port with http-port in the lightning config in conjunction with the http plugin.**
 
 Fully Noded is compatible with V3 authenticated hidden services, the user has the option in the app to add a V3 private key for authentication.
 

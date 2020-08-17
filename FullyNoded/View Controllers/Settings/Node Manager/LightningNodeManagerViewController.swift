@@ -15,6 +15,7 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDelegate,
     var peerArray = [[String:Any]]()
     var selectedPeer:[String:Any]?
     var url = ""
+    var newlyAdded = Bool()
     @IBOutlet weak var channelTable: UITableView!
     @IBOutlet weak var aliasLabel: UILabel!
     @IBOutlet weak var numPeersLabel: UILabel!
@@ -29,6 +30,13 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDelegate,
         channelTable.dataSource = self
         iconBackground.layer.cornerRadius = 5
         getInfo()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        if newlyAdded {
+            newlyAdded = false
+            showAlert(vc: self, title: "⚡️ Lightning Node added ⚡️", message: "We are fetching info from your lightning node now... Usually to get here you need to go to \"settings\" > \"node manager\" > ⚡️ > ⚙️\n\nFrom here you can see stats about your lightning node, see your peers, tap the plus button to add a new peer and create a channel with them. For others to connect to you tap the export button to share your nodes URI.")
+        }
     }
     
     @IBAction func shareNodeUrlAction(_ sender: Any) {

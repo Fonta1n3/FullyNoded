@@ -38,22 +38,34 @@ class ChooseConnectionTypeViewController: UIViewController, UITabBarControllerDe
         manualButtonOutlet.layer.cornerRadius = 35
     }
     
+    private func goToNewlyAddedLIghtningNode() {
+        DispatchQueue.main.async { [weak self] in
+            self?.performSegue(withIdentifier: "segueToLightningNodeView", sender: self)
+        }
+    }
+    
     func addBtcRpcQr(url: String) {
-        QuickConnect.addNode(url: url) { [unowned vc = self] (success, errorMessage) in
+        QuickConnect.addNode(url: url) { [weak self] (success, errorMessage) in
             if success {
-                if vc.cameFromHome {
-                    DispatchQueue.main.async { [unowned vc = self] in
-                        NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
-                        vc.navigationController?.popToRootViewController(animated: true)
-                    }
+                if url.hasPrefix("clightning-rpc") {
+                    self?.goToNewlyAddedLIghtningNode()
                 } else {
-                    DispatchQueue.main.async { [unowned vc = self] in
-                        NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
-                        vc.navigationController?.popViewController(animated: true)
+                    if self != nil {
+                        if self!.cameFromHome {
+                            DispatchQueue.main.async { [weak self] in
+                                NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
+                                self?.navigationController?.popToRootViewController(animated: true)
+                            }
+                        } else {
+                            DispatchQueue.main.async { [weak self] in
+                                NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
+                                self?.navigationController?.popViewController(animated: true)
+                            }
+                        }
                     }
                 }
             } else {
-                displayAlert(viewController: vc, isError: true, message: "Error adding that node: \(errorMessage ?? "unknown")")
+                displayAlert(viewController: self, isError: true, message: "Error adding that node: \(errorMessage ?? "unknown")")
             }
         }
     }
@@ -64,6 +76,10 @@ class ChooseConnectionTypeViewController: UIViewController, UITabBarControllerDe
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
         switch segue.identifier {
+        case "segueToLightningNodeView":
+            if let vc = segue.destination as? LightningNodeManagerViewController {
+                vc.newlyAdded = true
+            }
         case "segueToScanQuickConnect":
             if let vc = segue.destination as? QRScannerViewController {
                 vc.isQuickConnect = true

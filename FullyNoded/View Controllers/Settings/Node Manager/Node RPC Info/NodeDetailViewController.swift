@@ -53,7 +53,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         loadValues()
     }
     
-    @IBAction func deleteLightningNode(_ sender: Any) {
+    private func deleteLightningNodeNow() {
         if selectedNode != nil {
             let nodestr = NodeStruct(dictionary: selectedNode!)
             let id = nodestr.id
@@ -72,6 +72,26 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
         }
+    }
+    
+    private func promptToDeleteLightningNode() {
+        DispatchQueue.main.async { [weak self] in
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "Delete lightning node?", message: "You will no longer be able to access your lightning node!", preferredStyle: alertStyle)
+            alert.addAction(UIAlertAction(title: "Delete", style: .destructive, handler: { [weak self] action in
+                self?.deleteLightningNodeNow()
+            }))
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self?.view
+            self?.present(alert, animated: true) {}
+        }
+    }
+    
+    @IBAction func deleteLightningNode(_ sender: Any) {
+        promptToDeleteLightningNode()
     }
     
     
@@ -259,13 +279,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     func configureTapGesture() {
-        
-        let tapGesture = UITapGestureRecognizer(target: self,
-                                                action: #selector(dismissKeyboard (_:)))
-        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         view.addGestureRecognizer(tapGesture)
-        
     }
     
     func loadValues() {
