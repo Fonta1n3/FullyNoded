@@ -3,7 +3,7 @@
 
 # <img src="./Images/fn_logo.png" alt="" width="100"/> Fully Noded™️
 
-Self sovereign, secure, powerful, easy to use wallet that utilizes your own node as a backend. Powered by PSBT's and descriptors. Acts as an offline signer using your node as a watch-only wallet. [C-Lightning](https://github.com/ElementsProject/lightning) compatible for instant, unfairly cheap payments.
+Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own node as a backend. Powered by PSBT's and descriptors. Acts as an offline signer using your node as a watch-only wallet. [C-Lightning](https://github.com/ElementsProject/lightning) compatible for instant, unfairly cheap payments.
 
 [https://fullynoded.app](https://fullynoded.app) (work in progress)
 
@@ -11,6 +11,16 @@ pgp: 3B37 97FA 0AE8 4BE5 B440 6591 8564 01D7 121C 32FC
 
 ⚡️donation to support development of Fully Noded:<br/>
 http://56uo4htoxdt2tgh6zui5v2q7c4ax43dd3fwueiurgqdw7lpunn2cikqd.onion:5599/donation
+
+# Why Fully Noded?
+
+To answer that question you need to know your objectives, such as:
+I'd like to manage my Bitcoin node with a fullfletched GUI
+I'd like to be self sovereignly managing my crypto holdings
+I'd like to learn about and test the newest Bitcoin developments
+
+# For who is Fully Noded?
+
 
 # Table of Contents
 1. [Requirements](#requirements)
