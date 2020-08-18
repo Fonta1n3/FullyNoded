@@ -1,6 +1,7 @@
 ## Connecting over Tor 
  - [macOS](#Connecting-over-Tor-macOS)
  - [Windows 10](#Connecting-over-Tor-Windows-10)
+ - [Debian 10](#Connecting-over-Tor-Debian-10)
  - [Tor V3 Authentication](#Tor-V3-Authentication)
  
 #### Optional Tor v3
@@ -148,6 +149,15 @@ Once you have rpc credentials added to your `bitcoin.conf` you can reboot Bitcoi
 - Now in Fully Noded go to `Settings` > `Node Manager` > `+` and add a new node by inputting your RPC credentials and copy and paste your onion address with the port at the end `qndoiqnwoiquf713y8731783rgd.onion:8332`.
 - You should never type (password) fields manually, just copy and paste between devices. Between Apple Mac, iphone and iPad, the clipboard will be synced as soon as you *put on bluetooth* on at least two of the devices. Once bluetooth is on on your mac and ipad then it should automatically paste over from the computer to iPad and back. Same should work for iPhone.
 - Add *mainnet*, *testnet*, *regtest net* and / or *lightning* at your convenience. You can run all three and connect to all three.
+
+Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings).
+
+## Connecting over Tor Debian 10
+
+TBW 
+
+### On the device running FN:
+TBW 
 
 Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings).
 
