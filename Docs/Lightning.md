@@ -26,22 +26,8 @@ Pick the guide below for the device your're running your node on:
  - [Debian 10](./Tor.md/#Connecting-over-Tor-Linux-Debian-10)
 
 Find the suggested Authentication settings on the device **running FN** [here](./Authentication.md/#On-the-device-running-FN).
-Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings).
+Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings). For *Lightning* see below, or click [here](#Connect-Fully-Noded).
 
-
-Create a hidden service that we will use later:
-macOS:<br/>
-`nano /usr/local/etc/tor/torrc`<br/>
-(if it does not yet exist duplicate the torrc.sample in the same directory and delete the .sample extension, saving it as a new file)
-
-
-### Get your hostname
-
-Ensure all went well by running:<br/>
-`cat /usr/local/var/lib/tor/fullynoded/lightning/hostname`<br/>
-If it prints something like `ndfiuhfh2fu23ufh21u3bfd.onion` then all is well, if not message me on the Fully Noded Telegram and I can help (maybe).
-
-Save the above hostname, you will need it soon!
 
 ### Create lightning config
 
