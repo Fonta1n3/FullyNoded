@@ -3,6 +3,7 @@
  - [Windows 10](#Connecting-over-Tor-Windows-10)
  - [Debian 10](#Connecting-over-Tor-Debian-10)
  - [Tor V3 Authentication](#Tor-V3-Authentication)
+ - [QuickConnect URL Scheme](#QuickConnect-URL-Scheme)
  
 #### Optional Tor v3
 ## Connecting over Tor macOS
