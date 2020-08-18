@@ -12,16 +12,6 @@ pgp: 3B37 97FA 0AE8 4BE5 B440 6591 8564 01D7 121C 32FC
 ⚡️donation to support development of Fully Noded:<br/>
 http://56uo4htoxdt2tgh6zui5v2q7c4ax43dd3fwueiurgqdw7lpunn2cikqd.onion:5599/donation
 
-# Why Fully Noded?
-
-To answer that question you need to know your objectives, such as:
-I'd like to manage my Bitcoin node with a fullfletched GUI
-I'd like to be self sovereignly managing my crypto holdings
-I'd like to learn about and test the newest Bitcoin developments
-
-# For who is Fully Noded?
-
-
 # Table of Contents
 1. [Requirements](#requirements)
 2. [Supported Nodes](#supported-nodes)
@@ -49,6 +39,25 @@ I'd like to learn about and test the newest Bitcoin developments
 23. [Contributing](#contributing)
 24. [Built With](#built-with)
 25. [The docs](#docs)
+
+# Why Fully Noded?
+
+To answer that question you need to know your objectives, such as:
+I'd like to manage my Bitcoin node with a fullfletched GUI
+I'd like to be self sovereignly managing my crypto holdings
+I'd like to learn about and test the newest Bitcoin developments
+
+# For who is Fully Noded?
+
+
+# Preparatory work for Fully Noded users
+## Personal
+ - Knowledge
+ - Gear
+ - Skills 
+ - Course material
+ - Howto's, troubleshooting
+ - Questions and Answers
 
 ## Requirements
 - At least [Bitcoin Core 0.20.0](https://bitcoincore.org/bin/bitcoin-core-0.20.0/) for "Fully Noded Multisig" wallet compatibility, Bitcoin Core wallets will of course work with any version.
