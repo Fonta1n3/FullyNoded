@@ -58,7 +58,7 @@ To answer that question, you need to know your goals. These are the objectives F
  - a tool to manage your Decentralised ID; use Gordian Wallet (too)
 
 # For who is Fully Noded?
-Fully Noded is a multi-purpose tool for power user. It is aimed at an [experienced Bitcoin specialist](#Personal preparation), who runs a testnet (and eventually mainnet) Bitcoin node and recognises his/her goals in why to use FN and is willing to use an iOS device like iPhone or iPad.
+Fully Noded is a multi-purpose tool for power user. It is aimed at an [experienced Bitcoin specialist](#Personal-preparation), who runs a testnet (and eventually mainnet) Bitcoin node and recognises his/her goals in why to use FN and is willing to use an iOS device like iPhone or iPad.
 
 # Preparatory work for Fully Noded users
 ## Personal preparation
@@ -67,7 +67,8 @@ Fully Noded is a multi-purpose tool for power user. It is aimed at an [experienc
  - Skills
 ## Available info
  - Course material
- - Howto's, troubleshooting
+ - Tutorials
+ - Troubleshooting
  - Questions and Answers
 
 ## Requirements
