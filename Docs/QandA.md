@@ -165,11 +165,6 @@ For starters ensure you are connected to your node, can you confirm it successfu
 
 Airdrop is not a must. You can save the files in `iphone` using the native file application.
 
-#### Question : How to export your single sig wallet from Coldcard to Fully Noded using your own node?
-
-See this instruction of 33 secs [here](https://www.youtube.com/watch?v=W0vwgzIrPoY). This is super cool, super easy. <br/>
-Video is obviously edited, the spinner will take longer then that, just wait a bit
-
 #### Question : I experience crashes, and I want it fixed. How?
 
 I will be be keeping the testflight up to date for you [here](https://testflight.apple.com/join/a6GWxet2), so that they can be shared and investigated.
@@ -181,6 +176,8 @@ Go slow, `tor` is not meant for speed. `Tor` does not stay alive in the backgrou
 #### Question : What are the assurances that the developer can't push out software that will steal my seed say in a single sig wallet?
 
 There isn’t any, that’s why you should use multisig or build the app from source.
+
+HvC: Only if we are able to containerize the build environment (for example with Docker) then a hash of that "authenticity test" container proofs that the container has not been altered and will therefore most likely produce the exactly the same executable of FN + dito hash.
 
 ##### Further question:  how can I load that code directly to my iOS device without the appstore? What assurances are there that the github code is exactly what is sent and installed via apple appstore?
 
@@ -262,6 +259,10 @@ So its a true airgap.<br/>
 Then you create your qr codes on the airgapped laptop, and scan signed txs with the phone<br/>
 Build your unsigned transactions on your phone, and send them to airgapped laptop via QR code scanning.
 
+#### Question : Gordian wallet. There is no “add manually” like in FullyNoded?
+
+You can view node details in FN, there is an export button, it gives you a QR that you can scan or upload with Gordian Wallet.
+
 ## Export
 
 #### Question : Why doesn't broadcast work via my Node?
@@ -272,6 +273,11 @@ You can only broadcast signed raw transactions. The only purpose of psbts is to 
 <img src="./Images/Hardware-wallets.png" alt="Hardware-wallets" border="0" width="200"><br/>
 
 They should all work with Fully Noded too. You can import your `xpub` directly into your node from your hardware wallets. I import my `coldcard` wallet xpub with Fully Noded, then build `PSBTs` with it.
+
+#### Question : How to export your single sig wallet from Coldcard to Fully Noded using your own node?
+
+See this instruction of 33 secs [here](https://www.youtube.com/watch?v=W0vwgzIrPoY). This is super cool, super easy. <br/>
+Video is obviously edited, the spinner will take longer then that, just wait a bit
 
 #### Question : Is there  a way to export the multisig.txt file anytime after the initial prompt when exiting the Multisig Creator flow?
 
@@ -291,6 +297,21 @@ fingerprint:xpub
 
 You can also get that info by tapping the info button on the active wallet tab. You will see your "receive keypool descriptor" it also holds all xpubs/fingerprints needed.
 
+#### Question : How export and backup my wallet into a QR code?
+
+To make your life easier, you should save your wallet export QR code <br/>
+Then if you delete the app you can always easily recreate the wallet from the QR<br/>
+No need to touch your external signing device (like CC) again<br/>
+In wallet details you'll see the export button in the top right corner.<br/>
+Tap it and save that QR, if you need to recover the wallet just tap the `+ > "import" > scan said QR`
+
+#### Question : Are there any security risks associated with export / backup? Loss of privacy (watch only), loss of funds?
+
+Loss of privacy. Not loss of funds. It holds pubkeys only. More info [here](https://github.com/Fonta1n3/FullyNoded/blob/master/Docs/Wallet-Export-Import.md)
+
+##### Further question : No need to touch my external signing device again? So then FullyNoded would be the signer??
+
+No, signers are seperate, the QR is pubkey only. You have to add signer manually as words, if you'd like to spend the funds involved.
 
 ## General
 
@@ -306,7 +327,6 @@ I have `Tor` running fine and you can make normal url requests over `Tor` in the
 Onion Browser has the solution, worst case scenario I can fork it and include the entire codebase in Fully Noded, but I want to try and find a proper solution before I do that.
 
 On android they have `orbot` and the path to getting tor working to onion sites for devs is easier.
-
 
 #### Question : What is your privacy policy and how to comply with GPDR?
 
@@ -337,7 +357,7 @@ We then loop through each signer on the device, decrypting them and seeing if it
 
 You can set a mining fee target in `settings`, if you want it to be confirmed quickly adjust this setting accordingly. Otherwise all transactions are `replace by fee` enabled in FN. To bump the fee simply tap the transaction and you will see a button for bumping the fee. If FN does not hold a signer for the wallet and the node can not sign then FN will allow you to export the new transaction as a `psbt` which you will need to pass back to your signer and broadcast again as utilizing `rbf` means you create an entirely new transaction.
 
-#### Question : Any suggestion about this problem? All the username, password, and onion address are OK<br/>
+#### Question : Any suggestion about this problem? All the username, password, and onion address are OK
 <img src="./Images/err-network-conn.png" alt="err-network-conn" border="0" width="200">
 
 Force quitting FN and rebooting `tor` on your `node` usually works. Sometimes Tor can get "stuck" especially if your node's machine has gone offline or been put to sleep. This issue may also be encountered if you connect to multiple nodes and switch between them, simply force quitting FN and reopening it resolves the issue and force refreshes the connection to the new node.
