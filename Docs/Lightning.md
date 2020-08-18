@@ -19,56 +19,21 @@ First you need to install c-lightning, to do that follow [this](https://github.c
 
 If you have c-lightning running already you can stop it. `cli/lightning-cli stop`
 
-### Install Tor
+### Install and configure Tor
+Pick the guide below for the device your're running your node on:
+ - [Mac Osx](./Tor.md/#Connecting-over-MacOS)
+ - [Windows 10](./Tor.md/#Connecting-over-Tor-Windows-10)
+ - [Debian 10](./Tor.md/#Connecting-over-Tor-Linux-Debian-10)
 
-You will need Tor running on the node. On linux `sudo apt install tor` works, on macOS `brew install tor` does the trick.
+Find the suggested Authentication settings on the device **running FN** [here](./Authentication.md/#On-the-device-running-FN).
+Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings).
 
-Boot tor as a service:
-mac: `brew services start tor`<br/>
-Linux: `systemctl start tor`
-
-### Configure Tor
 
 Create a hidden service that we will use later:
 macOS:<br/>
 `nano /usr/local/etc/tor/torrc`<br/>
 (if it does not yet exist duplicate the torrc.sample in the same directory and delete the .sample extension, saving it as a new file)
 
-On Linux:<br/>
-`nano /etc/tor/torrc`<br/>
-
-Find the hidden services section:<br/>
-```
-############### This section is just for location-hidden services ###
-
-## Once you have configured a hidden service, you can look at the
-## contents of the file ".../hidden_service/hostname" for the address
-## to tell people.
-##
-## HiddenServicePort x y:z says to redirect requests on port x to the
-## address y:z.
-```
-
-Below it add the hidden service we will use to control our lightning node:<br/>
-```
-HiddenServiceDir /usr/local/var/lib/tor/fullynoded/lightning/
-HiddenServiceVersion 3
-HiddenServicePort 1312 127.0.0.1:1312
-```
-`ctlr x` > `y` > `return` to save the changes and quit nano text editor
-
-You will then need to create the hidden service directory:<br/>
-`mkdir /usr/local/var/lib/tor/fullynoded/lightning/`
-
-On linux assign the owner (brew should do this automatically on macOS):<br/>
-`chown -R debian-tor:debian-tor /usr/local/var/lib/tor/fullynoded/lightning/`
-
-On both linux and mac:<br/>
-`chmod 700 /usr/local/var/lib/tor/fullynoded/lightning/`
-
-Restart Tor<br/>
-macOS `brew services restart tor`<br/>
-linux `systemctl restart tor`
 
 ### Get your hostname
 

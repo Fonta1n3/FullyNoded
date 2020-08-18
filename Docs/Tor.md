@@ -1,7 +1,7 @@
 ## Connecting over Tor 
  - [macOS](#Connecting-over-Tor-macOS)
  - [Windows 10](#Connecting-over-Tor-Windows-10)
- - [Debian 10](#Connecting-over-Tor-Debian-10)
+ - [Debian 10](#Connecting-over-Tor-Linux-Debian-10)
  
 #### Optional Tor v3
 ## Connecting over Tor macOS
@@ -69,8 +69,7 @@ The syntax is `HiddenServicePort xxxx 127.0.0.1:18332`, `xxxx` represents a synt
 - A ready to use `torrc` file that conforms to the guidelines above is available [here](./Docs/torrc-tailored.md).
 - Check that your node is **on**, that it's really running.
 
-Find the suggested Authentication settings on the device running FN [here](./Authentication.md/#On-the-device-running-FN).
-
+Find the suggested Authentication settings on the device running FN [here](./Authentication.md/#On-the-device-running-FN).<br/>
 Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings).
 
 ## Connecting over Tor Windows 10
@@ -138,28 +137,76 @@ Next you need to ensure your `bitcoin.conf` has rpc credentials added (see next 
 
 Once you have rpc credentials added to your `bitcoin.conf` you can reboot Bitcoin-Core.
 
-### On the device running FN
-- Now in Fully Noded go to `Settings` > `Node Manager` > `+` and add a new node by inputting your RPC credentials and copy and paste your onion address with the port at the end `qndoiqnwoiquf713y8731783rgd.onion:8332`.
-- You should never type (password) fields manually, just copy and paste between devices. Between Apple Mac, iphone and iPad, the clipboard will be synced as soon as you *put on bluetooth* on at least two of the devices. Once bluetooth is on on your mac and ipad then it should automatically paste over from the computer to iPad and back. Same should work for iPhone.
-- Add *mainnet*, *testnet*, *regtest net* and / or *lightning* at your convenience. You can run all three and connect to all three.
-
-Find the suggested Authentication settings on the device running FN [here](./Authentication.md/#On-the-device-running-FN).
-
+Find the suggested Authentication settings on the device running FN [here](./Authentication.md/#On-the-device-running-FN).<br/>
 Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings).
 
-## Connecting over Tor Debian 10
+## Connecting over Tor Linux Debian 10
 
 Install tor on linux: `sudo apt install tor` works
 
 ### On the device running your node:
+
 Boot tor as a service:
 Linux: `systemctl start tor`
 
+Once Tor is installed (and started) you will be able to create a Hidden Service.
 
-### On the device running FN:
-TBW 
+On Linux:<br/>
+`nano /etc/tor/torrc`<br/>
 
-Find the suggested Authentication settings on the device running FN [here](./Authentication.md/#On-the-device-running-FN).
+Find the hidden services section:<br/>
+```
+############### This section is just for location-hidden services ###
 
+## Once you have configured a hidden service, you can look at the
+## contents of the file ".../hidden_service/hostname" for the address
+## to tell people.
+##
+## HiddenServicePort x y:z says to redirect requests on port x to the
+## address y:z.
+```
+
+Below it add the hidden service we will use to control our Bitcoin node and lightning node:<br/>
+```
+HiddenServiceDir /usr/local/var/lib/tor/fullynoded/main
+HiddenServiceVersion 3
+HiddenServicePort 8332 127.0.0.1:8332
+
+HiddenServiceDir /usr/local/var/lib/tor/fullynoded/test
+HiddenServiceVersion 3
+HiddenServicePort 18332 127.0.0.1:18332
+
+HiddenServiceDir /usr/local/var/lib/tor/fullynoded/regtest
+HiddenServiceVersion 3
+HiddenServicePort 18443 127.0.0.1:18443
+
+HiddenServiceDir /usr/local/var/lib/tor/fullynoded/lightning/
+HiddenServiceVersion 3
+HiddenServicePort 1312 127.0.0.1:1312
+```
+`ctlr x` > `y` > `return` to save the changes and quit nano text editor
+
+You will then need to create the hidden service directory:<br/>
+`cd /usr/local/var/lib/tor/`<br/>
+`mkdir fullynoded`<br/>
+`mkdir fullynoded/main`<br/>
+`mkdir fullynoded/test`<br/>
+`mkdir fullynoded/regtest`<br/>
+`mkdir fullynoded/lightning/`
+
+On linux assign the owner for every *subdirectory* above, here example *lightning*:<br/>
+`chown -R debian-tor:debian-tor /usr/local/var/lib/tor/fullynoded/lightning/`
+
+Then:<br/>
+`chmod 700 /usr/local/var/lib/tor/fullynoded/lightning/`
+
+Restart Tor:<br/>
+linux `systemctl restart tor`
+
+Tor should start and you should be able to **navigate to** your onion address(es) you need for Fully Noded, the example is for subdirectory *main* but it should be done for all subdirectories if relevant for you:
+    * `/usr/local/var/lib/tor/fullynoded/main` (the directory for *mainnet* we added to the torrc file) and see a file called `hostname`, **open it and copy the onion address, that you need for Fully Noded**.
+	* Do the same for `test`, `regtest` and `lightning`
+
+Find the suggested Authentication settings on the device running FN [here](./Authentication.md/#On-the-device-running-FN).<br/>
 Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings).
 
