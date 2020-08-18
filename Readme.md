@@ -42,19 +42,30 @@ http://56uo4htoxdt2tgh6zui5v2q7c4ax43dd3fwueiurgqdw7lpunn2cikqd.onion:5599/donat
 
 # Why Fully Noded?
 
-To answer that question you need to know your objectives, such as:
-I'd like to manage my Bitcoin node with a fullfletched GUI
-I'd like to be self sovereignly managing my crypto holdings
-I'd like to learn about and test the newest Bitcoin developments
+To answer that question, you need to know your goals such as:
+
+  - I would like to manage my Bitcoin node with a handy GUI
+  - I would like to sovereignly manage my crypto assets myself
+  - I would like to comply with the latest bitcoin security practices 
+  - I would like to get to know and test the latest Bitcoin developments
+  - I would like to contribute to open public developments in bitcoin
+
+These are the type of goals Fully Noded supports. FN is not:
+
+ - an easy to use novice-proof bitcoin wallet to hodl cryptovalue 
+ - an anonymous coinjoin tool, use Samourai or Wasabi instead
+ - a dedicated tool with ease of use in mind to control a bitcoin node, use Gordian Wallet (too)
+ - a tool to manage your Decentralised ID, use Gordian Wallet (too)
 
 # For who is Fully Noded?
-
+Fully Noded is a multi-purpose tool for power user. It is aimed at an [experienced Bitcoin specialist](#Personal preparation), who runs a testnet (and eventually mainnet) Bitcoin node and recognises his/her goals in why to use FN and is willing to use an iOS device like iPhone or iPad.
 
 # Preparatory work for Fully Noded users
-## Personal
+## Personal preparation
  - Knowledge
  - Gear
- - Skills 
+ - Skills
+## Available info
  - Course material
  - Howto's, troubleshooting
  - Questions and Answers
