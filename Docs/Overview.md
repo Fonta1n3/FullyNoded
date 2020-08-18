@@ -8,7 +8,7 @@ Your node has all kinds of complex functionality built into it, I will only be e
 
 Bitcoin Core includes its very own built in wallet as well as different ways to interact with that wallet. *Fully Noded* does not have any wallet related code in it, it relies completely on your node for all of the wallet functionality. Think of *Fully Noded* as a remote control for you node and its wallet.
 
-Back to your node...
+#### Back to your node...
 
 When you install Bitcoin Core you will notice a few different programs that you can use:
 
@@ -74,7 +74,7 @@ which would return:
 
 Anything you can do in `bitcoin-qt` you can do with `bitcoin-cli` and much more, `bitcoin-cli` really lets you have full access to the power of your node and all the information it can give you about the Bitcoin network.
 
-The killer app here is the ability to access your nodes functionality remotely.
+**The killer app here is the ability to access your nodes functionality remotely.**
 
 There are two completely separate realms of functionality that can be accessed remotely via your node. In order to speak to your node remotely you need a port to talk to. Bitcoin Core dedicates port 8333 to the peer to peer network and port 8332 is used for `rpc`.
 

@@ -1,17 +1,14 @@
-
-
 # Tor Authentication
  - [On the device running FN](#On-the-device-running-FN)
  - [Tor V3 Authentication](#Tor-V3-Authentication)
  - [QuickConnect URL Scheme](#QuickConnect-URL-Scheme)
-### On the device running FN
+## On the device running FN
  - Now in Fully Noded go to `Settings` > `Node Manager` > `+` and add a new node by inputting your RPC credentials and copy and paste your onion address with the port at the end `qndoiqnwoiquf713y8731783rgd.onion:8332`.
  - You should never type (password) fields manually, just copy and paste between devices. Between Apple Mac, iphone and iPad, the clipboard will be synced as soon as you *put on bluetooth* on at least two of the devices. Once bluetooth is on on your mac and ipad then it should automatically paste over from the computer to iPad and back. Same should work for iPhone.
  - Add *mainnet*, *testnet*, *regtest net* and / or *lightning* at your convenience. You can run all three and connect to all three.
 
  - Restart Tor on your nodes computer `brew services restart tor`, and check that your node is **on**; that it's really running. Hard stop FN app on your device and reopen FN.
  - And you should be able to connect to your V3 hidden service from anywhere in the world with your node completely behind a firewall and no port forwarding
-
  
 ## Tor V3 Authentication
 
@@ -23,7 +20,7 @@ First get your connection going. **Resolve the connection issue first then add t
 ###### On your device running node
 - Your node is running either mainnet, testnet or regtest
 - Your node is **on**, it's really running (check that it's running)
-- You've made the appropriate HiddenService -Dir, -Version and -Port declaration in your `torrc` file for at least the matching port (respectively 8332, 18332 and/or 18443).
+- You've made the appropriate HiddenService -Dir, -Version and -Port declaration in your `torrc` file for at least the matching port (respectively 8332, 18332, 18443 and /or 1312).
 - You've started Tor for the changes to take effect
 - You've looked up the hostname files
 
