@@ -69,12 +69,8 @@ Fully Noded is a multi-purpose tool for power user. It is aimed at an [experienc
  - Skills
 ## Available info
  - Course material
-<<<<<<< HEAD
  - Tutorials
  - Troubleshooting
-=======
- - Howto's, troubleshooting
->>>>>>> cc65f165c8003018ff079c132c71e2c4055651c2
  - Questions and Answers
 
 ## Requirements
