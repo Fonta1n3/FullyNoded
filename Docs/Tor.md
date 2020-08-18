@@ -70,7 +70,8 @@ The syntax is `HiddenServicePort xxxx 127.0.0.1:18332`, `xxxx` represents a synt
 - Check that your node is **on**, that it's really running.
 
 Find the suggested Authentication settings on the device running FN [here](./Authentication.md/#On-the-device-running-FN).<br/>
-Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings).
+Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings).<br/>
+Find the suggested `lightning.conf` settings for FN [here](./Lightning.md/#Create-lightning-config).
 
 ## Connecting over Tor Windows 10
 If you already have the Tor Expert Bundle installed you can skip the first 3 steps.
@@ -138,7 +139,8 @@ Next you need to ensure your `bitcoin.conf` has rpc credentials added (see next 
 Once you have rpc credentials added to your `bitcoin.conf` you can reboot Bitcoin-Core.
 
 Find the suggested Authentication settings on the device running FN [here](./Authentication.md/#On-the-device-running-FN).<br/>
-Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings).
+Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings).<br/>
+Find the suggested `lightning.conf` settings for FN [here](./Lightning.md/#Create-lightning-config).
 
 ## Connecting over Tor Linux Debian 10
 
@@ -209,5 +211,6 @@ Tor should start and you should be able to **navigate to** your onion address(es
 	* Do the same for `test`, `regtest` and `lightning`
 
 Find the suggested Authentication settings on the device running FN [here](./Authentication.md/#On-the-device-running-FN).<br/>
-Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings).
+Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings).<br/>
+Find the suggested `lightning.conf` settings for FN [here](./Lightning.md/#Create-lightning-config).
 

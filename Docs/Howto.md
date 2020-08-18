@@ -1,38 +1,36 @@
-# Preparatory work for Fully Noded users
-## Personal preparation
- - Knowledge
- - Gear
- - Skills
-## Available info
- - Course material
- - Tutorials
- - Troubleshooting
- - Questions and Answers
+# Workflow table of contents
+0. [Overview Fully Noded](./Overview.md)
+1. [Requirements](./Howto.md#requirements)
+1. [Preparation](./Preparation.md)
+2. [Supported Nodes](./Connect-node.md#supported-nodes)
+3. [Connect your own node](./Connect-node.md#connect-your-own-node)
+4. [Connect BTCPayServer](./Connect-node.md#connect-btcpayserver)
+5. [Connect Nodl](./Connect-node.md#connect-nodl)
+6. [Connect Raspiblitz](./Connect-node.md#connect-raspiblitz)
+7. [Connect Embassy](./Connect-node.md#connect-embassy)
+8. [Connect myNode](./Connect-node.md#connect-mynode)
+9. [Importing a wallet from Specter](./Connect-node.md#importing-a-wallet-from-specter)
+10. [Troubleshooting](./Connect-node.md#troubleshooting)
+11. [What can Fully Noded do?](./Howto.md#what-can-fully-noded-do)
+12. [Download from App Store](./Howto.md#download-from-app-store)
+13. [Telegram](./Howto.md#telegram)
+14. [Q and A](./Howto.md#q-and-a)
+15. [Tutorials](./Howto.md#tutorials)
+16. [Build From Source](./Howto.md#build-from-source)
+17. [Connecting over Tor macOS](./Tor.md#connecting-over-tor-macos)
+18. [Connecting over Tor Windows 10](./Tor.md#connecting-over-tor-windows-10)
+19. [Connecting over Tor Linux Debian 10](./Tor.md#connecting-over-tor-linux-debian-10)
+20. [Bitcoin Core settings](./Howto.md#bitcoin-core-settings)
+21. [Tor V3 Authentication](./Authentication.md#tor-v3-authentication)
+22. [QuickConnect URL Scheme](./Authentication.md#quickconnect-url-scheme)
+23. [Security and Privacy](./Authentication.md#security-and-privacy)
+24. [How does it work?](./Howto.md#how-does-it-work)
 
 ## Requirements
 - At least [Bitcoin Core 0.20.0](https://bitcoincore.org/bin/bitcoin-core-0.20.0/) for "Fully Noded Multisig" wallet compatibility, Bitcoin Core wallets will of course work with any version.
 - [Tor](https://www.torproject.org/download/)
 - [C-Lightning](https://github.com/ElementsProject/lightning) (optional, currently built to work with v0.9.0-1)
 
-
-## What can Fully Noded do?
-- Recover any wallet
-- Import any wallet with xpubs/xprvs
-- WIF import
-- Create watch-only wallets on your node where the seed is encrypted and stored securely on your device so that you may sign the psbt's your node builds for you
-- RBF
-- Full coin control
-- A suite of raw transaction tools: verify, broadcast, build, sign etc...
-- A suite of PSBT tools: process, finalize, analyze, decode, join, combine etc...
-- HWW Paring
-- Easy HD Multisig capability
-- Easy Cold Storage
-- Coldcard, Ledger, Trezor, Wasabi wallet compatibilty for building psbt's/watch-only wallets or recovery
-- Most of the Bitcoin Core JSON-RPC API is covered
-- wallet.dat encryption for hot wallets
-- So much more
-- BIP39 compatiblity for your Node
-- 100% self sovereign Bitcoin use, Fully Noded is 95% powered by your own node with some additional code for smartly creating wallets and signing psbt's offline, a very minimized third party.
 
 ## Download from App Store
 [here](https://apps.apple.com/us/app/fully-noded/id1436425586)

@@ -23,6 +23,7 @@ http://56uo4htoxdt2tgh6zui5v2q7c4ax43dd3fwueiurgqdw7lpunn2cikqd.onion:5599/donat
 ### Workflow table of contents
 0. [Overview Fully Noded](./Overview.md)
 1. [Requirements](./Howto.md#requirements)
+1. [Preparation](./Preparation.md)
 2. [Supported Nodes](./Connect-node.md#supported-nodes)
 3. [Connect your own node](./Connect-node.md#connect-your-own-node)
 4. [Connect BTCPayServer](./Connect-node.md#connect-btcpayserver)
@@ -57,13 +58,38 @@ To answer that question, you need to know your goals. These are the objectives F
   - I would like to get to know and test the latest Bitcoin developments
   - I would like to contribute to open public developments in bitcoin
 
- FN is not:
+ FN is less:
 
  - an easy to use novice-proof bitcoin wallet to hodl cryptovalue; use Trezor, Ledger, KeepKey; etc. 
  - an anonymous coinjoin tool; use Samourai or Wasabi instead
  - a dedicated tool with ease of use in mind to control a bitcoin node, use Gordian Wallet (too)
  - a tool to manage your Decentralised ID; use Gordian Wallet (too)
 
+## What can Fully Noded do?
+- Recover any wallet
+- Import any wallet with xpubs/xprvs
+- WIF import
+- Create watch-only wallets on your node where the seed is encrypted and stored securely on your device so that you may sign the psbt's your node builds for you
+- RBF
+- Full coin control
+- A suite of raw transaction tools: verify, broadcast, build, sign etc...
+- A suite of PSBT tools: process, finalize, analyze, decode, join, combine etc...
+- HWW Paring
+- Easy HD Multisig capability
+- Easy Cold Storage
+- Coldcard, Ledger, Trezor, Wasabi wallet compatibilty for building psbt's/watch-only wallets or recovery
+- Most of the Bitcoin Core JSON-RPC API is covered
+- wallet.dat encryption for hot wallets
+- So much more
+- BIP39 compatiblity for your Node
+- 100% self sovereign Bitcoin use, Fully Noded is 95% powered by your own node with some additional code for smartly creating wallets and signing psbt's offline, a very minimized third party.
+
+
+# Overview and workflow
+ - [Overview](./Overview.md)
+ - [Workflow](./Howto.md)
+
+ 
 # For who is Fully Noded?
 
 Fully Noded is a multi-purpose tool for power user. It is aimed at an [experienced Bitcoin specialist](#Personal-preparation), who runs a testnet (and eventually mainnet) Bitcoin node and recognises his/her goals in why to use FN and is willing to use an iOS device like iPhone or iPad.
