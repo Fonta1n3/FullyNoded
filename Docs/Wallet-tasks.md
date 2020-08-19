@@ -112,3 +112,7 @@ Client side software needs to deduce the how the change keys will be derived fro
 - [Specter-Desktop](https://github.com/cryptoadvance/specter-desktop)
 - [Fully Noded](https://apps.apple.com/us/app/fully-noded/id1436425586)
 - [Magical Bitcoin Wallet](https://github.com/MagicalBitcoin/magical-bitcoin-wallet)
+
+## Troubleshooting
+
+A categorized page for troubleshooting is available [here](./Troubleshooting.md) or directly to [troubleshooting wallet tasks](./Troubleshooting.md#Wallet-tasks)

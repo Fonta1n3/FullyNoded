@@ -126,3 +126,7 @@ Scanning a valid node url will trigger a series of calls:
 If all goes well you will get a success message, if not you'll get an error.
 
 Thats it for now! It is a bit rough and ready but very functional, please report bugs, crashes and feature requests ⚡️⚡️⚡️⚡️⚡️⚡️⚡️
+
+## Troubleshooting
+
+A categorized page for troubleshooting is available [here](./Troubleshooting.md) or directly to [troubleshooting Lightning](./Troubleshooting.md#Lightning)

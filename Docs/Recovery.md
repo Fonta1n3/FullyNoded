@@ -46,3 +46,8 @@ Or all address types would be `combo([5585785b/84'/0'/0']xprv73h7hr7rh/0/*)`
 To read more about what the above means check out this [explainer](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md).
 
 Of course that means you need to understand the derivation, which xprv to use and have a fingerprint.
+
+
+## Troubleshooting
+
+A categorized page for troubleshooting is available [here](./Troubleshooting.md) or directly to [troubleshooting recovery ](./Troubleshooting.md#Recovery)
