@@ -1,6 +1,4 @@
 
-
-
 # <img src="./Images/fn_logo.png" alt="" width="100"/> Fully Noded™️
 
 Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own node as a backend. Powered by PSBT's and descriptors. Acts as an offline signer using your node as a watch-only wallet. [C-Lightning](https://github.com/ElementsProject/lightning) compatible for instant, unfairly cheap payments.
