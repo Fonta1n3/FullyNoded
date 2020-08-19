@@ -311,7 +311,7 @@ Tap it and save that QR, if you need to recover the wallet just tap the `+ > "im
 
 #### Question : Are there any security risks associated with export / backup? Loss of privacy (watch only), loss of funds?
 
-Loss of privacy. Not loss of funds. It holds pubkeys only. More info [here](https://github.com/Fonta1n3/FullyNoded/blob/master/Docs/Wallet-Export-Import.md)
+Loss of privacy. Not loss of funds. It holds pubkeys only. More info [here](https://github.com/Fonta1n3/FullyNoded/blob/master/Docs/Wallet-tasks.md)
 
 ##### Further question : No need to touch my external signing device again? So then FullyNoded would be the signer??
 
