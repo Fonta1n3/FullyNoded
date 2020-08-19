@@ -1,10 +1,14 @@
 #Wallet tasks
 
-[Create](#create)
-[Backup](#Backup)
-[Send and Receive](#Send-and-Receive)
-[Export and Import](#Wallet-Export-and-Import)
+ - [Create](#create)
+ - [Backup](#Backup)
+ - [Send and Receive](#Send-and-Receive)
+ - [Export and Import](#Wallet-Export-and-Import)
 
+A seperate page is dedicated to Recovery:
+
+ - [Recovery](./Recovery.md)
+ 
 ## Create
 
 Read the instruction on the site [here](https://fullynoded.app/faq/#How-Do-I-Create-a-Wallet) to create 
