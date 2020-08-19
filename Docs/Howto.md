@@ -25,7 +25,8 @@
 22. [QuickConnect URL Scheme](./Authentication.md#quickconnect-url-scheme)
 23. [Security and Privacy](./Authentication.md#security-and-privacy)
 24. [How does it work?](./Howto.md#how-does-it-work)
-
+25. [Recover FN Wallets](./Recovery.md#Fully-Noded-Wallets)
+26. [Recover anything else](./Recovery.md#Anything)
 ## Requirements
 - At least [Bitcoin Core 0.20.0](https://bitcoincore.org/bin/bitcoin-core-0.20.0/) for "Fully Noded Multisig" wallet compatibility, Bitcoin Core wallets will of course work with any version.
 - [Tor](https://www.torproject.org/download/)

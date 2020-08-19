@@ -45,6 +45,8 @@ http://56uo4htoxdt2tgh6zui5v2q7c4ax43dd3fwueiurgqdw7lpunn2cikqd.onion:5599/donat
 22. [QuickConnect URL Scheme](./Authentication.md#quickconnect-url-scheme)
 23. [Security and Privacy](./Authentication.md#security-and-privacy)
 24. [How does it work?](./Howto.md#how-does-it-work)
+25. [Recover FN Wallets](./Recovery.md#Fully-Noded-Wallets)
+26. [Recover Anything else](./Recovery.md#Anything)
 
 # Why Fully Noded?
 
