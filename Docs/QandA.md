@@ -40,6 +40,10 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 - satoshi: 0.000000001 BTC. A satoshi is the smallest unit of a bitcoin, equivalent to 100 millionth of a bitcoin.
 - UTXO's: Unspend transaction Outputs; UTXO stands for the unspent output from bitcoin transactions. Each bitcoin transaction begins with coins used to balance the ledger. UTXOs are processed continuously and are responsible for beginning and ending each transaction. Confirmation of transaction results in the removal of spent coins from the UTXO database. But a record of the spent coins still exists on the ledger. **for newbies**: UTXO is unspent bitcoin that you can "see" in your wallet and on the blockchain. It is an address and amount of sathosis. As soon as you spend the money, it won't add to your wallet balance anymore and therefore will only.
 - signed raw transaction : [Wikipage](https://en.bitcoin.it/wiki/Raw_Transactions) explains it all
+- Bitcoin-cli: Bitcoin *CommandLine Interface*; just like Bitcoin Core app the CLI uses RPC calls to give your node and the bitcoin network commands and get results back.
+- Bitcoin Core (Wallet) App, also known as `Bitcoin-qt`: Software running on MacOS, Windows and Linux that offers a **Graphical User Interface** to your Bitcoin Wallet and, if you wish, to your node. Just like Bitcoin CLI the Core app uses RPC calls to give your node and the bitcoin network commands and get results back.
+- Bitcoin-qt: another name for Bitcoin Core (Wallet) App.
+- bitcoind: Bitcoin Deamon, background process running a bitcoin node. Bitcoind is a program that implements the Bitcoin protocol for remote procedure call (RPC) use. It is also the second Bitcoin client in the network's history. It is available under the MIT license in 32-bit and 64-bit versions for Windows, GNU/Linux-based OSes, and Mac OS X. [Read more](https://en.bitcoin.it/wiki/Bitcoind)
 - psbt: Partially signed bitcoin transactions (PSBTs) Also covering BIP174. Partially Signed Bitcoin Transactions (PSBTs) are a data format that allows wallets and other tools to exchange information about a Bitcoin transaction and the signatures necessary to complete it.
 - rbf; Replace-By-Fee (RBF) is a node policy that allows an unconfirmed transaction in a mempool to be replaced with a different transaction that spends at least one of the same inputs and which pays a higher transaction fee. **For newbies:** a transaction that can't get through because of too low fee, can be overridden (replaced) with a higher fee to maybe succeed instead.
 - pure bitcoin core wallets: traditional bitcoin wallet, that has to be manually backed up, recovered etc using bitcoin-cli. Your node will sign transactions and will hold the private key.
@@ -767,6 +771,27 @@ You can only delete` wallet.dat` wallets, by going onto your node and deleting t
 #### Question : How do I delete a (FN) wallet?
 
 Look up the answer in [the FAQ] (https://fullynoded.app/faq/#How-Do-I-Delete-a-Wallet)
+
+#### Question : What’s the diff between FN wallets and bitcoin core wallets in the app?  
+*When added to bitcoin core it doesn’t show up in FN wallets but when add a FN wallet it shows up in bitcoin core.*
+
+The first section [of this link](https://medium.com/@FullyNoded/introducing-fully-noded-wallets-9fc2e4837102) explains it in detail.
+
+FN is powered by your node. You can create wallets on your node without FN. Either with your node (using `bitcoin-cli` or the `Core app`) directly or other apps.
+
+FN lets you access those wallets and in the app refers to them as "Bitcoin Core Wallets". FN *does not know anything about them* other then that they exist, FN is just a user interface between you and your node for those wallets.
+
+For "Fully Noded Wallets", they MUST be created in FN. That way FN can remember certain things about the wallet, for example everything you see in "Wallet Details" is only possible to see, because the wallet was created in the app.
+
+So FN has its own database it stores you descriptors, label etc. for that wallet, which is why you can edit the label, refill the keypool, have an address explorer etc.
+
+If you create a wallet using electrum or Join Market or bitcoin-qt, FN has no clue how that wallet was created or what was added to it.
+
+F**N wallets are of course also created on your node**, the only difference is the app knows more about them and they are created in a "smart" way.
+
+Generally, if you are not familiar with `bitcoin-cli`, then you should ignore your "Bitcoin Core Wallets" in FN, hence why they are in *advanced* tab.
+
+One of the really cool things about FN is you can add seed words as a "signer" to FN, and then spend from any watch-only "Bitcoin Core Wallet" wallet on your node. This great for all kinds of ([recovery](./Recovery.md) scenarios.
 
 ## Standup
 
