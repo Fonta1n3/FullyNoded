@@ -793,6 +793,16 @@ Generally, if you are not familiar with `bitcoin-cli`, then you should ignore yo
 
 One of the really cool things about FN is you can add seed words as a "signer" to FN, and then spend from any watch-only "Bitcoin Core Wallet" wallet on your node. This great for all kinds of ([recovery](./Recovery.md) scenarios.
 
+#### Question : I tried to spend UTXO from multiSig wallet - running Bitcoin 0.20.1 and got an error. What's wrong?
+
+Electrum is broken it seems ( [here](https://github.com/spesmilo/electrum/issues/6503) : *Electrum rejects Bitcoin Core 0.20.1 psbt's · Issue #6503 · spesmilo/electrum*.
+
+In the latest Bitcoin Core release psbt's may include both `non_witness_utxo` and `witness_utxo` to mitigate the vulnerability Trezor found recently.
+
+To fix it you can revert to bitcoin core 0.20.0. 
+
+Aug 2020 : MOST PROBABLE THIS ISSUE WILL BE SOLVED SOON AND IF YOU WON'T EXPERIENCE THE ERROR ANYMORE
+
 ## Standup
 
 #### Question : where can I download this? 
