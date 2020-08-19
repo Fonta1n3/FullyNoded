@@ -770,7 +770,7 @@ You can only delete` wallet.dat` wallets, by going onto your node and deleting t
 
 #### Question : How do I delete a (FN) wallet?
 
-Look up the answer in [the FAQ] (https://fullynoded.app/faq/#How-Do-I-Delete-a-Wallet)
+Look up the answer in [the FAQ](https://fullynoded.app/faq/#How-Do-I-Delete-a-Wallet)
 
 #### Question : What’s the diff between FN wallets and bitcoin core wallets in the app?  
 *When added to bitcoin core it doesn’t show up in FN wallets but when add a FN wallet it shows up in bitcoin core.*
