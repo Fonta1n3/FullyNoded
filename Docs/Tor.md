@@ -214,3 +214,6 @@ Find the suggested Authentication settings on the device running FN [here](./Aut
 Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings).<br/>
 Find the suggested `lightning.conf` settings for FN [here](./Lightning.md/#Create-lightning-config).
 
+## Troubleshooting
+
+A categorized page for troubleshooting is available [here](./Troubleshooting.md) or directly to [troubleshooting Tor](./Troubleshooting.md#Tor)

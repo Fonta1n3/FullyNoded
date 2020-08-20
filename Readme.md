@@ -98,7 +98,9 @@ Fully Noded is a multi-purpose tool for power user. It is aimed at an [experienc
 
 Please let us know if you have issues.
 
-PR's welcome.
+ - Pull Requests (PRs) welcome.
+ - Participate in the open [Telegram-group](https://t.me/FullyNoded)
+ - Core test team members welcome too. Just drop us a line (DM or [Telegram-group](https://t.me/FullyNoded)) and we'll invite you to the Core Test group. 
 
 ## Built With
 
