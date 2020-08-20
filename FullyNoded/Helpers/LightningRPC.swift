@@ -11,12 +11,12 @@ import Foundation
 class LightningRPC {
 
     static let torClient = TorClient.sharedInstance
+    static var attempts = 0
     class func command(method: LIGHTNING_CLI, param: Any, completion: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
         
         var rpcusername = ""
         var rpcpassword = ""
         var onionAddress = ""
-        var attempts = 0
         
         CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
             if nodes != nil {
@@ -68,6 +68,7 @@ class LightningRPC {
                 let loginString = String(format: "%@:%@", rpcusername, rpcpassword)
                 let loginData = loginString.data(using: String.Encoding.utf8)!
                 let base64LoginString = loginData.base64EncodedString()
+                request.timeoutInterval = 5
                 request.addValue("application/json", forHTTPHeaderField: "Accept")
                 request.addValue("Basic \(base64LoginString)", forHTTPHeaderField: "Authorization")
                 request.httpMethod = "POST"
@@ -85,10 +86,11 @@ class LightningRPC {
                         
                         if error != nil {
                             
-                            if attempts < 10 {
-                                attempts += 1
+                            if self.attempts < 10 {
+                                self.attempts += 1
                                 command(method: method, param: param, completion: completion)
                             } else {
+                                self.attempts = 0
                                 #if DEBUG
                                 print("error: \(error!.localizedDescription)")
                                 #endif

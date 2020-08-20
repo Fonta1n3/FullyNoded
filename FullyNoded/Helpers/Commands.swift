@@ -92,4 +92,7 @@ public enum LIGHTNING_CLI: String {
     case listsendpays = "listsendpays"
     case listinvoices = "listinvoices"
     case withdraw = "withdraw"
+    case getroute = "getroute"
+    case listchannels = "listchannels"
+    case sendpay = "sendpay"
 }

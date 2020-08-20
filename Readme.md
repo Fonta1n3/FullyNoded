@@ -84,7 +84,6 @@ To answer that question, you need to know your goals. These are the objectives F
 - BIP39 compatiblity for your Node
 - 100% self sovereign Bitcoin use, Fully Noded is 95% powered by your own node with some additional code for smartly creating wallets and signing psbt's offline, a very minimized third party.
 
-
 # Overview and workflow
  - [Overview](./Overview.md)
  - [Workflow](./Howto.md)
@@ -92,7 +91,7 @@ To answer that question, you need to know your goals. These are the objectives F
  
 # For who is Fully Noded?
 
-Fully Noded is a multi-purpose tool for power user. It is aimed at an [experienced Bitcoin specialist](#Personal-preparation), who runs a testnet (and eventually mainnet) Bitcoin node and recognises his/her goals in why to use FN and is willing to use an iOS device like iPhone or iPad.
+Fully Noded is a multi-purpose tool for power users. It is aimed at an [experienced Bitcoin specialist](#Personal-preparation), who runs a testnet (and eventually mainnet) Bitcoin node and recognises his/her goals in why to use FN and is willing to use an iOS device like iPhone or iPad.
 
 ## Contributing
 

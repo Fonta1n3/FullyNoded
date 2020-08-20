@@ -15,6 +15,7 @@
 		D00F851B24949691008D7CD3 /* AppPasswordViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00F851A24949691008D7CD3 /* AppPasswordViewController.swift */; };
 		D00F851D2494A616008D7CD3 /* TorAuthViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00F851C2494A616008D7CD3 /* TorAuthViewController.swift */; };
 		D00F851F2494A7CA008D7CD3 /* AuthKeysStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00F851E2494A7CA008D7CD3 /* AuthKeysStruct.swift */; };
+		D011702824EBA3CE00ACC44B /* ChannelDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D011702724EBA3CE00ACC44B /* ChannelDetailViewController.swift */; };
 		D0126FF022443D1100412629 /* whitePlus.png in Resources */ = {isa = PBXBuildFile; fileRef = D0126FEF22443D1100412629 /* whitePlus.png */; };
 		D0126FF622446E3800412629 /* InvoiceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0126FF522446E3800412629 /* InvoiceViewController.swift */; };
 		D0126FF82244842000412629 /* bWhite.png in Resources */ = {isa = PBXBuildFile; fileRef = D0126FF72244842000412629 /* bWhite.png */; };
@@ -67,6 +68,8 @@
 		D05D9730226425730035F1DE /* images.png in Resources */ = {isa = PBXBuildFile; fileRef = D05D972F226425730035F1DE /* images.png */; };
 		D05D9732226433B60035F1DE /* strobe.png in Resources */ = {isa = PBXBuildFile; fileRef = D05D9731226433B60035F1DE /* strobe.png */; };
 		D05D973422647CE60035F1DE /* QRGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05D973322647CE60035F1DE /* QRGenerator.swift */; };
+		D069051F24EA6C1F007F939D /* LightningPeersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D069051E24EA6C1F007F939D /* LightningPeersViewController.swift */; };
+		D069052124EA8E95007F939D /* LightningChannelsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D069052024EA8E95007F939D /* LightningChannelsViewController.swift */; };
 		D0707D2124C7F4BA00F1C07C /* BitSense.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = D0707D1F24C7F4BA00F1C07C /* BitSense.xcdatamodeld */; };
 		D071A2A0214880F700C4BCB3 /* Search - tripkey.png in Resources */ = {isa = PBXBuildFile; fileRef = D071A29F214880F700C4BCB3 /* Search - tripkey.png */; };
 		D07399D9245EEA5F00860B7E /* Broadcaster.swift in Sources */ = {isa = PBXBuildFile; fileRef = D07399D8245EEA5F00860B7E /* Broadcaster.swift */; };
@@ -177,6 +180,7 @@
 		D00F851A24949691008D7CD3 /* AppPasswordViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPasswordViewController.swift; sourceTree = "<group>"; };
 		D00F851C2494A616008D7CD3 /* TorAuthViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TorAuthViewController.swift; sourceTree = "<group>"; };
 		D00F851E2494A7CA008D7CD3 /* AuthKeysStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthKeysStruct.swift; sourceTree = "<group>"; };
+		D011702724EBA3CE00ACC44B /* ChannelDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelDetailViewController.swift; sourceTree = "<group>"; };
 		D0126FEF22443D1100412629 /* whitePlus.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whitePlus.png; sourceTree = "<group>"; };
 		D0126FF522446E3800412629 /* InvoiceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceViewController.swift; sourceTree = "<group>"; };
 		D0126FF72244842000412629 /* bWhite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = bWhite.png; sourceTree = "<group>"; };
@@ -231,6 +235,8 @@
 		D05D972F226425730035F1DE /* images.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = images.png; sourceTree = "<group>"; };
 		D05D9731226433B60035F1DE /* strobe.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = strobe.png; sourceTree = "<group>"; };
 		D05D973322647CE60035F1DE /* QRGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRGenerator.swift; sourceTree = "<group>"; };
+		D069051E24EA6C1F007F939D /* LightningPeersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LightningPeersViewController.swift; sourceTree = "<group>"; };
+		D069052024EA8E95007F939D /* LightningChannelsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LightningChannelsViewController.swift; sourceTree = "<group>"; };
 		D0707D2024C7F4BA00F1C07C /* BitSense.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = BitSense.xcdatamodel; sourceTree = "<group>"; };
 		D071A29F214880F700C4BCB3 /* Search - tripkey.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Search - tripkey.png"; sourceTree = "<group>"; };
 		D07399D8245EEA5F00860B7E /* Broadcaster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Broadcaster.swift; sourceTree = "<group>"; };
@@ -376,6 +382,9 @@
 				D08495FA22EBCA5E003FE8EB /* Connection Type */,
 				D082397824DAE4CB0098D4F4 /* LightningNodeManagerViewController.swift */,
 				D082397A24DBDB330098D4F4 /* AddPeerViewController.swift */,
+				D069051E24EA6C1F007F939D /* LightningPeersViewController.swift */,
+				D069052024EA8E95007F939D /* LightningChannelsViewController.swift */,
+				D011702724EBA3CE00ACC44B /* ChannelDetailViewController.swift */,
 			);
 			path = "Node Manager";
 			sourceTree = "<group>";
@@ -1060,6 +1069,7 @@
 				D096EDFE249DCF970084A065 /* ShowDetailViewController.swift in Sources */,
 				D02094F02257FB78002E8E7A /* FirstTime.swift in Sources */,
 				D0560EEF22784E9D00C3E909 /* UnsignedViewController.swift in Sources */,
+				D069052124EA8E95007F939D /* LightningChannelsViewController.swift in Sources */,
 				D058F3C2226D9DED00CF4BE9 /* OutgoingsTableViewController.swift in Sources */,
 				D0C20EE024A6EF3800C62AA4 /* Balances.swift in Sources */,
 				D08A92B7233E113B00409D6E /* LockedViewController.swift in Sources */,
@@ -1127,6 +1137,7 @@
 				D0B6936E22B2412D00A2C3E6 /* ChooseConnectionTypeViewController.swift in Sources */,
 				D07E0DE622F9168F00A81FA8 /* WalletManagerViewController.swift in Sources */,
 				D0384E34246AC53B002FEE94 /* base58.c in Sources */,
+				D011702824EBA3CE00ACC44B /* ChannelDetailViewController.swift in Sources */,
 				D037C874231BB04B006C357D /* ScanExtendedKeyViewController.swift in Sources */,
 				D044ED78235AF42D00300D62 /* ImportStruct.swift in Sources */,
 				D0C20ED624A6E19600C62AA4 /* NetworkInfo.swift in Sources */,
@@ -1164,6 +1175,7 @@
 				D09A331324AC4C93009FA0B2 /* Descriptor.swift in Sources */,
 				D07AED032435B62800C2FADB /* Commands.swift in Sources */,
 				D0EDDF1124972CEF00657931 /* InvoiceSettingsViewController.swift in Sources */,
+				D069051F24EA6C1F007F939D /* LightningPeersViewController.swift in Sources */,
 				D084960422EBCD3B003FE8EB /* GetInfoViewController.swift in Sources */,
 				D073E16E22558CDE0012A28C /* CoreDataService.swift in Sources */,
 				D037C86E231BAFD2006C357D /* AddAsChangeViewController.swift in Sources */,
@@ -1332,8 +1344,8 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 206;
-				DEVELOPMENT_TEAM = 8JHDU5M9KD;
+				CURRENT_PROJECT_VERSION = 207;
+				DEVELOPMENT_TEAM = 69FR345CDA;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
@@ -1345,7 +1357,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.286;
+				MARKETING_VERSION = 1.287;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1368,9 +1380,9 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 206;
+				CURRENT_PROJECT_VERSION = 207;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 8JHDU5M9KD;
+				DEVELOPMENT_TEAM = 69FR345CDA;
 				ENABLE_TESTABILITY = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1383,7 +1395,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.286;
+				MARKETING_VERSION = 1.287;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
