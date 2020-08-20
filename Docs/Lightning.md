@@ -86,7 +86,7 @@ Thats it, Fully Noded will now automatically use those credentials for any light
 In Fully Noded you will see lightning bolt ⚡️ buttons in a few places, tap them to see what they do.
 
 From v0.1.72 FN has a nice new visualization for your active lightning channels and a lightning button from home node view to access your lightning node<br/>
-<a href="../Videos/IMG_3163.MP4" target="_blank"><img src="./Images/Ligtning-active-channels.png" alt="Tor-Hidden-Service-configuration" border="0" width="200"></a>
+<a href="../Videos/IMG_3163.MP4" target="_blank"><img src="./Images/Ligtning-active-channels.jpg" alt="Tor-Hidden-Service-configuration" border="0" width="200"></a>
 
 ### Invoices
 For invoices, Fully Noded by default creates on-chain invoice's from your Bitcoin Core node, tap the lightning bolt to create a lightning invoice, you can add optional amount (btc) and label for the bolt11 invoices.
