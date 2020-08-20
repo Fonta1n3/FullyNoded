@@ -40,36 +40,6 @@ http://56uo4htoxdt2tgh6zui5v2q7c4ax43dd3fwueiurgqdw7lpunn2cikqd.onion:5599/donat
 24. [Built With](#built-with)
 25. [The docs](#docs)
 
-# Why Fully Noded?
-
-To answer that question, you need to know your goals. These are the objectives Fully Noded supports:
-
-  - I would like to manage my Bitcoin node with a handy GUI
-  - I would like to sovereignly manage my crypto assets myself
-  - I would like to comply with the latest bitcoin security practices 
-  - I would like to get to know and test the latest Bitcoin developments
-  - I would like to contribute to open public developments in bitcoin
-
- FN is not:
-
- - an easy to use novice-proof bitcoin wallet to hodl cryptovalue; use Trezor, Ledger, KeepKey; etc. 
- - an anonymous coinjoin tool; use Samourai or Wasabi instead
- - a dedicated tool with ease of use in mind to control a bitcoin node, use Gordian Wallet (too)
- - a tool to manage your Decentralised ID; use Gordian Wallet (too)
-
-# For who is Fully Noded?
-Fully Noded is a multi-purpose tool for power user. It is aimed at an [experienced Bitcoin specialist](#Personal preparation), who runs a testnet (and eventually mainnet) Bitcoin node and recognises his/her goals in why to use FN and is willing to use an iOS device like iPhone or iPad.
-
-# Preparatory work for Fully Noded users
-## Personal preparation
- - Knowledge
- - Gear
- - Skills
-## Available info
- - Course material
- - Howto's, troubleshooting
- - Questions and Answers
-
 ## Requirements
 - At least [Bitcoin Core 0.20.0](https://bitcoincore.org/bin/bitcoin-core-0.20.0/) for "Fully Noded Multisig" wallet compatibility, Bitcoin Core wallets will of course work with any version.
 - [Tor](https://www.torproject.org/download/)

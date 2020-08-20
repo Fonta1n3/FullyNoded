@@ -68,6 +68,13 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         }
     }
     
+    @IBAction func showLightningNode(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            self?.performSegue(withIdentifier: "segueToLightningNode", sender: self)
+        }
+    }
+    
+    
     private func setEncryptionKey() {
         firstTimeHere() { [unowned vc = self] success in
             if !success {

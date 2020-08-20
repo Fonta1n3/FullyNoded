@@ -703,9 +703,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                     showAlert(vc: self, title: "Message", message: message)
                 } else if let status = dict["status"] as? String {
                     if status == "complete" {
-                        let msatoshi = dict["msatoshi"] as! Int
-                        let msatoshi_sent = dict["msatoshi_sent"] as! Int
-                        showAlert(vc: self, title: "Success ✅", message: "Lightning payment completed!\n\nAmount paid \(msatoshi / 1000) sats for a fee of \(Double((msatoshi_sent - msatoshi)) / 1000.0) sats")
+                        let msatoshi = Double(dict["msatoshi"] as! Int)
+                        let msatoshi_sent = Double(dict["msatoshi_sent"] as! Int)
+                        showAlert(vc: self, title: "Success ✅", message: "Lightning payment completed!\n\nAmount paid \(msatoshi / 1000.0) sats for a fee of \(Double((msatoshi_sent - msatoshi)) / 1000.0) sats")
                     }
                 }
             } else {

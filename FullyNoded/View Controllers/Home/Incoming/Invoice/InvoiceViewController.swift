@@ -102,8 +102,8 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                     millisats = "\(int)"
                 }
             } else if isSats {
-                if let int = Int(amountField.text!) {
-                    millisats = "\(int * 1000)"
+                if let int = Double(amountField.text!) {
+                    millisats = "\(Int(int * 1000))"
                 }
             }
         }
