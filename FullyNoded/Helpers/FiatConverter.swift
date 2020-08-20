@@ -13,7 +13,7 @@ class FiatConverter {
     private init() {}
     func getFxRate(completion: @escaping ((Double?)) -> Void) {
         let torClient = TorClient.sharedInstance
-        let url = NSURL(string: "http://bhnabseew4xlooaatukm7sxmvel2ntj53phtx3om4pcxcyg5moyciryd.onion/now/USD/kraken")
+        let url = NSURL(string: "https://blockchain.info/ticker")
         let task = torClient.session.dataTask(with: url! as URL) { (data, response, error) -> Void in
             do {
                 if error != nil {
@@ -25,8 +25,10 @@ class FiatConverter {
                                 #if DEBUG
                                 print("json = \(json)")
                                 #endif
-                                if let data = json["close"] as? Double {
-                                    completion(data)
+                                if let data = json["USD"] as? NSDictionary {
+                                    if let rateCheck = data["15m"] as? Double {
+                                        completion(rateCheck)
+                                    }
                                 }
                             }
                         } catch {

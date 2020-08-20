@@ -122,8 +122,9 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        selectedChannel = channels[indexPath.section]
-        showDetail()
+        showAlert(vc: self, title: "Coming soon", message: "Automated channel balancing is under construction.")
+        //selectedChannel = channels[indexPath.section]
+        //showDetail()
     }
     
     private func loadPeers() {

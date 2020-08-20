@@ -86,7 +86,7 @@ class LightningRPC {
                         
                         if error != nil {
                             
-                            if self.attempts < 10 {
+                            if self.attempts < 3 {
                                 self.attempts += 1
                                 command(method: method, param: param, completion: completion)
                             } else {
