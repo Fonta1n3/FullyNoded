@@ -1,4 +1,45 @@
-# Wallet Export and Import
+#Wallet tasks
+
+ - [Create](#create)
+ - [Backup](#Backup)
+ - [Send and Receive](#Send-and-Receive)
+ - [Export and Import](#Wallet-Export-and-Import)
+
+A seperate page is dedicated to Recovery:
+
+ - [Recovery](./Recovery.md)
+ 
+## Create
+
+Read the instruction on the site [here](https://fullynoded.app/faq/#How-Do-I-Create-a-Wallet) to create 
+
+## Backup
+Fully Noded first will use the devices cryptographically secure random number generator to create a seed for your wallet, it then converts that random data into a bip39 mnemonic (seed words) so that you may easily back the wallet up **by writing those words down** and easily recover the wallet by inputting those words.
+
+There are many sources to learn and practise smart custodianship for your seed words, for example:
+
+ - [The Smart Custody Book](https://github.com/BlockchainCommons/SmartCustodyBook)
+ - Several articles by Pamela Morgan on Medium [here](https://medium.com/@pamelawjd)
+
+## Delete
+
+There is difference in *Fully Noded* Wallet versus *Bitcoin Core* wallet (watch only in FN) in how to delete them.
+
+Read the instruction on the site [here](https://fullynoded.app/faq/#How-Do-I-Delete-a-Wallet)
+
+## Send and Receive
+
+How you spend funds in FN is dependent of:
+
+ - *Fully Noded* Wallet versus *Bitcoin Core* wallet (watch only in FN)
+ - *Single Signature* in Fully Noded Wallet vs. *Multi Signature* in Fully Noded Wallet
+ 
+Read the *Single Signature* explanation for Fully Noded Wallets on the site [here](https://fullynoded.app/faq/#single-signature)
+
+Read the *Multi Signature* explanation for Fully Noded Wallets on the site [here](https://fullynoded.app/faq/#multi-signature)
+
+
+## Wallet Export and Import
 
 Fully Noded utilizes a wallet export/import QR code to allow users to seamlessly export and import walllets and to easily back them up offline. The below description is a brief spec defining the scheme and the motivation.
 
@@ -71,3 +112,7 @@ Client side software needs to deduce the how the change keys will be derived fro
 - [Specter-Desktop](https://github.com/cryptoadvance/specter-desktop)
 - [Fully Noded](https://apps.apple.com/us/app/fully-noded/id1436425586)
 - [Magical Bitcoin Wallet](https://github.com/MagicalBitcoin/magical-bitcoin-wallet)
+
+## Troubleshooting
+
+A categorized page for troubleshooting is available [here](./Troubleshooting.md) or directly to [troubleshooting wallet tasks](./Troubleshooting.md#Wallet-tasks)
