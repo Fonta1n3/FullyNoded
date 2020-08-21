@@ -10,6 +10,7 @@ import UIKit
 
 class LightningPeersViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
+    var id = ""
     let spinner = ConnectingView()
     var peerArray = [[String:Any]]()
     var selectedPeer:[String:Any]?
@@ -74,23 +75,61 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "channelCell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "peerCell", for: indexPath)
         cell.selectionStyle = .none
+        cell.layer.borderColor = UIColor.lightGray.cgColor
+        cell.layer.borderWidth = 0.5
+        let connectedImageView = cell.viewWithTag(1) as! UIImageView
+        let idLabel = cell.viewWithTag(2) as! UILabel
+        let channelsImageView = cell.viewWithTag(3) as! UIImageView
+        let channelStatus = cell.viewWithTag(4) as! UILabel
+        
         if peerArray.count > 0 {
             let dict = peerArray[indexPath.section]
+            
             if let id = dict["id"] as? String {
-                cell.textLabel?.text = id
+                idLabel.text = id
             }
-            cell.textLabel?.textColor = .white
+            
+            if let connected = dict["connected"] as? Bool {
+                if connected {
+                    connectedImageView.image = UIImage(systemName: "person.crop.circle.badge.checkmark")
+                    connectedImageView.tintColor = .systemGreen
+                } else {
+                    connectedImageView.image = UIImage(systemName: "person.crop.circle.badge.exclam")
+                    connectedImageView.tintColor = .systemRed
+                }
+            }
+            
+            if let channels = dict["channels"] as? NSArray {
+                if channels.count > 0 {
+                    channelsImageView.image = UIImage(systemName: "bolt")
+                    channelsImageView.tintColor = .systemYellow
+                    if let status = (channels[0] as! NSDictionary)["state"] as? String {
+                        channelStatus.text = status
+                    } else {
+                        channelStatus.text = ""
+                    }
+                } else {
+                    channelsImageView.image = UIImage(systemName: "bolt.slash")
+                    channelsImageView.tintColor = .systemBlue
+                    channelStatus.text = "no channels with peer"
+                }
+            }
+            
         }
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.selectedPeer = vc.peerArray[indexPath.section]
-            vc.performSegue(withIdentifier: "segueToPeerDetails", sender: vc)
+        DispatchQueue.main.async { [weak self] in
+            self?.id = self?.peerArray[indexPath.section]["id"] as? String ?? ""
+            self?.performSegue(withIdentifier: "segueToKeySend", sender: self)
         }
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 96
     }
     
     private func addPeer(id: String, ip: String, port: String?) {
@@ -115,6 +154,12 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destination.
         // Pass the selected object to the new view controller
+        
+        if segue.identifier == "segueToKeySend" {
+            if let vc = segue.destination as? KeySendViewController {
+                vc.id = id
+            }
+        }
         
         if segue.identifier == "segueToPeerDetails" {
             if let vc = segue.destination as? ProcessPSBTViewController {

@@ -52,6 +52,7 @@
 		D03968B3246F769C0010D821 /* KeychainKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = D03968B2246F769C0010D821 /* KeychainKeys.swift */; };
 		D039D3C823322F1300D1ED18 /* NodeStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D039D3C723322F1300D1ED18 /* NodeStruct.swift */; };
 		D039D3CA2332440D00D1ED18 /* HDMusigStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D039D3C92332440D00D1ED18 /* HDMusigStruct.swift */; };
+		D03F65F124EFB25100901D06 /* KeySendViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D03F65F024EFB25100901D06 /* KeySendViewController.swift */; };
 		D0410617224ED189004AC0D0 /* ObjectiveCHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = D0410616224ED189004AC0D0 /* ObjectiveCHeader.m */; };
 		D044ED78235AF42D00300D62 /* ImportStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D044ED77235AF42D00300D62 /* ImportStruct.swift */; };
 		D0452AD42246C7830013E225 /* clear.png in Resources */ = {isa = PBXBuildFile; fileRef = D0452AD32246C7820013E225 /* clear.png */; };
@@ -218,6 +219,7 @@
 		D03968B2246F769C0010D821 /* KeychainKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainKeys.swift; sourceTree = "<group>"; };
 		D039D3C723322F1300D1ED18 /* NodeStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeStruct.swift; sourceTree = "<group>"; };
 		D039D3C92332440D00D1ED18 /* HDMusigStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HDMusigStruct.swift; sourceTree = "<group>"; };
+		D03F65F024EFB25100901D06 /* KeySendViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeySendViewController.swift; sourceTree = "<group>"; };
 		D0410615224ED188004AC0D0 /* FullyNoded-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FullyNoded-Bridging-Header.h"; sourceTree = "<group>"; };
 		D0410616224ED189004AC0D0 /* ObjectiveCHeader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ObjectiveCHeader.m; sourceTree = "<group>"; };
 		D044ED77235AF42D00300D62 /* ImportStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportStruct.swift; sourceTree = "<group>"; };
@@ -385,6 +387,7 @@
 				D069051E24EA6C1F007F939D /* LightningPeersViewController.swift */,
 				D069052024EA8E95007F939D /* LightningChannelsViewController.swift */,
 				D011702724EBA3CE00ACC44B /* ChannelDetailViewController.swift */,
+				D03F65F024EFB25100901D06 /* KeySendViewController.swift */,
 			);
 			path = "Node Manager";
 			sourceTree = "<group>";
@@ -1130,6 +1133,7 @@
 				D0F3919624C0379200EA8A2A /* ImportWallet.swift in Sources */,
 				D0A519B9226C212C00860D5C /* SendUTXO.swift in Sources */,
 				D0855FC622B08EE000DBBFC2 /* TorClient.swift in Sources */,
+				D03F65F124EFB25100901D06 /* KeySendViewController.swift in Sources */,
 				D0E51E5B226592C9005D1909 /* NodeDetailViewController.swift in Sources */,
 				D0233F222361E68F0041FFBA /* KeyGen.swift in Sources */,
 				D0126FF622446E3800412629 /* InvoiceViewController.swift in Sources */,
@@ -1344,7 +1348,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 210;
+				CURRENT_PROJECT_VERSION = 211;
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1357,7 +1361,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.290;
+				MARKETING_VERSION = 1.291;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1380,7 +1384,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 210;
+				CURRENT_PROJECT_VERSION = 211;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				ENABLE_TESTABILITY = NO;
@@ -1395,7 +1399,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.290;
+				MARKETING_VERSION = 1.291;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";

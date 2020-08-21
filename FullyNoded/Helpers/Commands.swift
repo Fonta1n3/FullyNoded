@@ -95,4 +95,6 @@ public enum LIGHTNING_CLI: String {
     case getroute = "getroute"
     case listchannels = "listchannels"
     case sendpay = "sendpay"
+    case rebalance = "rebalance"
+    case keysend = "keysend"
 }

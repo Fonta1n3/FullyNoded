@@ -37,7 +37,7 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
         
         if newlyAdded {
             newlyAdded = false
-            showAlert(vc: self, title: "⚡️ Lightning Node added ⚡️", message: "We are fetching info from your lightning node now... Usually to get here you need to go to \"settings\" > \"node manager\" > ⚡️ > ⚙️\n\nFrom here you can see stats about your lightning node, see your peers, tap the plus button to add a new peer and create a channel with them. For others to connect to you tap the export button to share your nodes URI.")
+            showAlert(vc: self, title: "⚡️ Lightning Node added ⚡️", message: "We are now fecthing info from your node, to view this screen from now on just tap the ⚡️ on the home screen to toggle between Lightning and onchcain.")
         }
     }
     
@@ -80,7 +80,7 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
                 let feesCollected = dict["fees_collected_msat"] as? String ?? "0msat"
                 let version = dict["version"] as? String ?? ""
                 if self != nil {
-                    self?.color = dict["color"] as! String
+                    self?.color = dict["color"] as? String ?? "03c304"
                     self?.myId = id
                     self?.tableArray.append(alias)
                     self?.tableArray.append("\(num_peers)")
