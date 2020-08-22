@@ -130,7 +130,7 @@
 	<key>NSLocationUsageDescription</key>
 	<string>We dont use your location</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>We dont use your loaction</string>
+	<string>We dont use your location</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>So we can upload a QR code from your photo library</string>
 	<key>UIApplicationSceneManifest</key>

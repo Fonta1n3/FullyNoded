@@ -71,7 +71,6 @@
 		D05D973422647CE60035F1DE /* QRGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05D973322647CE60035F1DE /* QRGenerator.swift */; };
 		D069051F24EA6C1F007F939D /* LightningPeersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D069051E24EA6C1F007F939D /* LightningPeersViewController.swift */; };
 		D069052124EA8E95007F939D /* LightningChannelsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D069052024EA8E95007F939D /* LightningChannelsViewController.swift */; };
-		D0707D2124C7F4BA00F1C07C /* BitSense.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = D0707D1F24C7F4BA00F1C07C /* BitSense.xcdatamodeld */; };
 		D071A2A0214880F700C4BCB3 /* Search - tripkey.png in Resources */ = {isa = PBXBuildFile; fileRef = D071A29F214880F700C4BCB3 /* Search - tripkey.png */; };
 		D07399D9245EEA5F00860B7E /* Broadcaster.swift in Sources */ = {isa = PBXBuildFile; fileRef = D07399D8245EEA5F00860B7E /* Broadcaster.swift */; };
 		D073E16E22558CDE0012A28C /* CoreDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D073E16D22558CDE0012A28C /* CoreDataService.swift */; };
@@ -131,6 +130,7 @@
 		D0C20EE024A6EF3800C62AA4 /* Balances.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20EDF24A6EF3800C62AA4 /* Balances.swift */; };
 		D0C20EE224A7639800C62AA4 /* LibWally.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0C20EE124A7639800C62AA4 /* LibWally.framework */; };
 		D0C20EE724A78A9700C62AA4 /* CreateFullyNodedWalletViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20EE624A78A9700C62AA4 /* CreateFullyNodedWalletViewController.swift */; };
+		D0C4EE6F24F0EC9B003C929A /* BitSense.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = D0C4EE6D24F0EC9B003C929A /* BitSense.xcdatamodeld */; };
 		D0C5A58824AECDBE003B11A9 /* SignerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C5A58724AECDBE003B11A9 /* SignerViewController.swift */; };
 		D0D4B9A624DA616300572811 /* Lightning.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0D4B9A524DA616300572811 /* Lightning.swift */; };
 		D0D71DA32351F835005CCDB9 /* UtilitieMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0D71DA22351F835005CCDB9 /* UtilitieMenuViewController.swift */; };
@@ -227,7 +227,7 @@
 		D0452AD52246E0370013E225 /* whiteBroom.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteBroom.png; sourceTree = "<group>"; };
 		D0452ADA2247417F0013E225 /* ImportPrivKeyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportPrivKeyViewController.swift; sourceTree = "<group>"; };
 		D0452ADC224743C50013E225 /* LogInViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogInViewController.swift; sourceTree = "<group>"; };
-		D049CB3824C7EFDF0039711B /* iTunesArtwork@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "iTunesArtwork@2x.png"; path = "../../../../MyStuff/temp/FINAL-Fully Noded-logo/ios/iTunesArtwork@2x.png"; sourceTree = "<group>"; };
+		D049CB3824C7EFDF0039711B /* iTunesArtwork@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "iTunesArtwork@2x.png"; sourceTree = "<group>"; };
 		D0560EE82277F75900C3E909 /* UTXOViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOViewController.swift; sourceTree = "<group>"; };
 		D0560EEE22784E9D00C3E909 /* UnsignedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnsignedViewController.swift; sourceTree = "<group>"; };
 		D05692E221434452006DF0F4 /* MainMenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuViewController.swift; sourceTree = "<group>"; };
@@ -239,7 +239,6 @@
 		D05D973322647CE60035F1DE /* QRGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRGenerator.swift; sourceTree = "<group>"; };
 		D069051E24EA6C1F007F939D /* LightningPeersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LightningPeersViewController.swift; sourceTree = "<group>"; };
 		D069052024EA8E95007F939D /* LightningChannelsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LightningChannelsViewController.swift; sourceTree = "<group>"; };
-		D0707D2024C7F4BA00F1C07C /* BitSense.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = BitSense.xcdatamodel; sourceTree = "<group>"; };
 		D071A29F214880F700C4BCB3 /* Search - tripkey.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Search - tripkey.png"; sourceTree = "<group>"; };
 		D07399D8245EEA5F00860B7E /* Broadcaster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Broadcaster.swift; sourceTree = "<group>"; };
 		D073E16D22558CDE0012A28C /* CoreDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataService.swift; sourceTree = "<group>"; };
@@ -298,6 +297,7 @@
 		D0C20EDF24A6EF3800C62AA4 /* Balances.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Balances.swift; sourceTree = "<group>"; };
 		D0C20EE124A7639800C62AA4 /* LibWally.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = LibWally.framework; path = Carthage/Build/iOS/LibWally.framework; sourceTree = "<group>"; };
 		D0C20EE624A78A9700C62AA4 /* CreateFullyNodedWalletViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateFullyNodedWalletViewController.swift; sourceTree = "<group>"; };
+		D0C4EE6E24F0EC9B003C929A /* BitSense.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = BitSense.xcdatamodel; sourceTree = "<group>"; };
 		D0C5A58724AECDBE003B11A9 /* SignerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignerViewController.swift; sourceTree = "<group>"; };
 		D0CB488F2435B32E0072D1F5 /* Entities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Entities.swift; sourceTree = "<group>"; };
 		D0CB48902435B32E0072D1F5 /* Commands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Commands.swift; sourceTree = "<group>"; };
@@ -457,12 +457,12 @@
 				D0FA417A213C7CB70028E4F8 /* Images */,
 				D0286D6321E267AD00954991 /* Miscellaneous */,
 				D00B9A272111427200E8B95A /* AppDelegate.swift */,
+				D0C4EE6D24F0EC9B003C929A /* BitSense.xcdatamodeld */,
 				D0410615224ED188004AC0D0 /* FullyNoded-Bridging-Header.h */,
 				D0410616224ED189004AC0D0 /* ObjectiveCHeader.m */,
 				D00B9A2B2111427200E8B95A /* Main.storyboard */,
 				D00B9A312111427200E8B95A /* Assets.xcassets */,
 				D00B9A332111427200E8B95A /* LaunchScreen.storyboard */,
-				D0707D1F24C7F4BA00F1C07C /* BitSense.xcdatamodeld */,
 				D00B9A362111427200E8B95A /* Info.plist */,
 				D0AD9B6723E7ECC20032C607 /* SceneDelegate.swift */,
 			);
@@ -1167,8 +1167,8 @@
 				D00F851D2494A616008D7CD3 /* TorAuthViewController.swift in Sources */,
 				D09A330F24A9B853009FA0B2 /* RecoveryViewController.swift in Sources */,
 				D0C20EDA24A6E46E00C62AA4 /* Uptime.swift in Sources */,
-				D0707D2124C7F4BA00F1C07C /* BitSense.xcdatamodeld in Sources */,
 				D09A330124A848DA009FA0B2 /* SeedDisplayerViewController.swift in Sources */,
+				D0C4EE6F24F0EC9B003C929A /* BitSense.xcdatamodeld in Sources */,
 				D0390326246B960B00D32C43 /* KeyChain.swift in Sources */,
 				D037C868231B85A0006C357D /* ExtendedKeysParentViewController.swift in Sources */,
 				D0EF29C1216B82B400EB776A /* SettingsViewController.swift in Sources */,
@@ -1349,7 +1349,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 211;
-				DEVELOPMENT_TEAM = 8JHDU5M9KD;
+				DEVELOPMENT_TEAM = 69FR345CDA;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
@@ -1386,7 +1386,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 211;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 8JHDU5M9KD;
+				DEVELOPMENT_TEAM = 69FR345CDA;
 				ENABLE_TESTABILITY = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1492,14 +1492,13 @@
 /* End XCConfigurationList section */
 
 /* Begin XCVersionGroup section */
-		D0707D1F24C7F4BA00F1C07C /* BitSense.xcdatamodeld */ = {
+		D0C4EE6D24F0EC9B003C929A /* BitSense.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
-				D0707D2024C7F4BA00F1C07C /* BitSense.xcdatamodel */,
+				D0C4EE6E24F0EC9B003C929A /* BitSense.xcdatamodel */,
 			);
-			currentVersion = D0707D2024C7F4BA00F1C07C /* BitSense.xcdatamodel */;
-			name = BitSense.xcdatamodeld;
-			path = ../../FullyNoded_old/BitSense/BitSense.xcdatamodeld;
+			currentVersion = D0C4EE6E24F0EC9B003C929A /* BitSense.xcdatamodel */;
+			path = BitSense.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
 		};
