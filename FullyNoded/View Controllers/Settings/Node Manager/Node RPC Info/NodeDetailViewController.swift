@@ -17,13 +17,13 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     var isInitialLoad = Bool()
     var isLightning = Bool()
     
+    @IBOutlet weak var header: UILabel!
     @IBOutlet var nodeLabel: UITextField!
     @IBOutlet var rpcUserField: UITextField!
     @IBOutlet var rpcPassword: UITextField!
     @IBOutlet var rpcLabel: UILabel!
     @IBOutlet var saveButton: UIButton!
     @IBOutlet weak var onionAddressField: UITextField!
-    @IBOutlet weak var lightnginSettingsOutet: UIBarButtonItem!
     @IBOutlet weak var deleteLightningOutlet: UIButton!
     
     override func viewDidLoad() {
@@ -42,10 +42,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             if selectedNode != nil {
                 deleteLightningOutlet.alpha = 1
             }
-            lightnginSettingsOutet.tintColor = UIColor.lightGray.withAlphaComponent(1)
+            header.text = "Lightning Node"
         } else {
             deleteLightningOutlet.alpha = 0
-            lightnginSettingsOutet.tintColor = UIColor.clear.withAlphaComponent(0)
+            header.text = "Bitcoin Core Node"
         }
     }
     

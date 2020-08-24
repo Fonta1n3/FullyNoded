@@ -97,4 +97,7 @@ public enum LIGHTNING_CLI: String {
     case sendpay = "sendpay"
     case rebalance = "rebalance"
     case keysend = "keysend"
+    case listnodes = "listnodes"
+    case sendmsg = "sendmsg"
+    case recvmsg = "recvmsg"
 }

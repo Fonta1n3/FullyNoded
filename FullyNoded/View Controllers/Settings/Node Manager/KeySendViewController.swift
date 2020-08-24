@@ -12,27 +12,41 @@ class KeySendViewController: UIViewController, UITextFieldDelegate {
     
     let spinner = ConnectingView()
     var id = ""
+    var peer:PeersStruct?
     @IBOutlet weak var idLabel: UILabel!
     @IBOutlet weak var textField: UITextField!
+    @IBOutlet weak var iconBackground: UIView!
+    @IBOutlet weak var aliasLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         textField.delegate = self
         textField.keyboardType = .decimalPad
         textField.keyboardAppearance = .dark
+        iconBackground.clipsToBounds = true
+        iconBackground.layer.cornerRadius = 5
+        
         addTapGesture()
-        idLabel.text = id
+        if peer != nil {
+            idLabel.text = peer!.label
+            iconBackground.backgroundColor = hexStringToUIColor(hex: peer!.color)
+            aliasLabel.text = peer!.alias
+        } else {
+            idLabel.text = id
+            aliasLabel.text = "Key Send"
+        }
+        
     }
     
     @IBAction func sendAction(_ sender: Any) {
         if textField.text != "" {
-            if let sats = Int(textField.text!) {
+            if let sats = Double(textField.text!) {
                 promptToSend(sats: sats)
             }
         }
     }
     
-    private func promptToSend(sats: Int) {
+    private func promptToSend(sats: Double) {
         DispatchQueue.main.async { [weak self] in
             if self != nil {
                 var alertStyle = UIAlertController.Style.actionSheet
@@ -53,20 +67,23 @@ class KeySendViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
-    private func send(sats: Int) {
-        let msats = sats * 1000
-        LightningRPC.command(method: .keysend, param: "\"\(id)\", \(msats)") { [weak self] (response, errorDesc) in
-            self?.spinner.removeConnectingView()
-            if let dict = response as? NSDictionary {
-                if let complete = dict["status"] as? String {
-                    if complete == "complete" {
-                        self?.success(dict: dict)
-                    } else {
-                        showAlert(vc: self, title: "Error", message: "\(dict)")
+    private func send(sats: Double) {
+        let msats = Int(sats * 1000.0)
+        let commandId = UUID()
+        LightningRPC.command(id: commandId, method: .keysend, param: "\"\(id)\", \(msats)") { [weak self] (uuid, response, errorDesc) in
+            if commandId == uuid {
+                self?.spinner.removeConnectingView()
+                if let dict = response as? NSDictionary {
+                    if let complete = dict["status"] as? String {
+                        if complete == "complete" {
+                            self?.success(dict: dict)
+                        } else {
+                            showAlert(vc: self, title: "Error", message: "\(dict)")
+                        }
                     }
+                } else {
+                    showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown key send error")
                 }
-            } else {
-                showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown key send error")
             }
         }
     }

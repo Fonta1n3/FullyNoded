@@ -43,7 +43,7 @@ class NodeLogic {
     }
     
     class func getOffChainBalance(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
-        LightningRPC.command(method: .listfunds, param: "") { (responseDict, errorDesc) in
+        LightningRPC.command(id: UUID(), method: .listfunds, param: "") { (uuid, responseDict, errorDesc) in
             if let dict = responseDict as? NSDictionary {
                 if let outputs = dict["outputs"] as? NSArray {
                     if outputs.count > 0 {
@@ -205,14 +205,17 @@ class NodeLogic {
         
         func getPaid() {
             
-            LightningRPC.command(method: .listinvoices, param: "") { (response, errorDesc) in
+            LightningRPC.command(id: UUID(), method: .listinvoices, param: "") { (uuid, response, errorDesc) in
                 if let dict = response as? NSDictionary {
                     if let payments = dict["invoices"] as? NSArray {
                         if payments.count > 0 {
                             for (i, payment) in payments.enumerated() {
                                 if let paymentDict = payment as? NSDictionary {
                                     let payment_hash = paymentDict["payment_hash"] as? String ?? ""
-                                    let amountMsat = paymentDict["msatoshi"] as? Int ?? 0
+                                    var amountMsat = paymentDict["msatoshi"] as? Int ?? 0
+                                    if amountMsat == 0 {
+                                        amountMsat = paymentDict["msatoshi_received"] as? Int ?? 0
+                                    }
                                     let status = paymentDict["status"] as? String ?? ""
                                     let created = paymentDict["expires_at"] as? Int ?? 0
                                     let bolt11 = paymentDict["bolt11"] as? String ?? ""
@@ -261,7 +264,7 @@ class NodeLogic {
         }
         
         func getSent() {
-            LightningRPC.command(method: .listsendpays, param: "") { (response, errorDesc) in
+            LightningRPC.command(id: UUID(), method: .listsendpays, param: "") { (uuid, response, errorDesc) in
                 if let dict = response as? NSDictionary {
                     if let payments = dict["payments"] as? NSArray {
                         if payments.count > 0 {
@@ -308,7 +311,7 @@ class NodeLogic {
             }
         }
         
-        LightningRPC.command(method: .listtransactions, param: "") { (responseDict, errorDesc) in
+        LightningRPC.command(id: UUID(), method: .listtransactions, param: "") { (uuid, responseDict, errorDesc) in
             if let dict = responseDict as? NSDictionary {
                 if let transactions = dict["transactions"] as? NSArray {
                     if transactions.count > 0 {

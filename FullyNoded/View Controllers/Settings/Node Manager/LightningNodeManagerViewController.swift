@@ -34,7 +34,6 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
         showInactive = false
         showActive = false
         showPending = false
-        
         if newlyAdded {
             newlyAdded = false
             showAlert(vc: self, title: "⚡️ Lightning Node added ⚡️", message: "We are now fecthing info from your node, to view this screen from now on just tap the ⚡️ on the home screen to toggle between Lightning and onchcain.")
@@ -46,7 +45,6 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
             self?.performSegue(withIdentifier: "segueToLightningChannels", sender: self)
         }
     }
-    
     
     private func goToPeers() {
         DispatchQueue.main.async { [weak self] in
@@ -62,44 +60,47 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
     
     private func getInfo() {
         spinner.addConnectingView(vc: self, description: "loading...")
-        LightningRPC.command(method: .getinfo, param: "") { [weak self] (response, errorDesc) in
-            if let dict = response as? NSDictionary {
-                let alias = dict["alias"] as? String ?? ""
-                let num_peers = dict["num_peers"] as? Int ?? 0
-                let num_pending_channels = dict["num_pending_channels"] as? Int ?? 0
-                let num_active_channels = dict["num_active_channels"] as? Int ?? 0
-                let num_inactive_channels = dict["num_inactive_channels"] as? Int ?? 0
-                let addresses = dict["address"] as? NSArray ?? []
-                var ip = ""
-                var port = 9735
-                if addresses.count > 0 {
-                    ip = (addresses[0] as! NSDictionary)["address"] as? String ?? ""
-                    port = (addresses[0] as! NSDictionary)["port"] as? Int ?? 9735
-                }
-                let id = dict["id"] as? String ?? ""
-                let feesCollected = dict["fees_collected_msat"] as? String ?? "0msat"
-                let version = dict["version"] as? String ?? ""
-                if self != nil {
-                    self?.color = dict["color"] as? String ?? "03c304"
-                    self?.myId = id
-                    self?.tableArray.append(alias)
-                    self?.tableArray.append("\(num_peers)")
-                    self?.tableArray.append("\(num_active_channels)")
-                    self?.tableArray.append("\(num_inactive_channels)")
-                    self?.tableArray.append("\(num_pending_channels)")
-                    self?.tableArray.append(feesCollected)
-                    self?.tableArray.append(version)
-                    self!.url = "\(id)@\(ip):\(port)"
-                }
-                DispatchQueue.main.async { [weak self] in
+        let commandId = UUID()
+        LightningRPC.command(id: commandId, method: .getinfo, param: "") { [weak self] (uuid, response, errorDesc) in
+            if commandId == uuid {
+                if let dict = response as? NSDictionary {
+                    let alias = dict["alias"] as? String ?? ""
+                    let num_peers = dict["num_peers"] as? Int ?? 0
+                    let num_pending_channels = dict["num_pending_channels"] as? Int ?? 0
+                    let num_active_channels = dict["num_active_channels"] as? Int ?? 0
+                    let num_inactive_channels = dict["num_inactive_channels"] as? Int ?? 0
+                    let addresses = dict["address"] as? NSArray ?? []
+                    var ip = ""
+                    var port = 9735
+                    if addresses.count > 0 {
+                        ip = (addresses[0] as! NSDictionary)["address"] as? String ?? ""
+                        port = (addresses[0] as! NSDictionary)["port"] as? Int ?? 9735
+                    }
+                    let id = dict["id"] as? String ?? ""
+                    let feesCollected = dict["fees_collected_msat"] as? String ?? "0msat"
+                    let version = dict["version"] as? String ?? ""
+                    if self != nil {
+                        self?.color = dict["color"] as? String ?? "03c304"
+                        self?.myId = id
+                        self?.tableArray.append(alias)
+                        self?.tableArray.append("\(num_peers)")
+                        self?.tableArray.append("\(num_active_channels)")
+                        self?.tableArray.append("\(num_inactive_channels)")
+                        self?.tableArray.append("\(num_pending_channels)")
+                        self?.tableArray.append(feesCollected)
+                        self?.tableArray.append(version)
+                        self!.url = "\(id)@\(ip):\(port)"
+                    }
+                    DispatchQueue.main.async { [weak self] in
+                        
+                        self?.nodeTable.reloadData()
+                    }
+                    self?.spinner.removeConnectingView()
                     
-                    self?.nodeTable.reloadData()
+                } else {
+                    self?.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "Error", message: errorDesc ?? "error getting info from lightning node")
                 }
-                self?.spinner.removeConnectingView()
-                
-            } else {
-                self?.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Error", message: errorDesc ?? "error getting info from lightning node")
             }
         }
     }
@@ -123,15 +124,6 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
         let chevron = cell.viewWithTag(4) as! UIImageView
         let value = tableArray[indexPath.section]
         label.text = value
-        /*
-        self?.tableArray[0]["alias"] = alias
-        self?.tableArray[1]["peers"] = "\(num_peers)"
-        self?.tableArray[2]["activeChannels"] = "\(num_active_channels)"
-        self?.tableArray[3]["inactiveChannels"] = "\(num_inactive_channels)"
-        self?.tableArray[4]["pendingChannels"] = "\(num_pending_channels)"
-        self?.tableArray[5]["feesCollected"] = feesCollected
-        self?.tableArray[6]["version"] = version
-        */
         iconbackground.clipsToBounds = true
         iconbackground.layer.cornerRadius = 5
         switch indexPath.section {
@@ -224,28 +216,6 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
         default:
             break
         }
-    }
-    
-    func hexStringToUIColor (hex:String) -> UIColor {
-        var cString:String = hex.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
-
-        if (cString.hasPrefix("#")) {
-            cString.remove(at: cString.startIndex)
-        }
-
-        if ((cString.count) != 6) {
-            return UIColor.gray
-        }
-
-        var rgbValue:UInt64 = 0
-        Scanner(string: cString).scanHexInt64(&rgbValue)
-
-        return UIColor(
-            red: CGFloat((rgbValue & 0xFF0000) >> 16) / 255.0,
-            green: CGFloat((rgbValue & 0x00FF00) >> 8) / 255.0,
-            blue: CGFloat(rgbValue & 0x0000FF) / 255.0,
-            alpha: CGFloat(1.0)
-        )
     }
     
     // MARK: - Navigation

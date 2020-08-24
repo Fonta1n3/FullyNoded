@@ -228,20 +228,22 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     private func withdrawLightningNow(address: String, sats: Int) {
         spinner.addConnectingView(vc: self, description: "withdrawing from lightning wallet...")
-        // withdraw destination satoshi
         let param = "\"\(address)\", \(sats)"
-        LightningRPC.command(method: .withdraw, param: param) { [weak self] (response, errorDesc) in
-            if let dict = response as? NSDictionary {
-                if let _ = dict["txid"] as? String {
+        let commandId = UUID()
+        LightningRPC.command(id: commandId, method: .withdraw, param: param) { [weak self] (uuid, response, errorDesc) in
+            if commandId == uuid {
+                if let dict = response as? NSDictionary {
+                    if let _ = dict["txid"] as? String {
+                        self?.spinner.removeConnectingView()
+                        showAlert(vc: self, title: "Success ✅", message: "⚡️ Lightning wallet withdraw to \(address) completed ⚡️")
+                    } else if let message = dict["message"] as? String {
+                        self?.spinner.removeConnectingView()
+                        showAlert(vc: self, title: "Uh oh, somehting is not right", message: message)
+                    }
+                } else {
                     self?.spinner.removeConnectingView()
-                    showAlert(vc: self, title: "Success ✅", message: "⚡️ Lightning wallet withdraw to \(address) completed ⚡️")
-                } else if let message = dict["message"] as? String {
-                    self?.spinner.removeConnectingView()
-                    showAlert(vc: self, title: "Uh oh, somehting is not right", message: message)
+                    showAlert(vc: self, title: "Uh oh, somehting is not right", message: errorDesc ?? "unknow error")
                 }
-            } else {
-                self?.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Uh oh, somehting is not right", message: errorDesc ?? "unknow error")
             }
         }
     }
@@ -249,20 +251,23 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     @IBAction func fundLightning(_ sender: Any) {
         spinner.addConnectingView(vc: self, description: "fetching lightning funding address...")
-        LightningRPC.command(method: .newaddr, param: "") { [weak self] (response, errorDesc) in
-            if let dict = response as? NSDictionary {
-                if let address = dict["address"] as? String {
-                    DispatchQueue.main.async { [weak self] in
-                        if self != nil {
-                            self!.addressInput.text = address
-                            self?.spinner.removeConnectingView()
-                            showAlert(vc: self, title: "⚡️ Nice! ⚡️", message: "This is an address you can use to fund your lightning node with, its your first step in transacting on the lightning network.")
+        let commandId = UUID()
+        LightningRPC.command(id: commandId, method: .newaddr, param: "") { [weak self] (uuid, response, errorDesc) in
+            if commandId == uuid {
+                if let dict = response as? NSDictionary {
+                    if let address = dict["address"] as? String {
+                        DispatchQueue.main.async { [weak self] in
+                            if self != nil {
+                                self!.addressInput.text = address
+                                self?.spinner.removeConnectingView()
+                                showAlert(vc: self, title: "⚡️ Nice! ⚡️", message: "This is an address you can use to fund your lightning node with, its your first step in transacting on the lightning network.")
+                            }
                         }
                     }
+                } else {
+                    self?.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error fetching lightning wallet address")
                 }
-            } else {
-                self?.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error fetching lightning wallet address")
             }
         }
     }
@@ -626,48 +631,51 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     private func decodeLighnting(invoice: String) {
         spinner.addConnectingView(vc: self, description: "decoding lightning invoice...")
-        LightningRPC.command(method: .decodepay, param: "\"\(invoice)\"") { [weak self] (response, errorDesc) in
-            if let dict = response as? NSDictionary {
-                if let _ = dict["msatoshi"] as? Int {
-                    if self != nil {
-                        self!.spinner.removeConnectingView()
-                        self!.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: nil)
-                    }
-                } else {
-                    DispatchQueue.main.async { [weak self] in
-                        self?.spinner.removeConnectingView()
-                        if self?.amountInput.text != "" {
-                            if self != nil {
-                                if let dblAmount = Double(self!.amountInput.text!) {
-                                    if dblAmount > 0.0 {
-                                        if self!.isFiat {
-                                            let btcamount = rounded(number: dblAmount / self!.fxRate)
-                                            let msats = Int(btcamount * 100000000000.0)
-                                            self!.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: msats)
-                                        } else if self!.isSats {
-                                            let msats = Int(dblAmount * 1000.0)
-                                            self!.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: msats)
+        let commandId = UUID()
+        LightningRPC.command(id: commandId, method: .decodepay, param: "\"\(invoice)\"") { [weak self] (uuid, response, errorDesc) in
+            if commandId == uuid {
+                if let dict = response as? NSDictionary {
+                    if let _ = dict["msatoshi"] as? Int {
+                        if self != nil {
+                            self!.spinner.removeConnectingView()
+                            self!.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: nil)
+                        }
+                    } else {
+                        DispatchQueue.main.async { [weak self] in
+                            self?.spinner.removeConnectingView()
+                            if self?.amountInput.text != "" {
+                                if self != nil {
+                                    if let dblAmount = Double(self!.amountInput.text!) {
+                                        if dblAmount > 0.0 {
+                                            if self!.isFiat {
+                                                let btcamount = rounded(number: dblAmount / self!.fxRate)
+                                                let msats = Int(btcamount * 100000000000.0)
+                                                self!.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: msats)
+                                            } else if self!.isSats {
+                                                let msats = Int(dblAmount * 1000.0)
+                                                self!.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: msats)
+                                            } else {
+                                                let msats = Int(dblAmount * 100000000000.0)
+                                                self!.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: msats)
+                                            }
                                         } else {
-                                            let msats = Int(dblAmount * 100000000000.0)
-                                            self!.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: msats)
+                                            self?.spinner.removeConnectingView()
+                                            showAlert(vc: self, title: "Oops", message: "You need to enter an amount to send for an invoice that does not include one.")
                                         }
                                     } else {
                                         self?.spinner.removeConnectingView()
                                         showAlert(vc: self, title: "Oops", message: "You need to enter an amount to send for an invoice that does not include one.")
                                     }
-                                } else {
-                                    self?.spinner.removeConnectingView()
-                                    showAlert(vc: self, title: "Oops", message: "You need to enter an amount to send for an invoice that does not include one.")
                                 }
+                            } else {
+                                self?.spinner.removeConnectingView()
+                                showAlert(vc: self, title: "Oops", message: "You need to enter an amount to send for an invoice that does not include one.")
                             }
-                        } else {
-                            self?.spinner.removeConnectingView()
-                            showAlert(vc: self, title: "Oops", message: "You need to enter an amount to send for an invoice that does not include one.")
                         }
                     }
+                } else {
+                    showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error")
                 }
-            } else {
-                showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error")
             }
         }
     }
@@ -696,21 +704,24 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         } else {
             params = "\"\(invoice)\""
         }
-        LightningRPC.command(method: .pay, param: params) { [weak self] (response, errorDesc) in
-            if let dict = response as? NSDictionary {
-                self?.spinner.removeConnectingView()
-                if let message = dict["message"] as? String {
-                    showAlert(vc: self, title: "Message", message: message)
-                } else if let status = dict["status"] as? String {
-                    if status == "complete" {
-                        let msatoshi = Double(dict["msatoshi"] as! Int)
-                        let msatoshi_sent = Double(dict["msatoshi_sent"] as! Int)
-                        showAlert(vc: self, title: "Success ✅", message: "Lightning payment completed!\n\nAmount paid \(msatoshi / 1000.0) sats for a fee of \(Double((msatoshi_sent - msatoshi)) / 1000.0) sats")
+        let commandId = UUID()
+        LightningRPC.command(id: commandId, method: .pay, param: params) { [weak self] (uuid, response, errorDesc) in
+            if commandId == uuid {
+                if let dict = response as? NSDictionary {
+                    self?.spinner.removeConnectingView()
+                    if let message = dict["message"] as? String {
+                        showAlert(vc: self, title: "Message", message: message)
+                    } else if let status = dict["status"] as? String {
+                        if status == "complete" {
+                            let msatoshi = Double(dict["msatoshi"] as! Int)
+                            let msatoshi_sent = Double(dict["msatoshi_sent"] as! Int)
+                            showAlert(vc: self, title: "Success ✅", message: "Lightning payment completed!\n\nAmount paid \(msatoshi / 1000.0) sats for a fee of \(Double((msatoshi_sent - msatoshi)) / 1000.0) sats")
+                        }
                     }
+                } else {
+                    self?.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error")
                 }
-            } else {
-                self?.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error")
             }
         }
     }

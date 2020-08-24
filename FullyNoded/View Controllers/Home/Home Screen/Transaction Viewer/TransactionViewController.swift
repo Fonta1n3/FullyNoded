@@ -191,7 +191,7 @@ class TransactionViewController: UIViewController {
     }
     
     private func decodeBolt11(bolt11: String) {
-        LightningRPC.command(method: .decodepay, param: "\"\(bolt11)\"") { [unowned vc = self] (response, errorDesc) in
+        LightningRPC.command(id: UUID(), method: .decodepay, param: "\"\(bolt11)\"") { [unowned vc = self] (uuid, response, errorDesc) in
             if let dict = response as? NSDictionary {
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.bumpButtonOutlet.alpha = 0

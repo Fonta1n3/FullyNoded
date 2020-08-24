@@ -250,7 +250,8 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                                 DispatchQueue.main.async { [unowned vc = self] in
                                     vc.nodeArray.removeAll()
                                     for node in nodes! {
-                                        if node["id"] != nil {
+                                        let str = NodeStruct(dictionary: node)
+                                        if str.id != nil && !str.isLightning {
                                             vc.nodeArray.append(node)
                                         }
                                     }
@@ -279,7 +280,8 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.nodeArray.removeAll()
                     for node in nodes! {
-                        if node["id"] != nil {
+                        let ns = NodeStruct(dictionary: node)
+                        if ns.id != nil && !ns.isLightning {
                             vc.nodeArray.append(node)
                         }
                     }

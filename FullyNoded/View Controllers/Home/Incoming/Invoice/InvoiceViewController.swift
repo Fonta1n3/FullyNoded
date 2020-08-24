@@ -92,7 +92,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func lightningInvoice(_ sender: Any) {
         spinner.addConnectingView(vc: self, description: "creating lightning invoice...")
-        // invoice msatoshi label description
         var millisats = "\"any\""
         var label = "Fully-Noded-\(randomString(length: 5))"
         if amountField.text != "" {
@@ -111,25 +110,28 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             label = labelField.text!
         }
         let param = "\(millisats), \"\(label)\", \"\(Date())\", \(86400)"
-        LightningRPC.command(method: .invoice, param: param) { [weak self] (response, errorDesc) in
-            if let dict = response as? NSDictionary {
-                if let bolt11 = dict["bolt11"] as? String {
-                    DispatchQueue.main.async { [weak self] in
-                        self?.addressOutlet.alpha = 1
-                        self?.addressString = bolt11
-                        self?.addressOutlet.text = bolt11
-                        self?.showAddress(address: bolt11)
-                        self?.spinner.removeConnectingView()
+        let commandId = UUID()
+        LightningRPC.command(id: commandId, method: .invoice, param: param) { [weak self] (uuid, response, errorDesc) in
+            if commandId == uuid {
+                if let dict = response as? NSDictionary {
+                    if let bolt11 = dict["bolt11"] as? String {
+                        DispatchQueue.main.async { [weak self] in
+                            self?.addressOutlet.alpha = 1
+                            self?.addressString = bolt11
+                            self?.addressOutlet.text = bolt11
+                            self?.showAddress(address: bolt11)
+                            self?.spinner.removeConnectingView()
+                        }
                     }
-                }
-                if let warning = dict["warning_capacity"] as? String {
-                    if warning != "" {
-                        showAlert(vc: self, title: "Warning", message: warning)
+                    if let warning = dict["warning_capacity"] as? String {
+                        if warning != "" {
+                            showAlert(vc: self, title: "Warning", message: warning)
+                        }
                     }
+                } else {
+                    self?.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "Error", message: errorDesc ?? "we had an issue getting your lightning invoice")
                 }
-            } else {
-                self?.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Error", message: errorDesc ?? "we had an issue getting your lightning invoice")
             }
         }
     }

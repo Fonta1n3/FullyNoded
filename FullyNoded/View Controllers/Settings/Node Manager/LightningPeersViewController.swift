@@ -35,19 +35,22 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
     
     private func loadPeers() {
         spinner.addConnectingView(vc: self, description: "getting peers...")
-        LightningRPC.command(method: .listpeers, param: "") { [weak self] (response, errorDesc) in
-            if let dict = response as? NSDictionary {
-                if let peers = dict["peers"] as? NSArray {
-                    if peers.count > 0 {
-                        self?.parsePeers(peers: peers)
-                    } else {
-                        self?.spinner.removeConnectingView()
-                        showAlert(vc: self, title: "No peers yet", message: "Tap the + button to connect to a peer and start a channel")
+        let commandId = UUID()
+        LightningRPC.command(id: commandId, method: .listpeers, param: "") { [weak self] (uuid, response, errorDesc) in
+            if commandId == uuid {
+                if let dict = response as? NSDictionary {
+                    if let peers = dict["peers"] as? NSArray {
+                        if peers.count > 0 {
+                            self?.parsePeers(peers: peers)
+                        } else {
+                            self?.spinner.removeConnectingView()
+                            showAlert(vc: self, title: "No peers yet", message: "Tap the + button to connect to a peer and start a channel")
+                        }
                     }
+                } else {
+                    self?.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error fetching peers")
                 }
-            } else {
-                self?.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error fetching peers")
             }
         }
     }
@@ -58,9 +61,11 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
                 peerArray.append(peerDict)
             }
             if i + 1 == peers.count {
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.peersTable.reloadData()
-                    vc.spinner.removeConnectingView()
+                fetchLocalPeers { _ in
+                    DispatchQueue.main.async { [unowned vc = self] in
+                        vc.peersTable.reloadData()
+                        vc.spinner.removeConnectingView()
+                    }
                 }
             }
         }
@@ -79,6 +84,7 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
         cell.selectionStyle = .none
         cell.layer.borderColor = UIColor.lightGray.cgColor
         cell.layer.borderWidth = 0.5
+        
         let connectedImageView = cell.viewWithTag(1) as! UIImageView
         let idLabel = cell.viewWithTag(2) as! UILabel
         let channelsImageView = cell.viewWithTag(3) as! UIImageView
@@ -87,8 +93,10 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
         if peerArray.count > 0 {
             let dict = peerArray[indexPath.section]
             
-            if let id = dict["id"] as? String {
-                idLabel.text = id
+            if let name = dict["name"] as? String {
+                idLabel.text = name
+            } else {
+                idLabel.text = dict["id"] as? String ?? ""
             }
             
             if let connected = dict["connected"] as? Bool {
@@ -124,7 +132,7 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         DispatchQueue.main.async { [weak self] in
             self?.id = self?.peerArray[indexPath.section]["id"] as? String ?? ""
-            self?.performSegue(withIdentifier: "segueToKeySend", sender: self)
+            self?.performSegue(withIdentifier: "segueToPeerDetails", sender: self)
         }
     }
     
@@ -135,18 +143,51 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
     private func addPeer(id: String, ip: String, port: String?) {
         spinner.addConnectingView(vc: self, description: "connecting peer...")
         let param = "\(id)@\(ip):\(port ?? "9735")"
-        LightningRPC.command(method: .connect, param: "\(param)") { [weak self] (response, errorDesc) in
-            if let dict = response as? NSDictionary {
-                self?.spinner.removeConnectingView()
-                if let id = dict["id"] as? String {
-                    showAlert(vc: self, title: "Success ✅", message: "⚡️ peer added with id: \(id)")
+        let commandId = UUID()
+        LightningRPC.command(id: commandId, method: .connect, param: "\(param)") { [weak self] (uuid, response, errorDesc) in
+            if commandId == uuid {
+                if let dict = response as? NSDictionary {
+                    self?.spinner.removeConnectingView()
+                    if let id = dict["id"] as? String {
+                        showAlert(vc: self, title: "Success ✅", message: "⚡️ peer added with id: \(id)")
+                    } else {
+                        showAlert(vc: self, title: "Something is not quite right", message: "This is the response we got: \(dict)")
+                    }
+                    self?.loadPeers()
                 } else {
-                    showAlert(vc: self, title: "Something is not quite right", message: "This is the response we got: \(dict)")
+                    self?.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "Error", message: errorDesc ?? "error adding peer")
                 }
-                self?.loadPeers()
+            }
+        }
+    }
+    
+    private func fetchLocalPeers(completion: @escaping ((Bool)) -> Void) {
+        CoreDataService.retrieveEntity(entityName: .peers) { [weak self] (peers) in
+            if peers != nil {
+                if peers!.count > 0 {
+                    for (x, peer) in peers!.enumerated() {
+                        let peerStruct = PeersStruct(dictionary: peer)
+                        if self != nil {
+                            for (i, p) in self!.peerArray.enumerated() {
+                                if p["id"] as! String == peerStruct.pubkey {
+                                    if peerStruct.label == "" {
+                                        self?.peerArray[i]["name"] = peerStruct.alias
+                                    } else {
+                                        self?.peerArray[i]["name"] = peerStruct.label
+                                    }
+                                }
+                                if i + 1 == self?.peerArray.count && x + 1 == peers!.count {
+                                    completion(true)
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    completion(true)
+                }
             } else {
-                self?.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Error", message: errorDesc ?? "error adding peer")
+                completion(true)
             }
         }
     }
@@ -155,18 +196,9 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
         // Get the new view controller using segue.destination.
         // Pass the selected object to the new view controller
         
-        if segue.identifier == "segueToKeySend" {
-            if let vc = segue.destination as? KeySendViewController {
-                vc.id = id
-            }
-        }
-        
         if segue.identifier == "segueToPeerDetails" {
-            if let vc = segue.destination as? ProcessPSBTViewController {
-                vc.showPeer = true
-                if selectedPeer != nil {
-                    vc.peer = selectedPeer
-                }
+            if let vc = segue.destination as? PeerDetailsViewController {
+                vc.id = id
             }
         }
         

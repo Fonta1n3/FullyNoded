@@ -110,10 +110,19 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
         textLabel.font = UIFont.systemFont(ofSize: 15, weight: .regular)
         textLabel.textColor = .lightGray
         textLabel.frame = CGRect(x: 0, y: 0, width: 200, height: 50)
+        let dict = channels[section]
         if showActive {
-            textLabel.text = "short id: " + "\(channels[section]["short_channel_id"] as? String ?? "")"
+            if let name = dict["name"] as? String {
+                textLabel.text = name
+            } else {
+                textLabel.text = "short id: " + "\(dict["short_channel_id"] as? String ?? "")"
+            }
         } else {
-            textLabel.text = "id: " + "\(channels[section]["channel_id"] as? String ?? "")"
+            if let name = dict["name"] as? String {
+                textLabel.text = name
+            } else {
+                textLabel.text = "id: " + "\(dict["channel_id"] as? String ?? "")"
+            }
         }
         header.addSubview(textLabel)
         return header
@@ -132,19 +141,22 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     
     private func loadPeers() {
         spinner.addConnectingView(vc: self, description: "getting channels...")
-        LightningRPC.command(method: .listpeers, param: "") { [weak self] (response, errorDesc) in
-            if let dict = response as? NSDictionary {
-                if let peers = dict["peers"] as? NSArray {
-                    if peers.count > 0 {
-                        self?.parsePeers(peers: peers)
-                    } else {
-                        self?.spinner.removeConnectingView()
-                        showAlert(vc: self, title: "No channels yet", message: "Tap the + button to connect to a peer and start a channel")
+        let commandId = UUID()
+        LightningRPC.command(id: commandId, method: .listpeers, param: "") { [weak self] (uuid, response, errorDesc) in
+            if commandId == uuid {
+                if let dict = response as? NSDictionary {
+                    if let peers = dict["peers"] as? NSArray {
+                        if peers.count > 0 {
+                            self?.parsePeers(peers: peers)
+                        } else {
+                            self?.spinner.removeConnectingView()
+                            showAlert(vc: self, title: "No channels yet", message: "Tap the + button to connect to a peer and start a channel")
+                        }
                     }
+                } else {
+                    self?.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error fetching peers")
                 }
-            } else {
-                self?.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error fetching peers")
             }
         }
     }
@@ -165,10 +177,12 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
                                     } else if showPending {
                                         if state == "CHANNELD_AWAITING_LOCKIN" {
                                             channels.append(dict)
+                                            channels[channels.count - 1]["peerId"] = peerDict["id"] as! String
                                         }
                                     } else {
                                         if state != "CHANNELD_NORMAL" && state != "CHANNELD_AWAITING_LOCKIN" {
                                             channels.append(dict)
+                                            channels[channels.count - 1]["peerId"] = peerDict["id"] as! String
                                         }
                                     }
                                 }
@@ -176,9 +190,41 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
                         }
                     }
                     if i + 1 == peers.count {
-                        parseChannels()
+                        fetchLocalPeers { [weak self] _ in
+                            self?.parseChannels()
+                        }
                     }
                 }
+            }
+        }
+    }
+    
+    private func fetchLocalPeers(completion: @escaping ((Bool)) -> Void) {
+        CoreDataService.retrieveEntity(entityName: .peers) { [weak self] (peers) in
+            if peers != nil && self != nil {
+                if peers!.count > 0 && self!.channels.count > 0 {
+                    for (x, peer) in peers!.enumerated() {
+                        let peerStruct = PeersStruct(dictionary: peer)
+                        if self != nil {
+                            for (i, p) in self!.channels.enumerated() {
+                                if p["peerId"] as! String == peerStruct.pubkey {
+                                    if peerStruct.label == "" {
+                                        self?.channels[i]["name"] = peerStruct.alias
+                                    } else {
+                                        self?.channels[i]["name"] = peerStruct.label
+                                    }
+                                }
+                                if i + 1 == self?.channels.count && x + 1 == peers!.count {
+                                    completion(true)
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    completion(true)
+                }
+            } else {
+                completion(true)
             }
         }
     }
@@ -228,7 +274,7 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
             let ratio = Double(ourAmountInt) / Double(totalAmountInt)
             if ratio > 0.6 {
                 ours.append(ch)
-            } else if ratio <= 0.5 {
+            } else if ratio < 0.4 {
                 theirs.append(ch)
             }
             if i + 1 == channels.count {
@@ -254,14 +300,24 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     
     private func chooseTheirsCounterpart()  {
         if theirs.count > 0 {
+            let sortedArray = theirs.sorted { $0["receivable_msatoshi"] as? Int ?? .zero < $1["receivable_msatoshi"] as? Int ?? .zero }
             let sourceShortId = selectedChannel!["short_channel_id"] as! String
-            let destinationShortId = theirs[0]["short_channel_id"] as! String
+            let destinationShortId = sortedArray[sortedArray.count - 1]["short_channel_id"] as! String
+            rebalance(sourceShortId, destinationShortId)
+        }
+    }
+    
+    private func chooseOursCounterpart() {
+        if ours.count > 0 {
+            let sortedArray = ours.sorted { $0["spendable_msatoshi"] as? Int ?? .zero < $1["spendable_msatoshi"] as? Int ?? .zero }
+            let sourceShortId = sortedArray[ours.count - 1]["short_channel_id"] as! String
+            let destinationShortId = selectedChannel!["short_channel_id"] as! String
             rebalance(sourceShortId, destinationShortId)
         }
     }
     
     private func rebalance(_ source: String, _ destination: String) {
-        LightningRPC.command(method: .rebalance, param: "\"\(source)\", \"\(destination)\"") { [weak self] (response, errorDesc) in
+        LightningRPC.command(id: UUID(), method: .rebalance, param: "\"\(source)\", \"\(destination)\"") { [weak self] (id, response, errorDesc) in
             if errorDesc != nil {
                 self?.spinner.removeConnectingView()
                 showAlert(vc: self, title: "Error", message: errorDesc!)
@@ -272,14 +328,6 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
                 self?.spinner.removeConnectingView()
                 showAlert(vc: self, title: "", message: "\(String(describing: response))")
             }
-        }
-    }
-    
-    private func chooseOursCounterpart() {
-        if ours.count > 0 {
-            let sourceShortId = ours[0]["short_channel_id"] as! String
-            let destinationShortId = selectedChannel!["short_channel_id"] as! String
-            rebalance(sourceShortId, destinationShortId)
         }
     }
     

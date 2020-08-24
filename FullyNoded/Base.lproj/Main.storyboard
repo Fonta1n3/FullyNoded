@@ -3985,7 +3985,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
             </objects>
             <point key="canvasLocation" x="-2791.1999999999998" y="375.56221889055473"/>
         </scene>
-        <!--v0.1.73-->
+        <!--v0.1.74-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -4132,7 +4132,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                         <viewLayoutGuide key="safeArea" id="Cze-jj-bFe"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="v0.1.73" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="v0.1.74" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
@@ -4974,31 +4974,22 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <viewLayoutGuide key="safeArea" id="uUf-aQ-0bN"/>
                     </view>
                     <navigationItem key="navigationItem" id="J9p-j8-H8t">
-                        <rightBarButtonItems>
-                            <barButtonItem image="square.and.arrow.up" catalog="system" id="gwp-vI-ePE">
-                                <color key="tintColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <connections>
-                                    <action selector="exportNode:" destination="B99-yZ-naR" id="c4z-NG-lTv"/>
-                                </connections>
-                            </barButtonItem>
-                            <barButtonItem image="gear" catalog="system" id="7aj-uF-Wfb">
-                                <color key="tintColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <connections>
-                                    <action selector="goManageLightning:" destination="B99-yZ-naR" id="6zE-wF-7bI"/>
-                                </connections>
-                            </barButtonItem>
-                        </rightBarButtonItems>
+                        <barButtonItem key="rightBarButtonItem" image="square.and.arrow.up" catalog="system" id="gwp-vI-ePE">
+                            <color key="tintColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <connections>
+                                <action selector="exportNode:" destination="B99-yZ-naR" id="c4z-NG-lTv"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
                     <connections>
                         <outlet property="deleteLightningOutlet" destination="eoi-B9-9wY" id="gRh-JP-IYu"/>
-                        <outlet property="lightnginSettingsOutet" destination="7aj-uF-Wfb" id="q0a-li-slQ"/>
+                        <outlet property="header" destination="DTI-AZ-owi" id="puY-tw-wga"/>
                         <outlet property="nodeLabel" destination="LM8-fJ-o94" id="kkD-Ha-NwZ"/>
                         <outlet property="onionAddressField" destination="o4M-Vw-QWb" id="hON-oG-n3p"/>
                         <outlet property="rpcPassword" destination="4YC-xq-wqu" id="KIS-dN-d6I"/>
                         <outlet property="rpcUserField" destination="uRk-PX-ulA" id="pCP-J4-Y3p"/>
                         <outlet property="saveButton" destination="p2J-sn-A5I" id="ZWz-y2-s1b"/>
                         <segue destination="GlR-4A-eAx" kind="presentation" identifier="segueToExportNode" id="8MS-xS-DMP"/>
-                        <segue destination="u3j-cd-FEG" kind="show" identifier="segueToLightningSettings" id="Jga-md-lzo"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="YxC-Y3-iSs" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -5925,7 +5916,6 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <outlet property="unsignedTextView" destination="xcj-ZD-du1" id="akD-Z0-dzr"/>
                         <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScannerFromTxSigner" id="9m9-PM-uRL"/>
                         <segue destination="nyf-66-vKN" kind="show" identifier="segueToBroadcastFromTxSigner" id="qEx-f1-FOS"/>
-                        <segue destination="nyf-66-vKN" kind="show" id="VPR-U4-zLl"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="QLf-jx-ZWR" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -6117,6 +6107,125 @@ COLD means no keys will be generated and no private keys can be imported.</strin
             </objects>
             <point key="canvasLocation" x="1877.5999999999999" y="375.56221889055473"/>
         </scene>
+        <!--Peer Details View Controller-->
+        <scene sceneID="zMa-8I-OlW">
+            <objects>
+                <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="yNw-mi-HbQ" customClass="PeerDetailsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="gLC-Eo-Mcq">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ehe-XQ-6Tm">
+                                <rect key="frame" x="16" y="53" width="35" height="35"/>
+                                <subviews>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="person.circle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="j2u-TZ-AIU">
+                                        <rect key="frame" x="5" y="5.5" width="25" height="24"/>
+                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="25" id="J1G-ko-LNt"/>
+                                            <constraint firstAttribute="width" constant="25" id="S7n-a5-YFY"/>
+                                        </constraints>
+                                    </imageView>
+                                </subviews>
+                                <color key="backgroundColor" systemColor="systemIndigoColor" red="0.34509803919999998" green="0.33725490200000002" blue="0.83921568629999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstItem="j2u-TZ-AIU" firstAttribute="centerX" secondItem="Ehe-XQ-6Tm" secondAttribute="centerX" id="amm-Lm-Jk8"/>
+                                    <constraint firstAttribute="height" constant="35" id="fBK-UX-RLr"/>
+                                    <constraint firstItem="j2u-TZ-AIU" firstAttribute="centerY" secondItem="Ehe-XQ-6Tm" secondAttribute="centerY" id="lgG-le-qrR"/>
+                                    <constraint firstAttribute="width" constant="35" id="qGy-IJ-5xV"/>
+                                </constraints>
+                            </view>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Alias" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Asd-aS-Bhb">
+                                <rect key="frame" x="59" y="53" width="64.5" height="35"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="FPF-QE-p73">
+                                <rect key="frame" x="16" y="108" width="343" height="289"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Name (tap to edit)" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kaj-Qp-Bwt">
+                                        <rect key="frame" x="0.0" y="0.0" width="343" height="20.5"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="V8x-Iw-hgh">
+                                        <rect key="frame" x="0.0" y="30.5" width="343" height="34"/>
+                                        <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <textInputTraits key="textInputTraits"/>
+                                    </textField>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="URI" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="SDf-c1-XMB">
+                                        <rect key="frame" x="0.0" y="74.5" width="343" height="20.5"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="oNj-m5-FY9">
+                                        <rect key="frame" x="0.0" y="105" width="343" height="64"/>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="64" id="Mwm-Nx-fL3"/>
+                                        </constraints>
+                                        <string key="text">Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nam liber te conscient to factor tum poen legum odioque civiuda.</string>
+                                        <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                    </textView>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="RWw-Yy-9eB">
+                                        <rect key="frame" x="0.0" y="179" width="343" height="50"/>
+                                        <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="50" id="nSc-XR-xz5"/>
+                                        </constraints>
+                                        <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <state key="normal" title="key send"/>
+                                        <connections>
+                                            <action selector="keySendAction:" destination="yNw-mi-HbQ" eventType="touchUpInside" id="fBc-LZ-58q"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="IDh-Qz-h7w">
+                                        <rect key="frame" x="0.0" y="239" width="343" height="50"/>
+                                        <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="50" id="E6J-dk-g7l"/>
+                                        </constraints>
+                                        <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <state key="normal" title="noise"/>
+                                        <connections>
+                                            <action selector="noiseAction:" destination="yNw-mi-HbQ" eventType="touchUpInside" id="gIh-QB-USd"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="FPF-QE-p73" firstAttribute="leading" secondItem="LaB-rD-MSl" secondAttribute="leading" constant="16" id="3eR-Xv-YlH"/>
+                            <constraint firstItem="Asd-aS-Bhb" firstAttribute="leading" secondItem="Ehe-XQ-6Tm" secondAttribute="trailing" constant="8" id="BCi-OM-EX9"/>
+                            <constraint firstItem="Ehe-XQ-6Tm" firstAttribute="leading" secondItem="LaB-rD-MSl" secondAttribute="leading" constant="16" id="BI5-XG-5C0"/>
+                            <constraint firstItem="Ehe-XQ-6Tm" firstAttribute="top" secondItem="LaB-rD-MSl" secondAttribute="top" constant="9" id="Hph-DR-ivP"/>
+                            <constraint firstItem="FPF-QE-p73" firstAttribute="top" secondItem="Asd-aS-Bhb" secondAttribute="bottom" constant="20" id="WPF-UG-iqB"/>
+                            <constraint firstItem="Asd-aS-Bhb" firstAttribute="centerY" secondItem="Ehe-XQ-6Tm" secondAttribute="centerY" id="cG0-ER-fdd"/>
+                            <constraint firstItem="LaB-rD-MSl" firstAttribute="trailing" secondItem="FPF-QE-p73" secondAttribute="trailing" constant="16" id="iai-aa-UbG"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="LaB-rD-MSl"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="vse-Rb-eZl"/>
+                    <connections>
+                        <outlet property="aliasLabel" destination="Asd-aS-Bhb" id="mHm-yo-KeR"/>
+                        <outlet property="iconBackground" destination="Ehe-XQ-6Tm" id="aDp-9s-ITh"/>
+                        <outlet property="nameField" destination="V8x-Iw-hgh" id="qNI-hD-D9W"/>
+                        <outlet property="uriField" destination="oNj-m5-FY9" id="1vW-U4-SQX"/>
+                        <segue destination="amX-D2-23f" kind="show" identifier="segueToKeySend" id="kwd-Dr-gXa"/>
+                        <segue destination="baW-2k-QoW" kind="show" identifier="segueToNoise" id="WCg-tZ-UZ6"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="bED-Ve-boN" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3150" y="4315"/>
+        </scene>
         <!--Lightning Peers View Controller-->
         <scene sceneID="5Go-R5-Osn">
             <objects>
@@ -6176,7 +6285,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                                 <constraint firstItem="yhI-6Z-Bmv" firstAttribute="centerY" secondItem="tr7-4F-cQd" secondAttribute="centerY" id="sKj-rZ-j6G"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" red="0.13820590101522845" green="0.13820590101522845" blue="0.13820590101522845" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="backgroundColor" red="0.078040815890000004" green="0.090017892419999995" blue="0.10251823810000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     </tableViewCell>
                                 </prototypes>
                                 <connections>
@@ -6189,7 +6298,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="person.3" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="LmA-Zg-qqp">
                                         <rect key="frame" x="5" y="6.5" width="25" height="22.5"/>
-                                        <color key="tintColor" systemColor="systemYellowColor" red="1" green="0.80000000000000004" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="25" id="RFi-Az-TTJ"/>
                                             <constraint firstAttribute="height" constant="25" id="smz-gT-3VD"/>
@@ -6210,21 +6319,13 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="tap a peer to pay them" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ufD-pK-sUa">
-                                <rect key="frame" x="114.5" y="95" width="146" height="17"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="ufD-pK-sUa" firstAttribute="top" secondItem="gGI-Dk-1GP" secondAttribute="top" constant="51" id="57Q-C7-Nch"/>
                             <constraint firstItem="9E9-C3-962" firstAttribute="centerY" secondItem="UuX-D9-fxh" secondAttribute="centerY" id="BnJ-m6-Pku"/>
                             <constraint firstItem="9E9-C3-962" firstAttribute="leading" secondItem="UuX-D9-fxh" secondAttribute="trailing" constant="8" id="Mt0-Pn-zCd"/>
                             <constraint firstItem="2BG-H0-7TA" firstAttribute="trailing" secondItem="gGI-Dk-1GP" secondAttribute="trailing" id="Qqd-jf-nhR"/>
                             <constraint firstItem="2BG-H0-7TA" firstAttribute="leading" secondItem="gGI-Dk-1GP" secondAttribute="leading" id="Y9t-9t-E4o"/>
-                            <constraint firstItem="ufD-pK-sUa" firstAttribute="centerX" secondItem="iKp-LR-xX1" secondAttribute="centerX" id="ggV-uf-eNh"/>
                             <constraint firstItem="UuX-D9-fxh" firstAttribute="top" secondItem="gGI-Dk-1GP" secondAttribute="top" constant="20" id="jbu-NP-3Ih"/>
                             <constraint firstItem="UuX-D9-fxh" firstAttribute="leading" secondItem="gGI-Dk-1GP" secondAttribute="leading" constant="16" id="owB-9i-PYp"/>
                             <constraint firstItem="2BG-H0-7TA" firstAttribute="bottom" secondItem="gGI-Dk-1GP" secondAttribute="bottom" id="y4Q-Tn-vR5"/>
@@ -6243,9 +6344,8 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                     <connections>
                         <outlet property="iconBackground" destination="UuX-D9-fxh" id="VYa-mz-Yva"/>
                         <outlet property="peersTable" destination="2BG-H0-7TA" id="4kE-HP-4n2"/>
-                        <segue destination="MbW-zL-TON" kind="show" identifier="segueToPeerDetails" id="EAc-2Q-Iy3"/>
                         <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToAddPeer" id="sXG-y0-yya"/>
-                        <segue destination="amX-D2-23f" kind="show" identifier="segueToKeySend" id="6Cj-zl-jpC"/>
+                        <segue destination="yNw-mi-HbQ" kind="show" identifier="segueToPeerDetails" id="kP1-4t-Akr"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="d2o-cI-Umd" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -6265,7 +6365,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bolt.horizontal" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="pOt-d4-IQb">
                                         <rect key="frame" x="5" y="9" width="25" height="17.5"/>
-                                        <color key="tintColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="25" id="35I-qN-cZc"/>
                                             <constraint firstAttribute="height" constant="25" id="Arb-KB-Wen"/>
@@ -6330,13 +6430,118 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                     </view>
                     <navigationItem key="navigationItem" id="SCy-fj-IPL"/>
                     <connections>
+                        <outlet property="aliasLabel" destination="Gbf-hv-pE0" id="oGQ-h9-cMS"/>
+                        <outlet property="iconBackground" destination="5gq-Mr-wd8" id="2TL-xP-QSz"/>
                         <outlet property="idLabel" destination="cZ4-b4-9Q3" id="jK4-4z-0l2"/>
                         <outlet property="textField" destination="pW9-Tg-G5r" id="F73-dc-pSa"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="P1O-iB-fKB" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3149.5999999999999" y="4300.2998500749627"/>
+            <point key="canvasLocation" x="2570" y="5068"/>
+        </scene>
+        <!--Noise View Controller-->
+        <scene sceneID="Lv2-Ma-pYO">
+            <objects>
+                <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="baW-2k-QoW" customClass="NoiseViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Gey-FA-a1k">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" text="if your listening, tap the listen button, if you want to make noise, tap here and start typing your message and tap send" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="jDy-tx-GKN">
+                                <rect key="frame" x="16" y="136" width="343" height="402"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
+                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                            </textView>
+                            <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="En8-QL-DyG">
+                                <rect key="frame" x="16" y="64" width="35" height="35"/>
+                                <subviews>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="hifispeaker" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="DtH-5P-ZcT">
+                                        <rect key="frame" x="5" y="4.5" width="25" height="26.5"/>
+                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="25" id="b6Q-yC-i50"/>
+                                            <constraint firstAttribute="width" constant="25" id="zH7-mh-tig"/>
+                                        </constraints>
+                                    </imageView>
+                                </subviews>
+                                <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="35" id="OCj-68-CeZ"/>
+                                    <constraint firstAttribute="height" constant="35" id="URF-0M-DpM"/>
+                                    <constraint firstItem="DtH-5P-ZcT" firstAttribute="centerX" secondItem="En8-QL-DyG" secondAttribute="centerX" id="aSO-AH-cJO"/>
+                                    <constraint firstItem="DtH-5P-ZcT" firstAttribute="centerY" secondItem="En8-QL-DyG" secondAttribute="centerY" id="f8j-hK-P8q"/>
+                                </constraints>
+                            </view>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Noise" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mZH-uX-lT5">
+                                <rect key="frame" x="59" y="64" width="75.5" height="35"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="You can either listen, or be noisy" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dU7-Kq-OI6">
+                                <rect key="frame" x="16" y="107" width="343" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="N8q-4Q-paw">
+                                <rect key="frame" x="16" y="607" width="343" height="40"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="40" id="OeW-aV-rgo"/>
+                                </constraints>
+                                <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <state key="normal" title="send noise"/>
+                                <connections>
+                                    <action selector="sendAction:" destination="baW-2k-QoW" eventType="touchUpInside" id="8GW-Gj-Gy9"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="87j-lS-hkP">
+                                <rect key="frame" x="16" y="559" width="343" height="40"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="40" id="t51-mA-MXh"/>
+                                </constraints>
+                                <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <state key="normal" title="listen"/>
+                                <connections>
+                                    <action selector="listenAction:" destination="baW-2k-QoW" eventType="touchUpInside" id="QAR-Qs-dhP"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="jDy-tx-GKN" firstAttribute="leading" secondItem="c9N-bR-2V2" secondAttribute="leading" constant="16" id="2E4-OD-O1w"/>
+                            <constraint firstItem="N8q-4Q-paw" firstAttribute="top" secondItem="87j-lS-hkP" secondAttribute="bottom" constant="8" id="4cV-xL-K61"/>
+                            <constraint firstItem="En8-QL-DyG" firstAttribute="leading" secondItem="c9N-bR-2V2" secondAttribute="leading" constant="16" id="7bt-Yg-veX"/>
+                            <constraint firstItem="dU7-Kq-OI6" firstAttribute="leading" secondItem="c9N-bR-2V2" secondAttribute="leading" constant="16" id="8tn-ff-QDf"/>
+                            <constraint firstItem="N8q-4Q-paw" firstAttribute="leading" secondItem="c9N-bR-2V2" secondAttribute="leading" constant="16" id="As8-Kb-H8v"/>
+                            <constraint firstItem="87j-lS-hkP" firstAttribute="leading" secondItem="c9N-bR-2V2" secondAttribute="leading" constant="16" id="Eca-Xc-SnW"/>
+                            <constraint firstItem="En8-QL-DyG" firstAttribute="top" secondItem="c9N-bR-2V2" secondAttribute="top" constant="20" id="IG7-ts-pEf"/>
+                            <constraint firstItem="c9N-bR-2V2" firstAttribute="trailing" secondItem="87j-lS-hkP" secondAttribute="trailing" constant="16" id="MGQ-l1-P6E"/>
+                            <constraint firstItem="c9N-bR-2V2" firstAttribute="trailing" secondItem="N8q-4Q-paw" secondAttribute="trailing" constant="16" id="TQV-m5-d1i"/>
+                            <constraint firstItem="dU7-Kq-OI6" firstAttribute="top" secondItem="En8-QL-DyG" secondAttribute="bottom" constant="8" id="Ygt-3i-bSd"/>
+                            <constraint firstItem="c9N-bR-2V2" firstAttribute="trailing" secondItem="jDy-tx-GKN" secondAttribute="trailing" constant="16" id="ZkY-25-Kng"/>
+                            <constraint firstItem="87j-lS-hkP" firstAttribute="top" secondItem="jDy-tx-GKN" secondAttribute="bottom" constant="21" id="ff4-ZB-SC6"/>
+                            <constraint firstItem="mZH-uX-lT5" firstAttribute="leading" secondItem="En8-QL-DyG" secondAttribute="trailing" constant="8" id="hM8-az-Dhb"/>
+                            <constraint firstItem="mZH-uX-lT5" firstAttribute="centerY" secondItem="En8-QL-DyG" secondAttribute="centerY" id="iYV-Qe-awK"/>
+                            <constraint firstItem="c9N-bR-2V2" firstAttribute="bottom" secondItem="N8q-4Q-paw" secondAttribute="bottom" constant="20" id="kIz-LC-km0"/>
+                            <constraint firstItem="c9N-bR-2V2" firstAttribute="trailing" secondItem="dU7-Kq-OI6" secondAttribute="trailing" constant="16" id="q6s-Xn-D4m"/>
+                            <constraint firstItem="jDy-tx-GKN" firstAttribute="top" secondItem="dU7-Kq-OI6" secondAttribute="bottom" constant="8" id="yZC-Vn-2J3"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="c9N-bR-2V2"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="thg-Nh-BRi"/>
+                    <connections>
+                        <outlet property="textView" destination="jDy-tx-GKN" id="3gZ-VH-onI"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="9f2-L8-sE9" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3612" y="5067.6161919040487"/>
         </scene>
         <!--Lightning Channels View Controller-->
         <scene sceneID="ZY3-1a-ipr">
@@ -6384,7 +6589,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                             <rect key="frame" x="0.0" y="0.0" width="345" height="43.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" red="0.13723513479999999" green="0.13726624849999999" blue="0.13723316790000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="backgroundColor" red="0.078040815890000004" green="0.090017892419999995" blue="0.10251823810000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="activeChannelCell" rowHeight="80" id="XXT-CY-ISI">
                                         <rect key="frame" x="15" y="99" width="345" height="80"/>
@@ -6457,7 +6662,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                                 <constraint firstAttribute="bottom" secondItem="2mq-sl-3hg" secondAttribute="bottom" id="xD5-8S-sy1"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" red="0.13723513479999999" green="0.13726624849999999" blue="0.13723316790000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="backgroundColor" red="0.078040815890000004" green="0.090017892419999995" blue="0.10251823810000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     </tableViewCell>
                                 </prototypes>
                                 <connections>
@@ -6518,11 +6723,10 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="EAc-2Q-Iy3"/>
         <segue reference="qed-hl-jG5"/>
         <segue reference="DF5-fx-Xqy"/>
-        <segue reference="sOC-xM-b3f"/>
-        <segue reference="jzM-oI-Kmu"/>
+        <segue reference="Yjp-aE-XkH"/>
+        <segue reference="CiB-VJ-HaC"/>
         <segue reference="RbT-dI-IvI"/>
         <segue reference="IVc-aG-8QZ"/>
         <segue reference="cvp-U1-bU5"/>
@@ -6531,7 +6735,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="HNI-HG-9ZQ"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="sXG-y0-yya"/>
-        <segue reference="7UD-TA-0Dv"/>
+        <segue reference="8MS-xS-DMP"/>
         <segue reference="h0D-Od-IZu"/>
         <segue reference="j10-wi-hpr"/>
         <segue reference="G1i-Bv-OSl"/>
@@ -6552,6 +6756,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <image name="desktopcomputer" catalog="system" width="128" height="101"/>
         <image name="gear" catalog="system" width="128" height="119"/>
         <image name="heart" catalog="system" width="128" height="109"/>
+        <image name="hifispeaker" catalog="system" width="110" height="128"/>
         <image name="iTunesArtwork.png" width="512" height="512"/>
         <image name="info.circle" catalog="system" width="128" height="121"/>
         <image name="link" catalog="system" width="128" height="116"/>

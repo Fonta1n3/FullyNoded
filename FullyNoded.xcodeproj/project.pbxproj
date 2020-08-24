@@ -132,6 +132,9 @@
 		D0C20EE724A78A9700C62AA4 /* CreateFullyNodedWalletViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20EE624A78A9700C62AA4 /* CreateFullyNodedWalletViewController.swift */; };
 		D0C4EE6F24F0EC9B003C929A /* BitSense.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = D0C4EE6D24F0EC9B003C929A /* BitSense.xcdatamodeld */; };
 		D0C5A58824AECDBE003B11A9 /* SignerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C5A58724AECDBE003B11A9 /* SignerViewController.swift */; };
+		D0CC0E2024F0F35A001BF905 /* Peers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0CC0E1F24F0F35A001BF905 /* Peers.swift */; };
+		D0CC0E2224F0FA98001BF905 /* PeerDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0CC0E2124F0FA98001BF905 /* PeerDetailsViewController.swift */; };
+		D0CC0E2424F2069D001BF905 /* NoiseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0CC0E2324F2069D001BF905 /* NoiseViewController.swift */; };
 		D0D4B9A624DA616300572811 /* Lightning.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0D4B9A524DA616300572811 /* Lightning.swift */; };
 		D0D71DA32351F835005CCDB9 /* UtilitieMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0D71DA22351F835005CCDB9 /* UtilitieMenuViewController.swift */; };
 		D0DE292B22BCFE9900D9EBCF /* Readme.md in Resources */ = {isa = PBXBuildFile; fileRef = D0DE292A22BCFE9900D9EBCF /* Readme.md */; };
@@ -301,6 +304,9 @@
 		D0C5A58724AECDBE003B11A9 /* SignerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignerViewController.swift; sourceTree = "<group>"; };
 		D0CB488F2435B32E0072D1F5 /* Entities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Entities.swift; sourceTree = "<group>"; };
 		D0CB48902435B32E0072D1F5 /* Commands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Commands.swift; sourceTree = "<group>"; };
+		D0CC0E1F24F0F35A001BF905 /* Peers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Peers.swift; sourceTree = "<group>"; };
+		D0CC0E2124F0FA98001BF905 /* PeerDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerDetailsViewController.swift; sourceTree = "<group>"; };
+		D0CC0E2324F2069D001BF905 /* NoiseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoiseViewController.swift; sourceTree = "<group>"; };
 		D0D4B9A524DA616300572811 /* Lightning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lightning.swift; sourceTree = "<group>"; };
 		D0D71DA22351F835005CCDB9 /* UtilitieMenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilitieMenuViewController.swift; sourceTree = "<group>"; };
 		D0DE292A22BCFE9900D9EBCF /* Readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Readme.md; sourceTree = "<group>"; };
@@ -388,6 +394,8 @@
 				D069052024EA8E95007F939D /* LightningChannelsViewController.swift */,
 				D011702724EBA3CE00ACC44B /* ChannelDetailViewController.swift */,
 				D03F65F024EFB25100901D06 /* KeySendViewController.swift */,
+				D0CC0E2124F0FA98001BF905 /* PeerDetailsViewController.swift */,
+				D0CC0E2324F2069D001BF905 /* NoiseViewController.swift */,
 			);
 			path = "Node Manager";
 			sourceTree = "<group>";
@@ -602,6 +610,7 @@
 				D09A330424A8C4F6009FA0B2 /* Wallet.swift */,
 				D09A331224AC4C93009FA0B2 /* Descriptor.swift */,
 				D09F9E4D24B06A63006B588C /* SignerStruct.swift */,
+				D0CC0E1F24F0F35A001BF905 /* Peers.swift */,
 			);
 			path = Structs;
 			sourceTree = "<group>";
@@ -1080,6 +1089,7 @@
 				D08A92AD2337A63000409D6E /* DescriptorStruct.swift in Sources */,
 				D037C876231CAFD9006C357D /* AddLabelViewController.swift in Sources */,
 				D09A330D24A9B10E009FA0B2 /* BIP39WordList.swift in Sources */,
+				D0CC0E2424F2069D001BF905 /* NoiseViewController.swift in Sources */,
 				D0233F282361EA5F0041FFBA /* shim.swift in Sources */,
 				D0F3919424C0147400EA8A2A /* QRScannerViewController.swift in Sources */,
 				D05692E321434452006DF0F4 /* MainMenuViewController.swift in Sources */,
@@ -1123,6 +1133,7 @@
 				D082397924DAE4CB0098D4F4 /* LightningNodeManagerViewController.swift in Sources */,
 				D0233F242361EA090041FFBA /* Base32.swift in Sources */,
 				D020480F249605AB00EF52DB /* ActiveWalletsViewController.swift in Sources */,
+				D0CC0E2224F0FA98001BF905 /* PeerDetailsViewController.swift in Sources */,
 				D0F029BD24C3D6F700FED673 /* MultiSigCreatorViewController.swift in Sources */,
 				D037C86C231BAFB4006C357D /* AddToKeypoolViewController.swift in Sources */,
 				D0452ADB2247417F0013E225 /* ImportPrivKeyViewController.swift in Sources */,
@@ -1142,6 +1153,7 @@
 				D07E0DE622F9168F00A81FA8 /* WalletManagerViewController.swift in Sources */,
 				D0384E34246AC53B002FEE94 /* base58.c in Sources */,
 				D011702824EBA3CE00ACC44B /* ChannelDetailViewController.swift in Sources */,
+				D0CC0E2024F0F35A001BF905 /* Peers.swift in Sources */,
 				D037C874231BB04B006C357D /* ScanExtendedKeyViewController.swift in Sources */,
 				D044ED78235AF42D00300D62 /* ImportStruct.swift in Sources */,
 				D0C20ED624A6E19600C62AA4 /* NetworkInfo.swift in Sources */,
@@ -1348,7 +1360,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 211;
+				CURRENT_PROJECT_VERSION = 212;
 				DEVELOPMENT_TEAM = 69FR345CDA;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1361,7 +1373,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.291;
+				MARKETING_VERSION = 1.292;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1384,7 +1396,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 211;
+				CURRENT_PROJECT_VERSION = 212;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 69FR345CDA;
 				ENABLE_TESTABILITY = NO;
@@ -1399,7 +1411,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.291;
+				MARKETING_VERSION = 1.292;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";

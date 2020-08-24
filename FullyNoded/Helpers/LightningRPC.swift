@@ -12,7 +12,7 @@ class LightningRPC {
 
     static let torClient = TorClient.sharedInstance
     static var attempts = 0
-    class func command(method: LIGHTNING_CLI, param: Any, completion: @escaping ((response: Any?, errorDesc: String?)) -> Void) {
+    class func command(id: UUID, method: LIGHTNING_CLI, param: Any, completion: @escaping ((id: UUID, response: Any?, errorDesc: String?)) -> Void) {
         
         var rpcusername = ""
         var rpcpassword = ""
@@ -31,7 +31,7 @@ class LightningRPC {
                 }
                 
                 guard lightningNode != nil else {
-                    completion((nil, "no lightning node"))
+                    completion((id, nil, "no lightning node"))
                     return
                 }
                 
@@ -59,17 +59,18 @@ class LightningRPC {
                 
                 let lightningUrl = "http://\(rpcusername):\(rpcpassword)@\(onionAddress)"
                 guard let url = URL(string: lightningUrl) else {
-                    completion((nil, "url error"))
+                    completion((id, nil, "url error"))
                     return
                 }
                 
                 var request = URLRequest(url: url)
-                let id = UUID()
                 let loginString = String(format: "%@:%@", rpcusername, rpcpassword)
                 let loginData = loginString.data(using: String.Encoding.utf8)!
                 let base64LoginString = loginData.base64EncodedString()
                 if method == .rebalance {
-                    request.timeoutInterval = 90
+                    request.timeoutInterval = 120
+                } else if method == .recvmsg {
+                    request.timeoutInterval = 180
                 } else {
                     request.timeoutInterval = 60
                 }
@@ -85,26 +86,16 @@ class LightningRPC {
                 #endif
                 
                 let task = torClient.session.dataTask(with: request as URLRequest) { (data, response, error) in
-                    
                     do {
                         
                         if error != nil {
+                            #if DEBUG
+                            print("error: \(error!.localizedDescription)")
+                            #endif
+                            completion((id, nil, error!.localizedDescription))
                             
-                            //if self.attempts < 3 {
-                                //self.attempts += 1
-                                //command(method: method, param: param, completion: completion)
-                            //} else {
-                                //self.attempts = 0
-                                #if DEBUG
-                                print("error: \(error!.localizedDescription)")
-                                #endif
-                                completion((nil, error!.localizedDescription))
-                            //}
-                                                        
                         } else {
-                            
                             if let urlContent = data {
-                                
                                 do {
                                     let jsonAddressResult = try JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as! NSDictionary
                                     
@@ -123,15 +114,15 @@ class LightningRPC {
                                             
                                         }
                                         
-                                        completion((nil, errorDesc))
+                                        completion((id, nil, errorDesc))
                                         
                                     } else {
-                                        completion((jsonAddressResult["result"], nil))
+                                        completion((id, jsonAddressResult["result"], nil))
                                         
                                     }
                                     
                                 } catch {
-                                    completion((nil, "unknown error"))
+                                    completion((id, nil, "unknown error"))
                                     
                                 }
                             }
@@ -141,7 +132,7 @@ class LightningRPC {
                 task.resume()
                 
             } else {
-                completion((nil, "error getting nodes from core data"))
+                completion((id, nil, "error getting nodes from core data"))
                 
             }
         }
