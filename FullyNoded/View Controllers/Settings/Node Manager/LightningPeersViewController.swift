@@ -24,6 +24,9 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
         peersTable.dataSource = self
         iconBackground.clipsToBounds = true
         iconBackground.layer.cornerRadius = 5
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
         loadPeers()
     }
     
@@ -35,6 +38,9 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
     
     private func loadPeers() {
         spinner.addConnectingView(vc: self, description: "getting peers...")
+        peerArray.removeAll()
+        selectedPeer = nil
+        id = ""
         let commandId = UUID()
         LightningRPC.command(id: commandId, method: .listpeers, param: "") { [weak self] (uuid, response, errorDesc) in
             if commandId == uuid {

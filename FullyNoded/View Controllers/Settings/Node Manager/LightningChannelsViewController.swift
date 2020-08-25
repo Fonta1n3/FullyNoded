@@ -318,17 +318,24 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     
     private func rebalance(_ source: String, _ destination: String) {
         LightningRPC.command(id: UUID(), method: .rebalance, param: "\"\(source)\", \"\(destination)\"") { [weak self] (id, response, errorDesc) in
+            self?.refresh()
             if errorDesc != nil {
-                self?.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Error", message: errorDesc!)
+               showAlert(vc: self, title: "Error", message: errorDesc!)
             } else if let message = response as? String {
-                self?.spinner.removeConnectingView()
                 showAlert(vc: self, title: "⚡️ Success ⚡️", message: message)
             } else {
-                self?.spinner.removeConnectingView()
+                
                 showAlert(vc: self, title: "", message: "\(String(describing: response))")
             }
         }
+    }
+    
+    private func refresh() {
+        channels.removeAll()
+        ours.removeAll()
+        theirs.removeAll()
+        loadPeers()
+        spinner.removeConnectingView()
     }
     
     // MARK: - Navigation

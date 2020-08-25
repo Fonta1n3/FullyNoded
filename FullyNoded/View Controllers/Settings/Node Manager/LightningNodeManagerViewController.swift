@@ -20,6 +20,7 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
     var showActive = Bool()
     var showInactive = Bool()
     var color = ""
+    var activeNode:[String:Any]?
     @IBOutlet weak var nodeTable: UITableView!
     
     override func viewDidLoad() {
@@ -27,7 +28,6 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
         nodeTable.delegate = self
         nodeTable.dataSource = self
         iconBackground.layer.cornerRadius = 5
-        getInfo()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -37,6 +37,63 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
         if newlyAdded {
             newlyAdded = false
             showAlert(vc: self, title: "⚡️ Lightning Node added ⚡️", message: "We are now fecthing info from your node, to view this screen from now on just tap the ⚡️ on the home screen to toggle between Lightning and onchcain.")
+        } else {
+            checkForLightningNodes { [weak self] (exists) in
+                if exists {
+                    self?.getInfo()
+                } else {
+                    self?.promptToAddNode()
+                }
+            }
+        }
+    }
+    
+    @IBAction func goToCreds(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            self?.performSegue(withIdentifier: "segueToLightningCreds", sender: self)
+        }
+    }
+    
+    
+    private func promptToAddNode() {
+        DispatchQueue.main.async { [weak self] in
+            if self != nil {
+                var alertStyle = UIAlertController.Style.actionSheet
+                if (UIDevice.current.userInterfaceIdiom == .pad) {
+                  alertStyle = UIAlertController.Style.alert
+                }
+                let alert = UIAlertController(title: "No lightning nodes added yet", message: "You need to add one in order to use lightning features", preferredStyle: alertStyle)
+                alert.addAction(UIAlertAction(title: "add a node", style: .default, handler: { [weak self] action in
+                    self?.performSegue(withIdentifier: "segueToLightningCreds", sender: self)
+                }))
+                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+                alert.popoverPresentationController?.sourceView = self?.view
+                self?.present(alert, animated: true, completion: nil)
+            }
+        }
+    }
+    
+    private func checkForLightningNodes(completion: @escaping ((Bool)) -> Void) {
+        CoreDataService.retrieveEntity(entityName: .newNodes) { (nodes) in
+            if nodes != nil {
+                if nodes!.count > 0 {
+                    var islightning = false
+                    for (i, node) in nodes!.enumerated() {
+                        let ns = NodeStruct(dictionary: node)
+                        if ns.isLightning {
+                            islightning = true
+                            self.activeNode = node
+                        }
+                        if i + 1 == nodes!.count {
+                            completion(islightning)
+                        }
+                    }
+                } else {
+                    completion(false)
+                }
+            } else {
+                completion(false)
+            }
         }
     }
     
@@ -223,20 +280,25 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destination.
         // Pass the selected object to the new view controller
-        
-        if segue.identifier == "segueToShareLightningUrl" {
+        switch segue.identifier {
+        case "segueToShareLightningUrl":
             if let vc = segue.destination as? QRDisplayerViewController {
                 vc.text = url
             }
-        }
-        
-        if segue.identifier == "segueToLightningChannels" {
+        case "segueToLightningChannels":
             if let vc = segue.destination as? LightningChannelsViewController {
                 vc.myId = myId
                 vc.showPending = showPending
                 vc.showActive = showActive
                 vc.showInactive = showInactive
             }
+        case "segueToLightningCreds":
+            if let vc = segue.destination as? NodeDetailViewController {
+                vc.isLightning = true
+                vc.selectedNode = activeNode
+            }
+        default:
+            break
         }
     }
 }

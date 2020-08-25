@@ -33,12 +33,6 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         getNodes()
     }
     
-    @IBAction func addLightningNode(_ sender: Any) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "segueToAddLightningNode", sender: vc)
-        }
-    }
-    
     func getNodes() {
         
         CoreDataService.retrieveEntity(entityName: .newNodes) { [unowned vc = self] nodes in

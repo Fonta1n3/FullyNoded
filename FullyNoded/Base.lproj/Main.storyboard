@@ -3985,7 +3985,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
             </objects>
             <point key="canvasLocation" x="-2791.1999999999998" y="375.56221889055473"/>
         </scene>
-        <!--v0.1.74-->
+        <!--v0.1.75-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -4132,7 +4132,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                         <viewLayoutGuide key="safeArea" id="Cze-jj-bFe"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="v0.1.74" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="v0.1.75" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
@@ -4230,30 +4230,16 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ZdQ-AB-6EJ">
-                                <rect key="frame" x="326" y="64" width="33" height="22"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="33" id="ACy-Gu-NVs"/>
-                                    <constraint firstAttribute="height" constant="22" id="ygn-bx-Gh8"/>
-                                </constraints>
-                                <color key="tintColor" systemColor="systemYellowColor" red="1" green="0.80000000000000004" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <state key="normal" image="bolt" catalog="system"/>
-                                <connections>
-                                    <action selector="addLightningNode:" destination="FrY-WR-Inf" eventType="touchUpInside" id="cLC-57-8Lr"/>
-                                </connections>
-                            </button>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="omk-V0-xkJ" firstAttribute="leading" secondItem="Lcc-il-gAQ" secondAttribute="leading" constant="16" id="73E-PH-tlp"/>
                             <constraint firstItem="RkE-8N-Qp0" firstAttribute="leading" secondItem="Lcc-il-gAQ" secondAttribute="leading" id="9gU-Ox-BoV"/>
                             <constraint firstItem="RkE-8N-Qp0" firstAttribute="trailing" secondItem="Lcc-il-gAQ" secondAttribute="trailing" id="A5Q-Zi-uPz"/>
-                            <constraint firstItem="ZdQ-AB-6EJ" firstAttribute="centerY" secondItem="omk-V0-xkJ" secondAttribute="centerY" id="LAK-SL-cQg"/>
                             <constraint firstItem="RkE-8N-Qp0" firstAttribute="bottom" secondItem="Lcc-il-gAQ" secondAttribute="bottom" id="Qek-Hu-eWI"/>
                             <constraint firstItem="omk-V0-xkJ" firstAttribute="top" secondItem="Lcc-il-gAQ" secondAttribute="top" constant="14" id="cd8-Pd-9fC"/>
                             <constraint firstItem="Lcc-il-gAQ" firstAttribute="trailing" secondItem="omk-V0-xkJ" secondAttribute="trailing" constant="172.5" id="s1B-9i-RON"/>
                             <constraint firstItem="RkE-8N-Qp0" firstAttribute="top" secondItem="omk-V0-xkJ" secondAttribute="bottom" constant="29" id="t24-vm-ABV"/>
-                            <constraint firstItem="Lcc-il-gAQ" firstAttribute="trailing" secondItem="ZdQ-AB-6EJ" secondAttribute="trailing" constant="16" id="wQz-l3-bS6"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="Lcc-il-gAQ"/>
                     </view>
@@ -4974,12 +4960,20 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <viewLayoutGuide key="safeArea" id="uUf-aQ-0bN"/>
                     </view>
                     <navigationItem key="navigationItem" id="J9p-j8-H8t">
-                        <barButtonItem key="rightBarButtonItem" image="square.and.arrow.up" catalog="system" id="gwp-vI-ePE">
-                            <color key="tintColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                            <connections>
-                                <action selector="exportNode:" destination="B99-yZ-naR" id="c4z-NG-lTv"/>
-                            </connections>
-                        </barButtonItem>
+                        <rightBarButtonItems>
+                            <barButtonItem image="square.and.arrow.up" catalog="system" id="gwp-vI-ePE">
+                                <color key="tintColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <connections>
+                                    <action selector="exportNode:" destination="B99-yZ-naR" id="c4z-NG-lTv"/>
+                                </connections>
+                            </barButtonItem>
+                            <barButtonItem image="qrcode.viewfinder" catalog="system" id="awp-qu-L3a">
+                                <color key="tintColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <connections>
+                                    <action selector="scanQuickConnect:" destination="B99-yZ-naR" id="TMH-9e-2OO"/>
+                                </connections>
+                            </barButtonItem>
+                        </rightBarButtonItems>
                     </navigationItem>
                     <connections>
                         <outlet property="deleteLightningOutlet" destination="eoi-B9-9wY" id="gRh-JP-IYu"/>
@@ -4989,7 +4983,9 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <outlet property="rpcPassword" destination="4YC-xq-wqu" id="KIS-dN-d6I"/>
                         <outlet property="rpcUserField" destination="uRk-PX-ulA" id="pCP-J4-Y3p"/>
                         <outlet property="saveButton" destination="p2J-sn-A5I" id="ZWz-y2-s1b"/>
+                        <outlet property="scanQROutlet" destination="awp-qu-L3a" id="pQ4-ao-MZ5"/>
                         <segue destination="GlR-4A-eAx" kind="presentation" identifier="segueToExportNode" id="8MS-xS-DMP"/>
+                        <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScanNodeCreds" id="07E-4w-Zh7"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="YxC-Y3-iSs" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -5107,12 +5103,20 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <viewLayoutGuide key="safeArea" id="wIc-WS-cg9"/>
                     </view>
                     <navigationItem key="navigationItem" id="ETb-EZ-yt9">
-                        <barButtonItem key="rightBarButtonItem" image="square.and.arrow.up" catalog="system" id="9Q9-ug-mWO">
-                            <color key="tintColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                            <connections>
-                                <action selector="shareNodeUrlAction:" destination="u3j-cd-FEG" id="ZdN-f5-kzW"/>
-                            </connections>
-                        </barButtonItem>
+                        <rightBarButtonItems>
+                            <barButtonItem image="gear" catalog="system" id="3mR-Sp-Vxf">
+                                <color key="tintColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <connections>
+                                    <action selector="goToCreds:" destination="u3j-cd-FEG" id="KdS-2Y-faZ"/>
+                                </connections>
+                            </barButtonItem>
+                            <barButtonItem image="square.and.arrow.up" catalog="system" id="9Q9-ug-mWO">
+                                <color key="tintColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <connections>
+                                    <action selector="shareNodeUrlAction:" destination="u3j-cd-FEG" id="ZdN-f5-kzW"/>
+                                </connections>
+                            </barButtonItem>
+                        </rightBarButtonItems>
                     </navigationItem>
                     <connections>
                         <outlet property="iconBackground" destination="cW4-kO-AmG" id="llE-kn-b7a"/>
@@ -5120,6 +5124,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <segue destination="GlR-4A-eAx" kind="presentation" identifier="segueToShareLightningUrl" id="7UD-TA-0Dv"/>
                         <segue destination="aoj-WH-UVD" kind="show" identifier="goToSeeLightningPeers" id="2y9-PV-6Nh"/>
                         <segue destination="a32-zP-STg" kind="show" identifier="segueToLightningChannels" id="YuM-96-FnM"/>
+                        <segue destination="B99-yZ-naR" kind="show" identifier="segueToLightningCreds" id="2uq-d6-8Xa"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="oL2-EX-61b" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -6725,7 +6730,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
     <inferredMetricsTieBreakers>
         <segue reference="qed-hl-jG5"/>
         <segue reference="DF5-fx-Xqy"/>
-        <segue reference="Yjp-aE-XkH"/>
+        <segue reference="aQN-4W-cSW"/>
         <segue reference="CiB-VJ-HaC"/>
         <segue reference="RbT-dI-IvI"/>
         <segue reference="IVc-aG-8QZ"/>
@@ -6734,8 +6739,8 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="HNI-HG-9ZQ"/>
         <segue reference="IAz-j1-Gq6"/>
-        <segue reference="sXG-y0-yya"/>
-        <segue reference="8MS-xS-DMP"/>
+        <segue reference="07E-4w-Zh7"/>
+        <segue reference="7UD-TA-0Dv"/>
         <segue reference="h0D-Od-IZu"/>
         <segue reference="j10-wi-hpr"/>
         <segue reference="G1i-Bv-OSl"/>

@@ -17,6 +17,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     var isInitialLoad = Bool()
     var isLightning = Bool()
     
+    @IBOutlet weak var scanQROutlet: UIBarButtonItem!
     @IBOutlet weak var header: UILabel!
     @IBOutlet var nodeLabel: UITextField!
     @IBOutlet var rpcUserField: UITextField!
@@ -43,15 +44,24 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 deleteLightningOutlet.alpha = 1
             }
             header.text = "Lightning Node"
+            scanQROutlet.tintColor = UIColor.lightGray.withAlphaComponent(1)
         } else {
             deleteLightningOutlet.alpha = 0
             header.text = "Bitcoin Core Node"
+            scanQROutlet.tintColor = UIColor.lightGray.withAlphaComponent(0)
         }
     }
     
     override func viewDidAppear(_ animated: Bool) {
         loadValues()
     }
+    
+    @IBAction func scanQuickConnect(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            self?.performSegue(withIdentifier: "segueToScanNodeCreds", sender: self)
+        }
+    }
+    
     
     private func deleteLightningNodeNow() {
         if selectedNode != nil {
@@ -513,10 +523,37 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         }
     }
     
+    func addBtcRpcQr(url: String) {
+        QuickConnect.addNode(url: url) { [weak self] (success, errorMessage) in
+            if success {
+                if url.hasPrefix("clightning-rpc") {
+                    self?.navigationController?.popViewController(animated: true)
+                }
+            } else {
+                displayAlert(viewController: self, isError: true, message: "Error adding that node: \(errorMessage ?? "unknown")")
+            }
+        }
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "segueToExportNode" {
             if let vc = segue.destination as? QRDisplayerViewController {
-                vc.text = "btcrpc://\(rpcUserField.text ?? ""):\(rpcPassword.text ?? "")@\(onionAddressField.text ?? "")/?label=\(nodeLabel.text?.replacingOccurrences(of: " ", with: "%20") ?? "")"
+                var prefix = "btcrpc"
+                if isLightning {
+                    prefix = "c-lightning"
+                }
+                vc.text = "\(prefix)://\(rpcUserField.text ?? ""):\(rpcPassword.text ?? "")@\(onionAddressField.text ?? "")/?label=\(nodeLabel.text?.replacingOccurrences(of: " ", with: "%20") ?? "")"
+            }
+        }
+        
+        if segue.identifier == "segueToScanNodeCreds" {
+            if let vc = segue.destination as? QRScannerViewController {
+                vc.isQuickConnect = true
+                vc.onQuickConnectDoneBlock = { [unowned thisVc = self] url in
+                    if url != nil {
+                        thisVc.addBtcRpcQr(url: url!)
+                    }
+                }
             }
         }
     }

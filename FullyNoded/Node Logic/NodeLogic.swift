@@ -217,11 +217,12 @@ class NodeLogic {
                                         amountMsat = paymentDict["msatoshi_received"] as? Int ?? 0
                                     }
                                     let status = paymentDict["status"] as? String ?? ""
-                                    let created = paymentDict["expires_at"] as? Int ?? 0
+                                    //var created = paymentDict["expires_at"] as? Int ?? 0
                                     let bolt11 = paymentDict["bolt11"] as? String ?? ""
                                     let label = paymentDict["label"] as? String ?? ""
+                                    let paid_at = paymentDict["paid_at"] as? Int ?? 0
                                     
-                                    let date = Date(timeIntervalSince1970: Double(created))
+                                    let date = Date(timeIntervalSince1970: Double(paid_at))
                                     dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
                                     let dateString = dateFormatter.string(from: date)
                                     
