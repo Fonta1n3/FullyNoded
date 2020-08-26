@@ -35,7 +35,7 @@ class Lightning {
     class func fundchannelstart(channelId: String, amount: Int, completion: @escaping ((result: NSDictionary?, errorMessage: String?)) -> Void) {
         let param = "\"\(channelId)\", \(amount)"
         let commandId = UUID()
-        LightningRPC.command(id: UUID(), method: .fundchannel_start, param: param) { (uuid, response, errorDesc) in
+        LightningRPC.command(id: commandId, method: .fundchannel_start, param: param) { (uuid, response, errorDesc) in
             if commandId == uuid {
                 if let fundedChannelDict = response as? NSDictionary {
                     Lightning.parseFundChannelStart(channelId: channelId, amount: amount, dict: fundedChannelDict, completion: completion)
@@ -100,7 +100,7 @@ class Lightning {
     
     class func listtransactions(channelId: String, scriptPubKey: String, txid: String, completion: @escaping ((result: NSDictionary?, errorMessage: String?)) -> Void) {
         let commandId = UUID()
-        LightningRPC.command(id: UUID(), method: .listtransactions, param: "") { (uuid, response, errorDesc) in
+        LightningRPC.command(id: commandId, method: .listtransactions, param: "") { (uuid, response, errorDesc) in
             if commandId == uuid {
                 if let dict = response as? NSDictionary {
                     Lightning.parseTransactionsResult(channelId: channelId, scriptPubKey: scriptPubKey, txid: txid, dict: dict, completion: completion)
@@ -142,7 +142,7 @@ class Lightning {
     class func fundchannelcomplete(channelId: String, txid: String, vout: Int, completion: @escaping ((result: NSDictionary?, errorMessage: String?)) -> Void) {
         let param = "\"\(channelId)\", \"\(txid)\", \(vout)"
         let commandId = UUID()
-        LightningRPC.command(id: UUID(), method: .fundchannel_complete, param: param) { (uuid, response, errorDesc) in
+        LightningRPC.command(id: commandId, method: .fundchannel_complete, param: param) { (uuid, response, errorDesc) in
             if commandId == uuid {
                 if let dict = response as? NSDictionary {
                     completion((dict, nil))

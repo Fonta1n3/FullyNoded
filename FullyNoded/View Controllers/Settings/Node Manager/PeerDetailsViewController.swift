@@ -113,6 +113,21 @@ class PeerDetailsViewController: UIViewController, UITextFieldDelegate {
                                             }
                                         }
                                     }
+                                } else {
+                                    if self?.uuid != nil {
+                                        if self != nil {
+                                            self!.uuid = UUID()
+                                            var d = [String:Any]()
+                                            d["color"] = color
+                                            d["uri"] = ""
+                                            d["alias"] = ""
+                                            d["pubkey"] = nodeId
+                                            d["id"] = self!.uuid
+                                            CoreDataService.saveEntity(dict: d, entityName: .peers) { _ in }
+                                        }
+                                    }
+                                    self?.spinner.removeConnectingView()
+                                    showAlert(vc: self, title: "Private node", message: "We could not get any info about that node other then its pubkey")
                                 }
                             }
                         } else {

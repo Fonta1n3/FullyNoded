@@ -540,7 +540,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             if let vc = segue.destination as? QRDisplayerViewController {
                 var prefix = "btcrpc"
                 if isLightning {
-                    prefix = "c-lightning"
+                    prefix = "clightning-rpc"
                 }
                 vc.text = "\(prefix)://\(rpcUserField.text ?? ""):\(rpcPassword.text ?? "")@\(onionAddressField.text ?? "")/?label=\(nodeLabel.text?.replacingOccurrences(of: " ", with: "%20") ?? "")"
             }

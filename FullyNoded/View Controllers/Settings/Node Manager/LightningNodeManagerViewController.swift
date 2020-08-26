@@ -21,6 +21,7 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
     var showInactive = Bool()
     var color = ""
     var activeNode:[String:Any]?
+    var initialLoad = Bool()
     @IBOutlet weak var nodeTable: UITableView!
     
     override func viewDidLoad() {
@@ -28,6 +29,7 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
         nodeTable.delegate = self
         nodeTable.dataSource = self
         iconBackground.layer.cornerRadius = 5
+        initialLoad = true
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -53,7 +55,6 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
             self?.performSegue(withIdentifier: "segueToLightningCreds", sender: self)
         }
     }
-    
     
     private func promptToAddNode() {
         DispatchQueue.main.async { [weak self] in
@@ -116,7 +117,11 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
     }
     
     private func getInfo() {
-        spinner.addConnectingView(vc: self, description: "loading...")
+        if initialLoad {
+            spinner.addConnectingView(vc: self, description: "loading...")
+            initialLoad = false
+        }
+        tableArray.removeAll()
         let commandId = UUID()
         LightningRPC.command(id: commandId, method: .getinfo, param: "") { [weak self] (uuid, response, errorDesc) in
             if commandId == uuid {
@@ -149,7 +154,6 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
                         self!.url = "\(id)@\(ip):\(port)"
                     }
                     DispatchQueue.main.async { [weak self] in
-                        
                         self?.nodeTable.reloadData()
                     }
                     self?.spinner.removeConnectingView()
@@ -179,41 +183,43 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
         let icon = cell.viewWithTag(2) as! UIImageView
         let label = cell.viewWithTag(3) as! UILabel
         let chevron = cell.viewWithTag(4) as! UIImageView
-        let value = tableArray[indexPath.section]
-        label.text = value
-        iconbackground.clipsToBounds = true
-        iconbackground.layer.cornerRadius = 5
-        switch indexPath.section {
-        case 0:
-            iconbackground.backgroundColor = hexStringToUIColor(hex: color)
-            icon.image = UIImage(systemName: "person")
-            chevron.alpha = 0
-        case 1:
-            iconbackground.backgroundColor = .systemOrange
-            icon.image = UIImage(systemName: "person.3")
-            chevron.alpha = 1
-        case 2:
-            iconbackground.backgroundColor = .systemBlue
-            icon.image = UIImage(systemName: "slider.horizontal.3")
-            chevron.alpha = 1
-        case 3:
-            iconbackground.backgroundColor = .systemIndigo
-            icon.image = UIImage(systemName: "moon.zzz")
-            chevron.alpha = 1
-        case 4:
-            iconbackground.backgroundColor = .systemOrange
-            icon.image = UIImage(systemName: "hourglass")
-            chevron.alpha = 1
-        case 5:
-            iconbackground.backgroundColor = .systemPurple
-            icon.image = UIImage(systemName: "bitcoinsign.circle")
-            chevron.alpha = 0
-        case 6:
-            iconbackground.backgroundColor = .systemYellow
-            icon.image = UIImage(systemName: "v.circle")
-            chevron.alpha = 0
-        default:
-            break
+        if tableArray.count > 0 {
+            let value = tableArray[indexPath.section]
+            label.text = value
+            iconbackground.clipsToBounds = true
+            iconbackground.layer.cornerRadius = 5
+            switch indexPath.section {
+            case 0:
+                iconbackground.backgroundColor = hexStringToUIColor(hex: color)
+                icon.image = UIImage(systemName: "person")
+                chevron.alpha = 0
+            case 1:
+                iconbackground.backgroundColor = .systemOrange
+                icon.image = UIImage(systemName: "person.3")
+                chevron.alpha = 1
+            case 2:
+                iconbackground.backgroundColor = .systemBlue
+                icon.image = UIImage(systemName: "slider.horizontal.3")
+                chevron.alpha = 1
+            case 3:
+                iconbackground.backgroundColor = .systemIndigo
+                icon.image = UIImage(systemName: "moon.zzz")
+                chevron.alpha = 1
+            case 4:
+                iconbackground.backgroundColor = .systemOrange
+                icon.image = UIImage(systemName: "hourglass")
+                chevron.alpha = 1
+            case 5:
+                iconbackground.backgroundColor = .systemPurple
+                icon.image = UIImage(systemName: "bitcoinsign.circle")
+                chevron.alpha = 0
+            case 6:
+                iconbackground.backgroundColor = .systemYellow
+                icon.image = UIImage(systemName: "v.circle")
+                chevron.alpha = 0
+            default:
+                break
+            }
         }
         return cell
     }
