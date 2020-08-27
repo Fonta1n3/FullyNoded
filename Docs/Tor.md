@@ -1,11 +1,9 @@
-## Connecting over Tor 
+# Connecting over Tor 
  - [macOS](#Connecting-over-Tor-macOS)
  - [Windows 10](#Connecting-over-Tor-Windows-10)
- - [Ubuntu 18.04](#Connecting-over-Tor-Ubuntu-18)
- - [Debian 10](#Connecting-over-Tor-Linux-Debian-10)
- 
-#### Optional Tor v3
-## Connecting over Tor macOS
+ - [Linux all platforms](#Connecting-over-Tor-Linux-all-platforms)
+  
+# Connecting over Tor macOS
 Run `brew --version` in a terminal, if you get a valid response you have brew installed already. If not, install brew:
 
 ```cd /usr/local
@@ -74,7 +72,7 @@ Find the suggested Authentication settings on the device running FN [here](./Aut
 Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings).<br/>
 Find the suggested `lightning.conf` settings for FN [here](./Lightning.md/#Create-lightning-config).
 
-## Connecting over Tor Windows 10
+# Connecting over Tor Windows 10
 If you already have the Tor Expert Bundle installed you can skip the first 3 steps.
 
 ### On the device running your node
@@ -143,12 +141,19 @@ Find the suggested Authentication settings on the device running FN [here](./Aut
 Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings).<br/>
 Find the suggested `lightning.conf` settings for FN [here](./Lightning.md/#Create-lightning-config).
 
+# Connecting over Tor Linux all platforms
 
-## Connecting over Tor Ubuntu 18
+Install tor on linux, follow this guide [here](https://2019.www.torproject.org/docs/debian.html.en). 
+1. The guide uses your input to adapt the commands you have to give in. It uses the instructions from the tor project website. They cover all platforms.
+2. The guide is very strict about **what you have to do as 'root'. Follow those rules**. It can be practical to open a terminal tab and changed the user of that tab to root with `su - root`. That needs the root password. No to be confused with the 'sudo ...' commands. Those need the user who is logged in and has sufficient rights to execute as superuser.
 
-Install tor on linux, follow this guide [here](https://2019.www.torproject.org/docs/debian.html.en). The guide uses your input to adapt the commands you have to give in:
+## Example covers connecting over Tor Ubuntu 18
+.... but I should work the same for all Linux platforms. Later the example will be more specifically directed towards:<br/>
+ - the location `/var/lib/tor/*` where tor landed, but that could have been elsewhere in your directory structure too.
+ - the HiddenServiceDir *lightning*, but that could have been main, test, regtest or standup, as you wish (see below)
+ - 
 
-### Finding the your Operating System version details
+### Finding your Operating System version details
 Click the down arrow, often in the upper right corner of your screen:<br/>
 <img src="./Images/Settings-Ubuntu.png" alt="Settings-Ubuntu" border="0" width="300">
 <img src="./Images/Settings-Detailed-Ubuntu.png" alt="Settings-Detailed-Ubuntu" border="0" width="200"><br/>
@@ -161,7 +166,7 @@ Choosing the right pull down menu-items and the text below with your commands wi
 
 ### Where has Tor been installed?
 
-It depends on the setup of the OS whether tor gets parked in `var/lib/tor/*` instead of `usr/local/var/lib/tor/*`.
+It depends on the setup of the OS whether tor gets parked in `var/lib/tor/*` instead of `usr/local/var/lib/tor/*` for example.
 
 Check wether you are in `/usr/local/var/lib/tor` ... or in `/var/lib/tor` ...
 
@@ -175,7 +180,6 @@ $ find / -name tor -type d  2> /dev/null
 /usr/share/doc/tor
 /etc/tor
 ```
-
 ### On the device running your node:
 
 Boot tor as a service:
@@ -183,7 +187,7 @@ Linux: `systemctl start tor`
 
 Once Tor is installed (and started) you will be able to create a Hidden Service.
 
-On Linux:<br/>
+On Linux start your text-editor, e.g. nano:<br/>
 `nano /etc/tor/torrc`<br/>
 
 Find the hidden services section:<br/>
@@ -200,26 +204,26 @@ Find the hidden services section:<br/>
 
 Below it add the hidden service we will use to control our Bitcoin node and lightning node:<br/>
 ```
-HiddenServiceDir /usr/local/var/lib/tor/fullynoded/main
+HiddenServiceDir /var/lib/tor/fullynoded/main
 HiddenServiceVersion 3
 HiddenServicePort 8332 127.0.0.1:8332
 
-HiddenServiceDir /usr/local/var/lib/tor/fullynoded/test
+HiddenServiceDir /var/lib/tor/fullynoded/test
 HiddenServiceVersion 3
 HiddenServicePort 18332 127.0.0.1:18332
 
-HiddenServiceDir /usr/local/var/lib/tor/fullynoded/regtest
+HiddenServiceDir /var/lib/tor/fullynoded/regtest
 HiddenServiceVersion 3
 HiddenServicePort 18443 127.0.0.1:18443
 
-HiddenServiceDir /usr/local/var/lib/tor/fullynoded/lightning/
+HiddenServiceDir /var/lib/tor/fullynoded/lightning/
 HiddenServiceVersion 3
 HiddenServicePort 1312 127.0.0.1:1312
 ```
 `ctlr x` > `y` > `return` to save the changes and quit nano text editor
 
 You will then need to create the hidden service directory:<br/>
-`cd /usr/local/var/lib/tor/`<br/>
+`cd /var/lib/tor/`<br/>
 `mkdir fullynoded`<br/>
 `mkdir fullynoded/main`<br/>
 `mkdir fullynoded/test`<br/>
@@ -235,10 +239,12 @@ Then:<br/>
 Restart Tor:<br/>
 linux `systemctl restart tor`
 
+## Expected result
+
 Tor should start and you should be able to **navigate to** your onion address(es) you need for Fully Noded, the example is for subdirectory *main* but it should be done for all subdirectories if relevant for you:<br/>
-    * `/usr/local/var/lib/tor/fullynoded/main` (the directory for *mainnet* we added to the torrc file) and see a file called `hostname`, **open it and copy the onion address, that you need for Fully Noded**. 
+    * `/usr/local/var/lib/tor/fullynoded/lightning` (the directory for *lightning* we added to the torrc file) and see a file called `hostname`, **open it and copy the onion address, that you need for Fully Noded**. 
     * Or `cat /usr/local/var/lib/tor/fullynoded/lightning/hostname`. If it prints something like `ndfiuhfh2fu23ufh21u3bfd.onion` then all is well, if not message me on the Fully Noded Telegram and some group member can help (maybe).
-    * Do the same for `test`, `regtest` and `lightning`
+    * Do the same for `test`, `regtest` and `main` if you wish to configure tor for those networks too.
 
 Find the suggested Authentication settings on the device running FN [here](./Authentication.md/#On-the-device-running-FN).<br/>
 Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings).<br/>
