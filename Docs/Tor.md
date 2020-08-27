@@ -160,7 +160,7 @@ Copy the "About" <br/>
 <img src="./Images/About-Ubuntu-os.png" alt="About-Ubuntu-os" border="0" width="400"><br/>
 
 ### Use the installation guide on the Tor website
-Choosing the right pull down menu-items and the text below with your commands will change accordingly:<br/>
+[Here](https://2019.www.torproject.org/docs/debian.html.en) again the link to the instruction. Choosing the right pull down menu-items and the text below with your commands will change accordingly:<br/>
 <img src="./Images/install-tor-interaction.png" alt="install-tor-interaction on site" border="0" width="500"><br/>
 
 ### Where has Tor been installed?
