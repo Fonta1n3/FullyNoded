@@ -148,20 +148,18 @@ Find the suggested `lightning.conf` settings for FN [here](./Lightning.md/#Creat
 
 Install tor on linux, follow this guide [here](https://2019.www.torproject.org/docs/debian.html.en). The guide uses your input to adapt the commands you have to give in:
 
-#### Finding the your Operating System version details
+### Finding the your Operating System version details
 Click the down arrow, often in the upper right corner of your screen:<br/>
-<img src="./Images/Settings-Detailed-Ubuntu.png" alt="Settings-Detailed-Ubuntu" border="0" width="300">
-<img src="./Images/Settings-Ubuntu.png" alt="Settings-Ubuntu" border="0" width="300"><br/>
+<img src="./Images/Settings-Ubuntu.png" alt="Settings-Ubuntu" border="0" width="300">
+<img src="./Images/Settings-Detailed-Ubuntu.png" alt="Settings-Detailed-Ubuntu" border="0" width="200"><br/>
 Copy the "About" <br/>
-<img src="./Images/About-Ubuntu-os.png" alt="About-Ubuntu-os" border="0" width="300"><br/>
+<img src="./Images/About-Ubuntu-os.png" alt="About-Ubuntu-os" border="0" width="400"><br/>
 
-#### Use the installation guide on the Tor website
-Choosing the right pull down menu-items:
-<img src="./Images/install-tor-interaction.png" alt="install-tor-interaction on site" border="0" width="300">
-<img src="./Images/result-interaction.png" alt="result-interaction on screen below" border="0" width="300"><br/>
+### Use the installation guide on the Tor website
+Choosing the right pull down menu-items and the text below with your commands will change accordingly:<br/>
+<img src="./Images/install-tor-interaction.png" alt="install-tor-interaction on site" border="0" width="500"><br/>
 
-
-#### Where has Tor been installed?
+### Where has Tor been installed?
 
 It depends on the setup of the OS whether tor gets parked in `var/lib/tor/*` instead of `usr/local/var/lib/tor/*`.
 
