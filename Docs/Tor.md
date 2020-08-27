@@ -1,6 +1,7 @@
 ## Connecting over Tor 
  - [macOS](#Connecting-over-Tor-macOS)
  - [Windows 10](#Connecting-over-Tor-Windows-10)
+ - [Ubuntu 18.04](#Connecting-over-Tor-Ubuntu-18)
  - [Debian 10](#Connecting-over-Tor-Linux-Debian-10)
  
 #### Optional Tor v3
@@ -142,9 +143,103 @@ Find the suggested Authentication settings on the device running FN [here](./Aut
 Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings).<br/>
 Find the suggested `lightning.conf` settings for FN [here](./Lightning.md/#Create-lightning-config).
 
+
+## Connecting over Tor Ubuntu 18
+
+Install tor on linux, follow this guide [here](https://2019.www.torproject.org/docs/debian.html.en). The guide uses your input to adapt the commands you have to give in:
+
+#### Finding the your Operating System version details
+Click the down arrow, often in the upper right corner of your screen:<br/>
+<img src="./Images/Settings-Detailed-Ubuntu.png" alt="Settings-Detailed-Ubuntu" border="0" width="300">
+<img src="./Images/Settings-Ubuntu.png" alt="Settings-Ubuntu" border="0" width="300"><br/>
+Copy the "About" <br/>
+<img src="./Images/About-Ubuntu-os.png" alt="About-Ubuntu-os" border="0" width="300"><br/>
+
+#### Use the installation guide on the Tor website
+Choosing the right pull down menu-items:
+<img src="./Images/install-tor-interaction.png" alt="install-tor-interaction on site" border="0" width="300">
+<img src="./Images/result-interaction.png" alt="result-interaction on screen below" border="0" width="300"><br/>
+
+
+#### Where has Tor been installed?
+
+It depends on the setup of the OS whether tor gets parked in `var/lib/tor/*` instead of `usr/local/var/lib/tor/*`.
+
+Check wether you are in `/usr/local/var/lib/tor` ... or in `/var/lib/tor` ...
+
+This command could come in handy: `find / -name tor 2> /dev/null` The result will tell you which absolute paths the system has installed tor into.
+
+### On the device running your node:
+
+Boot tor as a service:
+Linux: `systemctl start tor`
+
+Once Tor is installed (and started) you will be able to create a Hidden Service.
+
+On Linux:<br/>
+`nano /etc/tor/torrc`<br/>
+
+Find the hidden services section:<br/>
+```
+############### This section is just for location-hidden services ###
+
+## Once you have configured a hidden service, you can look at the
+## contents of the file ".../hidden_service/hostname" for the address
+## to tell people.
+##
+## HiddenServicePort x y:z says to redirect requests on port x to the
+## address y:z.
+```
+
+Below it add the hidden service we will use to control our Bitcoin node and lightning node:<br/>
+```
+HiddenServiceDir /usr/local/var/lib/tor/fullynoded/main
+HiddenServiceVersion 3
+HiddenServicePort 8332 127.0.0.1:8332
+
+HiddenServiceDir /usr/local/var/lib/tor/fullynoded/test
+HiddenServiceVersion 3
+HiddenServicePort 18332 127.0.0.1:18332
+
+HiddenServiceDir /usr/local/var/lib/tor/fullynoded/regtest
+HiddenServiceVersion 3
+HiddenServicePort 18443 127.0.0.1:18443
+
+HiddenServiceDir /usr/local/var/lib/tor/fullynoded/lightning/
+HiddenServiceVersion 3
+HiddenServicePort 1312 127.0.0.1:1312
+```
+`ctlr x` > `y` > `return` to save the changes and quit nano text editor
+
+You will then need to create the hidden service directory:<br/>
+`cd /usr/local/var/lib/tor/`<br/>
+`mkdir fullynoded`<br/>
+`mkdir fullynoded/main`<br/>
+`mkdir fullynoded/test`<br/>
+`mkdir fullynoded/regtest`<br/>
+`mkdir fullynoded/lightning/`
+
+On linux assign the owner for every *subdirectory* above, here example *lightning*:<br/>
+`chown -R debian-tor:debian-tor /usr/local/var/lib/tor/fullynoded/lightning/`
+
+Then:<br/>
+`chmod 700 /usr/local/var/lib/tor/fullynoded/lightning/`
+
+Restart Tor:<br/>
+linux `systemctl restart tor`
+
+Tor should start and you should be able to **navigate to** your onion address(es) you need for Fully Noded, the example is for subdirectory *main* but it should be done for all subdirectories if relevant for you:<br/>
+    * `/usr/local/var/lib/tor/fullynoded/main` (the directory for *mainnet* we added to the torrc file) and see a file called `hostname`, **open it and copy the onion address, that you need for Fully Noded**. 
+    * Or `cat /usr/local/var/lib/tor/fullynoded/lightning/hostname`. If it prints something like `ndfiuhfh2fu23ufh21u3bfd.onion` then all is well, if not message me on the Fully Noded Telegram and some group member can help (maybe).
+    * Do the same for `test`, `regtest` and `lightning`
+
+Find the suggested Authentication settings on the device running FN [here](./Authentication.md/#On-the-device-running-FN).<br/>
+Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings).<br/>
+Find the suggested `lightning.conf` settings for FN [here](./Lightning.md/#Create-lightning-config).
+
 ## Connecting over Tor Linux Debian 10
 
-Install tor on linux: `sudo apt install tor` works
+Install tor on linux, follow this guide [here](https://2019.www.torproject.org/docs/debian.html.en)
 
 ### On the device running your node:
 
