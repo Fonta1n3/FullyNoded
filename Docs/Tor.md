@@ -257,7 +257,7 @@ sudo journalctl -u tor@default | tail -40
 ```
 To get the helpful log output of the last 40 lines.
 
-A section of the log that is promising looks like this:
+An example section of the journal (log) that looks promising:
 ```
 aug 27 22:58:36 linux-laptwwop tor[1043]: Configuration was valid
 aug 27 22:58:36 linux-laptwwop tor[1073]: Aug 27 22:58:36.722 [notice] Tor 0.4.3.6 running on Linux with Libevent 2.1.8-stable, OpenSSL 1.1.1, Zlib 1.2.11, Liblzma 5.2.2, and Libzstd 1.3.3.
