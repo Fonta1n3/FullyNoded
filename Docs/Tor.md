@@ -145,13 +145,12 @@ Find the suggested `lightning.conf` settings for FN [here](./Lightning.md/#Creat
 
 Install tor on linux, follow this guide [here](https://2019.www.torproject.org/docs/debian.html.en). 
 1. The guide uses your input to adapt the commands you have to give in. It uses the instructions from the tor project website. They cover all platforms.
-2. The guide is very strict about **what you have to do as 'root'. Follow those rules**. It can be practical to open a terminal tab and changed the user of that tab to root with `su - root`. That needs the root password. No to be confused with the 'sudo ...' commands. Those need the user who is logged in and has sufficient rights to execute as superuser.
+2. The guide is very strict about **what you have to do as 'root'. Follow those rules**. It can be practical to open a terminal tab and change the user of that tab to root with `su - root`. That needs the root password. No to be confused with the 'sudo ...' commands. Those need the user who is logged in and has sufficient rights to execute as superuser.
 
 ## Example covers connecting over Tor Ubuntu 18
-.... but I should work the same for all Linux platforms. Later the example will be more specifically directed towards:<br/>
+.... but I should work the same for all Linux platforms. Later this example will be more specifically directed towards:<br/>
  - the location `/var/lib/tor/*` where tor landed, but that could have been elsewhere in your directory structure too.
  - the HiddenServiceDir *lightning*, but that could have been main, test, regtest or standup, as you wish (see below)
- - 
 
 ### Finding your Operating System version details
 Click the down arrow, often in the upper right corner of your screen:<br/>
@@ -231,10 +230,10 @@ You will then need to create the hidden service directory:<br/>
 `mkdir fullynoded/lightning/`
 
 On linux assign the owner for every *subdirectory* above, here example *lightning*:<br/>
-`chown -R debian-tor:debian-tor /usr/local/var/lib/tor/fullynoded/lightning/`
+`chown -R debian-tor:debian-tor /var/lib/tor/fullynoded/lightning/`
 
 Then:<br/>
-`chmod 700 /usr/local/var/lib/tor/fullynoded/lightning/`
+`chmod 700 /var/lib/tor/fullynoded/lightning/`
 
 Restart Tor:<br/>
 linux `systemctl restart tor`
@@ -252,9 +251,9 @@ Find the suggested `lightning.conf` settings for FN [here](./Lightning.md/#Creat
 
 ## Troubleshooting
 
-You can check<br/>
+You can check Tor configuration and restart with: <br/>
 ```
-journalctl -u tor@default | tail -40
+sudo journalctl -u tor@default | tail -40
 ```
 To get the helpful log output of the last 40 lines.
 
