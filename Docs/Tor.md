@@ -250,78 +250,27 @@ Find the suggested Authentication settings on the device running FN [here](./Aut
 Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings).<br/>
 Find the suggested `lightning.conf` settings for FN [here](./Lightning.md/#Create-lightning-config).
 
-## Connecting over Tor Linux Debian 10
-
-Install tor on linux, follow this guide [here](https://2019.www.torproject.org/docs/debian.html.en)
-
-### On the device running your node:
-
-Boot tor as a service:
-Linux: `systemctl start tor`
-
-Once Tor is installed (and started) you will be able to create a Hidden Service.
-
-On Linux:<br/>
-`nano /etc/tor/torrc`<br/>
-
-Find the hidden services section:<br/>
-```
-############### This section is just for location-hidden services ###
-
-## Once you have configured a hidden service, you can look at the
-## contents of the file ".../hidden_service/hostname" for the address
-## to tell people.
-##
-## HiddenServicePort x y:z says to redirect requests on port x to the
-## address y:z.
-```
-
-Below it add the hidden service we will use to control our Bitcoin node and lightning node:<br/>
-```
-HiddenServiceDir /usr/local/var/lib/tor/fullynoded/main
-HiddenServiceVersion 3
-HiddenServicePort 8332 127.0.0.1:8332
-
-HiddenServiceDir /usr/local/var/lib/tor/fullynoded/test
-HiddenServiceVersion 3
-HiddenServicePort 18332 127.0.0.1:18332
-
-HiddenServiceDir /usr/local/var/lib/tor/fullynoded/regtest
-HiddenServiceVersion 3
-HiddenServicePort 18443 127.0.0.1:18443
-
-HiddenServiceDir /usr/local/var/lib/tor/fullynoded/lightning/
-HiddenServiceVersion 3
-HiddenServicePort 1312 127.0.0.1:1312
-```
-`ctlr x` > `y` > `return` to save the changes and quit nano text editor
-
-You will then need to create the hidden service directory:<br/>
-`cd /usr/local/var/lib/tor/`<br/>
-`mkdir fullynoded`<br/>
-`mkdir fullynoded/main`<br/>
-`mkdir fullynoded/test`<br/>
-`mkdir fullynoded/regtest`<br/>
-`mkdir fullynoded/lightning/`
-
-On linux assign the owner for every *subdirectory* above, here example *lightning*:<br/>
-`chown -R debian-tor:debian-tor /usr/local/var/lib/tor/fullynoded/lightning/`
-
-Then:<br/>
-`chmod 700 /usr/local/var/lib/tor/fullynoded/lightning/`
-
-Restart Tor:<br/>
-linux `systemctl restart tor`
-
-Tor should start and you should be able to **navigate to** your onion address(es) you need for Fully Noded, the example is for subdirectory *main* but it should be done for all subdirectories if relevant for you:<br/>
-    * `/usr/local/var/lib/tor/fullynoded/main` (the directory for *mainnet* we added to the torrc file) and see a file called `hostname`, **open it and copy the onion address, that you need for Fully Noded**. 
-    * Or `cat /usr/local/var/lib/tor/fullynoded/lightning/hostname`. If it prints something like `ndfiuhfh2fu23ufh21u3bfd.onion` then all is well, if not message me on the Fully Noded Telegram and some group member can help (maybe).
-    * Do the same for `test`, `regtest` and `lightning`
-
-Find the suggested Authentication settings on the device running FN [here](./Authentication.md/#On-the-device-running-FN).<br/>
-Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings).<br/>
-Find the suggested `lightning.conf` settings for FN [here](./Lightning.md/#Create-lightning-config).
-
 ## Troubleshooting
+
+You can check<br/>
+```
+journalctl -u tor@default | tail -40
+```
+To get the helpful log output of the last 40 lines.
+
+A section of the log that is promising looks like this:
+```
+aug 27 22:58:36 linux-laptwwop tor[1043]: Configuration was valid
+aug 27 22:58:36 linux-laptwwop tor[1073]: Aug 27 22:58:36.722 [notice] Tor 0.4.3.6 running on Linux with Libevent 2.1.8-stable, OpenSSL 1.1.1, Zlib 1.2.11, Liblzma 5.2.2, and Libzstd 1.3.3.
+aug 27 22:58:36 linux-laptwwop tor[1073]: Aug 27 22:58:36.722 [notice] Tor can't help you if you use it wrong! Learn how to be safe at https://www.torproject.org/download/download#warning
+aug 27 22:58:36 linux-laptwwop tor[1073]: Aug 27 22:58:36.722 [notice] Read configuration file "/usr/share/tor/tor-service-defaults-torrc".
+aug 27 22:58:36 linux-laptwwop tor[1073]: Aug 27 22:58:36.722 [notice] Read configuration file "/etc/tor/torrc".
+aug 27 22:58:36 linux-laptwwop tor[1073]: Aug 27 22:58:36.724 [notice] Opening Socks listener on 127.0.0.1:9050
+aug 27 22:58:36 linux-laptwwop tor[1073]: Aug 27 22:58:36.725 [notice] Opened Socks listener on 127.0.0.1:9050
+aug 27 22:58:36 linux-laptwwop tor[1073]: Aug 27 22:58:36.725 [notice] Opening Control listener on 127.0.0.1:9051
+aug 27 22:58:36 linux-laptwwop tor[1073]: Aug 27 22:58:36.725 [notice] Opened Control listener on 127.0.0.1:9051
+aug 27 22:58:37 linux-laptwwop systemd[1]: Started Anonymizing overlay network for TCP.
+```
+### More troubleshooting
 
 A categorized page for troubleshooting is available [here](./Troubleshooting.md) or directly to [troubleshooting Tor](./Troubleshooting.md#Tor)
