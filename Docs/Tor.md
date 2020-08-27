@@ -165,7 +165,16 @@ It depends on the setup of the OS whether tor gets parked in `var/lib/tor/*` ins
 
 Check wether you are in `/usr/local/var/lib/tor` ... or in `/var/lib/tor` ...
 
-This command could come in handy: `find / -name tor 2> /dev/null` The result will tell you which absolute paths the system has installed tor into.
+This command could come in handy: `find / -name tor -type d 2> /dev/null` The result will tell you which absolute paths the system has installed tor into. The `2> /dev/null` redirects permission denied errors to the void.
+```
+$ find / -name tor -type d  2> /dev/null
+/var/lib/tor
+/var/log/tor
+/run/tor
+/usr/share/tor
+/usr/share/doc/tor
+/etc/tor
+```
 
 ### On the device running your node:
 
