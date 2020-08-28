@@ -62,7 +62,7 @@ For a more in depth Q&A inspired by discussions on the telegram group check out 
 - Install [Xcode](https://itunes.apple.com/id/app/xcode/id497799835?mt=12)
 - Create a free Apple developer account [here](https://developer.apple.com/programs/enroll/)
 - In Terminal:
-  - `git clone https://github.com/Fonta1n3/FullyNoded.git --recurse-submodules`
+  - `git clone https://github.com/Fonta1n3/FullyNoded.git`
   - `cd FullyNoded`
   - `carthage build --platform iOS`, let it finish.
 - That's it, you can now open `FullyNoded.xcodeproj` in Xcode and run it in a simulator or on your device.
