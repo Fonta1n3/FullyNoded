@@ -42,6 +42,9 @@ However, developing and supporting this project is hard work and costs real mone
 
 # Getting Setup Proper
 
+* On macOS By far the easiest way to get a node up and running over Tor, configured correctly and connect with a *Quick Connect QR* code is to use *Gordian-Server*, you can check out the repo [here](https://github.com/BlockchainCommons/GordianServer-macOS) and download the app [here](https://github.com/BlockchainCommons/GordianServer-macOS/raw/master/GordianServer-macOS-v0.1.2.dmg).
+* For linux you can use this [script](https://github.com/BlockchainCommons/Bitcoin-Standup-Scripts/blob/master/Scripts/StandUp.sh)
+
 - After downloading the app you need to first connect a node - see the guides
     - [Connect your own node](./Connect-node.md#connect-your-own-node)
         - [Bitcoin Core settings](./Howto.md#bitcoin-core-settings)
