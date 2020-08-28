@@ -117,6 +117,8 @@ This software additionally references or incorporates the following sources
 of intellectual property, the license terms for which are set forth
 in the sources themselves:
 
+* Credit to [Chat-Secure](https://github.com/ChatSecure/ChatSecure-iOS/blob/master/README.md) Readme.md for inspiring the layout/format and some of the text of this document.
+
 The following dependencies are bundled with the Fully Noded™️, but are under
 terms of a separate license:
 
