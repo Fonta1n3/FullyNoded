@@ -39,13 +39,12 @@ However, developing and supporting this project is hard work and costs real mone
 * [Tor](https://www.torproject.org/download/)
 * An understanding of basic Bitcoin concepts, you can read this [overview](./Docs/Overview.md). It greatly helps to have a basic understanding of `bitcoin-cli` commands, what they do and how they work to grasp how the app works under the hood. [Learning Bitcoin from the Command Line](https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line) is an excellent in depth reference.
 
-# Getting Setup Proper
-
-* On macOS By far the easiest way to get a node up and running over Tor, configured correctly and connect with a *Quick Connect QR* code is to use *Gordian-Server*, you can check out the repo [here](https://github.com/BlockchainCommons/GordianServer-macOS) and download the app [here](https://github.com/BlockchainCommons/GordianServer-macOS/raw/master/GordianServer-macOS-v0.1.2.dmg).
-* For linux you can use this [script](https://github.com/BlockchainCommons/Bitcoin-Standup-Scripts/blob/master/Scripts/StandUp.sh)
+# Getting Setup Proper 
 
 - After downloading the app you need to first connect a node - see the guides
-    - [Connect your own node](./Docs/Connect-node.md#connect-your-own-node)
+    - On macOS by far the easiest way (one click setup) to get a node up and running over Tor, configured correctly, and connect with a *Quick Connect QR* code is to use *Gordian-Server*, download [here](https://github.com/BlockchainCommons/GordianServer-macOS/raw/master/GordianServer-macOS-v0.1.2.dmg).
+    - For linux you can use this [script](https://github.com/BlockchainCommons/Bitcoin-Standup-Scripts/blob/master/Scripts/StandUp.sh)
+    - [Connect your existing node](./Docs/Connect-node.md#connect-your-own-node)
         - [Bitcoin Core settings](./Docs/Howto.md#bitcoin-core-settings)
     - To connect a node box see our guides:
         - [BTCPayServer](./Docs/Connect-node.md#connect-btcpayserver)
