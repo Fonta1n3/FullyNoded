@@ -63,7 +63,7 @@ However, developing and supporting this project is hard work and costs real mone
 
 # Docs
 
-* [Overview Fully Noded™️](./Overview.md)
+* [Overview Fully Noded™️](./Docs/Overview.md)
 * [Requirements](./Howto.md#requirements)
 * [Preparation](./Preparation.md)
 * [Supported Nodes](./Connect-node.md#supported-nodes)
