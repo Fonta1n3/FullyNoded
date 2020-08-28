@@ -43,21 +43,21 @@ However, developing and supporting this project is hard work and costs real mone
 # Getting Setup Proper
 
 - After downloading the app you need to first connect a node - see the guides
- - [Connect your own node](./Connect-node.md#connect-your-own-node)
- - [Bitcoin Core settings](./Howto.md#bitcoin-core-settings)
- - To connect a node box see our guides:
-  - [BTCPayServer](./Connect-node.md#connect-btcpayserver)
-  - [Nodl](./Connect-node.md#connect-nodl)
-  - [Raspiblitz](./Connect-node.md#connect-raspiblitz)
-  - [Embassy](./Connect-node.md#connect-embassy)
-  - [myNode](./Connect-node.md#connect-mynode)
+    - [Connect your own node](./Connect-node.md#connect-your-own-node)
+    - [Bitcoin Core settings](./Howto.md#bitcoin-core-settings)
+    - To connect a node box see our guides:
+        - [BTCPayServer](./Connect-node.md#connect-btcpayserver)
+        - [Nodl](./Connect-node.md#connect-nodl)
+        - [Raspiblitz](./Connect-node.md#connect-raspiblitz)
+        - [Embassy](./Connect-node.md#connect-embassy)
+        - [myNode](./Connect-node.md#connect-mynode)
 - In order to connect to your own node you need to expose its functionality to a Tor Hidden Service - see the guides
- - [macOS](./Tor.md#connecting-over-tor-macos)
- - [Windows 10](./Tor.md#connecting-over-tor-windows-10)
- - [Debian 10](./Tor.md#connecting-over-tor-linux-debian-10)
+    - [macOS](./Tor.md#connecting-over-tor-macos)
+    - [Windows 10](./Tor.md#connecting-over-tor-windows-10)
+    - [Debian 10](./Tor.md#connecting-over-tor-linux-debian-10)
 - Once you are connected for best in class security practices you ought to take full advantage of the apps ability to authenticate over native Tor V3 - see the guide
- - [Tor V3 Authentication](./Authentication.md#tor-v3-authentication)
--  [Troubleshooting](./Connect-node.md#troubleshooting)
+    - [Tor V3 Authentication](./Authentication.md#tor-v3-authentication)
+    -  [Troubleshooting](./Connect-node.md#troubleshooting)
 
 # Docs
 
