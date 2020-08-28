@@ -161,7 +161,7 @@ Copy the "About" <br/>
 
 ### Use the installation guide on the Tor website
 [Here](https://2019.www.torproject.org/docs/debian.html.en) again the link to the instruction. Choosing the right pull down menu-items and the text below with your commands will change accordingly:<br/>
-<img src="./Images/install-tor-interaction.png" alt="install-tor-interaction on site" border="0" width="500"><br/>
+<img src="./Images/install-tor-interaction.png" alt="install-tor-interaction on site" border="0" width="700"><br/>
 
 ### Where has Tor been installed?
 
