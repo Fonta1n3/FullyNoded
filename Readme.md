@@ -58,7 +58,7 @@ However, developing and supporting this project is hard work and costs real mone
     - [Debian 10](./Docs/Tor.md#connecting-over-tor-linux-debian-10)
 - Once you are connected for best in class security practices you ought to take full advantage of the apps ability to authenticate over native Tor V3 - see the guide
     - [Tor V3 Authentication](./Docs/Authentication.md#tor-v3-authentication)
--  [Troubleshooting](./Docs/Connect-node.md#troubleshooting)
+- [Troubleshooting](./Docs/Connect-node.md#troubleshooting)
 
 # Docs
 
