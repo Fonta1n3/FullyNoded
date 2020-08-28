@@ -44,7 +44,7 @@ However, developing and supporting this project is hard work and costs real mone
 
 - After downloading the app you need to first connect a node - see the guides
     - [Connect your own node](./Connect-node.md#connect-your-own-node)
-    - [Bitcoin Core settings](./Howto.md#bitcoin-core-settings)
+        - [Bitcoin Core settings](./Howto.md#bitcoin-core-settings)
     - To connect a node box see our guides:
         - [BTCPayServer](./Connect-node.md#connect-btcpayserver)
         - [Nodl](./Connect-node.md#connect-nodl)
@@ -91,7 +91,7 @@ Thank you for your interest in contributing to Fully Noded™️! To avoid poten
 
     Software License Agreement (GPLv3+)
     
-    Copyright (c) 2015, Chris Ballinger. All rights reserved.
+    Copyright (c) 2018, Peter Denton. All rights reserved.
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
