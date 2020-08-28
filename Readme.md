@@ -23,18 +23,18 @@ However, developing and supporting this project is hard work and costs real mone
 * [GitHub Sponsors](https://github.com/sponsors/fonta1n3)
 * ⚡️ [Tor lightning donation](http://56uo4htoxdt2tgh6zui5v2q7c4ax43dd3fwueiurgqdw7lpunn2cikqd.onion:5599/donation) (Tor browser required)
 * 🔗 [Bitcoin](bitcoin:bc1q6xw40gsm86yk78dlfun70nt7meh2nq9j7sc7ym?message=FullyNoded%20Donations) `bc1q6xw40gsm86yk78dlfun70nt7meh2nq9j7sc7ym`
-* The preffered method of donation is via the app itself, simply tap the ♥️ button when creating a transaction and it will automatically load a donation address which is derived from a hard coded xpub within the app:<br/><br/>
+* The preferred method of donation is via the app itself, simply tap the ♥️ button when creating a transaction and it will automatically load a donation address which is derived from a hard coded xpub within the app:<br/><br/>
 <img src="./Images/donation.jpg" alt="download fully noded on the app store" width="250"/><br/>
 
 
 # Why Fully Noded™️?
 
-* **Privacy.** Majority of exisiting Bitcoin wallets are powered by someone elses node, this causes complete and utter loss of privacy. By running your own node and utilizing it via a Tor hidden service you are maintaining a high level of privacy.
+* **Privacy.** Majority of existing Bitcoin wallets are powered by someone else's node, this causes complete and utter loss of privacy. By running your own node and utilizing it via a Tor hidden service you are maintaining a high level of privacy.
 * **Security.** All communications to your node are done within the Tor network, this means your IP is never exposed, your communications to your node are heavily encrypted, this is by default and not possible to opt out of. The app allows you to utilize Tor V3 authentication for first in class security, in short this means you self authenticate your device and no other device will be able to connect to your node. The app by default never uses your node as a hot wallet and instead keeps your seed heavily encrypted and securely stored on your iOS device, it never touches a network request. Your node builds psbt's and the app acts like a hardware wallet signing it offline. You may at any time delete your seed words from the device and add them at will.
 * **Sovereignty.** You are in total control, you run a self hosted server which then powers your mobile wallet. There is no middle man which can deny you access to your own server. You are in control of your private keys and utxo's.
-* **Recovery.** Users may recover any wallet with the app, simply create a Recovery wallet with BIP39 seed words and automatically recover every popular wallet in the space in one fell swoop. For advanced users you may simply create a descriptor of any type and import it with the app, this allows quite literally every wallet type imaginable to be recovered. If you have exisiting wallets on your node which are watch-only you may simply add BIP39 seed words to the app and because of its psbt architecture the wallet will become fully spendable.
+* **Recovery.** Users may recover any wallet with the app, simply create a Recovery wallet with BIP39 seed words and automatically recover every popular wallet in the space in one fell swoop. For advanced users you may simply create a descriptor of any type and import it with the app, this allows quite literally every wallet type imaginable to be recovered. If you have existing wallets on your node which are watch-only you may simply add BIP39 seed words to the app and because of its psbt architecture the wallet will become fully spendable.
 
-# Prequisites
+# Prerequisites
 
 * [Bitcoin Core](https://bitcoincore.org/en/releases/), recommended v0.20.1
 * [Tor](https://www.torproject.org/download/)
@@ -90,23 +90,23 @@ Thank you for your interest in contributing to Fully Noded™️! To avoid poten
 
 
     Software License Agreement (GPLv3+)
-    
+
     Copyright (c) 2018, Peter Denton. All rights reserved.
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-If you would like to relicense this code to distribute it on the App Store, 
+If you would like to relicense this code to distribute it on the App Store,
 please contact me at [dentondevelopment@protonmail.com](mailto:dentondevelopment@protonmail.com).
 
 ## Third-party Libraries
