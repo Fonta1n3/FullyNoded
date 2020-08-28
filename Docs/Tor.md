@@ -235,6 +235,17 @@ On linux assign the owner for every *subdirectory* above, here example *lightnin
 Then:<br/>
 `chmod 700 /var/lib/tor/fullynoded/lightning/`
 
+#### Rights in the tree that work:
+```
+$ namei -l /var/lib/tor/fullynoded/lightning
+f: /var/lib/tor/fullynoded/lightning
+drwxr-xr-x root       root       /
+drwxr-xr-x root       root       var
+drwxr-xr-x root       root       lib
+drwx--S--- debian-tor debian-tor tor
+drwxr-sr-x debian-tor debian-tor fullynoded
+drwx--S--- debian-tor debian-tor lightning
+```
 Restart Tor:<br/>
 linux `systemctl restart tor`
 
