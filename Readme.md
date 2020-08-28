@@ -37,7 +37,7 @@ However, developing and supporting this project is hard work and costs real mone
 
 * [Bitcoin Core](https://bitcoincore.org/en/releases/), recommended v0.20.1
 * [Tor](https://www.torproject.org/download/)
-* An understanding of basic Bitcoin concepts, it greatly helps to have a basic understanding of `bitcoin-cli` commands, what they do and how they work to grasp how the app works under the hood. [Learning Bitcoin from the Command Line](https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line) is an excellent reference.
+* An understanding of basic Bitcoin concepts, you can read this [overview](./Docs/Overview.md). It greatly helps to have a basic understanding of `bitcoin-cli` commands, what they do and how they work to grasp how the app works under the hood. [Learning Bitcoin from the Command Line](https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line) is an excellent in depth reference.
 
 # Getting Setup Proper
 
@@ -45,38 +45,38 @@ However, developing and supporting this project is hard work and costs real mone
 * For linux you can use this [script](https://github.com/BlockchainCommons/Bitcoin-Standup-Scripts/blob/master/Scripts/StandUp.sh)
 
 - After downloading the app you need to first connect a node - see the guides
-    - [Connect your own node](./Connect-node.md#connect-your-own-node)
-        - [Bitcoin Core settings](./Howto.md#bitcoin-core-settings)
+    - [Connect your own node](./Docs/Connect-node.md#connect-your-own-node)
+        - [Bitcoin Core settings](./Docs/Howto.md#bitcoin-core-settings)
     - To connect a node box see our guides:
-        - [BTCPayServer](./Connect-node.md#connect-btcpayserver)
-        - [Nodl](./Connect-node.md#connect-nodl)
-        - [Raspiblitz](./Connect-node.md#connect-raspiblitz)
-        - [Embassy](./Connect-node.md#connect-embassy)
-        - [myNode](./Connect-node.md#connect-mynode)
+        - [BTCPayServer](./Docs/Connect-node.md#connect-btcpayserver)
+        - [Nodl](./Docs/Connect-node.md#connect-nodl)
+        - [Raspiblitz](./Docs/Connect-node.md#connect-raspiblitz)
+        - [Embassy](./Docs/Connect-node.md#connect-embassy)
+        - [myNode](./Docs/Connect-node.md#connect-mynode)
 - In order to connect to your own node you need to expose its functionality to a Tor Hidden Service - see the guides
-    - [macOS](./Tor.md#connecting-over-tor-macos)
-    - [Windows 10](./Tor.md#connecting-over-tor-windows-10)
-    - [Debian 10](./Tor.md#connecting-over-tor-linux-debian-10)
+    - [macOS](./Docs/Tor.md#connecting-over-tor-macos)
+    - [Windows 10](./Docs/Tor.md#connecting-over-tor-windows-10)
+    - [Debian 10](./Docs/Tor.md#connecting-over-tor-linux-debian-10)
 - Once you are connected for best in class security practices you ought to take full advantage of the apps ability to authenticate over native Tor V3 - see the guide
-    - [Tor V3 Authentication](./Authentication.md#tor-v3-authentication)
-    -  [Troubleshooting](./Connect-node.md#troubleshooting)
+    - [Tor V3 Authentication](./Docs/Authentication.md#tor-v3-authentication)
+    -  [Troubleshooting](./Docs/Connect-node.md#troubleshooting)
 
 # Docs
 
 * [Overview Fully Noded™️](./Docs/Overview.md)
-* [Requirements](./Howto.md#requirements)
-* [Preparation](./Preparation.md)
-* [Supported Nodes](./Connect-node.md#supported-nodes)
-* [Importing a wallet from Specter](./Connect-node.md#importing-a-wallet-from-specter)
-* [Telegram](./Howto.md#telegram)
-* [Q and A](./Howto.md#q-and-a)
-* [Tutorials](./Howto.md#tutorials)
-* [Build From Source](./Howto.md#build-from-source)
-* [QuickConnect URL Scheme](./Authentication.md#quickconnect-url-scheme)
-* [Security and Privacy](./Authentication.md#security-and-privacy)
-* [How does it work?](./Howto.md#how-does-it-work)
-* [Recover FN Wallets](./Recovery.md#Fully-Noded-Wallets)
-* [Recover Anything else](./Recovery.md#Anything)
+* [Requirements](./Docs/Howto.md#requirements)
+* [Preparation](./Docs/Preparation.md)
+* [Supported Nodes](./Docs/Connect-node.md#supported-nodes)
+* [Importing a wallet from Specter](./Docs/Connect-node.md#importing-a-wallet-from-specter)
+* [Telegram](./Docs/Howto.md#telegram)
+* [Q and A](./Docs/Howto.md#q-and-a)
+* [Tutorials](./Docs/Howto.md#tutorials)
+* [Build From Source](./Docs/Howto.md#build-from-source)
+* [QuickConnect URL Scheme](./Docs/Authentication.md#quickconnect-url-scheme)
+* [Security and Privacy](./Docs/Authentication.md#security-and-privacy)
+* [How does it work?](./Docs/Howto.md#how-does-it-work)
+* [Recover FN Wallets](./Docs/Recovery.md#Fully-Noded-Wallets)
+* [Recover Anything else](./Docs/Recovery.md#Anything)
 
 ## Contributing
 
