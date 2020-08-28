@@ -9,7 +9,7 @@ Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own 
 
 ## Cost
 
-### Redistributing Fully Noded Code on the App Store
+### Redistributing Fully Noded™️ Code on the App Store
 
 Even though this project is open source, this does not mean you can reuse this code when distributing closed source commercial products. Please [contact us](mailto:dentondevelopment@protonmail.com) to discuss licensing options before you start building your product.
 
@@ -17,112 +17,106 @@ If you are an open source project, please [contact us](mailto:dentondevelopment@
 
 ### Cost for End Users
 
-Downloading the Fully Noded iOS app is **100% free** because it is important that all people around the world have unrestricted access to a private, self sovereign means of using Bitcoin.
+Downloading the Fully Noded™️ iOS app is **100% free** because it is important that all people around the world have unrestricted access to a private, self sovereign means of using Bitcoin.
 However, developing and supporting this project is hard work and costs real money. Please help support the development of this project!
 
 * [GitHub Sponsors](https://github.com/sponsors/fonta1n3)
-* ⚡️ [Tor lightning donation](http://56uo4htoxdt2tgh6zui5v2q7c4ax43dd3fwueiurgqdw7lpunn2cikqd.onion:5599/donation)
+* ⚡️ [Tor lightning donation](http://56uo4htoxdt2tgh6zui5v2q7c4ax43dd3fwueiurgqdw7lpunn2cikqd.onion:5599/donation) (Tor browser required)
 * 🔗 [Bitcoin](bitcoin:bc1q6xw40gsm86yk78dlfun70nt7meh2nq9j7sc7ym?message=FullyNoded%20Donations) `bc1q6xw40gsm86yk78dlfun70nt7meh2nq9j7sc7ym`
-* The preffered method of donation is via the app itself, simply tap the ♥️ button when creating a transaction and it will automatically load a donation address which is derived from a hard coded xpub within the app.
+* The preffered method of donation is via the app itself, simply tap the ♥️ button when creating a transaction and it will automatically load a donation address which is derived from a hard coded xpub within the app:<br/>
 <img src="./Images/donation.jpg" alt="download fully noded on the app store" width="250"/><br/>
 
 
-# Table of Contents
+# Why Fully Noded™️?
 
-### Introduction table of contents
-1. [Why Fully Noded](#Why-Fully-Noded)
-2. [For who is Fully Noded?](#For-who-is-Fully-N-oded?)
-3. [Contributing](#contributing)
-4. [Built With](#built-with)
-5. [The docs](#docs)
-### Workflow table of contents
-0. [Overview Fully Noded](./Overview.md)
-1. [Requirements](./Howto.md#requirements)
-1. [Preparation](./Preparation.md)
-2. [Supported Nodes](./Connect-node.md#supported-nodes)
-3. [Connect your own node](./Connect-node.md#connect-your-own-node)
-4. [Connect BTCPayServer](./Connect-node.md#connect-btcpayserver)
-5. [Connect Nodl](./Connect-node.md#connect-nodl)
-6. [Connect Raspiblitz](./Connect-node.md#connect-raspiblitz)
-7. [Connect Embassy](./Connect-node.md#connect-embassy)
-8. [Connect myNode](./Connect-node.md#connect-mynode)
-9. [Importing a wallet from Specter](./Connect-node.md#importing-a-wallet-from-specter)
-10. [Troubleshooting](./Connect-node.md#troubleshooting)
-11. [What can Fully Noded do?](./Howto.md#what-can-fully-noded-do)
-12. [Download from App Store](./Howto.md#download-from-app-store)
-13. [Telegram](./Howto.md#telegram)
-14. [Q and A](./Howto.md#q-and-a)
-15. [Tutorials](./Howto.md#tutorials)
-16. [Build From Source](./Howto.md#build-from-source)
-17. [Connecting over Tor macOS](./Tor.md#connecting-over-tor-macos)
-18. [Connecting over Tor Windows 10](./Tor.md#connecting-over-tor-windows-10)
-19. [Connecting over Tor Linux Debian 10](./Tor.md#connecting-over-tor-linux-debian-10)
-20. [Bitcoin Core settings](./Howto.md#bitcoin-core-settings)
-21. [Tor V3 Authentication](./Authentication.md#tor-v3-authentication)
-22. [QuickConnect URL Scheme](./Authentication.md#quickconnect-url-scheme)
-23. [Security and Privacy](./Authentication.md#security-and-privacy)
-24. [How does it work?](./Howto.md#how-does-it-work)
-25. [Recover FN Wallets](./Recovery.md#Fully-Noded-Wallets)
-26. [Recover Anything else](./Recovery.md#Anything)
+* **Privacy.** Majority of exisiting Bitcoin wallets are powered by someone elses node, this causes complete and utter loss of privacy. By running your own node and utilizing it via a Tor hidden service you are maintaining a high level of privacy.
+* **Security.** All communications to your node are done within the Tor network, this means your IP is never exposed, your communications to your node are heavily encrypted, this is by default and not possible to opt out of. The app allows you to utilize Tor V3 authentication for first in class security, in short this means you self authenticate your device and no other device will be able to connect to your node. The app by default never uses your node as a hot wallet and instead keeps your seed heavily encrypted and securely stored on your iOS device, it never touches a network request. Your node builds psbt's and the app acts like a hardware wallet signing it offline. You may at any time delete your seed words from the device and add them at will.
+* **Sovereignty.** You are in total control, you run a self hosted server which then powers your mobile wallet. There is no middle man which can deny you access to your own server. You are in control of your private keys and utxo's.
+* **Recovery.** Users may recover any wallet with the app, simply create a Recovery wallet with BIP39 seed words and automatically recover every popular wallet in the space in one fell swoop. For advanced users you may simply create a descriptor of any type and import it with the app, this allows quite literally every wallet type imaginable to be recovered. If you have exisiting wallets on your node which are watch-only you may simply add BIP39 seed words to the app and because of its psbt architecture the wallet will become fully spendable.
 
-# Why Fully Noded?
+# Prequisites
 
-To answer that question, you need to know your goals. These are the objectives Fully Noded supports:
+* [Bitcoin Core](https://bitcoincore.org/en/releases/), recommended v0.20.1
+* [Tor](https://www.torproject.org/download/)
+* An understanding of basic Bitcoin concepts, it greatly helps to have a basic understanding of `bitcoin-cli` commands, what they do and how they work to grasp how the app works under the hood. [Learning Bitcoin from the Command Line](https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line) is an excellent reference.
 
-  - I would like to manage my Bitcoin node with a handy GUI
-  - I would like to sovereignly manage my crypto assets myself
-  - I would like to comply with the latest bitcoin security practices 
-  - I would like to get to know and test the latest Bitcoin developments
-  - I would like to contribute to open public developments in bitcoin
+# Getting Setup Proper
 
- FN is less:
+- After downloading the app you need to first connect a node - see the guides
+ - [Connect your own node](./Connect-node.md#connect-your-own-node)
+ - [Bitcoin Core settings](./Howto.md#bitcoin-core-settings)
+ - To connect a node box see our guides:
+  - [BTCPayServer](./Connect-node.md#connect-btcpayserver)
+  - [Nodl](./Connect-node.md#connect-nodl)
+  - [Raspiblitz](./Connect-node.md#connect-raspiblitz)
+  - [Embassy](./Connect-node.md#connect-embassy)
+  - [myNode](./Connect-node.md#connect-mynode)
+- In order to connect to your own node you need to expose its functionality to a Tor Hidden Service - see the guides
+ - [macOS](./Tor.md#connecting-over-tor-macos)
+ - [Windows 10](./Tor.md#connecting-over-tor-windows-10)
+ - [Debian 10](./Tor.md#connecting-over-tor-linux-debian-10)
+- Once you are connected for best in class security practices you ought to take full advantage of the apps ability to authenticate over native Tor V3 - see the guide
+ - [Tor V3 Authentication](./Authentication.md#tor-v3-authentication)
+-  [Troubleshooting](./Connect-node.md#troubleshooting)
 
- - an easy to use novice-proof bitcoin wallet to hodl cryptovalue; use Trezor, Ledger, KeepKey; etc. 
- - an anonymous coinjoin tool; use Samourai or Wasabi instead
- - a dedicated tool with ease of use in mind to control a bitcoin node, use Gordian Wallet (too)
- - a tool to manage your Decentralised ID; use Gordian Wallet (too)
+# Docs
 
-## What can Fully Noded do?
-- Recover any wallet
-- Import any wallet with xpubs/xprvs
-- WIF import
-- Create watch-only wallets on your node where the seed is encrypted and stored securely on your device so that you may sign the psbt's your node builds for you
-- RBF
-- Full coin control
-- A suite of raw transaction tools: verify, broadcast, build, sign etc...
-- A suite of PSBT tools: process, finalize, analyze, decode, join, combine etc...
-- HWW Paring
-- Easy HD Multisig capability
-- Easy Cold Storage
-- Coldcard, Ledger, Trezor, Wasabi wallet compatibilty for building psbt's/watch-only wallets or recovery
-- Most of the Bitcoin Core JSON-RPC API is covered
-- wallet.dat encryption for hot wallets
-- So much more
-- BIP39 compatiblity for your Node
-- 100% self sovereign Bitcoin use, Fully Noded is 95% powered by your own node with some additional code for smartly creating wallets and signing psbt's offline, a very minimized third party.
-
-# Overview and workflow
- - [Overview](./Overview.md)
- - [Workflow](./Howto.md)
-
- 
-# For who is Fully Noded?
-
-Fully Noded is a multi-purpose tool for power users. It is aimed at an [experienced Bitcoin specialist](#Personal-preparation), who runs a testnet (and eventually mainnet) Bitcoin node and recognises his/her goals in why to use FN and is willing to use an iOS device like iPhone or iPad.
+* [Overview Fully Noded™️](./Overview.md)
+* [Requirements](./Howto.md#requirements)
+* [Preparation](./Preparation.md)
+* [Supported Nodes](./Connect-node.md#supported-nodes)
+* [Importing a wallet from Specter](./Connect-node.md#importing-a-wallet-from-specter)
+* [Telegram](./Howto.md#telegram)
+* [Q and A](./Howto.md#q-and-a)
+* [Tutorials](./Howto.md#tutorials)
+* [Build From Source](./Howto.md#build-from-source)
+* [QuickConnect URL Scheme](./Authentication.md#quickconnect-url-scheme)
+* [Security and Privacy](./Authentication.md#security-and-privacy)
+* [How does it work?](./Howto.md#how-does-it-work)
+* [Recover FN Wallets](./Recovery.md#Fully-Noded-Wallets)
+* [Recover Anything else](./Recovery.md#Anything)
 
 ## Contributing
 
-Please let us know if you have issues.
+Thank you for your interest in contributing to Fully Noded™️! To avoid potential legal headaches and to allow distribution on Apple's App Store please sign our CLA (Contributors License Agreement).
 
- - Pull Requests (PRs) welcome.
- - Participate in the open [Telegram-group](https://t.me/FullyNoded)
- - Core test team members welcome too. Just drop us a line (DM or [Telegram-group](https://t.me/FullyNoded)) and we'll invite you to the Core Test group. 
+1. Sign the [CLA](./CLA.md), and email it to [dentondevelopment@protonmail.com](mailto:dentondevelopment@protonmail.com).
+2. [Fork](https://github.com/Fonta1n3/FullyNoded/fork) the project and (preferably) work in a feature branch.
+3. Open a [pull request](https://github.com/Fonta1n3/FullyNoded/pulls) on GitHub adding your signed CLA [here](./CLA-signed).
+4. All commits must be pgp signed, see [this guide](https://docs.github.com/en/enterprise/2.14/user/articles/signing-commits).
+5. Thank you!
 
-## Built With
+## License
 
-- [Tor](https://github.com/iCepa/Tor.framework) for connecting to your node more privately and securely.
-- [Libwally-Swift](https://github.com/Fonta1n3/libwally-swift) which relies on [Libwally-Core v0.7.7](https://github.com/Fonta1n3/libwally-swift/tree/master/CLibWally/libwally-core) for converting cryptographically secure entropy to BIP39 words, deriving HD keys and most importantly signing psbt's.
 
-## Docs
+    Software License Agreement (GPLv3+)
+    
+    Copyright (c) 2015, Chris Ballinger. All rights reserved.
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-For more relevant reading see the [docs](./Docs)
+If you would like to relicense this code to distribute it on the App Store, 
+please contact me at [dentondevelopment@protonmail.com](mailto:dentondevelopment@protonmail.com).
+
+## Third-party Libraries
+
+This software additionally references or incorporates the following sources
+of intellectual property, the license terms for which are set forth
+in the sources themselves:
+
+The following dependencies are bundled with the Fully Noded™️, but are under
+terms of a separate license:
+
+* [Tor](https://github.com/iCepa/Tor.framework) for connecting to your node more privately and securely.
+* [Libwally-Swift](https://github.com/Fonta1n3/libwally-swift) which relies on [Libwally-Core v0.7.7](https://github.com/Fonta1n3/libwally-swift/tree/master/CLibWally/libwally-core) for converting cryptographically secure entropy to BIP39 words, deriving HD keys and most importantly signing psbt's.
