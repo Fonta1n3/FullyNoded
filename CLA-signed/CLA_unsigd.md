@@ -1,6 +1,3 @@
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA256
-
 # Contributor License Agreement
 
 Version 1.0
@@ -53,22 +50,6 @@ I promise not to offer contributions that contain or depend on the work of other
 
 ***As far as the law allows, my contributions come as is, without any warranty or condition.  Other than under [Copyright Guarantee](#copyright-guarantee), [Patent Guarantee](#patent-guarantee), or [Open Source Guarantee](#open-source-guarantee), I will not be liable to anyone for any damages related to my contributions or this contributor license agreement, under any kind of legal claim.***
 
-- ---
+---
 
 To sign this Contributor License Agreement, fill in `$name`, `$email`, and `$date` above. Then sign using GPG using the following command `gpg --armor --clearsign --output cla.YOURGITHUBNAME.YOURGPGFINGERPRINT.asc CLA.md`, then either submit your signed Contributor License Agreement to this repo as a GPG signed Pull Request or email it to [dentondevelopment@protonmail.com](mailto:dentondevelopment@protonmail.com).
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEGHSZ7UWvk/AW/U9FJTK4wjDb1QMFAl9I/gsACgkQJTK4wjDb
-1QPAnA//S9PkgMlp3YI3qnIF9awpeRUptMlbFWG8Mt6fQiqAkNJWl+f55V6S5GDQ
-MhGgdquGxeb64igQrCPdCCCnJZFgJM3FrKPJJFbDUmmQVHLIELPyd1AohT/TOy0Y
-b3UxTtoj2NYdGg/34MoR/uPVFN6YHwaYU5e6WGk3NGVpfmamo2qSxgrc0lH620hh
-wFGdBGPc2NVvscpU6zevrZGSfI+3gcU12u0ZaHRsAszAkNlqTLHYs4yxOiERzjug
-ikgItpsZC4/gkQLrcAoO5GNQzpcPwX91BH7Ay/37xFRYSnZQYgN+LdILtytei02P
-oWlc73a+xalaCTbh3R26mcVzxjGfHuXba1nNlgcavQVREwcb6BD8vTKVL+RsVG0t
-C6Gv5BfvKBai2BVS0F6ljLhfpmKFBsHDe0Louf+sSsGV1NKtt1oYVJoPga+S+ZLI
-JlT+cVOgBONjwfQdHuO1X64WMlKEcYe/PI/NpksOt2KgzSY946D2A/iL9ud8+Zz2
-IPbCxDJ/qKODIqtg/bInw6bRnjQTlVbzJ3zgUlw3fNYhm5UkVBh2z2JReXLkY7rl
-sFZwcIJ3pmqC1niBagHajgLxgZeXJAjKo6n6E8LLdEDr33b9cc49m7km3QFRIwsK
-L9llNuRbC94w1RP3JOYN+eeoe9rxgW2/J0uto8CAWUCNzzAOQHI=
-=QxBU
------END PGP SIGNATURE-----
