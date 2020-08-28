@@ -1,0 +1,4 @@
+Starting build scheme Pre-actions
+CLibWally/libwally-core/src/.libs/libwallycore.a exists
+libwallycore.a contains armv7 armv7s i386 x86_64 arm64 arm64e
+Skip rebuild

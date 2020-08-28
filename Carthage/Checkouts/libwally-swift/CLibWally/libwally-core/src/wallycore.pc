@@ -1,0 +1,11 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: libwallycore
+Description: Wally is a collection of useful primitives for cryptocurrency wallets
+URL: https://github.com/ElementsProject/libwally-core
+Version: 0.7.7
+Cflags: -I${includedir}
+Libs: -L${libdir} -lwallycore

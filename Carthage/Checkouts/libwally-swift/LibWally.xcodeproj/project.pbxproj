@@ -1,0 +1,565 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 52;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A20C942522C6BC3900B0D206 /* libwallycore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A20C942422C6BC3900B0D206 /* libwallycore.a */; };
+		A232260122B94A6B00C3B79C /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = A232260022B94A6B00C3B79C /* Transaction.swift */; };
+		A232260322B94A8400C3B79C /* TransactionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A232260222B94A8400C3B79C /* TransactionTests.swift */; };
+		A23509D72398F33E0045D3A5 /* DataExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A23509D62398F33E0045D3A5 /* DataExtensionTests.swift */; };
+		A2BCE19223A7D28500737BEB /* PSBTTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2BCE19123A7D28500737BEB /* PSBTTests.swift */; };
+		A2BCE19423A7D6B200737BEB /* PSBT.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2BCE19323A7D6B200737BEB /* PSBT.swift */; };
+		A2F7489522C6D02B00EF11C8 /* LibWally.h in Headers */ = {isa = PBXBuildFile; fileRef = FE9CD3B4229C397900345DFA /* LibWally.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FE120F55229C3B6900E7720C /* BIP39.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE120F54229C3B6900E7720C /* BIP39.swift */; };
+		FE1A3C0622B395B300EDCB58 /* Address.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A3C0522B395B300EDCB58 /* Address.swift */; };
+		FE39CDFA229DAAF400DD135E /* DataExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE39CDF9229DAAF400DD135E /* DataExtension.swift */; };
+		FE8B80A222B397090041CC94 /* AddressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8B80A122B397090041CC94 /* AddressTests.swift */; };
+		FE8B80A422B3E5630041CC94 /* Script.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8B80A322B3E5630041CC94 /* Script.swift */; };
+		FE8B80A622B3E5760041CC94 /* ScriptTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8B80A522B3E5760041CC94 /* ScriptTests.swift */; };
+		FE9CD3BB229C397900345DFA /* LibWally.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE9CD3B1229C397900345DFA /* LibWally.framework */; };
+		FE9CD3C0229C397900345DFA /* BIP39Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9CD3BF229C397900345DFA /* BIP39Tests.swift */; };
+		FEC79CE4229E7F3800D86E2E /* BIP32.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC79CE3229E7F3800D86E2E /* BIP32.swift */; };
+		FEC79CE6229E807500D86E2E /* BIP32Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC79CE5229E807500D86E2E /* BIP32Tests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		FE9CD3BC229C397900345DFA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FE9CD3A8229C397900345DFA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FE9CD3B0229C397900345DFA;
+			remoteInfo = LibWally;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		A20557A522C6CDBE007221AA /* LibWally.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = LibWally.modulemap; sourceTree = "<group>"; };
+		A20C942422C6BC3900B0D206 /* libwallycore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libwallycore.a; path = "CLibWally/libwally-core/src/.libs/libwallycore.a"; sourceTree = "<group>"; };
+		A20C942622C6BDB000B0D206 /* CLibWally */ = {isa = PBXFileReference; lastKnownFileType = folder; path = CLibWally; sourceTree = "<group>"; };
+		A232260022B94A6B00C3B79C /* Transaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
+		A232260222B94A8400C3B79C /* TransactionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionTests.swift; sourceTree = "<group>"; };
+		A23509D62398F33E0045D3A5 /* DataExtensionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataExtensionTests.swift; sourceTree = "<group>"; };
+		A2BCE19123A7D28500737BEB /* PSBTTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PSBTTests.swift; sourceTree = "<group>"; };
+		A2BCE19323A7D6B200737BEB /* PSBT.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PSBT.swift; sourceTree = "<group>"; };
+		FE120F54229C3B6900E7720C /* BIP39.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BIP39.swift; sourceTree = "<group>"; };
+		FE1A3C0522B395B300EDCB58 /* Address.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Address.swift; sourceTree = "<group>"; };
+		FE39CDF5229D534100DD135E /* DemoPlayground.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = DemoPlayground.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		FE39CDF9229DAAF400DD135E /* DataExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataExtension.swift; sourceTree = "<group>"; };
+		FE8B80A122B397090041CC94 /* AddressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressTests.swift; sourceTree = "<group>"; };
+		FE8B80A322B3E5630041CC94 /* Script.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Script.swift; sourceTree = "<group>"; };
+		FE8B80A522B3E5760041CC94 /* ScriptTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptTests.swift; sourceTree = "<group>"; };
+		FE9CD3B1229C397900345DFA /* LibWally.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = LibWally.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		FE9CD3B4229C397900345DFA /* LibWally.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LibWally.h; sourceTree = "<group>"; };
+		FE9CD3B5229C397900345DFA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FE9CD3BA229C397900345DFA /* LibWallyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LibWallyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FE9CD3BF229C397900345DFA /* BIP39Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BIP39Tests.swift; sourceTree = "<group>"; };
+		FE9CD3C1229C397900345DFA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FEC79CE3229E7F3800D86E2E /* BIP32.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BIP32.swift; sourceTree = "<group>"; };
+		FEC79CE5229E807500D86E2E /* BIP32Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BIP32Tests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		FE9CD3AE229C397900345DFA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A20C942522C6BC3900B0D206 /* libwallycore.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FE9CD3B7229C397900345DFA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FE9CD3BB229C397900345DFA /* LibWally.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		FE9CD3A7229C397900345DFA = {
+			isa = PBXGroup;
+			children = (
+				A20C942622C6BDB000B0D206 /* CLibWally */,
+				FE39CDF5229D534100DD135E /* DemoPlayground.playground */,
+				FE9CD3B3229C397900345DFA /* LibWally */,
+				FE9CD3BE229C397900345DFA /* LibWallyTests */,
+				FE9CD3B2229C397900345DFA /* Products */,
+				FEB0B466229C6B6C00459518 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		FE9CD3B2229C397900345DFA /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				FE9CD3B1229C397900345DFA /* LibWally.framework */,
+				FE9CD3BA229C397900345DFA /* LibWallyTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		FE9CD3B3229C397900345DFA /* LibWally */ = {
+			isa = PBXGroup;
+			children = (
+				A20557A522C6CDBE007221AA /* LibWally.modulemap */,
+				FE9CD3B4229C397900345DFA /* LibWally.h */,
+				FE9CD3B5229C397900345DFA /* Info.plist */,
+				FE39CDF9229DAAF400DD135E /* DataExtension.swift */,
+				FE1A3C0522B395B300EDCB58 /* Address.swift */,
+				FEC79CE3229E7F3800D86E2E /* BIP32.swift */,
+				FE120F54229C3B6900E7720C /* BIP39.swift */,
+				A2BCE19323A7D6B200737BEB /* PSBT.swift */,
+				FE8B80A322B3E5630041CC94 /* Script.swift */,
+				A232260022B94A6B00C3B79C /* Transaction.swift */,
+			);
+			path = LibWally;
+			sourceTree = "<group>";
+		};
+		FE9CD3BE229C397900345DFA /* LibWallyTests */ = {
+			isa = PBXGroup;
+			children = (
+				FE9CD3C1229C397900345DFA /* Info.plist */,
+				A23509D62398F33E0045D3A5 /* DataExtensionTests.swift */,
+				FEC79CE5229E807500D86E2E /* BIP32Tests.swift */,
+				FE9CD3BF229C397900345DFA /* BIP39Tests.swift */,
+				FE8B80A122B397090041CC94 /* AddressTests.swift */,
+				A2BCE19123A7D28500737BEB /* PSBTTests.swift */,
+				FE8B80A522B3E5760041CC94 /* ScriptTests.swift */,
+				A232260222B94A8400C3B79C /* TransactionTests.swift */,
+			);
+			path = LibWallyTests;
+			sourceTree = "<group>";
+		};
+		FEB0B466229C6B6C00459518 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				A20C942422C6BC3900B0D206 /* libwallycore.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		FE9CD3AC229C397900345DFA /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A2F7489522C6D02B00EF11C8 /* LibWally.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		FE9CD3B0229C397900345DFA /* LibWally */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FE9CD3C5229C397900345DFA /* Build configuration list for PBXNativeTarget "LibWally" */;
+			buildPhases = (
+				FE9CD3AC229C397900345DFA /* Headers */,
+				FE9CD3AD229C397900345DFA /* Sources */,
+				FE9CD3AE229C397900345DFA /* Frameworks */,
+				FE9CD3AF229C397900345DFA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LibWally;
+			productName = LibWally;
+			productReference = FE9CD3B1229C397900345DFA /* LibWally.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		FE9CD3B9229C397900345DFA /* LibWallyTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FE9CD3C8229C397900345DFA /* Build configuration list for PBXNativeTarget "LibWallyTests" */;
+			buildPhases = (
+				FE9CD3B6229C397900345DFA /* Sources */,
+				FE9CD3B7229C397900345DFA /* Frameworks */,
+				FE9CD3B8229C397900345DFA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				FE9CD3BD229C397900345DFA /* PBXTargetDependency */,
+			);
+			name = LibWallyTests;
+			productName = LibWallyTests;
+			productReference = FE9CD3BA229C397900345DFA /* LibWallyTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		FE9CD3A8229C397900345DFA /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1020;
+				LastUpgradeCheck = 1020;
+				ORGANIZATIONNAME = Blockchain;
+				TargetAttributes = {
+					FE9CD3B0229C397900345DFA = {
+						CreatedOnToolsVersion = 10.2.1;
+						LastSwiftMigration = 1020;
+					};
+					FE9CD3B9229C397900345DFA = {
+						CreatedOnToolsVersion = 10.2.1;
+					};
+				};
+			};
+			buildConfigurationList = FE9CD3AB229C397900345DFA /* Build configuration list for PBXProject "LibWally" */;
+			compatibilityVersion = "Xcode 11.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = FE9CD3A7229C397900345DFA;
+			productRefGroup = FE9CD3B2229C397900345DFA /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				FE9CD3B0229C397900345DFA /* LibWally */,
+				FE9CD3B9229C397900345DFA /* LibWallyTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		FE9CD3AF229C397900345DFA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FE9CD3B8229C397900345DFA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		FE9CD3AD229C397900345DFA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FE120F55229C3B6900E7720C /* BIP39.swift in Sources */,
+				A2BCE19423A7D6B200737BEB /* PSBT.swift in Sources */,
+				FE39CDFA229DAAF400DD135E /* DataExtension.swift in Sources */,
+				FE1A3C0622B395B300EDCB58 /* Address.swift in Sources */,
+				FE8B80A422B3E5630041CC94 /* Script.swift in Sources */,
+				FEC79CE4229E7F3800D86E2E /* BIP32.swift in Sources */,
+				A232260122B94A6B00C3B79C /* Transaction.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FE9CD3B6229C397900345DFA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FE8B80A222B397090041CC94 /* AddressTests.swift in Sources */,
+				A23509D72398F33E0045D3A5 /* DataExtensionTests.swift in Sources */,
+				FE8B80A622B3E5760041CC94 /* ScriptTests.swift in Sources */,
+				FEC79CE6229E807500D86E2E /* BIP32Tests.swift in Sources */,
+				A2BCE19223A7D28500737BEB /* PSBTTests.swift in Sources */,
+				A232260322B94A8400C3B79C /* TransactionTests.swift in Sources */,
+				FE9CD3C0229C397900345DFA /* BIP39Tests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		FE9CD3BD229C397900345DFA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FE9CD3B0229C397900345DFA /* LibWally */;
+			targetProxy = FE9CD3BC229C397900345DFA /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		FE9CD3C3229C397900345DFA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				BUILD_LIB_WALLY_CORE = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEFINES_MODULE = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		FE9CD3C4229C397900345DFA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				BUILD_LIB_WALLY_CORE = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEFINES_MODULE = NO;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		FE9CD3C6229C397900345DFA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Manual;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = "";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = LibWally/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/CLibWally/libwally-core/src/.libs",
+				);
+				MODULEMAP_FILE = "$(SRCROOT)/LibWally/LibWally.modulemap";
+				PRODUCT_BUNDLE_IDENTIFIER = com.blockchain.LibWally;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
+				SKIP_INSTALL = YES;
+				SWIFT_INCLUDE_PATHS = "${SRCROOT}/CLibWally";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		FE9CD3C7229C397900345DFA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Manual;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = "";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = LibWally/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/CLibWally/libwally-core/src/.libs",
+				);
+				MODULEMAP_FILE = "$(SRCROOT)/LibWally/LibWally.modulemap";
+				PRODUCT_BUNDLE_IDENTIFIER = com.blockchain.LibWally;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
+				SKIP_INSTALL = YES;
+				SWIFT_INCLUDE_PATHS = "${SRCROOT}/CLibWally";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		FE9CD3C9229C397900345DFA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = LibWallyTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.blockchain.LibWallyTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		FE9CD3CA229C397900345DFA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = LibWallyTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.blockchain.LibWallyTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		FE9CD3AB229C397900345DFA /* Build configuration list for PBXProject "LibWally" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FE9CD3C3229C397900345DFA /* Debug */,
+				FE9CD3C4229C397900345DFA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FE9CD3C5229C397900345DFA /* Build configuration list for PBXNativeTarget "LibWally" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FE9CD3C6229C397900345DFA /* Debug */,
+				FE9CD3C7229C397900345DFA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FE9CD3C8229C397900345DFA /* Build configuration list for PBXNativeTarget "LibWallyTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FE9CD3C9229C397900345DFA /* Debug */,
+				FE9CD3CA229C397900345DFA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = FE9CD3A8229C397900345DFA /* Project object */;
+}

@@ -1,0 +1,87 @@
+git:
+    depth: 5
+branches:
+    only:
+      - master
+language: c
+sudo: required
+os:
+  - linux
+  - osx
+  - windows
+dist: bionic
+compiler:
+  - clang
+  - gcc
+addons:
+    apt:
+        sources:
+          - sourceline: 'ppa:ubuntu-toolchain-r/test'
+          - sourceline: 'deb http://apt.llvm.org/bionic llvm-toolchain-bionic-8 main'
+            key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+          - sourceline: 'deb http://apt.llvm.org/bionic llvm-toolchain-bionic-9 main'
+            key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+        packages:
+          - llvm-8-dev
+          - llvm-9-dev
+          - python
+          - python-dev
+          - python3
+          - python3-dev
+          - swig
+          - gcc-multilib
+          - clang-8
+          - clang-9
+matrix:
+    include:
+      - services:
+          - docker
+        script: docker run -v $PWD:/wally debian:buster /bin/sh -c "apt-get update -yqq && apt-get install -yqq --no-install-recommends git uncrustify && cd /wally && (tools/uncrustify || true) && git diff --exit-code"
+      - os: linux
+        compiler: clang
+        env: CC=clang-9 CXX=clang++-9 LDFLAGS=-Wl,-z,now ENABLE_BUILTIN_MEMSET=--disable-builtin-memset
+      - os: linux
+        compiler: clang
+        env: CC=clang-8 CXX=clang++-8 HOST=i686-linux-gnu ENABLE_BUILTIN_MEMSET=--disable-builtin-memset
+      - os: linux
+        compiler: gcc
+        env: HOST=i686-linux-gnu
+      - compiler: gcc
+        os: linux
+        env: PYTHON_VERSION=3
+      - compiler: clang
+        os: linux
+        env: DEBUG_WALLY=--enable-debug
+      - compiler: clang
+        os: linux
+        env: CC=clang-8 CXX=clang++-8 LDFLAGS=-Wl,-z,now ENABLE_ELEMENTS=--enable-elements ENABLE_BUILTIN_MEMSET=--disable-builtin-memset
+      - os: windows
+        env: PATH=/c/Python37:/c/Python37/Scripts:$PATH SWIG_PATH=/c/swig
+        before_script:
+        script:
+          - tools/msvc/wheel.bat
+      - os: windows
+        env: PATH=/c/Python37:/c/Python37/Scripts:$PATH NODE_VERSION=node/12.14.0
+        before_script:
+        script:
+          - source $ProgramData/nvs/nvs.sh
+          - nvs use $NODE_VERSION
+          - tools/msvc/wallyjs.bat
+    exclude:
+      - os: windows
+        compiler: gcc
+      - os: windows
+        compiler: clang
+      - os: linux
+        compiler: clang
+
+
+before_script:
+  - ./tools/cleanup.sh && ./tools/autogen.sh
+before_install:
+  - ./tools/travis_install.sh
+script:
+  - ./tools/travis_build.sh
+  - if [[ "$CC" == "clang" ]]; then ./tools/build_js_bindings.sh; fi
+notifications:
+    email: false
