@@ -29,10 +29,10 @@ However, developing and supporting this project is hard work and costs real mone
 # Why Fully Noded™️?
 
 * **Privacy.** Majority of existing Bitcoin wallets are powered by someone else's node, this causes complete and utter loss of privacy. By running your own node and utilizing it via a Tor hidden service you are maintaining a high level of privacy.
-* **Security.** All communications to your node are done within the Tor network, this means your IP is never exposed, your communications to your node are heavily encrypted, this is by default and not possible to opt out of. The app allows you to utilize Tor V3 authentication for first in class security, in short this means you self authenticate your device and no other device will be able to connect to your node. The app by default never uses your node as a hot wallet and instead keeps your seed heavily encrypted and securely stored on your iOS device, it never touches a network request. Your node builds psbt's and the app acts like a hardware wallet signing it offline. You may at any time delete your seed words from the device and add them at will.
+* **Security.** All communications to your node are done within the Tor network, this means your IP is never exposed, your communications to your node are heavily encrypted, this is by default and not possible to opt out of. The app allows you to utilize Tor V3 authentication for first in class security, in short this means you self authenticate your device and no other device will be able to connect to your node. The app by default never uses your node as a hot wallet and instead keeps your seed heavily encrypted and securely stored on your iOS device, private keys never touch a network request, Tor or otherwise. With Fully Noded™️ architecture you can always keep your node completely behind a firewall and access it securely from anywhere in the world.
 * **Sovereignty.** You are in total control, you run a self hosted server which then powers your mobile wallet. There is no middle man which can deny you access to your own server. You are in control of your private keys and utxo's.
 * **Censorship Resistance.** If you rely on a companies' server to power your wallet you are inherently relying on them, they can at any time disable your connection to their servers, shut them off or be forced to deny you service. When using Fully Noded™️ you never have to be concerned about a third party censoring your payments, you are quite literally your own bank.
-* **Recovery.** Users may recover any wallet with the app, simply create a Recovery wallet with BIP39 seed words and automatically recover every popular wallet in the space in one fell swoop. For advanced users you may simply create a descriptor of any type and import it with the app, this allows quite literally every wallet type imaginable to be recovered. If you have existing wallets on your node which are watch-only you may simply add BIP39 seed words to the app and because of its psbt architecture the wallet will become fully spendable.
+* **Recovery.** Users may recover any wallet with the app, simply create a Recovery wallet with BIP39 seed words and automatically recover every popular wallet in one fell swoop. For advanced users you may create a descriptor of any type and import it with the app, this allows every wallet type imaginable to be recovered. If you have existing wallets on your node which are watch-only you may add BIP39 seed words to the app to make them spendable.
 
 # Prerequisites
 
@@ -63,6 +63,7 @@ However, developing and supporting this project is hard work and costs real mone
 
 # Docs
 
+* [Wallet usage](./Docs/Wallets)
 * [Overview Fully Noded™️](./Docs/Overview.md)
 * [Requirements](./Docs/Howto.md#requirements)
 * [Preparation](./Docs/Preparation.md)
