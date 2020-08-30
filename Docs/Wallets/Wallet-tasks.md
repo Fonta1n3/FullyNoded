@@ -43,12 +43,11 @@ To delete the `Bitcoin Core Wallet` you need to navigate to your nodes wallets d
 * macOS: `~/Library/Application Support/Bitcoin/wallets`
 * Windows: `%APPDATA%\Bitcoin\wallets`
 
-You can cross reference *Fully Noded Wallets* by tapping the "info" button from the "Active Wallet" tab and looking for the `Filename` field:
-<img src="./Images/fn_filename.png" alt="" width="400"/>
+You can cross reference *Fully Noded Wallets* by tapping the "info" button from the "Active Wallet" tab and looking for the `Filename` field:<br/>
+<img src="./Images/fn_filename.png" alt="" width="400"/><br/>
 
-You can cross reference *Bitcoin Core Wallets* filenames by navigating to `advanced` > `Bitcoin Core Wallets`, the text you see is the wallets filename:
-<img src="./Images/bitcoincore_filenames.png" alt="" width="400"/>
-
+You can cross reference *Bitcoin Core Wallets* filenames by navigating to `advanced` > `Bitcoin Core Wallets`, the text you see is the wallets filename:<br/>
+<img src="./Images/bitcoincore_filenames.png" alt="" width="400"/><br/>
 
 ## Sending
 
@@ -56,8 +55,9 @@ Sending and receiving is as simple as tapping send from the "Active Wallet" tab,
 
 ### Transaction fee
 
-At the bottom of the screen you will see a "Confirmation target" slider:
+At the bottom of the screen you will see a "Confirmation target" slider:<br/>
 <img src="./Images/fee_slider.png" alt="" width="400"/><br/>
+
 The slider can be used to change the number of blocks in which we want our transaction to be confirmed (mined) in. Since each block takes about ten minutes to mine we can convert blocks to time, therefore setting the slider to two blocks will create a fee for your transaction which aims to get the transaction mined into a block within twenty minutes. The lower the number of blocks the higher your fee will be. **This is a rough target! It is not an exact science.** If you need the transaction to be confirmed quickly set it to the minimum target which is two blocks. This uses your node's built in fee estimation algorithm. Transactions are always RBF enabled in Fully Noded, however you always **need a balance** to utilize RBF. If you sweep your wallet (spend everything) and that transaction is not getting confirmed you will **NOT** be able to use RBF because you have no funds with which to RBF the transaction. Fully Noded is not yet capable of CPFP so please exercise caution when sweeping by setting a high mining fee.
 
 ### Lightning
