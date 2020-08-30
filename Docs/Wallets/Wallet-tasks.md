@@ -11,6 +11,9 @@
     - [Batching](#Batching)
     - [BIP21](#BIP21)
     - [Currencies](#Currencies)
+    - [PSBT](#PSBT)
+    - [Raw Transaction](#Raw-Transaction)
+    - [Replace By Fee](#Replace-By-Fee)
  - [Receiving](#Receiving)
 
 A seperate page is dedicated to Recovery:
@@ -72,7 +75,7 @@ The ♥️ button is for generating a donation address, this address is derived 
 
 ### Sweeping
 
-The sweep button will automatically sweep all your finuds to the address provided. It is highly recommended to use a high fee setting when sweeping wallets as you will not be able to use RBF if fees spike while your transaction is uncomfirmed.
+The sweep button will automatically sweep all your funds to the address provided. It is highly recommended to use a high fee setting when sweeping wallets as you will not be able to use RBF if fees spike while your transaction is uncomfirmed.
 
 ### Batching
 
@@ -85,6 +88,34 @@ You can tap the QR scanner to scan BIP21 invoices or addresses. Generally if you
 ### Currencies
 
 You can select denominations of `btc` (Bitcoin), `sats` (satoshis) and `usd`. Selecting `usd` will trigger the app to refresh the exchange rate and convert the dollar specified amount to an amount in btc, please be aware of Bitcoin's volatility and that by the time someone receives the btc the exchange rate may have changed.
+
+### PSBT
+
+Fully Noded is capable of creating either a fully signed raw transaction or a psbt depending on whether the wallet is watch-only or hot or a multisig wallet which can not be fully signed by the app itself.
+
+If Fully Noded and your node do not hold the private keys necessary to fully sign the transaction you will get presented with a psbt and have the option to export it in a number of formats:<br/>
+<img src="./Images/psbt_export.png" alt="" width="400"/><br/>
+
+You may also airdrop a `.psbt` file to Fully Noded and it will attempt to sign the psbt and will either allow you to export the updated psbt again or if it is complete will finalize it and ocnvert it to a raw transaction which can be broadcast, automatically presenting you with that option.
+
+### Raw Transaction
+
+If the transaction can be signed and is complete then Fully Noded will instead present you with a signed raw transaction in hex format:<br/>
+<img src="./Images/broadcast.png" alt="" width="400"/><br/>
+
+It is recommended to always use the "verify" button:<br/>
+<img src="./Images/verify.png" alt="" width="400"/><br/>
+
+The verify button inspects and parses each input and output individually, displaying the amount and address associated with each as well as manually calculating the mining fee and the usd amount for each. Usually there will always be a change output. You can confirm the change address is yours by copying it > "tools" tab > "wallet" > "get address info" > it will automatically paste in and fetch the address info, if the "solvable" field `solvable=1` then you can rest assured the address is yours.
+
+At this point you can tap "broadcast" and you may either broadcast the transaction with your own node, or by using Blockstream's Esplora API over Tor. Using someone elses node to broadcast your transactions is much more private than broadcasting it with your own node even though this may seem counterintuitive. Once the transaction has been successfully broadcast you will get a valid transaction ID and a success message and the transaction will appear in your transaction history.
+
+### Replace By Fee
+
+**You always need a balance to utilize RBF, RBF will not work when you sweep a wallet**
+
+By default all transactions created by Fully Noded are [RBF](https://en.bitcoin.it/wiki/Replace_by_fee) enabled. To take advantage of this tap the transaction from the "Active Wallet" tab and then tap "bump fee" button. Under the hood an entirely new transaction is created with a higher fee, if Fully Noded can not completely sign the transaction it will present you with a psbt as normal, you will need to pass it to your signer and then back to Fully Noded to broadcast the higher fee transaction again and overwrite the original low fee transaction. If FN can complete the transaction it will automatically sign and broadcast the transaction at this point.
+
 
 ## Receiving
 
