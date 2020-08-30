@@ -25,17 +25,15 @@ class LightningRPC {
                 return
             }
 
-            var lightningNode:[String:Any]?
+            var potentialLightningNode: [String:Any]?
             
             for node in nodes {
-                if let isLightning = node["isLightning"] as? Bool {
-                    if isLightning {
-                        lightningNode = node
-                    }
+                if let isLightning = node["isLightning"] as? Bool, isLightning {
+                    potentialLightningNode = node
                 }
             }
             
-            guard lightningNode != nil else {
+            guard let lightningNode = potentialLightningNode else {
                 completion((id, nil, "no lightning node"))
                 return
             }
@@ -50,7 +48,7 @@ class LightningRPC {
                 return decryptedValue
             }
             
-            let node = NodeStruct(dictionary: lightningNode!)
+            let node = NodeStruct(dictionary: lightningNode)
             
             if let encAddress = node.onionAddress {
                 onionAddress = decryptedValue(encAddress)
