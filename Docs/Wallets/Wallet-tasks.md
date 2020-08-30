@@ -2,8 +2,16 @@
 
  - [Create](#create)
  - [Backup](#Backup)
- - [Send and Receive](#Send-and-Receive)
- - [Export and Import](#Wallet-Export-and-Import)
+ - [Delete](#Delete)
+ - [Sending](#Sending)
+    -[Transaction fee](#Transaction-fee)
+    -[⚡️](#⚡️)
+    -[♥️](#♥️)
+    -[Sweeping](#Sweeping)
+    -[Batching +](#Batching-+)
+    -[BIP21](#BIP21)
+    -[Currencies](#Currencies)
+ - [Receiving](#Receiving)
 
 A seperate page is dedicated to Recovery:
 
@@ -78,6 +86,14 @@ You can tap the QR scanner to scan BIP21 invoices or addresses. Generally if you
 
 You can select denominations of `btc` (Bitcoin), `sats` (satoshis) and `usd`. Selecting `usd` will trigger the app to refresh the exchange rate and convert the dollar specified amount to an amount in btc, please be aware of Bitcoin's volatility and that by the time someone receives the btc the exchange rate may have changed.
 
-## Receive
+## Receiving
 
-Receiving is as simple as tapping "invoice" from the "Active Wallet" tab.
+Receiving is as simple as tapping "invoice" from the "Active Wallet" tab. 
+
+An address will be fetched from your node using `bitcoin-cli getnewaddress` for the "Active Wallet". 
+
+By default these invoices are BIP21 compatible, you may add a BIP21 amount and label by filling out the respective text fields.
+
+If you have added a c-lightning node you can tap the ⚡️ button to create a bolt11 invoice, editing the amount andlabel for lightning invoices does not happen in "real time" like the bitcoin invoices do. To edit the label and amount you will need to always tap the ⚡️ for the new values to take effect by creating a new invoice. By default lightning invoices are "any" ypes meaning no amount is specified. Some lightning wallets are not compatible with "any" invoices, so if you have an issue specify an amount then tap the ⚡️ button. Amounts will always get converted to milli satoshis on the backend, so you may either select btc or satoshis and the app will convert the amount accordingly.
+
+Advanced users have the option to derive different different address scripts by navigating to "Active Wallet" tab > `advanced` > `Address script type` however this should used with caution, it is comaptible with your nodes default wallet, Fully Noded single signature wallets and Coldcard single signature wallets. It will also always work if your wallet has a Fully Noded signer associated with it. To be safe stick with the defaults!
