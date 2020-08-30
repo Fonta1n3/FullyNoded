@@ -47,16 +47,14 @@ class Keys {
             chain = .testnet
         }
         
-        var masterKey: String?
-        
         if let mnmemonic = BIP39Mnemonic(words) {
             let seedHex = mnmemonic.seedHex(passphrase)
             if let mk = HDKey(seedHex, chain), let xpriv = mk.xpriv {
-                masterKey = xpriv
+                return xpriv
             }
         }
         
-        return masterKey
+        return nil
     }
     
     class func fingerprint(masterKey: String) -> String? {
