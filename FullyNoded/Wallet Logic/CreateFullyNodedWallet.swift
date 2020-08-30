@@ -49,7 +49,7 @@ class Keys {
         
         if let mnmemonic = BIP39Mnemonic(words) {
             let seedHex = mnmemonic.seedHex(passphrase)
-            if let mk = HDKey(seedHex, chain), let xpriv = mk.xpriv {
+            if let masterKey = HDKey(seedHex, chain), let xpriv = masterKey.xpriv {
                 return xpriv
             }
         }
@@ -64,9 +64,9 @@ class Keys {
     }
     
     class func bip84AccountXpub(masterKey: String, coinType: String, account: Int16) -> String? {
-        guard let mk = HDKey(masterKey),
+        guard let masterKey = HDKey(masterKey),
               let path = BIP32Path("m/84'/\(coinType)'/\(account)'"),
-              let accountKey = try? mk.derive(path) else { return nil }
+              let accountKey = try? masterKey.derive(path) else { return nil }
         
         return accountKey.xpub
     }
