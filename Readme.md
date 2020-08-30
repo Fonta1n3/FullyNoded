@@ -26,7 +26,7 @@ However, developing and supporting this project is hard work and costs real mone
 <img src="./Images/donation.jpg" alt="download fully noded on the app store" width="250"/><br/>
 
 
-# Why Fully Noded™️?
+## Why Fully Noded™️?
 
 * **Privacy.** Majority of existing Bitcoin wallets are powered by someone else's node, this causes complete and utter loss of privacy. By running your own node and utilizing it via a Tor hidden service you are maintaining a high level of privacy.
 * **Security.** All communications to your node are done within the Tor network, this means your IP is never exposed, your communications to your node are heavily encrypted, this is by default and not possible to opt out of. The app allows you to utilize Tor V3 authentication for first in class security, in short this means you self authenticate your device and no other device will be able to connect to your node. The app by default never uses your node as a hot wallet and instead keeps your seed heavily encrypted and securely stored on your iOS device, private keys never touch a network request, Tor or otherwise. With Fully Noded™️ architecture you can always keep your node completely behind a firewall and access it securely from anywhere in the world.
@@ -34,13 +34,13 @@ However, developing and supporting this project is hard work and costs real mone
 * **Censorship Resistance.** If you rely on a companies' server to power your wallet you are inherently relying on them, they can at any time disable your connection to their servers, shut them off or be forced to deny you service. When using Fully Noded™️ you never have to be concerned about a third party censoring your payments, you are quite literally your own bank.
 * **Recovery.** Users may recover any wallet with the app, simply create a Recovery wallet with BIP39 seed words and automatically recover every popular wallet in one fell swoop. For advanced users you may create a descriptor of any type and import it with the app, this allows every wallet type imaginable to be recovered. If you have existing wallets on your node which are watch-only you may add BIP39 seed words to the app to make them spendable.
 
-# Prerequisites
+## Prerequisites
 
 * [Bitcoin Core](https://bitcoincore.org/en/releases/), recommended v0.20.1
 * [Tor](https://www.torproject.org/download/)
 * An understanding of basic Bitcoin concepts, you can read this [overview](./Docs/What-is-a-node.md). It greatly helps to have a basic understanding of `bitcoin-cli` commands, what they do and how they work to grasp how the app works under the hood. [Learning Bitcoin from the Command Line](https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line) is an excellent in depth reference.
 
-# Getting Setup Proper
+## Getting Setup Proper
 
 - After downloading the app you need to first connect a node - see the guides
     - On macOS by far the easiest way (one click setup) is to use *Gordian-Server*, download [here](https://github.com/BlockchainCommons/GordianServer-macOS/raw/master/GordianServer-macOS-v0.1.2.dmg)
@@ -63,7 +63,7 @@ However, developing and supporting this project is hard work and costs real mone
     - [Q and A](https://fullynoded.app/faq/)
     - [Telegram](https://t.me/FullyNoded)
 
-# Docs
+## Docs
 
 * [Wallet usage](./Docs/Wallets)
 * [Bitcoin Core (node) related](./Docs/Bitcoin-Core)
@@ -76,12 +76,12 @@ However, developing and supporting this project is hard work and costs real mone
 * [Lightning](./Docs/Lightning.md)
 * [Tor](./Docs/Tor)
 
-# Medium Posts
+## Medium Posts
 
 * [Intoducing Fully Noded Wallets](https://medium.com/@FullyNoded/introducing-fully-noded-wallets-9fc2e4837102)
 * [Introducing Fully Noded PSBT Signers](https://medium.com/@FullyNoded/introducing-fully-noded-psbt-signers-8f259c1ec558?sk=fa56fa3939136f269f0ca2a4fcdeee38)
 
-# Youtube Tutorials
+## Youtube Tutorials
 
 * [Coldcard Single Signature wallet](https://www.youtube.com/watch?v=W0vwgzIrPoY)
 * [Coldcard Multi Signature wallet](https://www.youtube.com/watch?v=daXvAcHy8H0)
