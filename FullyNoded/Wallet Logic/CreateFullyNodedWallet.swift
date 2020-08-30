@@ -9,9 +9,9 @@
 import Foundation
 import LibWally
 
-class Keys {
+enum Keys {
     
-    class func donationAddress() -> String? {
+    static func donationAddress() -> String? {
         let randomInt = Int.random(in: 0..<10000)
         
         guard let hdKey = HDKey("xpub6C1DcRZo4RfYHE5F4yiA2m26wMBLr33qP4xpVdzY1EkHyUdaxwHhAvAUpohwT4ajjd1N9nt7npHrjd3CLqzgfbEYPknaRW8crT2C9xmAy3G"),
@@ -21,7 +21,7 @@ class Keys {
         return address.description
     }
     
-    class func seed() -> String? {
+    static func seed() -> String? {
         var words: String?
         let bytesCount = 16
         var randomBytes = [UInt8](repeating: 0, count: bytesCount)
@@ -38,7 +38,7 @@ class Keys {
         return words
     }
     
-    class func masterKey(words: String, coinType: String, passphrase: String) -> String? {
+    static func masterKey(words: String, coinType: String, passphrase: String) -> String? {
         let chain: Network
         
         if coinType == "0" {
@@ -57,13 +57,13 @@ class Keys {
         return nil
     }
     
-    class func fingerprint(masterKey: String) -> String? {
+    static func fingerprint(masterKey: String) -> String? {
         guard let mk = HDKey(masterKey) else { return nil }
         
         return mk.fingerprint.hexString
     }
     
-    class func bip84AccountXpub(masterKey: String, coinType: String, account: Int16) -> String? {
+    static func bip84AccountXpub(masterKey: String, coinType: String, account: Int16) -> String? {
         guard let mk = HDKey(masterKey),
               let path = BIP32Path("m/84'/\(coinType)'/\(account)'"),
               let accountKey = try? mk.derive(path) else { return nil }
@@ -71,7 +71,7 @@ class Keys {
         return accountKey.xpub
     }
     
-    class func xpub(path: String, masterKey: String) -> String? {
+    static func xpub(path: String, masterKey: String) -> String? {
         guard let mk = HDKey(masterKey),
               let path = BIP32Path(path),
               let accountKey = try? mk.derive(path) else { return nil }
