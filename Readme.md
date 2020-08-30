@@ -77,10 +77,12 @@ However, developing and supporting this project is hard work and costs real mone
 * [Tor](./Docs/Tor)
 
 # Medium Posts
+
 * [Intoducing Fully Noded Wallets](https://medium.com/@FullyNoded/introducing-fully-noded-wallets-9fc2e4837102)
 * [Introducing Fully Noded PSBT Signers](https://medium.com/@FullyNoded/introducing-fully-noded-psbt-signers-8f259c1ec558?sk=fa56fa3939136f269f0ca2a4fcdeee38)
 
 # Youtube Tutorials
+
 * [Coldcard Single Signature wallet](https://www.youtube.com/watch?v=W0vwgzIrPoY)
 * [Coldcard Multi Signature wallet](https://www.youtube.com/watch?v=daXvAcHy8H0)
 
