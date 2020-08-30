@@ -5,8 +5,8 @@
  - [Delete](#Delete)
  - [Sending](#Sending)
     - [Transaction fee](#Transaction-fee)
-    - [⚡️](#⚡️)
-    - [♥️](#♥️)
+    - [Lightning](#Lightning)
+    - [Donation](#Donation)
     - [Sweeping](#Sweeping)
     - [Batching +](#Batching-+)
     - [BIP21](#BIP21)
@@ -60,15 +60,15 @@ At the bottom of the screen you will see a "Confirmation target" slider:
 <img src="./Images/fee_slider.png" alt="" width="400"/><br/>
 The slider can be used to change the number of blocks in which we want our transaction to be confirmed (mined) in. Since each block takes about ten minutes to mine we can convert blocks to time, therefore setting the slider to two blocks will create a fee for your transaction which aims to get the transaction mined into a block within twenty minutes. The lower the number of blocks the higher your fee will be. **This is a rough target! It is not an exact science.** If you need the transaction to be confirmed quickly set it to the minimum target which is two blocks. This uses your node's built in fee estimation algorithm. Transactions are always RBF enabled in Fully Noded, however you always **need a balance** to utilize RBF. If you sweep your wallet (spend everything) and that transaction is not getting confirmed you will **NOT** be able to use RBF because you have no funds with which to RBF the transaction. Fully Noded is not yet capable of CPFP so please exercise caution when sweeping by setting a high mining fee.
 
-### ⚡️
+### Lightning
 
-You will see the lightning button in a few places. On the "Receiving address" field the ⚡️ button will fetch a funding address for your lighnting wallet. You can think of this as a way to deposit funds to your lightning wallet.
+You will see the ⚡️ button in a few places. On the "Receiving address" field the ⚡️ button will fetch a funding address for your lighnting wallet. You can think of this as a way to deposit funds to your lightning wallet.
 
 The larger ⚡️ button in the top right is for withdrawing funds from your lightning wallet to whichever address you specify.
 
-### ♥️
+### Donation
 
-The heart button is for generating a donation address, this address is derived from a hard coded xpub in the app which I control and hold the seed words to. Your donations are greatly appreciated and support ontinued development of the app.
+The ♥️ button is for generating a donation address, this address is derived from a hard coded xpub in the app which I control and hold the seed words to. Your donations are greatly appreciated and support ontinued development of the app.
 
 ### Sweeping
 
