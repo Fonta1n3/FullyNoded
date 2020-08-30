@@ -38,46 +38,51 @@ However, developing and supporting this project is hard work and costs real mone
 
 * [Bitcoin Core](https://bitcoincore.org/en/releases/), recommended v0.20.1
 * [Tor](https://www.torproject.org/download/)
-* An understanding of basic Bitcoin concepts, you can read this [overview](./Docs/Overview.md). It greatly helps to have a basic understanding of `bitcoin-cli` commands, what they do and how they work to grasp how the app works under the hood. [Learning Bitcoin from the Command Line](https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line) is an excellent in depth reference.
+* An understanding of basic Bitcoin concepts, you can read this [overview](./Docs/What-is-a-node.md). It greatly helps to have a basic understanding of `bitcoin-cli` commands, what they do and how they work to grasp how the app works under the hood. [Learning Bitcoin from the Command Line](https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line) is an excellent in depth reference.
 
 # Getting Setup Proper
 
 - After downloading the app you need to first connect a node - see the guides
-    - On macOS by far the easiest way (one click setup) to get a node up and running over Tor, configured correctly, and connect with a *Quick Connect QR* code is to use *Gordian-Server*, download [here](https://github.com/BlockchainCommons/GordianServer-macOS/raw/master/GordianServer-macOS-v0.1.2.dmg).
+    - On macOS by far the easiest way (one click setup) is to use *Gordian-Server*, download [here](https://github.com/BlockchainCommons/GordianServer-macOS/raw/master/GordianServer-macOS-v0.1.2.dmg)
     - For linux you can use this [script](https://github.com/BlockchainCommons/Bitcoin-Standup-Scripts/blob/master/Scripts/StandUp.sh)
-    - [Connect your existing node](./Docs/Connect-node.md#connect-your-own-node)
-        - [Bitcoin Core settings](./Docs/Howto.md#bitcoin-core-settings)
+    - [Connect your existing node](./Docs/Bitcoin-Core/Connect.md#connect-your-own-node)
+        - [Bitcoin Core settings](./Docs/Bitcoin-Core/bitcoin-conf.md)
     - To connect a node box see our guides:
-        - [BTCPayServer](./Docs/Connect-node.md#connect-btcpayserver)
-        - [Nodl](./Docs/Connect-node.md#connect-nodl)
-        - [Raspiblitz](./Docs/Connect-node.md#connect-raspiblitz)
-        - [Embassy](./Docs/Connect-node.md#connect-embassy)
-        - [myNode](./Docs/Connect-node.md#connect-mynode)
-- In order to connect to your own node you need to expose its functionality to a Tor Hidden Service - see the guides
-    - [macOS](./Docs/Tor.md#connecting-over-tor-macos)
-    - [Windows 10](./Docs/Tor.md#connecting-over-tor-windows-10)
-    - [Debian 10](./Docs/Tor.md#connecting-over-tor-linux-debian-10)
-- Once you are connected for best in class security practices you ought to take full advantage of the apps ability to authenticate over native Tor V3 - see the guide
-    - [Tor V3 Authentication](./Docs/Authentication.md#tor-v3-authentication)
-- [Troubleshooting](./Docs/Connect-node.md#troubleshooting)
+        - [BTCPayServer](./Docs/Bitcoin-Core/Connect.md#connect-btcpayserver)
+        - [Nodl](./Docs/Bitcoin-Core/Connect.md#connect-nodl)
+        - [Raspiblitz](./Docs/Bitcoin-Core/Connect.md#connect-raspiblitz)
+        - [Embassy](./Docs/Bitcoin-Core/Connect.md#connect-embassy)
+        - [myNode](../Docs/Bitcoin-Core/Connect.md#connect-mynode)
+- In order to connect to your own node you need to expose its functionality to a Tor Hidden Service:
+    - [macOS](./Docs/Tor/Tor.md#connecting-over-tor-macos)
+    - [Windows 10](./Docs/Tor/Tor.md#connecting-over-tor-windows-10)
+    - [Debian 10](./Docs/Tor/Tor.md#connecting-over-tor-linux-debian-10)
+- Once you are connected for best in class security practices you ought to take full advantage of the apps ability to authenticate over native Tor V3:
+    - [Tor V3 Authentication](./Docs/Tor/Authentication.md)
+- [Troubleshooting](./Docs/Troubleshooting.md)
+    - [Q and A](https://fullynoded.app/faq/)
+    - [Telegram](https://t.me/FullyNoded).
 
 # Docs
 
 * [Wallet usage](./Docs/Wallets)
-* [Overview Fully Noded™️](./Docs/Overview.md)
-* [Requirements](./Docs/Howto.md#requirements)
-* [Preparation](./Docs/Preparation.md)
-* [Supported Nodes](./Docs/Connect-node.md#supported-nodes)
-* [Importing a wallet from Specter](./Docs/Connect-node.md#importing-a-wallet-from-specter)
-* [Telegram](./Docs/Howto.md#telegram)
-* [Q and A](./Docs/Howto.md#q-and-a)
-* [Tutorials](./Docs/Howto.md#tutorials)
-* [Build From Source](./Docs/Howto.md#build-from-source)
-* [QuickConnect URL Scheme](./Docs/Authentication.md#quickconnect-url-scheme)
-* [Security and Privacy](./Docs/Authentication.md#security-and-privacy)
-* [How does it work?](./Docs/Howto.md#how-does-it-work)
-* [Recover FN Wallets](./Docs/Recovery.md#Fully-Noded-Wallets)
-* [Recover Anything else](./Docs/Recovery.md#Anything)
+* [Bitcoin Core (node) related](./Docs/Bitcoin-Core)
+* [Connecting your node](./Docs/Bitcoin-Core/Connect-node.md)
+* [Importing a wallet from Specter](./Docs/Wallets/Specter.md)
+* [Build From Source](./Docs/Build-from-source.md)
+* [Quick Connect uri](./Docs/Quick-Connect-QR.md)
+* [How does it work?](./Docs/How-does-it-work.md)
+* [Recovery](./Docs/Wallets/Recovery.md)
+* [Lightning](./Docs/Lightning.md)
+* [Tor](./Docs/Tor)
+
+# Medium Posts
+* [Intoducing Fully Noded Wallets](https://medium.com/@FullyNoded/introducing-fully-noded-wallets-9fc2e4837102)
+* [Introducing Fully Noded PSBT Signers](https://medium.com/@FullyNoded/introducing-fully-noded-psbt-signers-8f259c1ec558?sk=fa56fa3939136f269f0ca2a4fcdeee38)
+
+# Youtube Tutorials
+* [Coldcard Single Signature wallet](https://www.youtube.com/watch?v=W0vwgzIrPoY)
+* [Coldcard Multi Signature wallet](https://www.youtube.com/watch?v=daXvAcHy8H0)
 
 ## Contributing
 
