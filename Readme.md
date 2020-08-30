@@ -61,7 +61,7 @@ However, developing and supporting this project is hard work and costs real mone
     - [Tor V3 Authentication](./Docs/Tor/Authentication.md)
 - [Troubleshooting](./Docs/Troubleshooting.md)
     - [Q and A](https://fullynoded.app/faq/)
-    - [Telegram](https://t.me/FullyNoded).
+    - [Telegram](https://t.me/FullyNoded)
 
 # Docs
 

@@ -1,9 +1,11 @@
 # Connecting over Tor 
+
  - [macOS](#Connecting-over-Tor-macOS)
  - [Windows 10](#Connecting-over-Tor-Windows-10)
  - [Linux all platforms](#Connecting-over-Tor-Linux-all-platforms)
   
 # Connecting over Tor macOS
+
 Run `brew --version` in a terminal, if you get a valid response you have brew installed already. If not, install brew:
 
 ```cd /usr/local
@@ -73,9 +75,11 @@ Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Cor
 Find the suggested `lightning.conf` settings for FN [here](./Lightning.md/#Create-lightning-config).
 
 # Connecting over Tor Windows 10
+
 If you already have the Tor Expert Bundle installed you can skip the first 3 steps.
 
 ### On the device running your node
+
 - Download the Tor Expert Bundle [here](https://www.torproject.org/download/tor/)
 - Unpack the "Tor" folder onto your C: drive.
 - Open PowerShell as admin (Press Windows Key + X and then select PowerShell (Admin))
