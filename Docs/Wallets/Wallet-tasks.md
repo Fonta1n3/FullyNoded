@@ -8,7 +8,7 @@
     - [Lightning](#Lightning)
     - [Donation](#Donation)
     - [Sweeping](#Sweeping)
-    - [Batching +](#Batching-+)
+    - [Batching](#Batching)
     - [BIP21](#BIP21)
     - [Currencies](#Currencies)
  - [Receiving](#Receiving)
@@ -74,9 +74,9 @@ The ♥️ button is for generating a donation address, this address is derived 
 
 The sweep button will automatically sweep all your finuds to the address provided. It is highly recommended to use a high fee setting when sweeping wallets as you will not be able to use RBF if fees spike while your transaction is uncomfirmed.
 
-### Batching +
+### Batching
 
-The plus button is for batching transactions, You can add a recipient address, an amount then tap the + button to add multiple outputs. This is great if you need to send multiple transactions at once and want to save on fees. Once you have added all the outputs you want just tap the 🔗 button to create the transaction.
+The + button is for batching transactions, You can add a recipient address, an amount then tap the + button to add multiple outputs. This is great if you need to send multiple transactions at once and want to save on fees. Once you have added all the outputs you want just tap the 🔗 button to create the transaction.
 
 ### BIP21
 
