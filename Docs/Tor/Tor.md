@@ -11,10 +11,10 @@
 - 1. Install `brew`
     - `brew` is a really common program on macOS so its a good idea to first check if you already have it:
         - Open a terminal and run the command: `brew --version`
-        - If you got a valid response you can stop here, if not then install brew with:
+        - If you got a valid response you can skip to the next step, if not then install brew with:
             - `cd /usr/local` (its very important that you do **not** install brew using the `sudo` command, that will mess things up later)
             - `mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew`
-            - Let `brew` finsish installing, once it has move to the next step.
+            - Let `brew` finish installing, once it has move to the next step.
 - 2. Install `tor`
     - In a terminal run `brew install tor` (so easy)
         - Once tor finishes installing we need to configure it to run a hidden service for us. The hidden service is what we use to connect to our node remotely. A hidden service simply exposes a specific port on your computer to the Tor network via a super secret URL which is called a `hostname`, the `hostname` is nothing more then a web address for the Tor network. Its important to remember these are secret, only you will know about it unless you intentionally give it to others.
