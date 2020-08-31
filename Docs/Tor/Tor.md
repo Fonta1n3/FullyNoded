@@ -28,7 +28,6 @@
         <img src="./Images/open_torrc.png" alt="open torrc" width="250"/><br/>
         - Select all of its contents and delete it. Paste in the contents of the sample torrc file we provide [here](./torrc-tailored.md) (do not include the explainer at the top, just they `grayed` out text)
         - If you do not want to overwrite your entire `torrc` you can instead paste the following hidden services in to the existing `torrc`, look for the `HiddenServices` section and paste the following into it:
-
         ```
         HiddenServiceDir /usr/local/var/lib/tor/fullynoded/main
         HiddenServiceVersion 3

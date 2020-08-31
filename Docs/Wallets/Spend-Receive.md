@@ -19,10 +19,10 @@
 A seperate page is dedicated to Recovery:
 
  - [Recovery](./Recovery.md)
- 
+
 ## Create
 
-Read the instruction on the site [here](https://fullynoded.app/faq/#How-Do-I-Create-a-Wallet) to create 
+Read the instruction on the site [here](https://fullynoded.app/faq/#How-Do-I-Create-a-Wallet) to create
 
 ## Backup
 
@@ -54,7 +54,9 @@ You can cross reference *Bitcoin Core Wallets* filenames by navigating to `advan
 
 ## Sending
 
-Sending and receiving is as simple as tapping send from the "Active Wallet" tab, inputting an amount, a recipient address and tapping the 🔗 button to create a normal (onchain) Bitcoin transaction. 
+<br/><img src="./Images/send_overview.png" alt="" width="600"/><br/>
+
+Sending and receiving is as simple as tapping send from the "Active Wallet" tab, inputting an amount, a recipient address and tapping the 🔗 button to create a normal (onchain) Bitcoin transaction.
 
 ### Transaction fee
 
@@ -119,9 +121,9 @@ By default all transactions created by Fully Noded are [RBF](https://en.bitcoin.
 
 ## Receiving
 
-Receiving is as simple as tapping "invoice" from the "Active Wallet" tab. 
+Receiving is as simple as tapping "invoice" from the "Active Wallet" tab.
 
-An address will be fetched from your node using `bitcoin-cli getnewaddress` for the "Active Wallet". 
+An address will be fetched from your node using `bitcoin-cli getnewaddress` for the "Active Wallet".
 
 By default these invoices are BIP21 compatible, you may add a BIP21 amount and label by filling out the respective text fields.
 
