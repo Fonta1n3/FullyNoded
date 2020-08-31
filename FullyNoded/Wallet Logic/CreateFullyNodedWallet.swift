@@ -49,7 +49,7 @@ enum Keys {
         
         if let mnmemonic = BIP39Mnemonic(words) {
             let seedHex = mnmemonic.seedHex(passphrase)
-            if let masterKey = HDKey(seedHex, chain), let xpriv = masterKey.xpriv {
+            if let hdMasterKey = HDKey(seedHex, chain), let xpriv = hdMasterKey.xpriv {
                 return xpriv
             }
         }
@@ -58,23 +58,23 @@ enum Keys {
     }
     
     static func fingerprint(masterKey: String) -> String? {
-        guard let mk = HDKey(masterKey) else { return nil }
+        guard let hdMasterKey = HDKey(masterKey) else { return nil }
         
-        return mk.fingerprint.hexString
+        return hdMasterKey.fingerprint.hexString
     }
     
     static func bip84AccountXpub(masterKey: String, coinType: String, account: Int16) -> String? {
-        guard let masterKey = HDKey(masterKey),
+        guard let hdMasterKey = HDKey(masterKey),
               let path = BIP32Path("m/84'/\(coinType)'/\(account)'"),
-              let accountKey = try? masterKey.derive(path) else { return nil }
+              let accountKey = try? hdMasterKey.derive(path) else { return nil }
         
         return accountKey.xpub
     }
     
     static func xpub(path: String, masterKey: String) -> String? {
-        guard let mk = HDKey(masterKey),
+        guard let hdMasterKey = HDKey(masterKey),
               let path = BIP32Path(path),
-              let accountKey = try? mk.derive(path) else { return nil }
+              let accountKey = try? hdMasterKey.derive(path) else { return nil }
         
         return accountKey.xpub
     }
