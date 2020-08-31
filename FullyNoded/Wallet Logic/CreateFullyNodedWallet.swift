@@ -66,7 +66,7 @@ enum Keys {
     static func bip84AccountXpub(masterKey: String, coinType: String, account: Int16) -> String? {
         guard let mk = HDKey(masterKey),
               let path = BIP32Path("m/84'/\(coinType)'/\(account)'"),
-              let accountKey = try? masterKey.derive(path) else { return nil }
+              let accountKey = try? mk.derive(path) else { return nil }
         
         return accountKey.xpub
     }
