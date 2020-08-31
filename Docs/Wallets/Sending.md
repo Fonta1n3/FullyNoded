@@ -25,21 +25,21 @@ Fully Noded is capable of creating either a fully signed raw transaction or psbt
 
 If Fully Noded and your node do not hold the private keys necessary to fully sign the transaction you will get presented with a psbt and have the option to export it in a number of formats.
 
-You may also airdrop a `.psbt` file to Fully Noded and it will attempt to sign the psbt and will either allow you to export the updated psbt again or if it is complete will finalize it and ocnvert it to a raw transaction which can be broadcast, automatically presenting you with that option.
+You may also tap, double click, or airdrop a `.psbt` file to Fully Noded and it will automatically launch, attempting to sign the psbt and will either allow you to export the updated psbt again or if it is complete will finalize it and convert it to a raw transaction which can be broadcast.
 
 ## Raw Transaction
 
 <img src="./Images/broadcast.png" alt="" width="600"/><br/>
 
-If the transaction can be signed and is complete then Fully Noded will instead present you with a signed raw transaction in hex format:<br/>
+If the transaction can be signed and is complete then Fully Noded will present you with a signed raw transaction in hex format. You may at any time tap, double click or airdrop a `.txn` file to your device or MacBook and Fully Noded will automatically launch and display the "Broadcaster" for you.
 
 <img src="./Images/verify.png" alt="" width="600"/><br/>
 
 It is recommended to always use the "verify" button.
 
-The verify button inspects and parses each input and output individually, displaying the amount and address associated with each as well as manually calculating the mining fee and the usd amount for each. Usually there will always be a change output. You can confirm the change address is yours by copying it > "tools" tab > "wallet" > "get address info" > it will automatically paste in and fetch the address info, if the "solvable" field `solvable=1` then you can rest assured the address is yours.
+The verify button inspects and parses each input and output individually, displaying the amount and address associated with each as well as manually calculating the mining fee and the usd amount for each. Usually there will be a change output. You can confirm the change address is yours by copying it > "tools" tab > "wallet" > "get address info" > it will automatically paste in and fetch the address info, if `solvable=1` then you can rest assured the address is yours, this is only something you need to do if you are paranoid.
 
-At this point you can tap "broadcast" and you may either broadcast the transaction with your own node, or by using Blockstream's Esplora API over Tor. Using someone else's node to broadcast your transactions is much more private than broadcasting it with your own node even though this may seem counterintuitive. Once the transaction has been successfully broadcast you will get a valid transaction ID and a success message and the transaction will appear in your transaction history.
+When ready you can tap "broadcast" and you may either broadcast the transaction with your own node, or by using Blockstream's Esplora API over Tor. Using someone else's node to broadcast your transaction is much more private than broadcasting it with your own node even though this may seem counterintuitive. Once the transaction has been successfully broadcast you will get a valid transaction ID and a success message and the transaction will appear in your transaction history.
 
 ## Transaction fee
 
@@ -71,7 +71,7 @@ The ♥️ button is for generating a donation address, this address is derived 
 
 <img src="./Images/sweep_button.png" alt="sweep button" width="300"/><br/>
 
-The sweep button will automatically sweep all your funds to the address provided. It is highly recommended to use a high fee setting when sweeping wallets as you will not be able to use RBF if fees spike while your transaction is uncomfirmed.
+The sweep button will automatically sweep all your funds to the address provided. It is highly recommended to use a high fee setting when sweeping wallets as you will not be able to use RBF if fees spike while your transaction is unconfirmed.
 
 ## Batching
 
