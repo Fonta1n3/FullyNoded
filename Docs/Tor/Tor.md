@@ -51,7 +51,7 @@
     - Start `tor` with `brew services start tor`
 - Congratulations, you just installed and configured your first ever Tor hidden service for your own node! 🎉 🎊 🥳 - One more step!
 - 4.  Get your `hostname`
-    - Open Finder > `shift command g` > `/usr/local/var/lib/tor/fullynoded/main`
+    - Open Finder and again either click "Go" from the top menu bar or simply type  `shift command g` and paste in the following path `/usr/local/var/lib/tor/fullynoded/main`
         - If you want to use testnet we got you covered, just go here instead `/usr/local/var/lib/tor/fullynoded/test`
     - Double click `hostname`, you need to copy this hostname into Fully Noded along with its port at the end. For mainnet the port is `8332` for testnet `18332`
     - `4tbssic3c6uu2lzfvhmsmfjlvwm4gk26qqvutzmnr6gmtszp5wujotqd.onion:8332` as a mainnet example
