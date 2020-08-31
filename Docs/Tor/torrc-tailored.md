@@ -74,13 +74,6 @@ Copy-paste the following code into an empty `torrc` file and save the file. Be s
 ## HiddenServicePort x y:z says to redirect requests on port x to the
 ## address y:z.
 
-#HiddenServiceDir /usr/local/var/lib/tor/hidden_service/
-#HiddenServicePort 80 127.0.0.1:80
-
-#HiddenServiceDir /usr/local/var/lib/tor/other_hidden_service/
-#HiddenServicePort 80 127.0.0.1:80
-#HiddenServicePort 22 127.0.0.1:22
-
 HiddenServiceDir /usr/local/var/lib/tor/fullynoded/main/
 HiddenServiceVersion 3
 HiddenServicePort 8332 127.0.0.1:8332

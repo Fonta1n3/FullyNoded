@@ -4,9 +4,14 @@
 
 - Create a Tor hidden service that controls your nodes `rpcport`, for details on how to do that see this [guide](../Tor/Tor.md)
 - Go to `settings` > `node manager` > `+` > `manually`
-- Find your bitcoin.conf and input your rpcuser and rpcpassword and a label into the app. See "bitcoin.conf settings" below. **No special characters allowed! Only alphanumeric**
-- Input the hidden services hostname with the port at the end (njcnewicnweiun.onion:8332)
-- Tap `save`, you will be alerted it if was saved successfully, it will automatically start connecting to it.
+- Find your `bitcoin.conf` which by default can be found in these locations:
+    - Linux: `~/.bitcoin/bitcoin.conf`
+    - macOS: `~/Library/Application Support/Bitcoin/bitcoin.conf`
+    - Windows: `%APPDATA%\Bitcoin\bitcoin.conf`
+    - Input your `rpcuser` and `rpcpassword` and a label into the app. **No special characters allowed! Only alphanumeric**. If none exists add them, you can see an example `bitcoin.conf` [here](./bitcoin-conf.md). You always need to restart your node after editing your `bitcoin.conf` for the changes to take effect.
+- Back to Fully Noded
+- Input the hidden service hostname with the port at the end `njcnewicnweiun.onion:8332`
+- Tap `save`, you will be alerted it if was saved successfully, it will automatically start connecting to it, go to the home screen and watch the magic.
 
 ## [BTCPayServer](https://btcpayserver.org)
 

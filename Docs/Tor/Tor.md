@@ -8,79 +8,59 @@
   
 ## macOS
 
-Run `brew --version` in a terminal, if you get a valid response you have brew installed already. If not, install brew:
+- 1. Install `brew`
+    - `brew` is a really common program on macOS so its a good idea to first check if you already have it:
+        - Open a terminal and run the command: `brew --version`
+        - If you got a valid response you can stop here, if not then install brew with:
+            - `cd /usr/local` (its very important that you do **not** install brew using the `sudo` command, that will mess things up later)
+            - `mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew`
+            - Let `brew` finsish installing, once it has move to the next step.
+- 2. Install `tor`
+    - In a terminal run `brew install tor` (so easy)
+        - Once tor finishes installing we need to configure it to run a hidden service for us. The hidden service is what we use to connect to our node remotely. A hidden service simply exposes a specific port on your computer to the Tor network via a super secret URL which is called a `hostname`, the `hostname` is nothing more then a web address for the Tor network. Its important to remember these are secret, only you will know about it unless you intentionally give it to others.
+        - Start `tor` by opening a terminal and running `brew services start tor`, ensure it starts
+        - Stop `tor` by running `brew services stop tor`, ensure it stops
+- 3. Configure `tor`
+    - Open Finder and click the `Go` button on the top menu bar then click "Go to Folder" or simply type `shift command g`:<br/>
+        <img src="./Images/find_torrc.png" alt="find torrc" width="250"/><br/>
+    - Paste in `/usr/local/etc/tor/`
+    - Double click the `torrc` file:<br/>
+        <img src="./Images/open_torrc.png" alt="open torrc" width="250"/><br/>
+        - Select all of its contents and delete it. Paste in the contents of the sample torrc file we provide [here](./torrc-tailored.md) (do not include the explainer at the top, just they `grayed` out text)
+        - If you do not want to overwrite your entire `torrc` you can instead paste the following hidden services in to the exisiting `torrc`, look for the `HiddenServices` section and paste the following into it:
+       
+        ```
+        HiddenServiceDir /usr/local/var/lib/tor/fullynoded/main
+        HiddenServiceVersion 3
+        HiddenServicePort 8332 127.0.0.1:8332
 
-```cd /usr/local
-mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew
-```
-### On the device running your node:
-- run `brew install tor` in a terminal
-- Once Tor is installed you will need to create a Hidden Service.
-- Now first locate your `torrc` file, this is Tor's configuration file. Open Finder and type `shift command h` to navigate to your home folder and  `shift command .` to show hidden files.
--  If you've not been able to locate the torrc file, you might have to create the torrc file manually first. Do this by copying the torrc.sample -file: `cp /usr⁩/local⁩/etc⁩/tor⁩/torrc.sample /usr⁩/local⁩/etc⁩/tor⁩/torrc` and give the file it's right permission `chmod 700 /usr⁩/local⁩/etc⁩/tor⁩/torrc`
-- The torrc file should be located at `‎⁨/usr⁩/local⁩/etc⁩/tor⁩/torrc`, to edit it you can open terminal and run `sudo nano /usr⁩/local⁩/etc⁩/tor⁩/torrc`
-- Locate the section that looks like:
+        HiddenServiceDir /usr/local/var/lib/tor/fullynoded/test
+        HiddenServiceVersion 3
+        HiddenServicePort 18332 127.0.0.1:18332
 
-```
-## Once you have configured a hidden service, you can look at the
-## contents of the file ".../hidden_service/hostname" for the address
-## to tell people.
-##
-## HiddenServicePort x y:z says to redirect requests on port x to the
-## address y:z.
+        HiddenServiceDir /usr/local/var/lib/tor/fullynoded/regtest
+        HiddenServiceVersion 3
+        HiddenServicePort 18443 127.0.0.1:18443
 
-```
-
-- And below it add one Hidden Service for each port:
-
-```
-HiddenServiceDir /usr/local/var/lib/tor/fullynoded/main
-HiddenServiceVersion 3
-HiddenServicePort 8332 127.0.0.1:8332
-
-HiddenServiceDir /usr/local/var/lib/tor/fullynoded/test
-HiddenServiceVersion 3
-HiddenServicePort 18332 127.0.0.1:18332
-
-HiddenServiceDir /usr/local/var/lib/tor/fullynoded/regtest
-HiddenServiceVersion 3
-HiddenServicePort 18443 127.0.0.1:18443
-
-HiddenServiceDir /usr/local/var/lib/tor/fullynoded/lightning
-HiddenServiceVersion 3
-HiddenServicePort 1312 127.0.0.1:1312
-```
-
-The syntax is `HiddenServicePort xxxx 127.0.0.1:18332`, `xxxx` represents a synthetic port (virtual port), that means it doesn't matter what number you assign to `xxxx`. However, to make it simple just keep the ports the same.
-
-
-- Save and close nano with `ctrl x` + `y` + `enter` to save and exit nano (follow the prompts)
-- Start Tor by opening a terminal and running `brew services start tor`
-- Tor should start and you should be able to open Finder and **navigate to** your onion address(es) you need for Fully Noded:
-    * `/usr/local/var/lib/tor/fullynoded/main` (the directory for *mainnet* we added to the torrc file) and see a file called `hostname`, open it and copy the onion address, that you need for Fully Noded.
-    * `/usr/local/var/lib/tor/fullynoded/test` (the directory for *testnet* we added to the torrc file), same: there is file called `hostname`, open it etc.
-    * `/usr/local/var/lib/tor/fullynoded/regtest` (the directory for *regtest net* we added to the torrc file); same as `main` and `test`.
-
-- The `HiddenServicePort` needs to control your nodes rpcport, by default for mainnet that is 8332, for testnet 18332 and for regtest 18443.
-
-- All three `HiddenServiceDir`'s in `main`, `test` and `regtest` subdirectories of `/usr/local/var/lib/tor/fullynoded` need to have permission 700, You can check this yourself ([How to interpret file permissions](https://askubuntu.com/a/528433))If not, they must be changed to 700 with `chmod 700` command:
-    * `chmod 700 /usr/local/var/lib/tor/fullynoded/main`
-    * `chmod 700 /usr/local/var/lib/tor/fullynoded/test`
-    * `chmod 700 /usr/local/var/lib/tor/fullynoded/regtest`
-	* `chmod 700  /usr/local/var/lib/tor/fullynoded/lightning`
-
-- A ready to use `torrc` file that conforms to the guidelines above is available [here](./Docs/torrc-tailored.md).
-- Check that your node is **on**, that it's really running.
-
-Find the suggested Authentication settings on the device running FN [here](./Authentication.md/#On-the-device-running-FN).<br/>
-Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings).<br/>
-Find the suggested `lightning.conf` settings for FN [here](./Lightning.md/#Create-lightning-config).
+        HiddenServiceDir /usr/local/var/lib/tor/fullynoded/lightning
+        HiddenServiceVersion 3
+        HiddenServicePort 1312 127.0.0.1:1312
+        ```
+        
+    - Save the newly edited `torrc` file with `command s`
+    - Start `tor` with `brew services start tor`
+- Congratulations, you just installed and configured your first ever Tor hidden service for your own node! 🎉 🎊 🥳 - One more step!
+- 4.  Get your `hostname`
+    - Open Finder > `shift command g` > `/usr/local/var/lib/tor/fullynoded/main`
+        - If you want to use testnet we got you covered, just go here instead `/usr/local/var/lib/tor/fullynoded/test`
+    - Double click `hostname`, you need to copy this hostname into Fully Noded along with its port at the end. For mainnet the port is `8332` for testnet `18332`
+    - `4tbssic3c6uu2lzfvhmsmfjlvwm4gk26qqvutzmnr6gmtszp5wujotqd.onion:8332` as a mainnet example
+    
+That is it as far as Tor is concerned from here you can continue where we left off at [Connect.md](../Bitcoin-Core/Connect.md)
 
 ## Windows 10
 
 If you already have the Tor Expert Bundle installed you can skip the first 3 steps.
-
-### On the device running your node
 
 - Download the Tor Expert Bundle [here](https://www.torproject.org/download/tor/)
 - Unpack the "Tor" folder onto your C: drive.
