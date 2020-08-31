@@ -5,7 +5,7 @@
  - [macOS](#macOS)
  - [Windows 10](#Windows-10)
  - [Linux](#Linux)
-  
+
 ## macOS
 
 - 1. Install `brew`
@@ -27,8 +27,8 @@
     - Double click the `torrc` file:<br/>
         <img src="./Images/open_torrc.png" alt="open torrc" width="250"/><br/>
         - Select all of its contents and delete it. Paste in the contents of the sample torrc file we provide [here](./torrc-tailored.md) (do not include the explainer at the top, just they `grayed` out text)
-        - If you do not want to overwrite your entire `torrc` you can instead paste the following hidden services in to the exisiting `torrc`, look for the `HiddenServices` section and paste the following into it:
-       
+        - If you do not want to overwrite your entire `torrc` you can instead paste the following hidden services in to the existing `torrc`, look for the `HiddenServices` section and paste the following into it:
+
         ```
         HiddenServiceDir /usr/local/var/lib/tor/fullynoded/main
         HiddenServiceVersion 3
@@ -46,16 +46,16 @@
         HiddenServiceVersion 3
         HiddenServicePort 1312 127.0.0.1:1312
         ```
-        
+
     - Save the newly edited `torrc` file with `command s`
     - Start `tor` with `brew services start tor`
 - Congratulations, you just installed and configured your first ever Tor hidden service for your own node! 🎉 🎊 🥳 - One more step!
 - 4.  Get your `hostname`
-    - Open Finder and again either click "Go" from the top menu bar or simply type  `shift command g` and paste in the following path `/usr/local/var/lib/tor/fullynoded/main`
+    - Open Finder and again either click "Go" from the top menu bar or simply type `shift command g` and paste in the following path `/usr/local/var/lib/tor/fullynoded/main`
         - If you want to use testnet we got you covered, just go here instead `/usr/local/var/lib/tor/fullynoded/test`
     - Double click `hostname`, you need to copy this hostname into Fully Noded along with its port at the end. For mainnet the port is `8332` for testnet `18332`
     - `4tbssic3c6uu2lzfvhmsmfjlvwm4gk26qqvutzmnr6gmtszp5wujotqd.onion:8332` as a mainnet example
-    
+
 That is it as far as Tor is concerned from here you can continue where we left off at [Connect.md](../Bitcoin-Core/Connect.md)
 
 ## Windows 10
@@ -129,7 +129,7 @@ Find the suggested `lightning.conf` settings for FN [here](./Lightning.md/#Creat
 
 ## Linux
 
-Install tor on linux, follow this guide [here](https://2019.www.torproject.org/docs/debian.html.en). 
+Install tor on linux, follow this guide [here](https://2019.www.torproject.org/docs/debian.html.en).
 1. The guide uses your input to adapt the commands you have to give in. It uses the instructions from the tor project website. They cover all platforms.
 2. The guide is very strict about **what you have to do as 'root'. Follow those rules**. It can be practical to open a terminal tab and change the user of that tab to root with `su - root`. That needs the root password. No to be confused with the 'sudo ...' commands. Those need the user who is logged in and has sufficient rights to execute as superuser.
 
@@ -238,7 +238,7 @@ linux `systemctl restart tor`
 ## Expected result
 
 Tor should start and you should be able to **navigate to** your onion address(es) you need for Fully Noded, the example is for subdirectory *main* but it should be done for all subdirectories if relevant for you:<br/>
-    * `/usr/local/var/lib/tor/fullynoded/lightning` (the directory for *lightning* we added to the torrc file) and see a file called `hostname`, **open it and copy the onion address, that you need for Fully Noded**. 
+    * `/usr/local/var/lib/tor/fullynoded/lightning` (the directory for *lightning* we added to the torrc file) and see a file called `hostname`, **open it and copy the onion address, that you need for Fully Noded**.
     * Or `cat /usr/local/var/lib/tor/fullynoded/lightning/hostname`. If it prints something like `ndfiuhfh2fu23ufh21u3bfd.onion` then all is well, if not message me on the Fully Noded Telegram and some group member can help (maybe).
     * Do the same for `test`, `regtest` and `main` if you wish to configure tor for those networks too.
 
