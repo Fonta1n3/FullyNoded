@@ -54,7 +54,7 @@ You can cross reference *Bitcoin Core Wallets* filenames by navigating to `advan
 
 ## Sending
 
-<br/><img src="./Images/send_overview.png" alt="" width="600"/><br/>
+<br/><img src="./Images/send_view.png" alt="sending view" width="600"/><br/>
 
 Sending and receiving is as simple as tapping send from the "Active Wallet" tab, inputting an amount, a recipient address and tapping the 🔗 button to create a normal (onchain) Bitcoin transaction.
 
