@@ -101,7 +101,7 @@ class LightningRPC {
                 }
                 
                 guard let urlContent = data else {
-                    print("Tor client session data is nil")
+                    completion((id, nil, "Tor client session data is nil"))
                     return
                 }
                 
