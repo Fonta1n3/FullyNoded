@@ -1,61 +1,15 @@
-# Wallet tasks
+# Sending
 
- - [Create](#create)
- - [Backup](#Backup)
- - [Delete](#Delete)
- - [Sending](#Sending)
-    - [Transaction fee](#Transaction-fee)
-    - [Lightning](#Lightning)
-    - [Donation](#Donation)
-    - [Sweeping](#Sweeping)
-    - [Batching](#Batching)
-    - [BIP21](#BIP21)
-    - [Currencies](#Currencies)
-    - [PSBT](#PSBT)
-    - [Raw Transaction](#Raw-Transaction)
-    - [Replace By Fee](#Replace-By-Fee)
- - [Receiving](#Receiving)
-
-A seperate page is dedicated to Recovery:
-
- - [Recovery](./Recovery.md)
-
-## Create
-
-Read the instruction on the site [here](https://fullynoded.app/faq/#How-Do-I-Create-a-Wallet) to create
-
-## Backup
-
-When creating a single signature wallet Fully Noded will always display 12 BIP39 seed words you should **write down** and store safely. You may at anytime recover the wallet by simply adding them as a signer to the app. If you are completely recovering the wallet from scratch you can create a "Recovery Wallet" using those BIP39 words.
-
-There are many sources to learn and practise smart custodianship for your seed words, for example:
-
- - [The Smart Custody Book](https://github.com/BlockchainCommons/SmartCustodyBook)
- - Several articles by Pamela Morgan on Medium [here](https://medium.com/@pamelawjd)
-
-## Delete
-
-There are differences in *Fully Noded Wallets* versus *Bitcoin Core Wallets*, you can read a detailed explanation on the website [here](https://fullynoded.app/faq/#How-Do-I-Delete-a-Wallet).
-
-The TLDR is you can not completely delete a *Bitcoin Core Wallet* from the Fully Noded app, you must do it on your node.
-
-For *Fully Noded Wallets* you can delete the apps database for the wallet by tapping the "trash" button from the "Wallet Detail" view which will cause the app to forget about the wallet, however it can still be accessed as a *Bitcoin Core Wallet* by tapping `advanced` > `Bitcoin Core Wallets`.
-
-To delete the `Bitcoin Core Wallet` you need to navigate to your nodes wallets directory which can generally be found in your Bitcoin Core's default data directory:
-* Linux: `~/.bitcoin/wallets`
-* macOS: `~/Library/Application Support/Bitcoin/wallets`
-* Windows: `%APPDATA%\Bitcoin\wallets`
-
-<br/><img src="./Images/fn_filename.png" alt="" width="400"/><br/>
-
-You can cross reference *Fully Noded Wallets* by tapping the "info" button from the "Active Wallet" tab and looking for the `Filename` field.
-
-<br/><img src="./Images/bitcoincore_filenames.png" alt="" width="400"/><br/>
-
-You can cross reference *Bitcoin Core Wallets* filenames by navigating to `advanced` > `Bitcoin Core Wallets`, the text you see is the wallets filename.
-
-
-## Sending
+- [Transaction fee](#Transaction-fee)
+- [Lightning](#Lightning)
+- [Donation](#Donation)
+- [Sweeping](#Sweeping)
+- [Batching](#Batching)
+- [BIP21](#BIP21)
+- [Currencies](#Currencies)
+- [PSBT](#PSBT)
+- [Raw Transaction](#Raw-Transaction)
+- [Replace By Fee](#Replace-By-Fee)
 
 <img src="./Images/send_view.png" alt="sending view" width="600"/><br/>
 
