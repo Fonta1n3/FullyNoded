@@ -38,6 +38,7 @@ class LightningRPC {
                 return
             }
             
+            // FIXME: Race condition can occur
             func decryptedValue(_ encryptedValue: Data) -> String {
                 var decryptedValue = ""
                 Crypto.decryptData(dataToDecrypt: encryptedValue) { decryptedData in
@@ -89,45 +90,42 @@ class LightningRPC {
             #endif
             
             let task = torClient.session.dataTask(with: request as URLRequest) { (data, response, error) in
-                do {
+                if error != nil {
+                    #if DEBUG
+                    print("error: \(error!.localizedDescription)")
+                    #endif
+                    completion((id, nil, error!.localizedDescription))
                     
-                    if error != nil {
-                        #if DEBUG
-                        print("error: \(error!.localizedDescription)")
-                        #endif
-                        completion((id, nil, error!.localizedDescription))
-                        
-                    } else {
-                        if let urlContent = data {
-                            do {
-                                let jsonAddressResult = try JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as! NSDictionary
+                } else {
+                    if let urlContent = data {
+                        do {
+                            let jsonAddressResult = try JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as! NSDictionary
+                            
+                            #if DEBUG
+                            print("json: \(jsonAddressResult)")
+                            #endif
+                            
+                            if let errorCheck = jsonAddressResult["error"] as? NSDictionary {
+                                var errorDesc = ""
                                 
-                                #if DEBUG
-                                print("json: \(jsonAddressResult)")
-                                #endif
-                                
-                                if let errorCheck = jsonAddressResult["error"] as? NSDictionary {
-                                    var errorDesc = ""
-                                    
-                                    if let errorMessage = errorCheck["message"] as? String {
-                                        errorDesc = errorMessage
-                                        
-                                    } else {
-                                        errorDesc = "Uknown error"
-                                        
-                                    }
-                                    
-                                    completion((id, nil, errorDesc))
+                                if let errorMessage = errorCheck["message"] as? String {
+                                    errorDesc = errorMessage
                                     
                                 } else {
-                                    completion((id, jsonAddressResult["result"], nil))
+                                    errorDesc = "Uknown error"
                                     
                                 }
                                 
-                            } catch {
-                                completion((id, nil, "unknown error"))
+                                completion((id, nil, errorDesc))
+                                
+                            } else {
+                                completion((id, jsonAddressResult["result"], nil))
                                 
                             }
+                            
+                        } catch {
+                            completion((id, nil, "unknown error"))
+                            
                         }
                     }
                 }
