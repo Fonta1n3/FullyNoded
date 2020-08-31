@@ -2,10 +2,12 @@
 
 ### Fully Noded Wallets
 
-There is a recovery tool which can be accessed via the "Active wallet" tab by tapping the plus button in the top left. With this tool recovery is powerful and automated. You can input any BIP39 words with an optional passphrase and custom account number (default account number is 0). From that point on Fully Noded will import almost every conceivable (popular) derivation scheme into your nodes wallet so that you may sweep/spend the funds (BIP44/49/84, Samourai derivations, and BRD along with all three address types for each derivation including change and receive keys). The signing functionality of Fully Noded means it can sign for any derivation path, the only limitation is what is imported into your node. 
+There is a recovery tool which can be accessed via the "Active wallet" tab by tapping the plus button in the top left. With this tool recovery is powerful and automated. You can input any BIP39 mnemonic with an optional passphrase and custom account number (default account number is 0). 
+
+From that point on Fully Noded will import almost every conceivable (popular) derivation scheme into your nodes wallet so that you may sweep/spend the funds (BIP44/49/84, Samourai derivations, BRD, Coinomi to name a few) along with all three address types for each derivation including change and receive keys). The signing functionality of Fully Noded means it can sign for any derivation path, the only limitation is what is imported into your node. 
 
 #### Walletsrecovery.org
-To be clear we import most of the popular schemes from [walletsrecovery.org](https://walletsrecovery.org) into your node as watch-only wallets where your node simply holds public keys and is able to watch for the utxo's, for Samourai all derivations are imported except BIP47. 
+To be clear we import *most* of the popular schemes from [walletsrecovery.org](https://walletsrecovery.org) into your node as watch-only wallets where your node simply holds public keys and is able to watch for the utxo's, for Samourai all derivations are imported except BIP47. 
 
 The derivations (important to note these are the root derivation paths, we add `/0/*` for receive keys and `/1/*` for change keys as well as allowing testnet compatibility as per bip44/84/49 if you node is on testnet):
 
@@ -46,8 +48,3 @@ Or all address types would be `combo([5585785b/84'/0'/0']xprv73h7hr7rh/0/*)`
 To read more about what the above means check out this [explainer](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md).
 
 Of course that means you need to understand the derivation, which xprv to use and have a fingerprint.
-
-
-## Troubleshooting
-
-A categorized page for troubleshooting is available [here](./Troubleshooting.md) or directly to [troubleshooting recovery ](./Troubleshooting.md#Recovery)

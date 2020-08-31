@@ -86,6 +86,7 @@
 		D084960622EC0A94003FE8EB /* LICENSE.md in Resources */ = {isa = PBXBuildFile; fileRef = D084960522EC0A94003FE8EB /* LICENSE.md */; };
 		D0855FC622B08EE000DBBFC2 /* TorClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0855FC522B08EE000DBBFC2 /* TorClient.swift */; };
 		D0855FCA22B0CEA800DBBFC2 /* CreatePSBT.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0855FC922B0CEA800DBBFC2 /* CreatePSBT.swift */; };
+		D088E9D824FBA4E00097D755 /* CreateMultisigViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D088E9D724FBA4E00097D755 /* CreateMultisigViewController.swift */; };
 		D08A92A62334F66900409D6E /* Reducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08A92A52334F66900409D6E /* Reducer.swift */; };
 		D08A92A92337755600409D6E /* AddDescriptors.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08A92A82337755600409D6E /* AddDescriptors.swift */; };
 		D08A92AD2337A63000409D6E /* DescriptorStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08A92AC2337A63000409D6E /* DescriptorStruct.swift */; };
@@ -149,7 +150,6 @@
 		D0EC7490227F6977001489B9 /* SignRawViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EC748F227F6977001489B9 /* SignRawViewController.swift */; };
 		D0EDDF1124972CEF00657931 /* InvoiceSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EDDF1024972CEF00657931 /* InvoiceSettingsViewController.swift */; };
 		D0EF29C1216B82B400EB776A /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EF29C0216B82B400EB776A /* SettingsViewController.swift */; };
-		D0F029BD24C3D6F700FED673 /* MultiSigCreatorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F029BC24C3D6F700FED673 /* MultiSigCreatorViewController.swift */; };
 		D0F3919024BFE48600EA8A2A /* AccountMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F3918F24BFE48600EA8A2A /* AccountMap.swift */; };
 		D0F3919224BFEBBB00EA8A2A /* QRDisplayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F3919124BFEBBB00EA8A2A /* QRDisplayerViewController.swift */; };
 		D0F3919424C0147400EA8A2A /* QRScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F3919324C0147400EA8A2A /* QRScannerViewController.swift */; };
@@ -256,6 +256,7 @@
 		D0855FB822ACB7D100DBBFC2 /* Tor.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Tor.framework; path = Carthage/Build/iOS/Tor.framework; sourceTree = "<group>"; };
 		D0855FC522B08EE000DBBFC2 /* TorClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TorClient.swift; path = "../New Group/TorClient.swift"; sourceTree = "<group>"; };
 		D0855FC922B0CEA800DBBFC2 /* CreatePSBT.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePSBT.swift; sourceTree = "<group>"; };
+		D088E9D724FBA4E00097D755 /* CreateMultisigViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CreateMultisigViewController.swift; sourceTree = "<group>"; };
 		D08A92A52334F66900409D6E /* Reducer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reducer.swift; sourceTree = "<group>"; };
 		D08A92A82337755600409D6E /* AddDescriptors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddDescriptors.swift; sourceTree = "<group>"; };
 		D08A92AC2337A63000409D6E /* DescriptorStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DescriptorStruct.swift; sourceTree = "<group>"; };
@@ -321,7 +322,6 @@
 		D0EC748F227F6977001489B9 /* SignRawViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignRawViewController.swift; sourceTree = "<group>"; };
 		D0EDDF1024972CEF00657931 /* InvoiceSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceSettingsViewController.swift; sourceTree = "<group>"; };
 		D0EF29C0216B82B400EB776A /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
-		D0F029BC24C3D6F700FED673 /* MultiSigCreatorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiSigCreatorViewController.swift; sourceTree = "<group>"; };
 		D0F3918F24BFE48600EA8A2A /* AccountMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountMap.swift; sourceTree = "<group>"; };
 		D0F3919124BFEBBB00EA8A2A /* QRDisplayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRDisplayerViewController.swift; sourceTree = "<group>"; };
 		D0F3919324C0147400EA8A2A /* QRScannerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerViewController.swift; sourceTree = "<group>"; };
@@ -557,7 +557,6 @@
 				D0C5A58724AECDBE003B11A9 /* SignerViewController.swift */,
 				D0F3919124BFEBBB00EA8A2A /* QRDisplayerViewController.swift */,
 				D0F3919324C0147400EA8A2A /* QRScannerViewController.swift */,
-				D0F029BC24C3D6F700FED673 /* MultiSigCreatorViewController.swift */,
 			);
 			path = "View Controllers";
 			sourceTree = "<group>";
@@ -852,6 +851,7 @@
 		D0C20EE524A78A6F00C62AA4 /* Wallets */ = {
 			isa = PBXGroup;
 			children = (
+				D088E9D724FBA4E00097D755 /* CreateMultisigViewController.swift */,
 				D0E2A1042496EE9400AE0C04 /* ActiveWalletViewController.swift */,
 				D0C20EE624A78A9700C62AA4 /* CreateFullyNodedWalletViewController.swift */,
 				D09A330024A848DA009FA0B2 /* SeedDisplayerViewController.swift */,
@@ -1106,6 +1106,7 @@
 				D0196DDB21B5AC5F0081E0AB /* KeyPad.swift in Sources */,
 				D09F9E4C24B0673C006B588C /* SignersViewController.swift in Sources */,
 				D0E2A1052496EE9400AE0C04 /* ActiveWalletViewController.swift in Sources */,
+				D088E9D824FBA4E00097D755 /* CreateMultisigViewController.swift in Sources */,
 				D037C870231BAFF1006C357D /* RescanViewController.swift in Sources */,
 				D0C20EE724A78A9700C62AA4 /* CreateFullyNodedWalletViewController.swift in Sources */,
 				D00F851F2494A7CA008D7CD3 /* AuthKeysStruct.swift in Sources */,
@@ -1134,7 +1135,6 @@
 				D0233F242361EA090041FFBA /* Base32.swift in Sources */,
 				D020480F249605AB00EF52DB /* ActiveWalletsViewController.swift in Sources */,
 				D0CC0E2224F0FA98001BF905 /* PeerDetailsViewController.swift in Sources */,
-				D0F029BD24C3D6F700FED673 /* MultiSigCreatorViewController.swift in Sources */,
 				D037C86C231BAFB4006C357D /* AddToKeypoolViewController.swift in Sources */,
 				D0452ADB2247417F0013E225 /* ImportPrivKeyViewController.swift in Sources */,
 				D0384E2F246AC4B1002FEE94 /* XpubConverter.swift in Sources */,
@@ -1360,8 +1360,8 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 216;
-				DEVELOPMENT_TEAM = 8JHDU5M9KD;
+				CURRENT_PROJECT_VERSION = 217;
+				DEVELOPMENT_TEAM = 69FR345CDA;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
@@ -1373,7 +1373,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.296;
+				MARKETING_VERSION = 1.297;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1396,9 +1396,9 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 216;
+				CURRENT_PROJECT_VERSION = 217;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 8JHDU5M9KD;
+				DEVELOPMENT_TEAM = 69FR345CDA;
 				ENABLE_TESTABILITY = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1411,7 +1411,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.296;
+				MARKETING_VERSION = 1.297;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";

@@ -158,9 +158,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     private func presentMultisigCreator(zpub: String, fingerprint: String, xpub: String) {
         //MultisigCreator
         let storyBoard = UIStoryboard(name: "Main", bundle: nil)
-        if let multisigCreator = storyBoard.instantiateViewController(identifier: "MultisigCreator") as? MultiSigCreatorViewController {
-            let dict = ["signer":"","fingerprint":fingerprint,"xpub":xpub,"zpub":zpub]
-            multisigCreator.signers.append(dict)
+        if let multisigCreator = storyBoard.instantiateViewController(identifier: "MultisigCreator") as? CreateMultisigViewController {
+        multisigCreator.ccXfp = fingerprint
+        multisigCreator.ccXpub = xpub
             if let window = self.window, let rootViewController = window.rootViewController {
                 var currentController = rootViewController
                 while let presentedController = currentController.presentedViewController {

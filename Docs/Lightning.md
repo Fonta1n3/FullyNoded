@@ -20,14 +20,11 @@ First you need to install c-lightning, to do that follow [this](https://github.c
 If you have c-lightning running already you can stop it. `cli/lightning-cli stop`
 
 ### Install and configure Tor
+
 Pick the guide below for the device your're running your node on:
- - [Mac Osx](./Tor.md/#Connecting-over-MacOS)
- - [Windows 10](./Tor.md/#Connecting-over-Tor-Windows-10)
- - [Debian 10](./Tor.md/#Connecting-over-Tor-Linux-Debian-10)
-
-Find the suggested Authentication settings on the device **running FN** [here](./Authentication.md/#On-the-device-running-FN).
-Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings). For *Lightning* see below, or click [here](#Connect-Fully-Noded).
-
+ - [macOS](./Tor/Tor.md/#Connecting-over-MacOS)
+ - [Windows 10](./Tor/Tor.md/#Connecting-over-Tor-Windows-10)
+ - [Debian 10](./Tor/Tor.md/#Connecting-over-Tor-Linux-Debian-10)
 
 ### Create lightning config
 
@@ -76,8 +73,9 @@ Start lightning:<br/>
 
 ### Connect Fully Noded
 
-In Fully Noded go to "Settings" > "Node Manager" > ⚡️:<br/>
-- add the rpcuser: `lightning`
+In Fully Noded go to Home screen  and tap the  ⚡️, from there you will be automatically prompted to add a node:<br/>
+- add a label
+- add the rpc user: `lightning`
 - add the rpc password which is the `http-pass` you added to the config from above: `aPasswordYouWillSoonCreate`
 - add the onion address (hostname) we created earlier, ensure you add the port at the end: `theHostnameYouJustSavedFromThePreviousSteps.onion:1312`
 
@@ -129,7 +127,3 @@ Scanning a valid node url will trigger a series of calls:
 If all goes well you will get a success message, if not you'll get an error.
 
 Thats it for now! It is a bit rough and ready but very functional, please report bugs, crashes and feature requests ⚡️⚡️⚡️⚡️⚡️⚡️⚡️
-
-## Troubleshooting
-
-A categorized page for troubleshooting is available [here](./Troubleshooting.md) or directly to [troubleshooting Lightning](./Troubleshooting.md#Lightning)
