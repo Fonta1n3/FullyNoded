@@ -4,17 +4,7 @@ To understand *FullyNoded* one needs to understand some basics of how Bitcoin Co
 
 ### The basics
 
-Your node has all kinds of complex functionality built into it, I will only be explaining what your node is capable of as far as *Fully Noded* is concerned.# What is in a node?
-
-To understand *FullyNoded* one needs to understand some basics of how Bitcoin Core itself works. In the below sections I will try and describe the basics in a concise way to help you understand *FullyNoded* and your own node a bit better and how to use them.
-
-### The basics
-
 Your node has all kinds of complex functionality built into it, I will only be explaining what your node is capable of as far as *Fully Noded* is concerned.
-
-Bitcoin Core includes its very own built in wallet as well as different ways to interact with that wallet. *Fully Noded* does not have any wallet related code in it, it relies completely on your node for all of the wallet functionality. Think of *Fully Noded* as a remote control for you node and its wallet.
-
-#### Back to your node...
 
 When you install Bitcoin Core you will notice a few different programs that you can use:
 
