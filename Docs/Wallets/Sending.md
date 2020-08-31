@@ -2,6 +2,8 @@
 
 <img src="./Images/send_view.png" alt="sending view" width="600"/><br/>
 
+Sending in Fully Noded is as simple as tapping the "send" button from the "Active Wallet" tab, inputting an amount, a recipient address and tapping the 🔗 button to create a normal (onchain) Bitcoin transaction. However there is more to it then that and you should be aware of all your options and what it all means.
+
 - [PSBT](#PSBT)
 - [Raw Transaction](#Raw-Transaction)
 - [Transaction fee](#Transaction-fee)
@@ -12,8 +14,6 @@
 - [BIP21](#BIP21)
 - [Currencies](#Currencies)
 - [Replace By Fee](#Replace-By-Fee)
-
-Sending is as simple as tapping send from the "Active Wallet" tab, inputting an amount, a recipient address and tapping the 🔗 button to create a normal (onchain) Bitcoin transaction.
 
 ## PSBT
 
