@@ -21,7 +21,7 @@ Sending is as simple as tapping send from the "Active Wallet" tab, inputting an 
 
 All psbt functionality is BIP174 compatible.
 
-Fully Noded is capable of creating either a fully signed raw transaction or a psbt depending on whether the wallet is watch-only, hot multisig which can not be fully signed by the app itself.
+Fully Noded is capable of creating either a fully signed raw transaction or psbt depending on whether the wallet is watch-only, hot, or multi-sig which can not be fully signed by the app itself.
 
 If Fully Noded and your node do not hold the private keys necessary to fully sign the transaction you will get presented with a psbt and have the option to export it in a number of formats.
 
