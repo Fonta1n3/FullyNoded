@@ -46,22 +46,26 @@ To delete the `Bitcoin Core Wallet` you need to navigate to your nodes wallets d
 * macOS: `~/Library/Application Support/Bitcoin/wallets`
 * Windows: `%APPDATA%\Bitcoin\wallets`
 
-You can cross reference *Fully Noded Wallets* by tapping the "info" button from the "Active Wallet" tab and looking for the `Filename` field:<br/>
-<img src="./Images/fn_filename.png" alt="" width="400"/><br/>
+<br/><img src="./Images/fn_filename.png" alt="" width="400"/><br/>
 
-You can cross reference *Bitcoin Core Wallets* filenames by navigating to `advanced` > `Bitcoin Core Wallets`, the text you see is the wallets filename:<br/>
-<img src="./Images/bitcoincore_filenames.png" alt="" width="400"/><br/>
+You can cross reference *Fully Noded Wallets* by tapping the "info" button from the "Active Wallet" tab and looking for the `Filename` field.
+
+<br/><img src="./Images/bitcoincore_filenames.png" alt="" width="400"/><br/>
+
+You can cross reference *Bitcoin Core Wallets* filenames by navigating to `advanced` > `Bitcoin Core Wallets`, the text you see is the wallets filename.
+
 
 ## Sending
 
-<br/><img src="./Images/send_view.png" alt="sending view" width="600"/><br/>
+<img src="./Images/send_view.png" alt="sending view" width="600"/><br/>
 
 Sending and receiving is as simple as tapping send from the "Active Wallet" tab, inputting an amount, a recipient address and tapping the 🔗 button to create a normal (onchain) Bitcoin transaction.
 
 ### Transaction fee
 
-At the bottom of the screen you will see a "Confirmation target" slider:<br/>
 <img src="./Images/fee_slider.png" alt="" width="600"/><br/>
+
+At the bottom of the screen you will see a "Confirmation target" slider.
 
 The slider can be used to change the number of blocks in which we want our transaction to be confirmed (mined) in. Since each block takes about ten minutes to mine we can convert blocks to time, therefore setting the slider to two blocks will create a fee for your transaction which aims to get the transaction mined into a block within twenty minutes. The lower the number of blocks the higher your fee will be. **This is a rough target! It is not an exact science.** If you need the transaction to be confirmed quickly set it to the minimum target which is two blocks. This uses your node's built in fee estimation algorithm. Transactions are always RBF enabled in Fully Noded, however you always **need a balance** to utilize RBF. If you sweep your wallet (spend everything) and that transaction is not getting confirmed you will **NOT** be able to use RBF because you have no funds with which to RBF the transaction. Fully Noded is not yet capable of CPFP so please exercise caution when sweeping by setting a high mining fee.
 
@@ -85,7 +89,7 @@ The ♥️ button is for generating a donation address, this address is derived 
 
 ### Sweeping
 
-<img src="./Images/sweep_button.png" alt="sweep button" width="600"/><br/>
+<img src="./Images/sweep_button.png" alt="sweep button" width="300"/><br/>
 
 The sweep button will automatically sweep all your funds to the address provided. It is highly recommended to use a high fee setting when sweeping wallets as you will not be able to use RBF if fees spike while your transaction is uncomfirmed.
 
@@ -93,9 +97,9 @@ The sweep button will automatically sweep all your funds to the address provided
 
 <img src="./Images/top_buttons.png" alt="top buttons" width="300"/><br/>
 
-The + button is for batching transactions, You can add a recipient address, an amount then tap the + button to add multiple outputs. This is great if you need to send multiple transactions at once and want to save on fees. Once you have added all the outputs you want just tap the 🔗 button to create the transaction.
-
 <img src="./Images/batching.png" alt="batching" width="600"/><br/>
+
+The + button is for batching transactions, You can add a recipient address, an amount then tap the + button to add multiple outputs. This is great if you need to send multiple transactions at once and want to save on fees. Once you have added all the outputs you want just tap the 🔗 button to create the transaction.
 
 ### BIP21
 
@@ -111,20 +115,25 @@ You can select denominations of `btc` (Bitcoin), `sats` (satoshis) and `usd`. Se
 
 ### PSBT
 
+All psbt functionality is BIP174 compatible.
+
 Fully Noded is capable of creating either a fully signed raw transaction or a psbt depending on whether the wallet is watch-only, hot multisig which can not be fully signed by the app itself.
 
-If Fully Noded and your node do not hold the private keys necessary to fully sign the transaction you will get presented with a psbt and have the option to export it in a number of formats:<br/>
-<img src="./Images/psbt_export.png" alt="" width="600"/><br/>
+If Fully Noded and your node do not hold the private keys necessary to fully sign the transaction you will get presented with a psbt and have the option to export it in a number of formats:
+
+<br/><img src="./Images/psbt_export.png" alt="" width="600"/><br/>
 
 You may also airdrop a `.psbt` file to Fully Noded and it will attempt to sign the psbt and will either allow you to export the updated psbt again or if it is complete will finalize it and ocnvert it to a raw transaction which can be broadcast, automatically presenting you with that option.
 
 ### Raw Transaction
 
-If the transaction can be signed and is complete then Fully Noded will instead present you with a signed raw transaction in hex format:<br/>
 <img src="./Images/broadcast.png" alt="" width="600"/><br/>
 
-It is recommended to always use the "verify" button:<br/>
+If the transaction can be signed and is complete then Fully Noded will instead present you with a signed raw transaction in hex format:<br/>
+
 <img src="./Images/verify.png" alt="" width="600"/><br/>
+
+It is recommended to always use the "verify" button.
 
 The verify button inspects and parses each input and output individually, displaying the amount and address associated with each as well as manually calculating the mining fee and the usd amount for each. Usually there will always be a change output. You can confirm the change address is yours by copying it > "tools" tab > "wallet" > "get address info" > it will automatically paste in and fetch the address info, if the "solvable" field `solvable=1` then you can rest assured the address is yours.
 
@@ -134,19 +143,19 @@ At this point you can tap "broadcast" and you may either broadcast the transacti
 
 **You always need a balance to utilize RBF, RBF will not work when you sweep a wallet**
 
-By default all transactions created by Fully Noded are [RBF](https://en.bitcoin.it/wiki/Replace_by_fee) enabled. To take advantage of this tap the transaction from the "Active Wallet" tab and then tap "bump fee" button.
-
 <img src="./Images/bump_button.png" alt="bump button" width="600"/><br/>
 
-Under the hood an entirely new transaction is created with a higher fee, if Fully Noded can not completely sign the transaction it will present you with a psbt as normal, you will need to pass it to your signer and then back to Fully Noded to broadcast the higher fee transaction again and overwrite the original low fee transaction. 
+By default all transactions created by Fully Noded are [RBF](https://en.bitcoin.it/wiki/Replace_by_fee) enabled. To take advantage of this tap the transaction from the "Active Wallet" tab and then tap "bump fee" button.
 
-<img src="./Images/bump_broadcast.png" alt="bump broadcast" width="600"/><br/>
+Under the hood an entirely new transaction is created with a higher fee, if Fully Noded can not completely sign the transaction it will present you with a psbt as normal, you will need to pass it to your signer and then back to Fully Noded to broadcast the higher fee transaction again and overwrite the original low fee transaction.
+
+<br/><img src="./Images/bump_broadcast.png" alt="bump broadcast" width="600"/><br/>
 
 If FN can complete the transaction it will automatically sign and broadcast the transaction at this point.
 
-The final result will be multiple almost identical (only the fee will have changed) transactions on your "Active Wallet" tab as seen below:
+<br/><img src="./Images/bumped_tx.png" alt="bumped transaction" width="600"/><br/>
 
-<img src="./Images/bumped_tx.png" alt="bumped transaction" width="600"/><br/>
+The final result will be multiple almost identical (only the fee will have changed) transactions on your "Active Wallet" tab as seen below:
 
 
 ## Receiving
