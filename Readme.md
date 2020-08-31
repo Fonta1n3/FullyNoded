@@ -85,6 +85,7 @@ However, developing and supporting this project is hard work and costs real mone
 
 * [Coldcard Single Signature wallet](https://www.youtube.com/watch?v=W0vwgzIrPoY)
 * [Coldcard Multi Signature wallet](https://www.youtube.com/watch?v=daXvAcHy8H0)
+* [Create, spend from and recover a multisig wallet](https://www.youtube.com/watch?v=-Eh-OdtFRmI)
 
 ## Contributing
 
