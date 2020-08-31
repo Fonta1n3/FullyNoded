@@ -21,7 +21,6 @@ class LightningRPC {
         CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
             guard let nodes = nodes else {
                 completion((id, nil, "error getting nodes from core data"))
-                
                 return
             }
 
@@ -71,6 +70,7 @@ class LightningRPC {
             let loginString = String(format: "%@:%@", rpcusername, rpcpassword)
             let loginData = loginString.data(using: String.Encoding.utf8)!
             let base64LoginString = loginData.base64EncodedString()
+            
             if method == .rebalance {
                 request.timeoutInterval = 120
             } else if method == .recvmsg {
@@ -78,6 +78,7 @@ class LightningRPC {
             } else {
                 request.timeoutInterval = 60
             }
+            
             request.addValue("application/json", forHTTPHeaderField: "Accept")
             request.addValue("Basic \(base64LoginString)", forHTTPHeaderField: "Authorization")
             request.httpMethod = "POST"
@@ -90,44 +91,39 @@ class LightningRPC {
             #endif
             
             let task = torClient.session.dataTask(with: request as URLRequest) { (data, response, error) in
-                if error != nil {
+                guard error != nil else {
                     #if DEBUG
                     print("error: \(error!.localizedDescription)")
                     #endif
-                    completion((id, nil, error!.localizedDescription))
                     
-                } else {
-                    if let urlContent = data {
-                        do {
-                            let jsonAddressResult = try JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as! NSDictionary
-                            
-                            #if DEBUG
-                            print("json: \(jsonAddressResult)")
-                            #endif
-                            
-                            if let errorCheck = jsonAddressResult["error"] as? NSDictionary {
-                                var errorDesc = ""
-                                
-                                if let errorMessage = errorCheck["message"] as? String {
-                                    errorDesc = errorMessage
-                                    
-                                } else {
-                                    errorDesc = "Uknown error"
-                                    
-                                }
-                                
-                                completion((id, nil, errorDesc))
-                                
-                            } else {
-                                completion((id, jsonAddressResult["result"], nil))
-                                
-                            }
-                            
-                        } catch {
-                            completion((id, nil, "unknown error"))
-                            
-                        }
+                    completion((id, nil, error!.localizedDescription))
+                    return
+                }
+                
+                guard let urlContent = data else {
+                    print("Tor client session data is nil")
+                    return
+                }
+                
+                guard let jsonAddressResult = try? JSONSerialization.jsonObject(with: urlContent,
+                                                                                options: JSONSerialization.ReadingOptions.mutableLeaves) as? NSDictionary else {
+                    completion((id, nil, "Error serializing."))
+                    return
+                }
+                
+                #if DEBUG
+                print("json: \(jsonAddressResult)")
+                #endif
+                
+                if let error = jsonAddressResult["error"] as? NSDictionary { // Error path
+                    
+                    if let errorMessage = error["message"] as? String {
+                        completion((id, nil, errorMessage))
+                    } else {
+                        completion((id, nil, "Unknown error"))
                     }
+                } else { // Success path
+                    completion((id, jsonAddressResult["result"], nil))
                 }
             }
             task.resume()
