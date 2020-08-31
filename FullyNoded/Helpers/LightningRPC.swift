@@ -91,7 +91,7 @@ class LightningRPC {
             #endif
             
             let task = torClient.session.dataTask(with: request as URLRequest) { (data, response, error) in
-                guard error != nil else {
+                guard error == nil else {
                     #if DEBUG
                     print("error: \(error!.localizedDescription)")
                     #endif
