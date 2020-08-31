@@ -1,14 +1,6 @@
 # Connect Node
 
-## Supported Nodes
-- Bitcoin Core (0.20.1 is recommended)
-- Nodl
-- myNode
-- BTCPayServer
-- Raspiblitz
-- Embassy
-
-## Connect your own node
+## [Bitcoin Core](https://bitcoincore.org/en/releases/)
 
 - Create a Tor hidden service that controls your nodes `rpcport`, for details on how to do that see this [guide](../Tor/Tor.md)
 - Go to `settings` > `node manager` > `+` > `manually`
@@ -16,7 +8,7 @@
 - Input the hidden services hostname with the port at the end (njcnewicnweiun.onion:8332)
 - Tap `save`, you will be alerted it if was saved successfully, it will automatically start connecting to it.
 
-## Connect BTCPayServer
+## [BTCPayServer](https://btcpayserver.org)
 
 - In BTCPay go to `Server Settings` > `Services` > click on `Full Node RPC`
 <img src="./Images/btcpay.png" alt="" width="500"/>
@@ -24,7 +16,7 @@
 - In Fully Noded go to `Settings` > `Node Manager` > `+` > `Scan Quick Connect QR`
 - Once you have scanned the QR the app will automatically connect and start loading the home screen, to ensure its working go home and see the table load. To troubleshoot any connection issue reboot your BTCPayServer and force quit and reopen Fully Noded.
 
-## Connect Nodl
+## [Nodl](https://www.nodl.it)
 
 - In Nodl go to the Tor tile settings pane which will dsiplay:
 <img src="./Images/nodl_1.JPG" alt="" width="250"/>
@@ -41,19 +33,19 @@
 
 You can always do this manually by inputting your `rpcuser` and `rpcpassword` along with the Tor hidden service url in Fully Noded. Just add `:8332` to the end of the onion url.
 
-## Connect Raspiblitz
+## [Raspiblitz](https://shop.fulmo.org/raspiblitz/)
 
 In Raspiblitz:
 - Ensure Tor is running
 - SSH-MAINMENU > FULLY_NODED
 - follow the simple instructions
 
-## Connect Embassy
+## [Embassy](https://start9labs.com)
 
 - In Fully Noded go to `Settings` > `Node Manager` > `+` > `manually`
 - Simply add the Tor onion url with `:8332` appended to it and your rpc username/password
 
-## Connect myNode
+## [myNode](http://www.mynodebtc.com)
 
 - In myNode:
 <img src="./Images/myNode_1.png" alt="" width="250"/>

@@ -1,12 +1,12 @@
-# Connecting over Tor
+# Setting up Tor
 
 **The below guides walk you through how to install Tor and setup your own hidden service which is what Fully Noded needs to connect to**
 
- - [macOS](#Connecting-over-Tor-macOS)
- - [Windows 10](#Connecting-over-Tor-Windows-10)
- - [Linux](#Connecting-over-Tor-Linux-all-platforms)
+ - [macOS](#macOS)
+ - [Windows 10](#Windows-10)
+ - [Linux](#Linux)
   
-  ## Connecting over Tor macOS
+## macOS
 
 Run `brew --version` in a terminal, if you get a valid response you have brew installed already. If not, install brew:
 
@@ -76,7 +76,7 @@ Find the suggested Authentication settings on the device running FN [here](./Aut
 Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings).<br/>
 Find the suggested `lightning.conf` settings for FN [here](./Lightning.md/#Create-lightning-config).
 
-## Connecting over Tor Windows 10
+## Windows 10
 
 If you already have the Tor Expert Bundle installed you can skip the first 3 steps.
 
@@ -147,7 +147,7 @@ Find the suggested Authentication settings on the device running FN [here](./Aut
 Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings).<br/>
 Find the suggested `lightning.conf` settings for FN [here](./Lightning.md/#Create-lightning-config).
 
-## Connecting over Tor Linux all platforms
+## Linux
 
 Install tor on linux, follow this guide [here](https://2019.www.torproject.org/docs/debian.html.en). 
 1. The guide uses your input to adapt the commands you have to give in. It uses the instructions from the tor project website. They cover all platforms.
