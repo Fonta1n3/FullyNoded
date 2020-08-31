@@ -1,10 +1,12 @@
-# Connecting over Tor 
+# Connecting over Tor
+
+**The below guides walk you through how to install Tor and setup your own hidden service which is what Fully Noded needs to connect to**
 
  - [macOS](#Connecting-over-Tor-macOS)
  - [Windows 10](#Connecting-over-Tor-Windows-10)
- - [Linux all platforms](#Connecting-over-Tor-Linux-all-platforms)
+ - [Linux](#Connecting-over-Tor-Linux-all-platforms)
   
-# Connecting over Tor macOS
+  ## Connecting over Tor macOS
 
 Run `brew --version` in a terminal, if you get a valid response you have brew installed already. If not, install brew:
 
@@ -74,7 +76,7 @@ Find the suggested Authentication settings on the device running FN [here](./Aut
 Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings).<br/>
 Find the suggested `lightning.conf` settings for FN [here](./Lightning.md/#Create-lightning-config).
 
-# Connecting over Tor Windows 10
+## Connecting over Tor Windows 10
 
 If you already have the Tor Expert Bundle installed you can skip the first 3 steps.
 
@@ -145,7 +147,7 @@ Find the suggested Authentication settings on the device running FN [here](./Aut
 Find the suggested `bitcoin.conf` settings for FN [here](./Howto.md/#Bitcoin-Core-settings).<br/>
 Find the suggested `lightning.conf` settings for FN [here](./Lightning.md/#Create-lightning-config).
 
-# Connecting over Tor Linux all platforms
+## Connecting over Tor Linux all platforms
 
 Install tor on linux, follow this guide [here](https://2019.www.torproject.org/docs/debian.html.en). 
 1. The guide uses your input to adapt the commands you have to give in. It uses the instructions from the tor project website. They cover all platforms.
@@ -285,6 +287,3 @@ aug 27 22:58:36 linux-laptwwop tor[1073]: Aug 27 22:58:36.725 [notice] Opening C
 aug 27 22:58:36 linux-laptwwop tor[1073]: Aug 27 22:58:36.725 [notice] Opened Control listener on 127.0.0.1:9051
 aug 27 22:58:37 linux-laptwwop systemd[1]: Started Anonymizing overlay network for TCP.
 ```
-### More troubleshooting
-
-A categorized page for troubleshooting is available [here](./Troubleshooting.md) or directly to [troubleshooting Tor](./Troubleshooting.md#Tor)

@@ -10,11 +10,11 @@
 
 ## Connect your own node
 
-- Create a hidden service that controls your nodes rpcport (there is a mac guide below on how to do that).
+- Create a Tor hidden service that controls your nodes `rpcport`, for details on how to do that see this [guide](../Tor/Tor.md)
 - Go to `settings` > `node manager` > `+` > `manually`
 - Find your bitcoin.conf and input your rpcuser and rpcpassword and a label into the app. See "bitcoin.conf settings" below. **No special characters allowed! Only alphanumeric**
 - Input the hidden services hostname with the port at the end (njcnewicnweiun.onion:8332)
-- Tap `save`, you will be alerted it if was saved successfully, it will automatically start connecting to it. Optionally, if you have authentication setup you will need to create V3 auth keys in the app by going to `settings` > `security center` > `Tor V3 Authentication` > `tap the refresh button to create keys out of band or add your own private key by pasting it in` > `tap the export button to export your public key`
+- Tap `save`, you will be alerted it if was saved successfully, it will automatically start connecting to it.
 
 ## Connect BTCPayServer
 
