@@ -37,9 +37,19 @@ If the transaction can be signed and is complete then Fully Noded will present y
 
 It is recommended to always use the "verify" button.
 
-The verify button inspects and parses each input and output individually, displaying the amount and address associated with each as well as manually calculating the mining fee and the usd amount for each. Usually there will be a change output. You can confirm the change address is yours by copying it > "tools" tab > "wallet" > "get address info" > it will automatically paste in and fetch the address info, if `solvable=1` then you can rest assured the address is yours, this is only something you need to do if you are paranoid.
+The verify button inspects and parses each input and output individually, displaying the amount and address associated with each as well as manually calculating the mining fee and the usd amount for each. This serves the purpose of allowing you to inspect the transaction and make sure nothing looks obviously out of whack.
 
-When ready you can tap "broadcast" and you may either broadcast the transaction with your own node, or by using Blockstream's Esplora API over Tor. Using someone else's node to broadcast your transaction is much more private than broadcasting it with your own node even though this may seem counterintuitive. Once the transaction has been successfully broadcast you will get a valid transaction ID and a success message and the transaction will appear in your transaction history.
+Usually there will be a change output. You can confirm the change address is yours by copying it > "tools" tab > "wallet" > "get address info". It will automatically paste the address and fetch the address info, if you `solvable=1` in the returned data then you can rest assured the address is yours, this is only something you need to do if you are paranoid.
+
+There is no reason that you need to immediately broadcast the transaction. You can copy and paste it and save it for broadcasting later, which gives you ample time to inspect it.
+
+<img src="./Images/broadcast_tool.png" alt="broadcast tool" width="600"/><br/>
+
+<img src="./Images/broadcast_tool1.png" alt="broadcast tool" width="600"/><br/>
+
+You may broadcast any signed raw transaction with Fully Noded not just ones your wallet creates. This can be accessed as shown above by "tools" > "transactions" > "broadcast".
+
+When ready you can tap "broadcast" (or the play button for the generic tool) and you may either broadcast the transaction with your own node, or by using Blockstream's Esplora API over Tor. Using someone else's node to broadcast your transaction is much more private than broadcasting it with your own node even though this may seem counterintuitive. Once the transaction has been successfully broadcast you will get a valid transaction ID and a success message and the transaction will appear in your transaction history.
 
 ## Transaction fee
 
