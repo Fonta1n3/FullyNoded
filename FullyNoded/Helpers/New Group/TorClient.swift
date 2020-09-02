@@ -52,7 +52,12 @@ class TorClient {
         
         sessionConfiguration.connectionProxyDictionary = [kCFProxyTypeKey: kCFProxyTypeSOCKS, kCFStreamPropertySOCKSProxyHost: "localhost", kCFStreamPropertySOCKSProxyPort: 19050]
         session = URLSession(configuration: sessionConfiguration)
-        session.configuration.urlCache = URLCache(memoryCapacity: 0, diskCapacity: 0, diskPath: nil)
+        #if targetEnvironment(macCatalyst)
+            // Code specific to Mac.
+        #else
+            // Code to exclude from Mac.
+            session.configuration.urlCache = URLCache(memoryCapacity: 0, diskCapacity: 0, diskPath: nil)
+        #endif
         
         //add V3 auth keys to ClientOnionAuthDir if any exist
         let torDir = createTorDirectory()

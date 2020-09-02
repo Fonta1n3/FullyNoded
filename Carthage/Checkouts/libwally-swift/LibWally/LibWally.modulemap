@@ -1,8 +1,0 @@
-framework module LibWally {
-    umbrella header "LibWally.h"
-
-    export *
-    module * { export * }
-
-    link "CLibWally"
-}
