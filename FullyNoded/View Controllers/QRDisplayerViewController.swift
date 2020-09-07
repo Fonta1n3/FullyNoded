@@ -26,6 +26,13 @@ class QRDisplayerViewController: UIViewController {
         imageView.addGestureRecognizer(tapQRGesture)
     }
     
+    @IBAction func closeAction(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            self?.dismiss(animated: true, completion: nil)
+        }
+    }
+    
+    
     private func qR() -> UIImage {
         let qrGenerator = QRGenerator()
         qrGenerator.textInput = text

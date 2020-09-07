@@ -17,6 +17,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     var spinner = ConnectingView()
     var coinType = "0"
     var addresses = ""
+    var originalLabel = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -401,6 +402,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         labelField.addTarget(self, action: #selector(labelDidChange(_:)), for: .editingDidEnd)
         
         if wallet != nil {
+            originalLabel = wallet.label
             labelField.text = wallet.label
             fileNameLabel.text = "  " + wallet.name + ".dat"
             receiveDescTextView.text = wallet.receiveDescriptor
@@ -435,7 +437,12 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     @objc func labelDidChange(_ sender: UITextField) {
-        promptToEditLabel(newLabel: sender.text!)
+        if sender.text != "" {
+            if sender.text != originalLabel {
+                originalLabel = sender.text!
+                promptToEditLabel(newLabel: sender.text!)
+            }
+        }
     }
     
     private func promptToUpdateMaxIndex(max: Int) {

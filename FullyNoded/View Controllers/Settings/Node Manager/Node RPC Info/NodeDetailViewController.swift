@@ -253,39 +253,44 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     private func onionSane(onion: String?) -> Bool {
-        if onion != "" {
-            if onion!.contains(":") {
-                let arr = onion!.split(separator: ".")
-                if ("\(arr[0])".count == 16 || "\(arr[0])".count == 56) && "\(arr[0])".isAlphanumeric {
-                    if "\(arr[1])".contains(":") {
-                        let arr1 = "\(arr[1])".split(separator: ":")
-                        if arr1.count > 1 {
-                                if let _ = Int("\(arr1[1])") {
-                                    return true
-                                } else {
-                                    showAlert(vc: self, title: "Not a valid port", message: "")
-                                    return false
-                                }
-                        } else {
-                            showAlert(vc: self, title: "No port added", message: "Ensure you add a port to the end of the onion url, for example heuehehe8444.onion:8332")
-                            return false
-                        }
-                    } else {
-                       showAlert(vc: self, title: "No port added", message: "Ensure you add a port to the end of the onion url, for example heuehehe8444.onion:8332")
-                        return false
-                    }
-                } else {
-                    showAlert(vc: self, title: "Not a valid Tor V2/V3 hostname", message: "")
-                    return false
-                }
-            } else {
-               showAlert(vc: self, title: "Not a valid port", message: "")
-                return false
-            }
-        } else {
-            showAlert(vc: self, title: "Add an onion hostname", message: "")
-            return false
-        }
+        return true
+//        if onion != "" {
+//            if onion!.contains(":") {
+//                if onion!.contains("127.0.0.1") {
+//                    return true
+//                } else {
+//                    let arr = onion!.split(separator: ".")
+//                    if ("\(arr[0])".count == 16 || "\(arr[0])".count == 56) && "\(arr[0])".isAlphanumeric {
+//                        if "\(arr[1])".contains(":") {
+//                            let arr1 = "\(arr[1])".split(separator: ":")
+//                            if arr1.count > 1 {
+//                                    if let _ = Int("\(arr1[1])") {
+//                                        return true
+//                                    } else {
+//                                        showAlert(vc: self, title: "Not a valid port", message: "")
+//                                        return false
+//                                    }
+//                            } else {
+//                                showAlert(vc: self, title: "No port added", message: "Ensure you add a port to the end of the onion url, for example heuehehe8444.onion:8332")
+//                                return false
+//                            }
+//                        } else {
+//                           showAlert(vc: self, title: "No port added", message: "Ensure you add a port to the end of the onion url, for example heuehehe8444.onion:8332")
+//                            return false
+//                        }
+//                    } else {
+//                        showAlert(vc: self, title: "Not a valid Tor V2/V3 hostname", message: "")
+//                        return false
+//                    }
+//                }
+//            } else {
+//               showAlert(vc: self, title: "Not a valid port", message: "")
+//                return false
+//            }
+//        } else {
+//            showAlert(vc: self, title: "Add an onion hostname", message: "")
+//            return false
+//        }
     }
     
     func configureTapGesture() {

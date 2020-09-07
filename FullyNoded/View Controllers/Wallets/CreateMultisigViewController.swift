@@ -41,10 +41,10 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         xpubField.delegate = self
         derivationField.isUserInteractionEnabled = false
         spinner.addConnectingView(vc: self, description: "fetching chain type...")
-        fingerprintField.text = ccXfp
-        xpubField.text = ccXpub
         if ccXpub != "" && ccXfp != "" {
             closeOutlet.alpha = 1
+            textView.text += ccXfp + ":" + ccXpub + "\n\n"
+            showAlert(vc: self, title: "Coldcard xpub added ✅", message: "You can add more xpubs or tap the refresh button to get Fully Noded to create them for you. The seed words are *never* saved, make sure you write them down, they will be gone forever!")
         } else {
             closeOutlet.alpha = 0
         }
@@ -161,7 +161,10 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         var keys = ""
         for (i, signer) in parts.enumerated() {
             let fingerprint = signer["fingerprint"]
-            let xpub = signer["xpub"]
+            var xpub = signer["xpub"]
+            if !xpub!.hasPrefix("xpub") && !xpub!.hasPrefix("tpub") {
+                xpub = XpubConverter.convert(extendedKey: xpub!)
+            }
             if fingerprint != "" {
                 if xpub != "" {
                     keys += "[\(fingerprint!)/48'/\(cointType)'/0'/2']\(xpub!)/0/*"

@@ -10,9 +10,12 @@ import Foundation
 
 class CreatePSBT {
     
-    class func create(outputs: String, completion: @escaping ((psbt: String?, rawTx: String?, errorMessage: String?)) -> Void) {
+    class func create(inputs: String, outputs: String, completion: @escaping ((psbt: String?, rawTx: String?, errorMessage: String?)) -> Void) {
         let feeTarget = UserDefaults.standard.object(forKey: "feeTarget") as? Int ?? 432
-        var param = "[], ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget)}, true"
+        var param = "[], ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget)}, true"//add_inputs
+//        if inputs != "" {
+//            param = "\(inputs), ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget)}, true"
+//        }
         
         func create(params: String) {
             Reducer.makeCommand(command: .walletcreatefundedpsbt, param: params) { (response, errorMessage) in

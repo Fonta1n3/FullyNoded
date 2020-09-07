@@ -1,0 +1,13 @@
+module CLibWally {
+  header "wally_address.h"
+  header "wally_bip32.h"
+  header "wally_bip38.h"
+  header "wally_bip39.h"
+  header "wally_core.h"
+  header "wally_crypto.h"
+  header "wally_psbt.h"
+  header "wally_script.h"
+  header "wally_transaction.h"
+
+  export *
+}

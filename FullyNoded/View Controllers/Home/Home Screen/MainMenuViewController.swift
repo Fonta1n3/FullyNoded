@@ -770,7 +770,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 self.backView.backgroundColor = .black
                 let imageView = UIImageView()
                 imageView.frame = CGRect(x: self.view.center.x - 75, y: self.view.center.y - 75, width: 150, height: 150)
-                imageView.image = UIImage(named: "iTunesArtwork@2x.png")
+                imageView.image = UIImage(named: "logo_grey.png")
                 self.backView.addSubview(imageView)
                 self.view.addSubview(self.backView)
                 
@@ -844,7 +844,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     private func setFeeTarget() {
         if ud.object(forKey: "feeTarget") == nil {
-            ud.set(1008, forKey: "feeTarget")
+            ud.set(432, forKey: "feeTarget")
         }
     }
     

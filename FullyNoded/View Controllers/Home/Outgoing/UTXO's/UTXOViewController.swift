@@ -48,6 +48,11 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         self.blurView2.addGestureRecognizer(tapGesture)
+        NotificationCenter.default.addObserver(self, selector: #selector(reloadUtxos), name: .refreshUtxos, object: nil)
+        refresh()
+    }
+    
+    @objc func reloadUtxos() {
         refresh()
     }
     
@@ -328,21 +333,24 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         if self.utxoToSpendArray.count > 0 {
             
             updateInputs()
-            
+//            DispatchQueue.main.async { [weak self] in
+//                self?.performSegue(withIdentifier: "segueToSendFromUtxos", sender: self)
+//            }
+//
             if self.inputArray.count > 0 {
-                
+
                 DispatchQueue.main.async {
-                    
+
                     self.getAmount()
-                    
+
                 }
-                
+
             } else {
-                
+
                 displayAlert(viewController: self,
                              isError: true,
                              message: "Select a UTXO first")
-                
+
             }
             
         } else {
@@ -493,6 +501,13 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         
         return cell
         
+    }
+    
+    @objc func lockViaButton(_ sender: UIButton) {
+        let utxo = utxoArray[sender.tag] as! [String:Any]
+        let txid = utxo["txid"] as! String
+        let vout = utxo["vout"] as! Int
+        lockUTXO(txid: txid, vout: vout)
     }
     
     func lockUTXO(txid: String, vout: Int) {
@@ -897,8 +912,36 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         }
     }
     
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+                
+        let header = UIView()
+        header.backgroundColor = UIColor.clear
+        header.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 50)
+        
+        let lockButton = UIButton()
+        let lockImage = UIImage(systemName: "lock")!
+        lockButton.tag = section
+        lockButton.tintColor = .systemTeal
+        lockButton.setImage(lockImage, for: .normal)
+        lockButton.addTarget(self, action: #selector(lockViaButton(_:)), for: .touchUpInside)
+        lockButton.frame = CGRect(x: header.frame.maxX - 60, y: 0, width: 50, height: 50)
+        lockButton.center.y = header.center.y
+        header.addSubview(lockButton)
+        
+        return header
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 50
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         switch segue.identifier {
+            
+        case "segueToSendFromUtxos":
+            if let vc = segue.destination as? CreateRawTxViewController {
+                vc.inputArray = inputArray
+            }
             
         case "getUTXOinfo":
             if let vc = segue.destination as? GetInfoViewController {

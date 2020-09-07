@@ -18,32 +18,32 @@ class LockedViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         tableView.tableFooterView = UIView(frame: .zero)
-        
         DispatchQueue.main.async {
-            
-            self.creatingView.addConnectingView(vc: self,
-                                                description: "Getting Locked UTXOs")
-            
+            self.creatingView.addConnectingView(vc: self, description: "Getting Locked UTXOs")
         }
-        
     }
     
     override func viewDidAppear(_ animated: Bool) {
         executeNodeCommand(method: .listlockunspent, param: "")
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(name: .refreshUtxos, object: nil, userInfo: nil)
+        }
+    }
+    
     // MARK: - Table view data source
     
     func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
-        return 1
+        return lockedArray.count
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
-        return lockedArray.count
+        return 1
     }
     
     
@@ -54,7 +54,7 @@ class LockedViewController: UIViewController, UITableViewDelegate, UITableViewDa
         let voutLabel = cell.viewWithTag(2) as! UILabel
         let txidLabel = cell.viewWithTag(3) as! UILabel
         
-        let dict = lockedArray[indexPath.row]
+        let dict = lockedArray[indexPath.section]
         let txid = dict["txid"] as! String
         let vout = dict["vout"] as! Int
         
@@ -73,7 +73,7 @@ class LockedViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         
-        let utxo = lockedArray[indexPath.row]
+        let utxo = lockedArray[indexPath.section]
         let txid = utxo["txid"] as! String
         let vout = utxo["vout"] as! Int
         
@@ -90,7 +90,6 @@ class LockedViewController: UIViewController, UITableViewDelegate, UITableViewDa
         creatingView.addConnectingView(vc: self, description: "unlocking...")
         let param = "true, ''[{\"txid\":\"\(txid)\",\"vout\":\(vout)}]''"
         executeNodeCommand(method: .lockunspent, param: param)
-        
     }
     
     
@@ -145,6 +144,36 @@ class LockedViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 }
             }
         }
+    }
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+                
+        let header = UIView()
+        header.backgroundColor = UIColor.clear
+        header.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 50)
+        
+        let lockButton = UIButton()
+        let lockImage = UIImage(systemName: "lock.open")!
+        lockButton.tag = section
+        lockButton.tintColor = .systemTeal
+        lockButton.setImage(lockImage, for: .normal)
+        lockButton.addTarget(self, action: #selector(unlockViaButton(_:)), for: .touchUpInside)
+        lockButton.frame = CGRect(x: header.frame.maxX - 60, y: 0, width: 50, height: 50)
+        lockButton.center.y = header.center.y
+        header.addSubview(lockButton)
+        
+        return header
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 50
+    }
+    
+    @objc func unlockViaButton(_ sender: UIButton) {
+        let utxo = lockedArray[sender.tag]
+        let txid = utxo["txid"] as! String
+        let vout = utxo["vout"] as! Int
+        unlockUTXO(txid: txid, vout: vout)
     }
     
 }
