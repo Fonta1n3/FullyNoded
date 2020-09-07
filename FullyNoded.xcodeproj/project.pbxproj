@@ -19,6 +19,8 @@
 		D0126FF022443D1100412629 /* whitePlus.png in Resources */ = {isa = PBXBuildFile; fileRef = D0126FEF22443D1100412629 /* whitePlus.png */; };
 		D0126FF622446E3800412629 /* InvoiceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0126FF522446E3800412629 /* InvoiceViewController.swift */; };
 		D0126FF82244842000412629 /* bWhite.png in Resources */ = {isa = PBXBuildFile; fileRef = D0126FF72244842000412629 /* bWhite.png */; };
+		D01879B425065D96007883C1 /* Tor.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D01879B225065D90007883C1 /* Tor.xcframework */; };
+		D01879B525065D96007883C1 /* Tor.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D01879B225065D90007883C1 /* Tor.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D0196DD721B5AB300081E0AB /* KeyPadButtonView.xib in Resources */ = {isa = PBXBuildFile; fileRef = D0196DD621B5AB300081E0AB /* KeyPadButtonView.xib */; };
 		D0196DDB21B5AC5F0081E0AB /* KeyPad.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0196DDA21B5AC5F0081E0AB /* KeyPad.swift */; };
 		D020480F249605AB00EF52DB /* ActiveWalletsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D020480E249605AB00EF52DB /* ActiveWalletsViewController.swift */; };
@@ -76,8 +78,6 @@
 		D06FD7CE2506156A00481185 /* LibWally.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D06FD7CA2506155B00481185 /* LibWally.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D06FD7D025062F7A00481185 /* GetTx.swift in Sources */ = {isa = PBXBuildFile; fileRef = D06FD7CF25062F7A00481185 /* GetTx.swift */; };
 		D06FD7D2250640F800481185 /* logo_grey.png in Resources */ = {isa = PBXBuildFile; fileRef = D06FD7D1250640F800481185 /* logo_grey.png */; };
-		D06FD7D72506498300481185 /* Tor-2.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D06FD7D52506497B00481185 /* Tor-2.xcframework */; };
-		D06FD7D82506498300481185 /* Tor-2.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D06FD7D52506497B00481185 /* Tor-2.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D071A2A0214880F700C4BCB3 /* Search - tripkey.png in Resources */ = {isa = PBXBuildFile; fileRef = D071A29F214880F700C4BCB3 /* Search - tripkey.png */; };
 		D07399D9245EEA5F00860B7E /* Broadcaster.swift in Sources */ = {isa = PBXBuildFile; fileRef = D07399D8245EEA5F00860B7E /* Broadcaster.swift */; };
 		D073E16E22558CDE0012A28C /* CoreDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D073E16D22558CDE0012A28C /* CoreDataService.swift */; };
@@ -178,8 +178,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				D06FD7D82506498300481185 /* Tor-2.xcframework in Embed Frameworks */,
 				D06FD7CE2506156A00481185 /* LibWally.xcframework in Embed Frameworks */,
+				D01879B525065D96007883C1 /* Tor.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -206,6 +206,7 @@
 		D0126FEF22443D1100412629 /* whitePlus.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whitePlus.png; sourceTree = "<group>"; };
 		D0126FF522446E3800412629 /* InvoiceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceViewController.swift; sourceTree = "<group>"; };
 		D0126FF72244842000412629 /* bWhite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = bWhite.png; sourceTree = "<group>"; };
+		D01879B225065D90007883C1 /* Tor.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Tor.xcframework; sourceTree = "<group>"; };
 		D0196DD621B5AB300081E0AB /* KeyPadButtonView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = KeyPadButtonView.xib; sourceTree = "<group>"; };
 		D0196DDA21B5AC5F0081E0AB /* KeyPad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyPad.swift; sourceTree = "<group>"; };
 		D020480E249605AB00EF52DB /* ActiveWalletsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWalletsViewController.swift; sourceTree = "<group>"; };
@@ -264,7 +265,6 @@
 		D06FD7CA2506155B00481185 /* LibWally.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = LibWally.xcframework; sourceTree = "<group>"; };
 		D06FD7CF25062F7A00481185 /* GetTx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetTx.swift; sourceTree = "<group>"; };
 		D06FD7D1250640F800481185 /* logo_grey.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo_grey.png; sourceTree = "<group>"; };
-		D06FD7D52506497B00481185 /* Tor-2.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = "Tor-2.xcframework"; sourceTree = "<group>"; };
 		D071A29F214880F700C4BCB3 /* Search - tripkey.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Search - tripkey.png"; sourceTree = "<group>"; };
 		D07399D8245EEA5F00860B7E /* Broadcaster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Broadcaster.swift; sourceTree = "<group>"; };
 		D073E16D22558CDE0012A28C /* CoreDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataService.swift; sourceTree = "<group>"; };
@@ -355,7 +355,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D06FD7CB2506155C00481185 /* CLibWally.xcframework in Frameworks */,
-				D06FD7D72506498300481185 /* Tor-2.xcframework in Frameworks */,
+				D01879B425065D96007883C1 /* Tor.xcframework in Frameworks */,
 				D06FD7CD2506156A00481185 /* LibWally.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -849,7 +849,7 @@
 		D08C1FBB211147F600B7CA79 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				D06FD7D52506497B00481185 /* Tor-2.xcframework */,
+				D01879B225065D90007883C1 /* Tor.xcframework */,
 				D06FD7C92506155B00481185 /* CLibWally.xcframework */,
 				D06FD7CA2506155B00481185 /* LibWally.xcframework */,
 			);
@@ -1405,7 +1405,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 218;
+				CURRENT_PROJECT_VERSION = 220;
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1419,7 +1419,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.299;
+				MARKETING_VERSION = 1.301;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1442,7 +1442,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 218;
+				CURRENT_PROJECT_VERSION = 220;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
@@ -1458,7 +1458,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.299;
+				MARKETING_VERSION = 1.301;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
