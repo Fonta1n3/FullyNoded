@@ -894,6 +894,13 @@ It's done programmatically. If you don't want someone to open the app -> add a p
 
 If you are security conscious, you can also just delete the signer for that wallet. Then when you want to spend, add it again. It's easy to do.
 
+#### Question : Can I sweep an old paper wallet?
+<img src="./Images/paper-wallet-sweep.png" alt="paper-wallet-sweep-screen" border="0" width="200"><br/>
+
+Yes, but Fully Noded wallets are not capable of that. You will need to use the nodes default wallet `"advanced" > Core wallets > default`
+
+Sweep it and then spend it to your Coldcard Fully Noded Wallet (or whatever you want to do). You will need to rescan before balances show up as usual.
+
 ## Standup
 
 #### Question : where can I download this? 
@@ -964,4 +971,5 @@ You **can not do anything in FN without connecting to your node** first.
 No, your node will keep rescanning, the only way it will stop is if you tell it to stop or it naturally finishes
 
 #### Further Question : If I add an xpub I assume I need to rescan. Does rescanning take hours/days on a pi?
-It depends how far back you want to rescan, you can set any custom date to scan from. If it's 2gb ram and a full rescan it'll prob take ~two hours?
+It depends how far back you want to rescan, you can set any custom date to scan from. If it's 2gb ram and a full rescan it'll prob take ~two hours? <br/>
+N8r: about 4 hrs on pi3
