@@ -5,6 +5,7 @@ Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own 
 
 <img src="./Images/fn_logo.png" alt="" width="100"/><br/>
 [<img src="./Images/appstore.png" alt="download fully noded on the app store" width="100"/>](https://apps.apple.com/us/app/fully-noded/id1436425586)<br/>
+[<img src="./Images/macos_badge.png" alt="download fully noded for macos" width="100"/>](./FullyNoded.dmg)<br/>
 
 ## Cost
 
