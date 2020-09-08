@@ -319,6 +319,21 @@ No, signers are seperate, the QR is pubkey only. You have to add signer manually
 
 ## General
 
+#### Question : What’s the difference between Gordian Wallet (GW) and Fully Noded (FN)?
+
+1. GW is more focused on easy to use wallets, it will automatically create a 2/3 multisig wallet for you where your node is a signer as well as your device. Then you can keep one offline backup to restore either your nodes signer or devices signer
+2. FN never adds a private key to your node unless you manually import an wif or xprv
+3. GW does not give you access to every wallet on the node, FN does
+4. GW does not have all the pure node functionality, again its a focused wallet
+5. GW is account based it only signs with account xprv, FN keeps your master seed to sign with
+6. GW has iCloud sync and sign in with apple, FN does not
+7. FN has lightning, GW does not
+8. Also GW is not released on mainnet or on the app store
+
+##### Teamplayers Gordian Wallet and Fully Noded
+The general idea is `multisig` is by far the most secure way to use bitcoin, both GW and FN are excellent multsig wallets, it’s generally a good idea to use many wallets for your multisig setup, with that in mind the two together make an excellent team.
+
+
 #### Question : Why is there no version for Android yet?
 
 It is a budget issue. Android has bigger security issues. Tor is easier on Android.
