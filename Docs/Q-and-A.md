@@ -703,6 +703,7 @@ FN never creates a hot wallet on your node unless you explicitly go to `“advan
 You have reboot tor on mynode. Without having to reboot the whole node, use<br/>
 `systemctl restart tor`<br/>
 
+#### Question :  I am connected to my raspiblitz node and I get this Lighting Method unkown error.
 
 ## Wallets
 
@@ -895,7 +896,7 @@ It's done programmatically. If you don't want someone to open the app -> add a p
 If you are security conscious, you can also just delete the signer for that wallet. Then when you want to spend, add it again. It's easy to do.
 
 #### Question : Can I sweep an old paper wallet?
-<img src="./Images/paper-wallet-sweep.png" alt="paper-wallet-sweep-screen" border="0" width="200"><br/>
+<img src="./Images/paper-wallet-sweep.jpg" alt="paper-wallet-sweep-screen" border="0" width="200"><br/>
 
 Yes, but Fully Noded wallets are not capable of that. You will need to use the nodes default wallet `"advanced" > Core wallets > default`
 
