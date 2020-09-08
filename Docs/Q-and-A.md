@@ -485,6 +485,17 @@ I dont know, better to ask on `mynode` group for a definitive answer, not sure e
 
 Have a feeling its a paywalled feature on mynode. i think all mynode does it puts a paywall around the convenience of automatically showing the `QR`, but again I am not sure. If they block you from `ssh`'ing and creating your Hidden services, that would be lame.
 
+#### Question : Why does the `tor` service persist in the background even after I've shut down Gordian Server? Why doesn't Gordian Server shut down its service that it initiated?
+
+Because Gordian Server is just an installer. The Gordian Wallet app is totally separate from `tor` and `bitcoin core`. You can delete Gordian and redownlaod and it has zero effect on your node or tor. Gordian sets-up `tor` as a system service.
+
+You can always stop it with  `brew services stop tor` or you can click the stop button
+
+##### Further question: Most people would expect it to stop itself when pressing `cmd+q`? Most people think of apps in macOS as a self contained monolith. 
+*I was under the impression that on macOS once an app window is shut then it and any associated programs are turned off, like that's the default behaviour, unless there's a clear visual indicator that it's still running in the menu bar or the dock; unlike in windows where its minimized to the system tray.*
+
+##### Further answer:
+Tor is a service. And Gordian is not really a traditional app. Tor and bitcoind is not embedded with it. It's totally external, for that it would never get approved on mac app store. What's so hard with clicking `stop`?
 
 ## Connection
 
@@ -866,10 +877,12 @@ When you go to create a FN wallet or add a signer it *always* gets encrypted bef
 This is obvious in the code, which is open source and signed off by me. A checksum is available. See [the asnwer to this question]() 
 if you like to learn the nuances of these security proofs and what they are worth.
 
-##### Further question : But it shows the seed phrase without any authentication. Regardless of the Biometrics setting
+##### Further question : But it shows the seed phrase without any authentication. Regardless of the Biometrics setting. How can that be secure?
 
 ##### Further answer : 
-It's done programmatically
+It's done programmatically. If you don't want someone to open the app -> add a password or biometrics. It's setup so that if a hacker got your device, they would not be able to jail break it and get your seeds. You should definitely use the password to lock the app.
+
+If you are security conscious, you can also just delete the signer for that wallet. Then when you want to spend, add it again. It's easy to do.
 
 ## Standup
 
