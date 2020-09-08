@@ -703,7 +703,55 @@ FN never creates a hot wallet on your node unless you explicitly go to `“advan
 You have reboot tor on mynode. Without having to reboot the whole node, use<br/>
 `systemctl restart tor`<br/>
 
-#### Question :  I am connected to my raspiblitz node and I get this Lighting Method unkown error.
+#### Question :  I am connected to my raspiblitz node and I get this Lightning "Method not found" error.
+<img src="./Images/lightning-raspiblitz-error.jpg" alt="lightning-raspiblitz-error-screen" border="0" width="200"><br/>
+*I got that message just by clicking on the lightning icon here on the main screen. I can access my node but not the lightning* <br/>
+<img src="./Images/verification-progress.jpg" alt="verification-progress-screen" border="0" width="200"><br/>
+
+Javier: You need to follow this guide. https://github.com/Fonta1n3/FullyNoded/blob/master/Docs/Lightning.md
+@Fonta1n3: there is difference now. To add the lightning node tap the lighting button on home screen then the settings button, it should also automatically prompt you.
+
+#### Question : Do you use wireguard to connect to your nodes?
+*All it is is a vpn right? Just need to add an IP:port to connect? - Raised by Fonta1n3*
+
+Max: Need a VPN server obviously but yes, an IP and port with the WireGuard app together with a keypair.
+
+##### Further Question: Where does the keypair fit in?
+*Adding ability to connect to localhost, and it dawned on me it would be very trivial to allow people to connect using their VPNs*
+
+##### Further answer:
+Max: each device you have has a separate key pair for authentication. So basically your router has a bunch of public keys
+ and you can generate the private keys on each client, just like tor v3 auth.<br/>
+If you added the ability to connect to your local host and someone was connected to their WireGuard, it should just work as they would be local
+
+1. If we just add abilty to use a normal IP instead of only onion, that should work. 
+2. Also for OpenVPN users too
+3. And the traffic over VPN is always encrypted, from your client to your router
+
+Benefits: 
+- Could make it a whole lot more accessible
+- And less latency
+- And dont have to rely on Tor
+
+#### Question : What is a good local network connection set-up to your nodes?
+
+Max: I generally recommend people to have a config that allows them to set up DuckDNS<br/>
+So basically they will have a `Pi` or something similar running the `WireGuard` server. Their router will not be a fixed IP.
+
+So folk can register a domain for free like `fontaine.duckdns.org` and an an app will check the IP address the router has
+ and update the corresponding IP with `DuckDNS`.
+
+##### Further Question: Where does the keypair fit in?
+*Fonta1n3: So for the nodes side, say your `nodl` Do you expose it to something other then localhost? Other then the `vpn` obviously... T<br/>here is nothing stopping people from doing something really dumb
+Like exposing their node to the entire internet unencrypted*
+
+##### Further answer:
+Max: Only `Tor`<br/>
+The Home Assistant UI where I can administer my `BItwarden`, `DuckDNS`, `VPN` and `Adblocker` I can access over a userinterface. <br/>
+So ports are forwarded and I have a `letsencrypt` certificate for that.
+About doing something really dumb:<br/>
+You wouldn't actually be doing anything there right, though? People's nodes will be accessible on their local network anyway. 
+For example by `SSHing` into the network (just not using `FullyNoded`).
 
 ## Wallets
 
