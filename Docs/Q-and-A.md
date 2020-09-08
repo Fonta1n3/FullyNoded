@@ -36,7 +36,8 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 ## Definitions
 
 - FN : Fully Noded app
-- FN2 : Fully Noded 2 app, new name is Gordian Wallet, The original name FN2 was a misnaming because it is a different app than FN from its inception. [This comparison](./Docs/FN2_Comparison.md) tries to explain the differences between Fully Noded and Gordian Wallet. 
+- FN2 : see GW
+- GW : Gordian Wallet, formerly known as `Fully Noded 2` app, The original name FN2 was a misnaming because it is a different app than FN from its inception. [This comparison](http://github.com/henkvancann/FNcompGordian/FN2_Comparison.md) tries to explain the differences between Fully Noded and Gordian Wallet. 
 - satoshi: 0.000000001 BTC. A satoshi is the smallest unit of a bitcoin, equivalent to 100 millionth of a bitcoin.
 - UTXO's: Unspend transaction Outputs; UTXO stands for the unspent output from bitcoin transactions. Each bitcoin transaction begins with coins used to balance the ledger. UTXOs are processed continuously and are responsible for beginning and ending each transaction. Confirmation of transaction results in the removal of spent coins from the UTXO database. But a record of the spent coins still exists on the ledger. **for newbies**: UTXO is unspent bitcoin that you can "see" in your wallet and on the blockchain. It is an address and amount of sathosis. As soon as you spend the money, it won't add to your wallet balance anymore and therefore will only.
 - signed raw transaction : [Wikipage](https://en.bitcoin.it/wiki/Raw_Transactions) explains it all
@@ -71,6 +72,7 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 - bitcoind: Bitcoin Deamon, background process running a bitcoin node. Bitcoind is a program that implements the Bitcoin protocol for remote procedure call (RPC) use. It is also the second Bitcoin client in the network's history. It is available under the MIT license in 32-bit and 64-bit versions for Windows, GNU/Linux-based OSes, and Mac OS X. [Read more](https://en.bitcoin.it/wiki/Bitcoind)
 - SSH: Secure Shell (SSH) is a cryptographic network protocol for operating network services securely over an unsecured network.[1] Typical applications include remote command-line, login, and remote command execution, but any network service can be secured with SSH.
 - Nano : famous text GUI editor to start from commandline, not to be confused with Ledger Nano S/X, which is a cold storage.
+- gap limit : This means you ended with more than 20 consecutive unused addresses in your bitcoin wallet. This could have have happened due to various reasons. [What it is and how to get over it](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1)
 
 ## Knowledge you should be confidently applying
 - The definitions above
@@ -317,7 +319,32 @@ Loss of privacy. Not loss of funds. It holds pubkeys only. More info [here](http
 
 No, signers are seperate, the QR is pubkey only. You have to add signer manually as words, if you'd like to spend the funds involved.
 
+#### How can I import a 12 word mnemonic from Coldcard into FN wallet? 
+*FN defaults to a camera but the coldcard doesnt have QR codes on the screen (I'm using the BIP85 feature)*
+
+Create a recovery wallet instead.
+
+
 ## General
+
+#### Question : What’s the difference between Gordian Wallet (GW) and Fully Noded (FN)?
+
+1. GW is more focused on easy to use wallets, it will automatically create a 2/3 multisig wallet for you where your node is a signer as well as your device. Then you can keep one seed in offline backup to restore either your nodes signer or devices signer. So GW will give you your nodes seed words to back up and the purely offline seed words and of course you can access the devices words to back them up as well. 
+Much redundancy and flexibility
+2. FN never adds a private key to your node unless you manually import an wif or xprv
+3. GW does not give you access to every wallet on the node, FN does
+4. GW does not have all the pure node functionality, again its a focused wallet
+5. GW is account based it only signs with account xprv, FN keeps your master seed to sign with
+6. GW has iCloud sync and sign in with apple, FN does not
+7. FN has lightning, GW does not
+8. Also GW is not released on mainnet or on the app store
+
+##### Teamplayers Gordian Wallet and Fully Noded
+The general idea is `multisig` is by far the most secure way to use bitcoin, both GW and FN are excellent multsig wallets, it’s generally a good idea to use many wallets for your multisig setup, with that in mind the two together make an excellent team.
+
+##### Addition to point 1: example
+So for example if your node dies or you lose your device you are well covered to recover the 2/3. What I do is add one set of words to other apps on other devices (as this diagram points out), so no one device can fully sign and spend.
+<img src="./Images/FinalSolution.png" alt="Final FN multisig solution" border="0" width="600">
 
 #### Question : Why is there no version for Android yet?
 
@@ -651,6 +678,12 @@ HowTo: <br/>
 
 FN never creates a hot wallet on your node unless you explicitly go to `“advanced” > “bitcoin core wallets” > + > hot`. The Tor auth has nothing to do with wallet creation.
 
+#### With myNode, over `tor`, i'm always getting "network connection was lost" right after tor connected. What to do?
+
+You have reboot tor on mynode. Without having to reboot the whole node, use<br/>
+`systemctl restart tor`<br/>
+
+
 ## Wallets
 
 #### Question : How do I create a wallet in FN?
@@ -802,6 +835,17 @@ In the latest Bitcoin Core release psbt's may include both `non_witness_utxo` an
 To fix it you can revert to bitcoin core 0.20.0. 
 
 Aug 2020 : MOST PROBABLE THIS ISSUE WILL BE SOLVED SOON AND IF YOU WON'T EXPERIENCE THE ERROR ANYMORE
+
+#### Question : How to have a watch-only wallet to track BTCPayserver incoming funds?
+*...without running into `gap-limit` problem. What kind of wallet should I use, Bitcoin core or Fully Noded wallet?*
+
+Fully Noded, because you can always easily increase the gap limit with a Fully Noded wallet. And it also by default watches 1.5x more addresses.
+
+##### Further question : how do I know it's time to increase the `gap limit`?
+Youll get an alert from FN. You need to really use a ton of addresses before that happens. <br/>
+After you create the wallet → Tap the info button → Youll see your current index and the max index <br/>
+You can at anytime edit the max index.
+
 
 ## Standup
 
