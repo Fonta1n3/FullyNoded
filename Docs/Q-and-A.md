@@ -36,7 +36,8 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 ## Definitions
 
 - FN : Fully Noded app
-- FN2 : Fully Noded 2 app, new name is Gordian Wallet, The original name FN2 was a misnaming because it is a different app than FN from its inception. [This comparison](./Docs/FN2_Comparison.md) tries to explain the differences between Fully Noded and Gordian Wallet. 
+- FN2 : see GW
+- GW : Gordian Wallet, formerly known as `Fully Noded 2` app, The original name FN2 was a misnaming because it is a different app than FN from its inception. [This comparison](http://github.com/henkvancann/FNcompGordian/FN2_Comparison.md) tries to explain the differences between Fully Noded and Gordian Wallet. 
 - satoshi: 0.000000001 BTC. A satoshi is the smallest unit of a bitcoin, equivalent to 100 millionth of a bitcoin.
 - UTXO's: Unspend transaction Outputs; UTXO stands for the unspent output from bitcoin transactions. Each bitcoin transaction begins with coins used to balance the ledger. UTXOs are processed continuously and are responsible for beginning and ending each transaction. Confirmation of transaction results in the removal of spent coins from the UTXO database. But a record of the spent coins still exists on the ledger. **for newbies**: UTXO is unspent bitcoin that you can "see" in your wallet and on the blockchain. It is an address and amount of sathosis. As soon as you spend the money, it won't add to your wallet balance anymore and therefore will only.
 - signed raw transaction : [Wikipage](https://en.bitcoin.it/wiki/Raw_Transactions) explains it all
@@ -321,7 +322,8 @@ No, signers are seperate, the QR is pubkey only. You have to add signer manually
 
 #### Question : What’s the difference between Gordian Wallet (GW) and Fully Noded (FN)?
 
-1. GW is more focused on easy to use wallets, it will automatically create a 2/3 multisig wallet for you where your node is a signer as well as your device. Then you can keep one offline backup to restore either your nodes signer or devices signer
+1. GW is more focused on easy to use wallets, it will automatically create a 2/3 multisig wallet for you where your node is a signer as well as your device. Then you can keep one seed in offline backup to restore either your nodes signer or devices signer. So GW will give you your nodes seed words to back up and the purely offline seed words and of course you can access the devices words to back them up as well. 
+Much redundancy and flexibility
 2. FN never adds a private key to your node unless you manually import an wif or xprv
 3. GW does not give you access to every wallet on the node, FN does
 4. GW does not have all the pure node functionality, again its a focused wallet
@@ -333,6 +335,9 @@ No, signers are seperate, the QR is pubkey only. You have to add signer manually
 ##### Teamplayers Gordian Wallet and Fully Noded
 The general idea is `multisig` is by far the most secure way to use bitcoin, both GW and FN are excellent multsig wallets, it’s generally a good idea to use many wallets for your multisig setup, with that in mind the two together make an excellent team.
 
+##### Addition to point 1: example
+So for example if your node dies or you lose your device you are well covered to recover the 2/3. What I do is add one set of words to other apps on other devices (as this diagram points out), so no one device can fully sign and spend.
+<img src="./Images/FinalSolution.png" alt="Final FN multisig solution" border="0" width="600">
 
 #### Question : Why is there no version for Android yet?
 
