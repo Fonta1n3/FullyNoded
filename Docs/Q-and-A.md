@@ -269,6 +269,16 @@ Build your unsigned transactions on your phone, and send them to airgapped lapto
 
 You can view node details in FN, there is an export button, it gives you a QR that you can scan or upload with Gordian Wallet.
 
+##### Can I import a multisig wallet from Electrum into Fully Noded?  
+*I want to use it as a watch only wallet*
+
+Follow these steps:
+1. You’ll want to tap “create multisig”.
+2. Then you can paste your xpubs from electrum, FullyNoded wants fingerprints too thats bc some HWW require them. If you don’t know it you can input a fake one as it is not actually required for anything other then Coldcard. `00000000` will do the trick
+3. I forgot to add ability to convert `Zpub` to `xpub` in the current version so you will need to use https://jlopp.github.io/xpub-converter/ to convert your Electrum Zpub into xpubs
+4. Just paste in the xpub and add fingerprint, tap +, then when all have been added tap “create now”
+5. The derivation is hardcoded to the most widely used default `m/48’/0’/0’/2’`, which from Electrum would be a `Zpub`.
+
 ## Export
 
 #### Question : Why doesn't broadcast work via my Node?
@@ -949,6 +959,9 @@ Would need to start simple and expand... sigh so much to do so little time. Wish
 
 You **can not do anything in FN without connecting to your node** first.
 
+#### Question : If you start rescan of blockchain does the app have to stay open the whole time for it to rescan?
 
+No, your node will keep rescanning, the only way it will stop is if you tell it to stop or it naturally finishes
 
-
+#### Further Question : If I add an xpub I assume I need to rescan. Does rescanning take hours/days on a pi?
+It depends how far back you want to rescan, you can set any custom date to scan from. If it's 2gb ram and a full rescan it'll prob take ~two hours?
