@@ -318,6 +318,12 @@ Loss of privacy. Not loss of funds. It holds pubkeys only. More info [here](http
 
 No, signers are seperate, the QR is pubkey only. You have to add signer manually as words, if you'd like to spend the funds involved.
 
+#### How can I import a 12 word mnemonic from Coldcard into FN wallet? 
+*FN defaults to a camera but the coldcard doesnt have QR codes on the screen (I'm using the BIP85 feature)*
+
+Create a recovery wallet instead.
+
+
 ## General
 
 #### Question : What’s the difference between Gordian Wallet (GW) and Fully Noded (FN)?
