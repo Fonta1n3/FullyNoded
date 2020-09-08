@@ -322,8 +322,7 @@ No, signers are seperate, the QR is pubkey only. You have to add signer manually
 #### How can I import a 12 word mnemonic from Coldcard into FN wallet? 
 *FN defaults to a camera but the coldcard doesnt have QR codes on the screen (I'm using the BIP85 feature)*
 
-Create a recovery wallet instead.
-
+Create a recovery wallet instead. More info in [troubleshooting](https://github.com/Fonta1n3/FullyNoded/blob/master/Docs/Troubleshooting.md) section.
 
 ## General
 
@@ -846,6 +845,31 @@ Youll get an alert from FN. You need to really use a ton of addresses before tha
 After you create the wallet → Tap the info button → Youll see your current index and the max index <br/>
 You can at anytime edit the max index.
 
+#### Question : Why would a new Fully Noded wallet be watch-only when it should have a private key at least.
+
+Because it keeps the signer on your device, not on your node. Pls read the docs from [here](https://github.com/Fonta1n3/FullyNoded)
+
+##### Further question: But I'm trying to encrypt the wallet on device. I just created wallet, go-to settings, security, encrypt - error...
+
+##### Further answer : 
+Your seed is already encrypted. The command you are using is the bitcoin-cli encryption. That error you're getting is for your node.<br/>
+```
+bitcoin-cli encryptwallet
+```
+
+If there is nothing to encrypt it won't encrypt. Your wallets private keys are by default encrypted in the device. No private key ever goes to your node.
+
+#### Question: Private keys are by default encrypted in the device. But there is no password in the app. How's the seed protected?
+
+The first thing the FN app does is create a private key it uses for encryption. It gets encrypted itself and stored on your devices secure enclave.
+When you go to create a FN wallet or add a signer it *always* gets encrypted before it gets saved.<br/>
+This is obvious in the code, which is open source and signed off by me. A checksum is available. See [the asnwer to this question]() 
+if you like to learn the nuances of these security proofs and what they are worth.
+
+##### Further question : But it shows the seed phrase without any authentication. Regardless of the Biometrics setting
+
+##### Further answer : 
+It's done programmatically
 
 ## Standup
 
