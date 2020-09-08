@@ -72,6 +72,7 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 - bitcoind: Bitcoin Deamon, background process running a bitcoin node. Bitcoind is a program that implements the Bitcoin protocol for remote procedure call (RPC) use. It is also the second Bitcoin client in the network's history. It is available under the MIT license in 32-bit and 64-bit versions for Windows, GNU/Linux-based OSes, and Mac OS X. [Read more](https://en.bitcoin.it/wiki/Bitcoind)
 - SSH: Secure Shell (SSH) is a cryptographic network protocol for operating network services securely over an unsecured network.[1] Typical applications include remote command-line, login, and remote command execution, but any network service can be secured with SSH.
 - Nano : famous text GUI editor to start from commandline, not to be confused with Ledger Nano S/X, which is a cold storage.
+- gap limit : This means you ended with more than 20 consecutive unused addresses in your bitcoin wallet. This could have have happened due to various reasons. [What it is and how to get over it](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1)
 
 ## Knowledge you should be confidently applying
 - The definitions above
@@ -677,6 +678,12 @@ HowTo: <br/>
 
 FN never creates a hot wallet on your node unless you explicitly go to `“advanced” > “bitcoin core wallets” > + > hot`. The Tor auth has nothing to do with wallet creation.
 
+#### With myNode, over `tor`, i'm always getting "network connection was lost" right after tor connected. What to do?
+
+You have reboot tor on mynode. Without having to reboot the whole node, use<br/>
+`systemctl restart tor`<br/>
+
+
 ## Wallets
 
 #### Question : How do I create a wallet in FN?
@@ -828,6 +835,17 @@ In the latest Bitcoin Core release psbt's may include both `non_witness_utxo` an
 To fix it you can revert to bitcoin core 0.20.0. 
 
 Aug 2020 : MOST PROBABLE THIS ISSUE WILL BE SOLVED SOON AND IF YOU WON'T EXPERIENCE THE ERROR ANYMORE
+
+#### Question : How to have a watch-only wallet to track BTCPayserver incoming funds?
+*...without running into `gap-limit` problem. What kind of wallet should I use, Bitcoin core or Fully Noded wallet?*
+
+Fully Noded, because you can always easily increase the gap limit with a Fully Noded wallet. And it also by default watches 1.5x more addresses.
+
+##### Further question : how do I know it's time to increase the `gap limit`?
+Youll get an alert from FN. You need to really use a ton of addresses before that happens. <br/>
+After you create the wallet → Tap the info button → Youll see your current index and the max index <br/>
+You can at anytime edit the max index.
+
 
 ## Standup
 
