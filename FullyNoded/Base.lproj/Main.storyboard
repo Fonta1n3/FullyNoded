@@ -3729,18 +3729,6 @@ The range represents the index of the derived addresses</string>
                                 <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <datePicker contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" datePickerMode="date" useCurrentDate="NO" translatesAutoresizingMaskIntoConstraints="NO" id="INN-r0-DiZ">
-                                <rect key="frame" x="0.0" y="240" width="375" height="216"/>
-                                <date key="date" timeIntervalSinceReferenceDate="589009561.46770203">
-                                    <!--2019-09-01 05:46:01 +0000-->
-                                </date>
-                                <date key="minimumDate" timeIntervalSinceReferenceDate="253123200">
-                                    <!--2009-01-08 16:00:00 +0000-->
-                                </date>
-                                <date key="maximumDate" timeIntervalSinceReferenceDate="1167562800">
-                                    <!--2037-12-31 11:00:00 +0000-->
-                                </date>
-                            </datePicker>
                             <button opaque="NO" tag="8" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rXN-gh-h77">
                                 <rect key="frame" x="0.0" y="614" width="375" height="53"/>
                                 <color key="backgroundColor" red="0.084890075029999998" green="0.3978849351" blue="0.86794960499999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -3767,10 +3755,21 @@ A full rescan will take around an hour to complete.</string>
                                 <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <datePicker contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" datePickerMode="date" useCurrentDate="NO" translatesAutoresizingMaskIntoConstraints="NO" id="INN-r0-DiZ">
+                                <rect key="frame" x="0.0" y="240" width="375" height="216"/>
+                                <date key="date" timeIntervalSinceReferenceDate="589009561.46770203">
+                                    <!--2019-09-01 05:46:01 +0000-->
+                                </date>
+                                <date key="minimumDate" timeIntervalSinceReferenceDate="253123200">
+                                    <!--2009-01-08 16:00:00 +0000-->
+                                </date>
+                                <date key="maximumDate" timeIntervalSinceReferenceDate="1167562800">
+                                    <!--2037-12-31 11:00:00 +0000-->
+                                </date>
+                            </datePicker>
                         </subviews>
                         <color key="backgroundColor" red="0.078040815890000004" green="0.090017892419999995" blue="0.10251823810000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="INN-r0-DiZ" firstAttribute="trailing" secondItem="JHp-gP-77k" secondAttribute="trailing" id="5OQ-Gk-qtZ"/>
                             <constraint firstItem="INN-r0-DiZ" firstAttribute="leading" secondItem="JHp-gP-77k" secondAttribute="leading" id="6vu-Uh-mDB"/>
                             <constraint firstItem="BYf-oB-nGS" firstAttribute="leading" secondItem="JHp-gP-77k" secondAttribute="leading" constant="16" id="7xu-Cu-af5"/>
                             <constraint firstItem="rXN-gh-h77" firstAttribute="trailing" secondItem="JHp-gP-77k" secondAttribute="trailing" id="9lW-AK-cPq"/>
@@ -3781,7 +3780,7 @@ A full rescan will take around an hour to complete.</string>
                             <constraint firstItem="JHp-gP-77k" firstAttribute="trailing" secondItem="cuA-jy-GEG" secondAttribute="trailing" constant="16" id="M8Y-eQ-Kf0"/>
                             <constraint firstItem="rXN-gh-h77" firstAttribute="leading" secondItem="JHp-gP-77k" secondAttribute="leading" id="Zfb-Qg-HcO"/>
                             <constraint firstItem="INN-r0-DiZ" firstAttribute="trailing" secondItem="JHp-gP-77k" secondAttribute="trailing" id="nYX-3G-XND"/>
-                            <constraint firstItem="INN-r0-DiZ" firstAttribute="leading" secondItem="JHp-gP-77k" secondAttribute="leading" id="uxl-mX-6Eo"/>
+                            <constraint firstItem="INN-r0-DiZ" firstAttribute="centerX" secondItem="j9f-VA-TBJ" secondAttribute="centerX" id="oXO-ip-xgG"/>
                             <constraint firstItem="rXN-gh-h77" firstAttribute="bottom" secondItem="JHp-gP-77k" secondAttribute="bottom" id="v72-GO-lZR"/>
                             <constraint firstItem="cuA-jy-GEG" firstAttribute="top" secondItem="JHp-gP-77k" secondAttribute="top" constant="20" id="yY0-fi-zKP"/>
                         </constraints>
@@ -7176,19 +7175,19 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="2uq-d6-8Xa"/>
         <segue reference="jzM-oI-Kmu"/>
         <segue reference="w2g-bl-j8v"/>
-        <segue reference="RbT-dI-IvI"/>
-        <segue reference="IVc-aG-8QZ"/>
-        <segue reference="cvp-U1-bU5"/>
+        <segue reference="XQE-Ek-uZu"/>
+        <segue reference="Ear-8U-mw8"/>
+        <segue reference="upA-ZA-3fA"/>
         <segue reference="AYh-di-V7O"/>
         <segue reference="kq8-dj-bJ2"/>
-        <segue reference="HNI-HG-9ZQ"/>
+        <segue reference="ywj-ud-JRK"/>
         <segue reference="oY9-Pq-H5b"/>
         <segue reference="1fQ-PG-chF"/>
         <segue reference="zi9-mK-A5a"/>
         <segue reference="8yc-oK-dlC"/>
         <segue reference="Jma-5H-zJx"/>
         <segue reference="Ikt-mc-dmE"/>
-        <segue reference="G1i-Bv-OSl"/>
+        <segue reference="6HW-Pq-bwM"/>
         <segue reference="qmy-fM-U4p"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
