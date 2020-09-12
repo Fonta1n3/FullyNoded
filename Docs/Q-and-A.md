@@ -753,6 +753,12 @@ About doing something really dumb:<br/>
 You wouldn't actually be doing anything there right, though? People's nodes will be accessible on their local network anyway. 
 For example by `SSHing` into the network (just not using `FullyNoded`).
 
+#### Question : Can I connect FN on iPhone to my own node via FN on Mac?
+
+Yes, no need for the user to worry about `Tor` at all. just use `macOS` FN which runs its own tor node embedded in the app, it hosts a hidden service itself. **This obviously only works if you have Bitcoin Core running on the same macbook.**
+
+Next macOS update (in Sept 2020) will have a new button on the node credentials view for showing a QR code for connecting your iOS device.
+
 ## Wallets
 
 #### Question : How do I create a wallet in FN?
