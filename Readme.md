@@ -94,6 +94,11 @@ However, developing and supporting this project is hard work and costs real mone
 * [Coldcard multi signature wallet](https://www.youtube.com/watch?v=daXvAcHy8H0)
 * [Create, spend from and recover a multisig wallet](https://www.youtube.com/watch?v=-Eh-OdtFRmI)
 
+## PGP
+
+* Peter Denton (new): 1C72 2776 3647 A221 6E02  E539 025E 9AD2 D3AC 0FCA
+* Peter Denton (old): 3B37 97FA 0AE8 4BE5 B440  6591 8564 01D7 121C 32FC
+
 ## Contributing
 
 Thank you for your interest in contributing to Fully Noded™️! To avoid potential legal headaches and to allow distribution on Apple's App Store please sign our CLA (Contributors License Agreement).
