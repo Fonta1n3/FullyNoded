@@ -760,6 +760,11 @@ Yes, no need for the user to worry about `Tor` at all. just use `macOS` FN which
 
 Next macOS update (in Sept 2020) will have a new button on the node credentials view for showing a QR code for connecting your iOS device.
 
+#### Question : How to run your own node and connect to it with Fully Noded macOS? 
+
+Just follow the easy steps in this [instruction video](https://www.youtube.com/watch?v=_7MZd0weDis) on youtube.
+
+
 ## Wallets
 
 #### Question : How do I create a wallet in FN?
