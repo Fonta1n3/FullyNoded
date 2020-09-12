@@ -73,6 +73,7 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 - SSH: Secure Shell (SSH) is a cryptographic network protocol for operating network services securely over an unsecured network.[1] Typical applications include remote command-line, login, and remote command execution, but any network service can be secured with SSH.
 - Nano : famous text GUI editor to start from commandline, not to be confused with Ledger Nano S/X, which is a cold storage.
 - gap limit : This means you ended with more than 20 consecutive unused addresses in your bitcoin wallet. This could have have happened due to various reasons. [What it is and how to get over it](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1)
+- Esplora : Name of Blockstream's Tor V3 api to broadcast, it falls back to the users node if the api is unavailable. More info [here](https://github.com/Blockstream/esplora)
 
 ## Knowledge you should be confidently applying
 - The definitions above
@@ -1028,3 +1029,9 @@ No, your node will keep rescanning, the only way it will stop is if you tell it 
 #### Further Question : If I add an xpub I assume I need to rescan. Does rescanning take hours/days on a pi?
 It depends how far back you want to rescan, you can set any custom date to scan from. If it's 2gb ram and a full rescan it'll prob take ~two hours? <br/>
 N8r: about 4 hrs on pi3
+
+#### Question : Can I use a pruned node with FN?
+
+Of course, I use with pruned only. There is a few areas where a pruned node lacks the functionality needed that FN requires, so it smartly checks for that and if the node is pruned it falls back on `Esplora` over Tor v3; essentially only for parsing every input in your transactions for the verifier, if one of the inputs does not belong to you we fall back on `esplora` to fetch the raw transaction associated with that `txid`
+
+just set `prune=550` in your `bitcoin.conf` when you go to get the `rpc` credentials. A pruned node only needs 500 megabytes.
