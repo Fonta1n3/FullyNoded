@@ -83,12 +83,22 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     }
     
     @IBAction func addButton(_ sender: Any) {
-        if fingerprintField.text != "" && xpubField.text != "" {
-            textView.text += fingerprintField.text! + ":" + xpubField.text! + "\n\n"
+        let xpub = xpubField.text ?? ""
+        let fingerprint = fingerprintField.text ?? ""
+        
+        if fingerprint != "" && xpub != "" {
+            textView.text += fingerprint + ":" + xpub + "\n\n"
             wordsTextView.text = ""
             fingerprintField.text = ""
             xpubField.text = ""
-            showAlert(vc: self, title: "Key added ✅", message: "Key added to your soon to be created multisig wallet. Keep adding keys until you are ready to create the wallet.")
+            let msg = "Key added to your soon to be created multisig wallet. Keep adding keys until you are ready to create the wallet."
+            showAlert(vc: self, title: "Key added ✅", message: msg)
+            
+        } else if fingerprint == "" && xpub != "" {
+            if let fp = Keys.fingerprint(masterKey: xpub) {
+                textView.text += fp + ":" + xpub + "\n\n"
+            }
+            
         } else {
             showAlert(vc: self, title: "Error", message: "You must add both a valid extended public key and fingerprint")
         }
@@ -114,7 +124,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                         }
                     }
                     vc.spinner.removeConnectingView()
-                    showAlert(vc: vc, title: "Multisig Creator", message: "You can create a multisig wallet with this tool, all that is required are xpubs and the master key fingerprints.\n\nThis tool is for experts who have a solid understanding of multisig and how it works, the derivation is hard coded to m/48'/0'/0'/2', your xpub must be derived from this path!\n\nIf you want Fully Noded to create the keys for you you may tap the refresh button.\n\nOr you may supply your own xpub/Zpub or bip39 words.\n\nThis wallet will strictly be created as watch-only, you may add signers at anytime to Fully Noded seperately from this process.")
+                    showAlert(vc: vc, title: "Multisig Creator", message: "You can create/recover multisig wallets with this tool, all that is required are xpubs.\n\nThis tool is for users who have an understanding of multisig and how it works, the derivation is hard coded to the default m/48'/0'/0'/2', your xpub's must be derived from this path!\n\nIf you want Fully Noded to create the xpub's for you you may tap the refresh button.\n\nAlternatively supply your own xpub/Zpub/tpub/Vpub or bip39 words.\n\nThis wallet will strictly be created as watch-only, any seed words generated or added will *NOT* be remembered and are *ONLY* used to derive xpub's, you may add the signers at anytime to Fully Noded seperately from this process via the signer view if you would like the app to sign your transactions.")
                 } else {
                     vc.spinner.removeConnectingView()
                     showAlert(vc: vc, title: "Error", message: "error fetching chain type: \(errorMessage ?? "")")

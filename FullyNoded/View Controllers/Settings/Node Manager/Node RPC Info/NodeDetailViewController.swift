@@ -16,6 +16,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     var newNode = [String:Any]()
     var isInitialLoad = Bool()
     var isLightning = Bool()
+    var isHost = Bool()
+    var hostname: String?
     
     @IBOutlet weak var scanQROutlet: UIBarButtonItem!
     @IBOutlet weak var header: UILabel!
@@ -56,12 +58,37 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         loadValues()
     }
     
+    @IBAction func showHostAction(_ sender: Any) {
+        #if targetEnvironment(macCatalyst)
+            // Code specific to Mac.
+            let hostAddress = onionAddressField.text ?? ""
+            let macName = UIDevice.current.name
+            if hostAddress.contains("127.0.0.1") || hostAddress.contains("localhost") || hostAddress.contains(macName) {
+                hostname = TorClient.sharedInstance.hostname()
+                if hostname != nil {
+                    hostname = hostname?.replacingOccurrences(of: "\n", with: "")
+                    isHost = true
+                    DispatchQueue.main.async { [unowned vc = self] in
+                        vc.performSegue(withIdentifier: "segueToExportNode", sender: vc)
+                    }
+                } else {
+                    showAlert(vc: self, title: "Ooops", message: "There was an error getting your hostname for remote connection... Please make sure you are connected to the internet and that Tor successfully bootstrapped.")
+                }
+            } else {
+                showAlert(vc: self, title: "Ooops", message: "This feature can only be used with nodes which are running on the same computer as Fully Noded - Desktop.\n\nTo take advantage of this feature just download Bitcoin Core and run it.\n\nThen add your local node to Fully Noded - Desktop using 127.0.0.1:8332 as the address.\n\nYou can then tap this button to get a QR code which will allow you to connect your node via your iPhone or iPad on the mobile app.")
+            }
+        #else
+            // Code to exclude from Mac.
+            showAlert(vc: self, title: "Ooops", message: "This is a macOS feature only, when you use Fully Noded - Desktop, it has the ability to display a QR code you can scan with your iPhone or iPad to connect to your node remotely.")
+        #endif
+    }
+    
+    
     @IBAction func scanQuickConnect(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             self?.performSegue(withIdentifier: "segueToScanNodeCreds", sender: self)
         }
     }
-    
     
     private func deleteLightningNodeNow() {
         if selectedNode != nil {
@@ -103,7 +130,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     @IBAction func deleteLightningNode(_ sender: Any) {
         promptToDeleteLightningNode()
     }
-    
     
     @IBAction func goManageLightning(_ sender: Any) {
         if isLightning {
@@ -160,12 +186,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
-            if onionSane(onion: onionAddressField.text) {
-                guard let encryptedOnionAddress = encryptedValue((onionAddressField.text)!.dataUsingUTF8StringEncoding)  else { return }
-                newNode["onionAddress"] = encryptedOnionAddress
-            } else {
-                return
-            }
+            guard let encryptedOnionAddress = encryptedValue((onionAddressField.text)!.dataUsingUTF8StringEncoding)  else { return }
+            newNode["onionAddress"] = encryptedOnionAddress
             
             if nodeLabel.text != "" && rpcPassword.text != "" && rpcUserField.text != "" && onionAddressField.text != "" {
                 CoreDataService.retrieveEntity(entityName: .newNodes) { [unowned vc = self] nodes in
@@ -238,59 +260,16 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 }
             }
             
-            if onionSane(onion: onionAddressField.text) {
-                let decryptedAddress = (onionAddressField.text)!.dataUsingUTF8StringEncoding
-                guard let encryptedOnionAddress = encryptedValue(decryptedAddress) else { return }
-                CoreDataService.update(id: id, keyToUpdate: "onionAddress", newValue: encryptedOnionAddress, entity: .newNodes) { [unowned vc = self] success in
-                    if success {
-                        vc.nodeAddedSuccess()
-                    } else {
-                        displayAlert(viewController: vc, isError: true, message: "Error updating node!")
-                    }
+            let decryptedAddress = (onionAddressField.text)!.dataUsingUTF8StringEncoding
+            guard let encryptedOnionAddress = encryptedValue(decryptedAddress) else { return }
+            CoreDataService.update(id: id, keyToUpdate: "onionAddress", newValue: encryptedOnionAddress, entity: .newNodes) { [unowned vc = self] success in
+                if success {
+                    vc.nodeAddedSuccess()
+                } else {
+                    displayAlert(viewController: vc, isError: true, message: "Error updating node!")
                 }
             }
         }
-    }
-    
-    private func onionSane(onion: String?) -> Bool {
-        return true
-//        if onion != "" {
-//            if onion!.contains(":") {
-//                if onion!.contains("127.0.0.1") {
-//                    return true
-//                } else {
-//                    let arr = onion!.split(separator: ".")
-//                    if ("\(arr[0])".count == 16 || "\(arr[0])".count == 56) && "\(arr[0])".isAlphanumeric {
-//                        if "\(arr[1])".contains(":") {
-//                            let arr1 = "\(arr[1])".split(separator: ":")
-//                            if arr1.count > 1 {
-//                                    if let _ = Int("\(arr1[1])") {
-//                                        return true
-//                                    } else {
-//                                        showAlert(vc: self, title: "Not a valid port", message: "")
-//                                        return false
-//                                    }
-//                            } else {
-//                                showAlert(vc: self, title: "No port added", message: "Ensure you add a port to the end of the onion url, for example heuehehe8444.onion:8332")
-//                                return false
-//                            }
-//                        } else {
-//                           showAlert(vc: self, title: "No port added", message: "Ensure you add a port to the end of the onion url, for example heuehehe8444.onion:8332")
-//                            return false
-//                        }
-//                    } else {
-//                        showAlert(vc: self, title: "Not a valid Tor V2/V3 hostname", message: "")
-//                        return false
-//                    }
-//                }
-//            } else {
-//               showAlert(vc: self, title: "Not a valid port", message: "")
-//                return false
-//            }
-//        } else {
-//            showAlert(vc: self, title: "Add an onion hostname", message: "")
-//            return false
-//        }
     }
     
     func configureTapGesture() {
@@ -547,7 +526,16 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 if isLightning {
                     prefix = "clightning-rpc"
                 }
-                vc.text = "\(prefix)://\(rpcUserField.text ?? ""):\(rpcPassword.text ?? "")@\(onionAddressField.text ?? "")/?label=\(nodeLabel.text?.replacingOccurrences(of: " ", with: "%20") ?? "")"
+                if isHost {
+                    vc.text = "\(prefix)://\(rpcUserField.text ?? ""):\(rpcPassword.text ?? "")@\(hostname!):11221/?label=\(nodeLabel.text?.replacingOccurrences(of: " ", with: "%20") ?? "")"
+                    vc.headerText = "Quick Connect - Remote Control"
+                    vc.descriptionText = "Fully Noded macOS hosts a secure hidden service for your node which can be used to remotely connect to it.\n\nSimply scan this QR with your iPhone or iPad using the Fully Noded iOS app and connect to your node remotely from anywhere in the world!"
+                    isHost = false
+                    
+                } else {
+                    vc.text = "\(prefix)://\(rpcUserField.text ?? ""):\(rpcPassword.text ?? "")@\(onionAddressField.text ?? "")/?label=\(nodeLabel.text?.replacingOccurrences(of: " ", with: "%20") ?? "")"
+                }
+                
             }
         }
         

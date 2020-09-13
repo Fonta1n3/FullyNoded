@@ -17,12 +17,15 @@ class ImportWallet {
         var primDescriptor = accountMap["descriptor"] as! String
         let blockheight = accountMap["blockheight"] as! Int
         let label = accountMap["label"] as! String
+        
         wallet["label"] = label
         wallet["id"] = UUID()
         wallet["blockheight"] = Int64(blockheight)
         wallet["maxIndex"] = 2500
         wallet["index"] = 0
+        
         let descStruct = descriptorParser.descriptor(primDescriptor)
+        
         if descStruct.isMulti {
             wallet["type"] = "Multi-Sig"
             keypool = false
@@ -30,6 +33,7 @@ class ImportWallet {
             wallet["type"] = "Single-Sig"
             keypool = true
         }
+        
         primDescriptor = primDescriptor.replacingOccurrences(of: "'", with: "h")
         let arr = primDescriptor.split(separator: "#")
         primDescriptor = "\(arr[0])"
@@ -103,7 +107,8 @@ class ImportWallet {
         }
         
         func createWallet(_ recDesc: String, _ changeDesc: String) {
-            let walletName = "FullyNoded-Import-\(randomString(length: 10))"
+            // Use the sha256 hash of the checksum-less primary receive keypool desc as the wallet name so it has a deterministic identifier
+            let walletName = "FullyNoded-\(Crypto.sha256hash(primDescriptor))"
             let param = "\"\(walletName)\", true, true, \"\", true"
             Reducer.makeCommand(command: .createwallet, param: param) { (response, errorMessage) in
                 if let dict = response as? NSDictionary {
@@ -292,7 +297,8 @@ class ImportWallet {
         }
         
         func createWallet() {
-            let walletName = "Coldcard-\(randomString(length: 10))"
+            // Use the sha256 hash of the checksum-less primary receive keypool desc as the wallet name so it has a deterministic identifier
+            let walletName = "Coldcard-\(Crypto.sha256hash(bip84DescPrim))"
             let param = "\"\(walletName)\", true, true, \"\", true"
             Reducer.makeCommand(command: .createwallet, param: param) { (response, errorMessage) in
                 if let dict = response as? NSDictionary {

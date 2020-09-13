@@ -99,7 +99,9 @@ class AppPasswordViewController: UIViewController, UITextFieldDelegate, UINaviga
             DispatchQueue.main.async { [unowned vc = self] in
                 vc.textField.text = ""
             }
-            displayAlert(viewController: self, isError: false, message: "password set, you may now go back")
+            //displayAlert(viewController: self, isError: false, message: "password set, you may now go back")
+            passwordSet()
+            
         } else {
             showAlert(vc: self, title: "Error", message: "We had an error saving your password.")
         }
@@ -122,6 +124,26 @@ class AppPasswordViewController: UIViewController, UITextFieldDelegate, UINaviga
             }
         } else {
             shakeAlert(viewToShake: textField)
+        }
+    }
+    
+    private func passwordSet() {
+        DispatchQueue.main.async { [weak self] in
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+                alertStyle = UIAlertController.Style.alert
+            }
+            
+            let alert = UIAlertController(title: "Password set 🔐", message: "", preferredStyle: alertStyle)
+            
+            alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
+                DispatchQueue.main.async { [weak self] in
+                    self?.navigationController?.popToRootViewController(animated: true)
+                }
+            }))
+            
+            alert.popoverPresentationController?.sourceView = self?.view
+            self?.present(alert, animated: true) {}
         }
     }
 

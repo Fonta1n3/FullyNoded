@@ -56,6 +56,7 @@
 		D03FC07C2508850600450B45 /* Tor-3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D03FC07A250883D900450B45 /* Tor-3.xcframework */; };
 		D03FC07D2508850600450B45 /* Tor-3.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D03FC07A250883D900450B45 /* Tor-3.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D0410617224ED189004AC0D0 /* ObjectiveCHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = D0410616224ED189004AC0D0 /* ObjectiveCHeader.m */; };
+		D042FABC250C9F0600E99D9B /* Torrc.swift in Sources */ = {isa = PBXBuildFile; fileRef = D042FABB250C9F0600E99D9B /* Torrc.swift */; };
 		D044ED78235AF42D00300D62 /* ImportStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D044ED77235AF42D00300D62 /* ImportStruct.swift */; };
 		D0452AD42246C7830013E225 /* clear.png in Resources */ = {isa = PBXBuildFile; fileRef = D0452AD32246C7820013E225 /* clear.png */; };
 		D0452AD62246E0370013E225 /* whiteBroom.png in Resources */ = {isa = PBXBuildFile; fileRef = D0452AD52246E0370013E225 /* whiteBroom.png */; };
@@ -242,6 +243,8 @@
 		D03FC07A250883D900450B45 /* Tor-3.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = "Tor-3.xcframework"; sourceTree = "<group>"; };
 		D0410615224ED188004AC0D0 /* FullyNoded-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FullyNoded-Bridging-Header.h"; sourceTree = "<group>"; };
 		D0410616224ED189004AC0D0 /* ObjectiveCHeader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ObjectiveCHeader.m; sourceTree = "<group>"; };
+		D042FABB250C9F0600E99D9B /* Torrc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Torrc.swift; sourceTree = "<group>"; };
+		D042FAC1250DA86D00E99D9B /* .torrc */ = {isa = PBXFileReference; lastKnownFileType = text; path = .torrc; sourceTree = "<group>"; };
 		D044ED77235AF42D00300D62 /* ImportStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportStruct.swift; sourceTree = "<group>"; };
 		D0452AD32246C7820013E225 /* clear.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = clear.png; sourceTree = "<group>"; };
 		D0452AD52246E0370013E225 /* whiteBroom.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteBroom.png; sourceTree = "<group>"; };
@@ -690,6 +693,7 @@
 			children = (
 				D0855FC522B08EE000DBBFC2 /* TorClient.swift */,
 				D0A2918E225114670099A2F3 /* MakeRPCCall.swift */,
+				D042FABB250C9F0600E99D9B /* Torrc.swift */,
 			);
 			path = Tor;
 			sourceTree = "<group>";
@@ -845,6 +849,7 @@
 		D08C1FBB211147F600B7CA79 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D042FAC1250DA86D00E99D9B /* .torrc */,
 				D03FC07A250883D900450B45 /* Tor-3.xcframework */,
 				D06FD7C92506155B00481185 /* CLibWally.xcframework */,
 				D06FD7CA2506155B00481185 /* LibWally.xcframework */,
@@ -1186,6 +1191,7 @@
 				D03F65F124EFB25100901D06 /* KeySendViewController.swift in Sources */,
 				D0E51E5B226592C9005D1909 /* NodeDetailViewController.swift in Sources */,
 				D0233F222361E68F0041FFBA /* KeyGen.swift in Sources */,
+				D042FABC250C9F0600E99D9B /* Torrc.swift in Sources */,
 				D0126FF622446E3800412629 /* InvoiceViewController.swift in Sources */,
 				D0410617224ED189004AC0D0 /* ObjectiveCHeader.m in Sources */,
 				D0B6936E22B2412D00A2C3E6 /* ChooseConnectionTypeViewController.swift in Sources */,

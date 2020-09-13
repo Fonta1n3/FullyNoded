@@ -114,14 +114,16 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     }
     
     private func createWallet(fingerprint: String, xpub: String, completion: @escaping ((Bool)) -> Void) {
-        let walletName = "FullyNoded-Single-Sig-\(randomString(length: 10))"
+        let primDesc = primaryDescriptor(fingerprint, xpub)
+        let walletName = "FullyNoded-\(Crypto.sha256hash(primDesc))"
         let param = "\"\(walletName)\", true, true, \"\", true"
+        
         Reducer.makeCommand(command: .createwallet, param: param) { [unowned vc = self] (response, errorMessage) in
             if let dict = response as? NSDictionary {
                 if let name = dict["name"] as? String {
                     UserDefaults.standard.set(name, forKey: "walletName")
                     vc.name = name
-                    vc.importPrimaryKeys(desc: vc.primaryDescriptor(fingerprint, xpub)) { (success, errorMessage) in
+                    vc.importPrimaryKeys(desc: primDesc) { (success, errorMessage) in
                         if success {
                             vc.importChangeKeys(desc: vc.changeDescriptor(fingerprint, xpub)) { (changeImported, errorDesc) in
                                 if changeImported {

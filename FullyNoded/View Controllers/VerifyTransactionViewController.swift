@@ -249,42 +249,54 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     func parsePrevTxOutput(outputs: NSArray, vout: Int) {
-        for o in outputs {
-            let output = o as! NSDictionary
-            let n = output["n"] as! Int
-            
-            if n == vout {
-                //this is our inputs output, we can now get the amount and address for the input (PITA)
-                let scriptpubkey = output["scriptPubKey"] as! NSDictionary
-                let addresses = scriptpubkey["addresses"] as! NSArray
-                let amount = output["value"] as! Double
-                var addressString = ""
+        if outputs.count > 0 {
+            for o in outputs {
+                let output = o as! NSDictionary
+                let n = output["n"] as! Int
                 
-                if addresses.count > 1 {
-                    for a in addresses {
-                        addressString += a as! String + " "
+                if n == vout {
+                    //this is our inputs output, we can now get the amount and address for the input (PITA)
+                    let scriptpubkey = output["scriptPubKey"] as! NSDictionary
+                    let addresses = scriptpubkey["addresses"] as! NSArray
+                    let amount = output["value"] as! Double
+                    var addressString = ""
+                    
+                    if addresses.count > 1 {
+                        for a in addresses {
+                            addressString += a as! String + " "
+                        }
+                        
+                    } else {
+                        addressString = addresses[0] as! String
                     }
                     
-                } else {
-                    addressString = addresses[0] as! String
+                    inputTotal += amount
+                    var amountString = amount.avoidNotation
+                    if fxRate != nil {
+                        amountString += " btc / \(fiatAmount(btc: amount))"
+                    }
+                    
+                    let inputDict:[String:Any] = [
+                        "index": index + 1,
+                        "amount": amountString,
+                        "address": addressString,
+                        "isOurs": false,// Hardcode at this stage and update before displaying
+                        "isDust": amount < 0.00020000
+                    ]
+                    
+                    inputTableArray.append(inputDict)
                 }
-                
-                inputTotal += amount
-                var amountString = amount.avoidNotation
-                if fxRate != nil {
-                    amountString += " btc / \(fiatAmount(btc: amount))"
-                }
-                
-                let inputDict:[String:Any] = [
-                    "index": index + 1,
-                    "amount": amountString,
-                    "address": addressString,
-                    "isOurs": false,// Hardcode at this stage and update before displaying
-                    "isDust": amount < 0.00020000
-                ]
-                
-                inputTableArray.append(inputDict)
             }
+        } else {
+            let inputDict:[String:Any] = [
+                "index": index + 1,
+                "amount": "unknown",
+                "address": "unknown",
+                "isOurs": false,// Hardcode at this stage and update before displaying
+                "isDust": true
+            ]
+            
+            inputTableArray.append(inputDict)
         }
         
         if index + 1 < inputArray.count {
@@ -501,15 +513,15 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     self?.parsePrevTx(method: .decoderawtransaction, param: "\"\(hex)\"", vout: vout, txid: txid)
                 } else {
                     if errorMessage != nil {
-                        // Node is pruned and the tx does not belong to use, fall back on esplora
+                        // Node is pruned and the tx does not belong to us, fall back on esplora
                         if errorMessage!.contains("Invalid or non-wallet transaction id") {
                             let fetcher = GetTx.sharedInstance
                             fetcher.fetch(txid: txid) { [weak self] rawHex in
                                 if rawHex != nil {
                                     self?.parsePrevTx(method: .decoderawtransaction, param: "\"\(rawHex!)\"", vout: vout, txid: txid)
-                                }  else {
-                                    self?.spinner.removeConnectingView()
-                                    displayAlert(viewController: self, isError: true, message: "Error parsing inputs: \(errorMessage ?? "unknown")")
+                                } else {
+                                    // Esplora must be down, pass an empty array instead
+                                    self?.parsePrevTxOutput(outputs: [], vout: 0)
                                 }
                             }
                         } else {

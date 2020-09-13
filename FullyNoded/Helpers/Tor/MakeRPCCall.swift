@@ -81,10 +81,10 @@ class MakeRPCCall {
                 var request = URLRequest(url: url)
                 var timeout = 10.0
                 if method == .gettxoutsetinfo {
-                    timeout = 500.0
+                    timeout = 1000.0
                 }
                 if method == .importmulti || method == .deriveaddresses {
-                    timeout = 30.0
+                    timeout = 60.0
                 }
                 request.timeoutInterval = timeout
                 request.httpMethod = "POST"

@@ -26,6 +26,7 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
     var autoCompleteCharacterCount = 0
     var timer = Timer()
     var blockheight:Int64!
+    
     @IBOutlet weak var textField: UITextField!
     @IBOutlet weak var wordView: UIView!
     @IBOutlet weak var recoverOutlet: UIButton!
@@ -47,11 +48,14 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
         bip39Words = Words.valid
         updatePlaceHolder(wordNumber: 1)
         accountField.text = "0"
+        
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
+        
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+        
         setCoinType()
     }
     
@@ -162,12 +166,14 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
     
     private func recoverNow() {
         spinner.addConnectingView(vc: self, description: "creating your recovery wallet...")
+        
         accountNumber = accountField.text ?? "0"
         let passphrase = passphraseField.text ?? ""
         let seed = justWords.joined(separator: " ")
-        createWallet { [unowned vc = self] success in
-            if success {
-                if let mk = Keys.masterKey(words: seed, coinType: vc.coinType, passphrase: passphrase) {
+        
+        if let mk = Keys.masterKey(words: seed, coinType: coinType, passphrase: passphrase) {
+            createWallet(mk: mk) { [unowned vc = self] success in
+                if success {
                     if vc.recoverSamourai {
                         vc.updateSpinnerText(text: "getting Samourai Bad Bank primary descriptor...")
                         vc.getDescriptorInfo(desc: vc.samouraiBadBankPrim(mk)) { [unowned vc = self] sam2DescPrim in
@@ -247,6 +253,8 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
                     }
                 }
             }
+        } else {
+            
         }
     }
     
@@ -551,8 +559,8 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
         return desc
     }
     
-    private func createWallet(completion: @escaping ((Bool)) -> Void) {
-        let walletName = "FullyNoded-Recovery-\(randomString(length: 10))"
+    private func createWallet(mk: String, completion: @escaping ((Bool)) -> Void) {
+        let walletName = "Recovery-\(Crypto.sha256hash(bip84PrimDesc(mk)))"
         let param = "\"\(walletName)\", true, true, \"\", true"
         Reducer.makeCommand(command: .createwallet, param: param) { [unowned vc = self] (response, errorMessage) in
             if let dict = response as? NSDictionary {

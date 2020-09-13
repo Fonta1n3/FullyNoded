@@ -780,12 +780,20 @@
                         <color key="badgeColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     </tabBarItem>
                     <navigationItem key="navigationItem" id="83A-pa-ZRF">
-                        <barButtonItem key="leftBarButtonItem" image="bolt.circle" catalog="system" id="jkl-cI-grP">
-                            <color key="tintColor" systemColor="systemYellowColor" red="1" green="0.80000000000000004" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                            <connections>
-                                <action selector="showLightningNode:" destination="XmP-lK-cua" id="l9O-f8-HvD"/>
-                            </connections>
-                        </barButtonItem>
+                        <leftBarButtonItems>
+                            <barButtonItem image="bolt.circle" catalog="system" id="jkl-cI-grP">
+                                <color key="tintColor" systemColor="systemYellowColor" red="1" green="0.80000000000000004" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <connections>
+                                    <action selector="showLightningNode:" destination="XmP-lK-cua" id="l9O-f8-HvD"/>
+                                </connections>
+                            </barButtonItem>
+                            <barButtonItem image="antenna.radiowaves.left.and.right" catalog="system" id="VyU-pF-TCi">
+                                <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <connections>
+                                    <action selector="showRemoteControl:" destination="XmP-lK-cua" id="1fj-vG-Ade"/>
+                                </connections>
+                            </barButtonItem>
+                        </leftBarButtonItems>
                     </navigationItem>
                     <connections>
                         <outlet property="headerLabel" destination="PnO-jn-Gk8" id="J3T-P9-QBG"/>
@@ -794,6 +802,7 @@
                         <segue destination="bdZ-xF-GZ9" kind="show" identifier="addNodeNow" id="jzM-oI-Kmu"/>
                         <segue destination="6nj-bF-aCc" kind="show" identifier="showDetailSegue" id="d35-nk-fhY"/>
                         <segue destination="u3j-cd-FEG" kind="show" identifier="segueToLightningNode" id="DF5-fx-Xqy"/>
+                        <segue destination="GlR-4A-eAx" kind="show" identifier="segueToRemoteControl" id="aV5-mq-s3Q"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dhK-90-srt" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -1816,14 +1825,14 @@
             <objects>
                 <viewController storyboardIdentifier="QRDisplayer" useStoryboardIdentifierAsRestorationIdentifier="YES" id="GlR-4A-eAx" customClass="QRDisplayerViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="1Ax-bN-O8E">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="574"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="Kj5-uB-hmc">
-                                <rect key="frame" x="16" y="422" width="343" height="205"/>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Kj5-uB-hmc">
+                                <rect key="frame" x="16" y="422" width="343" height="132"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <color key="textColor" systemColor="labelColor" cocoaTouchSystemColor="darkTextColor"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="kT3-vW-HgJ">
@@ -1833,30 +1842,32 @@
                                     <constraint firstAttribute="height" constant="343" id="lbF-go-rBu"/>
                                 </constraints>
                             </imageView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vDz-Hr-be0">
-                                <rect key="frame" x="313" y="20" width="46" height="30"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="30" id="tDr-4Y-eiE"/>
-                                    <constraint firstAttribute="width" constant="46" id="wlv-NJ-naI"/>
-                                </constraints>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="antenna.radiowaves.left.and.right" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="dfM-Fg-VDq">
+                                <rect key="frame" x="16" y="15.5" width="44" height="42"/>
                                 <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <state key="normal" image="xmark.rectangle" catalog="system">
-                                    <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="large"/>
-                                </state>
-                                <connections>
-                                    <action selector="closeAction:" destination="GlR-4A-eAx" eventType="touchUpInside" id="8Eq-Lx-2Kq"/>
-                                </connections>
-                            </button>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="44" id="ip8-ZB-8iJ"/>
+                                    <constraint firstAttribute="width" constant="44" id="uXh-ui-Pwh"/>
+                                </constraints>
+                            </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Header" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cLD-vU-YX6">
+                                <rect key="frame" x="68" y="21" width="90" height="32.5"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="27"/>
+                                <color key="textColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="V2W-B3-jFj" firstAttribute="trailing" secondItem="Kj5-uB-hmc" secondAttribute="trailing" constant="16" id="BKp-nX-JEq"/>
                             <constraint firstItem="Kj5-uB-hmc" firstAttribute="top" secondItem="kT3-vW-HgJ" secondAttribute="bottom" constant="8" id="Fxi-cU-AT4"/>
+                            <constraint firstItem="cLD-vU-YX6" firstAttribute="leading" secondItem="dfM-Fg-VDq" secondAttribute="trailing" constant="8" id="QQa-zY-1by"/>
                             <constraint firstItem="V2W-B3-jFj" firstAttribute="trailing" secondItem="kT3-vW-HgJ" secondAttribute="trailing" constant="16" id="UuP-QH-CTq"/>
+                            <constraint firstItem="dfM-Fg-VDq" firstAttribute="leading" secondItem="V2W-B3-jFj" secondAttribute="leading" constant="16" id="Xii-iY-6d4"/>
+                            <constraint firstItem="cLD-vU-YX6" firstAttribute="centerY" secondItem="dfM-Fg-VDq" secondAttribute="centerY" id="d6u-qr-IxG"/>
                             <constraint firstItem="kT3-vW-HgJ" firstAttribute="leading" secondItem="V2W-B3-jFj" secondAttribute="leading" constant="16" id="m0z-We-aTR"/>
+                            <constraint firstItem="dfM-Fg-VDq" firstAttribute="top" secondItem="V2W-B3-jFj" secondAttribute="top" constant="15" id="qwr-5e-g8F"/>
                             <constraint firstItem="kT3-vW-HgJ" firstAttribute="top" secondItem="V2W-B3-jFj" secondAttribute="top" constant="71" id="rbT-RD-kQQ"/>
-                            <constraint firstItem="V2W-B3-jFj" firstAttribute="trailing" secondItem="vDz-Hr-be0" secondAttribute="trailing" constant="16" id="reu-Yp-TH1"/>
-                            <constraint firstItem="vDz-Hr-be0" firstAttribute="top" secondItem="V2W-B3-jFj" secondAttribute="top" constant="20" id="rsz-xP-yVl"/>
                             <constraint firstItem="Kj5-uB-hmc" firstAttribute="leading" secondItem="V2W-B3-jFj" secondAttribute="leading" constant="16" id="wdF-UY-AT3"/>
                             <constraint firstItem="V2W-B3-jFj" firstAttribute="bottom" secondItem="Kj5-uB-hmc" secondAttribute="bottom" constant="20" id="yzk-tn-uY1"/>
                         </constraints>
@@ -1864,6 +1875,7 @@
                     </view>
                     <navigationItem key="navigationItem" id="VsN-eD-EWM"/>
                     <connections>
+                        <outlet property="headerLabel" destination="cLD-vU-YX6" id="rAY-Zc-KcM"/>
                         <outlet property="imageView" destination="kT3-vW-HgJ" id="L4j-xg-uHU"/>
                         <outlet property="textView" destination="Kj5-uB-hmc" id="2An-oW-xbw"/>
                     </connections>
@@ -2798,16 +2810,6 @@
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="9" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bW8-lG-7Hz">
-                                <rect key="frame" x="16" y="131" width="333" height="203"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="203" id="J20-pl-qTn"/>
-                                </constraints>
-                                <string key="text">Fully Noded wallets are a bit different then your standard Bitcoin Core wallets. Fully Noded wallets support BIP39 recovery words. Your seed is encrypted and stored securely to the device *not* on your node. Your node will only ever hold public keys. Your node builds psbt's for us which Fully Noded will sign (not your node). Your node verifies the utxo's and knows everything about the wallet except for its private keys.</string>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo_grey.png" translatesAutoresizingMaskIntoConstraints="NO" id="OAM-QB-2gl">
                                 <rect key="frame" x="16" y="54" width="79" height="60"/>
                                 <constraints>
@@ -2816,7 +2818,7 @@
                                 </constraints>
                             </imageView>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="11" translatesAutoresizingMaskIntoConstraints="NO" id="6zG-h6-wiF">
-                                <rect key="frame" x="16" y="342" width="343" height="264"/>
+                                <rect key="frame" x="16" y="122" width="343" height="264"/>
                                 <subviews>
                                     <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GO8-o8-fXl">
                                         <rect key="frame" x="0.0" y="0.0" width="343" height="44"/>
@@ -2863,7 +2865,7 @@
                                         <constraints>
                                             <constraint firstAttribute="height" constant="44" id="gZf-di-IBG"/>
                                         </constraints>
-                                        <state key="normal" title="import">
+                                        <state key="normal" title="import via QR">
                                             <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         </state>
                                         <connections>
@@ -2876,7 +2878,7 @@
                                         <constraints>
                                             <constraint firstAttribute="height" constant="44" id="aEN-7b-FIU"/>
                                         </constraints>
-                                        <state key="normal" title="upload file">
+                                        <state key="normal" title="import via file">
                                             <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         </state>
                                         <connections>
@@ -2889,16 +2891,13 @@
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="OAM-QB-2gl" firstAttribute="leading" secondItem="V4I-Q6-GVc" secondAttribute="leading" constant="16" id="6WN-0B-5us"/>
+                            <constraint firstItem="6zG-h6-wiF" firstAttribute="top" secondItem="ZTq-Qt-Cb4" secondAttribute="bottom" constant="8" id="7E0-mu-WaG"/>
                             <constraint firstItem="6zG-h6-wiF" firstAttribute="leading" secondItem="V4I-Q6-GVc" secondAttribute="leading" constant="16" id="8UM-IY-OU4"/>
-                            <constraint firstItem="bW8-lG-7Hz" firstAttribute="leading" secondItem="V4I-Q6-GVc" secondAttribute="leading" constant="16" id="B0g-uP-SGd"/>
-                            <constraint firstItem="6zG-h6-wiF" firstAttribute="top" secondItem="bW8-lG-7Hz" secondAttribute="bottom" constant="8" id="FAk-K6-LlD"/>
                             <constraint firstItem="OAM-QB-2gl" firstAttribute="top" secondItem="V4I-Q6-GVc" secondAttribute="top" constant="10" id="Ge6-2N-SKB"/>
                             <constraint firstItem="V4I-Q6-GVc" firstAttribute="trailing" secondItem="ZTq-Qt-Cb4" secondAttribute="trailing" constant="26" id="H04-kj-cXt"/>
                             <constraint firstItem="ZTq-Qt-Cb4" firstAttribute="leading" secondItem="OAM-QB-2gl" secondAttribute="trailing" constant="8" id="Hgg-cg-1rH"/>
-                            <constraint firstItem="V4I-Q6-GVc" firstAttribute="trailing" secondItem="bW8-lG-7Hz" secondAttribute="trailing" constant="26" id="bRZ-mM-1XR"/>
                             <constraint firstItem="ZTq-Qt-Cb4" firstAttribute="top" secondItem="V4I-Q6-GVc" secondAttribute="top" constant="10" id="gOC-hw-8vg"/>
                             <constraint firstItem="V4I-Q6-GVc" firstAttribute="trailing" secondItem="6zG-h6-wiF" secondAttribute="trailing" constant="16" id="pph-He-lUp"/>
-                            <constraint firstItem="bW8-lG-7Hz" firstAttribute="top" secondItem="ZTq-Qt-Cb4" secondAttribute="bottom" constant="17" id="qzl-eY-Rue"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="V4I-Q6-GVc"/>
                     </view>
@@ -4979,9 +4978,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                             <constraint firstItem="tL2-J8-k43" firstAttribute="top" secondItem="PoV-6L-X84" secondAttribute="top" constant="20" id="0Ix-aV-P0a"/>
                             <constraint firstItem="hIn-Uo-p04" firstAttribute="leading" secondItem="G5O-Yl-luJ" secondAttribute="trailing" constant="8" id="0gD-OM-Yw6"/>
                             <constraint firstItem="G5O-Yl-luJ" firstAttribute="top" secondItem="awR-fG-6eE" secondAttribute="bottom" constant="8" id="2fa-ID-XkN"/>
-                            <constraint firstItem="PoV-6L-X84" firstAttribute="trailing" secondItem="tL2-J8-k43" secondAttribute="trailing" constant="177" id="64h-Gj-NgD"/>
                             <constraint firstItem="PoV-6L-X84" firstAttribute="trailing" secondItem="hIn-Uo-p04" secondAttribute="trailing" constant="16" id="IEo-qb-dvn"/>
-                            <constraint firstItem="PoV-6L-X84" firstAttribute="trailing" secondItem="awR-fG-6eE" secondAttribute="trailing" constant="195" id="KVD-IH-K5r"/>
                             <constraint firstItem="tL2-J8-k43" firstAttribute="leading" secondItem="PoV-6L-X84" secondAttribute="leading" constant="16" id="Yru-hz-owd"/>
                             <constraint firstItem="awR-fG-6eE" firstAttribute="top" secondItem="tL2-J8-k43" secondAttribute="bottom" constant="34" id="a04-br-hOu"/>
                             <constraint firstItem="G5O-Yl-luJ" firstAttribute="leading" secondItem="PoV-6L-X84" secondAttribute="leading" constant="16" id="atT-Jd-HeH"/>
@@ -5087,7 +5084,6 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                             <constraint firstItem="yal-Te-OvI" firstAttribute="top" secondItem="1i0-rS-dgs" secondAttribute="bottom" constant="8" id="FmK-pX-ZSo"/>
                             <constraint firstItem="8gH-bm-rKb" firstAttribute="centerY" secondItem="nEN-fJ-IQg" secondAttribute="centerY" id="MLe-e2-Vwg"/>
                             <constraint firstItem="JVg-t3-erP" firstAttribute="trailing" secondItem="KvQ-lH-ysz" secondAttribute="trailing" constant="16" id="Svp-9T-IV3"/>
-                            <constraint firstItem="8gH-bm-rKb" firstAttribute="leading" secondItem="nEN-fJ-IQg" secondAttribute="trailing" constant="244.5" id="UoO-nT-JW0"/>
                             <constraint firstItem="KvQ-lH-ysz" firstAttribute="top" secondItem="9uA-U1-aYX" secondAttribute="bottom" constant="7.5" id="VQe-0d-dOB"/>
                             <constraint firstItem="rpP-21-3Z5" firstAttribute="leading" secondItem="JVg-t3-erP" secondAttribute="leading" constant="16" id="VSh-Kv-CxE"/>
                             <constraint firstItem="9uA-U1-aYX" firstAttribute="leading" secondItem="JVg-t3-erP" secondAttribute="leading" constant="16" id="VeB-m4-pRX"/>
@@ -5095,13 +5091,11 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                             <constraint firstItem="JVg-t3-erP" firstAttribute="trailing" secondItem="4Dm-7E-1gc" secondAttribute="trailing" constant="16" id="cGB-9B-DxH"/>
                             <constraint firstItem="yal-Te-OvI" firstAttribute="leading" secondItem="JVg-t3-erP" secondAttribute="leading" constant="16" id="cVY-qk-TIQ"/>
                             <constraint firstItem="nEN-fJ-IQg" firstAttribute="top" secondItem="yal-Te-OvI" secondAttribute="bottom" constant="30" id="ddc-3v-HhR"/>
-                            <constraint firstItem="JVg-t3-erP" firstAttribute="trailing" secondItem="rpP-21-3Z5" secondAttribute="trailing" constant="126" id="elg-73-9jH"/>
                             <constraint firstItem="JVg-t3-erP" firstAttribute="trailing" secondItem="8gH-bm-rKb" secondAttribute="trailing" constant="16" id="gvY-sU-OtT"/>
                             <constraint firstItem="JVg-t3-erP" firstAttribute="trailing" secondItem="9uA-U1-aYX" secondAttribute="trailing" constant="16" id="mqT-O1-Gkb"/>
                             <constraint firstItem="1i0-rS-dgs" firstAttribute="top" secondItem="rpP-21-3Z5" secondAttribute="bottom" constant="34" id="q78-zM-cVg"/>
                             <constraint firstItem="4Dm-7E-1gc" firstAttribute="centerY" secondItem="1i0-rS-dgs" secondAttribute="centerY" id="snv-1b-lGE"/>
                             <constraint firstItem="1i0-rS-dgs" firstAttribute="leading" secondItem="JVg-t3-erP" secondAttribute="leading" constant="16" id="vpe-NX-Kxb"/>
-                            <constraint firstItem="4Dm-7E-1gc" firstAttribute="leading" secondItem="1i0-rS-dgs" secondAttribute="trailing" constant="239.5" id="zIO-bk-UFa"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="JVg-t3-erP"/>
                     </view>
@@ -5130,7 +5124,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 <nil key="highlightedColor"/>
                             </label>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="qBh-RP-hWz">
-                                <rect key="frame" x="16" y="135" width="343" height="314"/>
+                                <rect key="frame" x="16" y="96" width="343" height="314"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tcf-UB-YOb">
                                         <rect key="frame" x="0.0" y="0.0" width="343" height="17"/>
@@ -5208,27 +5202,32 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         </subviews>
                         <color key="backgroundColor" red="0.050706155598163605" green="0.058625258505344391" blue="0.071102283895015717" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
+                            <constraint firstItem="qBh-RP-hWz" firstAttribute="top" secondItem="DTI-AZ-owi" secondAttribute="bottom" constant="7.5" id="ACa-qM-sgb"/>
                             <constraint firstItem="uUf-aQ-0bN" firstAttribute="trailing" secondItem="qBh-RP-hWz" secondAttribute="trailing" constant="16" id="HV2-84-YUw"/>
                             <constraint firstItem="DTI-AZ-owi" firstAttribute="leading" secondItem="uUf-aQ-0bN" secondAttribute="leading" constant="16" id="RC6-xc-GeH"/>
                             <constraint firstItem="eoi-B9-9wY" firstAttribute="centerX" secondItem="B9e-yr-KMo" secondAttribute="centerX" id="edZ-7P-yIT"/>
                             <constraint firstItem="qBh-RP-hWz" firstAttribute="leading" secondItem="uUf-aQ-0bN" secondAttribute="leading" constant="16" id="gOe-Le-cG0"/>
                             <constraint firstItem="uUf-aQ-0bN" firstAttribute="bottom" secondItem="eoi-B9-9wY" secondAttribute="bottom" constant="20" id="jc2-gh-9Hl"/>
                             <constraint firstItem="DTI-AZ-owi" firstAttribute="top" secondItem="uUf-aQ-0bN" secondAttribute="top" constant="11" id="kzr-7F-vnw"/>
-                            <constraint firstItem="uUf-aQ-0bN" firstAttribute="trailing" secondItem="DTI-AZ-owi" secondAttribute="trailing" constant="139" id="pzn-zP-cyh"/>
-                            <constraint firstItem="qBh-RP-hWz" firstAttribute="top" secondItem="DTI-AZ-owi" secondAttribute="bottom" constant="46.5" id="t3I-X9-IOK"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="uUf-aQ-0bN"/>
                     </view>
                     <navigationItem key="navigationItem" id="J9p-j8-H8t">
                         <rightBarButtonItems>
                             <barButtonItem image="square.and.arrow.up" catalog="system" id="gwp-vI-ePE">
-                                <color key="tintColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <connections>
                                     <action selector="exportNode:" destination="B99-yZ-naR" id="c4z-NG-lTv"/>
                                 </connections>
                             </barButtonItem>
+                            <barButtonItem image="antenna.radiowaves.left.and.right" catalog="system" id="dnk-QA-bMo">
+                                <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <connections>
+                                    <action selector="showHostAction:" destination="B99-yZ-naR" id="CPP-h4-wm3"/>
+                                </connections>
+                            </barButtonItem>
                             <barButtonItem image="qrcode.viewfinder" catalog="system" id="awp-qu-L3a">
-                                <color key="tintColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <connections>
                                     <action selector="scanQuickConnect:" destination="B99-yZ-naR" id="TMH-9e-2OO"/>
                                 </connections>
@@ -5244,7 +5243,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <outlet property="rpcUserField" destination="uRk-PX-ulA" id="pCP-J4-Y3p"/>
                         <outlet property="saveButton" destination="p2J-sn-A5I" id="ZWz-y2-s1b"/>
                         <outlet property="scanQROutlet" destination="awp-qu-L3a" id="pQ4-ao-MZ5"/>
-                        <segue destination="GlR-4A-eAx" kind="presentation" identifier="segueToExportNode" id="8MS-xS-DMP"/>
+                        <segue destination="GlR-4A-eAx" kind="show" identifier="segueToExportNode" id="8MS-xS-DMP"/>
                         <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScanNodeCreds" id="07E-4w-Zh7"/>
                     </connections>
                 </viewController>
@@ -7088,7 +7087,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                     </textField>
                                 </subviews>
                             </stackView>
-                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="HC3-hY-POM">
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="HC3-hY-POM">
                                 <rect key="frame" x="16" y="281.5" width="343" height="321.5"/>
                                 <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
                                 <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -7183,8 +7182,8 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="ywj-ud-JRK"/>
         <segue reference="oY9-Pq-H5b"/>
         <segue reference="1fQ-PG-chF"/>
-        <segue reference="zi9-mK-A5a"/>
-        <segue reference="8yc-oK-dlC"/>
+        <segue reference="aV5-mq-s3Q"/>
+        <segue reference="g7x-oO-Buw"/>
         <segue reference="Jma-5H-zJx"/>
         <segue reference="Ikt-mc-dmE"/>
         <segue reference="6HW-Pq-bwM"/>
@@ -7194,6 +7193,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
     <resources>
         <image name="Home" width="30" height="30"/>
         <image name="Settings" width="30" height="30"/>
+        <image name="antenna.radiowaves.left.and.right" catalog="system" width="128" height="109"/>
         <image name="arrow.2.circlepath" catalog="system" width="128" height="101"/>
         <image name="arrow.clockwise" catalog="system" width="115" height="128"/>
         <image name="arrow.down.left" catalog="system" width="128" height="111"/>

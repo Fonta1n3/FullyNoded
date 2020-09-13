@@ -104,6 +104,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                     } else if let _ = dict["chain"] as? String {
                         print("coldcard single sig")
                         presentWalletCreator(coldCard: dict)
+                    } else if let _ = dict["descriptor"] as? String {
+                        // Its an account map
+                        print("account map: \(dict)")
                     }
                 } catch {}
                 if needTo {
