@@ -37,6 +37,7 @@ class CoreDataService {
         }
     }
     
+    // TODO: Create a data type to simplify the use of [[String:Any]]
     class func retrieveEntity(entityName: ENTITY, completion: @escaping (([[String:Any]]?)) -> Void) {
         DispatchQueue.main.async {
             if let appDelegate = UIApplication.shared.delegate as? AppDelegate {

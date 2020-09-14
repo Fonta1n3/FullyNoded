@@ -10,31 +10,29 @@ import Foundation
 import UIKit
 
 public func activeWallet(completion: @escaping ((Wallet?)) -> Void) {
-    var structToReturn:Wallet!
     
     guard let activeWalletName = UserDefaults.standard.object(forKey: "walletName") as? String else {
         completion(nil)
         return
     }
     
-    CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
-        if wallets != nil {
-            if wallets!.count > 0 {
-                for (i, w) in wallets!.enumerated() {
-                    let walletStruct = Wallet(dictionary: w)
-                    if walletStruct.name == activeWalletName {
-                        structToReturn = walletStruct
-                    }
-                    if i + 1 == wallets!.count {
-                        completion(structToReturn)
-                    }
-                }
-            } else {
-                completion(nil)
-            }
-        } else {
+    CoreDataService.retrieveEntity(entityName: .wallets) { coreDataWallets in
+        guard let coreDataWallets = coreDataWallets, !coreDataWallets.isEmpty else {
             completion(nil)
+            return
         }
+        
+        var foundWallet: Wallet?
+        
+        for coreDataWallet in coreDataWallets where foundWallet == nil {
+            let wallet = Wallet(dictionary: coreDataWallet)
+            
+            if wallet.name == activeWalletName {
+                foundWallet = wallet
+            }
+        }
+        
+        completion(foundWallet)
     }
 }
 
