@@ -85,6 +85,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     func torConnProgress(_ progress: Int) {
         print("progress = \(progress)")
+        displayAlert(viewController: self, isError: false, message: "Tor progress: \(progress)%")
     }
     
     func torConnFinished() {
