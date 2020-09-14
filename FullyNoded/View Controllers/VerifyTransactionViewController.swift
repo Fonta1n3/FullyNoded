@@ -27,7 +27,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var inputArray = [[String:Any]]()
     var inputTableArray = [[String:Any]]()
     var outputArray = [[String:Any]]()
-    var index = Int()
+    var index = 0
     var inputTotal = Double()
     var outputTotal = Double()
     var miningFee = ""
@@ -321,7 +321,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             let address = inputTableArray[index]["address"] as! String
             Reducer.makeCommand(command: .getaddressinfo, param: "\"\(address)\"") { [weak self] (response, errorMessage) in
                 if let dict = response as? NSDictionary {
-                    print("dict: \(dict)")
                     let solvable = dict["solvable"] as? Bool ?? false
                     let keypath = dict["hdkeypath"] as? String ?? "no key path"
                     let labels = dict["labels"] as? NSArray ?? ["no label"]
@@ -353,7 +352,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         self?.inputTableArray[self!.index]["label"] = labelsText
                         self?.inputTableArray[self!.index]["fingerprint"] = fingerprint
                         self?.inputTableArray[self!.index]["desc"] = desc
-                        if script == "multisig" {
+                        
+                        if script == "multisig" && self?.signedRawTx == "" {
                             self?.inputTableArray[self!.index]["sigsrequired"] = sigsrequired
                             self?.inputTableArray[self!.index]["pubkeys"] = pubkeys
                             var numberOfSigs = 0
@@ -404,7 +404,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             let address = outputArray[index]["address"] as! String
             Reducer.makeCommand(command: .getaddressinfo, param: "\"\(address)\"") { [weak self] (response, errorMessage) in
                 if let dict = response as? NSDictionary {
-                    print("dict: \(dict)")
                     let solvable = dict["solvable"] as? Bool ?? false
                     let keypath = dict["hdkeypath"] as? String ?? "no key path"
                     let labels = dict["labels"] as? NSArray ?? ["no label"]
@@ -832,16 +831,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 
                 var feeWarning = ""
                 let percentage = (satsPerByte() / smartFee) * 100
-                print("percentage: \(percentage)")
                 let rounded = Double(round(10*percentage)/10)
                 if satsPerByte() > smartFee {
                     feeWarning = "The fee paid for this transaction is \(rounded - 100)% greater then your target in terms of sats per byte"
                 } else {
                     feeWarning = "The fee paid for this transaction is \(100 - rounded)% less then your target fee in terms of sats per byte"
                 }
-                
-                print("actual s/b: \(satsPerByte())")
-                print("target s/b: \(smartFee)")
                 
                 if percentage >= 90 && percentage <= 110 {
                     background.backgroundColor = .systemGreen
