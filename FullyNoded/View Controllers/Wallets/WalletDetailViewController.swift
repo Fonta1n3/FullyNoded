@@ -614,6 +614,9 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         if let vc = segue.destination as? QRDisplayerViewController {
             if let json = AccountMap.create(wallet: wallet!) {
                 vc.text = json
+                vc.headerText = "Wallet Export QR"
+                vc.descriptionText = "Save this QR in lots of places so you can always easily recreate this wallet as watch-only."
+                vc.headerIcon = UIImage(systemName: "rectangle.and.paperclip")
             }
         }
         default:

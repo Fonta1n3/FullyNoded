@@ -290,6 +290,9 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
         case "segueToShareLightningUrl":
             if let vc = segue.destination as? QRDisplayerViewController {
                 vc.text = url
+                vc.headerText = "QuickConnect QR"
+                vc.descriptionText = "You can share this QR with trusted others who you want to share your lightning node with, they will have full access to your lightning node!"
+                vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
             }
         case "segueToLightningChannels":
             if let vc = segue.destination as? LightningChannelsViewController {

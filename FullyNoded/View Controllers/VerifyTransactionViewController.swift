@@ -1162,11 +1162,21 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         // Get the new view controller using segue.destination.
         // Pass the selected object to the new view controller.
         if segue.identifier == "segueToExportPsbtAsQr" {
+            
             if let vc = segue.destination as? QRDisplayerViewController {
+                
                 if unsignedPsbt != "" {
                     vc.text = unsignedPsbt
+                    vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+                    vc.headerText = "PSBT"
+                    vc.descriptionText = "This psbt still needs more signatures to be complete, you can share it with another signer."
+                    
                 } else if signedRawTx != "" {
                     vc.text = signedRawTx
+                    vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+                    vc.headerText = "Signed Transaction"
+                    vc.descriptionText = "You can save this signed transaction and broadcast it later or share it with someone else."
+                    
                 }
             }
         }

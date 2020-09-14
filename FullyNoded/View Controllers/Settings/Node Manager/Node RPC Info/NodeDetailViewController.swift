@@ -531,9 +531,13 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     vc.headerText = "Quick Connect - Remote Control"
                     vc.descriptionText = "Fully Noded macOS hosts a secure hidden service for your node which can be used to remotely connect to it.\n\nSimply scan this QR with your iPhone or iPad using the Fully Noded iOS app and connect to your node remotely from anywhere in the world!"
                     isHost = false
+                    vc.headerIcon = UIImage(systemName: "antenna.radiowaves.left.and.right")
                     
                 } else {
                     vc.text = "\(prefix)://\(rpcUserField.text ?? ""):\(rpcPassword.text ?? "")@\(onionAddressField.text ?? "")/?label=\(nodeLabel.text?.replacingOccurrences(of: " ", with: "%20") ?? "")"
+                    vc.headerText = "QuickConnect QR"
+                    vc.descriptionText = "You can share this QR with trusted others who you want to share your node with, they will have access to all wallets on your node! If you want to maintain privacy and share your node you can look at running Bitcoin Knots which allows you to configure specific wallets to be accessed by specific rpcuser's."
+                    vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
                 }
                 
             }
