@@ -38,6 +38,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     var mempoolInfo:MempoolInfo!
     var uptimeInfo:Uptime!
     var feeInfo:FeeInfo!
+    @IBOutlet weak var torProgressLabel: UILabel!
     @IBOutlet weak var headerLabel: UILabel!
     
     override func viewDidLoad() {
@@ -134,7 +135,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     func torConnProgress(_ progress: Int) {
         print("progress = \(progress)")
-        displayAlert(viewController: self, isError: false, message: "Tor progress: \(progress)%")
+        DispatchQueue.main.async { [weak self] in
+            self?.torProgressLabel.text = "Tor progress: \(progress)%"
+        }
     }
     
     func torConnFinished() {
@@ -142,10 +145,16 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         removeBackView()
         loadTable()
         displayAlert(viewController: self, isError: false, message: "Tor finished bootstrapping")
+        DispatchQueue.main.async { [weak self] in
+            self?.torProgressLabel.isHidden = true
+        }
     }
     
     func torConnDifficulties() {
         displayAlert(viewController: self, isError: true, message: "We are having issues connecting tor")
+        DispatchQueue.main.async { [weak self] in
+            self?.torProgressLabel.isHidden = true
+        }
     }
     
     func addNavBarSpinner() {
@@ -790,6 +799,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         if let _ = self.tabBarController {
             
             DispatchQueue.main.async {
+                self.torProgressLabel.layer.zPosition = 1
                 
                 self.backView.alpha = 0
                 self.backView.frame = self.tabBarController!.view.frame
