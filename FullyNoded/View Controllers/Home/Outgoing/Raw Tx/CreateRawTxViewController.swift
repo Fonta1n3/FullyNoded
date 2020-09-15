@@ -7,8 +7,9 @@
 //
 
 import UIKit
+import AVFoundation
 
-class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource {
+class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
     
     var isFiat = false
     var isBtc = true
@@ -27,6 +28,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     var inputsString = ""
     var outputsString = ""
     let ud = UserDefaults.standard
+    let imagePicker = UIImagePickerController()
     
     
     @IBOutlet weak var segmentedControlOutlet: UISegmentedControl!
@@ -148,6 +150,12 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         outputs.removeAll()
         outputsString = ""
         outputArray.removeAll()
+    }
+    
+    private func configureImagePicker() {
+        imagePicker.delegate = self
+        imagePicker.allowsEditing = false
+        imagePicker.sourceType = .photoLibrary
     }
     
     @IBAction func withdrawalFromLightningAction(_ sender: Any) {
@@ -360,9 +368,14 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     @IBAction func scanNow(_ sender: Any) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "segueToScannerToGetAddress", sender: vc)
-        }
+        #if targetEnvironment(macCatalyst)
+            configureImagePicker()
+            chooseQRCodeFromLibrary()
+        #else
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.performSegue(withIdentifier: "segueToScannerToGetAddress", sender: vc)
+            }
+        #endif
     }
     
     @IBAction func addOutput(_ sender: Any) {
@@ -833,6 +846,32 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true, completion: nil)
+    }
+    
+    func chooseQRCodeFromLibrary() {
+        present(imagePicker, animated: true, completion: nil)
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        // Local variable inserted by Swift 4.2 migrator.
+        let info = convertFromUIImagePickerControllerInfoKeyDictionary(info)
+        if let pickedImage = info[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.originalImage)] as? UIImage {
+            let detector:CIDetector=CIDetector(ofType: CIDetectorTypeQRCode, context: nil, options: [CIDetectorAccuracy:CIDetectorAccuracyHigh])!
+            let ciImage:CIImage = CIImage(image:pickedImage)!
+            var qrCodeLink = ""
+            let features = detector.features(in: ciImage)
+            for feature in features as! [CIQRCodeFeature] {
+                qrCodeLink += feature.messageString!
+            }
+            AudioServicesPlaySystemSound(SystemSoundID(kSystemSoundID_Vibrate))
+            picker.dismiss(animated: true, completion: { [weak self] in
+                self?.processBIP21(url: qrCodeLink)
+            })
+        }
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         switch segue.identifier {
         case "segueToScannerToGetAddress":
@@ -870,5 +909,12 @@ extension String {
     }
 }
 
+fileprivate func convertFromUIImagePickerControllerInfoKeyDictionary(_ input: [UIImagePickerController.InfoKey: Any]) -> [String: Any] {
+    return Dictionary(uniqueKeysWithValues: input.map {key, value in (key.rawValue, value)})
+}
 
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromUIImagePickerControllerInfoKey(_ input: UIImagePickerController.InfoKey) -> String {
+    return input.rawValue
+}
 

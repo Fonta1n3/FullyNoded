@@ -167,10 +167,13 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 if nodeArray!.count > 0 {
                     vc.loopThroughNodes(nodes: nodeArray!)
                 } else {
+                    vc.removeLoader()
                     DispatchQueue.main.async { [unowned vc = self] in
-                        vc.performSegue(withIdentifier: "addNodeNow", sender: vc)
+                        vc.performSegue(withIdentifier: "segueToAddANode", sender: vc)
                     }
                 }
+            } else {
+                vc.removeLoader()
             }
             vc.initialLoad = false
         }
@@ -681,7 +684,22 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 }
             } else if errorMessage != nil {
                 vc.removeLoader()
-                displayAlert(viewController: self, isError: true, message: errorMessage!)
+                
+                if errorMessage!.contains("Loading block index") || errorMessage!.contains("Verifying") || errorMessage!.contains("Rewinding") {
+                    displayAlert(viewController: self, isError: true, message: "Your node is still getting warmed up! Wait 15 seconds and tap the refresh button to try again")
+                    
+                } else if errorMessage!.contains("Could not connect to the server.") {
+                    displayAlert(viewController: self, isError: true, message: "Looks like your node is not on, make sure it is running and try again.")
+                    
+                } else if errorMessage!.contains("unknown error") {
+                    displayAlert(viewController: self, isError: true, message: "We got a strange response from your node, first of all make 100% sure your credentials are correct, if they are then your node could be overloaded... Either wait a few minutes and try again or reboot Tor on your node, if that fails reboot your node too, force quit Fully Noded and open it again.")
+                    
+                } else if errorMessage!.contains("timed out") || errorMessage!.contains("The Internet connection appears to be offline") {
+                    displayAlert(viewController: self, isError: true, message: "Hmmm we are not getting a response from your node, you can try rebooting Tor on your node and force quitting Fully Noded and reopening it, that generally fixes the issue.")
+                    
+                } else {
+                    displayAlert(viewController: self, isError: true, message: errorMessage!)
+                }
             }
         }
     }
@@ -888,10 +906,11 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 vc.detailTextDescription = detailTextDescription
             }
             
-        case "addNodeNow":
+        case "segueToAddANode":
             
-            if let vc = segue.destination as? ChooseConnectionTypeViewController {
-                vc.cameFromHome = true
+            if let vc = segue.destination as? NodeDetailViewController {
+                vc.createNew = true
+                vc.isLightning = false
             }
             
         case "segueToRemoteControl":
