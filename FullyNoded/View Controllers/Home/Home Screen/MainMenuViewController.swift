@@ -913,7 +913,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
 
 // MARK: Helpers
 
-private extension MainMenuViewController {
+extension MainMenuViewController {
     
     private func headerName(for section: Section) -> String {
         switch section {
