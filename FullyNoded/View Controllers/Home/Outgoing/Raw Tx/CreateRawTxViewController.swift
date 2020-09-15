@@ -23,6 +23,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     var address = String()
     var amount = String()
     var outputs = [Any]()
+    var inputArray = [Any]()
+    var inputsString = ""
     var outputsString = ""
     let ud = UserDefaults.standard
     
@@ -460,71 +462,109 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         if addressInput.text != "" {
             spinner.addConnectingView(vc: self, description: "sweeping...")
             let receivingAddress = addressInput.text!
-            Reducer.makeCommand(command: .listunspent, param: "0") { [weak self] (response, errorMessage) in
-                if let resultArray = response as? NSArray {
-                    var inputArray = [Any]()
-                    var inputs = ""
-                    var amount = Double()
-                    var spendFromCold = Bool()
-                    
-                    for utxo in resultArray {
-                        let utxoDict = utxo as! NSDictionary
-                        let txid = utxoDict["txid"] as! String
-                        let vout = "\(utxoDict["vout"] as! Int)"
-                        let spendable = utxoDict["spendable"] as! Bool
-                        if !spendable {
-                            spendFromCold = true
+//            if inputArray.count > 0 {
+//                processInputs()
+//                let ud = UserDefaults.standard
+//                let param = "''\(inputsString)'', ''{\"\(receivingAddress)\":\(rounded(number: amount))}'', 0, ''{\"includeWatching\": \(true), \"replaceable\": true, \"conf_target\": \(ud.object(forKey: "feeTarget") as! Int), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
+//                Reducer.makeCommand(command: .walletcreatefundedpsbt, param: param) { (response, errorMessage) in
+//                    if let result = response as? NSDictionary {
+//                        let psbt1 = result["psbt"] as! String
+//                        Reducer.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt1)\"") { [weak self] (response, errorMessage) in
+//                            if let dict = response as? NSDictionary {
+//                                if let processedPSBT = dict["psbt"] as? String {
+//                                    Signer.sign(psbt: processedPSBT) { [weak self] (psbt, rawTx, errorMessage) in
+//                                        if self != nil {
+//                                            self?.spinner.removeConnectingView()
+//                                            if psbt != nil {
+//                                                self!.rawTxUnsigned = psbt!
+//                                                self!.showRaw(raw: psbt!)
+//                                            } else if rawTx != nil {
+//                                                self!.rawTxSigned = rawTx!
+//                                                self!.showRaw(raw: rawTx!)
+//                                            } else if errorMessage != nil {
+//                                                showAlert(vc: self, title: "Error", message: errorMessage!)
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                            } else {
+//                                self?.spinner.removeConnectingView()
+//                                displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
+//                            }
+//                        }
+//                    } else {
+//                        self?.spinner.removeConnectingView()
+//                        displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
+//                    }
+//                }
+//            } else {
+                Reducer.makeCommand(command: .listunspent, param: "0") { [weak self] (response, errorMessage) in
+                    if let resultArray = response as? NSArray {
+                        var inputArray = [Any]()
+                        var inputs = ""
+                        var amount = Double()
+                        var spendFromCold = Bool()
+                        
+                        for utxo in resultArray {
+                            let utxoDict = utxo as! NSDictionary
+                            let txid = utxoDict["txid"] as! String
+                            let vout = "\(utxoDict["vout"] as! Int)"
+                            let spendable = utxoDict["spendable"] as! Bool
+                            if !spendable {
+                                spendFromCold = true
+                            }
+                            amount += utxoDict["amount"] as! Double
+                            let input = "{\"txid\":\"\(txid)\",\"vout\": \(vout),\"sequence\": 1}"
+                            inputArray.append(input)
                         }
-                        amount += utxoDict["amount"] as! Double
-                        let input = "{\"txid\":\"\(txid)\",\"vout\": \(vout),\"sequence\": 1}"
-                        inputArray.append(input)
-                    }
-                    
-                    inputs = inputArray.description
-                    inputs = inputs.replacingOccurrences(of: "[\"", with: "[")
-                    inputs = inputs.replacingOccurrences(of: "\"]", with: "]")
-                    inputs = inputs.replacingOccurrences(of: "\"{", with: "{")
-                    inputs = inputs.replacingOccurrences(of: "}\"", with: "}")
-                    inputs = inputs.replacingOccurrences(of: "\\", with: "")
-                    
-                    let ud = UserDefaults.standard
-                    let param = "''\(inputs)'', ''{\"\(receivingAddress)\":\(rounded(number: amount))}'', 0, ''{\"includeWatching\": \(spendFromCold), \"replaceable\": true, \"conf_target\": \(ud.object(forKey: "feeTarget") as! Int), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
-                    Reducer.makeCommand(command: .walletcreatefundedpsbt, param: param) { (response, errorMessage) in
-                        if let result = response as? NSDictionary {
-                            let psbt1 = result["psbt"] as! String
-                            Reducer.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt1)\"") { [weak self] (response, errorMessage) in
-                                if let dict = response as? NSDictionary {
-                                    if let processedPSBT = dict["psbt"] as? String {
-                                        Signer.sign(psbt: processedPSBT) { [weak self] (psbt, rawTx, errorMessage) in
-                                            if self != nil {
-                                                self?.spinner.removeConnectingView()
-                                                if psbt != nil {
-                                                    self!.rawTxUnsigned = psbt!
-                                                    self!.showRaw(raw: psbt!)
-                                                } else if rawTx != nil {
-                                                    self!.rawTxSigned = rawTx!
-                                                    self!.showRaw(raw: rawTx!)
-                                                } else if errorMessage != nil {
-                                                    showAlert(vc: self, title: "Error", message: errorMessage!)
+                        
+                        inputs = inputArray.description
+                        inputs = inputs.replacingOccurrences(of: "[\"", with: "[")
+                        inputs = inputs.replacingOccurrences(of: "\"]", with: "]")
+                        inputs = inputs.replacingOccurrences(of: "\"{", with: "{")
+                        inputs = inputs.replacingOccurrences(of: "}\"", with: "}")
+                        inputs = inputs.replacingOccurrences(of: "\\", with: "")
+                        
+                        let ud = UserDefaults.standard
+                        let param = "''\(inputs)'', ''{\"\(receivingAddress)\":\(rounded(number: amount))}'', 0, ''{\"includeWatching\": \(spendFromCold), \"replaceable\": true, \"conf_target\": \(ud.object(forKey: "feeTarget") as! Int), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
+                        Reducer.makeCommand(command: .walletcreatefundedpsbt, param: param) { (response, errorMessage) in
+                            if let result = response as? NSDictionary {
+                                let psbt1 = result["psbt"] as! String
+                                Reducer.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt1)\"") { [weak self] (response, errorMessage) in
+                                    if let dict = response as? NSDictionary {
+                                        if let processedPSBT = dict["psbt"] as? String {
+                                            Signer.sign(psbt: processedPSBT) { [weak self] (psbt, rawTx, errorMessage) in
+                                                if self != nil {
+                                                    self?.spinner.removeConnectingView()
+                                                    if psbt != nil {
+                                                        self!.rawTxUnsigned = psbt!
+                                                        self!.showRaw(raw: psbt!)
+                                                    } else if rawTx != nil {
+                                                        self!.rawTxSigned = rawTx!
+                                                        self!.showRaw(raw: rawTx!)
+                                                    } else if errorMessage != nil {
+                                                        showAlert(vc: self, title: "Error", message: errorMessage!)
+                                                    }
                                                 }
                                             }
                                         }
+                                    } else {
+                                        self?.spinner.removeConnectingView()
+                                        displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
                                     }
-                                } else {
-                                    self?.spinner.removeConnectingView()
-                                    displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
                                 }
+                            } else {
+                                self?.spinner.removeConnectingView()
+                                displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
                             }
-                        } else {
-                            self?.spinner.removeConnectingView()
-                            displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
                         }
+                    } else {
+                        self?.spinner.removeConnectingView()
+                        displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
                     }
-                } else {
-                    self?.spinner.removeConnectingView()
-                    displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
                 }
-            }
+            //}
+            
         }
     }
     
@@ -544,6 +584,15 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
+    private func processInputs() {
+        inputsString = inputArray.description
+        inputsString = inputsString.replacingOccurrences(of: "[\"", with: "[")
+        inputsString = inputsString.replacingOccurrences(of: "\"]", with: "]")
+        inputsString = inputsString.replacingOccurrences(of: "\"{", with: "{")
+        inputsString = inputsString.replacingOccurrences(of: "}\"", with: "}")
+        inputsString = inputsString.replacingOccurrences(of: "\\", with: "")
+    }
+    
     @objc func tryRaw() {
         spinner.addConnectingView(vc: self, description: "creating psbt...")
         
@@ -559,7 +608,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                     }
                 }
             }
-            
+            if inputArray.count > 0 {
+                processInputs()
+            }
             outputsString = outputs.description
             outputsString = outputsString.replacingOccurrences(of: "[", with: "")
             outputsString = outputsString.replacingOccurrences(of: "]", with: "")
@@ -749,7 +800,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     func getRawTx() {
-        CreatePSBT.create(outputs: outputsString) { [weak self] (psbt, rawTx, errorMessage) in
+        CreatePSBT.create(inputs: inputsString, outputs: outputsString) { [weak self] (psbt, rawTx, errorMessage) in
             self?.spinner.removeConnectingView()
             if psbt != nil {
                 self?.rawTxUnsigned = psbt!
@@ -800,13 +851,11 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 }
             }
         case "segueToBroadcaster":
-            if let vc = segue.destination as? SignerViewController {
+            if let vc = segue.destination as? VerifyTransactionViewController {
                 if rawTxSigned != "" {
-                    vc.txn = rawTxSigned
-                    vc.broadcast = true
+                    vc.signedRawTx = rawTxSigned
                 } else if rawTxUnsigned != "" {
-                    vc.psbt = rawTxUnsigned
-                    vc.export = true
+                    vc.unsignedPsbt = rawTxUnsigned
                 }
             }
         default:

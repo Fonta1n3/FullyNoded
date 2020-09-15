@@ -17,6 +17,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     var spinner = ConnectingView()
     var coinType = "0"
     var addresses = ""
+    var originalLabel = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,16 +26,52 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         setCoinType()
     }
     
-    @IBAction func showAccountMap(_ sender: Any) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "segueToAccountMap", sender: vc)
-        }
-    }
     
+    
+    @IBAction func showAccountMap(_ sender: Any) {
+        promptToExportWallet()
+        
+    }
     
     @IBAction func showHelp(_ sender: Any) {
         let message = "These are the details for your \"Fully Noded Wallet\". \"Label\" is the label we assing the wallet which can be edited by tapping it. \"Filename\" is your wallet.dat filename that this wallet is represented by on your node, in order to truly delete the wallet you need to delete this file on your node. \"Receive Descriptor Keypool\" is the descriptor your wallet will use to create invoices with. \"Change Descriptor Keypool\" is the descriptor your wallet will use to create change addresses with. \"Maximum Index\" field is the maximum address index your wallet is watching for, in order to increase it simply tap the text field and input a higher number. \"Current Index\" is the highest address index you have a utxo for. You will see the \"Signer\" which can sign for this wallet and any descriptors this wallet is watching for which will be quite a few if this is a Recovery Wallet."
         showAlert(vc: self, title: "Fully Noded Wallets", message: message)
+    }
+    
+    private func promptToExportWallet() {
+        DispatchQueue.main.async { [unowned vc = self] in
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "Export wallet?", message: "You can export your wallet as a QR code or a .json file.\n\nIt is recommended to do both.\n\nThe wallet export information contains **public keys only**\n\nYour seed words are something seperate and should be backed up in a much more secure way.\n\nFor multisig it is especially important to keep your public keys backed up as losing them **and** losing one of your seeds can cause permanent loss.", preferredStyle: alertStyle)
+            alert.addAction(UIAlertAction(title: "QR", style: .default, handler: { action in
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.performSegue(withIdentifier: "segueToAccountMap", sender: vc)
+                }
+            }))
+            alert.addAction(UIAlertAction(title: ".json file", style: .default, handler: { [weak self] action in
+                self?.exportJson()
+            }))
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = vc.view
+            vc.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func exportJson() {
+        if let json = AccountMap.create(wallet: wallet) {
+            if let url = exportWalletJson(name: wallet.label, data: json.dataUsingUTF8StringEncoding) {
+                DispatchQueue.main.async { [unowned vc = self] in
+                    let activityViewController = UIActivityViewController(activityItems: ["\(vc.wallet.label) Export", url], applicationActivities: nil)
+                    if UIDevice.current.userInterfaceIdiom == .pad {
+                        activityViewController.popoverPresentationController?.sourceView = self.view
+                        activityViewController.popoverPresentationController?.sourceRect = CGRect(x: 0, y: 0, width: 100, height: 100)
+                    }
+                    vc.present(activityViewController, animated: true) {}
+                }
+            }
+        }
     }
     
     private func getAddresses() {
@@ -401,6 +438,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         labelField.addTarget(self, action: #selector(labelDidChange(_:)), for: .editingDidEnd)
         
         if wallet != nil {
+            originalLabel = wallet.label
             labelField.text = wallet.label
             fileNameLabel.text = "  " + wallet.name + ".dat"
             receiveDescTextView.text = wallet.receiveDescriptor
@@ -435,7 +473,12 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     @objc func labelDidChange(_ sender: UITextField) {
-        promptToEditLabel(newLabel: sender.text!)
+        if sender.text != "" {
+            if sender.text != originalLabel {
+                originalLabel = sender.text!
+                promptToEditLabel(newLabel: sender.text!)
+            }
+        }
     }
     
     private func promptToUpdateMaxIndex(max: Int) {
@@ -571,6 +614,9 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         if let vc = segue.destination as? QRDisplayerViewController {
             if let json = AccountMap.create(wallet: wallet!) {
                 vc.text = json
+                vc.headerText = "Wallet Export QR"
+                vc.descriptionText = "Save this QR in lots of places so you can always easily recreate this wallet as watch-only."
+                vc.headerIcon = UIImage(systemName: "rectangle.and.paperclip")
             }
         }
         default:

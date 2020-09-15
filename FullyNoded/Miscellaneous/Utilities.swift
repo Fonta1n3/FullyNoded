@@ -100,6 +100,23 @@ public func exportMultisigWalletToURL(data: Data) -> URL? {
   }
 }
 
+public func exportWalletJson(name: String, data: Data) -> URL? {
+  let documents = FileManager.default.urls(
+    for: .documentDirectory,
+    in: .userDomainMask
+  ).first
+  guard let path = documents?.appendingPathComponent("/\(name).json") else {
+    return nil
+  }
+  do {
+    try data.write(to: path, options: .atomicWrite)
+    return path
+  } catch {
+    print(error.localizedDescription)
+    return nil
+  }
+}
+
 public extension Dictionary {
     func json() -> String? {
         if let json = try? JSONSerialization.data(withJSONObject: self, options: []) {
@@ -132,6 +149,7 @@ extension Notification.Name {
     public static let refreshNode = Notification.Name(rawValue: "refreshNode")
     public static let refreshWallet = Notification.Name(rawValue: "refreshWallet")
     public static let addColdCard = Notification.Name(rawValue: "addColdcard")
+    public static let refreshUtxos = Notification.Name(rawValue: "refreshUtxos")
 }
 
 public extension Data {

@@ -33,10 +33,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet var labelField: UITextField!
     @IBOutlet var qrView: UIImageView!
     @IBOutlet var addressOutlet: UILabel!
-    @IBOutlet var minusOutlet: UIButton!
-    @IBOutlet var plusOutlet: UIButton!
-    @IBOutlet var indexDisplay: UILabel!
-    @IBOutlet var indexLabel: UILabel!
     var isBtc = false
     var isSats = false
     
@@ -45,10 +41,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         spinner.addConnectingView(vc: self, description: "fetching address...")
         addressOutlet.isUserInteractionEnabled = true
         addressOutlet.text = ""
-        minusOutlet.alpha = 0
-        plusOutlet.alpha = 0
-        indexLabel.alpha = 0
-        indexDisplay.alpha = 0
         amountField.delegate = self
         labelField.delegate = self
         amountField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
@@ -73,6 +65,13 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             segmentedControlOutlet.selectedSegmentIndex = 0
         }
     }
+    
+    @IBAction func copyInvoiceAction(_ sender: Any) {
+        UIPasteboard.general.string = addressString
+        displayAlert(viewController: self, isError: false, message: "invoice copied ✓")
+    }
+    
+    
     
     @IBAction func denominationChanged(_ sender: UISegmentedControl) {
         switch sender.selectedSegmentIndex {
@@ -136,63 +135,19 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
-    
-    @IBAction func minusAction(_ sender: Any) {
-        if indexDisplay.text != "" {
-            let index = Int(indexDisplay.text!)!
-            if index != 0 {
-                //fetch new address then save the updated index
-                spinner.addConnectingView(vc: self, description: "fetching address index \(index - 1)")
-                DispatchQueue.main.async {
-                    self.indexDisplay.text = "\(index - 1)"
-                }
-                let param = "\(descriptor), [\(index - 1),\(index - 1)]"
-                self.executeNodeCommand(method: .deriveaddresses, param: param)
-            }
-        }
-    }
-    
-    @IBAction func plusAction(_ sender: Any) {
-        if indexDisplay.text != "" {
-            let index = Int(indexDisplay.text!)!
-            if index >= 0 {
-                //fetch new address then save the updated index
-                spinner.addConnectingView(vc: self, description: "fetching address index \(index + 1)")
-                DispatchQueue.main.async {
-                    self.indexDisplay.text = "\(index + 1)"
-                }
-                let param = "\(descriptor), [\(index + 1),\(index + 1)]"
-                self.executeNodeCommand(method: .deriveaddresses, param: param)
-            }
-        }
-    }
-    
     func load() {
         addressOutlet.text = ""
-        if isHDInvoice {
-            DispatchQueue.main.async {
-                UIView.animate(withDuration: 0.2, animations: {
-                    self.minusOutlet.alpha = 1
-                    self.plusOutlet.alpha = 1
-                    self.indexLabel.alpha = 1
-                    self.indexDisplay.alpha = 1
-                }) { _ in
-                    self.getHDMusigAddress()
-                }
-            }
-        } else {
-            activeWallet { [weak self] (wallet) in
-                if wallet != nil {
-                    let descriptorParser = DescriptorParser()
-                    let descriptorStruct = descriptorParser.descriptor(wallet!.receiveDescriptor)
-                    if descriptorStruct.isMulti {
-                        self?.getReceieveAddressForFullyNodedMultiSig(wallet!)
-                    } else {
-                        self?.showAddress()
-                    }
+        activeWallet { [weak self] (wallet) in
+            if wallet != nil {
+                let descriptorParser = DescriptorParser()
+                let descriptorStruct = descriptorParser.descriptor(wallet!.receiveDescriptor)
+                if descriptorStruct.isMulti {
+                    self?.getReceieveAddressForFullyNodedMultiSig(wallet!)
                 } else {
                     self?.showAddress()
                 }
+            } else {
+                self?.showAddress()
             }
         }
     }
@@ -221,35 +176,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     @IBAction func getAddressInfo(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             self?.performSegue(withIdentifier: "getAddressInfo", sender: self)
-        }
-    }
-    
-    func getHDMusigAddress() {
-        let walletStr = WalletOld(dictionary: wallet)
-        Crypto.decryptData(dataToDecrypt: walletStr.descriptor!) { [weak self] (desc) in
-            if desc != nil {
-                self?.descriptor = desc!.utf8
-                let label = walletStr.label
-                let addressIndex = "\(walletStr.index)"
-                let param = "\(self?.descriptor), [\(addressIndex),\(addressIndex)]"
-                Reducer.makeCommand(command: .deriveaddresses, param: param) { (response, errorMessage) in
-                    if let result = response as? NSArray {
-                        if let addressToReturn = result[0] as? String {
-                            DispatchQueue.main.async { [weak self] in
-                                self?.indexDisplay.text = addressIndex
-                                self?.addressOutlet.text = addressToReturn
-                                self?.navigationController?.navigationBar.topItem?.title = label
-                                self?.addressString = addressToReturn
-                                self?.isHDMusig = true
-                                self?.showAddress()
-                            }
-                        }
-                    } else {
-                        self?.spinner.removeConnectingView()
-                        displayAlert(viewController: self, isError: true, message: errorMessage ?? "error deriving addresses")
-                    }
-                }
-            }
         }
     }
     
@@ -330,15 +256,11 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         }
         
         DispatchQueue.main.async {
-            
             let textToShare = [self.addressString]
-            
-            let activityViewController = UIActivityViewController(activityItems: textToShare,
-                                                                  applicationActivities: nil)
-            
+            let activityViewController = UIActivityViewController(activityItems: textToShare, applicationActivities: nil)
             activityViewController.popoverPresentationController?.sourceView = self.view
+            activityViewController.popoverPresentationController?.sourceRect = self.view.bounds
             self.present(activityViewController, animated: true) {}
-            
         }
         
     }
@@ -356,12 +278,12 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 self.qrView.alpha = 1
                 
             }) { _ in
-                
-                let activityController = UIActivityViewController(activityItems: [self.qrView.image!],
-                                                                  applicationActivities: nil)
-                
-                activityController.popoverPresentationController?.sourceView = self.view
-                self.present(activityController, animated: true) {}
+                DispatchQueue.main.async {
+                    let activityController = UIActivityViewController(activityItems: [self.qrView.image!], applicationActivities: nil)
+                    activityController.popoverPresentationController?.sourceView = self.view
+                    activityController.popoverPresentationController?.sourceRect = self.view.bounds
+                    self.present(activityController, animated: true) {}
+                }
                 
             }
             
@@ -371,36 +293,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
         print("executeNodeCommand")
-        
-        func deriveAddresses() {
-            Reducer.makeCommand(command: .deriveaddresses, param: param) { [weak self] (response, errorMessage) in
-                if let result = response as? NSArray {
-                    if let addressToReturn = result[0] as? String {
-                        DispatchQueue.main.async { [weak self] in
-                            self?.spinner.removeConnectingView()
-                            self?.addressString = addressToReturn
-                            self?.addressOutlet.text = addressToReturn
-                            self?.showAddress(address: addressToReturn)
-                            let id = self?.wallet["id"] as! UUID
-                            if self != nil {
-                                if self?.indexDisplay.text != nil {
-                                    CoreDataService.update(id: id, keyToUpdate: "index", newValue: Int32(self!.indexDisplay.text!)!, entity: .newHdWallets) { success in
-                                        if success {
-                                            print("updated index")
-                                        } else {
-                                            print("index update failed")
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    self?.spinner.removeConnectingView()
-                    displayAlert(viewController: self, isError: true, message: errorMessage ?? "error deriving addresses")
-                }
-            }
-        }
         
         func getAddress() {
             Reducer.makeCommand(command: .getnewaddress, param: param) { [weak self] (response, errorMessage) in
@@ -421,9 +313,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         }
         
         switch method {
-        case .deriveaddresses:
-            deriveAddresses()
-            
         case .getnewaddress:
             getAddress()
             

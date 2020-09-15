@@ -52,6 +52,13 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         loadTable()
     }
     
+    @IBAction func signAction(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            self?.performSegue(withIdentifier: "segueToSignSomething", sender: self)
+        }
+    }
+    
+    
     @IBAction func getDetails(_ sender: Any) {
         if wallet != nil {
             id = wallet!.id

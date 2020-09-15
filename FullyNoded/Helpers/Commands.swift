@@ -73,6 +73,7 @@ public enum BTC_CLI_COMMAND: String {
     case walletpassphrasechange = "walletpassphrasechange"
     case gettxoutsetinfo = "gettxoutsetinfo"
     case help = "help"
+    case testmempoolaccept = "testmempoolaccept"
 }
 
 public enum LIGHTNING_CLI: String {

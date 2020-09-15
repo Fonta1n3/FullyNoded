@@ -1,2 +1,0 @@
-binary "https://icepa.github.io/Tor.framework/Tor.json" == 403.6.1
-git "https://github.com/Fonta1n3/libwally-swift.git" "master"

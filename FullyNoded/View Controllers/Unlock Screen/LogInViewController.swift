@@ -142,23 +142,16 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     }
     
     func showUnlockScreen() {
-        
         UIView.animate(withDuration: 0.2, animations: {
-                
             self.passwordInput.alpha = 1
             self.labelTitle.alpha = 1
             self.touchIDButton.alpha = 1
-                
         })
-        
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        print("textFieldShouldReturn")
-        
         self.view.endEditing(true)
         return false
-        
     }
     
     @objc func nextButtonAction() {

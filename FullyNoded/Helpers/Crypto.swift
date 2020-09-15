@@ -8,13 +8,18 @@
 
 import CryptoKit
 
-class Crypto {
+enum Crypto {
     
-    class func privateKey() -> Data {
+    static func sha256hash(_ text: String) -> String {
+        let digest = SHA256.hash(data: text.dataUsingUTF8StringEncoding)
+        return digest.map { String(format: "%02hhx", $0) }.joined()
+    }
+    
+    static func privateKey() -> Data {
         return P256.Signing.PrivateKey().rawRepresentation
     }
     
-    class func encryptData(dataToEncrypt: Data, completion: @escaping ((Data?)) -> Void) {
+    static func encryptData(dataToEncrypt: Data, completion: @escaping ((Data?)) -> Void) {
         if let key = KeyChain.getData("privateKey") {
             let k = SymmetricKey(data: key)
             if let sealedBox = try? ChaChaPoly.seal(dataToEncrypt, using: k) {
@@ -26,7 +31,7 @@ class Crypto {
         }
     }
     
-    class func decryptData(dataToDecrypt: Data, completion: @escaping ((Data?)) -> Void) {
+    static func decryptData(dataToDecrypt: Data, completion: @escaping ((Data?)) -> Void) {
         if let key = KeyChain.getData("privateKey") {
             do {
                 let box = try ChaChaPoly.SealedBox.init(combined: dataToDecrypt)
@@ -39,7 +44,7 @@ class Crypto {
         }
     }
     
-    class func checksum(_ descriptor: String) -> String {
+    static func checksum(_ descriptor: String) -> String {
         let hash = SHA256.hash(data: Data(SHA256.hash(data: Base58.decode(descriptor))))
         let checksum = Data(hash).subdata(in: Range(0...3))
         let hex = checksum.hexString

@@ -13,17 +13,31 @@ class QRDisplayerViewController: UIViewController {
     var text = ""
     var tapQRGesture = UITapGestureRecognizer()
     var tapTextViewGesture = UITapGestureRecognizer()
+    var headerText = ""
+    var descriptionText = ""
+    var headerIcon: UIImage!
+    
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var textView: UITextView!
+    @IBOutlet weak var headerLabel: UILabel!
+    @IBOutlet weak var headerImage: UIImageView!
     
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        headerLabel.text = headerText
+        headerImage.image = headerIcon
         imageView.isUserInteractionEnabled = true
         imageView.image = qR()
-        textView.text = text
+        textView.text = descriptionText
         tapQRGesture = UITapGestureRecognizer(target: self, action: #selector(shareQRCode(_:)))
         imageView.addGestureRecognizer(tapQRGesture)
+    }
+    
+    @IBAction func closeAction(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            self?.dismiss(animated: true, completion: nil)
+        }
     }
     
     private func qR() -> UIImage {

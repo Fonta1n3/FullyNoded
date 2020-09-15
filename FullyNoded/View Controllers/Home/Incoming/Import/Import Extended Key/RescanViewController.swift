@@ -19,8 +19,11 @@ class RescanViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        #if targetEnvironment(macCatalyst)
+        #else
         datePicker.setValue(UIColor.white, forKey: "textColor")
+        #endif
+        
         dateFormatter.dateFormat = "dd/MM/yyyy"
         let genesis = dateFormatter.date(from: "09/01/2009")
         datePicker.minimumDate = genesis

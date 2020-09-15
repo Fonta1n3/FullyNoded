@@ -1,5 +1,11 @@
 # Setting up Tor
 
+This is the guide *Connecting to your node over tor **the "manual expert" way**!*
+
+The default way however is **"tap a button on FN macOS, scan QR with FN iOS"**. Check this out first [here](https://www.youtube.com/watch?v=_7MZd0weDis), because it'll host a hidden service itself.
+
+## So only if you haven't been able to use the default way or you intentionally want to set up `Tor` the manual expert way, please continue reading.
+
 **The below guides walk you through how to install Tor and setup your own hidden service which is what Fully Noded needs to connect to**
 
  - [macOS](#macOS)

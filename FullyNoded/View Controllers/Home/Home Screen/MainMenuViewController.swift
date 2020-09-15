@@ -30,6 +30,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     var detailHeaderText = ""
     var detailSubheaderText = ""
     var detailTextDescription = ""
+    var host = ""
     var blockchainInfo:BlockchainInfo!
     var peerInfo:PeerInfo!
     var networkInfo:NetworkInfo!
@@ -68,12 +69,60 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         }
     }
     
+    @IBAction func showRemoteControl(_ sender: Any) {
+        #if targetEnvironment(macCatalyst)
+            // Code specific to Mac.
+            if activeNode != nil {
+                let nodeStruct = NodeStruct(dictionary: activeNode!)
+                var prefix = "btcrpc"
+                if nodeStruct.isLightning {
+                    prefix = "clightning-rpc"
+                }
+                
+                func decryptedValue(_ encryptedValue: Data) -> String? {
+                    var decryptedValue = ""
+                    Crypto.decryptData(dataToDecrypt: encryptedValue) { decryptedData in
+                        if decryptedData != nil {
+                            decryptedValue = decryptedData!.utf8
+                        }
+                    }
+                    return decryptedValue
+                }
+                
+                guard let address = decryptedValue(nodeStruct.onionAddress!) else { return }
+                guard let rpcusername = decryptedValue(nodeStruct.rpcuser!) else { return }
+                guard let rpcpassword = decryptedValue(nodeStruct.rpcpassword!) else { return }
+                let macName = UIDevice.current.name
+                
+                if address.contains("127.0.0.1") || address.contains("localhost") || address.contains(macName) {
+                    var hostname = mgr?.hostname()
+                    if hostname != nil {
+                        hostname = hostname?.replacingOccurrences(of: "\n", with: "")
+                        DispatchQueue.main.async { [weak self] in
+                            self?.host = "\(prefix)://\(rpcusername):\(rpcpassword)@\(hostname!):11221/?label=\(nodeStruct.label.replacingOccurrences(of: " ", with: "%20"))"
+                            self?.performSegue(withIdentifier: "segueToRemoteControl", sender: self)
+                        }
+                    } else {
+                        showAlert(vc: self, title: "Ooops", message: "There was an error getting your hostname for remote connection... Please make sure you are connected to the internet and that Tor successfully bootstrapped.")
+                    }
+                } else {
+                    showAlert(vc: self, title: "Ooops", message: "This feature can only be used with nodes which are running on the same computer as Fully Noded - Desktop.\n\nTo take advantage of this feature just download Bitcoin Core and run it.\n\nThen add your local node to Fully Noded - Desktop using 127.0.0.1:8332 as the address.\n\nYou can then tap this button to get a QR code which will allow you to connect your node via your iPhone or iPad on the mobile app.")
+                }
+            }
+
+        #else
+            // Code to exclude from Mac.
+            showAlert(vc: self, title: "Ooops", message: "This is a macOS feature only, when you use Fully Noded - Desktop, it has the ability to display a QR code you can scan with your iPhone or iPad to connect to your node remotely.")
+        #endif
+        
+    }
+    
+    
     @IBAction func showLightningNode(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             self?.performSegue(withIdentifier: "segueToLightningNode", sender: self)
         }
     }
-    
     
     private func setEncryptionKey() {
         firstTimeHere() { [unowned vc = self] success in
@@ -134,6 +183,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             let nodeStruct = NodeStruct.init(dictionary: node)
             if nodeStruct.isActive {
                 activeNode = node
+                self.activeNode = node
             }
             if i + 1 == nodes.count {
                 if activeNode != nil {
@@ -609,31 +659,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 """
                 segueToShowDetail()
             }
-            
-//        case 5:
-//            //"Mining hashrate"
-//            segueToShowDetail()
-//        case 6:
-//            //"Current blockheight"
-//            segueToShowDetail()
-//        case 7:
-//            //"Mining difficulty"
-//            segueToShowDetail()
-//        case 8:
-//            //"Blockchain size on disc"
-//            segueToShowDetail()
-//        case 9:
-//            //"Node's mempool"
-//            segueToShowDetail()
-//        case 10:
-//            //"Fee rate"
-//            segueToShowDetail()
-//        case 11:
-//            //"P2P hidden service"
-//            segueToShowDetail()
-//        case 12:
-//            //"Node uptime"
-//            segueToShowDetail()
         
         default:
             break
@@ -771,7 +796,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 self.backView.backgroundColor = .black
                 let imageView = UIImageView()
                 imageView.frame = CGRect(x: self.view.center.x - 75, y: self.view.center.y - 75, width: 150, height: 150)
-                imageView.image = UIImage(named: "iTunesArtwork@2x.png")
+                imageView.image = UIImage(named: "logo_grey.png")
                 self.backView.addSubview(imageView)
                 self.view.addSubview(self.backView)
                 
@@ -845,7 +870,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     private func setFeeTarget() {
         if ud.object(forKey: "feeTarget") == nil {
-            ud.set(1008, forKey: "feeTarget")
+            ud.set(432, forKey: "feeTarget")
         }
     }
     
@@ -867,15 +892,20 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         case "addNodeNow":
             
             if let vc = segue.destination as? ChooseConnectionTypeViewController {
-                
                 vc.cameFromHome = true
-                
+            }
+            
+        case "segueToRemoteControl":
+            
+            if let vc = segue.destination as? QRDisplayerViewController {
+                vc.text = host
+                vc.headerIcon = UIImage(systemName: "antenna.radiowaves.left.and.right")
+                vc.headerText = "Remote Control - Quick Connect"
+                vc.descriptionText = "Fully Noded macOS hosts a secure hidden service for your node which can be used to remotely connect to it.\n\nSimply scan this QR with your iPhone or iPad using the Fully Noded iOS app and connect to your node remotely from anywhere in the world!"
             }
             
         default:
-            
             break
-            
         }
         
     }

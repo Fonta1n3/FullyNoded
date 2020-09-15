@@ -53,7 +53,10 @@
 		D039D3C823322F1300D1ED18 /* NodeStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D039D3C723322F1300D1ED18 /* NodeStruct.swift */; };
 		D039D3CA2332440D00D1ED18 /* HDMusigStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D039D3C92332440D00D1ED18 /* HDMusigStruct.swift */; };
 		D03F65F124EFB25100901D06 /* KeySendViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D03F65F024EFB25100901D06 /* KeySendViewController.swift */; };
+		D03FC07C2508850600450B45 /* Tor-3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D03FC07A250883D900450B45 /* Tor-3.xcframework */; };
+		D03FC07D2508850600450B45 /* Tor-3.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D03FC07A250883D900450B45 /* Tor-3.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D0410617224ED189004AC0D0 /* ObjectiveCHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = D0410616224ED189004AC0D0 /* ObjectiveCHeader.m */; };
+		D042FABC250C9F0600E99D9B /* Torrc.swift in Sources */ = {isa = PBXBuildFile; fileRef = D042FABB250C9F0600E99D9B /* Torrc.swift */; };
 		D044ED78235AF42D00300D62 /* ImportStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D044ED77235AF42D00300D62 /* ImportStruct.swift */; };
 		D0452AD42246C7830013E225 /* clear.png in Resources */ = {isa = PBXBuildFile; fileRef = D0452AD32246C7820013E225 /* clear.png */; };
 		D0452AD62246E0370013E225 /* whiteBroom.png in Resources */ = {isa = PBXBuildFile; fileRef = D0452AD52246E0370013E225 /* whiteBroom.png */; };
@@ -71,6 +74,11 @@
 		D05D973422647CE60035F1DE /* QRGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05D973322647CE60035F1DE /* QRGenerator.swift */; };
 		D069051F24EA6C1F007F939D /* LightningPeersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D069051E24EA6C1F007F939D /* LightningPeersViewController.swift */; };
 		D069052124EA8E95007F939D /* LightningChannelsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D069052024EA8E95007F939D /* LightningChannelsViewController.swift */; };
+		D06FD7CB2506155C00481185 /* CLibWally.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D06FD7C92506155B00481185 /* CLibWally.xcframework */; };
+		D06FD7CD2506156A00481185 /* LibWally.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D06FD7CA2506155B00481185 /* LibWally.xcframework */; };
+		D06FD7CE2506156A00481185 /* LibWally.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D06FD7CA2506155B00481185 /* LibWally.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		D06FD7D025062F7A00481185 /* GetTx.swift in Sources */ = {isa = PBXBuildFile; fileRef = D06FD7CF25062F7A00481185 /* GetTx.swift */; };
+		D06FD7D2250640F800481185 /* logo_grey.png in Resources */ = {isa = PBXBuildFile; fileRef = D06FD7D1250640F800481185 /* logo_grey.png */; };
 		D071A2A0214880F700C4BCB3 /* Search - tripkey.png in Resources */ = {isa = PBXBuildFile; fileRef = D071A29F214880F700C4BCB3 /* Search - tripkey.png */; };
 		D07399D9245EEA5F00860B7E /* Broadcaster.swift in Sources */ = {isa = PBXBuildFile; fileRef = D07399D8245EEA5F00860B7E /* Broadcaster.swift */; };
 		D073E16E22558CDE0012A28C /* CoreDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D073E16D22558CDE0012A28C /* CoreDataService.swift */; };
@@ -120,7 +128,6 @@
 		D0AD9B6823E7ECC20032C607 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0AD9B6723E7ECC20032C607 /* SceneDelegate.swift */; };
 		D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B3149E216C4DB1008FDC53 /* CreateRawTxViewController.swift */; };
 		D0B6936E22B2412D00A2C3E6 /* ChooseConnectionTypeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B6936D22B2412D00A2C3E6 /* ChooseConnectionTypeViewController.swift */; };
-		D0C20ECE24A624E600C62AA4 /* Tor.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0855FB822ACB7D100DBBFC2 /* Tor.framework */; platformFilter = ios; };
 		D0C20ED224A6DB9D00C62AA4 /* BlockchainInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20ED124A6DB9D00C62AA4 /* BlockchainInfo.swift */; };
 		D0C20ED424A6DFE600C62AA4 /* PeerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20ED324A6DFE500C62AA4 /* PeerInfo.swift */; };
 		D0C20ED624A6E19600C62AA4 /* NetworkInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20ED524A6E19600C62AA4 /* NetworkInfo.swift */; };
@@ -129,7 +136,6 @@
 		D0C20EDC24A6E51D00C62AA4 /* MempoolInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20EDB24A6E51D00C62AA4 /* MempoolInfo.swift */; };
 		D0C20EDE24A6E70A00C62AA4 /* SmartFee.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20EDD24A6E70A00C62AA4 /* SmartFee.swift */; };
 		D0C20EE024A6EF3800C62AA4 /* Balances.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20EDF24A6EF3800C62AA4 /* Balances.swift */; };
-		D0C20EE224A7639800C62AA4 /* LibWally.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0C20EE124A7639800C62AA4 /* LibWally.framework */; };
 		D0C20EE724A78A9700C62AA4 /* CreateFullyNodedWalletViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20EE624A78A9700C62AA4 /* CreateFullyNodedWalletViewController.swift */; };
 		D0C4EE6F24F0EC9B003C929A /* BitSense.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = D0C4EE6D24F0EC9B003C929A /* BitSense.xcdatamodeld */; };
 		D0C5A58824AECDBE003B11A9 /* SignerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C5A58724AECDBE003B11A9 /* SignerViewController.swift */; };
@@ -138,10 +144,8 @@
 		D0CC0E2424F2069D001BF905 /* NoiseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0CC0E2324F2069D001BF905 /* NoiseViewController.swift */; };
 		D0D4B9A624DA616300572811 /* Lightning.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0D4B9A524DA616300572811 /* Lightning.swift */; };
 		D0D71DA32351F835005CCDB9 /* UtilitieMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0D71DA22351F835005CCDB9 /* UtilitieMenuViewController.swift */; };
+		D0DBC7062501CEFE00F6787C /* VerifyTransactionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DBC7052501CEFE00F6787C /* VerifyTransactionViewController.swift */; };
 		D0DE292B22BCFE9900D9EBCF /* Readme.md in Resources */ = {isa = PBXBuildFile; fileRef = D0DE292A22BCFE9900D9EBCF /* Readme.md */; };
-		D0DE292D22BCFEEA00D9EBCF /* addNode.PNG in Resources */ = {isa = PBXBuildFile; fileRef = D0DE292C22BCFEEA00D9EBCF /* addNode.PNG */; };
-		D0DE292F22BCFF0400D9EBCF /* switcher.PNG in Resources */ = {isa = PBXBuildFile; fileRef = D0DE292E22BCFF0400D9EBCF /* switcher.PNG */; };
-		D0DE293322BCFFAB00D9EBCF /* screenShot.png in Resources */ = {isa = PBXBuildFile; fileRef = D0DE293222BCFFAB00D9EBCF /* screenShot.png */; };
 		D0E2A1052496EE9400AE0C04 /* ActiveWalletViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E2A1042496EE9400AE0C04 /* ActiveWalletViewController.swift */; };
 		D0E51E592265640F005D1909 /* ErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E51E582265640F005D1909 /* ErrorView.swift */; };
 		D0E51E5B226592C9005D1909 /* NodeDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E51E5A226592C9005D1909 /* NodeDetailViewController.swift */; };
@@ -168,9 +172,22 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		D01A861624FE86F0009D2510 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				D06FD7CE2506156A00481185 /* LibWally.xcframework in Embed Frameworks */,
+				D03FC07D2508850600450B45 /* Tor-3.xcframework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
-		A084FD712359E9D500DA63CF /* Cartfile.resolved */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Cartfile.resolved; sourceTree = "<group>"; };
-		A084FD732359E9D500DA63CF /* Cartfile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Cartfile; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		A084FD782359F7B700DA63CF /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		D00B9A242111427200E8B95A /* FullyNoded.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FullyNoded.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D00B9A272111427200E8B95A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -223,8 +240,11 @@
 		D039D3C723322F1300D1ED18 /* NodeStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeStruct.swift; sourceTree = "<group>"; };
 		D039D3C92332440D00D1ED18 /* HDMusigStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HDMusigStruct.swift; sourceTree = "<group>"; };
 		D03F65F024EFB25100901D06 /* KeySendViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeySendViewController.swift; sourceTree = "<group>"; };
+		D03FC07A250883D900450B45 /* Tor-3.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = "Tor-3.xcframework"; sourceTree = "<group>"; };
 		D0410615224ED188004AC0D0 /* FullyNoded-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FullyNoded-Bridging-Header.h"; sourceTree = "<group>"; };
 		D0410616224ED189004AC0D0 /* ObjectiveCHeader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ObjectiveCHeader.m; sourceTree = "<group>"; };
+		D042FABB250C9F0600E99D9B /* Torrc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Torrc.swift; sourceTree = "<group>"; };
+		D042FAC1250DA86D00E99D9B /* .torrc */ = {isa = PBXFileReference; lastKnownFileType = text; path = .torrc; sourceTree = "<group>"; };
 		D044ED77235AF42D00300D62 /* ImportStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportStruct.swift; sourceTree = "<group>"; };
 		D0452AD32246C7820013E225 /* clear.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = clear.png; sourceTree = "<group>"; };
 		D0452AD52246E0370013E225 /* whiteBroom.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteBroom.png; sourceTree = "<group>"; };
@@ -242,6 +262,10 @@
 		D05D973322647CE60035F1DE /* QRGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRGenerator.swift; sourceTree = "<group>"; };
 		D069051E24EA6C1F007F939D /* LightningPeersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LightningPeersViewController.swift; sourceTree = "<group>"; };
 		D069052024EA8E95007F939D /* LightningChannelsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LightningChannelsViewController.swift; sourceTree = "<group>"; };
+		D06FD7C92506155B00481185 /* CLibWally.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = CLibWally.xcframework; sourceTree = "<group>"; };
+		D06FD7CA2506155B00481185 /* LibWally.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = LibWally.xcframework; sourceTree = "<group>"; };
+		D06FD7CF25062F7A00481185 /* GetTx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetTx.swift; sourceTree = "<group>"; };
+		D06FD7D1250640F800481185 /* logo_grey.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo_grey.png; sourceTree = "<group>"; };
 		D071A29F214880F700C4BCB3 /* Search - tripkey.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Search - tripkey.png"; sourceTree = "<group>"; };
 		D07399D8245EEA5F00860B7E /* Broadcaster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Broadcaster.swift; sourceTree = "<group>"; };
 		D073E16D22558CDE0012A28C /* CoreDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataService.swift; sourceTree = "<group>"; };
@@ -253,7 +277,6 @@
 		D082397A24DBDB330098D4F4 /* AddPeerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPeerViewController.swift; sourceTree = "<group>"; };
 		D084960322EBCD3B003FE8EB /* GetInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetInfoViewController.swift; sourceTree = "<group>"; };
 		D084960522EC0A94003FE8EB /* LICENSE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
-		D0855FB822ACB7D100DBBFC2 /* Tor.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Tor.framework; path = Carthage/Build/iOS/Tor.framework; sourceTree = "<group>"; };
 		D0855FC522B08EE000DBBFC2 /* TorClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TorClient.swift; path = "../New Group/TorClient.swift"; sourceTree = "<group>"; };
 		D0855FC922B0CEA800DBBFC2 /* CreatePSBT.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePSBT.swift; sourceTree = "<group>"; };
 		D088E9D724FBA4E00097D755 /* CreateMultisigViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CreateMultisigViewController.swift; sourceTree = "<group>"; };
@@ -299,7 +322,6 @@
 		D0C20EDB24A6E51D00C62AA4 /* MempoolInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MempoolInfo.swift; sourceTree = "<group>"; };
 		D0C20EDD24A6E70A00C62AA4 /* SmartFee.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartFee.swift; sourceTree = "<group>"; };
 		D0C20EDF24A6EF3800C62AA4 /* Balances.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Balances.swift; sourceTree = "<group>"; };
-		D0C20EE124A7639800C62AA4 /* LibWally.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = LibWally.framework; path = Carthage/Build/iOS/LibWally.framework; sourceTree = "<group>"; };
 		D0C20EE624A78A9700C62AA4 /* CreateFullyNodedWalletViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateFullyNodedWalletViewController.swift; sourceTree = "<group>"; };
 		D0C4EE6E24F0EC9B003C929A /* BitSense.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = BitSense.xcdatamodel; sourceTree = "<group>"; };
 		D0C5A58724AECDBE003B11A9 /* SignerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignerViewController.swift; sourceTree = "<group>"; };
@@ -310,10 +332,8 @@
 		D0CC0E2324F2069D001BF905 /* NoiseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoiseViewController.swift; sourceTree = "<group>"; };
 		D0D4B9A524DA616300572811 /* Lightning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lightning.swift; sourceTree = "<group>"; };
 		D0D71DA22351F835005CCDB9 /* UtilitieMenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilitieMenuViewController.swift; sourceTree = "<group>"; };
+		D0DBC7052501CEFE00F6787C /* VerifyTransactionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyTransactionViewController.swift; sourceTree = "<group>"; };
 		D0DE292A22BCFE9900D9EBCF /* Readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Readme.md; sourceTree = "<group>"; };
-		D0DE292C22BCFEEA00D9EBCF /* addNode.PNG */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = addNode.PNG; sourceTree = "<group>"; };
-		D0DE292E22BCFF0400D9EBCF /* switcher.PNG */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = switcher.PNG; sourceTree = "<group>"; };
-		D0DE293222BCFFAB00D9EBCF /* screenShot.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = screenShot.png; sourceTree = "<group>"; };
 		D0E2A1042496EE9400AE0C04 /* ActiveWalletViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWalletViewController.swift; sourceTree = "<group>"; };
 		D0E51E582265640F005D1909 /* ErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorView.swift; sourceTree = "<group>"; };
 		D0E51E5A226592C9005D1909 /* NodeDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDetailViewController.swift; sourceTree = "<group>"; };
@@ -335,8 +355,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D0C20EE224A7639800C62AA4 /* LibWally.framework in Frameworks */,
-				D0C20ECE24A624E600C62AA4 /* Tor.framework in Frameworks */,
+				D06FD7CB2506155C00481185 /* CLibWally.xcframework in Frameworks */,
+				D06FD7CD2506156A00481185 /* LibWally.xcframework in Frameworks */,
+				D03FC07C2508850600450B45 /* Tor-3.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -354,8 +375,6 @@
 			isa = PBXGroup;
 			children = (
 				A084FD782359F7B700DA63CF /* .gitignore */,
-				A084FD732359E9D500DA63CF /* Cartfile */,
-				A084FD712359E9D500DA63CF /* Cartfile.resolved */,
 			);
 			name = Build;
 			sourceTree = "<group>";
@@ -542,6 +561,7 @@
 				D09A331024AC4BF6009FA0B2 /* DescriptorParser.swift */,
 				D0F3918F24BFE48600EA8A2A /* AccountMap.swift */,
 				D0257E6424D6C5F5000EB854 /* LightningRPC.swift */,
+				D06FD7CF25062F7A00481185 /* GetTx.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -557,6 +577,7 @@
 				D0C5A58724AECDBE003B11A9 /* SignerViewController.swift */,
 				D0F3919124BFEBBB00EA8A2A /* QRDisplayerViewController.swift */,
 				D0F3919324C0147400EA8A2A /* QRScannerViewController.swift */,
+				D0DBC7052501CEFE00F6787C /* VerifyTransactionViewController.swift */,
 			);
 			path = "View Controllers";
 			sourceTree = "<group>";
@@ -672,6 +693,7 @@
 			children = (
 				D0855FC522B08EE000DBBFC2 /* TorClient.swift */,
 				D0A2918E225114670099A2F3 /* MakeRPCCall.swift */,
+				D042FABB250C9F0600E99D9B /* Torrc.swift */,
 			);
 			path = Tor;
 			sourceTree = "<group>";
@@ -827,8 +849,10 @@
 		D08C1FBB211147F600B7CA79 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				D0C20EE124A7639800C62AA4 /* LibWally.framework */,
-				D0855FB822ACB7D100DBBFC2 /* Tor.framework */,
+				D042FAC1250DA86D00E99D9B /* .torrc */,
+				D03FC07A250883D900450B45 /* Tor-3.xcframework */,
+				D06FD7C92506155B00481185 /* CLibWally.xcframework */,
+				D06FD7CA2506155B00481185 /* LibWally.xcframework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -895,9 +919,7 @@
 		D0FA417A213C7CB70028E4F8 /* Images */ = {
 			isa = PBXGroup;
 			children = (
-				D0DE293222BCFFAB00D9EBCF /* screenShot.png */,
-				D0DE292E22BCFF0400D9EBCF /* switcher.PNG */,
-				D0DE292C22BCFEEA00D9EBCF /* addNode.PNG */,
+				D06FD7D1250640F800481185 /* logo_grey.png */,
 				D05D9731226433B60035F1DE /* strobe.png */,
 				D049CB3824C7EFDF0039711B /* iTunesArtwork@2x.png */,
 				D05D972F226425730035F1DE /* images.png */,
@@ -926,6 +948,7 @@
 				D00B9A212111427200E8B95A /* Frameworks */,
 				D00B9A222111427200E8B95A /* Resources */,
 				D08C1FBE2111480100B7CA79 /* ShellScript */,
+				D01A861624FE86F0009D2510 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -940,6 +963,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = D00BD9D12365664600222A37 /* Build configuration list for PBXNativeTarget "FullyNodedTests" */;
 			buildPhases = (
+				67A2355F9AFB1832C81E0778 /* [CP] Check Pods Manifest.lock */,
 				D00BD9C42365664600222A37 /* Sources */,
 				D00BD9C52365664600222A37 /* Frameworks */,
 				D00BD9C62365664600222A37 /* Resources */,
@@ -987,6 +1011,7 @@
 					};
 					D00BD9C72365664600222A37 = {
 						CreatedOnToolsVersion = 11.1;
+						ProvisioningStyle = Automatic;
 						TestTargetID = D00B9A232111427200E8B95A;
 					};
 				};
@@ -1015,7 +1040,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D0DE292F22BCFF0400D9EBCF /* switcher.PNG in Resources */,
 				D0358D9521B1B44B007D56ED /* whiteCheck.png in Resources */,
 				D084960622EC0A94003FE8EB /* LICENSE.md in Resources */,
 				D0A291912251743B0099A2F3 /* settings90.png in Resources */,
@@ -1029,14 +1053,13 @@
 				D0196DD721B5AB300081E0AB /* KeyPadButtonView.xib in Resources */,
 				D0452AD62246E0370013E225 /* whiteBroom.png in Resources */,
 				D049CB3924C7EFDF0039711B /* iTunesArtwork@2x.png in Resources */,
-				D0DE292D22BCFEEA00D9EBCF /* addNode.PNG in Resources */,
 				D071A2A0214880F700C4BCB3 /* Search - tripkey.png in Resources */,
 				D0452AD42246C7830013E225 /* clear.png in Resources */,
 				D0126FF82244842000412629 /* bWhite.png in Resources */,
 				D05D9732226433B60035F1DE /* strobe.png in Resources */,
+				D06FD7D2250640F800481185 /* logo_grey.png in Resources */,
 				D0FA417E213C7CED0028E4F8 /* whiteFingerPrint.png in Resources */,
 				D00B9A2D2111427200E8B95A /* Main.storyboard in Resources */,
-				D0DE293322BCFFAB00D9EBCF /* screenShot.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1050,14 +1073,34 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		67A2355F9AFB1832C81E0778 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-FullyNodedTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
 		D08C1FBE2111480100B7CA79 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
-				"$(SRCROOT)/Carthage/Build/iOS/Tor.framework",
-				"$(SRCROOT)/Carthage/Build/iOS/LibWally.framework",
 			);
 			outputPaths = (
 			);
@@ -1099,6 +1142,7 @@
 				D05D973422647CE60035F1DE /* QRGenerator.swift in Sources */,
 				D09A330724A982F3009FA0B2 /* FullyNodedWalletsViewController.swift in Sources */,
 				D07AED042435B62B00C2FADB /* Entities.swift in Sources */,
+				D0DBC7062501CEFE00F6787C /* VerifyTransactionViewController.swift in Sources */,
 				D037C872231BB020006C357D /* AddFingerprintViewController.swift in Sources */,
 				D0855FCA22B0CEA800DBBFC2 /* CreatePSBT.swift in Sources */,
 				D02094F3225936D2002E8E7A /* ConnectingView.swift in Sources */,
@@ -1147,6 +1191,7 @@
 				D03F65F124EFB25100901D06 /* KeySendViewController.swift in Sources */,
 				D0E51E5B226592C9005D1909 /* NodeDetailViewController.swift in Sources */,
 				D0233F222361E68F0041FFBA /* KeyGen.swift in Sources */,
+				D042FABC250C9F0600E99D9B /* Torrc.swift in Sources */,
 				D0126FF622446E3800412629 /* InvoiceViewController.swift in Sources */,
 				D0410617224ED189004AC0D0 /* ObjectiveCHeader.m in Sources */,
 				D0B6936E22B2412D00A2C3E6 /* ChooseConnectionTypeViewController.swift in Sources */,
@@ -1157,6 +1202,7 @@
 				D037C874231BB04B006C357D /* ScanExtendedKeyViewController.swift in Sources */,
 				D044ED78235AF42D00300D62 /* ImportStruct.swift in Sources */,
 				D0C20ED624A6E19600C62AA4 /* NetworkInfo.swift in Sources */,
+				D06FD7D025062F7A00481185 /* GetTx.swift in Sources */,
 				D0C5A58824AECDBE003B11A9 /* SignerViewController.swift in Sources */,
 				D096EE00249DFADD0084A065 /* HelpViewController.swift in Sources */,
 				D09F9E4E24B06A63006B588C /* SignerStruct.swift in Sources */,
@@ -1359,10 +1405,11 @@
 				CODE_SIGN_ENTITLEMENTS = FullyNoded/FullyNoded.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 217;
-				CURRENT_PROJECT_VERSION = 216;
-				DEVELOPMENT_TEAM = 69FR345CDA;
+				CURRENT_PROJECT_VERSION = 226;
+				DEVELOPMENT_TEAM = 8JHDU5M9KD;
+				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
@@ -1374,12 +1421,14 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.297;
+				MARKETING_VERSION = 1.306;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SUPPORTS_MACCATALYST = NO;
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "FullyNoded/FullyNoded-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -1397,9 +1446,10 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 217;
+				CURRENT_PROJECT_VERSION = 226;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 69FR345CDA;
+				DEVELOPMENT_TEAM = 8JHDU5M9KD;
+				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				ENABLE_TESTABILITY = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1412,12 +1462,14 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.297;
+				MARKETING_VERSION = 1.306;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SUPPORTS_MACCATALYST = NO;
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "FullyNoded/FullyNoded-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

@@ -5,6 +5,7 @@ Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own 
 
 <img src="./Images/fn_logo.png" alt="" width="100"/><br/>
 [<img src="./Images/appstore.png" alt="download fully noded on the app store" width="100"/>](https://apps.apple.com/us/app/fully-noded/id1436425586)<br/>
+[<img src="./Images/macos_badge.png" alt="download fully noded for macos" width="100"/>](./FullyNoded.dmg)<br/>
 
 ## Cost
 
@@ -40,7 +41,11 @@ However, developing and supporting this project is hard work and costs real mone
 * [Tor](https://www.torproject.org/download/)
 * An understanding of basic Bitcoin concepts, you can read this [overview](./Docs/What-is-a-node.md). It greatly helps to have a basic understanding of `bitcoin-cli` commands, what they do and how they work to grasp how the app works under the hood. [Learning Bitcoin from the Command Line](https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line) is an excellent in depth reference.
 
-## Getting Setup Proper
+## macOS setup (recommended)
+
+* [How to get started](https://www.youtube.com/watch?v=_7MZd0weDis)
+
+## Getting Setup Proper (advanced users)
 
 - After downloading the app you need to first connect a node - see the guides
     - On macOS by far the easiest way (one click setup) is to use *Gordian-Server*, download [here](https://github.com/BlockchainCommons/GordianServer-macOS/raw/master/GordianServer-macOS-v0.1.2.dmg)
@@ -83,9 +88,16 @@ However, developing and supporting this project is hard work and costs real mone
 
 ## Youtube Tutorials
 
-* [Coldcard Single Signature wallet](https://www.youtube.com/watch?v=W0vwgzIrPoY)
-* [Coldcard Multi Signature wallet](https://www.youtube.com/watch?v=daXvAcHy8H0)
+* [Get started](https://www.youtube.com/watch?v=_7MZd0weDis)
+* [Set and reset a password to lock the app, enable and disable biometrics](https://www.youtube.com/watch?v=IGTEncREFCY)
+* [Coldcard single signature wallet](https://www.youtube.com/watch?v=W0vwgzIrPoY)
+* [Coldcard multi signature wallet](https://www.youtube.com/watch?v=daXvAcHy8H0)
 * [Create, spend from and recover a multisig wallet](https://www.youtube.com/watch?v=-Eh-OdtFRmI)
+
+## PGP
+
+* Peter Denton (new): 1C72 2776 3647 A221 6E02  E539 025E 9AD2 D3AC 0FCA
+* Peter Denton (old): 3B37 97FA 0AE8 4BE5 B440  6591 8564 01D7 121C 32FC
 
 ## Contributing
 
@@ -137,4 +149,3 @@ terms of a separate license:
 * [DescriptorParser.swift](https://github.com/BlockchainCommons/GordianWallet-iOS/blob/master/XCode/GordianWallet/Helpers/DescriptorParser.swift) from [Blockchain Commons](https://github.com/BlockchainCommons) which is under the [spdx:BSD-2-Clause Plus Patent License](https://spdx.org/licenses/BSD-2-Clause-Patent.html).
 * [Base32](https://github.com/norio-nomura/Base32/blob/master/Sources/Base32) built by [@norio-nomura](https://github.com/norio-nomura) - for Tor V3 authentication key encoding which is licensed under The MIT License (MIT).
 * [Base58](https://github.com/wavesplatform/Base58/tree/master/Source) from [@LukeDash-jr](https://github.com/luke-jr) and the [Waves Platform](https://github.com/wavesplatform) which is licensed under The MIT License (MIT). Used for converting Slip0132 extended keys to xpubs/xprvs.
-

@@ -81,10 +81,10 @@ class MakeRPCCall {
                 var request = URLRequest(url: url)
                 var timeout = 10.0
                 if method == .gettxoutsetinfo {
-                    timeout = 500.0
+                    timeout = 1000.0
                 }
                 if method == .importmulti || method == .deriveaddresses {
-                    timeout = 30.0
+                    timeout = 60.0
                 }
                 request.timeoutInterval = timeout
                 request.httpMethod = "POST"
@@ -96,7 +96,12 @@ class MakeRPCCall {
                 print("request: \("{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method.rawValue)\",\"params\":[\(formattedParam)]}")")
                 #endif
                 
-                let task = vc.torClient.session.dataTask(with: request as URLRequest) { [unowned vc = self] (data, response, error) in
+                var sesh = URLSession(configuration: .default)
+                if vc.onionAddress.contains("onion") {
+                    sesh = vc.torClient.session
+                }
+                
+                let task = sesh.dataTask(with: request as URLRequest) { [unowned vc = self] (data, response, error) in
                     
                     do {
                         

@@ -36,7 +36,8 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 ## Definitions
 
 - FN : Fully Noded app
-- FN2 : Fully Noded 2 app, new name is Gordian Wallet, The original name FN2 was a misnaming because it is a different app than FN from its inception. [This comparison](./Docs/FN2_Comparison.md) tries to explain the differences between Fully Noded and Gordian Wallet. 
+- FN2 : see GW
+- GW : Gordian Wallet, formerly known as `Fully Noded 2` app, The original name FN2 was a misnaming because it is a different app than FN from its inception. [This comparison](http://github.com/henkvancann/FNcompGordian/FN2_Comparison.md) tries to explain the differences between Fully Noded and Gordian Wallet. 
 - satoshi: 0.000000001 BTC. A satoshi is the smallest unit of a bitcoin, equivalent to 100 millionth of a bitcoin.
 - UTXO's: Unspend transaction Outputs; UTXO stands for the unspent output from bitcoin transactions. Each bitcoin transaction begins with coins used to balance the ledger. UTXOs are processed continuously and are responsible for beginning and ending each transaction. Confirmation of transaction results in the removal of spent coins from the UTXO database. But a record of the spent coins still exists on the ledger. **for newbies**: UTXO is unspent bitcoin that you can "see" in your wallet and on the blockchain. It is an address and amount of sathosis. As soon as you spend the money, it won't add to your wallet balance anymore and therefore will only.
 - signed raw transaction : [Wikipage](https://en.bitcoin.it/wiki/Raw_Transactions) explains it all
@@ -71,6 +72,8 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 - bitcoind: Bitcoin Deamon, background process running a bitcoin node. Bitcoind is a program that implements the Bitcoin protocol for remote procedure call (RPC) use. It is also the second Bitcoin client in the network's history. It is available under the MIT license in 32-bit and 64-bit versions for Windows, GNU/Linux-based OSes, and Mac OS X. [Read more](https://en.bitcoin.it/wiki/Bitcoind)
 - SSH: Secure Shell (SSH) is a cryptographic network protocol for operating network services securely over an unsecured network.[1] Typical applications include remote command-line, login, and remote command execution, but any network service can be secured with SSH.
 - Nano : famous text GUI editor to start from commandline, not to be confused with Ledger Nano S/X, which is a cold storage.
+- gap limit : This means you ended with more than 20 consecutive unused addresses in your bitcoin wallet. This could have have happened due to various reasons. [What it is and how to get over it](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1)
+- Esplora : Name of Blockstream's Tor V3 api to broadcast, it falls back to the users node if the api is unavailable. More info [here](https://github.com/Blockstream/esplora)
 
 ## Knowledge you should be confidently applying
 - The definitions above
@@ -267,6 +270,16 @@ Build your unsigned transactions on your phone, and send them to airgapped lapto
 
 You can view node details in FN, there is an export button, it gives you a QR that you can scan or upload with Gordian Wallet.
 
+##### Can I import a multisig wallet from Electrum into Fully Noded?  
+*I want to use it as a watch only wallet*
+
+Follow these steps:
+1. You’ll want to tap “create multisig”.
+2. Then you can paste your xpubs from electrum, FullyNoded wants fingerprints too thats bc some HWW require them. If you don’t know it you can input a fake one as it is not actually required for anything other then Coldcard. `00000000` will do the trick
+3. I forgot to add ability to convert `Zpub` to `xpub` in the current version so you will need to use https://jlopp.github.io/xpub-converter/ to convert your Electrum Zpub into xpubs
+4. Just paste in the xpub and add fingerprint, tap +, then when all have been added tap “create now”
+5. The derivation is hardcoded to the most widely used default `m/48’/0’/0’/2’`, which from Electrum would be a `Zpub`.
+
 ## Export
 
 #### Question : Why doesn't broadcast work via my Node?
@@ -317,7 +330,31 @@ Loss of privacy. Not loss of funds. It holds pubkeys only. More info [here](http
 
 No, signers are seperate, the QR is pubkey only. You have to add signer manually as words, if you'd like to spend the funds involved.
 
+#### How can I import a 12 word mnemonic from Coldcard into FN wallet? 
+*FN defaults to a camera but the coldcard doesnt have QR codes on the screen (I'm using the BIP85 feature)*
+
+Create a recovery wallet instead. More info in [troubleshooting](https://github.com/Fonta1n3/FullyNoded/blob/master/Docs/Troubleshooting.md) section.
+
 ## General
+
+#### Question : What’s the difference between Gordian Wallet (GW) and Fully Noded (FN)?
+
+1. GW is more focused on easy to use wallets, it will automatically create a 2/3 multisig wallet for you where your node is a signer as well as your device. Then you can keep one seed in offline backup to restore either your nodes signer or devices signer. So GW will give you your nodes seed words to back up and the purely offline seed words and of course you can access the devices words to back them up as well. 
+Much redundancy and flexibility
+2. FN never adds a private key to your node unless you manually import an wif or xprv
+3. GW does not give you access to every wallet on the node, FN does
+4. GW does not have all the pure node functionality, again its a focused wallet
+5. GW is account based it only signs with account xprv, FN keeps your master seed to sign with
+6. GW has iCloud sync and sign in with apple, FN does not
+7. FN has lightning, GW does not
+8. Also GW is not released on mainnet or on the app store
+
+##### Teamplayers Gordian Wallet and Fully Noded
+The general idea is `multisig` is by far the most secure way to use bitcoin, both GW and FN are excellent multsig wallets, it’s generally a good idea to use many wallets for your multisig setup, with that in mind the two together make an excellent team.
+
+##### Addition to point 1: example
+So for example if your node dies or you lose your device you are well covered to recover the 2/3. What I do is add one set of words to other apps on other devices (as this diagram points out), so no one device can fully sign and spend.
+<img src="./Images/FinalSolution.png" alt="Final FN multisig solution" border="0" width="600">
 
 #### Question : Why is there no version for Android yet?
 
@@ -459,6 +496,17 @@ I dont know, better to ask on `mynode` group for a definitive answer, not sure e
 
 Have a feeling its a paywalled feature on mynode. i think all mynode does it puts a paywall around the convenience of automatically showing the `QR`, but again I am not sure. If they block you from `ssh`'ing and creating your Hidden services, that would be lame.
 
+#### Question : Why does the `tor` service persist in the background even after I've shut down Gordian Server? Why doesn't Gordian Server shut down its service that it initiated?
+
+Because Gordian Server is just an installer. The Gordian Wallet app is totally separate from `tor` and `bitcoin core`. You can delete Gordian and redownlaod and it has zero effect on your node or tor. Gordian sets-up `tor` as a system service.
+
+You can always stop it with  `brew services stop tor` or you can click the stop button
+
+##### Further question: Most people would expect it to stop itself when pressing `cmd+q`? Most people think of apps in macOS as a self contained monolith. 
+*I was under the impression that on macOS once an app window is shut then it and any associated programs are turned off, like that's the default behaviour, unless there's a clear visual indicator that it's still running in the menu bar or the dock; unlike in windows where its minimized to the system tray.*
+
+##### Further answer:
+Tor is a service. And Gordian is not really a traditional app. Tor and bitcoind is not embedded with it. It's totally external, for that it would never get approved on mac app store. What's so hard with clicking `stop`?
 
 ## Connection
 
@@ -651,6 +699,72 @@ HowTo: <br/>
 
 FN never creates a hot wallet on your node unless you explicitly go to `“advanced” > “bitcoin core wallets” > + > hot`. The Tor auth has nothing to do with wallet creation.
 
+#### With myNode, over `tor`, i'm always getting "network connection was lost" right after tor connected. What to do?
+
+You have reboot tor on mynode. Without having to reboot the whole node, use<br/>
+`systemctl restart tor`<br/>
+
+#### Question :  I am connected to my raspiblitz node and I get this Lightning "Method not found" error.
+<img src="./Images/lightning-raspiblitz-error.jpg" alt="lightning-raspiblitz-error-screen" border="0" width="200"><br/>
+*I got that message just by clicking on the lightning icon here on the main screen. I can access my node but not the lightning* <br/>
+<img src="./Images/verification-progress.jpg" alt="verification-progress-screen" border="0" width="200"><br/>
+
+Javier: You need to follow this guide. https://github.com/Fonta1n3/FullyNoded/blob/master/Docs/Lightning.md
+@Fonta1n3: there is difference now. To add the lightning node tap the lighting button on home screen then the settings button, it should also automatically prompt you.
+
+#### Question : Do you use wireguard to connect to your nodes?
+*All it is is a vpn right? Just need to add an IP:port to connect? - Raised by Fonta1n3*
+
+Max: Need a VPN server obviously but yes, an IP and port with the WireGuard app together with a keypair.
+
+##### Further Question: Where does the keypair fit in?
+*Adding ability to connect to localhost, and it dawned on me it would be very trivial to allow people to connect using their VPNs*
+
+##### Further answer:
+Max: each device you have has a separate key pair for authentication. So basically your router has a bunch of public keys
+ and you can generate the private keys on each client, just like tor v3 auth.<br/>
+If you added the ability to connect to your local host and someone was connected to their WireGuard, it should just work as they would be local
+
+1. If we just add abilty to use a normal IP instead of only onion, that should work. 
+2. Also for OpenVPN users too
+3. And the traffic over VPN is always encrypted, from your client to your router
+
+Benefits: 
+- Could make it a whole lot more accessible
+- And less latency
+- And dont have to rely on Tor
+
+#### Question : What is a good local network connection set-up to your nodes?
+
+Max: I generally recommend people to have a config that allows them to set up DuckDNS<br/>
+So basically they will have a `Pi` or something similar running the `WireGuard` server. Their router will not be a fixed IP.
+
+So folk can register a domain for free like `fontaine.duckdns.org` and an an app will check the IP address the router has
+ and update the corresponding IP with `DuckDNS`.
+
+##### Further Question: Where does the keypair fit in?
+*Fonta1n3: So for the nodes side, say your `nodl` Do you expose it to something other then localhost? Other then the `vpn` obviously... T<br/>here is nothing stopping people from doing something really dumb
+Like exposing their node to the entire internet unencrypted*
+
+##### Further answer:
+Max: Only `Tor`<br/>
+The Home Assistant UI where I can administer my `BItwarden`, `DuckDNS`, `VPN` and `Adblocker` I can access over a userinterface. <br/>
+So ports are forwarded and I have a `letsencrypt` certificate for that.
+About doing something really dumb:<br/>
+You wouldn't actually be doing anything there right, though? People's nodes will be accessible on their local network anyway. 
+For example by `SSHing` into the network (just not using `FullyNoded`).
+
+#### Question : Can I connect FN on iPhone to my own node via FN on Mac?
+
+Yes, no need for the user to worry about `Tor` at all. just use `macOS` FN which runs its own tor node embedded in the app, it hosts a hidden service itself. **This obviously only works if you have Bitcoin Core running on the same macbook.**
+
+Next macOS update (in Sept 2020) will have a new button on the node credentials view for showing a QR code for connecting your iOS device.
+
+#### Question : How to run your own node and connect to it with Fully Noded macOS? 
+
+Just follow the easy steps in this [instruction video](https://www.youtube.com/watch?v=_7MZd0weDis) on youtube.
+
+
 ## Wallets
 
 #### Question : How do I create a wallet in FN?
@@ -803,6 +917,51 @@ To fix it you can revert to bitcoin core 0.20.0.
 
 Aug 2020 : MOST PROBABLE THIS ISSUE WILL BE SOLVED SOON AND IF YOU WON'T EXPERIENCE THE ERROR ANYMORE
 
+#### Question : How to have a watch-only wallet to track BTCPayserver incoming funds?
+*...without running into `gap-limit` problem. What kind of wallet should I use, Bitcoin core or Fully Noded wallet?*
+
+Fully Noded, because you can always easily increase the gap limit with a Fully Noded wallet. And it also by default watches 1.5x more addresses.
+
+##### Further question : how do I know it's time to increase the `gap limit`?
+Youll get an alert from FN. You need to really use a ton of addresses before that happens. <br/>
+After you create the wallet → Tap the info button → Youll see your current index and the max index <br/>
+You can at anytime edit the max index.
+
+#### Question : Why would a new Fully Noded wallet be watch-only when it should have a private key at least.
+
+Because it keeps the signer on your device, not on your node. Pls read the docs from [here](https://github.com/Fonta1n3/FullyNoded)
+
+##### Further question: But I'm trying to encrypt the wallet on device. I just created wallet, go-to settings, security, encrypt - error...
+
+##### Further answer : 
+Your seed is already encrypted. The command you are using is the bitcoin-cli encryption. That error you're getting is for your node.<br/>
+```
+bitcoin-cli encryptwallet
+```
+
+If there is nothing to encrypt it won't encrypt. Your wallets private keys are by default encrypted in the device. No private key ever goes to your node.
+
+#### Question: Private keys are by default encrypted in the device. But there is no password in the app. How's the seed protected?
+
+The first thing the FN app does is create a private key it uses for encryption. It gets encrypted itself and stored on your devices secure enclave.
+When you go to create a FN wallet or add a signer it *always* gets encrypted before it gets saved.<br/>
+This is obvious in the code, which is open source and signed off by me. A checksum is available. See [the asnwer to this question]() 
+if you like to learn the nuances of these security proofs and what they are worth.
+
+##### Further question : But it shows the seed phrase without any authentication. Regardless of the Biometrics setting. How can that be secure?
+
+##### Further answer : 
+It's done programmatically. If you don't want someone to open the app -> add a password or biometrics. It's setup so that if a hacker got your device, they would not be able to jail break it and get your seeds. You should definitely use the password to lock the app.
+
+If you are security conscious, you can also just delete the signer for that wallet. Then when you want to spend, add it again. It's easy to do.
+
+#### Question : Can I sweep an old paper wallet?
+<img src="./Images/paper-wallet-sweep.jpg" alt="paper-wallet-sweep-screen" border="0" width="200"><br/>
+
+Yes, but Fully Noded wallets are not capable of that. You will need to use the nodes default wallet `"advanced" > Core wallets > default`
+
+Sweep it and then spend it to your Coldcard Fully Noded Wallet (or whatever you want to do). You will need to rescan before balances show up as usual.
+
 ## Standup
 
 #### Question : where can I download this? 
@@ -868,6 +1027,16 @@ Would need to start simple and expand... sigh so much to do so little time. Wish
 
 You **can not do anything in FN without connecting to your node** first.
 
+#### Question : If you start rescan of blockchain does the app have to stay open the whole time for it to rescan?
 
+No, your node will keep rescanning, the only way it will stop is if you tell it to stop or it naturally finishes
 
+#### Further Question : If I add an xpub I assume I need to rescan. Does rescanning take hours/days on a pi?
+It depends how far back you want to rescan, you can set any custom date to scan from. If it's 2gb ram and a full rescan it'll prob take ~two hours? <br/>
+N8r: about 4 hrs on pi3
 
+#### Question : Can I use a pruned node with FN?
+
+Of course, I use with pruned only. There is a few areas where a pruned node lacks the functionality needed that FN requires, so it smartly checks for that and if the node is pruned it falls back on `Esplora` over Tor v3; essentially only for parsing every input in your transactions for the verifier, if one of the inputs does not belong to you we fall back on `esplora` to fetch the raw transaction associated with that `txid`
+
+just set `prune=550` in your `bitcoin.conf` when you go to get the `rpc` credentials. A pruned node only needs 500 megabytes.
