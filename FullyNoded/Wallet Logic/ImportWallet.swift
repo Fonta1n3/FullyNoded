@@ -239,15 +239,21 @@ class ImportWallet {
         CoreDataService.retrieveEntity(entityName: .wallets) { (wallets) in
             var walletExists = false
             if wallets != nil {
-                for (i, wallet) in wallets!.enumerated() {
-                    let walletStruct = Wallet(dictionary: wallet)
-                    if walletStruct.name == walletToBeStruct.name {
-                        walletExists = true
+                if wallets!.count > 0 {
+                    for (i, wallet) in wallets!.enumerated() {
+                        let walletStruct = Wallet(dictionary: wallet)
+                        if walletStruct.name == walletToBeStruct.name {
+                            walletExists = true
+                        }
+                        if i + 1 == wallets!.count {
+                            completion(walletExists)
+                        }
                     }
-                    if i + 1 == wallets!.count {
-                        completion(walletExists)
-                    }
+                } else {
+                    completion(false)
                 }
+            } else {
+                completion(false)
             }
         }
     }
@@ -286,16 +292,14 @@ class ImportWallet {
                 if let pruned = dict["pruned"] as? Bool {
                     if pruned {
                         if let pruneHeight = dict["pruneheight"] as? Int {
-                            Reducer.makeCommand(command: .rescanblockchain, param: "\(pruneHeight)") { (response, errorMessage) in
-                                saveLocally(wallet: wallet, completion: completion)
-                            }
+                            Reducer.makeCommand(command: .rescanblockchain, param: "\(pruneHeight)") { (_, _) in }
+                            saveLocally(wallet: wallet, completion: completion)
                         } else {
                             completion((false, errorMessage ?? "error getting prune height"))
                         }
                     } else {
-                        Reducer.makeCommand(command: .rescanblockchain, param: "") { (response, errorMessage) in
-                            saveLocally(wallet: wallet, completion: completion)
-                        }
+                        Reducer.makeCommand(command: .rescanblockchain, param: "") { (_, _) in }
+                        saveLocally(wallet: wallet, completion: completion)
                     }
                 } else {
                     completion((false, errorMessage ?? "error getting prune info"))
