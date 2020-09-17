@@ -28,12 +28,6 @@ class LockedViewController: UIViewController, UITableViewDelegate, UITableViewDa
         executeNodeCommand(method: .listlockunspent, param: "")
     }
     
-    override func viewWillDisappear(_ animated: Bool) {
-        DispatchQueue.main.async {
-            NotificationCenter.default.post(name: .refreshUtxos, object: nil, userInfo: nil)
-        }
-    }
-    
     // MARK: - Table view data source
     
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -66,9 +60,7 @@ class LockedViewController: UIViewController, UITableViewDelegate, UITableViewDa
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        
         return 50
-        
     }
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {

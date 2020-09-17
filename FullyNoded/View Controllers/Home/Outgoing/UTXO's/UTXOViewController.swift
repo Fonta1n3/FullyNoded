@@ -18,7 +18,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     var psbt = ""
     var amountTotal = 0.0
     let refresher = UIRefreshControl()
-    var utxoArray = [Any]()
+    var utxoArray = [UTXO]()
     var inputArray = [Any]()
     var inputs = ""
     var address = ""
@@ -27,7 +27,6 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     var nativeSegwit = Bool()
     var p2shSegwit = Bool()
     var legacy = Bool()
-    var selectedArray = [Bool]()
     var isUnsigned = false
     var utxo = NSDictionary()
     let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
@@ -40,20 +39,21 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         navigationController?.delegate = self
         utxoTable.delegate = self
         utxoTable.dataSource = self
+        utxoTable.register(UINib(nibName: UTXOCell.identifier, bundle: nil), forCellReuseIdentifier: UTXOCell.identifier)
         configureAmountView()
         utxoTable.tableFooterView = UIView(frame: .zero)
         refresher.tintColor = UIColor.white
-        refresher.addTarget(self, action: #selector(refresh), for: UIControl.Event.valueChanged)
+        refresher.addTarget(self, action: #selector(loadUnspentUTXOs), for: UIControl.Event.valueChanged)
         utxoTable.addSubview(refresher)
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         self.blurView2.addGestureRecognizer(tapGesture)
-        NotificationCenter.default.addObserver(self, selector: #selector(reloadUtxos), name: .refreshUtxos, object: nil)
-        refresh()
     }
     
-    @objc func reloadUtxos() {
-        refresh()
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        loadUnspentUTXOs()
     }
     
     @IBAction func lockAction(_ sender: Any) {
@@ -123,7 +123,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
             } else {
                 //consolidate them all
                 for utxo in utxoArray {
-                    utxoToSpendArray.append(utxo as! [String:Any])
+                    utxoToSpendArray.append(utxo)
                 }
             }
             getAddressSettings()
@@ -161,7 +161,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                                    height: 90)
         
         amountInput.keyboardType = UIKeyboardType.decimalPad
-        amountInput.font = UIFont.init(name: "HiraginoSans-W3", size: 40)
+        amountInput.font = UIFont(name: "HiraginoSans-W3", size: 40)
         amountInput.tintColor = UIColor.white
         amountInput.inputAccessoryView = sweepButtonView
         
@@ -279,7 +279,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         
         label.frame = CGRect(x: 0, y: 15, width: amountView.frame.width, height: 20)
         
-        label.font = UIFont.init(name: "HiraginoSans-W3", size: 20)
+        label.font = UIFont(name: "HiraginoSans-W3", size: 20)
         label.textColor = UIColor.darkGray
         label.textAlignment = .center
         label.text = "Amount to send"
@@ -374,12 +374,6 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         }
     }
     
-    @objc func refresh() {
-        addSpinner()
-        utxoArray.removeAll()
-        executeNodeCommand(method: .listunspent, param: "0")
-    }
-    
     func numberOfSections(in tableView: UITableView) -> Int {
         return utxoArray.count
     }
@@ -388,141 +382,74 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         return 1
     }
     
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 5 // Spacing between cells
+    }
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let headerView = UIView()
+        headerView.backgroundColor = .clear
+        return headerView
+    }
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "utxoCell", for: indexPath)
-        cell.clipsToBounds = true
-        cell.layer.cornerRadius = 8
-        cell.layer.borderColor = UIColor.lightGray.cgColor
-        cell.layer.borderWidth = 0.5
-        
-        if utxoArray.count > 0 {
-            
-            let dict = utxoArray[indexPath.section] as! NSDictionary
-            let address = cell.viewWithTag(1) as! UILabel
-            let txid = cell.viewWithTag(2) as! UILabel
-            let amount = cell.viewWithTag(4) as! UILabel
-            let vout = cell.viewWithTag(6) as! UILabel
-            let solvable = cell.viewWithTag(7) as! UILabel
-            let confs = cell.viewWithTag(8) as! UILabel
-            let spendable = cell.viewWithTag(10) as! UILabel
-            let checkMark = cell.viewWithTag(13) as! UIImageView
-            let label = cell.viewWithTag(11) as! UILabel
-            
-            if !(selectedArray[indexPath.section]) {
-                
-                checkMark.alpha = 0
-                cell.backgroundColor = #colorLiteral(red: 0.07831101865, green: 0.08237650245, blue: 0.08238270134, alpha: 1)
-                
-            } else {
-                
-                checkMark.alpha = 1
-                cell.backgroundColor = UIColor.black
-                
-            }
-            
-            for (key, value) in dict {
-                
-                let keyString = key as! String
-                
-                switch keyString {
-                    
-                case "txid":
-                    txid.text = "\(value)"
-                    
-                case "address":
-                    
-                    address.text = "\(value)"
-                    
-                case "amount":
-                    
-                    let dbl = rounded(number: value as! Double)
-                    amount.text = dbl.avoidNotation
-                    
-                case "vout":
-                    
-                    vout.text = "vout #\(value)"
-                    
-                case "solvable":
-                    
-                    if (value as! Int) == 1 {
-                        
-                        solvable.text = "Solvable"
-                        solvable.textColor = .systemGreen
-                        
-                    } else if (value as! Int) == 0 {
-                        
-                        solvable.text = "Not Solvable"
-                        solvable.textColor = .systemBlue
-                        
-                    }
-                    
-                case "confirmations":
-                    
-                    if (value as! Int) == 0 {
-                     
-                        confs.textColor = .systemRed
-                        
-                    } else {
-                        
-                        confs.textColor = .systemGreen
-                        
-                    }
-                    
-                    confs.text = "\(value) confs"
-                    
-               case "spendable":
-                    
-                    if (value as! Int) == 1 {
-                        
-                        spendable.text = "Spendable"
-                        spendable.textColor = .systemGreen
-                        
-                    } else if (value as! Int) == 0 {
-                        
-                        spendable.text = "COLD"
-                        spendable.textColor = .systemBlue
-                        
-                    }
-                    
-                case "label":
-                    
-                    label.text = (value as! String)
-                    
-                default:
-                    
-                    break
-                    
-                }
-                
-            }
-            
-        }
+        let cell = tableView.dequeueReusableCell(withIdentifier: UTXOCell.identifier, for: indexPath) as! UTXOCell
+        let utxo = utxoArray[indexPath.section]
+        cell.configure(utxo: utxo, delegate: self)
         
         return cell
+    }
+    
+    func lock(_ utxo: UTXO, completion: ((Result<Void, ReducerError>) -> Void)? = nil) {
+        guard let index = self.utxoArray.firstIndex(where: { $0.txid == utxo.txid }) else { return }
         
-    }
-    
-    @objc func lockViaButton(_ sender: UIButton) {
-        let utxo = utxoArray[sender.tag] as! [String:Any]
-        let txid = utxo["txid"] as! String
-        let vout = utxo["vout"] as! Int
-        lockUTXO(txid: txid, vout: vout)
-    }
-    
-    func lockUTXO(txid: String, vout: Int) {
+        utxoArray.remove(at: index)
+        
         creatingView.addConnectingView(vc: self, description: "locking...")
-        let param = "false, ''[{\"txid\":\"\(txid)\",\"vout\":\(vout)}]''"
-        executeNodeCommand(method: .lockunspent, param: param)
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.removeSpinner()
+            self.utxoTable.reloadData()
+        }
+        
+        Reducer.lock(utxo) { [weak self] result in
+            guard let self = self else { return }
+            
+            self.creatingView.removeConnectingView()
+            
+            if case .failure(let error) = result {
+                self.loadUnspentUTXOs()
+                
+                switch error {
+                case .description(let errorMessage):
+                    displayAlert(viewController: self, isError: true, message: errorMessage)
+                }
+            }
+            
+            completion?(result)
+        }
     }
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        let utxos = utxoArray as NSArray
-        let utxo = utxos[indexPath.section] as! NSDictionary
-        let txid = utxo["txid"] as! String
-        let vout = utxo["vout"] as! Int
-        let lock = UIContextualAction(style: .destructive, title: "Lock") {  (contextualAction, view, boolValue) in
-            self.lockUTXO(txid: txid, vout: vout)
+        
+        let utxo = utxoArray[indexPath.section]
+        let lock = UIContextualAction(style: .destructive, title: "Lock") { (contextualAction, view, boolValue) in
+            tableView.isUserInteractionEnabled = false
+            
+            self.lock(utxo) { [weak self] result in
+                guard let self = self else { return }
+                
+                if case .failure = result {
+                    self.loadUnspentUTXOs()
+                }
+                
+                DispatchQueue.main.async {
+                    tableView.isUserInteractionEnabled = true
+                    self.utxoTable.reloadData()
+                }
+            }
         }
         lock.backgroundColor = .systemRed
         let swipeActions = UISwipeActionsConfiguration(actions: [lock])
@@ -531,35 +458,13 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        let cell = utxoTable.cellForRow(at: indexPath)
-        let checkmark = cell?.viewWithTag(13) as! UIImageView
-        cell?.isSelected = true
+        utxoArray[indexPath.section].isSelected = true
         
-        self.selectedArray[indexPath.section] = true
+        let cell = utxoTable.cellForRow(at: indexPath) as! UTXOCell
         
-        DispatchQueue.main.async {
-            
-            impact()
-            
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                cell?.alpha = 0
-                
-            }) { _ in
-                
-                UIView.animate(withDuration: 0.2, animations: {
-                    
-                    cell?.alpha = 1
-                    checkmark.alpha = 1
-                    cell?.backgroundColor = UIColor.black
-                    
-                })
-                
-            }
-            
-        }
+        cell.selectedAnimation()
         
-        utxoToSpendArray.append(utxoArray[indexPath.section] as! [String:Any])
+        utxoToSpendArray.append(utxoArray[indexPath.section])
         
     }
     
@@ -590,77 +495,48 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     }
     
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
+        let cell = utxoTable.cellForRow(at: indexPath) as! UTXOCell
         
-        if let cell = utxoTable.cellForRow(at: indexPath) {
-            
-            self.selectedArray[indexPath.section] = false
-            
-            let checkmark = cell.viewWithTag(13) as! UIImageView
-            let cellTxid = (cell.viewWithTag(2) as! UILabel).text
-            let cellVout = (cell.viewWithTag(6) as! UILabel).text
-            impact()
-            
-            DispatchQueue.main.async {
-                
-                UIView.animate(withDuration: 0.2, animations: {
-                    
-                    checkmark.alpha = 0
-                    cell.alpha = 0
-                    
-                }) { _ in
-                    
-                    UIView.animate(withDuration: 0.2, animations: {
-                        
-                        cell.alpha = 1
-                        cell.backgroundColor = #colorLiteral(red: 0.07831101865, green: 0.08237650245, blue: 0.08238270134, alpha: 1)
-                        
-                    }, completion: { _ in
-                        
-                        if self.utxoToSpendArray.count > 0 {
-                            
-                            let txidProcessed = cellTxid?.replacingOccurrences(of: "txid: ", with: "")
-                            let voutProcessed = cellVout?.replacingOccurrences(of: "vout #", with: "")
-                            
-                            for (index, utxo) in (self.utxoToSpendArray as! [[String:Any]]).enumerated() {
-                                
-                                let txid = utxo["txid"] as! String
-                                let vout = "\(utxo["vout"] as! Int)"
-                                
-                                if txid == txidProcessed && vout == voutProcessed {
-                                    
-                                    self.utxoToSpendArray.remove(at: index)
-                                    
-                                }
-                                
-                            }
-                            
-                        }
-                        
-                    })
-                    
-                }
-                
-            }
-            
-        }
+        utxoArray[indexPath.section].isSelected = false
+        
+        impact()
+        
+        cell.deselectedAnimation()
+        
+        
         
     }
     
-    func parseUnspent(utxos: NSArray) {
-        if utxos.count > 0 {
-            utxoArray = (utxos as NSArray).sortedArray(using: [NSSortDescriptor(key: "confirmations", ascending: true)]) as! [[String:AnyObject]]
-            for _ in utxoArray {
-                self.selectedArray.append(false)
+    @objc func loadUnspentUTXOs() {
+        utxoArray = []
+        DispatchQueue.main.async { self.addSpinner() }
+        
+        Reducer.listUnpentUTXOs { [weak self] result in
+            guard let self = self else { return }
+            
+            switch result {
+            case .success(let utxos):
+                self.utxoArray = utxos
+                DispatchQueue.main.async {
+                    self.executeNodeCommand(method: .getnetworkinfo, param: "") // TODO: Ask Fontaine what this does
+                }
+                
+                if self.utxoArray.isEmpty {
+                    displayAlert(viewController: self, isError: true, message: "No UTXO's")
+                }
+            case .failure(let error):
+                switch error {
+                case .description(let description):
+                    displayAlert(viewController: self, isError: true, message: description)
+                }
             }
+            
             DispatchQueue.main.async {
                 self.removeSpinner()
                 self.utxoTable.reloadData()
-                self.executeNodeCommand(method: .getnetworkinfo, param: "")
             }
-        } else {
-            self.removeSpinner()
-            displayAlert(viewController: self, isError: true, message: "No UTXO's")
         }
+        
     }
     
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
@@ -668,21 +544,6 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         Reducer.makeCommand(command: method, param: param) { [weak self] (response, errorMessage) in
             if errorMessage == nil {
                 switch method {
-                    
-                case .lockunspent:
-                    if self != nil {
-                        if let result = response as? Double {
-                            self!.removeSpinner()
-                            if result == 1 {
-                                displayAlert(viewController: self, isError: false, message: "UTXO is locked and will not be selected for spends unless your node restarts, tap the lock button to unlock it")
-                                self!.creatingView.removeConnectingView()
-                                self!.refresh()
-                            } else {
-                                displayAlert(viewController: self, isError: true, message: "Unable to lock that UTXO")
-                            }
-                        }
-                    }
-                    
                 case .getnewaddress:
                     if self != nil {
                         if let address = response as? String {
@@ -713,11 +574,6 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
                                 }
                             }
                         }
-                    }
-                    
-                case .listunspent:
-                    if let resultArray = response as? NSArray {
-                        self?.parseUnspent(utxos: resultArray)
                     }
                     
                 case .getrawchangeaddress:
@@ -912,29 +768,6 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         }
     }
     
-    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-                
-        let header = UIView()
-        header.backgroundColor = UIColor.clear
-        header.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 50)
-        
-        let lockButton = UIButton()
-        let lockImage = UIImage(systemName: "lock")!
-        lockButton.tag = section
-        lockButton.tintColor = .systemTeal
-        lockButton.setImage(lockImage, for: .normal)
-        lockButton.addTarget(self, action: #selector(lockViaButton(_:)), for: .touchUpInside)
-        lockButton.frame = CGRect(x: header.frame.maxX - 60, y: 0, width: 50, height: 50)
-        lockButton.center.y = header.center.y
-        header.addSubview(lockButton)
-        
-        return header
-    }
-    
-    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 50
-    }
-    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         switch segue.identifier {
             
@@ -993,4 +826,12 @@ extension Int {
 }
 
 
+// MARK: UTXOCellDelegate
 
+extension UTXOViewController: UTXOCellDelegate {
+    
+    func didTapToLock(_ utxo: UTXO) {
+        lock(utxo)
+    }
+    
+}

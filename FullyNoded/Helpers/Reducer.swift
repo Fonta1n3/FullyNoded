@@ -8,6 +8,10 @@
 
 import Foundation
 
+enum ReducerError: Error {
+    case description(String)
+}
+
 class Reducer {
     
     class func makeCommand(command: BTC_CLI_COMMAND, param: Any, completion: @escaping ((response: Any?, errorMessage: String?)) -> Void) {
@@ -53,5 +57,47 @@ class Reducer {
             }
         }
         makeTorCommand()
+    }
+    
+    static func listUnpentUTXOs(completion: @escaping (Result<[UTXO], ReducerError>) -> Void) {
+        makeCommand(command: .listunspent, param: "0") { (response, errorDescription) in
+            
+            guard errorDescription == nil else {
+                completion(.failure(.description(errorDescription!)))
+                return
+            }
+            
+            guard let response = response as? [[String: Any]] else {
+                completion(.failure(.description("Unable to cast response to [[String: Any]]")))
+                return
+            }
+            
+            let utxos = response.map({ UTXO(dict: $0) }).sorted { $0.confirmations < $1.confirmations }
+            
+            completion(.success(utxos))
+        }
+    }
+    
+    static func lock(_ utxo: UTXO, completion: @escaping (Result<Void, ReducerError>) -> Void) {
+        let param = "false, ''[{\"txid\":\"\(utxo.txid)\",\"vout\":\(utxo.vout)}]''"
+        makeCommand(command: .lockunspent, param: param) { (response, errorDescription) in
+            
+            guard errorDescription == nil else {
+                completion(.failure(.description(errorDescription!)))
+                return
+            }
+            
+            guard let response = response as? Int else {
+                completion(.failure(.description("Unable to lock that UTXO. Unable to cast response to Double")))
+                return
+            }
+            
+            guard response == 1 else {
+                completion(.failure(.description("Unable to lock that UTXO")))
+                return
+            }
+            
+            completion(.success(()))
+        }
     }
 }
