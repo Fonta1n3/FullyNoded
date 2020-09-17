@@ -7,8 +7,9 @@
 //
 
 import UIKit
+import AVFoundation
 
-class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
+class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
     
     var selectedNode:[String:Any]?
     let cd = CoreDataService()
@@ -18,6 +19,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     var isLightning = Bool()
     var isHost = Bool()
     var hostname: String?
+    let imagePicker = UIImagePickerController()
     
     @IBOutlet weak var scanQROutlet: UIBarButtonItem!
     @IBOutlet weak var header: UILabel!
@@ -38,7 +40,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         rpcUserField.delegate = self
         onionAddressField.delegate = self
         rpcPassword.isSecureTextEntry = true
-        onionAddressField.isSecureTextEntry = true
+        onionAddressField.isSecureTextEntry = false
         saveButton.clipsToBounds = true
         saveButton.layer.cornerRadius = 8
         if isLightning {
@@ -46,16 +48,22 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 deleteLightningOutlet.alpha = 1
             }
             header.text = "Lightning Node"
-            scanQROutlet.tintColor = UIColor.lightGray.withAlphaComponent(1)
+            //scanQROutlet.tintColor = UIColor.lightGray.withAlphaComponent(1)
         } else {
             deleteLightningOutlet.alpha = 0
             header.text = "Bitcoin Core Node"
-            scanQROutlet.tintColor = UIColor.lightGray.withAlphaComponent(0)
+            //scanQROutlet.tintColor = UIColor.lightGray.withAlphaComponent(0)
         }
     }
     
     override func viewDidAppear(_ animated: Bool) {
         loadValues()
+    }
+    
+    private func configureImagePicker() {
+        imagePicker.delegate = self
+        imagePicker.allowsEditing = false
+        imagePicker.sourceType = .photoLibrary
     }
     
     @IBAction func showHostAction(_ sender: Any) {
@@ -85,9 +93,14 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     
     
     @IBAction func scanQuickConnect(_ sender: Any) {
-        DispatchQueue.main.async { [weak self] in
-            self?.performSegue(withIdentifier: "segueToScanNodeCreds", sender: self)
-        }
+        #if targetEnvironment(macCatalyst)
+            configureImagePicker()
+            chooseQRCodeFromLibrary()
+        #else
+            DispatchQueue.main.async { [weak self] in
+                self?.performSegue(withIdentifier: "segueToScanNodeCreds", sender: self)
+            }
+        #endif
     }
     
     private func deleteLightningNodeNow() {
@@ -140,8 +153,12 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     @IBAction func exportNode(_ sender: Any) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "segueToExportNode", sender: vc)
+        if onionAddressField.text != "" && rpcPassword.text != "" && rpcUserField.text != "" {
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.performSegue(withIdentifier: "segueToExportNode", sender: vc)
+            }
+        } else {
+            showAlert(vc: self, title: "Ooops", message: "You can not export something that does not exist")
         }
     }
     
@@ -331,7 +348,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 if let enc = node.onionAddress {
                     onionAddressField.text = decryptedValue(enc)
                 } else {
-                    onionAddressField.attributedPlaceholder = NSAttributedString(string: "83nd8e93djh.onion:8332",
+                    onionAddressField.attributedPlaceholder = NSAttributedString(string: "127.0.0.1:8332",
                                                                                  attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
                 }
                 
@@ -345,7 +362,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 nodeLabel.attributedPlaceholder = NSAttributedString(string: "Give your node a label",
                                                                      attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
                 
-                onionAddressField.attributedPlaceholder = NSAttributedString(string: "83nd8e93djh.onion:8332",
+                onionAddressField.attributedPlaceholder = NSAttributedString(string: "127.0.0.1:8332",
                                                                              attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
             }
         } else {
@@ -358,8 +375,19 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             nodeLabel.attributedPlaceholder = NSAttributedString(string: "Give your node a label",
                                                                  attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
             
-            onionAddressField.attributedPlaceholder = NSAttributedString(string: "83nd8e93djh.onion:8332",
+            onionAddressField.attributedPlaceholder = NSAttributedString(string: "127.0.0.1:8332",
                                                                          attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
+            var message = ""
+            #if targetEnvironment(macCatalyst)
+                onionAddressField.text = "127.0.0.1:8332"
+                message = "You can either enter your node credentials manually or tap the QR button to scan or upload a QuickConnect QR.\n\nBy default we make it as easy for you as we can by adding an address which will work for Bitcoin Core if it is running on this computer.\n\nJust add the rpcuser and rpcpassword which can be found in your bitcoin.conf file. On a mac this file can be found at /Library/Application Support/Bitcoin/bitcoin.conf\n\nIf you do not see rpcuser or rpcpassword in your bitcoin.conf just add them and save the changes, as an example:\n\nrpcuser=satoshiNakamoto\nrpcpassword=aReallyStrongPassword\n\nFor remote connections you may enter an onion address or a VPN address."
+            #else
+                message = "You can either enter your node credentials manually or tap the QR button to scan or upload a QuickConnect QR. For local nodes just add the IP of your node.\n\nFor remote connections you may enter an onion address or a VPN address.\n\nJust add the rpcuser and rpcpassword which can be found in your bitcoin.conf file. On a mac this file can be found at /Library/Application Support/Bitcoin/bitcoin.conf\n\nIf you do not see rpcuser or rpcpassword in your bitcoin.conf just add them and save the changes, as an example:\n\nrpcuser=satoshiNakamoto\nrpcpassword=aReallyStrongPassword"
+            #endif
+            
+            nodeLabel.text = "Bitcoin Core"
+            showAlert(vc: self, title: "First things first add a node ✅", message: message)
+            
         }
     }
     
@@ -424,7 +452,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                             if (UIDevice.current.userInterfaceIdiom == .pad) {
                               alertStyle = UIAlertController.Style.alert
                             }
-                                let alert = UIAlertController(title: "Node added successfully", message: "Your node has been added and activated. The home screen is automatically refreshing. Tap Done to go back.", preferredStyle: alertStyle)
+                                let alert = UIAlertController(title: "Node added successfully ✅", message: "Your node has been added and activated. The home screen is automatically refreshing. Tap Done to go back.", preferredStyle: alertStyle)
                                 alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                                     DispatchQueue.main.async { [unowned vc = self] in
                                         if !vc.isLightning {
@@ -512,10 +540,41 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             if success {
                 if url.hasPrefix("clightning-rpc") {
                     self?.navigationController?.popViewController(animated: true)
+                } else {
+                    DispatchQueue.main.async { [weak self] in
+                        NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
+                        self?.navigationController?.popViewController(animated: true)
+                    }
                 }
             } else {
                 displayAlert(viewController: self, isError: true, message: "Error adding that node: \(errorMessage ?? "unknown")")
             }
+        }
+    }
+    
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true, completion: nil)
+    }
+    
+    func chooseQRCodeFromLibrary() {
+        present(imagePicker, animated: true, completion: nil)
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        // Local variable inserted by Swift 4.2 migrator.
+        let info = convertFromUIImagePickerControllerInfoKeyDictionary(info)
+        if let pickedImage = info[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.originalImage)] as? UIImage {
+            let detector:CIDetector=CIDetector(ofType: CIDetectorTypeQRCode, context: nil, options: [CIDetectorAccuracy:CIDetectorAccuracyHigh])!
+            let ciImage:CIImage = CIImage(image:pickedImage)!
+            var qrCodeLink = ""
+            let features = detector.features(in: ciImage)
+            for feature in features as! [CIQRCodeFeature] {
+                qrCodeLink += feature.messageString!
+            }
+            AudioServicesPlaySystemSound(SystemSoundID(kSystemSoundID_Vibrate))
+            picker.dismiss(animated: true, completion: { [weak self] in
+                self?.addBtcRpcQr(url: qrCodeLink)
+            })
         }
     }
     
@@ -555,4 +614,13 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         }
     }
     
+}
+
+fileprivate func convertFromUIImagePickerControllerInfoKeyDictionary(_ input: [UIImagePickerController.InfoKey: Any]) -> [String: Any] {
+    return Dictionary(uniqueKeysWithValues: input.map {key, value in (key.rawValue, value)})
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromUIImagePickerControllerInfoKey(_ input: UIImagePickerController.InfoKey) -> String {
+    return input.rawValue
 }

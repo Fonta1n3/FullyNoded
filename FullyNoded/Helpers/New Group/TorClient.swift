@@ -208,10 +208,10 @@ class TorClient {
             }
         #elseif targetEnvironment(simulator)
         #else
-            let sourceURL = Bundle.main.bundleURL.appendingPathComponent(".torrc")
-            let torrc = try? String(contentsOf: sourceURL, encoding: .utf8)
-            print("sourceURL: \(sourceURL)")
-            print("torrc: \(torrc)")
+//            let sourceURL = Bundle.main.bundleURL.appendingPathComponent(".torrc")
+//            let torrc = try? String(contentsOf: sourceURL, encoding: .utf8)
+//            print("sourceURL: \(sourceURL)")
+//            print("torrc: \(torrc)")
         
         #endif
     }
@@ -265,33 +265,37 @@ class TorClient {
                     let authorizedKey = decryptedValue(authKeysStr.privateKey)
                     CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
                         if nodes != nil {
-                            for (i, nodeDict) in nodes!.enumerated() {
-                                let str = NodeStruct(dictionary: nodeDict)
-                                if str.isActive && str.onionAddress != nil {
-                                    let onionAddress = decryptedValue(str.onionAddress!)
-                                    let onionAddressArray = onionAddress.components(separatedBy: ".onion:")
-                                    let authString = onionAddressArray[0] + ":descriptor:x25519:" + authorizedKey
-                                    let file = URL(fileURLWithPath: authPath, isDirectory: true).appendingPathComponent("\(randomString(length: 10)).auth_private")
-                                    do {
-                                        try authString.write(to: file, atomically: true, encoding: .utf8)
-                                        print("successfully wrote authkey to file")
+                            if nodes!.count > 0 {
+                                for (i, nodeDict) in nodes!.enumerated() {
+                                    let str = NodeStruct(dictionary: nodeDict)
+                                    if str.isActive && str.onionAddress != nil {
+                                        let onionAddress = decryptedValue(str.onionAddress!)
+                                        let onionAddressArray = onionAddress.components(separatedBy: ".onion:")
+                                        let authString = onionAddressArray[0] + ":descriptor:x25519:" + authorizedKey
+                                        let file = URL(fileURLWithPath: authPath, isDirectory: true).appendingPathComponent("\(randomString(length: 10)).auth_private")
                                         do {
-                                            if #available(iOS 9.0, *) {
-                                                try (file as NSURL).setResourceValue(URLFileProtection.complete, forKey: .fileProtectionKey)
-                                                print("success setting file protection")
-                                            } else {
-                                                print("error setting file protection")
+                                            try authString.write(to: file, atomically: true, encoding: .utf8)
+                                            print("successfully wrote authkey to file")
+                                            do {
+                                                if #available(iOS 9.0, *) {
+                                                    try (file as NSURL).setResourceValue(URLFileProtection.complete, forKey: .fileProtectionKey)
+                                                    print("success setting file protection")
+                                                } else {
+                                                    print("error setting file protection")
+                                                }
+                                            } catch {
+                                               print("error setting file protection")
                                             }
                                         } catch {
-                                           print("error setting file protection")
+                                            print("failed writing auth key")
                                         }
-                                    } catch {
-                                        print("failed writing auth key")
+                                    }
+                                    if i + 1 == nodes!.count {
+                                        completion()
                                     }
                                 }
-                                if i + 1 == nodes!.count {
-                                    completion()
-                                }
+                            } else {
+                                completion()
                             }
                         } else {
                             completion()
