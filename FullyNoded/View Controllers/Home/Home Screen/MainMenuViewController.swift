@@ -69,6 +69,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         showUnlockScreen()
         setFeeTarget()
         NotificationCenter.default.addObserver(self, selector: #selector(refreshNode), name: .refreshNode, object: nil)
+        torProgressLabel.layer.zPosition = 1
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -805,11 +806,10 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     //MARK: User Interface
     
     func addlaunchScreen() {
-        
+
         if let _ = self.tabBarController {
             
             DispatchQueue.main.async {
-                self.torProgressLabel.layer.zPosition = 1
                 self.backView.alpha = 0
                 self.backView.frame = self.tabBarController!.view.frame
                 self.backView.backgroundColor = .black
