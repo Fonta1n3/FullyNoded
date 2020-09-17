@@ -8,7 +8,7 @@
 
 import UIKit
 
-class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate, UINavigationControllerDelegate {
+class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
     
     var isSweeping = false
     var amountToSend = String()
@@ -18,7 +18,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     var psbt = ""
     var amountTotal = 0.0
     let refresher = UIRefreshControl()
-    var utxoArray = [UTXO]()
+    var unspentUtxos = [UTXO]()
     var inputArray = [Any]()
     var inputs = ""
     var address = ""
@@ -117,12 +117,12 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     }
     
     @IBAction func consolidate(_ sender: Any) {
-        if utxoArray.count > 0 {
+        if unspentUtxos.count > 0 {
             if utxoToSpendArray.count > 0 {
                 //consolidate selected utxos only
             } else {
                 //consolidate them all
-                for utxo in utxoArray {
+                for utxo in unspentUtxos {
                     utxoToSpendArray.append(utxo)
                 }
             }
@@ -374,37 +374,19 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
         }
     }
     
-    func numberOfSections(in tableView: UITableView) -> Int {
-        return utxoArray.count
-    }
-    
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1
-    }
-    
-    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 5 // Spacing between cells
-    }
-    
-    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let headerView = UIView()
-        headerView.backgroundColor = .clear
-        return headerView
-    }
-    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: UTXOCell.identifier, for: indexPath) as! UTXOCell
-        let utxo = utxoArray[indexPath.section]
+        let utxo = unspentUtxos[indexPath.section]
         cell.configure(utxo: utxo, delegate: self)
         
         return cell
     }
     
     func lock(_ utxo: UTXO, completion: ((Result<Void, ReducerError>) -> Void)? = nil) {
-        guard let index = self.utxoArray.firstIndex(where: { $0.txid == utxo.txid }) else { return }
+        guard let index = self.unspentUtxos.firstIndex(where: { $0.txid == utxo.txid }) else { return }
         
-        utxoArray.remove(at: index)
+        unspentUtxos.remove(at: index)
         
         creatingView.addConnectingView(vc: self, description: "locking...")
         DispatchQueue.main.async { [weak self] in
@@ -434,7 +416,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         
-        let utxo = utxoArray[indexPath.section]
+        let utxo = unspentUtxos[indexPath.section]
         let lock = UIContextualAction(style: .destructive, title: "Lock") { (contextualAction, view, boolValue) in
             tableView.isUserInteractionEnabled = false
             
@@ -458,13 +440,13 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        utxoArray[indexPath.section].isSelected = true
+        unspentUtxos[indexPath.section].isSelected = true
         
         let cell = utxoTable.cellForRow(at: indexPath) as! UTXOCell
         
         cell.selectedAnimation()
         
-        utxoToSpendArray.append(utxoArray[indexPath.section])
+        utxoToSpendArray.append(unspentUtxos[indexPath.section])
         
     }
     
@@ -497,7 +479,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
         let cell = utxoTable.cellForRow(at: indexPath) as! UTXOCell
         
-        utxoArray[indexPath.section].isSelected = false
+        unspentUtxos[indexPath.section].isSelected = false
         
         impact()
         
@@ -508,7 +490,7 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
     }
     
     @objc func loadUnspentUTXOs() {
-        utxoArray = []
+        unspentUtxos = []
         DispatchQueue.main.async { self.addSpinner() }
         
         Reducer.listUnpentUTXOs { [weak self] result in
@@ -516,12 +498,12 @@ class UTXOViewController: UIViewController, UITableViewDataSource, UITableViewDe
             
             switch result {
             case .success(let utxos):
-                self.utxoArray = utxos
+                self.unspentUtxos = utxos
                 DispatchQueue.main.async {
                     self.executeNodeCommand(method: .getnetworkinfo, param: "") // TODO: Ask Fontaine what this does
                 }
                 
-                if self.utxoArray.isEmpty {
+                if self.unspentUtxos.isEmpty {
                     displayAlert(viewController: self, isError: true, message: "No UTXO's")
                 }
             case .failure(let error):
@@ -832,6 +814,37 @@ extension UTXOViewController: UTXOCellDelegate {
     
     func didTapToLock(_ utxo: UTXO) {
         lock(utxo)
+    }
+    
+}
+
+// Mark: UITableViewDataSource
+
+extension UTXOViewController: UITableViewDataSource {
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return unspentUtxos.count
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return 1
+    }
+    
+}
+
+
+// MarK: UITableViewDelegate
+
+extension UTXOViewController: UITableViewDelegate {
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 5 // Spacing between cells
+    }
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let headerView = UIView()
+        headerView.backgroundColor = .clear
+        return headerView
     }
     
 }
