@@ -10,29 +10,29 @@ import UIKit
 
 class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
     
-    var isSweeping = false
-    var amountToSend = String()
-    let amountInput = UITextField()
-    let amountView = UIView()
-    var rawSigned = ""
-    var psbt = ""
-    var amountTotal = 0.0
-    let refresher = UIRefreshControl()
-    var unspentUtxos = [UTXO]()
-    var inputArray = [Any]()
-    var inputs = ""
-    var address = ""
-    var utxoToSpendArray = [Any]()
-    var creatingView = ConnectingView()
-    var nativeSegwit = Bool()
-    var p2shSegwit = Bool()
-    var legacy = Bool()
-    var isUnsigned = false
-    var utxo = NSDictionary()
-    let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
-    let blurView2 = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
-    let sweepButtonView = Bundle.main.loadNibNamed("KeyPadButtonView", owner: self, options: nil)?.first as! UIView?
-    @IBOutlet weak var utxoTable: UITableView!
+    private var isSweeping = false
+    private var amountToSend = String()
+    private let amountInput = UITextField()
+    private let amountView = UIView()
+    private var rawSigned = ""
+    private var psbt = ""
+    private var amountTotal = 0.0
+    private let refresher = UIRefreshControl()
+    private var unspentUtxos = [UTXO]()
+    private var inputArray = [Any]()
+    private var inputs = ""
+    private var address = ""
+    private var utxoToSpendArray = [Any]()
+    private var creatingView = ConnectingView()
+    private var nativeSegwit = Bool()
+    private var p2shSegwit = Bool()
+    private var legacy = Bool()
+    private var isUnsigned = false
+    private var utxo = NSDictionary()
+    private let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
+    private let blurView2 = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
+    private let sweepButtonView = Bundle.main.loadNibNamed("KeyPadButtonView", owner: self, options: nil)?.first as! UIView?
+    @IBOutlet weak private var utxoTable: UITableView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -56,13 +56,13 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         loadUnspentUTXOs()
     }
     
-    @IBAction func lockAction(_ sender: Any) {
+    @IBAction private func lockAction(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             self?.performSegue(withIdentifier: "goToLocked", sender: self)
         }
     }
     
-    @IBAction func getUtxoInfo(_ sender: Any) {
+    @IBAction private func getUtxoInfo(_ sender: Any) {
         if self.utxoToSpendArray.count == 1 {
             
             DispatchQueue.main.async {
@@ -80,7 +80,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    func getAddressSettings() {
+    private func getAddressSettings() {
         
         let userDefaults = UserDefaults.standard
         
@@ -116,7 +116,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         
     }
     
-    @IBAction func consolidate(_ sender: Any) {
+    @IBAction private func consolidate(_ sender: Any) {
         if unspentUtxos.count > 0 {
             if utxoToSpendArray.count > 0 {
                 //consolidate selected utxos only
@@ -141,7 +141,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    func configureAmountView() {
+    private func configureAmountView() {
         
         amountView.backgroundColor = view.backgroundColor
         
@@ -173,7 +173,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         
     }
     
-    func amountAvailable(amount: Double) -> (Bool, String) {
+    private func amountAvailable(amount: Double) -> (Bool, String) {
         
         var amountAvailable = 0.0
         
@@ -199,7 +199,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         
     }
     
-    @objc func sweepButtonClicked() {
+    @objc private func sweepButtonClicked() {
         
         var amountToSweep = 0.0
         isSweeping = true
@@ -220,7 +220,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         
     }
     
-    @objc func closeAmount() {
+    @objc private func closeAmount() {
         
         if self.amountInput.text != "" {
                         
@@ -271,7 +271,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         
     }
     
-    func getAmount() {
+    private func getAmount() {
         
         blurView2.removeFromSuperview()
         
@@ -329,7 +329,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         
     }
     
-    @IBAction func createRaw(_ sender: Any) {
+    @IBAction private func createRaw(_ sender: Any) {
         if self.utxoToSpendArray.count > 0 {
             
             updateInputs()
@@ -362,7 +362,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
+    @objc private func dismissKeyboard(_ sender: UITapGestureRecognizer) {
         self.amountInput.resignFirstResponder()
         UIView.animate(withDuration: 0.2, animations: {
             self.amountView.frame = CGRect(x: 0, y: -200, width: self.view.frame.width, height: -200)
@@ -374,16 +374,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
-        let cell = tableView.dequeueReusableCell(withIdentifier: UTXOCell.identifier, for: indexPath) as! UTXOCell
-        let utxo = unspentUtxos[indexPath.section]
-        cell.configure(utxo: utxo, delegate: self)
-        
-        return cell
-    }
-    
-    func lock(_ utxo: UTXO, completion: ((Result<Void, ReducerError>) -> Void)? = nil) {
+    private func lock(_ utxo: UTXO, completion: ((Result<Void, ReducerError>) -> Void)? = nil) {
         guard let index = self.unspentUtxos.firstIndex(where: { $0.txid == utxo.txid }) else { return }
         
         unspentUtxos.remove(at: index)
@@ -414,43 +405,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        
-        let utxo = unspentUtxos[indexPath.section]
-        let lock = UIContextualAction(style: .destructive, title: "Lock") { (contextualAction, view, boolValue) in
-            tableView.isUserInteractionEnabled = false
-            
-            self.lock(utxo) { [weak self] result in
-                guard let self = self else { return }
-                
-                if case .failure = result {
-                    self.loadUnspentUTXOs()
-                }
-                
-                DispatchQueue.main.async {
-                    tableView.isUserInteractionEnabled = true
-                    self.utxoTable.reloadData()
-                }
-            }
-        }
-        lock.backgroundColor = .systemRed
-        let swipeActions = UISwipeActionsConfiguration(actions: [lock])
-        return swipeActions
-    }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
-        unspentUtxos[indexPath.section].isSelected = true
-        
-        let cell = utxoTable.cellForRow(at: indexPath) as! UTXOCell
-        
-        cell.selectedAnimation()
-        
-        utxoToSpendArray.append(unspentUtxos[indexPath.section])
-        
-    }
-    
-    func updateInputs() {
+    private func updateInputs() {
         
         inputArray.removeAll()
         
@@ -476,20 +431,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         
     }
     
-    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
-        let cell = utxoTable.cellForRow(at: indexPath) as! UTXOCell
-        
-        unspentUtxos[indexPath.section].isSelected = false
-        
-        impact()
-        
-        cell.deselectedAnimation()
-        
-        
-        
-    }
-    
-    @objc func loadUnspentUTXOs() {
+    @objc private func loadUnspentUTXOs() {
         unspentUtxos = []
         DispatchQueue.main.async { self.addSpinner() }
         
@@ -521,7 +463,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         
     }
     
-    func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
+    private func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
         
         Reducer.makeCommand(command: method, param: param) { [weak self] (response, errorMessage) in
             if errorMessage == nil {
@@ -575,7 +517,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    func removeSpinner() {
+    private func removeSpinner() {
         
         DispatchQueue.main.async {
             
@@ -586,13 +528,13 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         
     }
     
-    func addSpinner() {
+    private func addSpinner() {
         DispatchQueue.main.async {
             self.creatingView.addConnectingView(vc: self, description: "Getting UTXOs")
         }
     }
     
-    func getAddress() {
+    private func getAddress() {
         DispatchQueue.main.async { [weak self] in
             self?.blurView2.removeFromSuperview()
             self?.amountView.removeFromSuperview()
@@ -601,7 +543,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    func getRawTx(changeAddress: String) {
+    private func getRawTx(changeAddress: String) {
         let dbl = Double(amountToSend)!
         let roundedAmount = rounded(number: dbl)
         var total = Double()
@@ -636,7 +578,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-   func createRawNow() {
+   private func createRawNow() {
         if !isSweeping {
             activeWallet { [weak self] (wallet) in
                 if wallet != nil {
@@ -701,7 +643,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    func displayRaw(raw: String) {
+    private func displayRaw(raw: String) {
         DispatchQueue.main.async { [weak self] in
             self?.performSegue(withIdentifier: "segueToBroadcasterFromUtxo", sender: self)
         }
@@ -709,7 +651,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     
     // MARK: TEXTFIELD METHODS
     
-    func processBIP21(url: String) {
+    private func processBIP21(url: String) {
         let addressParser = AddressParser()
         let errorBool = addressParser.parseAddress(url: url).errorBool
         let errorDescription = addressParser.parseAddress(url: url).errorDescription
@@ -822,6 +764,15 @@ extension UTXOViewController: UTXOCellDelegate {
 
 extension UTXOViewController: UITableViewDataSource {
     
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
+        let cell = tableView.dequeueReusableCell(withIdentifier: UTXOCell.identifier, for: indexPath) as! UTXOCell
+        let utxo = unspentUtxos[indexPath.section]
+        cell.configure(utxo: utxo, delegate: self)
+        
+        return cell
+    }
+    
     func numberOfSections(in tableView: UITableView) -> Int {
         return unspentUtxos.count
     }
@@ -837,6 +788,16 @@ extension UTXOViewController: UITableViewDataSource {
 
 extension UTXOViewController: UITableViewDelegate {
     
+    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
+        let cell = utxoTable.cellForRow(at: indexPath) as! UTXOCell
+        
+        unspentUtxos[indexPath.section].isSelected = false
+        
+        impact()
+        
+        cell.deselectedAnimation()
+    }
+    
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 5 // Spacing between cells
     }
@@ -845,6 +806,42 @@ extension UTXOViewController: UITableViewDelegate {
         let headerView = UIView()
         headerView.backgroundColor = .clear
         return headerView
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
+        unspentUtxos[indexPath.section].isSelected = true
+        
+        let cell = utxoTable.cellForRow(at: indexPath) as! UTXOCell
+        
+        cell.selectedAnimation()
+        
+        utxoToSpendArray.append(unspentUtxos[indexPath.section])
+        
+    }
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        
+        let utxo = unspentUtxos[indexPath.section]
+        let lock = UIContextualAction(style: .destructive, title: "Lock") { (contextualAction, view, boolValue) in
+            tableView.isUserInteractionEnabled = false
+            
+            self.lock(utxo) { [weak self] result in
+                guard let self = self else { return }
+                
+                if case .failure = result {
+                    self.loadUnspentUTXOs()
+                }
+                
+                DispatchQueue.main.async {
+                    tableView.isUserInteractionEnabled = true
+                    self.utxoTable.reloadData()
+                }
+            }
+        }
+        lock.backgroundColor = .systemRed
+        let swipeActions = UISwipeActionsConfiguration(actions: [lock])
+        return swipeActions
     }
     
 }
