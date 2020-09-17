@@ -50,27 +50,34 @@ class ImportWallet {
         func createWalletNow(_ recDesc: String, _ changeDesc: String) {
             // Use the sha256 hash of the checksum-less primary receive keypool desc as the wallet name so it has a deterministic identifier
             let walletName = "\(prefix)-\(Crypto.sha256hash(primDescriptor))"
-            createWallet(walletName: walletName) { (name, errorMessage) in
+            
+            createWallet(walletName) { (name, errorMessage) in
                 if name != nil {
                     wallet["name"] = name
-                    UserDefaults.standard.set(name, forKey: "walletName")
-                    importReceiveDesc(recDesc: recDesc, label: label, keypool: keypool) { (success, errorMessage) in
+                    
+                    importReceiveDesc(recDesc, label, keypool) { (success, errorMessage) in
                         if success {
-                            importChangeDesc(changeDesc: changeDesc, keypool: keypool) { (success, errorMessage) in
+                            
+                            importChangeDesc(changeDesc, keypool) { (success, errorMessage) in
                                 if success {
+                                    
                                     if watching.count > 0 {
                                         index = 0
                                         processedWatching.removeAll()
+                                        
                                         importWatching(watching: watching) { (watchingArray, errorMessage) in
                                             if watchingArray != nil {
                                                 wallet["watching"] = watchingArray
                                                 rescan(wallet: wallet, completion: completion)
+                                                
                                             } else {
                                                 completion((false, "error importing watching descriptors: \(errorMessage ?? "unknown error importing watching descriptors")"))
+                                                
                                             }
                                         }
                                     } else {
                                         rescan(wallet: wallet, completion: completion)
+                                        
                                     }
                                 }
                             }
@@ -94,7 +101,6 @@ class ImportWallet {
                         walletExistsOnNode(hash) { (existingWallet) in
                             if existingWallet != nil {
                                 wallet["name"] = existingWallet!
-                                UserDefaults.standard.set(existingWallet!, forKey: "walletName")
                                 
                                 if watching.count > 0 {
                                     index = 0
@@ -104,23 +110,29 @@ class ImportWallet {
                                         if watchingArray != nil {
                                             wallet["watching"] = watchingArray!
                                             saveLocally(wallet: wallet, completion: completion)
+                                            
                                         } else {
                                             completion((false, "error processing watching descriptors: \(errorMessage ?? "unknown error")"))
+                                            
                                         }
                                     }
                                 } else {
                                     saveLocally(wallet: wallet, completion: completion)
+                                    
                                 }
                             } else {
                                 createWalletNow(recDesc!, changeDesc!)
+                                
                             }
                         }
                     } else {
                         completion((false, errorMessage ?? "error getting change descriptor info"))
+                        
                     }
                 }
             } else {
                 completion((false, errorMessage ?? "error getting descriptor info"))
+                
             }
         }
         
@@ -181,79 +193,104 @@ class ImportWallet {
         let watching = [bip49DescPrim, bip49DescChange, bip44DescPrim, bip44DescChange]
         wallet["descriptor"] = bip84DescPrim
         wallet["watching"] = watching
+        
         accountMap(wallet, completion: completion)
     }
     
-    class func createWallet(walletName: String, completion: @escaping ((name: String?, errorMessage: String?)) -> Void) {
+    class func createWallet(_ walletName: String, completion: @escaping ((name: String?, errorMessage: String?)) -> Void) {
         let param = "\"\(walletName)\", true, true, \"\", true"
+        
         Reducer.makeCommand(command: .createwallet, param: param) { (response, errorMessage) in
             if let dict = response as? NSDictionary {
+                
                 if let name = dict["name"] as? String {
                     completion((name, nil))
+                    
                 } else {
                     completion((nil, errorMessage))
+                    
                 }
             } else {
                 completion((nil, errorMessage))
+                
             }
         }
     }
     
-    class func importReceiveDesc(recDesc: String, label: String, keypool: Bool, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
+    class func importReceiveDesc(_ recDesc: String, _ label: String, _ keypool: Bool, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
         let recParams = "[{ \"desc\": \"\(recDesc)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"label\": \"\(label)\", \"keypool\": \(keypool), \"internal\": false }], {\"rescan\": false}"
+        
         importMultiDesc(params: recParams, completion: completion)
     }
     
-    class func importChangeDesc(changeDesc: String, keypool: Bool, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
+    class func importChangeDesc(_ changeDesc: String, _ keypool: Bool, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
         let changeParams = "[{ \"desc\": \"\(changeDesc)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"keypool\": \(keypool), \"internal\": true }], {\"rescan\": false}"
+        
         importMultiDesc(params: changeParams, completion: completion)
     }
     
     class func walletExistsOnNode(_ hash: String, completion: @escaping ((String?)) -> Void) {
         Reducer.makeCommand(command: .listwalletdir, param: "") { (response, errorMessage) in
-            if let dict = response as? NSDictionary {
-                parseWallets(wallets: dict, hash: hash, completion: completion)
+            
+            if let wallets = response as? NSDictionary {
+                parseWallets(wallets, hash, completion: completion)
+                
             } else {
                 completion(nil)
+                
             }
         }
     }
     
-    class func parseWallets(wallets: NSDictionary, hash: String, completion: @escaping ((String?)) -> Void) {
+    class func parseWallets(_ wallets: NSDictionary, _ hash: String, completion: @escaping ((String?)) -> Void) {
         let walletArr = wallets["wallets"] as! NSArray
         var existingWallet: String?
+        
         for (i, wallet) in walletArr.enumerated() {
             let walletDict = wallet as! NSDictionary
             let walletName = walletDict["name"] as! String
+            
             if walletName.contains(hash) {
                 existingWallet = walletName
+                
             }
+            
             if i + 1 == walletArr.count {
                 completion(existingWallet)
+                
             }
         }
     }
     
-    class func doesWalletExistLocally(walletToBe: [String:Any], completion: @escaping ((Bool)) -> Void) {
+    class func doesWalletExistLocally(_ walletToBe: [String:Any], completion: @escaping ((Bool)) -> Void) {
         let walletToBeStruct = Wallet(dictionary: walletToBe)
+        
         CoreDataService.retrieveEntity(entityName: .wallets) { (wallets) in
             var walletExists = false
+            
             if wallets != nil {
                 if wallets!.count > 0 {
+                    
                     for (i, wallet) in wallets!.enumerated() {
                         let walletStruct = Wallet(dictionary: wallet)
+                        
                         if walletStruct.name == walletToBeStruct.name {
                             walletExists = true
+                            
                         }
+                        
                         if i + 1 == wallets!.count {
                             completion(walletExists)
+                            
                         }
                     }
                 } else {
                     completion(false)
+                    
                 }
             } else {
                 completion(false)
+                
             }
         }
     }
@@ -271,12 +308,13 @@ class ImportWallet {
     }
     
     class func saveLocally(wallet: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
-        doesWalletExistLocally(walletToBe: wallet) { (exists) in
+        doesWalletExistLocally(wallet) { (exists) in
             if exists {
                 completion((false, "That wallet already exists!"))
             } else {
                 CoreDataService.saveEntity(dict: wallet, entityName: .wallets) { (success) in
                     if success {
+                        UserDefaults.standard.set(wallet["name"] as! String, forKey: "walletName")
                         completion((true, nil))
                     } else {
                         completion((false, "error saving wallet locally"))
