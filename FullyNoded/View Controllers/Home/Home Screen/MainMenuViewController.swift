@@ -19,11 +19,11 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     var nodes = [[String:Any]]()
     var activeNode:[String:Any]?
     var existingNodeID:UUID!
-    var initialLoad = Bool()
+    var initialLoad = false
     let spinner = UIActivityIndicatorView(style: .medium)
     var refreshButton = UIBarButtonItem()
     var dataRefresher = UIBarButtonItem()
-    var viewHasLoaded = Bool()
+    var viewHasLoaded = false
     var nodeLabel = ""
     var detailImage = UIImage()
     var detailImageTint = UIColor()
@@ -39,6 +39,23 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     var uptimeInfo:Uptime!
     var feeInfo:FeeInfo!
     @IBOutlet weak var headerLabel: UILabel!
+    
+    private enum Section: Int {
+        case verificationProgress
+        case totalSupply
+        case nodeVersion
+        case blockchainNetwork
+        case peerConnections
+        case blockchainState
+        case miningHashrate
+        case currentBlockHeight
+        case miningDifficulty
+        case blockchainSizeOnDisc
+        case memPool
+        case feeRate
+        case p2pHiddenService
+        case nodeUptime
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -167,10 +184,13 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 if nodeArray!.count > 0 {
                     vc.loopThroughNodes(nodes: nodeArray!)
                 } else {
+                    vc.removeLoader()
                     DispatchQueue.main.async { [unowned vc = self] in
-                        vc.performSegue(withIdentifier: "addNodeNow", sender: vc)
+                        vc.performSegue(withIdentifier: "segueToAddANode", sender: vc)
                     }
                 }
+            } else {
+                vc.removeLoader()
             }
             vc.initialLoad = false
         }
@@ -276,8 +296,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         background.layer.cornerRadius = 8
         icon.tintColor = .white
         
-        switch indexPath.section {
-        case 0:
+        switch Section(rawValue: indexPath.section) {
+        case .verificationProgress:
             if blockchainInfo != nil {
                 if blockchainInfo.progress == "Fully verified" {
                     background.backgroundColor = .systemGreen
@@ -290,7 +310,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 chevron.alpha = 1
             }
             
-        case 1:
+        case .totalSupply:
             if uptimeInfo != nil {
                 label.text = "Verify total supply"
                 icon.image = UIImage(systemName: "bitcoinsign.circle")
@@ -298,7 +318,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 chevron.alpha = 1
             }
             
-        case 2:
+        case .nodeVersion:
             if networkInfo != nil {
                 label.text = "Bitcoin Core v\(networkInfo.version)"
                 icon.image = UIImage(systemName: "v.circle")
@@ -306,7 +326,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 chevron.alpha = 1
             }
             
-        case 3:
+        case .blockchainNetwork:
             if blockchainInfo != nil {
                 label.text = blockchainInfo.network
                 icon.image = UIImage(systemName: "link")
@@ -320,7 +340,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 chevron.alpha = 1
             }
             
-        case 4:
+        case .peerConnections:
             if peerInfo != nil {
                 label.text = "\(peerInfo.outgoingCount) outgoing / \(peerInfo.incomingCount) incoming"
                 icon.image = UIImage(systemName: "person.3")
@@ -328,7 +348,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 chevron.alpha = 1
             }
             
-        case 5:
+        case .blockchainState:
             if blockchainInfo != nil {
                 if blockchainInfo.pruned {
                     label.text = "Pruned"
@@ -342,7 +362,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 chevron.alpha = 1
             }
             
-        case 6:
+        case .miningHashrate:
             if miningInfo != nil {
                 label.text = miningInfo.hashrate + " " + "EH/s hashrate"
                 icon.image = UIImage(systemName: "speedometer")
@@ -350,7 +370,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 chevron.alpha = 0
             }
             
-        case 7:
+        case .currentBlockHeight:
             if blockchainInfo != nil {
                 label.text = "\(blockchainInfo.blockheight.withCommas()) blocks"
                 icon.image = UIImage(systemName: "square.stack.3d.up")
@@ -358,7 +378,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 chevron.alpha = 0
             }
             
-        case 8:
+        case .miningDifficulty:
             if blockchainInfo != nil {
                 label.text = blockchainInfo.difficulty
                 icon.image = UIImage(systemName: "slider.horizontal.3")
@@ -366,7 +386,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 chevron.alpha = 0
             }
             
-        case 9:
+        case .blockchainSizeOnDisc:
             if blockchainInfo != nil {
                 label.text = blockchainInfo.size
                 background.backgroundColor = .systemPink
@@ -374,7 +394,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 chevron.alpha = 0
             }
         
-        case 10:
+        case .memPool:
             if mempoolInfo != nil {
                 label.text = "\(mempoolInfo.mempoolCount.withCommas()) mempool"
                 icon.image = UIImage(systemName: "waveform.path.ecg")
@@ -382,7 +402,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 chevron.alpha = 0
             }
             
-        case 11:
+        case .feeRate:
             if feeInfo != nil {
                 label.text = feeInfo.feeRate + " " + "fee rate"
                 icon.image = UIImage(systemName: "percent")
@@ -390,7 +410,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 chevron.alpha = 0
             }
             
-        case 12:
+        case .p2pHiddenService:
             if networkInfo != nil {
                 if networkInfo.torReachable {
                     label.text = "tor hidden service on"
@@ -405,7 +425,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 chevron.alpha = 0
             }
             
-        case 13:
+        case .nodeUptime:
             if uptimeInfo != nil {
                 label.text = "\(uptimeInfo.uptime / 86400) days \((uptimeInfo.uptime % 86400) / 3600) hours uptime"
                 icon.image = UIImage(systemName: "clock")
@@ -420,44 +440,51 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        switch indexPath.section {
-        case 0, 3, 5, 7, 8, 9:
+        switch Section(rawValue: indexPath.section) {
+        case .verificationProgress,
+             .blockchainNetwork,
+             .blockchainState,
+             .currentBlockHeight,
+             .miningDifficulty,
+             .blockchainSizeOnDisc:
             if blockchainInfo == nil {
                 return blankCell()
             } else {
                 return homeCell(indexPath)
             }
-        case 4:
+        case .peerConnections:
             if peerInfo == nil {
                 return blankCell()
             } else {
                 return homeCell(indexPath)
             }
-        case 2, 12:
+        case .nodeVersion,
+             .p2pHiddenService:
             if networkInfo == nil {
                 return blankCell()
             } else {
                 return homeCell(indexPath)
             }
-        case 6:
+        case .miningHashrate:
             if miningInfo == nil {
                 return blankCell()
             } else {
                 return homeCell(indexPath)
             }
-        case 13, 1:
+        case .nodeUptime,
+             .totalSupply:
             if uptimeInfo == nil {
                 return blankCell()
             } else {
                 return homeCell(indexPath)
             }
-        case 10:
+        case .memPool:
             if mempoolInfo == nil {
                 return blankCell()
             } else {
                 return homeCell(indexPath)
             }
-        case 11:
+        case .feeRate:
             if feeInfo == nil {
                 return blankCell()
             } else {
@@ -478,37 +505,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         textLabel.textColor = .white
         textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
         
-        switch section {
-        case 0:
-            textLabel.text = "Verification progress"
-        case 1:
-            textLabel.text = "Total supply"
-        case 2:
-            textLabel.text = "Node version"
-        case 3:
-            textLabel.text = "Blockchain network"
-        case 4:
-            textLabel.text = "Peer connections"
-        case 5:
-            textLabel.text = "Blockchain state"
-        case 6:
-            textLabel.text = "Mining hashrate"
-        case 7:
-            textLabel.text = "Current blockheight"
-        case 8:
-            textLabel.text = "Mining difficulty"
-        case 9:
-            textLabel.text = "Blockchain size on disc"
-        case 10:
-            textLabel.text = "Node's mempool"
-        case 11:
-            textLabel.text = "Fee rate"
-        case 12:
-            textLabel.text = "P2P hidden service"
-        case 13:
-            textLabel.text = "Node uptime"
-        default:
-            break
+        if let section = Section(rawValue: section) {
+            textLabel.text = headerName(for: section)
         }
         
         header.addSubview(textLabel)
@@ -524,11 +522,11 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        switch indexPath.section {
-        case 0:
+        switch Section(rawValue: indexPath.section) {
+        case .verificationProgress:
             if blockchainInfo != nil {
                 command = "getblockchaininfo"
-                detailHeaderText = "Verification progress"
+                detailHeaderText = headerName(for: .verificationProgress)
                 if blockchainInfo.progress == "Fully verified" {
                     detailImageTint = .systemGreen
                     detailImage = UIImage(systemName: "checkmark.seal")!
@@ -549,10 +547,10 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 segueToShowDetail()
             }
             
-        case 1:
+        case .totalSupply:
             if feeInfo != nil {
                 command = "gettxoutsetinfo"
-                detailHeaderText = "Total Supply"
+                detailHeaderText = headerName(for: .totalSupply)
                 detailSubheaderText = "Use your own node to verify total supply"
                 detailImage = UIImage(systemName: "bitcoinsign.circle")!
                 detailImageTint = .systemYellow
@@ -564,10 +562,10 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 segueToShowDetail()
             }
             
-        case 2:
+        case .nodeVersion:
             if networkInfo != nil {
                 command = "getnetworkinfo"
-                detailHeaderText = "Node version"
+                detailHeaderText = headerName(for: .nodeVersion)
                 detailImageTint = .systemBlue
                 detailImage = UIImage(systemName: "v.circle")!
                 detailSubheaderText = "Bitcoin Core v\(networkInfo.version)"
@@ -581,11 +579,10 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 segueToShowDetail()
             }
             
-        case 3:
-            //"Blockchain network"
+        case .blockchainNetwork:
             if blockchainInfo != nil {
                 command = "getblockchaininfo"
-                detailHeaderText = "Blockchain network"
+                detailHeaderText = headerName(for: .blockchainNetwork)
                 detailSubheaderText = blockchainInfo.network
                 if blockchainInfo.network == "test chain" {
                     detailImageTint = .systemGreen
@@ -611,11 +608,10 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 segueToShowDetail()
             }
             
-        case 4:
+        case .peerConnections:
             if peerInfo != nil {
-                //"Peer connections"
                 command = "getpeerinfo"
-                detailHeaderText = "Peer connections"
+                detailHeaderText = headerName(for: .peerConnections)
                 detailSubheaderText = "\(peerInfo.outgoingCount) outgoing / \(peerInfo.incomingCount) incoming"
                 detailImage = UIImage(systemName: "person.3")!
                 detailImageTint = .systemIndigo
@@ -633,11 +629,10 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 segueToShowDetail()
             }
             
-        case 5:
+        case .blockchainState:
             if blockchainInfo != nil {
-                //"Blockchain state"
                 command = "getblockchaininfo"
-                detailHeaderText = "Blockchain state"
+                detailHeaderText = headerName(for: .blockchainState)
                 if blockchainInfo.pruned {
                     detailSubheaderText = "Pruned"
                     detailImage = UIImage(systemName: "rectangle.compress.vertical")!
@@ -681,7 +676,22 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 }
             } else if errorMessage != nil {
                 vc.removeLoader()
-                displayAlert(viewController: self, isError: true, message: errorMessage!)
+                
+                if errorMessage!.contains("Loading block index") || errorMessage!.contains("Verifying") || errorMessage!.contains("Rewinding") {
+                    displayAlert(viewController: self, isError: true, message: "Your node is still getting warmed up! Wait 15 seconds and tap the refresh button to try again")
+                    
+                } else if errorMessage!.contains("Could not connect to the server.") {
+                    displayAlert(viewController: self, isError: true, message: "Looks like your node is not on, make sure it is running and try again.")
+                    
+                } else if errorMessage!.contains("unknown error") {
+                    displayAlert(viewController: self, isError: true, message: "We got a strange response from your node, first of all make 100% sure your credentials are correct, if they are then your node could be overloaded... Either wait a few minutes and try again or reboot Tor on your node, if that fails reboot your node too, force quit Fully Noded and open it again.")
+                    
+                } else if errorMessage!.contains("timed out") || errorMessage!.contains("The Internet connection appears to be offline") {
+                    displayAlert(viewController: self, isError: true, message: "Hmmm we are not getting a response from your node, you can try rebooting Tor on your node and force quitting Fully Noded and reopening it, that generally fixes the issue.")
+                    
+                } else {
+                    displayAlert(viewController: self, isError: true, message: errorMessage!)
+                }
             }
         }
     }
@@ -888,10 +898,11 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 vc.detailTextDescription = detailTextDescription
             }
             
-        case "addNodeNow":
+        case "segueToAddANode":
             
-            if let vc = segue.destination as? ChooseConnectionTypeViewController {
-                vc.cameFromHome = true
+            if let vc = segue.destination as? NodeDetailViewController {
+                vc.createNew = true
+                vc.isLightning = false
             }
             
         case "segueToRemoteControl":
@@ -914,6 +925,45 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     func firstTimeHere(completion: @escaping ((Bool)) -> Void) {
         FirstTime.firstTimeHere() { success in
             completion(success)
+        }
+    }
+    
+}
+
+// MARK: Helpers
+
+extension MainMenuViewController {
+    
+    private func headerName(for section: Section) -> String {
+        switch section {
+        case .verificationProgress:
+            return "Verification progress"
+        case .totalSupply:
+            return "Total supply"
+        case .nodeVersion:
+            return "Node version"
+        case .blockchainNetwork:
+            return "Blockchain network"
+        case .peerConnections:
+            return "Peer connections"
+        case .blockchainState:
+            return "Blockchain state"
+        case .miningHashrate:
+            return "Mining hashrate"
+        case .currentBlockHeight:
+            return "Current blockheight"
+        case .miningDifficulty:
+            return "Mining difficulty"
+        case .blockchainSizeOnDisc:
+            return "Blockchain size on disc"
+        case .memPool:
+            return "Node's mempool"
+        case .feeRate:
+            return "Fee rate"
+        case .p2pHiddenService:
+            return "P2P hidden service"
+        case .nodeUptime:
+            return "Node uptime"
         }
     }
     
