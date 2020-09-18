@@ -208,24 +208,29 @@ class QRScanner: UIView, AVCaptureMetadataOutputObjectsDelegate, UIImagePickerCo
             case videoInputInitFail
                 
         }
-            
-        do {
-                
-            try scanQRNow()
-            print("scanQRNow")
-                
-        } catch {
-                
-            print("Failed to scan QR Code")
-            
-        }
         
         configureImagePicker()
-        configureTextField()
-        configureUploadButton()
-        configureTorchButton()
-        configureCloseButton()
-        configureDownSwipe()
+        
+        #if targetEnvironment(macCatalyst)
+            chooseQRCodeFromLibrary()
+        
+        #else
+            configureTextField()
+            configureUploadButton()
+            configureTorchButton()
+            configureCloseButton()
+            configureDownSwipe()
+        
+            do {
+                try scanQRNow()
+                print("scanQRNow")
+                    
+            } catch {
+                print("Failed to scan QR Code")
+                
+            }
+        
+        #endif
         
     }
     
