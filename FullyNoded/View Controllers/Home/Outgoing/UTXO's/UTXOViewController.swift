@@ -9,7 +9,7 @@
 import UIKit
 
 class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
-    
+    // TODO: Ask Fontaine
     private var isSweeping = false
     private var amountToSend = String()
     private let amountInput = UITextField()
@@ -22,38 +22,42 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     private var inputArray = [Any]()
     private var inputs = ""
     private var address = ""
-    private var utxoToSpendArray = [Any]()
+    private var selectedUTXOs = Set<UTXO>()
     private var creatingView = ConnectingView()
     private var nativeSegwit = Bool()
     private var p2shSegwit = Bool()
     private var legacy = Bool()
     private var isUnsigned = false
-    private var utxo = NSDictionary()
+    private var utxo: UTXO?
     private let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     private let blurView2 = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     private let sweepButtonView = Bundle.main.loadNibNamed("KeyPadButtonView", owner: self, options: nil)?.first as! UIView?
-    @IBOutlet weak private var utxoTable: UITableView!
+    @IBOutlet weak private var tableView: UITableView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationController?.delegate = self
-        utxoTable.delegate = self
-        utxoTable.dataSource = self
-        utxoTable.register(UINib(nibName: UTXOCell.identifier, bundle: nil), forCellReuseIdentifier: UTXOCell.identifier)
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.register(UINib(nibName: UTXOCell.identifier, bundle: nil), forCellReuseIdentifier: UTXOCell.identifier)
         configureAmountView()
-        utxoTable.tableFooterView = UIView(frame: .zero)
+        tableView.tableFooterView = UIView(frame: .zero)
         refresher.tintColor = UIColor.white
         refresher.addTarget(self, action: #selector(loadUnspentUTXOs), for: UIControl.Event.valueChanged)
-        utxoTable.addSubview(refresher)
+        tableView.addSubview(refresher)
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         self.blurView2.addGestureRecognizer(tapGesture)
+        
+        loadUnspentUTXOs()
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        loadUnspentUTXOs()
+        if unspentUtxos.isEmpty {
+            loadUnspentUTXOs()
+        }
     }
     
     @IBAction private func lockAction(_ sender: Any) {
@@ -63,20 +67,19 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     }
     
     @IBAction private func getUtxoInfo(_ sender: Any) {
-        if self.utxoToSpendArray.count == 1 {
+        if selectedUTXOs.count == 1, let selectedUtxo = selectedUTXOs.first {
             
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
                 
-                self.utxo = self.utxoToSpendArray.last as! NSDictionary
+                self.utxo = selectedUtxo
                 
                 self.performSegue(withIdentifier: "getUTXOinfo", sender: self)
                 
             }
             
         } else {
-         
             displayAlert(viewController: self, isError: true, message: "select one utxo to get info for")
-            
         }
     }
     
@@ -116,14 +119,15 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         
     }
     
+    // TODO: Go over this with Fontaine
     @IBAction private func consolidate(_ sender: Any) {
         if unspentUtxos.count > 0 {
-            if utxoToSpendArray.count > 0 {
+            if selectedUTXOs.count > 0 {
                 //consolidate selected utxos only
             } else {
                 //consolidate them all
-                for utxo in unspentUtxos {
-                    utxoToSpendArray.append(utxo)
+                unspentUtxos.forEach {
+                    selectedUTXOs.insert($0)
                 }
             }
             getAddressSettings()
@@ -172,19 +176,10 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         
         
     }
-    
+    // TODO: Talk to Fontaine
     private func amountAvailable(amount: Double) -> (Bool, String) {
         
-        var amountAvailable = 0.0
-        
-        for utxoDict in utxoToSpendArray {
-            
-            let utxo = utxoDict as! NSDictionary
-            let amnt = utxo["amount"] as! Double
-            amountAvailable += amnt
-            
-        }
-        
+        let amountAvailable = selectedUTXOs.map { $0.amount }.reduce(0, +)
         let string = amountAvailable.avoidNotation
         
         if amountAvailable >= amount {
@@ -201,21 +196,11 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     
     @objc private func sweepButtonClicked() {
         
-        var amountToSweep = 0.0
         isSweeping = true
-        
-        for utxoDict in utxoToSpendArray {
-            
-            let utxo = utxoDict as! NSDictionary
-            let amount = utxo["amount"] as! Double
-            amountToSweep += amount
-            
-        }
+        let amountToSweep = selectedUTXOs.map { $0.amount }.reduce(0, +)
         
         DispatchQueue.main.async {
-            
             self.amountInput.text = amountToSweep.avoidNotation
-            
         }
         
     }
@@ -330,14 +315,14 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     }
     
     @IBAction private func createRaw(_ sender: Any) {
-        if self.utxoToSpendArray.count > 0 {
+        if selectedUTXOs.count > 0 {
             
             updateInputs()
 //            DispatchQueue.main.async { [weak self] in
 //                self?.performSegue(withIdentifier: "segueToSendFromUtxos", sender: self)
 //            }
 //
-            if self.inputArray.count > 0 {
+            if inputArray.count > 0 {
 
                 DispatchQueue.main.async {
 
@@ -375,16 +360,17 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     }
     
     private func lock(_ utxo: UTXO, completion: ((Result<Void, ReducerError>) -> Void)? = nil) {
-        guard let index = self.unspentUtxos.firstIndex(where: { $0.txid == utxo.txid }) else { return }
+        guard let index = unspentUtxos.firstIndex(of: utxo) else { return }
         
         unspentUtxos.remove(at: index)
+        selectedUTXOs.remove(utxo)
         
         creatingView.addConnectingView(vc: self, description: "locking...")
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
             self.removeSpinner()
-            self.utxoTable.reloadData()
+            self.tableView.reloadData()
         }
         
         Reducer.lock(utxo) { [weak self] result in
@@ -397,6 +383,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 
                 switch error {
                 case .description(let errorMessage):
+                    self.unspentUtxos.insert(utxo, at: index)
                     displayAlert(viewController: self, isError: true, message: errorMessage)
                 }
             }
@@ -409,17 +396,12 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         
         inputArray.removeAll()
         
-        for utxo in self.utxoToSpendArray {
+        for utxo in selectedUTXOs {
             
-            let dict = utxo as! [String:Any]
-            let amount = dict["amount"] as! Double
-            amountTotal += amount
-            let txid = dict["txid"] as! String
-            let vout = dict["vout"] as! Int
-            let spendable = dict["spendable"] as! Bool
-            let input = "{\"txid\":\"\(txid)\",\"vout\": \(vout),\"sequence\": 1}"
+            amountTotal += utxo.amount
+            let input = "{\"txid\":\"\(utxo.txid)\",\"vout\": \(utxo.vout),\"sequence\": 1}"
             
-            if !spendable {
+            if !utxo.spendable {
                 
                 isUnsigned = true
                 
@@ -433,7 +415,13 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     
     @objc private func loadUnspentUTXOs() {
         unspentUtxos = []
-        DispatchQueue.main.async { self.addSpinner() }
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.tableView.isUserInteractionEnabled = false
+            self.tableView.reloadData()
+            self.addSpinner()
+        }
         
         Reducer.listUnpentUTXOs { [weak self] result in
             guard let self = self else { return }
@@ -457,7 +445,8 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             
             DispatchQueue.main.async {
                 self.removeSpinner()
-                self.utxoTable.reloadData()
+                self.tableView.reloadData()
+                self.tableView.isUserInteractionEnabled = true
             }
         }
         
@@ -466,54 +455,53 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     private func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
         
         Reducer.makeCommand(command: method, param: param) { [weak self] (response, errorMessage) in
-            if errorMessage == nil {
-                switch method {
-                case .getnewaddress:
-                    if self != nil {
-                        if let address = response as? String {
-                            var total = Double()
-                            var miningFee = 0.00000100//No good way to do fee estimation when manually selecting utxos (for now), if the wallet knows about the utxo's we can set a low ball fee and always use rbf. For now we hardcode 100 sats per input as the fee.
-                            for utxoDict in self!.utxoToSpendArray {
-                                let utxo = utxoDict as! NSDictionary
-                                let amount = utxo["amount"] as! Double
-                                miningFee += 0.00000100
-                                total += amount
-                            }
-                            let roundedAmount = rounded(number: total - miningFee)
-                            let rawTransaction = SendUTXO()
-                            rawTransaction.addressToPay = address
-                            rawTransaction.sweep = true
-                            rawTransaction.amount = roundedAmount
-                            rawTransaction.inputArray = self!.inputArray
-                            rawTransaction.createRawTransaction { [weak self] (signedTx, psbt, errorMessage) in
-                                if signedTx != nil {
-                                    self!.rawSigned = signedTx!
-                                    self!.displayRaw(raw: self!.rawSigned)
-                                } else if psbt != nil {
-                                    self!.psbt = psbt!
-                                    self!.displayRaw(raw: self!.psbt)
-                                } else {
-                                    self!.creatingView.removeConnectingView()
-                                    displayAlert(viewController: self, isError: true, message: errorMessage ?? "unknown error")
-                                }
-                            }
-                        }
-                    }
-                    
-                case .getrawchangeaddress:
-                    if let changeAddress = response as? String {
-                        self?.getRawTx(changeAddress: changeAddress)
-                    }
-                    
-                default:
-                    break
-                }
-            } else {
-                DispatchQueue.main.async { [weak self] in
-                    self?.removeSpinner()
+            guard let self = self else { return }
+            
+            if errorMessage != nil {
+                DispatchQueue.main.async {
+                    self.removeSpinner()
                     displayAlert(viewController: self, isError: true, message: errorMessage!)
                 }
             }
+            
+            switch method {
+            case .getnewaddress:
+                if let address = response as? String {
+                    var total = Double()
+                    var miningFee = 0.00000100//No good way to do fee estimation when manually selecting utxos (for now), if the wallet knows about the utxo's we can set a low ball fee and always use rbf. For now we hardcode 100 sats per input as the fee.
+                    for utxo in self.selectedUTXOs { // TODO: Make method to adhere to DRY
+                        miningFee += 0.00000100
+                        total += utxo.amount
+                    }
+                    let roundedAmount = rounded(number: total - miningFee)
+                    let rawTransaction = SendUTXO()
+                    rawTransaction.addressToPay = address
+                    rawTransaction.sweep = true
+                    rawTransaction.amount = roundedAmount
+                    rawTransaction.inputArray = self.inputArray
+                    rawTransaction.createRawTransaction { [weak self] (signedTx, psbt, errorMessage) in
+                        if signedTx != nil {
+                            self!.rawSigned = signedTx!
+                            self!.displayRaw(raw: self!.rawSigned)
+                        } else if psbt != nil {
+                            self!.psbt = psbt!
+                            self!.displayRaw(raw: self!.psbt)
+                        } else {
+                            self!.creatingView.removeConnectingView()
+                            displayAlert(viewController: self, isError: true, message: errorMessage ?? "unknown error")
+                        }
+                    }
+                }
+                
+            case .getrawchangeaddress:
+                if let changeAddress = response as? String {
+                    self.getRawTx(changeAddress: changeAddress)
+                }
+                
+            default:
+                break
+            }
+            
         }
     }
     
@@ -544,15 +532,13 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     }
     
     private func getRawTx(changeAddress: String) {
-        let dbl = Double(amountToSend)!
+        let dbl = Double(amountToSend)! // TODO: Talk to Fontaine
         let roundedAmount = rounded(number: dbl)
         var total = Double()
         var miningFee = 0.00000100//No good way to do fee estimation when manually selecting utxos (for now), if the wallet knows about the utxo's we can set a low ball fee and always use rbf. For now we hardcode 100 sats per input as the fee.
-        for utxoDict in utxoToSpendArray {
-            let utxo = utxoDict as! NSDictionary
-            let amount = utxo["amount"] as! Double
+        for utxo in selectedUTXOs { // TODO: Make method to adhere to DRY
             miningFee += 0.00000100
-            total += amount
+            total += utxo.amount
         }
         let changeAmount = (total - dbl) - miningFee
         let rawTransaction = SendUTXO()
@@ -612,13 +598,11 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             }
             
         } else {
-            var total = Double()
+            var total = 0.0
             var miningFee = 0.00000100//No good way to do fee estimation when manually selecting utxos (for now), if the wallet knows about the utxo's we can set a low ball fee and always use rbf. For now we hardcode 100 sats per input as the fee.
-            for utxoDict in self.utxoToSpendArray {
-                let utxo = utxoDict as! NSDictionary
-                let amount = utxo["amount"] as! Double
+            for utxo in selectedUTXOs { // TODO: Make method to adhere to DRY
                 miningFee += 0.00000100
-                total += amount
+                total += utxo.amount
             }
             let roundedAmount = rounded(number: total - miningFee)
             let rawTransaction = SendUTXO()
@@ -768,7 +752,9 @@ extension UTXOViewController: UITableViewDataSource {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: UTXOCell.identifier, for: indexPath) as! UTXOCell
         let utxo = unspentUtxos[indexPath.section]
-        cell.configure(utxo: utxo, delegate: self)
+        let isSelected = selectedUTXOs.contains(utxo)
+        
+        cell.configure(utxo: utxo, isSelected: isSelected, delegate: self)
         
         return cell
     }
@@ -789,12 +775,12 @@ extension UTXOViewController: UITableViewDataSource {
 extension UTXOViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
-        let cell = utxoTable.cellForRow(at: indexPath) as! UTXOCell
         
-        unspentUtxos[indexPath.section].isSelected = false
-        
+        let utxo = unspentUtxos[indexPath.section]
+        selectedUTXOs.remove(utxo)
         impact()
         
+        let cell = tableView.cellForRow(at: indexPath) as! UTXOCell
         cell.deselectedAnimation()
     }
     
@@ -810,14 +796,11 @@ extension UTXOViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        unspentUtxos[indexPath.section].isSelected = true
+        let utxo = unspentUtxos[indexPath.section]
+        selectedUTXOs.insert(utxo)
         
-        let cell = utxoTable.cellForRow(at: indexPath) as! UTXOCell
-        
+        let cell = tableView.cellForRow(at: indexPath) as! UTXOCell
         cell.selectedAnimation()
-        
-        utxoToSpendArray.append(unspentUtxos[indexPath.section])
-        
     }
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
@@ -829,13 +812,9 @@ extension UTXOViewController: UITableViewDelegate {
             self.lock(utxo) { [weak self] result in
                 guard let self = self else { return }
                 
-                if case .failure = result {
-                    self.loadUnspentUTXOs()
-                }
-                
                 DispatchQueue.main.async {
                     tableView.isUserInteractionEnabled = true
-                    self.utxoTable.reloadData()
+                    self.tableView.reloadData()
                 }
             }
         }

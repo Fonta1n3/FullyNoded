@@ -51,8 +51,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     var alertMessage = ""
     
     var address = ""
-    
-    var utxo = NSDictionary()
+    var utxo: UTXO!
     var isUtxo = Bool()
     
     @IBAction func getHelp(_ sender: Any) {
@@ -113,10 +112,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        textView.clipsToBounds = true
-        textView.layer.cornerRadius = 8
-        textView.layer.borderWidth = 0.5
-        textView.layer.borderColor = UIColor.lightGray.cgColor
+        setupTextField()
         configureScanner()
         
         let tapGesture = UITapGestureRecognizer(target: self,
@@ -127,6 +123,14 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
         getInfo()
         
+    }
+    
+    private func setupTextField() {
+        textView.textContainer.lineBreakMode = .byCharWrapping
+        textView.clipsToBounds = true
+        textView.layer.cornerRadius = 8
+        textView.layer.borderWidth = 0.5
+        textView.layer.borderColor = UIColor.lightGray.cgColor
     }
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
@@ -312,7 +316,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
             
             DispatchQueue.main.async {
                 
-                self.textView.text = "\(self.utxo)"
+                self.textView.text = self.format(self.utxo)
                 self.creatingView.removeConnectingView()
                 
             }
@@ -345,6 +349,18 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
             
         }
         
+    }
+    // TODO: As Fontane about "safe" property
+    private func format(_ utxo: UTXO) -> String {
+        return """
+        address: \(utxo.address)
+        amount: \(utxo.amount)
+        confirmations: \(utxo.confirmations)
+        wallet label: \(utxo.walletLabel)
+        solvable: \(utxo.solvable)
+        spendable: \(utxo.spendable)
+        txid: \(utxo.txid)
+        """
     }
     
     private func setTextView(text: String) {

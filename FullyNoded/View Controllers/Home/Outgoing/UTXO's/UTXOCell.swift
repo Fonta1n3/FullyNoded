@@ -39,18 +39,21 @@ class UTXOCell: UITableViewCell {
         selectionStyle = .none
     }
     
-    func configure(utxo: UTXO, delegate: UTXOCellDelegate) {
+    func configure(utxo: UTXO, isSelected: Bool, delegate: UTXOCellDelegate) {
         self.utxo = utxo
         self.delegate = delegate
         
         txidLabel.text = utxo.txid
         walletLabel.text = utxo.walletLabel
         addressLabel.text = "Address: \(utxo.address)"
-        amountLabel.text = utxo.amount
         txidLabel.text = "TXID: \(utxo.txid)"
         voutLabel.text = "vout #\(utxo.vout)"
+        
+        
+        let roundedAmount = rounded(number: utxo.amount)
+        amountLabel.text = "\(roundedAmount)"
 
-        if utxo.isSelected {
+        if isSelected {
             checkMarkImageView.alpha = 1
             backgroundColor = UIColor.black
         } else {
@@ -139,17 +142,16 @@ class UTXOCell: UITableViewCell {
 }
 
 // TODO: Move to its own file
-struct UTXO { // TODO: Migrate to Codable
+struct UTXO: Equatable, Hashable { // TODO: Migrate to Codable
     
     let txid: String
     let address: String
-    let amount: String
+    let amount: Double
     let vout: Int
     let solvable: Bool
     let confirmations: Int
     let spendable: Bool
     let walletLabel: String
-    var isSelected: Bool = false
     
     init(dict: [String: Any]) {
         
@@ -160,8 +162,7 @@ struct UTXO { // TODO: Migrate to Codable
         address = addressValue ?? "N/A"
         
         let amountValue = dict["amount"] as? Double
-        let dbl = rounded(number: amountValue ?? -1)
-        amount = dbl.avoidNotation
+        amount = amountValue ?? 0
         
         let voutValue = dict["vout"] as? Int
         vout = voutValue ?? -1
@@ -178,6 +179,15 @@ struct UTXO { // TODO: Migrate to Codable
         let labelValue = dict["label"] as? String
         walletLabel = labelValue ?? ""
         
+    }
+    
+}
+
+// Equatable
+extension UTXO {
+    
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        return lhs.txid == rhs.txid
     }
     
 }
