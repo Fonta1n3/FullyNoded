@@ -72,7 +72,7 @@ class Reducer {
                 return
             }
             
-            let utxos = response.map({ UTXO(dict: $0) }).sorted { $0.confirmations < $1.confirmations }
+            let utxos = response.map { UTXO(dict: $0) }
             
             completion(.success(utxos))
         }

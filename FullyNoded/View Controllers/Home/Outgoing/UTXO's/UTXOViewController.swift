@@ -36,6 +36,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         navigationController?.delegate = self
         tableView.delegate = self
         tableView.dataSource = self
@@ -47,17 +48,13 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         tableView.addSubview(refresher)
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
-        self.blurView2.addGestureRecognizer(tapGesture)
-        
-        loadUnspentUTXOs()
+        blurView2.addGestureRecognizer(tapGesture)
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        if unspentUtxos.isEmpty {
-            loadUnspentUTXOs()
-        }
+        loadUnspentUTXOs()
     }
     
     @IBAction private func lockAction(_ sender: Any) {
@@ -428,7 +425,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             
             switch result {
             case .success(let utxos):
-                self.unspentUtxos = utxos
+                self.unspentUtxos = utxos.sorted { $0.confirmations < $1.confirmations }
                 DispatchQueue.main.async {
                     self.executeNodeCommand(method: .getnetworkinfo, param: "") // TODO: Ask Fontaine what this does
                 }

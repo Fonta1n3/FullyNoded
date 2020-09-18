@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		844D2A4B2512D4F60046372E /* UTXOCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844D2A492512D4F60046372E /* UTXOCell.swift */; };
+		844D2A4C2512D4F60046372E /* UTXOCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 844D2A4A2512D4F60046372E /* UTXOCell.xib */; };
 		D00B9A282111427200E8B95A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00B9A272111427200E8B95A /* AppDelegate.swift */; };
 		D00B9A2D2111427200E8B95A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D00B9A2B2111427200E8B95A /* Main.storyboard */; };
 		D00B9A322111427200E8B95A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D00B9A312111427200E8B95A /* Assets.xcassets */; };
@@ -187,6 +189,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		844D2A492512D4F60046372E /* UTXOCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOCell.swift; sourceTree = "<group>"; };
+		844D2A4A2512D4F60046372E /* UTXOCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = UTXOCell.xib; sourceTree = "<group>"; };
 		A084FD782359F7B700DA63CF /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		D00B9A242111427200E8B95A /* FullyNoded.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FullyNoded.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D00B9A272111427200E8B95A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -681,6 +685,8 @@
 			children = (
 				D0560EE82277F75900C3E909 /* UTXOViewController.swift */,
 				D08A92B6233E113B00409D6E /* LockedViewController.swift */,
+				844D2A492512D4F60046372E /* UTXOCell.swift */,
+				844D2A4A2512D4F60046372E /* UTXOCell.xib */,
 			);
 			path = "UTXO's";
 			sourceTree = "<group>";
@@ -1047,6 +1053,7 @@
 				D0126FF82244842000412629 /* bWhite.png in Resources */,
 				D05D9732226433B60035F1DE /* strobe.png in Resources */,
 				D06FD7D2250640F800481185 /* logo_grey.png in Resources */,
+				844D2A4C2512D4F60046372E /* UTXOCell.xib in Resources */,
 				D0FA417E213C7CED0028E4F8 /* whiteFingerPrint.png in Resources */,
 				D00B9A2D2111427200E8B95A /* Main.storyboard in Resources */,
 			);
@@ -1161,6 +1168,7 @@
 				D08A92B1233B213300409D6E /* ChooseWalletViewController.swift in Sources */,
 				D0A2918F225114670099A2F3 /* MakeRPCCall.swift in Sources */,
 				D082397B24DBDB330098D4F4 /* AddPeerViewController.swift in Sources */,
+				844D2A4B2512D4F60046372E /* UTXOCell.swift in Sources */,
 				D0233F262361EA380041FFBA /* StringExtension.swift in Sources */,
 				D07EC09022DBFB5400F9160D /* JoinPSBTViewController.swift in Sources */,
 				D0C20EDE24A6E70A00C62AA4 /* SmartFee.swift in Sources */,
