@@ -265,9 +265,11 @@ class QRScanner: UIView, AVCaptureMetadataOutputObjectsDelegate, UIImagePickerCo
     }
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-        
-        picker.dismiss(animated: true, completion: nil)
-        
+        picker.dismiss(animated: true) {
+            DispatchQueue.main.async {
+                self.vc.dismiss(animated: true, completion: nil)
+            }
+        }
     }
     
     func chooseQRCodeFromLibrary() {

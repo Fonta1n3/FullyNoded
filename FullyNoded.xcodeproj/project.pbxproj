@@ -127,6 +127,7 @@
 		D0A7CF73227967F900B683A0 /* AddressParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A7CF72227967F900B683A0 /* AddressParser.swift */; };
 		D0AD9B6823E7ECC20032C607 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0AD9B6723E7ECC20032C607 /* SceneDelegate.swift */; };
 		D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B3149E216C4DB1008FDC53 /* CreateRawTxViewController.swift */; };
+		D0B80A892516020A006B88F0 /* ImportXpubViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B80A882516020A006B88F0 /* ImportXpubViewController.swift */; };
 		D0C20ED224A6DB9D00C62AA4 /* BlockchainInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20ED124A6DB9D00C62AA4 /* BlockchainInfo.swift */; };
 		D0C20ED424A6DFE600C62AA4 /* PeerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20ED324A6DFE500C62AA4 /* PeerInfo.swift */; };
 		D0C20ED624A6E19600C62AA4 /* NetworkInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20ED524A6E19600C62AA4 /* NetworkInfo.swift */; };
@@ -312,6 +313,7 @@
 		D0AC9D31234D079000290550 /* FullyNoded.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FullyNoded.entitlements; sourceTree = "<group>"; };
 		D0AD9B6723E7ECC20032C607 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		D0B3149E216C4DB1008FDC53 /* CreateRawTxViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateRawTxViewController.swift; sourceTree = "<group>"; };
+		D0B80A882516020A006B88F0 /* ImportXpubViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportXpubViewController.swift; sourceTree = "<group>"; };
 		D0C20ED124A6DB9D00C62AA4 /* BlockchainInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockchainInfo.swift; sourceTree = "<group>"; };
 		D0C20ED324A6DFE500C62AA4 /* PeerInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerInfo.swift; sourceTree = "<group>"; };
 		D0C20ED524A6E19600C62AA4 /* NetworkInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkInfo.swift; sourceTree = "<group>"; };
@@ -874,6 +876,7 @@
 				D09F9E4B24B0673C006B588C /* SignersViewController.swift */,
 				D09F9E4F24B1BAC3006B588C /* SignerDetailViewController.swift */,
 				D09F9E5124B1F8DE006B588C /* AddSignerViewController.swift */,
+				D0B80A882516020A006B88F0 /* ImportXpubViewController.swift */,
 			);
 			path = Wallets;
 			sourceTree = "<group>";
@@ -1114,6 +1117,7 @@
 				D02094F02257FB78002E8E7A /* FirstTime.swift in Sources */,
 				D0560EEF22784E9D00C3E909 /* UnsignedViewController.swift in Sources */,
 				D069052124EA8E95007F939D /* LightningChannelsViewController.swift in Sources */,
+				D0B80A892516020A006B88F0 /* ImportXpubViewController.swift in Sources */,
 				D058F3C2226D9DED00CF4BE9 /* OutgoingsTableViewController.swift in Sources */,
 				D0C20EE024A6EF3800C62AA4 /* Balances.swift in Sources */,
 				D08A92B7233E113B00409D6E /* LockedViewController.swift in Sources */,
@@ -1388,14 +1392,14 @@
 		D00B9A3A2111427200E8B95A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-1";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = FullyNoded/FullyNoded.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 240;
+				CURRENT_PROJECT_VERSION = 241;
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1409,7 +1413,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.320;
+				MARKETING_VERSION = 1.321;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1428,13 +1432,13 @@
 		D00B9A3B2111427200E8B95A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-1";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = FullyNoded/FullyNoded.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 240;
+				CURRENT_PROJECT_VERSION = 241;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
@@ -1450,7 +1454,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.320;
+				MARKETING_VERSION = 1.321;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";

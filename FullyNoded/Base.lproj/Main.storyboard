@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097.3" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="nU0-zz-6p3">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="nU0-zz-6p3">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
@@ -981,7 +981,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="rhk-Kz-8ST">
-                                <rect key="frame" x="16" y="115.5" width="343" height="538.5"/>
+                                <rect key="frame" x="16" y="162" width="343" height="492"/>
                                 <color key="backgroundColor" red="0.1333139837" green="0.13334444170000001" blue="0.1333120763" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
@@ -993,39 +993,66 @@
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="uL0-83-uth">
-                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
-                            </imageView>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="WKP-8y-kGS">
+                                <rect key="frame" x="16" y="102" width="290" height="34"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits"/>
+                            </textField>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="CoM-f0-K05">
+                                <rect key="frame" x="313" y="104" width="46" height="30"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="46" id="OgY-xZ-VIL"/>
+                                    <constraint firstAttribute="height" constant="30" id="iWL-9k-bUw"/>
+                                </constraints>
+                                <state key="normal" title="Go">
+                                    <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="goAction:" destination="Hww-Qm-Hos" eventType="touchUpInside" id="ezC-Rt-wsJ"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="dcm-qP-Dpb" firstAttribute="leading" secondItem="qRH-sV-iTg" secondAttribute="leading" constant="16" id="2ir-up-BkL"/>
                             <constraint firstItem="dcm-qP-Dpb" firstAttribute="top" secondItem="qRH-sV-iTg" secondAttribute="top" constant="16" id="73L-eX-64g"/>
-                            <constraint firstItem="uL0-83-uth" firstAttribute="trailing" secondItem="qRH-sV-iTg" secondAttribute="trailing" id="AVz-BI-m5d"/>
-                            <constraint firstItem="uL0-83-uth" firstAttribute="top" secondItem="Mtx-uZ-lbO" secondAttribute="top" id="AwA-Wi-3Tq"/>
-                            <constraint firstItem="uL0-83-uth" firstAttribute="leading" secondItem="qRH-sV-iTg" secondAttribute="leading" id="IC7-ka-PPe"/>
                             <constraint firstItem="qRH-sV-iTg" firstAttribute="bottom" secondItem="rhk-Kz-8ST" secondAttribute="bottom" constant="13" id="KrN-Ai-XL8"/>
-                            <constraint firstItem="rhk-Kz-8ST" firstAttribute="top" secondItem="dcm-qP-Dpb" secondAttribute="bottom" constant="21.5" id="Wbb-v1-v5s"/>
-                            <constraint firstItem="uL0-83-uth" firstAttribute="bottom" secondItem="qRH-sV-iTg" secondAttribute="bottom" id="lni-3R-0AJ"/>
+                            <constraint firstItem="rhk-Kz-8ST" firstAttribute="top" secondItem="WKP-8y-kGS" secondAttribute="bottom" constant="26" id="XSC-SJ-5bO"/>
+                            <constraint firstItem="WKP-8y-kGS" firstAttribute="leading" secondItem="qRH-sV-iTg" secondAttribute="leading" constant="16" id="XXo-ae-Yef"/>
+                            <constraint firstItem="WKP-8y-kGS" firstAttribute="top" secondItem="dcm-qP-Dpb" secondAttribute="bottom" constant="8" id="iv6-Ad-4U4"/>
+                            <constraint firstItem="qRH-sV-iTg" firstAttribute="trailing" secondItem="CoM-f0-K05" secondAttribute="trailing" constant="16" id="jbe-zv-bxq"/>
                             <constraint firstItem="rhk-Kz-8ST" firstAttribute="leading" secondItem="qRH-sV-iTg" secondAttribute="leading" constant="16" id="nHR-zC-OSw"/>
+                            <constraint firstItem="CoM-f0-K05" firstAttribute="centerY" secondItem="WKP-8y-kGS" secondAttribute="centerY" id="q1h-7L-xnj"/>
                             <constraint firstItem="qRH-sV-iTg" firstAttribute="trailing" secondItem="rhk-Kz-8ST" secondAttribute="trailing" constant="16" id="s0o-Ke-uXb"/>
+                            <constraint firstItem="CoM-f0-K05" firstAttribute="leading" secondItem="WKP-8y-kGS" secondAttribute="trailing" constant="7" id="sDE-vv-iSO"/>
                             <constraint firstItem="qRH-sV-iTg" firstAttribute="trailing" secondItem="dcm-qP-Dpb" secondAttribute="trailing" constant="16" id="tSk-Ci-fRI"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="qRH-sV-iTg"/>
                     </view>
                     <navigationItem key="navigationItem" id="zSy-nu-tWq">
-                        <barButtonItem key="rightBarButtonItem" title="Item" image="questionmark.circle" catalog="system" id="NO8-nQ-xDb">
-                            <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                            <connections>
-                                <action selector="getHelp:" destination="Hww-Qm-Hos" id="SAw-dT-Mho"/>
-                            </connections>
-                        </barButtonItem>
+                        <rightBarButtonItems>
+                            <barButtonItem title="Item" image="questionmark.circle" catalog="system" id="NO8-nQ-xDb">
+                                <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <connections>
+                                    <action selector="getHelp:" destination="Hww-Qm-Hos" id="SAw-dT-Mho"/>
+                                </connections>
+                            </barButtonItem>
+                            <barButtonItem image="qrcode.viewfinder" catalog="system" id="RGr-Ty-huS">
+                                <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <connections>
+                                    <action selector="scanQr:" destination="Hww-Qm-Hos" id="hf1-U7-h9s"/>
+                                </connections>
+                            </barButtonItem>
+                        </rightBarButtonItems>
                     </navigationItem>
                     <connections>
-                        <outlet property="imageView" destination="uL0-83-uth" id="tni-KC-Bvb"/>
+                        <outlet property="goButtonOutlet" destination="CoM-f0-K05" id="CgZ-Ob-tfS"/>
                         <outlet property="label" destination="dcm-qP-Dpb" id="f1a-Nm-C0r"/>
+                        <outlet property="textField" destination="WKP-8y-kGS" id="oIy-6s-miT"/>
                         <outlet property="textView" destination="rhk-Kz-8ST" id="99X-yG-lnI"/>
                         <segue destination="heC-cF-uyp" kind="presentation" identifier="segueToShowHelp" id="U54-oe-CeC"/>
+                        <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToGoGetInfoScan" id="zsc-Qp-vnq"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="FVr-AY-4My" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -2829,7 +2856,7 @@
                                 </constraints>
                             </imageView>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="11" translatesAutoresizingMaskIntoConstraints="NO" id="6zG-h6-wiF">
-                                <rect key="frame" x="16" y="122" width="343" height="264"/>
+                                <rect key="frame" x="16" y="122" width="343" height="319"/>
                                 <subviews>
                                     <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GO8-o8-fXl">
                                         <rect key="frame" x="0.0" y="0.0" width="343" height="44"/>
@@ -2896,6 +2923,19 @@
                                             <action selector="uploadFileAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="jc3-Bs-S1B"/>
                                         </connections>
                                     </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="r0W-2T-fur">
+                                        <rect key="frame" x="0.0" y="275" width="343" height="44"/>
+                                        <color key="backgroundColor" red="0.12129447610000001" green="0.12922456860000001" blue="0.14169979099999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="44" id="YEq-6I-4nT"/>
+                                        </constraints>
+                                        <state key="normal" title="import via xpub">
+                                            <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="importXpubAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="Mwc-2J-ang"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                             </stackView>
                         </subviews>
@@ -2922,6 +2962,7 @@
                     </navigationItem>
                     <connections>
                         <outlet property="importOutlet" destination="5fe-JI-HkZ" id="UlE-sQ-oBY"/>
+                        <outlet property="importXpubOutlet" destination="r0W-2T-fur" id="HDH-av-qeo"/>
                         <outlet property="multiSigOutlet" destination="ewF-ze-dkg" id="EXb-It-bRN"/>
                         <outlet property="recoveryOutlet" destination="bPF-3j-BsX" id="fdn-vK-RVg"/>
                         <outlet property="singleSigOutlet" destination="GO8-o8-fXl" id="6Gi-pM-wjc"/>
@@ -2930,11 +2971,76 @@
                         <segue destination="pBQ-SK-r7u" kind="show" identifier="seguToManualCreation" id="tT8-Fn-Z1b"/>
                         <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScanner" id="1fQ-PG-chF"/>
                         <segue destination="00Y-n8-WfC" kind="show" identifier="segueToCreateMultiSig" id="ejH-sy-hlm"/>
+                        <segue destination="fG5-85-vAV" kind="show" identifier="segueToImportXpub" id="Cd3-qW-ujG"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="aBB-kS-R85" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-8106.3999999999996" y="1798.6506746626687"/>
+        </scene>
+        <!--Import Xpub View Controller-->
+        <scene sceneID="Id2-yj-57E">
+            <objects>
+                <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="fG5-85-vAV" customClass="ImportXpubViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="uv7-wI-T9f">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="fbb-jX-krx">
+                                <rect key="frame" x="16" y="116" width="343" height="34"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits"/>
+                            </textField>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="xpub import" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WjC-KR-sms">
+                                <rect key="frame" x="16" y="63" width="159" height="35"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sLK-5X-3x7">
+                                <rect key="frame" x="16" y="158" width="343" height="43"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="43" id="Wbp-hA-5nJ"/>
+                                </constraints>
+                                <state key="normal" title="import">
+                                    <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="importAction:" destination="fG5-85-vAV" eventType="touchUpInside" id="THm-ML-Qsc"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="WjC-KR-sms" firstAttribute="top" secondItem="c3d-xP-e7q" secondAttribute="top" constant="19" id="1eb-Pl-FBw"/>
+                            <constraint firstItem="sLK-5X-3x7" firstAttribute="leading" secondItem="c3d-xP-e7q" secondAttribute="leading" constant="16" id="8L8-oT-J9c"/>
+                            <constraint firstItem="c3d-xP-e7q" firstAttribute="trailing" secondItem="sLK-5X-3x7" secondAttribute="trailing" constant="16" id="8ex-2C-xXF"/>
+                            <constraint firstItem="c3d-xP-e7q" firstAttribute="trailing" secondItem="fbb-jX-krx" secondAttribute="trailing" constant="16" id="W7C-xD-gS3"/>
+                            <constraint firstItem="fbb-jX-krx" firstAttribute="leading" secondItem="c3d-xP-e7q" secondAttribute="leading" constant="16" id="Ye5-Nq-bVd"/>
+                            <constraint firstItem="sLK-5X-3x7" firstAttribute="top" secondItem="fbb-jX-krx" secondAttribute="bottom" constant="8" id="heB-GC-0KK"/>
+                            <constraint firstItem="WjC-KR-sms" firstAttribute="leading" secondItem="c3d-xP-e7q" secondAttribute="leading" constant="16" id="oeZ-rK-7A8"/>
+                            <constraint firstItem="fbb-jX-krx" firstAttribute="top" secondItem="WjC-KR-sms" secondAttribute="bottom" constant="18" id="vJa-fY-a4J"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="c3d-xP-e7q"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="bjo-9U-Qcx">
+                        <barButtonItem key="rightBarButtonItem" image="qrcode.viewfinder" catalog="system" id="U3l-YY-pME">
+                            <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <connections>
+                                <action selector="scanQrAction:" destination="fG5-85-vAV" id="aj1-o4-eGU"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="importOutlet" destination="sLK-5X-3x7" id="gab-wr-6bb"/>
+                        <outlet property="textField" destination="fbb-jX-krx" id="znG-r9-xgg"/>
+                        <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScanXpub" id="9TT-9o-7xG"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="O0T-yA-Vak" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-7383.1999999999998" y="2551.5742128935535"/>
         </scene>
         <!--Seed Displayer View Controller-->
         <scene sceneID="O8O-77-jvo">
@@ -4247,7 +4353,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
             </objects>
             <point key="canvasLocation" x="-2791.1999999999998" y="375.56221889055473"/>
         </scene>
-        <!--v0.1.80-->
+        <!--v0.1.81-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -4395,7 +4501,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                         <viewLayoutGuide key="safeArea" id="Cze-jj-bFe"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="v0.1.80" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="v0.1.81" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
@@ -7115,7 +7221,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="UBf-qr-XYG"/>
+        <segue reference="qed-hl-jG5"/>
         <segue reference="dhu-ZV-762"/>
         <segue reference="w2g-bl-j8v"/>
         <segue reference="XQE-Ek-uZu"/>
@@ -7125,13 +7231,13 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="ywj-ud-JRK"/>
         <segue reference="oY9-Pq-H5b"/>
-        <segue reference="07E-4w-Zh7"/>
+        <segue reference="zsc-Qp-vnq"/>
         <segue reference="aV5-mq-s3Q"/>
         <segue reference="g7x-oO-Buw"/>
         <segue reference="Jma-5H-zJx"/>
         <segue reference="j10-wi-hpr"/>
         <segue reference="6HW-Pq-bwM"/>
-        <segue reference="qmy-fM-U4p"/>
+        <segue reference="U54-oe-CeC"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
     <resources>

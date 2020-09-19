@@ -16,6 +16,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     @IBOutlet weak var singleSigOutlet: UIButton!
     @IBOutlet weak var recoveryOutlet: UIButton!
     @IBOutlet weak var importOutlet: UIButton!
+    @IBOutlet weak var importXpubOutlet: UIButton!
     
     let imagePicker = UIImagePickerController()
     var onDoneBlock:(((Bool)) -> Void)?
@@ -32,6 +33,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         importOutlet.layer.cornerRadius = 8
         multiSigOutlet.layer.cornerRadius = 8
         uploadOutlet.layer.cornerRadius = 8
+        importXpubOutlet.layer.cornerRadius = 8
         if (UIDevice.current.userInterfaceIdiom == .pad) {
           alertStyle = UIAlertController.Style.alert
         }
@@ -43,6 +45,13 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         imagePicker.allowsEditing = false
         imagePicker.sourceType = .photoLibrary
     }
+    
+    @IBAction func importXpubAction(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            self?.performSegue(withIdentifier: "segueToImportXpub", sender: self)
+        }
+    }
+    
     
     @IBAction func uploadFileAction(_ sender: Any) {
         DispatchQueue.main.async { [unowned vc = self] in
