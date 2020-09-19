@@ -187,7 +187,7 @@ struct UTXO: Equatable, Hashable { // TODO: Migrate to Codable
 extension UTXO {
     
     static func == (lhs: Self, rhs: Self) -> Bool {
-        return lhs.txid == rhs.txid
+        return lhs.txid == rhs.txid && lhs.vout == rhs.vout
     }
     
 }
