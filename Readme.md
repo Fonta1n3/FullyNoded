@@ -53,10 +53,11 @@ However, developing and supporting this project is hard work and costs real mone
   - Start Fully Noded by double clicking it.
   - Fully Noded will prompt you to add a node. Get your `rpc` credentials from your `bitcoin.conf` file which can be found at `/Users/<username>/Library/Application Support/Bitcoin/bitcoin.conf ` and add them to FN when adding your node. By default FN will add the correct address for your node, this can be customized for remote connections for advanced users.
   - Once your node is added and the home screen has loaded, tap the "antenna" button on the home screen:</br>
-  <img src="./Images/antenna.gif" alt="antenna" width="500"/></br>
+  </br><img src="./Images/antenna.gif" alt="antenna" width="500"/></br></br>
 - On your mobile device
   - Download Fully Noded iOS [<img src="./Images/appstore.png" alt="download fully noded on the app store" width="100"/>](https://apps.apple.com/us/app/fully-noded/id1436425586)<br/>
-  - Open it, when prompted to add a node tap the QR scanner button, and scan the QR that the macOS app is showing you, that is it. Just make sure your node is on and the Fully Noded on your mac is also on.
+  - Open it, when prompted to add a node tap the QR scanner button, and scan the QR that the macOS app is showing you:
+    </br><img src="./Images/scan.gif" alt="scan" width="250"/></br></br>
 
 ## Manual Setup - *advanced*
 
