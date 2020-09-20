@@ -58,7 +58,7 @@ However, developing and supporting this project is hard work and costs real mone
 * [Manually setup Tor](./Docs/Tor/Tor.md)
 * [Tor V3 Authentication](./Docs/Tor/Authentication.md)
 
-## Docs
+## [Docs](./Docs)
 
 * [Wallet usage](./Docs/Wallets)
 * [Bitcoin Core (node) related](./Docs/Bitcoin-Core)
