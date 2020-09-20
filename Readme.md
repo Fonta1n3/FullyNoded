@@ -10,7 +10,7 @@ Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own 
 ## Getting started
 
 - On your mac
-  - Download Fully Noded™️ macOS
+  - Download Fully Noded™️ macOS</br>
   [<img src="./Images/macos_badge.png" alt="download fully noded for macos" width="100"/>](./FullyNoded-v0.1.81.dmg)<br/>
   - Download Bitcoin Core [https://bitcoincore.org/en/download/](https://bitcoincore.org/en/download/)
     - Or for best security and ease of use download [GordianServer](https://github.com/Fonta1n3/GordianServer-macOS/blob/master/GordianServer-macOS-v0.1.4.dmg) which will harden your mac for best security practices and install Bitcoin Core, Tor and C-Lightning with one click.
@@ -20,7 +20,7 @@ Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own 
   - Once your node is added and the home screen has loaded, tap the "antenna" button on the home screen:</br>
   </br><img src="./Images/antenna.gif" alt="antenna" width="500"/></br></br>
 - On your mobile device
-  - Download Fully Noded™️ iOS
+  - Download Fully Noded™️ iOS</br>
   [<img src="./Images/appstore.png" alt="download fully noded on the app store" width="100"/>](https://apps.apple.com/us/app/fully-noded/id1436425586)<br/>
   - Open it, when prompted to add a node tap the QR scanner button, and scan the QR that the macOS app is showing you:
     </br><img src="./Images/scan.gif" alt="scan" width="250"/></br></br>
