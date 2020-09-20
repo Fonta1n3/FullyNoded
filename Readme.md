@@ -1,6 +1,8 @@
 
 # [Fully Noded™️](https://fullynoded.app)
 
+<img src="./Images/home.png" alt="home" width="500"/></br>
+
 Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own [Bitcoin Core](https://github.com/bitcoin/bitcoin) node as a backend. Providing an easy to use interface to interact with your nodes non wallet capabilities. Fully Noded™️ wallets are powered by PSBT's and descriptors. Fully Noded acts as an offline signer using your node as a watch-only wallet as well as giving you full unfettered access to every wallet.dat in your nodes `.bitcoin` directory. [C-Lightning](https://github.com/ElementsProject/lightning) compatible for instant, unfairly cheap payments.
 
 <img src="./Images/fn_logo.png" alt="" width="100"/><br/>
@@ -55,8 +57,8 @@ However, developing and supporting this project is hard work and costs real mone
   - Once your node is added and the home screen has loaded, tap the "antenna" button on the home screen.
 - On your mobile device
   - Download Fully Noded
-    - [<img src="./Images/appstore.png" alt="download fully noded on the app store" width="100"/>](https://apps.apple.com/us/app/fully-noded/id1436425586)
-  - Open it, when prompted to add a node tap the QR scanner button, and scan the QR that the macOS app is showing you. In order to connect Fully Noded on macOS will need to be running and your Bitcoin Core node will need to be on.
+    - [<img src="./Images/appstore.png" alt="download fully noded on the app store" width="100"/>](https://apps.apple.com/us/app/fully-noded/id1436425586)<br/>
+  - Open it, when prompted to add a node tap the QR scanner button, and scan the QR that the macOS app is showing you, that is it. Just make sure your node is on and the Fully Noded on your mac is also on.
 
 ## Manual Setup - *advanced*
 
