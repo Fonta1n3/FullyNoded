@@ -1,7 +1,7 @@
 
 # [Fully Noded™️](https://fullynoded.app)
 
-<img src="./Images/fn_logo.png" alt="" width="100"/> [<img src="./Images/appstore.png" alt="download fully noded on the app store" width="100"/>](https://apps.apple.com/us/app/fully-noded/id1436425586) [<img src="./Images/macos_badge.png" alt="download fully noded for macos" width="100"/>](./FullyNoded-v0.1.81.dmg)<br/>
+<img src="./Images/fn_logo.png" alt="" width="100"/></br>[<img src="./Images/appstore.png" alt="download fully noded on the app store" width="100"/>](https://apps.apple.com/us/app/fully-noded/id1436425586)</br>[<img src="./Images/macos_badge.png" alt="download fully noded for macos" width="100"/>](./FullyNoded-v0.1.81.dmg)<br/>
 
 <img src="./Images/home.png" alt="home" width="400"/> <img src="./Images/wallet.png" alt="home" width="400"/></br>
 
