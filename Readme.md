@@ -1,7 +1,7 @@
 
 # [Fully Noded™️](https://fullynoded.app)
 
-<img src="./Images/fn_logo.png" alt="" width="100"/></br>[<img src="./Images/appstore.png" alt="download fully noded on the app store" width="100"/>](https://apps.apple.com/us/app/fully-noded/id1436425586)</br>[<img src="./Images/macos_badge.png" alt="download fully noded for macos" width="100"/>](./FullyNoded-v0.1.81.dmg)<br/>
+<img src="./Images/fn_logo.png" alt="" width="100"/></br>[<img src="./Images/appstore.png" alt="download fully noded on the app store" width="100"/>](https://apps.apple.com/us/app/fully-noded/id1436425586)</br>[<img src="./Images/macos_badge.png" alt="download fully noded for macos" width="100"/>](https://apps.apple.com/us/app/fully-noded-desktop/id1530816100?mt=12)<br/>
 
 <img src="./Images/home.png" alt="home" width="400"/> <img src="./Images/wallet.png" alt="home" width="400"/></br>
 
@@ -11,7 +11,7 @@ Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own 
 
 - On your mac
   - Download Fully Noded™️ macOS</br>
-  [<img src="./Images/macos_badge.png" alt="download fully noded for macos" width="100"/>](./FullyNoded-v0.1.81.dmg)<br/>
+  [<img src="./Images/macos_badge.png" alt="download fully noded for macos" width="100"/>](https://apps.apple.com/us/app/fully-noded-desktop/id1530816100?mt=12)<br/>
   - Download Bitcoin Core [https://bitcoincore.org/en/download/](https://bitcoincore.org/en/download/)
     - Or for best security and ease of use download [GordianServer](https://github.com/Fonta1n3/GordianServer-macOS/blob/master/GordianServer-macOS-v0.1.4.dmg) which will harden your mac for best security practices and install Bitcoin Core, Tor and C-Lightning with one click.
   - Start Bitcoin Core by double clicking it.
