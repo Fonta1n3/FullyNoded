@@ -5,7 +5,7 @@ Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own 
 
 <img src="./Images/fn_logo.png" alt="" width="100"/><br/>
 [<img src="./Images/appstore.png" alt="download fully noded on the app store" width="100"/>](https://apps.apple.com/us/app/fully-noded/id1436425586)<br/>
-[<img src="./Images/macos_badge.png" alt="download fully noded for macos" width="100"/>](./FullyNoded.dmg)<br/>
+[<img src="./Images/macos_badge.png" alt="download fully noded for macos" width="100"/>](./FullyNoded-v0.1.81.dmg)<br/>
 
 ## Cost
 
@@ -41,11 +41,24 @@ However, developing and supporting this project is hard work and costs real mone
 * [Tor](https://www.torproject.org/download/)
 * An understanding of basic Bitcoin concepts, you can read this [overview](./Docs/What-is-a-node.md). It greatly helps to have a basic understanding of `bitcoin-cli` commands, what they do and how they work to grasp how the app works under the hood. [Learning Bitcoin from the Command Line](https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line) is an excellent in depth reference.
 
-## macOS setup (recommended)
+## Getting started - *the easy way*
 
-* [How to get started](https://www.youtube.com/watch?v=_7MZd0weDis)
+- On your mac
+  - Download Fully Noded macOS
+    - [<img src="./Images/macos_badge.png" alt="download fully noded for macos" width="100"/>](./FullyNoded-v0.1.81.dmg)<br/>
+  - Download Bitcoin Core
+    - [https://bitcoincore.org/en/download/](https://bitcoincore.org/en/download/)
+    - Or for best security and ease of use use [GordianServer](https://github.com/Fonta1n3/GordianServer-macOS/blob/master/GordianServer-macOS-v0.1.4.dmg) which will harden your mac for best security practices and install Bitcoin Core, Tor and C-Lightning with one click.
+  - Start Bitcoin Core by double clicking it.
+  - Start Fully Noded by double clicking it.
+  - Fully Noded will prompt you to add a node. Get your `rpc` credentials from your `bitcoin.conf` file which can be found at `/Users/<username>/Library/Application Support/Bitcoin/bitcoin.conf ` and add them to FN when adding your node. By default FN will add the correct address for your node, this can be customized for remote connections for advanced users.
+  - Once your node is added and the home screen has loaded, tap the "antenna" button on the home screen.
+- On your mobile device
+  - Download Fully Noded
+    - [<img src="./Images/appstore.png" alt="download fully noded on the app store" width="100"/>](https://apps.apple.com/us/app/fully-noded/id1436425586)
+  - Open it, when prompted to add a node tap the QR scanner button, and scan the QR that the macOS app is showing you. In order to connect Fully Noded on macOS will need to be running and your Bitcoin Core node will need to be on.
 
-## Getting Setup Proper (advanced users)
+## Manual Setup - *advanced*
 
 - After downloading the app you need to first connect a node - see the guides
     - On macOS by far the easiest way (one click setup) is to use *Gordian-Server*, download [here](https://github.com/BlockchainCommons/GordianServer-macOS/raw/master/GordianServer-macOS-v0.1.2.dmg)
@@ -58,7 +71,7 @@ However, developing and supporting this project is hard work and costs real mone
         - [Raspiblitz](./Docs/Bitcoin-Core/Connect.md#connect-raspiblitz)
         - [Embassy](./Docs/Bitcoin-Core/Connect.md#connect-embassy)
         - [myNode](../Docs/Bitcoin-Core/Connect.md#connect-mynode)
-- In order to connect to your own node you need to expose its functionality to a Tor Hidden Service:
+- In order to connect to your own node you need to expose its functionality to a Tor Hidden Service if not connecting locally:
     - [macOS](./Docs/Tor/Tor.md#connecting-over-tor-macos)
     - [Windows 10](./Docs/Tor/Tor.md#connecting-over-tor-windows-10)
     - [Debian 10](./Docs/Tor/Tor.md#connecting-over-tor-linux-debian-10)
@@ -83,7 +96,7 @@ However, developing and supporting this project is hard work and costs real mone
 
 ## Medium Posts
 
-* [Intoducing Fully Noded Wallets](https://medium.com/@FullyNoded/introducing-fully-noded-wallets-9fc2e4837102)
+* [Introducing Fully Noded Wallets](https://medium.com/@FullyNoded/introducing-fully-noded-wallets-9fc2e4837102)
 * [Introducing Fully Noded PSBT Signers](https://medium.com/@FullyNoded/introducing-fully-noded-psbt-signers-8f259c1ec558?sk=fa56fa3939136f269f0ca2a4fcdeee38)
 
 ## Youtube Tutorials
@@ -93,6 +106,7 @@ However, developing and supporting this project is hard work and costs real mone
 * [Coldcard single signature wallet](https://www.youtube.com/watch?v=W0vwgzIrPoY)
 * [Coldcard multi signature wallet](https://www.youtube.com/watch?v=daXvAcHy8H0)
 * [Create, spend from and recover a multisig wallet](https://www.youtube.com/watch?v=-Eh-OdtFRmI)
+* [Import xpub](https://www.youtube.com/watch?v=UsLd6ki5K4o)
 
 ## PGP
 
