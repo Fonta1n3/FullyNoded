@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097.3" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="nU0-zz-6p3">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
@@ -753,6 +754,12 @@
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2nt-hF-coL">
+                                <rect key="frame" x="8" y="123" width="359" height="0.0"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo_grey.png" translatesAutoresizingMaskIntoConstraints="NO" id="pxd-zp-3XW">
                                 <rect key="frame" x="16" y="71" width="41" height="40"/>
                                 <constraints>
@@ -768,9 +775,12 @@
                             <constraint firstItem="PnO-jn-Gk8" firstAttribute="top" secondItem="ioR-4d-qfe" secondAttribute="top" constant="30" id="I0x-qv-YQG"/>
                             <constraint firstItem="ioR-4d-qfe" firstAttribute="trailing" secondItem="PnO-jn-Gk8" secondAttribute="trailing" constant="16" id="NcH-9g-yyp"/>
                             <constraint firstItem="pxd-zp-3XW" firstAttribute="leading" secondItem="ioR-4d-qfe" secondAttribute="leading" constant="16" id="TaT-ds-p8M"/>
+                            <constraint firstItem="2nt-hF-coL" firstAttribute="leading" secondItem="ioR-4d-qfe" secondAttribute="leading" constant="8" id="WFr-Zm-8cB"/>
                             <constraint firstItem="WFU-Fl-Gfe" firstAttribute="top" secondItem="PnO-jn-Gk8" secondAttribute="bottom" constant="28" id="aC3-aR-8Ag"/>
                             <constraint firstItem="ioR-4d-qfe" firstAttribute="trailing" secondItem="WFU-Fl-Gfe" secondAttribute="trailing" id="bj2-pg-lic"/>
                             <constraint firstItem="ioR-4d-qfe" firstAttribute="bottom" secondItem="WFU-Fl-Gfe" secondAttribute="bottom" id="gd4-rE-ZJc"/>
+                            <constraint firstItem="2nt-hF-coL" firstAttribute="top" secondItem="PnO-jn-Gk8" secondAttribute="bottom" constant="15" id="ivv-zN-7SJ"/>
+                            <constraint firstItem="ioR-4d-qfe" firstAttribute="trailing" secondItem="2nt-hF-coL" secondAttribute="trailing" constant="8" id="xHC-7N-7xo"/>
                             <constraint firstItem="WFU-Fl-Gfe" firstAttribute="leading" secondItem="ioR-4d-qfe" secondAttribute="leading" id="y2z-ak-hGg"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="ioR-4d-qfe"/>
@@ -797,6 +807,7 @@
                     <connections>
                         <outlet property="headerLabel" destination="PnO-jn-Gk8" id="J3T-P9-QBG"/>
                         <outlet property="mainMenu" destination="WFU-Fl-Gfe" id="lGR-uB-jyD"/>
+                        <outlet property="torProgressLabel" destination="2nt-hF-coL" id="Jrh-ei-tN4"/>
                         <segue destination="bKH-sI-MiM" kind="presentation" identifier="lockScreen" modalPresentationStyle="fullScreen" id="UBf-qr-XYG"/>
                         <segue destination="6nj-bF-aCc" kind="show" identifier="showDetailSegue" id="d35-nk-fhY"/>
                         <segue destination="u3j-cd-FEG" kind="show" identifier="segueToLightningNode" id="DF5-fx-Xqy"/>
@@ -7005,9 +7016,9 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="qed-hl-jG5"/>
-        <segue reference="Fvb-gy-rb3"/>
-        <segue reference="EZr-Ut-goC"/>
+        <segue reference="UBf-qr-XYG"/>
+        <segue reference="dhu-ZV-762"/>
+        <segue reference="w2g-bl-j8v"/>
         <segue reference="XQE-Ek-uZu"/>
         <segue reference="Ear-8U-mw8"/>
         <segue reference="upA-ZA-3fA"/>
@@ -7015,9 +7026,9 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="ywj-ud-JRK"/>
         <segue reference="oY9-Pq-H5b"/>
-        <segue reference="2DM-Bo-8hK"/>
-        <segue reference="8MS-xS-DMP"/>
-        <segue reference="0zM-0B-b0r"/>
+        <segue reference="07E-4w-Zh7"/>
+        <segue reference="aV5-mq-s3Q"/>
+        <segue reference="g7x-oO-Buw"/>
         <segue reference="Jma-5H-zJx"/>
         <segue reference="Ikt-mc-dmE"/>
         <segue reference="6HW-Pq-bwM"/>
