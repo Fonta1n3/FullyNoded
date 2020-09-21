@@ -352,15 +352,15 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     }
     // TODO: As Fontane about "safe" property
     private func format(_ utxo: UTXO) -> String {
-        return """
-        address: \(utxo.address)
-        amount: \(utxo.amount)
-        confirmations: \(utxo.confirmations)
-        wallet label: \(utxo.walletLabel)
-        solvable: \(utxo.solvable)
-        spendable: \(utxo.spendable)
-        txid: \(utxo.txid)
-        """
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        let json: String
+        if let data = try? encoder.encode(utxo), let jsonString = String(data: data, encoding: .utf8) {
+            json = jsonString
+        } else {
+            json = ""
+        }
+        return json
     }
     
     private func setTextView(text: String) {

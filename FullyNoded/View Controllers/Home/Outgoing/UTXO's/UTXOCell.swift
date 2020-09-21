@@ -142,26 +142,30 @@ class UTXOCell: UITableViewCell {
 }
 
 // TODO: Move to its own file
-struct UTXO: Equatable, Hashable, Decodable {
+struct UTXO: Equatable, Hashable, Codable {
     
     let txid: String
-    let address: String
-    let amount: Double
     let vout: Int
-    let solvable: Bool
+    let address: String
+    let walletLabel: String
+    let pubKey: String
+    let amount: Double
     let confirmations: Int
     let spendable: Bool
-    let walletLabel: String
+    let solvable: Bool
+    let safe: Bool
     
     enum CodingKeys: String, CodingKey {
         case txid
-        case address
-        case amount
         case vout
-        case solvable
+        case address
+        case walletLabel = "label"
+        case pubKey = "scriptPubKey"
+        case amount
         case confirmations
         case spendable
-        case walletLabel = "label"
+        case solvable
+        case safe
     }
 }
 
@@ -172,21 +176,4 @@ extension UTXO {
         return lhs.txid == rhs.txid && lhs.vout == rhs.vout
     }
     
-}
-
-// MARK Decodable
-extension UTXO {
-    
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        
-        txid = try container.decode(String.self, forKey: .txid)
-        address = try container.decode(String.self, forKey: .address)
-        amount = try container.decode(Double.self, forKey: .amount)
-        vout = try container.decode(Int.self, forKey: .vout)
-        solvable = try container.decode(Bool.self, forKey: .solvable)
-        confirmations = try container.decode(Int.self, forKey: .confirmations)
-        spendable = try container.decode(Bool.self, forKey: .spendable)
-        walletLabel = try container.decode(String.self, forKey: .walletLabel)
-    }
 }
