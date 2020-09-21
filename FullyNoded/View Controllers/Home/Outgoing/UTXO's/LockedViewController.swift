@@ -87,52 +87,56 @@ class LockedViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
         
-        Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+        Reducer.makeCommand(command: method, param: param) { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
             if errorMessage == nil {
                 switch method {
                 case .listlockunspent:
-                    vc.lockedArray.removeAll()
+                    self.lockedArray.removeAll()
                     if let lockedutxos = response as? NSArray {
                         if lockedutxos.count > 0 {
                             for (i, locked) in lockedutxos.enumerated() {
                                 let dict = locked as! [String:Any]
-                                vc.lockedArray.append(dict)
+                                self.lockedArray.append(dict)
                                 if i + 1 == lockedutxos.count {
-                                    DispatchQueue.main.async { [unowned vc = self] in
-                                        vc.tableView.reloadData()
-                                        vc.creatingView.removeConnectingView()
+                                    DispatchQueue.main.async {
+                                        self.tableView.reloadData()
+                                        self.creatingView.removeConnectingView()
                                     }
                                 }
                             }
                         } else {
-                            DispatchQueue.main.async { [unowned vc = self] in
-                                vc.tableView.reloadData()
-                                vc.creatingView.removeConnectingView()
-                                showAlert(vc: vc, title: "No Locked UTXO's", message: "")
+                            DispatchQueue.main.async {
+                                self.tableView.reloadData()
+                                self.creatingView.removeConnectingView()
+                                showAlert(vc: self, title: "No Locked UTXO's", message: "")
                             }
                         }
                     }
                     
                 case .lockunspent:
                     if let result = response as? Double {
-                        DispatchQueue.main.async { [unowned vc = self] in
-                            vc.creatingView.label.text = "refreshing..."
+                        DispatchQueue.main.async {
+                            self.creatingView.label.text = "refreshing..."
                         }
                         if result == 1 {
                             displayAlert(viewController: self, isError: false, message: "UTXO is unlocked and can be selected for spends")
                         } else {
                             displayAlert(viewController: self, isError: true, message: "Unable to unlock that UTXO")
                         }
-                        vc.executeNodeCommand(method: .listlockunspent, param: "")
+                        self.executeNodeCommand(method: .listlockunspent, param: "")
                     }
                 default:
                     break
                     
                 }
             } else {
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.creatingView.removeConnectingView()
-                    displayAlert(viewController: vc, isError: true, message: errorMessage!)
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.creatingView.removeConnectingView()
+                    displayAlert(viewController: self, isError: true, message: errorMessage!)
                 }
             }
         }
