@@ -59,25 +59,6 @@ class Reducer {
         makeTorCommand()
     }
     
-    static func listUnpentUTXOs(completion: @escaping (Result<[UTXO], ReducerError>) -> Void) {
-        makeCommand(command: .listunspent, param: "0") { (response, errorDescription) in
-            
-            guard errorDescription == nil else {
-                completion(.failure(.description(errorDescription!)))
-                return
-            }
-            
-            guard let response = response as? [[String: Any]] else {
-                completion(.failure(.description("Unable to cast response to [[String: Any]]")))
-                return
-            }
-            
-            let utxos = response.map { UTXO(dict: $0) }
-            
-            completion(.success(utxos))
-        }
-    }
-    
     static func lock(_ utxo: UTXO, completion: @escaping (Result<Void, ReducerError>) -> Void) {
         let param = "false, ''[{\"txid\":\"\(utxo.txid)\",\"vout\":\(utxo.vout)}]''"
         makeCommand(command: .lockunspent, param: param) { (response, errorDescription) in

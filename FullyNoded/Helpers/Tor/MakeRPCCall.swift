@@ -8,6 +8,10 @@
 
 import Foundation
 
+enum MakeRPCCallError: Error {
+    case description(String)
+}
+
 class MakeRPCCall {
     
     static let sharedInstance = MakeRPCCall()
@@ -138,7 +142,7 @@ class MakeRPCCall {
                                     if let errorCheck = jsonAddressResult["error"] as? NSDictionary {
                                         
                                         var errorDesc = ""
-                                                                                
+                                        
                                         if let errorMessage = errorCheck["message"] as? String {
                                             
                                             errorDesc = errorMessage
@@ -183,4 +187,166 @@ class MakeRPCCall {
         }
         
     }
+    
+    func listUnspentUTXOs(completion: @escaping (Result<[UTXO], MakeRPCCallError>) -> Void) {
+        retry(3, task: { result in
+            self.executeCommand(method: .listunspent, param: "0", completion: result)
+        }) { result in
+            switch result {
+            case .success(let data):
+                do {
+                    struct Result: Decodable {
+                        let utxos: [UTXO]
+                        
+                        enum CodingKeys: String, CodingKey {
+                            case utxos = "result"
+                        }
+                    }
+                    
+                    let decoder = JSONDecoder()
+                    let decodedResult = try decoder.decode(Result.self, from: data)
+                    
+                    completion(.success(decodedResult.utxos))
+                } catch let error {
+                    completion(.failure(.description(error.localizedDescription)))
+                }
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+        
+    }
+    
+    private func executeCommand(method: BTC_CLI_COMMAND, param: Any, completion: @escaping (Result<Data, MakeRPCCallError>) -> Void) {
+        CoreDataService.retrieveEntity(entityName: .newNodes) { [weak self] nodes in
+            guard let self = self else { return }
+
+            guard let nodes = nodes else {
+                completion(.failure(.description("error getting nodes from core data")))
+                return
+            }
+
+            var activeNode = [String:Any]()
+
+            for node in nodes {
+                if let isActive = node["isActive"] as? Bool {
+                    if isActive {
+                        activeNode = node
+                    }
+                }
+            }
+
+            // FIXME: Race condition possible as Crypto.decryptData(dataToDecrypt: has an escaping closure
+            func decryptedValue(_ encryptedValue: Data) -> String {
+                var decryptedValue = ""
+                Crypto.decryptData(dataToDecrypt: encryptedValue) { decryptedData in
+                    if decryptedData != nil {
+                        decryptedValue = decryptedData!.utf8
+                    }
+                }
+                return decryptedValue
+            }
+
+            let node = NodeStruct(dictionary: activeNode)
+            if let encAddress = node.onionAddress {
+                self.onionAddress = decryptedValue(encAddress)
+            }
+            if let encUser = node.rpcuser {
+                self.rpcusername = decryptedValue(encUser)
+            }
+            if let encPassword = node.rpcpassword {
+                self.rpcpassword = decryptedValue(encPassword)
+            }
+
+            var walletUrl = "http://\(self.rpcusername):\(self.rpcpassword)@\(self.onionAddress)"
+            let ud = UserDefaults.standard
+
+            if ud.object(forKey: "walletName") != nil {
+                if let walletName = ud.object(forKey: "walletName") as? String {
+                    let b = isWalletRPC(command: method)
+                    if b {
+                        walletUrl += "/wallet/" + walletName
+                    }
+                }
+            }
+
+            var formattedParam = (param as! String).replacingOccurrences(of: "''", with: "")
+            formattedParam = formattedParam.replacingOccurrences(of: "'\"'\"'", with: "'")
+
+            guard let url = URL(string: walletUrl) else {
+                completion(.failure(.description("url error")))
+                return
+            }
+
+            var request = URLRequest(url: url)
+            var timeout = 10.0
+            if method == .gettxoutsetinfo {
+                timeout = 1000.0
+            }
+            if method == .importmulti || method == .deriveaddresses {
+                timeout = 60.0
+            }
+            request.timeoutInterval = timeout
+            request.httpMethod = "POST"
+            request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
+            request.httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method.rawValue)\",\"params\":[\(formattedParam)]}".data(using: .utf8)
+
+            #if DEBUG
+            print("url = \(url)")
+            print("request: \("{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method.rawValue)\",\"params\":[\(formattedParam)]}")")
+            #endif
+
+            var sesh = URLSession(configuration: .default)
+            if self.onionAddress.contains("onion") { // TODO: Ask Fontaine
+                sesh = self.torClient.session
+            }
+
+            let task = sesh.dataTask(with: request as URLRequest) { (data, response, error) in
+
+                guard error == nil else {
+                    #if DEBUG
+                    print("error: \(error!.localizedDescription)")
+                    #endif
+                    completion(.failure(.description( error!.localizedDescription)))
+                    return
+                }
+
+                guard let data = data else {
+                    completion(.failure(.description("Data is nil")))
+                    return
+                }
+
+                completion(.success(data))
+
+            }
+
+            task.resume()
+
+        }
+        
+    }
+    
+    private func retry<T>(_ attempts: Int, task: @escaping (_ completion: @escaping (Result<T, MakeRPCCallError>) -> Void) -> Void, completion: @escaping (Result<T, MakeRPCCallError>) -> Void) {
+
+        task { result in
+            switch result {
+            case .success(_):
+                completion(result)
+            case .failure(let error):
+                print("""
+                    Attempts left: \(attempts).
+                    Error: \(error)
+                    """)
+                if attempts > 1 {
+                    self.retry(attempts - 1, task: task, completion: completion)
+                } else {
+                    completion(result)
+                }
+            }
+        }
+    }
+    
 }
+
+
+

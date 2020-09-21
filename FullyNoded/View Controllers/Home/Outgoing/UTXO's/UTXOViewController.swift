@@ -420,7 +420,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             self.addSpinner()
         }
         
-        Reducer.listUnpentUTXOs { [weak self] result in
+        MakeRPCCall.sharedInstance.listUnspentUTXOs { [weak self] result in
             guard let self = self else { return }
             
             switch result {

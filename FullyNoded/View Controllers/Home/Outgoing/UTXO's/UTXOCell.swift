@@ -142,7 +142,7 @@ class UTXOCell: UITableViewCell {
 }
 
 // TODO: Move to its own file
-struct UTXO: Equatable, Hashable { // TODO: Migrate to Codable
+struct UTXO: Equatable, Hashable, Decodable {
     
     let txid: String
     let address: String
@@ -153,41 +153,40 @@ struct UTXO: Equatable, Hashable { // TODO: Migrate to Codable
     let spendable: Bool
     let walletLabel: String
     
-    init(dict: [String: Any]) {
-        
-        let txidValue = dict["txid"] as? String
-        txid = txidValue ?? "N/A"
-        
-        let addressValue = dict["address"] as? String
-        address = addressValue ?? "N/A"
-        
-        let amountValue = dict["amount"] as? Double
-        amount = amountValue ?? 0
-        
-        let voutValue = dict["vout"] as? Int
-        vout = voutValue ?? -1
-        
-        let solvableValue = dict["solvable"] as? Int
-        solvable = solvableValue == 1
-        
-        let confirmationsValue = dict["confirmations"] as? Int
-        confirmations = confirmationsValue ?? -1
-        
-        let spendableValue = dict["spendable"] as? Int
-        spendable = spendableValue == 1
-        
-        let labelValue = dict["label"] as? String
-        walletLabel = labelValue ?? ""
-        
+    enum CodingKeys: String, CodingKey {
+        case txid
+        case address
+        case amount
+        case vout
+        case solvable
+        case confirmations
+        case spendable
+        case walletLabel = "label"
     }
-    
 }
 
-// Equatable
+// MARK: Equatable
 extension UTXO {
     
     static func == (lhs: Self, rhs: Self) -> Bool {
         return lhs.txid == rhs.txid && lhs.vout == rhs.vout
     }
     
+}
+
+// MARK Decodable
+extension UTXO {
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        txid = try container.decode(String.self, forKey: .txid)
+        address = try container.decode(String.self, forKey: .address)
+        amount = try container.decode(Double.self, forKey: .amount)
+        vout = try container.decode(Int.self, forKey: .vout)
+        solvable = try container.decode(Bool.self, forKey: .solvable)
+        confirmations = try container.decode(Int.self, forKey: .confirmations)
+        spendable = try container.decode(Bool.self, forKey: .spendable)
+        walletLabel = try container.decode(String.self, forKey: .walletLabel)
+    }
 }
