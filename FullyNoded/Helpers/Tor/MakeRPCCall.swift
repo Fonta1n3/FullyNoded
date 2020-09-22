@@ -190,7 +190,7 @@ class MakeRPCCall {
     
     func listUnspentUTXOs(completion: @escaping (Result<[UTXO], MakeRPCCallError>) -> Void) {
         retry(20, task: { completion in
-            self.executeCommand(method: .listunspent, completion: completion)
+            self.executeCommand(method: .listunspent, param: "0", completion: completion)
         }) { result in
             switch result {
             case .success(let data):
