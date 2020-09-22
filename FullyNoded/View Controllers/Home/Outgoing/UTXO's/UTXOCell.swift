@@ -10,6 +10,7 @@ import UIKit
 
 protocol UTXOCellDelegate: class {
     func didTapToLock(_ utxo: UTXO)
+    func didTapInfoFor(_ utxo: UTXO)
 }
 
 class UTXOCell: UITableViewCell {
@@ -126,11 +127,14 @@ class UTXOCell: UITableViewCell {
         }
     }
     
-    @IBAction func lockTapped(_ sender: Any) {
+    @IBAction func lockButtonTapped(_ sender: Any) {
         
         delegate.didTapToLock(utxo)
     }
     
+    @IBAction func infoButtonTapped(_ sender: Any) {
+        delegate.didTapInfoFor(utxo)
+    }
 }
 
 // TODO: Move to its own file

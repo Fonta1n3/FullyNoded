@@ -5700,12 +5700,6 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                     <action selector="lockAction:" destination="1tX-je-wOH" id="1li-Ht-ieG"/>
                                 </connections>
                             </barButtonItem>
-                            <barButtonItem image="info.circle" catalog="system" id="yn2-Gw-FOv">
-                                <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <connections>
-                                    <action selector="getUtxoInfo:" destination="1tX-je-wOH" id="xzr-3q-sg4"/>
-                                </connections>
-                            </barButtonItem>
                             <barButtonItem image="arrow.down.right.and.arrow.up.left" catalog="system" id="1np-kq-cfq">
                                 <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <connections>
@@ -7115,7 +7109,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
     <inferredMetricsTieBreakers>
         <segue reference="qed-hl-jG5"/>
         <segue reference="dhu-ZV-762"/>
-        <segue reference="w2g-bl-j8v"/>
+        <segue reference="EZr-Ut-goC"/>
         <segue reference="XQE-Ek-uZu"/>
         <segue reference="Ear-8U-mw8"/>
         <segue reference="upA-ZA-3fA"/>
@@ -7123,11 +7117,11 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="ywj-ud-JRK"/>
         <segue reference="oY9-Pq-H5b"/>
-        <segue reference="zsc-Qp-vnq"/>
+        <segue reference="2DM-Bo-8hK"/>
         <segue reference="aV5-mq-s3Q"/>
-        <segue reference="g7x-oO-Buw"/>
+        <segue reference="0zM-0B-b0r"/>
         <segue reference="Jma-5H-zJx"/>
-        <segue reference="j10-wi-hpr"/>
+        <segue reference="Ikt-mc-dmE"/>
         <segue reference="6HW-Pq-bwM"/>
         <segue reference="U54-oe-CeC"/>
     </inferredMetricsTieBreakers>

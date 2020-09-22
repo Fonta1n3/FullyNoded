@@ -20,7 +20,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     private let refresher = UIRefreshControl()
     private var unspentUtxos = [UTXO]()
     private var inputArray = [Any]()
-    private var inputs = ""
     private var address = ""
     private var selectedUTXOs = Set<UTXO>()
     private var creatingView = ConnectingView()
@@ -28,7 +27,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     private var p2shSegwit = Bool()
     private var legacy = Bool()
     private var isUnsigned = false
-    private var utxo: UTXO?
     private let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     private let blurView2 = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     private let sweepButtonView = Bundle.main.loadNibNamed("KeyPadButtonView", owner: self, options: nil)?.first as! UIView?
@@ -60,23 +58,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     @IBAction private func lockAction(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             self?.performSegue(withIdentifier: "goToLocked", sender: self)
-        }
-    }
-    
-    @IBAction private func getUtxoInfo(_ sender: Any) {
-        if selectedUTXOs.count == 1, let selectedUtxo = selectedUTXOs.first {
-            
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                self.utxo = selectedUtxo
-                
-                self.performSegue(withIdentifier: "getUTXOinfo", sender: self)
-                
-            }
-            
-        } else {
-            displayAlert(viewController: self, isError: true, message: "select one utxo to get info for")
         }
     }
     
@@ -683,9 +664,8 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             }
             
         case "getUTXOinfo":
-            if let vc = segue.destination as? GetInfoViewController, let utxo = utxo {
+            if let vc = segue.destination as? GetInfoViewController, let utxo = sender as? UTXO {
                 vc.configure(utxo: utxo)
-                self.utxo = nil
             }
             
         case "segueToGetAddressFromUtxos":
@@ -738,6 +718,10 @@ extension UTXOViewController: UTXOCellDelegate {
     
     func didTapToLock(_ utxo: UTXO) {
         lock(utxo)
+    }
+    
+    func didTapInfoFor(_ utxo: UTXO) {
+        performSegue(withIdentifier: "getUTXOinfo", sender: utxo)
     }
     
 }
