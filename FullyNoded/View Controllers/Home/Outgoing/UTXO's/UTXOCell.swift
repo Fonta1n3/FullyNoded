@@ -169,3 +169,22 @@ extension UTXO {
     }
     
 }
+
+// MARK Decodable
+extension UTXO {
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        txid = try container.decode(String.self, forKey: .txid)
+        vout = try container.decode(Int.self, forKey: .vout)
+        address = try container.decode(String.self, forKey: .address)
+        walletLabel = try container.decode(String.self, forKey: .walletLabel)
+        pubKey = try container.decode(String.self, forKey: .pubKey)
+        amount = try container.decode(Double.self, forKey: .amount)
+        confirmations = try container.decode(Int.self, forKey: .confirmations)
+        spendable = try container.decode(Bool.self, forKey: .spendable)
+        solvable = try container.decode(Bool.self, forKey: .solvable)
+        safe = try container.decode(Bool.self, forKey: .safe)
+    }
+}
