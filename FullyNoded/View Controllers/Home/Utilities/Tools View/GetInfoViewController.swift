@@ -53,23 +53,32 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     var alertMessage = ""
     
     var address = ""
-    var utxo: UTXO!
+    private var utxo: UTXO?
     var isUtxo = Bool()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        textView.clipsToBounds = true
-        textView.layer.cornerRadius = 8
-        textView.layer.borderWidth = 0.5
-        textView.layer.borderColor = UIColor.lightGray.cgColor
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
         
         getInfo()
-        
+        setupTextField()
+    }
+    
+    /// Call this method to confgure the view controller when used to show a utxo.
+    /// - Parameter utxo: utxo to be shown
+    func configure(utxo: UTXO) {
+        self.utxo = utxo
+    }
+    
+    private func setupTextField() {
+        textView.textContainer.lineBreakMode = .byCharWrapping
+        textView.clipsToBounds = true
+        textView.layer.cornerRadius = 8
+        textView.layer.borderWidth = 0.5
+        textView.layer.borderColor = UIColor.lightGray.cgColor
     }
     
     @IBAction func scanQr(_ sender: Any) {
@@ -220,11 +229,11 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
             self.executeNodeCommand(method: .getwalletinfo, param: "")
         }
         
-        if isUtxo {
+        if let utxo = utxo {
             command = "listunspent"
             titleString = "UTXO"
             DispatchQueue.main.async {
-                self.textView.text = "\(self.utxo)"
+                self.textView.text = self.format(utxo)
                 self.spinner.removeConnectingView()
             }
         }

@@ -683,9 +683,9 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             }
             
         case "getUTXOinfo":
-            if let vc = segue.destination as? GetInfoViewController {
-                vc.utxo = utxo
-                vc.isUtxo = true
+            if let vc = segue.destination as? GetInfoViewController, let utxo = utxo {
+                vc.configure(utxo: utxo)
+                self.utxo = nil
             }
             
         case "segueToGetAddressFromUtxos":
@@ -772,16 +772,6 @@ extension UTXOViewController: UITableViewDataSource {
 
 extension UTXOViewController: UITableViewDelegate {
     
-    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
-        
-        let utxo = unspentUtxos[indexPath.section]
-        selectedUTXOs.remove(utxo)
-        impact()
-        
-        let cell = tableView.cellForRow(at: indexPath) as! UTXOCell
-        cell.deselectedAnimation()
-    }
-    
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 5 // Spacing between cells
     }
@@ -794,11 +784,19 @@ extension UTXOViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        let utxo = unspentUtxos[indexPath.section]
-        selectedUTXOs.insert(utxo)
-        
         let cell = tableView.cellForRow(at: indexPath) as! UTXOCell
-        cell.selectedAnimation()
+        let utxo = unspentUtxos[indexPath.section]
+        
+        if selectedUTXOs.contains(utxo) {
+            selectedUTXOs.remove(utxo)
+            cell.deselectedAnimation()
+            impact()
+        } else {
+            selectedUTXOs.insert(utxo)
+            cell.selectedAnimation()
+        }
+        
+        tableView.deselectRow(at: indexPath, animated: false)
     }
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {

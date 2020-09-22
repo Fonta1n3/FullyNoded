@@ -18,16 +18,16 @@ class UTXOCell: UITableViewCell {
     private var utxo: UTXO!
     private unowned var delegate: UTXOCellDelegate!
     
-    @IBOutlet weak var roundeBackgroundView: UIView!
-    @IBOutlet weak var walletLabel: UILabel!
-    @IBOutlet weak var checkMarkImageView: UIImageView!
-    @IBOutlet weak var confirmationsLabel: UILabel!
-    @IBOutlet weak var spendableLabel: UILabel!
-    @IBOutlet weak var solvableLabel: UILabel!
-    @IBOutlet weak var amountLabel: UILabel!
-    @IBOutlet weak var txidLabel: UILabel!
-    @IBOutlet weak var voutLabel: UILabel!
-    @IBOutlet weak var addressLabel: UILabel!
+    @IBOutlet private weak var roundeBackgroundView: UIView!
+    @IBOutlet private weak var walletLabel: UILabel!
+    @IBOutlet private weak var checkMarkImageView: UIImageView!
+    @IBOutlet private weak var confirmationsLabel: UILabel!
+    @IBOutlet private weak var spendableLabel: UILabel!
+    @IBOutlet private weak var solvableLabel: UILabel!
+    @IBOutlet private weak var amountLabel: UILabel!
+    @IBOutlet private weak var txidLabel: UILabel!
+    @IBOutlet private weak var voutLabel: UILabel!
+    @IBOutlet private weak var addressLabel: UILabel!
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -90,16 +90,10 @@ class UTXOCell: UITableViewCell {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            impact()
-            
             UIView.animate(withDuration: 0.2, animations: {
-                
                 self.alpha = 0
-                
             }) { _ in
-                
                 UIView.animate(withDuration: 0.2, animations: {
-                    
                     self.alpha = 1
                     self.checkMarkImageView.alpha = 1
                     self.backgroundColor = UIColor.black
@@ -119,11 +113,9 @@ class UTXOCell: UITableViewCell {
                 
                 self.checkMarkImageView.alpha = 0
                 self.alpha = 0
-                
             }) { _ in
                 
                 UIView.animate(withDuration: 0.2, animations: {
-                    
                     self.alpha = 1
                     self.backgroundColor = #colorLiteral(red: 0.07831101865, green: 0.08237650245, blue: 0.08238270134, alpha: 1)
                     
