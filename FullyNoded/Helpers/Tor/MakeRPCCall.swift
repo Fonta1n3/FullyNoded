@@ -306,9 +306,9 @@ class MakeRPCCall {
 
                 guard error == nil else {
                     #if DEBUG
-                    print("error: \(error!.localizedDescription)")
+                    print("error: \(error!)")
                     #endif
-                    completion(.failure(.description( error!.localizedDescription)))
+                    completion(.failure(.description("\(error!)")))
                     return
                 }
 
