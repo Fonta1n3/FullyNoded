@@ -118,7 +118,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     if hostname != nil {
                         hostname = hostname?.replacingOccurrences(of: "\n", with: "")
                         DispatchQueue.main.async { [weak self] in
-                            self?.host = "\(prefix)://\(rpcusername):\(rpcpassword)@\(hostname!):11221/?label=\(nodeStruct.walletLabel.replacingOccurrences(of: " ", with: "%20"))"
+                            self?.host = "\(prefix)://\(rpcusername):\(rpcpassword)@\(hostname!):11221/?label=\(nodeStruct.label.replacingOccurrences(of: " ", with: "%20"))"
                             self?.performSegue(withIdentifier: "segueToRemoteControl", sender: self)
                         }
                     } else {
