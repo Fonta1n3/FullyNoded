@@ -208,7 +208,7 @@ class MakeRPCCall {
                     
                     completion(.success(decodedResult.utxos))
                 } catch let error {
-                    completion(.failure(.description("Decoding Error: \(error.localizedDescription)")))
+                    completion(.failure(.description("Decoding Error: \(error)")))
                 }
             case .failure(let error):
                 completion(.failure(error))
