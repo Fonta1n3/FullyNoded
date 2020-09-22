@@ -520,6 +520,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                         
                         for utxo in resultArray {
                             let utxoDict = utxo as! NSDictionary
+                            let confs = utxoDict["confirmations"] as! Int
                             let txid = utxoDict["txid"] as! String
                             let vout = "\(utxoDict["vout"] as! Int)"
                             let spendable = utxoDict["spendable"] as! Bool
@@ -528,6 +529,11 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                             }
                             amount += utxoDict["amount"] as! Double
                             let input = "{\"txid\":\"\(txid)\",\"vout\": \(vout),\"sequence\": 1}"
+                            if confs == 0 {
+                                self?.spinner.removeConnectingView()
+                                showAlert(vc: self, title: "Ooops", message: "You have unconfirmed utxo's, wait till they get a confirmation before trying to sweep them.")
+                                return
+                            }
                             inputArray.append(input)
                         }
                         

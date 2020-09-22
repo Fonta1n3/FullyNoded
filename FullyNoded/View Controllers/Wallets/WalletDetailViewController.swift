@@ -116,7 +116,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                     }
                 }
                 
-            } else if wallet.watching != nil && wallet.name.contains("Coldcard") {
+            } else if wallet.watching != nil/* && wallet.name.contains("Coldcard")*/ {
                 let descriptors = wallet.watching!
                 var prefix = ""
                 var descriptorToUse = ""
@@ -294,6 +294,10 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                                 vc.detailTable.reloadData()
                             }
                         }
+                    }
+                } else {
+                    DispatchQueue.main.async { [unowned vc = self] in
+                        vc.detailTable.reloadData()
                     }
                 }
             }

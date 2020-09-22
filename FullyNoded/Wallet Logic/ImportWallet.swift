@@ -54,7 +54,7 @@ class ImportWallet {
             createWallet(walletName) { (name, errorMessage) in
                 if name != nil {
                     wallet["name"] = name
-                    
+                    UserDefaults.standard.set(wallet["name"] as! String, forKey: "walletName")
                     importReceiveDesc(recDesc, label, keypool) { (success, errorMessage) in
                         if success {
                             
@@ -71,6 +71,7 @@ class ImportWallet {
                                                 rescan(wallet: wallet, completion: completion)
                                                 
                                             } else {
+                                                UserDefaults.standard.removeObject(forKey: "walletName")
                                                 completion((false, "error importing watching descriptors: \(errorMessage ?? "unknown error importing watching descriptors")"))
                                                 
                                             }
@@ -84,6 +85,7 @@ class ImportWallet {
                         }
                     }
                 } else {
+                    UserDefaults.standard.removeObject(forKey: "walletName")
                     completion((false, "error creatig wallet: \(errorMessage ?? "unknown error")"))
                 }
             }
@@ -101,7 +103,7 @@ class ImportWallet {
                         walletExistsOnNode(hash) { (existingWallet) in
                             if existingWallet != nil {
                                 wallet["name"] = existingWallet!
-                                
+                                UserDefaults.standard.set(wallet["name"] as! String, forKey: "walletName")
                                 if watching.count > 0 {
                                     index = 0
                                     processedWatching.removeAll()
@@ -112,6 +114,7 @@ class ImportWallet {
                                             saveLocally(wallet: wallet, completion: completion)
                                             
                                         } else {
+                                            UserDefaults.standard.removeObject(forKey: "walletName")
                                             completion((false, "error processing watching descriptors: \(errorMessage ?? "unknown error")"))
                                             
                                         }
@@ -126,11 +129,13 @@ class ImportWallet {
                             }
                         }
                     } else {
+                        UserDefaults.standard.removeObject(forKey: "walletName")
                         completion((false, errorMessage ?? "error getting change descriptor info"))
                         
                     }
                 }
             } else {
+                UserDefaults.standard.removeObject(forKey: "walletName")
                 completion((false, errorMessage ?? "error getting descriptor info"))
                 
             }
@@ -314,7 +319,6 @@ class ImportWallet {
             } else {
                 CoreDataService.saveEntity(dict: wallet, entityName: .wallets) { (success) in
                     if success {
-                        UserDefaults.standard.set(wallet["name"] as! String, forKey: "walletName")
                         completion((true, nil))
                     } else {
                         completion((false, "error saving wallet locally"))

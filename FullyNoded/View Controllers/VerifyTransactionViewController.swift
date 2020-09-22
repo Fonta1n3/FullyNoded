@@ -333,10 +333,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     var labelsText = ""
                     if labels.count > 0 {
                         for label in labels {
-                            if label as! String == "" {
+                            if label as? String == "" {
                                 labelsText += "no label "
                             } else {
-                                labelsText += "\(label as! String) "
+                                labelsText += "\(label as? String ?? "") "
                             }
                         }
                     } else {
@@ -374,9 +374,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                             // Will only be any for a signed raw transaction
                             if self!.signedTxInputs.count > 0 {
                                 self?.inputTableArray[self!.index]["signatures"] = "Unsigned"
-                                let input = self?.signedTxInputs[self!.index] as! NSDictionary
-                                let scriptsig = input["scriptSig"] as! NSDictionary
-                                let hex = scriptsig["hex"] as! String
+                                let input = self?.signedTxInputs[self!.index] as? NSDictionary ?? [:]
+                                let scriptsig = input["scriptSig"] as? NSDictionary ?? [:]
+                                let hex = scriptsig["hex"] as? String ?? ""
                                 if hex != "" {
                                     self?.inputTableArray[self!.index]["signatures"] = "Signed"
                                 } else {
@@ -413,10 +413,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     var labelsText = ""
                     if labels.count > 0 {
                         for label in labels {
-                            if label as! String == "" {
+                            if label as? String == "" {
                                 labelsText += "no label "
                             } else {
-                                labelsText += "\(label as! String) "
+                                labelsText += "\(label as? String ?? "") "
                             }
                         }
                     } else {
@@ -442,7 +442,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 Reducer.makeCommand(command: .testmempoolaccept, param: "[\"\(signedRawTx)\"]") { [weak self] (response, errorMessage) in
                     if let arr = response as? NSArray {
                         if arr.count > 0 {
-                            let dict = arr[0] as! NSDictionary
+                            let dict = arr[0] as? NSDictionary ?? [:]
                             if let allowed = dict["allowed"] as? Bool {
                                 self?.txValid = allowed
                                 self?.rejectionMessage = dict["reject-reason"] as? String ?? ""

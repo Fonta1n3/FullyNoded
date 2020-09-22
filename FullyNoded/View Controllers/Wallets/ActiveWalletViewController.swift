@@ -498,6 +498,19 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
             DispatchQueue.main.async { [unowned vc = self] in
                 vc.walletTable.reloadSections(IndexSet(arrayLiteral: 0), with: .none)
                 vc.removeSpinner()
+                vc.getWalletInfo()
+            }
+        }
+    }
+    
+    private func getWalletInfo() {
+        Reducer.makeCommand(command: .getwalletinfo, param: "") { (response, errorMessage) in
+            if let dict = response as? NSDictionary {
+                if let scanning = dict["scanning"] as? NSDictionary {
+                    if let progress = scanning["progress"] as? Double {
+                        showAlert(vc: self, title: "Wallet scanning \(Int(progress * 100))% complete", message: "Your wallet is currently rescanning the blockchain, you need to wait until it completes before you will see your balances and transactions.")
+                    }
+                }
             }
         }
     }
