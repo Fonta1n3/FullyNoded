@@ -454,11 +454,12 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         Reducer.makeCommand(command: method, param: param) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
-            if errorMessage != nil {
+            guard errorMessage == nil else {
                 DispatchQueue.main.async {
                     self.removeSpinner()
                     displayAlert(viewController: self, isError: true, message: errorMessage!)
                 }
+                return
             }
             
             switch method {

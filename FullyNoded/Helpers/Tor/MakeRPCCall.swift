@@ -189,8 +189,8 @@ class MakeRPCCall {
     }
     
     func listUnspentUTXOs(completion: @escaping (Result<[UTXO], MakeRPCCallError>) -> Void) {
-        retry(3, task: { result in
-            self.executeCommand(method: .listunspent, param: "0", completion: result)
+        retry(20, task: { completion in
+            self.executeCommand(method: .listunspent, completion: completion)
         }) { result in
             switch result {
             case .success(let data):
@@ -217,7 +217,8 @@ class MakeRPCCall {
         
     }
     
-    private func executeCommand(method: BTC_CLI_COMMAND, param: Any, completion: @escaping (Result<Data, MakeRPCCallError>) -> Void) {
+    // TODO: Clean up. Create a type for a node
+    private func executeCommand(method: BTC_CLI_COMMAND, param: String = "", completion: @escaping (Result<Data, MakeRPCCallError>) -> Void) {
         CoreDataService.retrieveEntity(entityName: .newNodes) { [weak self] nodes in
             guard let self = self else { return }
 
@@ -270,8 +271,8 @@ class MakeRPCCall {
                 }
             }
 
-            var formattedParam = (param as! String).replacingOccurrences(of: "''", with: "")
-            formattedParam = formattedParam.replacingOccurrences(of: "'\"'\"'", with: "'")
+            let formattedParam = param.replacingOccurrences(of: "''", with: "")
+                                      .replacingOccurrences(of: "'\"'\"'", with: "'")
 
             guard let url = URL(string: walletUrl) else {
                 completion(.failure(.description("url error")))
