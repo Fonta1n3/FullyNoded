@@ -287,14 +287,16 @@ class MakeRPCCall {
             if method == .importmulti || method == .deriveaddresses {
                 timeout = 60.0
             }
+            
+            let httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method.rawValue)\",\"params\":[\(formattedParam)]}"
             request.timeoutInterval = timeout
             request.httpMethod = "POST"
             request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
-            request.httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method.rawValue)\",\"params\":[\(formattedParam)]}".data(using: .utf8)
+            request.httpBody = httpBody.data(using: .utf8)
 
             #if DEBUG
             print("url = \(url)")
-            print("request: \("{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method.rawValue)\",\"params\":[\(formattedParam)]}")")
+            print(httpBody)
             #endif
 
             var sesh = URLSession(configuration: .default)
