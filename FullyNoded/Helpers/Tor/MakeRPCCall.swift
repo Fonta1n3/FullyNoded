@@ -208,7 +208,7 @@ class MakeRPCCall {
                     
                     completion(.success(decodedResult.utxos))
                 } catch let error {
-                    completion(.failure(.description(error.localizedDescription)))
+                    completion(.failure(.description("Decoding Error: \(error.localizedDescription)")))
                 }
             case .failure(let error):
                 completion(.failure(error))
@@ -223,7 +223,7 @@ class MakeRPCCall {
             guard let self = self else { return }
 
             guard let nodes = nodes else {
-                completion(.failure(.description("error getting nodes from core data")))
+                completion(.failure(.description("Error getting nodes from core data")))
                 return
             }
 
