@@ -188,6 +188,7 @@ class MakeRPCCall {
         
     }
     
+    // TODO: Move out of here
     func listUnspentUTXOs(completion: @escaping (Result<[UTXO], MakeRPCCallError>) -> Void) {
         retry(20, task: { completion in
             self.executeCommand(method: .listunspent, param: "0", completion: completion)
@@ -195,18 +196,30 @@ class MakeRPCCall {
             switch result {
             case .success(let data):
                 do {
-                    struct Result: Decodable {
-                        let utxos: [UTXO]
+                    struct Result: Decodable { // TODO: Move out of here
+                        let utxos: [UTXO]?
+                        let error: Error?
                         
                         enum CodingKeys: String, CodingKey {
                             case utxos = "result"
+                            case error
+                        }
+                        
+                        struct Error: Decodable {
+                            let message: String
                         }
                     }
                     
                     let decoder = JSONDecoder()
                     let decodedResult = try decoder.decode(Result.self, from: data)
                     
-                    completion(.success(decodedResult.utxos))
+                    if let errorMessage = decodedResult.error?.message {
+                        completion(.failure(.description(errorMessage)))
+                    } else if let utxos = decodedResult.utxos {
+                        completion(.success(utxos))
+                    } else {
+                        completion(.failure(.description("JSON's result and error values are null.")))
+                    }
                 } catch let error {
                     completion(.failure(.description("Decoding Error: \(error)")))
                 }
