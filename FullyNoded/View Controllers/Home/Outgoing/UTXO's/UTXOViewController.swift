@@ -671,11 +671,11 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         case "segueToGetAddressFromUtxos":
             if let vc = segue.destination as? QRScannerViewController {
                 vc.isScanningAddress = true
-                vc.onAddressDoneBlock = { [unowned thisVc = self] address in
-                    if address != nil {
-                        thisVc.creatingView.addConnectingView(vc: thisVc, description: "building psbt...")
-                        thisVc.processBIP21(url: address!)
-                    }
+                vc.onAddressDoneBlock = { [weak self] address in
+                    guard let address = address, let self = self else { return }
+                    
+                    self.creatingView.addConnectingView(vc: self, description: "building psbt...")
+                    self.processBIP21(url: address)
                 }
             }
             
