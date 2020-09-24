@@ -26,11 +26,8 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         setCoinType()
     }
     
-    
-    
     @IBAction func showAccountMap(_ sender: Any) {
         promptToExportWallet()
-        
     }
     
     @IBAction func showHelp(_ sender: Any) {
@@ -39,36 +36,37 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func promptToExportWallet() {
-        DispatchQueue.main.async { [unowned vc = self] in
+        DispatchQueue.main.async { [weak self] in
             var alertStyle = UIAlertController.Style.actionSheet
             if (UIDevice.current.userInterfaceIdiom == .pad) {
               alertStyle = UIAlertController.Style.alert
             }
             let alert = UIAlertController(title: "Export wallet?", message: "You can export your wallet as a QR code or a .json file.\n\nIt is recommended to do both.\n\nThe wallet export information contains **public keys only**\n\nYour seed words are something seperate and should be backed up in a much more secure way.\n\nFor multisig it is especially important to keep your public keys backed up as losing them **and** losing one of your seeds can cause permanent loss.", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "QR", style: .default, handler: { action in
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.performSegue(withIdentifier: "segueToAccountMap", sender: vc)
+                DispatchQueue.main.async { [weak self] in
+                    self?.performSegue(withIdentifier: "segueToAccountMap", sender: self)
                 }
             }))
             alert.addAction(UIAlertAction(title: ".json file", style: .default, handler: { [weak self] action in
                 self?.exportJson()
             }))
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = vc.view
-            vc.present(alert, animated: true, completion: nil)
+            alert.popoverPresentationController?.sourceView = self?.view
+            self?.present(alert, animated: true, completion: nil)
         }
     }
     
     private func exportJson() {
         if let json = AccountMap.create(wallet: wallet) {
             if let url = exportWalletJson(name: wallet.label, data: json.dataUsingUTF8StringEncoding) {
-                DispatchQueue.main.async { [unowned vc = self] in
-                    let activityViewController = UIActivityViewController(activityItems: ["\(vc.wallet.label) Export", url], applicationActivities: nil)
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    let activityViewController = UIActivityViewController(activityItems: ["\(self.wallet.label) Export", url], applicationActivities: nil)
                     if UIDevice.current.userInterfaceIdiom == .pad {
                         activityViewController.popoverPresentationController?.sourceView = self.view
                         activityViewController.popoverPresentationController?.sourceRect = CGRect(x: 0, y: 0, width: 100, height: 100)
                     }
-                    vc.present(activityViewController, animated: true) {}
+                    self.present(activityViewController, animated: true) {}
                 }
             }
         }
@@ -96,22 +94,11 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                 
                 let arr = desc.split(separator: "#")
                 let bareDesc = "\(arr[0])"
-                Reducer.makeCommand(command: .getdescriptorinfo, param: "\"\(bareDesc)\"") { [unowned vc = self] (response, errorMessage) in
+                Reducer.makeCommand(command: .getdescriptorinfo, param: "\"\(bareDesc)\"") { [weak self] (response, errorMessage) in
                     if let dict = response as? NSDictionary {
                         if let descriptor = dict["descriptor"] as? String {
-                            let param = "\"\(descriptor)\", [\(0),\(vc.wallet.maxIndex)]"
-                            Reducer.makeCommand(command: .deriveaddresses, param: param) { [unowned vc = self] (response, errorMessage) in
-                                if let addres = response as? NSArray {
-                                    for (i, address) in addres.enumerated() {
-                                        vc.addresses += "#\(i): \(address)\n\n"
-                                        if i + 1 == addres.count {
-                                            DispatchQueue.main.async { [unowned vc = self] in
-                                                vc.detailTable.reloadData()
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                            guard let self = self else { return }
+                            self.deriveAddresses(descriptor)
                         }
                     }
                 }
@@ -139,33 +126,25 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                         }
                     }
                 }
-                
-                let param = "\"\(descriptorToUse)\", [\(0),\(wallet.maxIndex)]"
-                Reducer.makeCommand(command: .deriveaddresses, param: param) { [unowned vc = self] (response, errorMessage) in
-                    if let addres = response as? NSArray {
-                        for (i, address) in addres.enumerated() {
-                            vc.addresses += "#\(i): \(address)\n\n"
-                            if i + 1 == addres.count {
-                                DispatchQueue.main.async { [unowned vc = self] in
-                                    vc.detailTable.reloadData()
-                                }
-                            }
-                        }
-                    }
-                }
-                
+                deriveAddresses(descriptorToUse)
+            } else {
+                deriveAddresses(desc)
             }
         } else {
-            
-            let param = "\"\(wallet.receiveDescriptor)\", [\(0),\(wallet.maxIndex)]"
-            Reducer.makeCommand(command: .deriveaddresses, param: param) { [unowned vc = self] (response, errorMessage) in
-                if let addres = response as? NSArray {
-                    for (i, address) in addres.enumerated() {
-                        vc.addresses += "#\(i): \(address)\n\n"
-                        if i + 1 == addres.count {
-                            DispatchQueue.main.async { [unowned vc = self] in
-                                vc.detailTable.reloadData()
-                            }
+            deriveAddresses(wallet.receiveDescriptor)
+        }
+    }
+    
+    private func deriveAddresses(_ descriptor: String) {
+        let param = "\"\(descriptor)\", [\(0),\(self.wallet.maxIndex)]"
+        Reducer.makeCommand(command: .deriveaddresses, param: param) { [weak self] (response, errorMessage) in
+            if let addr = response as? NSArray {
+                for (i, address) in addr.enumerated() {
+                    guard let self = self else { return }
+                    self.addresses += "#\(i): \(address)\n\n"
+                    if i + 1 == addr.count {
+                        DispatchQueue.main.async { [weak self] in
+                            self?.detailTable.reloadData()
                         }
                     }
                 }
@@ -175,22 +154,23 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     
     private func setCoinType() {
         spinner.addConnectingView(vc: self, description: "fetching chain type...")
-        Reducer.makeCommand(command: .getblockchaininfo, param: "") { [unowned vc = self] (response, errorMessage) in
+        Reducer.makeCommand(command: .getblockchaininfo, param: "") { [weak self] (response, errorMessage) in
             if let dict = response as? NSDictionary {
+                guard let self = self else { return }
                 if let chain = dict["chain"] as? String {
                     if chain == "test" {
-                        vc.coinType = "1"
-                        vc.load()
-                        vc.spinner.removeConnectingView()
+                        self.coinType = "1"
+                        self.load()
+                        self.spinner.removeConnectingView()
                     } else {
-                        vc.load()
-                        vc.spinner.removeConnectingView()
+                        self.load()
+                        self.spinner.removeConnectingView()
                     }
                 }
             } else {
-                vc.showError(error: "Error getting blockchain info, please chack your connection to your node.")
+                self?.showError(error: "Error getting blockchain info, please chack your connection to your node.")
                 DispatchQueue.main.async {
-                    vc.navigationController?.popToRootViewController(animated: true)
+                    self?.navigationController?.popToRootViewController(animated: true)
                 }
             }
         }
@@ -216,15 +196,16 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     
     
     private func load() {
-        CoreDataService.retrieveEntity(entityName: .wallets) { [unowned vc = self] wallets in
+        CoreDataService.retrieveEntity(entityName: .wallets) { [weak self] wallets in
             if wallets != nil {
                 if wallets!.count > 0 {
                     for w in wallets! {
+                        guard let self = self else { return }
                         let walletStruct = Wallet(dictionary: w)
-                        if walletStruct.id == vc.walletId {
-                            vc.wallet = walletStruct
-                            vc.findSigner()
-                            vc.getAddresses()
+                        if walletStruct.id == self.walletId {
+                            self.wallet = walletStruct
+                            self.findSigner()
+                            self.getAddresses()
                         }
                     }
                 }
@@ -233,72 +214,73 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func findSigner() {
+        CoreDataService.retrieveEntity(entityName: .signers) { [weak self] signers in
+            guard let signers = signers else { return }
+            guard signers.count > 0 else {
+                DispatchQueue.main.async { [weak self] in
+                    self?.detailTable.reloadData()
+                }
+                return
+            }
+            self?.parseSigners(signers)
+        }
+    }
+    
+    private func parseSigners(_ signers: [[String:Any]]) {
+        for (i, signer) in signers.enumerated() {
+            let signerStruct = SignerStruct(dictionary: signer)
+            Crypto.decryptData(dataToDecrypt: signerStruct.words) { [weak self] decryptedData in
+                guard let decryptedData = decryptedData else { return }
+                self?.parseWords(decryptedData, signerStruct)
+            }
+            if i + 1 == signers.count {
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.detailTable.reloadData()
+                }
+            }
+        }
+    }
+    
+    private func parseWords(_ decryptedData: Data, _ signer: SignerStruct) {
         let descriptorParser = DescriptorParser()
-        let descriptorStruct = descriptorParser.descriptor(wallet.receiveDescriptor)
-        CoreDataService.retrieveEntity(entityName: .signers) { signers in
-            if signers != nil {
-                if signers!.count > 0 {
-                    for (i, signer) in signers!.enumerated() {
-                        let signerStruct = SignerStruct(dictionary: signer)
-                        Crypto.decryptData(dataToDecrypt: signerStruct.words) { [unowned vc = self] decryptedData in
-                            if decryptedData != nil {
-                                if let words = String(bytes: decryptedData!, encoding: .utf8) {
-                                    if signerStruct.passphrase != nil {
-                                        Crypto.decryptData(dataToDecrypt: signerStruct.passphrase!) { [unowned vc = self] decryptedPass in
-                                            if decryptedPass != nil {
-                                                if let pass = String(bytes: decryptedPass!, encoding: .utf8) {
-                                                    if let mk = Keys.masterKey(words: words, coinType: vc.coinType, passphrase: pass) {
-                                                        if descriptorStruct.isMulti {
-                                                            for (x, xpub) in descriptorStruct.multiSigKeys.enumerated() {
-                                                                if let derivedXpub = Keys.xpub(path: descriptorStruct.derivationArray[x], masterKey: mk) {
-                                                                    if xpub == derivedXpub {
-                                                                        vc.signer += words + "\n\n"
-                                                                    }
-                                                                }
-                                                            }
-                                                        } else {
-                                                            if let derivedXpub = Keys.xpub(path: descriptorStruct.derivation, masterKey: mk) {
-                                                                if descriptorStruct.accountXpub == derivedXpub {
-                                                                    vc.signer = words
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    } else {
-                                        if let mk = Keys.masterKey(words: words, coinType: vc.coinType, passphrase: "") {
-                                            if descriptorStruct.isMulti {
-                                                for (x, xpub) in descriptorStruct.multiSigKeys.enumerated() {
-                                                    if let derivedXpub = Keys.xpub(path: descriptorStruct.derivationArray[x], masterKey: mk) {
-                                                        if xpub == derivedXpub {
-                                                            vc.signer += words + "\n\n"
-                                                        }
-                                                    }
-                                                }
-                                            } else {
-                                                if let derivedXpub = Keys.xpub(path: descriptorStruct.derivation, masterKey: mk) {
-                                                    if descriptorStruct.accountXpub == derivedXpub {
-                                                        vc.signer = words
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        if i + 1 == signers!.count {
-                            DispatchQueue.main.async { [unowned vc = self] in
-                                vc.detailTable.reloadData()
-                            }
-                        }
+        let descriptor = descriptorParser.descriptor(self.wallet.receiveDescriptor)
+        if let words = String(bytes: decryptedData, encoding: .utf8) {
+            if signer.passphrase != nil {
+                parsePassphrase(words, signer.passphrase!, descriptor)
+            } else {
+                if let masterKey = Keys.masterKey(words: words, coinType: self.coinType, passphrase: "") {
+                    self.crossCheckXpubs(descriptor, masterKey, words)
+                }
+            }
+        }
+    }
+    
+    private func parsePassphrase(_ words: String, _ passphrase: Data, _ descriptor: Descriptor) {
+        Crypto.decryptData(dataToDecrypt: passphrase) { [weak self] decryptedPass in
+            guard let self = self else { return }
+            if decryptedPass != nil {
+                if let pass = String(bytes: decryptedPass!, encoding: .utf8) {
+                    if let masterKey = Keys.masterKey(words: words, coinType: self.coinType, passphrase: pass) {
+                        self.crossCheckXpubs(descriptor, masterKey, words)
                     }
-                } else {
-                    DispatchQueue.main.async { [unowned vc = self] in
-                        vc.detailTable.reloadData()
+                }
+            }
+        }
+    }
+    
+    private func crossCheckXpubs(_ descriptor: Descriptor, _ masterKey: String, _ words: String) {
+        if descriptor.isMulti {
+            for (x, xpub) in descriptor.multiSigKeys.enumerated() {
+                if let derivedXpub = Keys.xpub(path: descriptor.derivationArray[x], masterKey: masterKey) {
+                    if xpub == derivedXpub {
+                        self.signer += words + "\n\n"
                     }
+                }
+            }
+        } else {
+            if let derivedXpub = Keys.xpub(path: descriptor.derivation, masterKey: masterKey) {
+                if descriptor.accountXpub == derivedXpub {
+                    self.signer = words
                 }
             }
         }
@@ -322,7 +304,9 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             if (UIDevice.current.userInterfaceIdiom == .pad) {
               alertStyle = UIAlertController.Style.alert
             }
-            let alert = UIAlertController(title: "Remove this wallet?", message: "Removing the wallet hides it from your \"Fully Noded Wallets\". The wallet will still exist on your node and be accessed via the \"Wallet Manager\" or via bitcoin-cli and bitcoin-qt. In order to completely delete the wallet you need to find the \"Filename\" as listed above on your nodes machine in the .bitcoin directory and manually delete it there.", preferredStyle: alertStyle)
+            let message = "Removing the wallet hides it from your \"Fully Noded Wallets\". The wallet will still exist on your node and be accessed via the \"Wallet Manager\" or via bitcoin-cli and bitcoin-qt. In order to completely delete the wallet you need to find the \"Filename\" as listed above on your nodes machine in the .bitcoin directory and manually delete it there."
+            
+            let alert = UIAlertController(title: "Remove this wallet?", message: message, preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "Remove", style: .destructive, handler: { [unowned vc = self] action in
                 vc.deleteNow()
             }))
@@ -366,33 +350,33 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func promptToEditLabel(newLabel: String) {
-        DispatchQueue.main.async { [unowned vc = self] in
+        DispatchQueue.main.async { [weak self] in
             var alertStyle = UIAlertController.Style.actionSheet
             if (UIDevice.current.userInterfaceIdiom == .pad) {
               alertStyle = UIAlertController.Style.alert
             }
             let alert = UIAlertController(title: "Update wallet label?", message: "Selecting yes will update this wallets label.", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { action in
-                vc.updateLabel(newLabel: newLabel)
+                self?.updateLabel(newLabel: newLabel)
             }))
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = vc.view
-            vc.present(alert, animated: true, completion: nil)
+            alert.popoverPresentationController?.sourceView = self?.view
+            self?.present(alert, animated: true, completion: nil)
         }
     }
     
     private func updateLabel(newLabel: String) {
-        CoreDataService.update(id: walletId, keyToUpdate: "label", newValue: newLabel, entity: .wallets) { [unowned vc = self] success in
+        CoreDataService.update(id: walletId, keyToUpdate: "label", newValue: newLabel, entity: .wallets) { [weak self] success in
             if success {
-                vc.load()
-                if UserDefaults.standard.object(forKey: "walletName") as? String == vc.wallet.name {
+                self?.load()
+                if UserDefaults.standard.object(forKey: "walletName") as? String == self?.wallet.name {
                     DispatchQueue.main.async {
                         NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                     }
                 }
-                showAlert(vc: vc, title: "Success", message: "Wallet label updated ✓")
+                showAlert(vc: self, title: "Success", message: "Wallet label updated ✓")
             } else {
-                showAlert(vc: vc, title: "Error", message: "There was an error saving your new wallet label.")
+                showAlert(vc: self, title: "Error", message: "There was an error saving your new wallet label.")
             }
         }
     }
@@ -486,24 +470,25 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func promptToUpdateMaxIndex(max: Int) {
-        DispatchQueue.main.async { [unowned vc = self] in
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
             var alertStyle = UIAlertController.Style.actionSheet
             if (UIDevice.current.userInterfaceIdiom == .pad) {
               alertStyle = UIAlertController.Style.alert
             }
-            let alert = UIAlertController(title: "Import index \(vc.wallet.maxIndex + 1) to \(max) public keys?", message: "Selecting yes will trigger a series of calls to your node to import \(max - (Int(vc.wallet.maxIndex) + 1)) additional keys for each descriptor your wallet holds. This can take a bit of time so please be patient and wait for the spinner to dismiss.", preferredStyle: alertStyle)
+            let alert = UIAlertController(title: "Import index \(self.wallet.maxIndex + 1) to \(max) public keys?", message: "Selecting yes will trigger a series of calls to your node to import \(max - (Int(self.wallet.maxIndex) + 1)) additional keys for each descriptor your wallet holds. This can take a bit of time so please be patient and wait for the spinner to dismiss.", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { action in
-                vc.importUpdatedIndex(maxRange: max)
+                self.importUpdatedIndex(maxRange: max)
             }))
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = vc.view
-            vc.present(alert, animated: true, completion: nil)
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
         }
     }
     
     private func updateSpinnerText(text: String) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.spinner.label.text = text
+        DispatchQueue.main.async { [weak self] in
+            self?.spinner.label.text = text
         }
     }
     
@@ -539,32 +524,30 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                 params = "[{ \"desc\": \"\(descriptor)\", \"timestamp\": \"now\", \"range\": [\(wallet.maxIndex),\(maxRange)], \"watchonly\": true, \"keypool\": \(keypool), \"internal\": \(keypool) }], {\"rescan\": false}"
             }
             
-            importMulti(params: params) { [unowned vc = self] success in
+            importMulti(params: params) { [weak self] success in
                 if success {
-                    vc.importDescriptors(index: index + 1, maxRange: maxRange, descriptorsToImport: descriptorsToImport)
+                    self?.importDescriptors(index: index + 1, maxRange: maxRange, descriptorsToImport: descriptorsToImport)
                 } else {
-                    vc.showError(error: "Error importing a recovery descriptor.")
+                    self?.showError(error: "Error importing a recovery descriptor.")
                 }
             }
         } else {
             updateSpinnerText(text: "starting a rescan...")
-            Reducer.makeCommand(command: .getblockchaininfo, param: "") { [unowned vc = self] (response, errorMessage) in
+            Reducer.makeCommand(command: .getblockchaininfo, param: "") { [weak self] (response, errorMessage) in
                 if let dict = response as? NSDictionary {
                     if let pruned = dict["pruned"] as? Bool {
                         if pruned {
                             if let pruneHeight = dict["pruneheight"] as? Int {
-                                Reducer.makeCommand(command: .rescanblockchain, param: "\(pruneHeight)") { [unowned vc = self] (response, errorMessage) in
-                                    vc.updateMaxIndex(max: maxRange)
-                                }
+                                Reducer.makeCommand(command: .rescanblockchain, param: "\(pruneHeight)") { (_, _) in }
+                                self?.updateMaxIndex(max: maxRange)
                             }
                         } else {
-                            Reducer.makeCommand(command: .rescanblockchain, param: "") { [unowned vc = self] (response, errorMessage) in
-                                vc.updateMaxIndex(max: maxRange)
-                            }
+                            Reducer.makeCommand(command: .rescanblockchain, param: "") { (_, _) in }
+                            self?.updateMaxIndex(max: maxRange)
                         }
                     }
                 } else {
-                    vc.showError(error: "Error starting a rescan, your wallet has not been saved. Please check your connection to your node and try again.")
+                    self?.showError(error: "Error starting a rescan, your wallet has not been saved. Please check your connection to your node and try again.")
                 }
             }
         }
@@ -591,20 +574,20 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func updateMaxIndex(max: Int) {
-        CoreDataService.update(id: walletId, keyToUpdate: "maxIndex", newValue: Int64(max), entity: .wallets) { [unowned vc = self] success in
+        CoreDataService.update(id: walletId, keyToUpdate: "maxIndex", newValue: Int64(max), entity: .wallets) { [weak self] success in
             if success {
-                vc.spinner.removeConnectingView()
-                showAlert(vc: vc, title: "Success, you have imported up to \(max) public keys.", message: "Your wallet is now rescanning, you can check the progress at Tools > Get Wallet Info, if you want to abort the rescan you can do that from Tools as well. In order to see balances for all your addresses you'll need to wait for the rescan to complete.")
+                self?.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Success, you have imported up to \(max) public keys.", message: "Your wallet is now rescanning, you can check the progress at Tools > Get Wallet Info, if you want to abort the rescan you can do that from Tools as well. In order to see balances for all your addresses you'll need to wait for the rescan to complete.")
             } else {
-                vc.showError(error: "There was an error updating the wallets maximum index.")
+                self?.showError(error: "There was an error updating the wallets maximum index.")
             }
         }
     }
     
     private func showError(error:String) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.spinner.removeConnectingView()
-            showAlert(vc: vc, title: "Error", message: error)
+        DispatchQueue.main.async { [weak self] in
+            self?.spinner.removeConnectingView()
+            showAlert(vc: self, title: "Error", message: error)
         }
     }
 
