@@ -188,6 +188,21 @@ class MakeRPCCall {
         
     }
     
+    
+    private struct ListUnspentResult: Decodable {
+        let utxos: [UTXO]?
+        let error: Error?
+        
+        enum CodingKeys: String, CodingKey {
+            case utxos = "result"
+            case error
+        }
+        
+        struct Error: Decodable {
+            let message: String
+        }
+    }
+    
     // TODO: Move out of here
     func listUnspentUTXOs(completion: @escaping (Result<[UTXO], MakeRPCCallError>) -> Void) {
         retry(20, task: { completion in
@@ -196,22 +211,8 @@ class MakeRPCCall {
             switch result {
             case .success(let data):
                 do {
-                    struct Result: Decodable { // TODO: Move out of here
-                        let utxos: [UTXO]?
-                        let error: Error?
-                        
-                        enum CodingKeys: String, CodingKey {
-                            case utxos = "result"
-                            case error
-                        }
-                        
-                        struct Error: Decodable {
-                            let message: String
-                        }
-                    }
-                    
                     let decoder = JSONDecoder()
-                    let decodedResult = try decoder.decode(Result.self, from: data)
+                    let decodedResult = try decoder.decode(ListUnspentResult.self, from: data)
                     
                     if let errorMessage = decodedResult.error?.message {
                         completion(.failure(.description(errorMessage)))
@@ -230,7 +231,7 @@ class MakeRPCCall {
         
     }
     
-    // TODO: Clean up. Create a type for a node
+    // TODO: Clean up.
     private func executeCommand(method: BTC_CLI_COMMAND, param: String = "", completion: @escaping (Result<Data, MakeRPCCallError>) -> Void) {
         CoreDataService.retrieveEntity(entityName: .newNodes) { [weak self] nodes in
             guard let self = self else { return }
