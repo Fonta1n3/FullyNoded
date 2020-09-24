@@ -33,9 +33,9 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
         hideKeyboards()
         if psbtArray.count > 1 {
             if !combinePSBT {
-                executeNodeCommand(method: .joinpsbts, param: psbtArray)
+                executeNodeCommand(method: .joinpsbts, param: processedPsbt())
             } else {
-                executeNodeCommand(method: .combinepsbt, param: psbtArray)
+                executeNodeCommand(method: .combinepsbt, param: processedPsbt())
             }
         } else {
             connectingView.removeConnectingView()
@@ -102,6 +102,11 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
             
         }
         
+    }
+    
+    private func processedPsbt() -> String {
+        //var processed = psbtArray.description.replacingOccurrences(of: "[", with: "")
+        return psbtArray.description//processed.replacingOccurrences(of: "]", with: "")
     }
     
     func showRaw(raw: String) {
