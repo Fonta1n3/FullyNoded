@@ -9,30 +9,31 @@
 import Foundation
 import UIKit
 
+/// Call this method to retrive active wallet. This method seaches the device's storage. NOT the node.
+/// - Parameter completion: Active wallet
 public func activeWallet(completion: @escaping ((Wallet?)) -> Void) {
-    var structToReturn:Wallet!
-    if let activeWalletName = UserDefaults.standard.object(forKey: "walletName") as? String {
-        CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
-            if wallets != nil {
-                if wallets!.count > 0 {
-                    for (i, w) in wallets!.enumerated() {
-                        let walletStruct = Wallet(dictionary: w)
-                        if walletStruct.name == activeWalletName {
-                            structToReturn = walletStruct
-                        }
-                        if i + 1 == wallets!.count {
-                            completion(structToReturn)
-                        }
-                    }
-                } else {
-                    completion(nil)
-                }
-            } else {
-                completion(nil)
+    guard let activeWalletName = UserDefaults.standard.object(forKey: "walletName") as? String else {
+        completion(nil)
+        return
+    }
+    
+    CoreDataService.retrieveEntity(entityName: .wallets) { walletDictionaries in
+        guard let walletDictionaries = walletDictionaries, !walletDictionaries.isEmpty else {
+            completion(nil)
+            return
+        }
+        
+        var foundWallet: Wallet?
+        
+        for walletDictionary in walletDictionaries where foundWallet == nil {
+            let wallet = Wallet(dictionary: walletDictionary)
+            
+            if wallet.name == activeWalletName {
+                foundWallet = wallet
             }
         }
-    } else {
-        completion(nil)
+        
+        completion(foundWallet)
     }
 }
 
@@ -57,11 +58,11 @@ public extension UITextView {
 }
 
 public func showAlert(vc: UIViewController?, title: String, message: String) {
-    if vc != nil {
+    if let vc = vc {
         DispatchQueue.main.async {
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in }))
-            vc!.present(alert, animated: true, completion: nil)
+            vc.present(alert, animated: true, completion: nil)
         }
     }
 }
@@ -119,15 +120,10 @@ public func exportWalletJson(name: String, data: Data) -> URL? {
 
 public extension Dictionary {
     func json() -> String? {
-        if let json = try? JSONSerialization.data(withJSONObject: self, options: []) {
-            if let jsonString = String(data: json, encoding: .utf8) {
-                return jsonString
-            } else {
-                return nil
-            }
-        } else {
-            return nil
-        }
+        guard let json = try? JSONSerialization.data(withJSONObject: self, options: []),
+              let jsonString = String(data: json, encoding: .utf8) else { return nil }
+        
+        return jsonString
     }
 }
 
@@ -154,11 +150,7 @@ extension Notification.Name {
 
 public extension Data {
     var utf8:String {
-        if let string = String(bytes: self, encoding: .utf8) {
-            return string
-        } else {
-            return ""
-        }
+        return String(bytes: self, encoding: .utf8) ?? ""
     }
 }
 
