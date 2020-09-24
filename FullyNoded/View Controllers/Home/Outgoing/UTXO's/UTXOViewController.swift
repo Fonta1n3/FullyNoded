@@ -785,12 +785,13 @@ extension UTXOViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         
-        let utxo = unspentUtxos[indexPath.section]
-        let lock = UIContextualAction(style: .destructive, title: "Lock") { (contextualAction, view, boolValue) in
+        let lock = UIContextualAction(style: .destructive, title: "Lock") { [weak self] (contextualAction, view, boolValue) in
+            guard let self = self else { return }
+            
             tableView.isUserInteractionEnabled = false
             
-            self.lock(utxo) { [weak self] result in
-                guard let self = self else { return }
+            let utxo = self.unspentUtxos[indexPath.section]
+            self.lock(utxo) { result in
                 
                 DispatchQueue.main.async {
                     tableView.isUserInteractionEnabled = true
@@ -798,6 +799,7 @@ extension UTXOViewController: UITableViewDelegate {
                 }
             }
         }
+        
         lock.backgroundColor = .systemRed
         let swipeActions = UISwipeActionsConfiguration(actions: [lock])
         return swipeActions
