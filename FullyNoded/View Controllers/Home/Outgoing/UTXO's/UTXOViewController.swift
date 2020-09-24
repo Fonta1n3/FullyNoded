@@ -361,7 +361,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 
                 switch error {
                 case .description(let errorMessage):
-                    self.unspentUtxos.insert(utxo, at: index)
                     displayAlert(viewController: self, isError: true, message: errorMessage)
                 }
             }
