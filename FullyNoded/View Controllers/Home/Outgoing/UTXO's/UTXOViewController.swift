@@ -61,6 +61,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
+    // TODO: Go over this with Fontaine
     private func getAddressSettings() {
         
         let userDefaults = UserDefaults.standard
