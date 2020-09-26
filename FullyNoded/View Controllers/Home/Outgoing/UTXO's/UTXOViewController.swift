@@ -338,7 +338,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    private func lock(_ utxo: UTXO, completion: ((Result<Void, ReducerError>) -> Void)? = nil) {
+    private func lock(_ utxo: UTXO, completion: ((Result<Void, MakeRPCCallError>) -> Void)? = nil) {
         guard let index = unspentUtxos.firstIndex(of: utxo) else { return }
         
         unspentUtxos.remove(at: index)
@@ -401,7 +401,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             self.addSpinner()
         }
         
-        MakeRPCCall.sharedInstance.listUnspentUTXOs { [weak self] result in
+        Reducer.listUnspentUTXOs { [weak self] result in
             guard let self = self else { return }
             
             switch result {
