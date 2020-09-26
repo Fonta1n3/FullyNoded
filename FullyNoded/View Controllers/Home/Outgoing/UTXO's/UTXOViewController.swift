@@ -22,7 +22,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     private var inputArray = [Any]()
     private var address = ""
     private var selectedUTXOs = Set<UTXO>()
-    private var creatingView = ConnectingView()
+    private var spinner = ConnectingView()
     private var nativeSegwit = Bool()
     private var p2shSegwit = Bool()
     private var legacy = Bool()
@@ -42,7 +42,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         configureAmountView()
         tableView.tableFooterView = UIView(frame: .zero)
         refresher.tintColor = UIColor.white
-        refresher.addTarget(self, action: #selector(loadUnspentUTXOs), for: UIControl.Event.valueChanged)
+        refresher.addTarget(self, action: #selector(loadUnlockedUtxos), for: UIControl.Event.valueChanged)
         tableView.addSubview(refresher)
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
@@ -52,7 +52,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        loadUnspentUTXOs()
+        loadUnlockedUtxos()
     }
     
     @IBAction private func lockAction(_ sender: Any) {
@@ -111,7 +111,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             }
             getAddressSettings()
             updateInputs()
-            self.creatingView.addConnectingView(vc: self, description: "Consolidating UTXO's")
+            self.spinner.addConnectingView(vc: self, description: "Consolidating UTXO's")
             if self.nativeSegwit {
                 self.executeNodeCommand(method: .getnewaddress, param: "\"\", \"bech32\"")
             } else if self.legacy {
@@ -248,10 +248,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         label.textAlignment = .center
         label.text = "Amount to send"
         
-        let button = UIButton()
-        button.setImage(UIImage(named: "Minus"), for: .normal)
-        button.frame = CGRect(x: 0, y: 140, width: self.view.frame.width, height: 60)
-        button.addTarget(self, action: #selector(closeAmount), for: .touchUpInside)
+        
         
         blurView2.alpha = 0
         
@@ -264,6 +261,12 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         self.view.addSubview(self.amountView)
         self.amountView.addSubview(self.amountInput)
         self.amountInput.text = "0.0"
+        
+        let button = UIButton()
+        button.setImage(UIImage(systemName: "play.rectangle"), for: .normal)
+        button.frame = CGRect(x: 0, y: 140, width: self.amountView.frame.width, height: 60)
+        button.addTarget(self, action: #selector(closeAmount), for: .touchUpInside)
+        button.tintColor = .systemTeal
         
         UIView.animate(withDuration: 0.2, animations: {
             
@@ -344,26 +347,32 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         unspentUtxos.remove(at: index)
         selectedUTXOs.remove(utxo)
         
-        creatingView.addConnectingView(vc: self, description: "locking...")
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.removeSpinner()
-            self.tableView.reloadData()
-        }
+        spinner.addConnectingView(vc: self, description: "locking...")
         
         Reducer.lock(utxo) { [weak self] result in
-            guard let self = self else { return }
-            
-            self.creatingView.removeConnectingView()
+            guard let self = self else { return }            
             
             if case .failure(let error) = result {
-                self.loadUnspentUTXOs()
+                self.loadUnlockedUtxos()
                 
                 switch error {
                 case .description(let errorMessage):
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        
+                        self.spinner.removeConnectingView()
+                        self.tableView.reloadData()
+                    }
                     displayAlert(viewController: self, isError: true, message: errorMessage)
                 }
+            } else {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.spinner.removeConnectingView()
+                    self.tableView.reloadData()
+                }
+                showAlert(vc: self, title: "UTXO Locked 🔐", message: "You can tap the locked button to see your locked utxo's and unlock them. Be aware if your node reboots all utxo's will be unlocked by default!")
             }
             
             completion?(result)
@@ -391,7 +400,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         
     }
     
-    @objc private func loadUnspentUTXOs() {
+    @objc private func loadUnlockedUtxos() {
         unspentUtxos = []
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -466,7 +475,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                             self!.psbt = psbt!
                             self!.displayRaw(raw: self!.psbt)
                         } else {
-                            self!.creatingView.removeConnectingView()
+                            self!.spinner.removeConnectingView()
                             displayAlert(viewController: self, isError: true, message: errorMessage ?? "unknown error")
                         }
                     }
@@ -489,7 +498,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         DispatchQueue.main.async {
             
             self.refresher.endRefreshing()
-            self.creatingView.removeConnectingView()
+            self.spinner.removeConnectingView()
             
         }
         
@@ -497,7 +506,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     
     private func addSpinner() {
         DispatchQueue.main.async {
-            self.creatingView.addConnectingView(vc: self, description: "Getting UTXOs")
+            self.spinner.addConnectingView(vc: self, description: "Getting UTXOs")
         }
     }
     
@@ -536,7 +545,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                     self!.psbt = psbt!
                     self!.displayRaw(raw: self!.psbt)
                 } else {
-                    self!.creatingView.removeConnectingView()
+                    self!.spinner.removeConnectingView()
                     displayAlert(viewController: self, isError: true, message: errorMessage ?? "unknown error")
                 }
             }
@@ -598,7 +607,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                         self!.psbt = psbt!
                         self!.displayRaw(raw: psbt!)
                     } else {
-                        self!.creatingView.removeConnectingView()
+                        self!.spinner.removeConnectingView()
                         displayAlert(viewController: self, isError: true, message: errorMessage ?? "unknown error")
                     }
                 }
@@ -674,20 +683,18 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 vc.onAddressDoneBlock = { [weak self] address in
                     guard let address = address, let self = self else { return }
                     
-                    self.creatingView.addConnectingView(vc: self, description: "building psbt...")
+                    self.spinner.addConnectingView(vc: self, description: "building psbt...")
                     self.processBIP21(url: address)
                 }
             }
             
         case "segueToBroadcasterFromUtxo":
-            if let vc = segue.destination as? SignerViewController {
-                creatingView.removeConnectingView()
+            if let vc = segue.destination as? VerifyTransactionViewController {
+                spinner.removeConnectingView()
                 if rawSigned != "" {
-                    vc.txn = rawSigned
-                    vc.broadcast = true
+                    vc.signedRawTx = rawSigned
                 } else if psbt != "" {
-                    vc.psbt = psbt
-                    vc.export = true
+                    vc.unsignedPsbt = psbt
                 }
             }
             
@@ -756,6 +763,10 @@ extension UTXOViewController: UITableViewDataSource {
 
 extension UTXOViewController: UITableViewDelegate {
     
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 158
+    }
+    
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 5 // Spacing between cells
     }
@@ -774,7 +785,6 @@ extension UTXOViewController: UITableViewDelegate {
         if selectedUTXOs.contains(utxo) {
             selectedUTXOs.remove(utxo)
             cell.deselectedAnimation()
-            impact()
         } else {
             selectedUTXOs.insert(utxo)
             cell.selectedAnimation()

@@ -149,7 +149,7 @@ class LockedViewController: UIViewController, UITableViewDelegate, UITableViewDa
         header.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 50)
         
         let lockButton = UIButton()
-        let lockImage = UIImage(systemName: "lock.open")!
+        let lockImage = UIImage(systemName: "lock")!
         lockButton.tag = section
         lockButton.tintColor = .systemTeal
         lockButton.setImage(lockImage, for: .normal)

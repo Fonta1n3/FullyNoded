@@ -54,7 +54,6 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     
     var address = ""
     private var utxo: UTXO?
-    var isUtxo = Bool()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -236,6 +235,8 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
             titleString = "UTXO"
             DispatchQueue.main.async {
                 self.textView.text = self.format(utxo)
+                self.textField.alpha = 0
+                self.goButtonOutlet.alpha = 0
                 self.spinner.removeConnectingView()
             }
         }
