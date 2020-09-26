@@ -13,7 +13,7 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
     var psbtArray = [""]
     var index = Int()
     var psbt = ""
-    let connectingView = ConnectingView()
+    let spinner = ConnectingView()
     @IBOutlet var joinTable: UITableView!
     var combinePSBT = Bool()
     
@@ -25,20 +25,20 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
     
     @IBAction func joinNow(_ sender: Any) {
         if !combinePSBT {
-            connectingView.addConnectingView(vc: self, description: "→← Joining")
+            spinner.addConnectingView(vc: self, description: "→← Joining")
         } else {
-            connectingView.addConnectingView(vc: self, description: "→← Combining")
+            spinner.addConnectingView(vc: self, description: "→← Combining")
         }
         
         hideKeyboards()
         if psbtArray.count > 1 {
             if !combinePSBT {
-                executeNodeCommand(method: .joinpsbts, param: psbtArray)
+                executeNodeCommand(method: .joinpsbts, param: processedPsbt())
             } else {
-                executeNodeCommand(method: .combinepsbt, param: psbtArray)
+                executeNodeCommand(method: .combinepsbt, param: processedPsbt())
             }
         } else {
-            connectingView.removeConnectingView()
+            spinner.removeConnectingView()
             displayAlert(viewController: self, isError: true, message: "You need to add more then one PSBT")
         }
     }
@@ -50,11 +50,13 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
                 case .combinepsbt:
                     if let psbtCombined = response as? String {
                         vc.psbt = psbtCombined
+                        vc.spinner.removeConnectingView()
                         vc.showRaw(raw: vc.psbt)
                     }
                 case .joinpsbts:
                     if let psbtJoined = response as? String {
                         vc.psbt = psbtJoined
+                        vc.spinner.removeConnectingView()
                         vc.showRaw(raw: vc.psbt)
                     }
                 default:
@@ -62,7 +64,7 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
                 }
             } else {
                 DispatchQueue.main.async { [unowned vc = self] in
-                    vc.connectingView.removeConnectingView()
+                    vc.spinner.removeConnectingView()
                     displayAlert(viewController: vc, isError: true, message: errorMessage!)
                 }
             }
@@ -102,6 +104,11 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
             
         }
         
+    }
+    
+    private func processedPsbt() -> String {
+        //var processed = psbtArray.description.replacingOccurrences(of: "[", with: "")
+        return psbtArray.description//processed.replacingOccurrences(of: "]", with: "")
     }
     
     func showRaw(raw: String) {

@@ -414,7 +414,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                                 if (UIDevice.current.userInterfaceIdiom == .pad) {
                                   alertStyle = UIAlertController.Style.alert
                                 }
-                                let alert = UIAlertController(title: "Node saved successfully", message: "Your node has been saved and activated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection to your new node.", preferredStyle: alertStyle)
+                                let alert = UIAlertController(title: "Node added successfully ✅", message: "Your node has been saved and activated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection to your new node.", preferredStyle: alertStyle)
                                 alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                                     DispatchQueue.main.async { [unowned vc = self] in
                                         if !vc.isLightning {
@@ -491,7 +491,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                         if (UIDevice.current.userInterfaceIdiom == .pad) {
                           alertStyle = UIAlertController.Style.alert
                         }
-                            let alert = UIAlertController(title: "Node added successfully", message: "Your node has been added and activated. The home screen is automatically refreshing. Tap Done to go back.", preferredStyle: alertStyle)
+                            let alert = UIAlertController(title: "Node added successfully ✅", message: "Your node has been added and activated. The home screen is automatically refreshing. Tap Done to go back.", preferredStyle: alertStyle)
                             alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                                 DispatchQueue.main.async { [unowned vc = self] in
                                     if !vc.isLightning {
@@ -542,8 +542,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     self?.navigationController?.popViewController(animated: true)
                 } else {
                     DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
                         NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
-                        self?.navigationController?.popViewController(animated: true)
+                        self.navigationController?.popViewController(animated: true)
                     }
                 }
             } else {

@@ -271,23 +271,26 @@ class TorClient {
                                     if str.isActive && str.onionAddress != nil {
                                         let onionAddress = decryptedValue(str.onionAddress!)
                                         let onionAddressArray = onionAddress.components(separatedBy: ".onion:")
-                                        let authString = onionAddressArray[0] + ":descriptor:x25519:" + authorizedKey
-                                        let file = URL(fileURLWithPath: authPath, isDirectory: true).appendingPathComponent("\(randomString(length: 10)).auth_private")
-                                        do {
-                                            try authString.write(to: file, atomically: true, encoding: .utf8)
-                                            print("successfully wrote authkey to file")
+                                        // Ensure we are actually V3 before adding auth
+                                        if onionAddressArray[0].count > 55 {
+                                            let authString = onionAddressArray[0] + ":descriptor:x25519:" + authorizedKey
+                                            let file = URL(fileURLWithPath: authPath, isDirectory: true).appendingPathComponent("\(randomString(length: 10)).auth_private")
                                             do {
-                                                if #available(iOS 9.0, *) {
-                                                    try (file as NSURL).setResourceValue(URLFileProtection.complete, forKey: .fileProtectionKey)
-                                                    print("success setting file protection")
-                                                } else {
-                                                    print("error setting file protection")
+                                                try authString.write(to: file, atomically: true, encoding: .utf8)
+                                                print("successfully wrote authkey to file")
+                                                do {
+                                                    if #available(iOS 9.0, *) {
+                                                        try (file as NSURL).setResourceValue(URLFileProtection.complete, forKey: .fileProtectionKey)
+                                                        print("success setting file protection")
+                                                    } else {
+                                                        print("error setting file protection")
+                                                    }
+                                                } catch {
+                                                   print("error setting file protection")
                                                 }
                                             } catch {
-                                               print("error setting file protection")
+                                                print("failed writing auth key")
                                             }
-                                        } catch {
-                                            print("failed writing auth key")
                                         }
                                     }
                                     if i + 1 == nodes!.count {
