@@ -20,7 +20,7 @@ class UTXOCell: UITableViewCell {
     private unowned var delegate: UTXOCellDelegate!
     
     @IBOutlet private weak var roundeBackgroundView: UIView!
-    @IBOutlet private weak var walletLabel: UILabel!
+    @IBOutlet private weak var walletLabel: UILabel!// an address label
     @IBOutlet private weak var checkMarkImageView: UIImageView!
     @IBOutlet private weak var confirmationsLabel: UILabel!
     @IBOutlet private weak var spendableLabel: UILabel!
@@ -45,21 +45,21 @@ class UTXOCell: UITableViewCell {
         self.delegate = delegate
         
         txidLabel.text = utxo.txid
-        walletLabel.text = utxo.walletLabel
+        walletLabel.text = utxo.addressLabel
         addressLabel.text = "Address: \(utxo.address)"
         txidLabel.text = "TXID: \(utxo.txid)"
         voutLabel.text = "vout #\(utxo.vout)"
         
         
         let roundedAmount = rounded(number: utxo.amount)
-        amountLabel.text = "\(roundedAmount)"
+        amountLabel.text = "\(roundedAmount.avoidNotation)"
 
         if isSelected {
             checkMarkImageView.alpha = 1
-            backgroundColor = UIColor.black
+            self.roundeBackgroundView.backgroundColor = .darkGray
         } else {
             checkMarkImageView.alpha = 0
-            backgroundColor = #colorLiteral(red: 0.07831101865, green: 0.08237650245, blue: 0.08238270134, alpha: 1)
+            self.roundeBackgroundView.backgroundColor = #colorLiteral(red: 0.07831101865, green: 0.08237650245, blue: 0.08238270134, alpha: 1)
         }
 
         if utxo.solvable {
@@ -97,7 +97,7 @@ class UTXOCell: UITableViewCell {
                 UIView.animate(withDuration: 0.2, animations: {
                     self.alpha = 1
                     self.checkMarkImageView.alpha = 1
-                    self.backgroundColor = UIColor.black
+                    self.roundeBackgroundView.backgroundColor = .darkGray
                     
                 })
                 
@@ -118,7 +118,7 @@ class UTXOCell: UITableViewCell {
                 
                 UIView.animate(withDuration: 0.2, animations: {
                     self.alpha = 1
-                    self.backgroundColor = #colorLiteral(red: 0.07831101865, green: 0.08237650245, blue: 0.08238270134, alpha: 1)
+                    self.roundeBackgroundView.backgroundColor = #colorLiteral(red: 0.07831101865, green: 0.08237650245, blue: 0.08238270134, alpha: 1)
                     
                 })
                 
@@ -128,7 +128,6 @@ class UTXOCell: UITableViewCell {
     }
     
     @IBAction func lockButtonTapped(_ sender: Any) {
-        
         delegate.didTapToLock(utxo)
     }
     
@@ -143,7 +142,7 @@ struct UTXO: Equatable, Hashable, Codable {
     let txid: String
     let vout: Int
     let address: String
-    let walletLabel: String?
+    let addressLabel: String?
     let pubKey: String
     let amount: Double
     let confirmations: Int
@@ -155,7 +154,7 @@ struct UTXO: Equatable, Hashable, Codable {
         case txid
         case vout
         case address
-        case walletLabel = "label"
+        case addressLabel = "label"
         case pubKey = "scriptPubKey"
         case amount
         case confirmations
