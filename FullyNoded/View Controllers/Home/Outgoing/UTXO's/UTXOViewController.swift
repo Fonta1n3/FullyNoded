@@ -763,10 +763,6 @@ extension UTXOViewController: UITableViewDataSource {
 
 extension UTXOViewController: UITableViewDelegate {
     
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 158
-    }
-    
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 5 // Spacing between cells
     }
