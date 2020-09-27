@@ -68,7 +68,7 @@ class UTXOCell: UITableViewCell {
         txidLabel.text = "TXID: \(utxo.txid)"
         voutLabel.text = "vout #\(utxo.vout)"
         
-        if utxo.desc.contains("/1/") {
+        if let description = utxo.description, description.contains("/1/") {
             isChangeImageView.image = UIImage(systemName: "arrow.2.circlepath")
             isChangeBackground.backgroundColor = .systemPurple
         } else {
@@ -189,7 +189,7 @@ struct UTXO: Equatable, Hashable, Codable {
     let spendable: Bool
     let solvable: Bool
     let safe: Bool
-    let desc: String
+    let description: String?
     
     enum CodingKeys: String, CodingKey {
         case txid
@@ -202,7 +202,7 @@ struct UTXO: Equatable, Hashable, Codable {
         case spendable
         case solvable
         case safe
-        case desc
+        case description = "desc"
     }
 }
 
