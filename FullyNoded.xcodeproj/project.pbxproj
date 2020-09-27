@@ -151,6 +151,7 @@
 		D0E2A1052496EE9400AE0C04 /* ActiveWalletViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E2A1042496EE9400AE0C04 /* ActiveWalletViewController.swift */; };
 		D0E51E592265640F005D1909 /* ErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E51E582265640F005D1909 /* ErrorView.swift */; };
 		D0E51E5B226592C9005D1909 /* NodeDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E51E5A226592C9005D1909 /* NodeDetailViewController.swift */; };
+		D0E54DD525207A1C00BD859E /* UTXOs.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E54DD425207A1C00BD859E /* UTXOs.swift */; };
 		D0E9B63C211A94C600B416E7 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E9B63B211A94C600B416E7 /* Utilities.swift */; };
 		D0EC748A227DF06E001489B9 /* CreateUnsigned.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EC7489227DF06E001489B9 /* CreateUnsigned.swift */; };
 		D0EC7490227F6977001489B9 /* SignRawViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EC748F227F6977001489B9 /* SignRawViewController.swift */; };
@@ -341,6 +342,7 @@
 		D0E2A1042496EE9400AE0C04 /* ActiveWalletViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWalletViewController.swift; sourceTree = "<group>"; };
 		D0E51E582265640F005D1909 /* ErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorView.swift; sourceTree = "<group>"; };
 		D0E51E5A226592C9005D1909 /* NodeDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDetailViewController.swift; sourceTree = "<group>"; };
+		D0E54DD425207A1C00BD859E /* UTXOs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOs.swift; sourceTree = "<group>"; };
 		D0E9B63B211A94C600B416E7 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		D0EC7489227DF06E001489B9 /* CreateUnsigned.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateUnsigned.swift; sourceTree = "<group>"; };
 		D0EC748F227F6977001489B9 /* SignRawViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignRawViewController.swift; sourceTree = "<group>"; };
@@ -634,6 +636,7 @@
 				D09A331224AC4C93009FA0B2 /* Descriptor.swift */,
 				D09F9E4D24B06A63006B588C /* SignerStruct.swift */,
 				D0CC0E1F24F0F35A001BF905 /* Peers.swift */,
+				D0E54DD425207A1C00BD859E /* UTXOs.swift */,
 			);
 			path = Structs;
 			sourceTree = "<group>";
@@ -1240,6 +1243,7 @@
 				D069051F24EA6C1F007F939D /* LightningPeersViewController.swift in Sources */,
 				D084960422EBCD3B003FE8EB /* GetInfoViewController.swift in Sources */,
 				D073E16E22558CDE0012A28C /* CoreDataService.swift in Sources */,
+				D0E54DD525207A1C00BD859E /* UTXOs.swift in Sources */,
 				D037C86E231BAFD2006C357D /* AddAsChangeViewController.swift in Sources */,
 				D0F3919224BFEBBB00EA8A2A /* QRDisplayerViewController.swift in Sources */,
 			);
