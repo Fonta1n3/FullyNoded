@@ -347,32 +347,25 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         unspentUtxos.remove(at: index)
         selectedUTXOs.remove(utxo)
         
-        spinner.addConnectingView(vc: self, description: "locking...")
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
+        }
         
         Reducer.lock(utxo) { [weak self] result in
-            guard let self = self else { return }            
+            guard let self = self else { return }
             
-            if case .failure(let error) = result {
-                self.loadUnlockedUtxos()
-                
+            switch result {
+            case .success:
+                if FirstTime.isFirstTimeShowingLockInstructions() {
+                    FirstTime.setFirstTimeShowingLockInstructionsToFalse()
+                    showAlert(vc: self, title: "UTXO Locked 🔐", message: "You can tap the locked button to see your locked utxo's and unlock them. Be aware if your node reboots all utxo's will be unlocked by default!")
+                }
+            case .failure(let error):
                 switch error {
                 case .description(let errorMessage):
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        
-                        self.spinner.removeConnectingView()
-                        self.tableView.reloadData()
-                    }
+                    self.loadUnlockedUtxos()
                     displayAlert(viewController: self, isError: true, message: errorMessage)
                 }
-            } else {
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.spinner.removeConnectingView()
-                    self.tableView.reloadData()
-                }
-                showAlert(vc: self, title: "UTXO Locked 🔐", message: "You can tap the locked button to see your locked utxo's and unlock them. Be aware if your node reboots all utxo's will be unlocked by default!")
             }
             
             completion?(result)
