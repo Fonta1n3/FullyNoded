@@ -29,6 +29,12 @@ class UTXOCell: UITableViewCell {
     @IBOutlet private weak var txidLabel: UILabel!
     @IBOutlet private weak var voutLabel: UILabel!
     @IBOutlet private weak var addressLabel: UILabel!
+    @IBOutlet private weak var isChangeBackground: UIView!
+    @IBOutlet private weak var isChangeImageView: UIImageView!
+    @IBOutlet private weak var isSolvableBackground: UIView!
+    @IBOutlet private weak var isSolvableImageView: UIImageView!
+    @IBOutlet private weak var isDustBackground: UIView!
+    @IBOutlet private weak var isDustImageView: UIImageView!
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -36,6 +42,18 @@ class UTXOCell: UITableViewCell {
         layer.borderColor = UIColor.lightGray.cgColor
         layer.borderWidth = 0.5
         layer.cornerRadius = 8
+        
+        isChangeBackground.clipsToBounds = true
+        isSolvableBackground.clipsToBounds = true
+        isDustBackground.clipsToBounds = true
+        
+        isChangeBackground.layer.cornerRadius = 5
+        isSolvableBackground.layer.cornerRadius = 5
+        isDustBackground.layer.cornerRadius = 5
+        
+        isChangeImageView.tintColor = .white
+        isSolvableImageView.tintColor = .white
+        isDustImageView.tintColor = .white
         
         selectionStyle = .none
     }
@@ -49,6 +67,22 @@ class UTXOCell: UITableViewCell {
         addressLabel.text = "Address: \(utxo.address)"
         txidLabel.text = "TXID: \(utxo.txid)"
         voutLabel.text = "vout #\(utxo.vout)"
+        
+        if utxo.desc.contains("/1/") {
+            isChangeImageView.image = UIImage(systemName: "arrow.2.circlepath")
+            isChangeBackground.backgroundColor = .systemPurple
+        } else {
+            isChangeImageView.image = UIImage(systemName: "arrow.down.left")
+            isChangeBackground.backgroundColor = .systemBlue
+        }
+        
+        if utxo.amount <= 0.00010000 {
+            isDustImageView.image = UIImage(systemName: "exclamationmark.triangle")
+            isDustBackground.backgroundColor = .systemRed
+        } else {
+            isDustImageView.image = UIImage(systemName: "checkmark")
+            isDustBackground.backgroundColor = .darkGray
+        }
         
         
         let roundedAmount = rounded(number: utxo.amount)
@@ -65,9 +99,15 @@ class UTXOCell: UITableViewCell {
         if utxo.solvable {
             solvableLabel.text = "Solvable"
             solvableLabel.textColor = .systemGreen
+            
+            isSolvableBackground.backgroundColor = .systemGreen
+            isSolvableImageView.image = UIImage(systemName: "person.crop.circle.fill.badge.checkmark")
         } else {
             solvableLabel.text = "Not Solvable"
             solvableLabel.textColor = .systemBlue
+            
+            isSolvableBackground.backgroundColor = .systemRed
+            isSolvableImageView.image = UIImage(systemName: "person.crop.circle.badge.xmark")
         }
 
         if utxo.confirmations == 0 {
@@ -149,6 +189,7 @@ struct UTXO: Equatable, Hashable, Codable {
     let spendable: Bool
     let solvable: Bool
     let safe: Bool
+    let desc: String
     
     enum CodingKeys: String, CodingKey {
         case txid
@@ -161,6 +202,7 @@ struct UTXO: Equatable, Hashable, Codable {
         case spendable
         case solvable
         case safe
+        case desc
     }
 }
 
