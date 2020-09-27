@@ -80,12 +80,16 @@ class MakeRPCCall {
                 
                 var request = URLRequest(url: url)
                 var timeout = 10.0
-                if method == .gettxoutsetinfo {
+                
+                switch method {
+                case .gettxoutsetinfo:
                     timeout = 1000.0
-                }
-                if method == .importmulti || method == .deriveaddresses {
+                case .importmulti, .deriveaddresses, .loadwallet:
                     timeout = 60.0
+                default:
+                    break
                 }
+                
                 request.timeoutInterval = timeout
                 request.httpMethod = "POST"
                 request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
