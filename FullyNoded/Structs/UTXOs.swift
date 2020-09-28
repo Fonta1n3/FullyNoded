@@ -18,6 +18,10 @@ public struct UtxosStruct: CustomStringConvertible {
     let solvable: Bool
     let txid: String
     let vout: Int64
+    let walletId: UUID
+    let confs: Int64
+    let safe: Bool
+    let spendable: Bool
     
     init(dictionary: [String: Any]) {
         id = dictionary["id"] as! UUID
@@ -28,6 +32,10 @@ public struct UtxosStruct: CustomStringConvertible {
         solvable = dictionary["solvable"] as? Bool ?? false
         txid = dictionary["txid"] as? String ?? ""
         vout = dictionary["vout"] as? Int64 ?? 0
+        walletId = dictionary["walletId"] as! UUID
+        confs = dictionary["confs"] as? Int64 ?? 0
+        spendable = dictionary["spendable"] as? Bool ?? false
+        safe = dictionary["safe"] as? Bool ?? false
     }
     
     public var description: String {

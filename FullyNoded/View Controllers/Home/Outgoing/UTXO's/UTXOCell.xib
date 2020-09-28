@@ -228,6 +228,7 @@
                 <outlet property="isDustImageView" destination="Htb-h1-62A" id="JdH-73-MhX"/>
                 <outlet property="isSolvableBackground" destination="d1H-k5-uLn" id="nj5-00-DtH"/>
                 <outlet property="isSolvableImageView" destination="pey-jI-MkB" id="6yl-oM-ldK"/>
+                <outlet property="lockButtonOutlet" destination="lOQ-5R-kEw" id="0fn-uH-Dfd"/>
                 <outlet property="roundeBackgroundView" destination="pXx-EG-WdU" id="cqz-ve-Gga"/>
                 <outlet property="solvableLabel" destination="YnX-hr-prN" id="0c3-UX-pIm"/>
                 <outlet property="spendableLabel" destination="wOA-wl-Py4" id="0Ah-mK-A5K"/>

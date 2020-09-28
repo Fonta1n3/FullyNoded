@@ -8,6 +8,8 @@
 
 import Foundation
 
+// Core data entities
+
 public enum ENTITY: String {
     case newDescriptors = "NewDescriptors"
     case newHdWallets = "NewHDWallets"
@@ -16,4 +18,5 @@ public enum ENTITY: String {
     case signers = "Signers"
     case wallets = "Wallets"
     case peers = "Peers"
+    case utxos = "Utxos"
 }

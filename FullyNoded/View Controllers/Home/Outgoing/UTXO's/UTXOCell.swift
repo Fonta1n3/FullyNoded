@@ -17,6 +17,7 @@ class UTXOCell: UITableViewCell {
     
     static let identifier = "UTXOCell"
     private var utxo: UTXO!
+    var locked: Bool!
     private unowned var delegate: UTXOCellDelegate!
     
     @IBOutlet private weak var roundeBackgroundView: UIView!
@@ -35,6 +36,7 @@ class UTXOCell: UITableViewCell {
     @IBOutlet private weak var isSolvableImageView: UIImageView!
     @IBOutlet private weak var isDustBackground: UIView!
     @IBOutlet private weak var isDustImageView: UIImageView!
+    @IBOutlet private weak var lockButtonOutlet: UIButton!
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -64,29 +66,47 @@ class UTXOCell: UITableViewCell {
         
         txidLabel.text = utxo.txid
         walletLabel.text = utxo.addressLabel
-        addressLabel.text = "Address: \(utxo.address)"
+        addressLabel.text = "Address: \(utxo.address ?? "unknown")"
         txidLabel.text = "TXID: \(utxo.txid)"
         voutLabel.text = "vout #\(utxo.vout)"
         
-        if utxo.desc.contains("/1/") {
-            isChangeImageView.image = UIImage(systemName: "arrow.2.circlepath")
-            isChangeBackground.backgroundColor = .systemPurple
+        if locked {
+            lockButtonOutlet.setImage(UIImage(systemName: "lock"), for: .normal)
+            lockButtonOutlet.tintColor = .systemPink
         } else {
-            isChangeImageView.image = UIImage(systemName: "arrow.down.left")
-            isChangeBackground.backgroundColor = .systemBlue
+            lockButtonOutlet.setImage(UIImage(systemName: "lock.open"), for: .normal)
+            lockButtonOutlet.tintColor = .systemTeal
         }
         
-        if utxo.amount <= 0.00010000 {
-            isDustImageView.image = UIImage(systemName: "exclamationmark.triangle")
-            isDustBackground.backgroundColor = .systemRed
+        if utxo.desc != nil {
+            if utxo.desc!.contains("/1/") {
+                isChangeImageView.image = UIImage(systemName: "arrow.2.circlepath")
+                isChangeBackground.backgroundColor = .systemPurple
+            } else {
+                isChangeImageView.image = UIImage(systemName: "arrow.down.left")
+                isChangeBackground.backgroundColor = .systemBlue
+            }
         } else {
-            isDustImageView.image = UIImage(systemName: "checkmark")
-            isDustBackground.backgroundColor = .darkGray
+            isChangeImageView.image = UIImage(systemName: "questionmark")
+            isChangeBackground.backgroundColor = .clear
         }
         
-        
-        let roundedAmount = rounded(number: utxo.amount)
-        amountLabel.text = "\(roundedAmount.avoidNotation)"
+        if utxo.amount != nil {
+            let roundedAmount = rounded(number: utxo.amount!)
+            amountLabel.text = "\(roundedAmount.avoidNotation)"
+            
+            if utxo.amount! <= 0.00010000 {
+                isDustImageView.image = UIImage(systemName: "exclamationmark.triangle")
+                isDustBackground.backgroundColor = .systemRed
+            } else {
+                isDustImageView.image = UIImage(systemName: "checkmark")
+                isDustBackground.backgroundColor = .darkGray
+            }
+        }  else {
+            isDustImageView.image = UIImage(systemName: "questionmark")
+            isDustBackground.backgroundColor = .clear
+            amountLabel.text = "?"
+        }
 
         if isSelected {
             checkMarkImageView.alpha = 1
@@ -95,36 +115,55 @@ class UTXOCell: UITableViewCell {
             checkMarkImageView.alpha = 0
             self.roundeBackgroundView.backgroundColor = #colorLiteral(red: 0.07831101865, green: 0.08237650245, blue: 0.08238270134, alpha: 1)
         }
-
-        if utxo.solvable {
-            solvableLabel.text = "Solvable"
-            solvableLabel.textColor = .systemGreen
+        
+        if utxo.solvable != nil {
+            if utxo.solvable! {
+                solvableLabel.text = "Solvable"
+                solvableLabel.textColor = .systemGreen
+                
+                isSolvableBackground.backgroundColor = .systemGreen
+                isSolvableImageView.image = UIImage(systemName: "person.crop.circle.fill.badge.checkmark")
+            } else {
+                solvableLabel.text = "Not Solvable"
+                solvableLabel.textColor = .systemBlue
+                
+                isSolvableBackground.backgroundColor = .systemRed
+                isSolvableImageView.image = UIImage(systemName: "person.crop.circle.badge.xmark")
+            }
+        } else {
+            solvableLabel.text = "?"
+            solvableLabel.textColor = .lightGray
+            isSolvableImageView.image = UIImage(systemName: "questionmark")
+            isSolvableBackground.backgroundColor = .clear
+        }
+        
+        if utxo.confirmations != nil {
+            if utxo.confirmations == 0 {
+                confirmationsLabel.textColor = .systemRed
+            } else {
+                confirmationsLabel.textColor = .systemGreen
+            }
             
-            isSolvableBackground.backgroundColor = .systemGreen
-            isSolvableImageView.image = UIImage(systemName: "person.crop.circle.fill.badge.checkmark")
+            confirmationsLabel.text = "\(utxo.confirmations!) confs"
         } else {
-            solvableLabel.text = "Not Solvable"
-            solvableLabel.textColor = .systemBlue
-            
-            isSolvableBackground.backgroundColor = .systemRed
-            isSolvableImageView.image = UIImage(systemName: "person.crop.circle.badge.xmark")
+            confirmationsLabel.text = "?"
+            confirmationsLabel.textColor = .lightGray
         }
+        
+        if utxo.spendable != nil {
+            if utxo.spendable! {
+                spendableLabel.text = "Node hot"
+                spendableLabel.textColor = .systemGreen
+            } else {
+                spendableLabel.text = "Node cold"
+                spendableLabel.textColor = .systemBlue
 
-        if utxo.confirmations == 0 {
-            confirmationsLabel.textColor = .systemRed
+            }
         } else {
-            confirmationsLabel.textColor = .systemGreen
+            spendableLabel.text = "?"
+            spendableLabel.textColor = .lightGray
         }
-        confirmationsLabel.text = "\(utxo.confirmations) confs"
-
-        if utxo.spendable {
-            spendableLabel.text = "Spendable"
-            spendableLabel.textColor = .systemGreen
-        } else {
-            spendableLabel.text = "COLD"
-            spendableLabel.textColor = .systemBlue
-
-        }
+    
     }
     
     func selectedAnimation() {
@@ -181,15 +220,15 @@ struct UTXO: Equatable, Hashable, Codable {
     
     let txid: String
     let vout: Int
-    let address: String
+    let address: String?
     let addressLabel: String?
-    let pubKey: String
-    let amount: Double
-    let confirmations: Int
-    let spendable: Bool
-    let solvable: Bool
-    let safe: Bool
-    let desc: String
+    let pubKey: String?
+    let amount: Double?
+    let confirmations: Int?
+    let spendable: Bool?
+    let solvable: Bool?
+    let safe: Bool?
+    let desc: String?
     
     enum CodingKeys: String, CodingKey {
         case txid
