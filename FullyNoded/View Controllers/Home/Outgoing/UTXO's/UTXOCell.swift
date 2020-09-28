@@ -17,7 +17,7 @@ class UTXOCell: UITableViewCell {
     
     static let identifier = "UTXOCell"
     private var utxo: UTXO!
-    var locked: Bool!
+    private var isLocked: Bool!
     private unowned var delegate: UTXOCellDelegate!
     
     @IBOutlet private weak var roundeBackgroundView: UIView!
@@ -60,8 +60,9 @@ class UTXOCell: UITableViewCell {
         selectionStyle = .none
     }
     
-    func configure(utxo: UTXO, isSelected: Bool, delegate: UTXOCellDelegate) {
+    func configure(utxo: UTXO, isSelected: Bool, isLocked: Bool, delegate: UTXOCellDelegate) {
         self.utxo = utxo
+        self.isLocked = isLocked
         self.delegate = delegate
         
         txidLabel.text = utxo.txid
@@ -70,7 +71,7 @@ class UTXOCell: UITableViewCell {
         txidLabel.text = "TXID: \(utxo.txid)"
         voutLabel.text = "vout #\(utxo.vout)"
         
-        if locked {
+        if isLocked {
             lockButtonOutlet.setImage(UIImage(systemName: "lock"), for: .normal)
             lockButtonOutlet.tintColor = .systemPink
         } else {

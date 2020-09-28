@@ -188,9 +188,8 @@ extension LockedViewController: UITableViewDataSource {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: UTXOCell.identifier, for: indexPath) as! UTXOCell
         let utxo = lockedUtxos[indexPath.section]
-        cell.locked = true
         
-        cell.configure(utxo: utxo, isSelected: false, delegate: self)
+        cell.configure(utxo: utxo, isSelected: false, isLocked: true, delegate: self)
         
         return cell
     }
