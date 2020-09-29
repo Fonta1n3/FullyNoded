@@ -50,8 +50,6 @@ class LockedViewController: UIViewController {
                         return
                     }
                     
-                    var updatedUtxos = [UTXO]()
-                    
                     for savedLockedUtxo in savedLockedUtxos {
                         let savedUtxoStruct = UtxosStruct(dictionary: savedLockedUtxo)
                         let savedUtxoOutpoint = savedUtxoStruct.txid + "\(savedUtxoStruct.vout)"
@@ -62,28 +60,25 @@ class LockedViewController: UIViewController {
                             isSaved = outpoint == savedUtxoOutpoint
                             
                             if isSaved {
-                                utxos.remove(at: i)
-                                let utxoToAdd:UTXO = UTXO(txid: savedUtxoStruct.txid,
-                                                          vout: Int(savedUtxoStruct.vout),
-                                                          address: savedUtxoStruct.address,
-                                                          addressLabel: savedUtxoStruct.label,
-                                                          pubKey: "",
-                                                          amount: savedUtxoStruct.amount,
-                                                          confirmations: Int(savedUtxoStruct.confs),
-                                                          spendable: savedUtxoStruct.spendable,
-                                                          solvable: savedUtxoStruct.solvable,
-                                                          safe: savedUtxoStruct.safe,
-                                                          desc: savedUtxoStruct.desc)
                                 
-                                updatedUtxos.append(utxoToAdd)
+                                let updatedUtxo:UTXO = UTXO(txid: savedUtxoStruct.txid,
+                                                            vout: Int(savedUtxoStruct.vout),
+                                                            address: savedUtxoStruct.address,
+                                                            addressLabel: savedUtxoStruct.label,
+                                                            pubKey: "",
+                                                            amount: savedUtxoStruct.amount,
+                                                            confirmations: Int(savedUtxoStruct.confs),
+                                                            spendable: savedUtxoStruct.spendable,
+                                                            solvable: savedUtxoStruct.solvable,
+                                                            safe: savedUtxoStruct.safe,
+                                                            desc: savedUtxoStruct.desc)
                                 
-                            } else if i + 1 == utxos.count {
-                                updatedUtxos.append(utxo)
+                                utxos[i] = updatedUtxo
                             }
                         }
                     }
                     
-                    self.lockedUtxos = updatedUtxos.sorted { $0.confirmations ?? 0 < $1.confirmations ?? 0 }
+                    self.lockedUtxos = utxos.sorted { $0.confirmations ?? 0 < $1.confirmations ?? 0 }
                     
                     if self.lockedUtxos.isEmpty {
                         displayAlert(viewController: self, isError: true, message: "No locked UTXO's")
