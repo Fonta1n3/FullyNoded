@@ -769,9 +769,8 @@ extension UTXOViewController: UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: UTXOCell.identifier, for: indexPath) as! UTXOCell
         let utxo = unspentUtxos[indexPath.section]
         let isSelected = selectedUTXOs.contains(utxo)
-        cell.locked = false
         
-        cell.configure(utxo: utxo, isSelected: isSelected, delegate: self)
+        cell.configure(utxo: utxo, isSelected: isSelected, isLocked: false, delegate: self)
         
         return cell
     }
