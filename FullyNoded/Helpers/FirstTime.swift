@@ -6,21 +6,15 @@
 //  Copyright © 2019 Fontaine. All rights reserved.
 //
 
-class FirstTime {
+enum FirstTime {
     
-    class func firstTimeHere(completion: @escaping ((Bool)) -> Void) {
+    static func firstTimeHere() -> Bool {
         if KeyChain.getData("privateKey") == nil {
             /// Sets a new encryption key.
-            let pk = Crypto.privateKey()
-            if KeyChain.set(pk, forKey: "privateKey") {
-                completion(true)
-            } else {
-                completion(false)
-            }
+            return KeyChain.set(Crypto.privateKey(), forKey: "privateKey")
         } else {
-            completion(true)
+            return true
         }
-        
     }
     
 }

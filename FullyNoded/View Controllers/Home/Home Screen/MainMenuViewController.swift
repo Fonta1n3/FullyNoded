@@ -75,14 +75,13 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     override func viewDidAppear(_ animated: Bool) {
         if initialLoad {
             addlaunchScreen()
-            firstTimeHere() { [unowned vc = self] success in
-                if !success {
-                    displayAlert(viewController: vc, isError: true, message: "there was a critical error setting your devices encryption key, please delete and reinstall the app")
-                } else {
-                    if vc.mgr?.state != .started && vc.mgr?.state != .connected  {
-                        displayAlert(viewController: self, isError: false, message: "Tor is bootstrapping, please wait")
-                        vc.mgr?.start(delegate: self)
-                    }
+            if !firstTimeHere() {
+                displayAlert(viewController: self, isError: true, message: "there was a critical error setting your devices encryption key, please delete and reinstall the app")
+                
+            } else {
+                if mgr?.state != .started && mgr?.state != .connected  {
+                    displayAlert(viewController: self, isError: false, message: "Tor is bootstrapping, please wait")
+                    mgr?.start(delegate: self)
                 }
             }
         }
@@ -98,15 +97,9 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                     prefix = "clightning-rpc"
                 }
                 
-                func decryptedValue(_ encryptedValue: Data) -> String? {
-                    guard let decrypted = Crypto.decrypt(encryptedValue) else { return "" }
-                    
-                    return decrypted.utf8
-                }
-                
-                guard let address = decryptedValue(nodeStruct.onionAddress!),
-                    let rpcusername = decryptedValue(nodeStruct.rpcuser!),
-                    let rpcpassword = decryptedValue(nodeStruct.rpcpassword!) else { return }
+                let address = decryptedValue(nodeStruct.onionAddress!)
+                let rpcusername = decryptedValue(nodeStruct.rpcuser!)
+                let rpcpassword = decryptedValue(nodeStruct.rpcpassword!)
                 
                 let macName = UIDevice.current.name
                 
@@ -140,16 +133,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         }
     }
     
-    private func setEncryptionKey() {
-        firstTimeHere() { [unowned vc = self] success in
-            if !success {
-                displayAlert(viewController: vc, isError: true, message: "there was a critical error setting your devices encryption key, please delete and reinstall the app")
-            }
-        }
-    }
-    
     func torConnProgress(_ progress: Int) {
-        print("progress = \(progress)")
         DispatchQueue.main.async { [weak self] in
             self?.torProgressLabel.text = "Tor progress: \(progress)%"
         }
@@ -929,10 +913,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     //MARK: Helpers
     
-    func firstTimeHere(completion: @escaping ((Bool)) -> Void) {
-        FirstTime.firstTimeHere() { success in
-            completion(success)
-        }
+    func firstTimeHere() -> Bool {
+        return FirstTime.firstTimeHere()
     }
     
 }
