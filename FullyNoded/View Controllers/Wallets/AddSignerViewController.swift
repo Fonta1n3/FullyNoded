@@ -201,25 +201,29 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
     }
     
     private func saveLocally() {
-        DispatchQueue.main.async { [unowned vc = self] in
-            Crypto.encryptData(dataToEncrypt: (vc.justWords.joined(separator: " ")).dataUsingUTF8StringEncoding) { [unowned vc = self] encryptedWords in
-                if encryptedWords != nil {
-                    DispatchQueue.main.async { [unowned vc = self] in
-                        if vc.passphraseField.text != "" {
-                            Crypto.encryptData(dataToEncrypt: (vc.passphraseField.text!).dataUsingUTF8StringEncoding) { encryptedPassphrase in
-                                if encryptedPassphrase != nil {
-                                    vc.saveSignerAndPassphrase(encryptedSigner: encryptedWords!, encryptedPassphrase: encryptedPassphrase!)
-                                } else {
-                                    vc.showError(error: "error encrypting your passphrase")
-                                }
-                            }
-                        } else {
-                            vc.saveSigner(encryptedSigner: encryptedWords!)
-                        }
-                    }
-                } else {
-                    vc.showError(error: "error encrypting your seed")
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let mnemonicData = self.justWords.joined(separator: " ").dataUsingUTF8StringEncoding
+            let passphrase = self.passphraseField.text ?? ""
+            
+            guard let encryptedWords = Crypto.encrypt(mnemonicData) else {
+                self.showError(error: "error encrypting your seed")
+                
+                return
+            }
+                        
+            if passphrase != "" {
+                guard let encryptedPassphrase = Crypto.encrypt(passphrase.dataUsingUTF8StringEncoding) else {
+                    self.showError(error: "error encrypting your passphrase")
+                    
+                    return
                 }
+                
+                self.saveSignerAndPassphrase(encryptedSigner: encryptedWords, encryptedPassphrase: encryptedPassphrase)
+            } else {
+                
+                self.saveSigner(encryptedSigner: encryptedWords)
             }
         }
     }

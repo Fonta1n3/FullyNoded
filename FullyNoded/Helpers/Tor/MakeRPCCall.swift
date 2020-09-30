@@ -42,13 +42,8 @@ class MakeRPCCall {
                 }
                 
                 func decryptedValue(_ encryptedValue: Data) -> String {
-                    var decryptedValue = ""
-                    Crypto.decryptData(dataToDecrypt: encryptedValue) { decryptedData in
-                        if decryptedData != nil {
-                            decryptedValue = decryptedData!.utf8
-                        }
-                    }
-                    return decryptedValue
+                    guard let decrypted = Crypto.decrypt(encryptedValue) else { return "" }
+                    return decrypted.utf8
                 }
                 
                 let node = NodeStruct(dictionary: activeNode)
@@ -212,15 +207,9 @@ class MakeRPCCall {
                 }
             }
 
-            // FIXME: Race condition possible as Crypto.decryptData(dataToDecrypt: has an escaping closure
             func decryptedValue(_ encryptedValue: Data) -> String {
-                var decryptedValue = ""
-                Crypto.decryptData(dataToDecrypt: encryptedValue) { decryptedData in
-                    if decryptedData != nil {
-                        decryptedValue = decryptedData!.utf8
-                    }
-                }
-                return decryptedValue
+                guard let decrypted = Crypto.decrypt(encryptedValue) else { return "" }
+                return decrypted.utf8
             }
 
             let node = NodeStruct(dictionary: activeNode)

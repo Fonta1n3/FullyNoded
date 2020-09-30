@@ -200,11 +200,9 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     }
     
     private func saveLocally(words: String) {
-        Crypto.encryptData(dataToEncrypt: words.dataUsingUTF8StringEncoding) { [unowned vc = self] encryptedWords in
-            if encryptedWords != nil {
-                vc.saveSigner(encryptedSigner: encryptedWords!)
-            }
-        }
+        guard let encryptedWords = Crypto.encrypt(words.dataUsingUTF8StringEncoding) else { return }
+        
+        saveSigner(encryptedSigner: encryptedWords)
     }
     
     private func saveSigner(encryptedSigner: Data) {

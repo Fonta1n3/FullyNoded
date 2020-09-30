@@ -251,15 +251,13 @@ class TorClient {
         let authPath = self.authDirPath
         CoreDataService.retrieveEntity(entityName: .authKeys) { authKeys in
             if authKeys != nil {
+                
                 func decryptedValue(_ encryptedValue: Data) -> String {
-                    var decryptedValue = ""
-                    Crypto.decryptData(dataToDecrypt: encryptedValue) { decryptedData in
-                        if decryptedData != nil {
-                            decryptedValue = decryptedData!.utf8
-                        }
-                    }
-                    return decryptedValue
+                    guard let decrypted = Crypto.decrypt(encryptedValue) else { return "" }
+                    
+                    return decrypted.utf8
                 }
+                
                 if authKeys!.count > 0 {
                     let authKeysStr = AuthKeysStruct.init(dictionary: authKeys![0])
                     let authorizedKey = decryptedValue(authKeysStr.privateKey)

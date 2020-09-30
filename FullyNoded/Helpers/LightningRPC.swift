@@ -37,15 +37,9 @@ class LightningRPC {
                 return
             }
             
-            // FIXME: Race condition can occur
             func decryptedValue(_ encryptedValue: Data) -> String {
-                var decryptedValue = ""
-                Crypto.decryptData(dataToDecrypt: encryptedValue) { decryptedData in
-                    if decryptedData != nil {
-                        decryptedValue = decryptedData!.utf8
-                    }
-                }
-                return decryptedValue
+                guard let decrypted = Crypto.decrypt(encryptedValue) else { return "" }
+                return decrypted.utf8
             }
             
             let node = NodeStruct(dictionary: lightningNode)

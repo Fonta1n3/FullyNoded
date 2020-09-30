@@ -165,13 +165,7 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
     }
     
     private func encryptedValue(_ decryptedValue: Data) -> Data? {
-        var encryptedValue:Data?
-        Crypto.encryptData(dataToEncrypt: decryptedValue) { encryptedData in
-            if encryptedData != nil {
-                encryptedValue = encryptedData!
-            }
-        }
-        return encryptedValue
+        return Crypto.encrypt(decryptedValue)
     }
     
     func importHDMusig() {

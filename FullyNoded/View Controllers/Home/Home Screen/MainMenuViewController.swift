@@ -99,18 +99,15 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 }
                 
                 func decryptedValue(_ encryptedValue: Data) -> String? {
-                    var decryptedValue = ""
-                    Crypto.decryptData(dataToDecrypt: encryptedValue) { decryptedData in
-                        if decryptedData != nil {
-                            decryptedValue = decryptedData!.utf8
-                        }
-                    }
-                    return decryptedValue
+                    guard let decrypted = Crypto.decrypt(encryptedValue) else { return "" }
+                    
+                    return decrypted.utf8
                 }
                 
-                guard let address = decryptedValue(nodeStruct.onionAddress!) else { return }
-                guard let rpcusername = decryptedValue(nodeStruct.rpcuser!) else { return }
-                guard let rpcpassword = decryptedValue(nodeStruct.rpcpassword!) else { return }
+                guard let address = decryptedValue(nodeStruct.onionAddress!),
+                    let rpcusername = decryptedValue(nodeStruct.rpcuser!),
+                    let rpcpassword = decryptedValue(nodeStruct.rpcpassword!) else { return }
+                
                 let macName = UIDevice.current.name
                 
                 if address.contains("127.0.0.1") || address.contains("localhost") || address.contains(macName) {
