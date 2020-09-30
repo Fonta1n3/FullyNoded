@@ -7,6 +7,10 @@
 
 Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own [Bitcoin Core](https://github.com/bitcoin/bitcoin) node as a backend. Providing an easy to use interface to interact with your nodes non wallet capabilities. Fully Noded™️ wallets are powered by PSBT's and descriptors. Fully Noded™️ acts as an offline signer using your node as a watch-only wallet as well as giving you full unfettered access to every wallet.dat in your nodes `.bitcoin` directory. [C-Lightning](https://github.com/ElementsProject/lightning) compatible for instant, unfairly cheap payments.
 
+## Build from source
+</br><img src="./Images/build_from_source.png" alt="" width="400"/></br>
+Click `open in Xcode` and run the project on either your Mac, iOS device or simulator.
+
 ## Getting started
 
 - On your mac
