@@ -127,11 +127,9 @@ class MakeRPCCall {
                         } else {
                             
                             if let urlContent = data {
-                                
                                 vc.attempts = 0
                                 
                                 do {
-                                    
                                     let jsonAddressResult = try JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as! NSDictionary
                                     
                                     #if DEBUG
@@ -139,52 +137,36 @@ class MakeRPCCall {
                                     #endif
                                     
                                     if let errorCheck = jsonAddressResult["error"] as? NSDictionary {
-                                        
                                         var errorDesc = ""
                                         
                                         if let errorMessage = errorCheck["message"] as? String {
-                                            
                                             errorDesc = errorMessage
                                             
                                         } else {
-                                            
                                             errorDesc = "Uknown error"
                                             
                                         }
                                         
                                         completion((nil, errorDesc))
                                         
-                                        
                                     } else {
-                                        
                                         completion((jsonAddressResult["result"], nil))
                                         
                                     }
                                     
                                 } catch {
-                                    
                                     completion((nil, "unknown error"))
                                     
                                 }
-                                
                             }
-                            
                         }
-                        
                     }
-                    
                 }
-                
                 task.resume()
-                
             } else {
-                
                 completion((nil, "error getting nodes from core data"))
-                
             }
-            
         }
-        
     }
     
     // TODO: Clean up.

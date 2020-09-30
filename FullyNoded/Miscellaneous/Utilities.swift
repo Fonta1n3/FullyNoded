@@ -9,6 +9,12 @@
 import Foundation
 import UIKit
 
+public func decryptedValue(_ encryptedValue: Data) -> String {
+    guard let decrypted = Crypto.decrypt(encryptedValue) else { return "" }
+    
+    return decrypted.utf8
+}
+
 /// Call this method to retrive active wallet. This method seaches the device's storage. NOT the node.
 /// - Parameter completion: Active wallet
 public func activeWallet(completion: @escaping ((Wallet?)) -> Void) {
