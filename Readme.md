@@ -86,6 +86,9 @@ However, developing and supporting this project is hard work and costs real mone
 * [Coldcard multi signature wallet](https://www.youtube.com/watch?v=daXvAcHy8H0)
 * [Create, spend from and recover a multisig wallet](https://www.youtube.com/watch?v=-Eh-OdtFRmI)
 * [Import xpub](https://www.youtube.com/watch?v=UsLd6ki5K4o)
+* [Coin Control](https://www.youtube.com/watch?v=F7Uw6C1XWf0)
+* [Batching](https://www.youtube.com/watch?v=pDWTsYzG4uc)
+* [DIY Coinjoins](https://www.youtube.com/watch?v=O_MS9LD9otI)
 
 ## PGP
 
