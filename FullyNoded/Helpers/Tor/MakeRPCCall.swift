@@ -41,16 +41,6 @@ class MakeRPCCall {
                     }
                 }
                 
-                func decryptedValue(_ encryptedValue: Data) -> String {
-                    var decryptedValue = ""
-                    Crypto.decryptData(dataToDecrypt: encryptedValue) { decryptedData in
-                        if decryptedData != nil {
-                            decryptedValue = decryptedData!.utf8
-                        }
-                    }
-                    return decryptedValue
-                }
-                
                 let node = NodeStruct(dictionary: activeNode)
                 if let encAddress = node.onionAddress {
                     vc.onionAddress = decryptedValue(encAddress)
@@ -132,11 +122,9 @@ class MakeRPCCall {
                         } else {
                             
                             if let urlContent = data {
-                                
                                 vc.attempts = 0
                                 
                                 do {
-                                    
                                     let jsonAddressResult = try JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as! NSDictionary
                                     
                                     #if DEBUG
@@ -144,52 +132,36 @@ class MakeRPCCall {
                                     #endif
                                     
                                     if let errorCheck = jsonAddressResult["error"] as? NSDictionary {
-                                        
                                         var errorDesc = ""
                                         
                                         if let errorMessage = errorCheck["message"] as? String {
-                                            
                                             errorDesc = errorMessage
                                             
                                         } else {
-                                            
                                             errorDesc = "Uknown error"
                                             
                                         }
                                         
                                         completion((nil, errorDesc))
                                         
-                                        
                                     } else {
-                                        
                                         completion((jsonAddressResult["result"], nil))
                                         
                                     }
                                     
                                 } catch {
-                                    
                                     completion((nil, "unknown error"))
                                     
                                 }
-                                
                             }
-                            
                         }
-                        
                     }
-                    
                 }
-                
                 task.resume()
-                
             } else {
-                
                 completion((nil, "error getting nodes from core data"))
-                
             }
-            
         }
-        
     }
     
     // TODO: Clean up.
@@ -212,15 +184,9 @@ class MakeRPCCall {
                 }
             }
 
-            // FIXME: Race condition possible as Crypto.decryptData(dataToDecrypt: has an escaping closure
             func decryptedValue(_ encryptedValue: Data) -> String {
-                var decryptedValue = ""
-                Crypto.decryptData(dataToDecrypt: encryptedValue) { decryptedData in
-                    if decryptedData != nil {
-                        decryptedValue = decryptedData!.utf8
-                    }
-                }
-                return decryptedValue
+                guard let decrypted = Crypto.decrypt(encryptedValue) else { return "" }
+                return decrypted.utf8
             }
 
             let node = NodeStruct(dictionary: activeNode)

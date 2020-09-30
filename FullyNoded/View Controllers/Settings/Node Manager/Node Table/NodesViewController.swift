@@ -78,13 +78,9 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     private func decryptedValue(_ encryptedValue: Data) -> String {
-        var decryptedValue = ""
-        Crypto.decryptData(dataToDecrypt: encryptedValue) { decryptedData in
-            if decryptedData != nil {
-                decryptedValue = decryptedData!.utf8
-            }
-        }
-        return decryptedValue
+        guard let decrypted = Crypto.decrypt(encryptedValue) else { return "" }
+        
+        return decrypted.utf8
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

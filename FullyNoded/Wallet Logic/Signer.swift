@@ -132,32 +132,26 @@ class Signer {
             xprvsToSignWith.removeAll()
             for (i, s) in seedsToSignWith.enumerated() {
                 let encryptedSeed = s["words"] as! Data
-                Crypto.decryptData(dataToDecrypt: encryptedSeed) { seed in
-                    if seed != nil {
-                        if let words = String(data: seed!, encoding: .utf8) {
-                            if let encryptedPassphrase = s["passphrase"] as? Data {
-                                Crypto.decryptData(dataToDecrypt: encryptedPassphrase) { decryptedPassphrase in
-                                    if decryptedPassphrase != nil {
-                                        if let passphrase = String(data: decryptedPassphrase!, encoding: .utf8) {
-                                            if let masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: passphrase) {
-                                                if let hdkey = HDKey(masterKey) {
-                                                    xprvsToSignWith.append(hdkey)
-                                                    if i + 1 == seedsToSignWith.count {
-                                                        processWithActiveWallet()
-                                                    }
-                                                }
-                                            }
-                                        }
+                guard let seed = Crypto.decrypt(encryptedSeed) else { return }
+                if let words = String(data: seed, encoding: .utf8) {
+                    if let encryptedPassphrase = s["passphrase"] as? Data {
+                        guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase) else { return }
+                        if let passphrase = String(data: decryptedPassphrase, encoding: .utf8) {
+                            if let masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: passphrase) {
+                                if let hdkey = HDKey(masterKey) {
+                                    xprvsToSignWith.append(hdkey)
+                                    if i + 1 == seedsToSignWith.count {
+                                        processWithActiveWallet()
                                     }
                                 }
-                            } else {
-                                if let masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: "") {
-                                    if let hdkey = HDKey(masterKey) {
-                                        xprvsToSignWith.append(hdkey)
-                                        if i + 1 == seedsToSignWith.count {
-                                            processWithActiveWallet()
-                                        }
-                                    }
+                            }
+                        }
+                    } else {
+                        if let masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: "") {
+                            if let hdkey = HDKey(masterKey) {
+                                xprvsToSignWith.append(hdkey)
+                                if i + 1 == seedsToSignWith.count {
+                                    processWithActiveWallet()
                                 }
                             }
                         }

@@ -70,7 +70,7 @@ class QuickConnect {
                     for (i, node) in nodes!.enumerated() {
                         let nodeStruct = NodeStruct(dictionary: node)
                         guard let id = nodeStruct.id else { return }
-
+                        
                         CoreDataService.update(id: id, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
                         
                         if i + 1 == nodes!.count {
@@ -82,35 +82,30 @@ class QuickConnect {
         }
         
         // Encrypt credentials
-        Crypto.encryptData(dataToEncrypt: host.dataUsingUTF8StringEncoding) { encryptedHost in
-            guard let torNodeHost = encryptedHost else { completion((false, "error encrypting your host")); return }
-            
-            Crypto.encryptData(dataToEncrypt: rpcPassword.dataUsingUTF8StringEncoding) { encryptedPassword in
-                guard let torNodeRPCPass = encryptedPassword else { completion((false, "error encrypting your rpcpassword")); return }
-                
-                Crypto.encryptData(dataToEncrypt: rpcUser.dataUsingUTF8StringEncoding) { encryptedUser in
-                    guard let torNodeRPCUser = encryptedUser else { completion((false, "error encrypting your rpcuser")); return }
-                    
-                    // Set node data for storage
-                    var newNode = [String:Any]()
-                    newNode["id"] = UUID()
-                    newNode["onionAddress"] = torNodeHost
-                    newNode["label"] = label
-                    newNode["rpcuser"] = torNodeRPCUser
-                    newNode["rpcpassword"] = torNodeRPCPass
-                    
-                    if !url.hasPrefix("clightning-rpc") {
-                        newNode["isActive"] = true
-                        newNode["isLightning"] = false
-                    } else {
-                        newNode["isLightning"] = true
-                        newNode["isActive"] = false
-                    }
-                    
-                    processNode(newNode)
-                }
-            }
+        guard let torNodeHost = Crypto.encrypt(host.dataUsingUTF8StringEncoding),
+            let torNodeRPCPass = Crypto.encrypt(rpcPassword.dataUsingUTF8StringEncoding),
+            let torNodeRPCUser = Crypto.encrypt(rpcUser.dataUsingUTF8StringEncoding) else {
+                completion((false, "error encrypting your credentials"))
+                return
         }
+        
+        // Set node data for storage
+        var newNode = [String:Any]()
+        newNode["id"] = UUID()
+        newNode["onionAddress"] = torNodeHost
+        newNode["label"] = label
+        newNode["rpcuser"] = torNodeRPCUser
+        newNode["rpcpassword"] = torNodeRPCPass
+        
+        if !url.hasPrefix("clightning-rpc") {
+            newNode["isActive"] = true
+            newNode["isLightning"] = false
+        } else {
+            newNode["isLightning"] = true
+            newNode["isActive"] = false
+        }
+        
+        processNode(newNode)
     }
 }
 

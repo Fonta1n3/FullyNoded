@@ -158,7 +158,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     // TODO: Talk to Fontaine
     private func amountAvailable(amount: Double) -> (Bool, String) {
         
-        let amountAvailable = selectedUTXOs.map { $0.amount }.reduce(0, +)
+        let amountAvailable = selectedUTXOs.map { $0.amount ?? 0.0 }.reduce(0, +)
         let string = amountAvailable.avoidNotation
         
         if amountAvailable >= amount {
@@ -176,7 +176,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     @objc private func sweepButtonClicked() {
         
         isSweeping = true
-        let amountToSweep = selectedUTXOs.map { $0.amount }.reduce(0, +)
+        let amountToSweep = selectedUTXOs.map { $0.amount ?? 0.0 }.reduce(0, +)
         
         DispatchQueue.main.async {
             self.amountInput.text = amountToSweep.avoidNotation
@@ -368,7 +368,8 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             } else {
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
-                    
+                    // Only save UTXO's when they get locked, delete them from storage when they get unlocked.
+                    self.saveUtxoLocally(utxo)
                     self.spinner.removeConnectingView()
                     self.tableView.reloadData()
                 }
@@ -385,10 +386,10 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         
         for utxo in selectedUTXOs {
             
-            amountTotal += utxo.amount
+            amountTotal += utxo.amount ?? 0.0
             let input = "{\"txid\":\"\(utxo.txid)\",\"vout\": \(utxo.vout),\"sequence\": 1}"
             
-            if !utxo.spendable {
+            if !(utxo.spendable ?? false) {
                 
                 isUnsigned = true
                 
@@ -415,7 +416,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             
             switch result {
             case .success(let utxos):
-                self.unspentUtxos = utxos.sorted { $0.confirmations < $1.confirmations }
+                self.unspentUtxos = utxos.sorted { $0.confirmations ?? 0 < $1.confirmations ?? 0 }
                 DispatchQueue.main.async {
                     self.executeNodeCommand(method: .getnetworkinfo, param: "") // TODO: Ask Fontaine what this does
                 }
@@ -439,6 +440,32 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         
     }
     
+    private func saveUtxoLocally(_ utxo: UTXO) {
+        activeWallet { (wallet) in
+            // Only save utxos for Fully Noded wallets
+            guard let wallet = wallet else { return }
+            var dict = [String:Any]()
+            dict["txid"] = utxo.txid
+            dict["vout"] = utxo.vout
+            dict["label"] = utxo.addressLabel ?? ""
+            dict["id"] = UUID()
+            dict["walletId"] = wallet.id
+            dict["address"] = utxo.address
+            dict["amount"] = utxo.amount
+            dict["desc"] = utxo.desc
+            dict["solvable"] = utxo.solvable
+            dict["confs"] = utxo.confirmations
+            dict["safe"] = utxo.safe
+            dict["spendable"] = utxo.spendable
+            
+            CoreDataService.saveEntity(dict: dict, entityName: .utxos) { success in
+                #if DEBUG
+                print("saved utxo locally: \(success)")
+                #endif
+            }
+        }
+    }
+    
     private func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
         
         Reducer.makeCommand(command: method, param: param) { [weak self] (response, errorMessage) in
@@ -459,7 +486,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                     var miningFee = 0.00000100//No good way to do fee estimation when manually selecting utxos (for now), if the wallet knows about the utxo's we can set a low ball fee and always use rbf. For now we hardcode 100 sats per input as the fee.
                     for utxo in self.selectedUTXOs { // TODO: Make method to adhere to DRY
                         miningFee += 0.00000100
-                        total += utxo.amount
+                        total += utxo.amount ?? 0.0
                     }
                     let roundedAmount = rounded(number: total - miningFee)
                     let rawTransaction = SendUTXO()
@@ -526,7 +553,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         var miningFee = 0.00000100//No good way to do fee estimation when manually selecting utxos (for now), if the wallet knows about the utxo's we can set a low ball fee and always use rbf. For now we hardcode 100 sats per input as the fee.
         for utxo in selectedUTXOs { // TODO: Make method to adhere to DRY
             miningFee += 0.00000100
-            total += utxo.amount
+            total += utxo.amount ?? 0.0
         }
         let changeAmount = (total - dbl) - miningFee
         let rawTransaction = SendUTXO()
@@ -590,7 +617,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             var miningFee = 0.00000100//No good way to do fee estimation when manually selecting utxos (for now), if the wallet knows about the utxo's we can set a low ball fee and always use rbf. For now we hardcode 100 sats per input as the fee.
             for utxo in selectedUTXOs { // TODO: Make method to adhere to DRY
                 miningFee += 0.00000100
-                total += utxo.amount
+                total += utxo.amount ?? 0.0
             }
             let roundedAmount = rounded(number: total - miningFee)
             let rawTransaction = SendUTXO()
@@ -743,7 +770,7 @@ extension UTXOViewController: UITableViewDataSource {
         let utxo = unspentUtxos[indexPath.section]
         let isSelected = selectedUTXOs.contains(utxo)
         
-        cell.configure(utxo: utxo, isSelected: isSelected, delegate: self)
+        cell.configure(utxo: utxo, isSelected: isSelected, isLocked: false, delegate: self)
         
         return cell
     }

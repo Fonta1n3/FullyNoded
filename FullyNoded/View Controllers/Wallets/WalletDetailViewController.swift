@@ -229,13 +229,15 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     private func parseSigners(_ signers: [[String:Any]]) {
         for (i, signer) in signers.enumerated() {
             let signerStruct = SignerStruct(dictionary: signer)
-            Crypto.decryptData(dataToDecrypt: signerStruct.words) { [weak self] decryptedData in
-                guard let decryptedData = decryptedData else { return }
-                self?.parseWords(decryptedData, signerStruct)
-            }
+            guard let decryptedData = Crypto.decrypt(signerStruct.words) else { return }
+            
+            parseWords(decryptedData, signerStruct)
+            
             if i + 1 == signers.count {
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.detailTable.reloadData()
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.detailTable.reloadData()
                 }
             }
         }
@@ -256,16 +258,13 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     }
     
     private func parsePassphrase(_ words: String, _ passphrase: Data, _ descriptor: Descriptor) {
-        Crypto.decryptData(dataToDecrypt: passphrase) { [weak self] decryptedPass in
-            guard let self = self else { return }
-            if decryptedPass != nil {
-                if let pass = String(bytes: decryptedPass!, encoding: .utf8) {
-                    if let masterKey = Keys.masterKey(words: words, coinType: self.coinType, passphrase: pass) {
-                        self.crossCheckXpubs(descriptor, masterKey, words)
-                    }
-                }
-            }
+        guard let decryptedPass = Crypto.decrypt(passphrase),
+            let pass = String(bytes: decryptedPass, encoding: .utf8),
+            let masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: pass) else {
+            return
         }
+        
+        crossCheckXpubs(descriptor, masterKey, words)
     }
     
     private func crossCheckXpubs(_ descriptor: Descriptor, _ masterKey: String, _ words: String) {

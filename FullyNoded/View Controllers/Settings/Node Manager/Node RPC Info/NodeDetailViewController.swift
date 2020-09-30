@@ -165,13 +165,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     @IBAction func save(_ sender: Any) {
         
         func encryptedValue(_ decryptedValue: Data) -> Data? {
-            var encryptedValue:Data?
-            Crypto.encryptData(dataToEncrypt: decryptedValue) { encryptedData in
-                if encryptedData != nil {
-                    encryptedValue = encryptedData!
-                }
-            }
-            return encryptedValue
+            return Crypto.encrypt(decryptedValue)
         }
         
         if createNew || selectedNode == nil {
@@ -298,13 +292,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     func loadValues() {
         
         func decryptedValue(_ encryptedValue: Data) -> String {
-            var decryptedValue = ""
-            Crypto.decryptData(dataToDecrypt: encryptedValue) { decryptedData in
-                if decryptedData != nil {
-                    decryptedValue = decryptedData!.utf8
-                }
-            }
-            return decryptedValue
+            guard let decrypted = Crypto.decrypt(encryptedValue) else { return "" }
+            
+            return decrypted.utf8
         }
         
         if selectedNode != nil {

@@ -62,35 +62,32 @@ class TorAuthViewController: UIViewController, UITextFieldDelegate {
     
     private func addUserSuppliedPrivKey() {
         let data = (textField.text)!.dataUsingUTF8StringEncoding
-        Crypto.encryptData(dataToEncrypt: data) { encryptedKey in
-            if encryptedKey != nil {
-                CoreDataService.retrieveEntity(entityName: .authKeys) { authKeys in
-                    if authKeys != nil {
-                        if authKeys!.count > 0 {
-                            let authKeysStr = AuthKeysStruct.init(dictionary: authKeys![0])
-                            CoreDataService.update(id: authKeysStr.id, keyToUpdate: "privateKey", newValue: encryptedKey!, entity: .authKeys) { [unowned vc = self] success in
-                                if success {
-                                    CoreDataService.update(id: authKeysStr.id, keyToUpdate: "publicKey", newValue: "user supplied keys", entity: .authKeys) { [unowned vc = self] success in
-                                        if success {
-                                            displayAlert(viewController: vc, isError: false, message: "Updated auth keys")
-                                        } else {
-                                            showAlert(vc: vc, title: "Error", message: "Error saving user added public key")
-                                        }
-                                    }
-                                } else {
-                                    showAlert(vc: vc, title: "Error", message: "Error saving user added private key")
-                                }
-                            }
-                        } else {
-                            let dict = ["privateKey":encryptedKey!, "publicKey":"user added public key", "id":UUID()] as [String : Any]
-                            CoreDataService.saveEntity(dict: dict, entityName: .authKeys) { [unowned vc = self] success in
-                                if success {
-                                    displayAlert(viewController: vc, isError: false, message: "Auth keys added")
-                                }
-                            }
-                        }
-                        
+        guard let encryptedKey = Crypto.encrypt(data) else { return }
+        
+        CoreDataService.retrieveEntity(entityName: .authKeys) { authKeys in
+            guard let authKeys = authKeys, authKeys.count > 0 else {
+                let dict = ["privateKey":encryptedKey, "publicKey":"user added public key", "id":UUID()] as [String : Any]
+                CoreDataService.saveEntity(dict: dict, entityName: .authKeys) { [unowned vc = self] success in
+                    if success {
+                        displayAlert(viewController: vc, isError: false, message: "Auth keys added")
                     }
+                }
+                
+                return
+            }
+            
+            let authKeysStr = AuthKeysStruct.init(dictionary: authKeys[0])
+            CoreDataService.update(id: authKeysStr.id, keyToUpdate: "privateKey", newValue: encryptedKey, entity: .authKeys) { [unowned vc = self] success in
+                if success {
+                    CoreDataService.update(id: authKeysStr.id, keyToUpdate: "publicKey", newValue: "user supplied keys", entity: .authKeys) { [unowned vc = self] success in
+                        if success {
+                            displayAlert(viewController: vc, isError: false, message: "Updated auth keys")
+                        } else {
+                            showAlert(vc: vc, title: "Error", message: "Error saving user added public key")
+                        }
+                    }
+                } else {
+                    showAlert(vc: vc, title: "Error", message: "Error saving user added private key")
                 }
             }
         }
@@ -141,13 +138,7 @@ class TorAuthViewController: UIViewController, UITextFieldDelegate {
     }
     
     private func encryptedValue(_ decryptedValue: Data) -> Data? {
-        var encryptedValue:Data?
-        Crypto.encryptData(dataToEncrypt: decryptedValue) { encryptedData in
-            if encryptedData != nil {
-                encryptedValue = encryptedData!
-            }
-        }
-        return encryptedValue
+        return Crypto.encrypt(decryptedValue)
     }
     
     @objc func exportPublicKey() {
