@@ -67,7 +67,6 @@ However, developing and supporting this project is hard work and costs real mone
 * [Wallet usage](./Docs/Wallets)
 * [Bitcoin Core (node) related](./Docs/Bitcoin-Core)
 * [Importing a wallet from Specter](./Docs/Wallets/Specter.md)
-* [Build From Source](./Docs/Build-from-source.md)
 * [Quick Connect uri](./Docs/Quick-Connect-QR.md)
 * [How does it work?](./Docs/How-does-it-work.md)
 * [Recovery](./Docs/Wallets/Recovery.md)
