@@ -222,6 +222,7 @@
                 <outlet property="amountLabel" destination="1zU-in-w9s" id="i0b-sd-fsz"/>
                 <outlet property="checkMarkImageView" destination="un5-bt-OPd" id="AO8-ih-Fus"/>
                 <outlet property="confirmationsLabel" destination="Y2N-Mq-EK6" id="HIS-mS-i5d"/>
+                <outlet property="infoButtonOutlet" destination="RfU-Jm-for" id="BD1-Ob-lks"/>
                 <outlet property="isChangeBackground" destination="yBn-mf-ozB" id="czI-d9-7GS"/>
                 <outlet property="isChangeImageView" destination="6k0-Vs-kGa" id="OZ7-H3-hoE"/>
                 <outlet property="isDustBackground" destination="I5w-by-igz" id="czT-Bu-2aP"/>

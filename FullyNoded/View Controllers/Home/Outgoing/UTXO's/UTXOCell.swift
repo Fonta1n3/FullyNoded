@@ -37,6 +37,7 @@ class UTXOCell: UITableViewCell {
     @IBOutlet private weak var isDustBackground: UIView!
     @IBOutlet private weak var isDustImageView: UIImageView!
     @IBOutlet private weak var lockButtonOutlet: UIButton!
+    @IBOutlet private weak var infoButtonOutlet: UIButton!
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -74,9 +75,11 @@ class UTXOCell: UITableViewCell {
         if isLocked {
             lockButtonOutlet.setImage(UIImage(systemName: "lock"), for: .normal)
             lockButtonOutlet.tintColor = .systemPink
+            infoButtonOutlet.alpha = 0
         } else {
             lockButtonOutlet.setImage(UIImage(systemName: "lock.open"), for: .normal)
             lockButtonOutlet.tintColor = .systemTeal
+            infoButtonOutlet.alpha = 1
         }
         
         if utxo.desc != nil {
