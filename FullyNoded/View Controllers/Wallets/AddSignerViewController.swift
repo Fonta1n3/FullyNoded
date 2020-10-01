@@ -47,7 +47,6 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
         saveLocally()
     }
     
-    
     @IBAction func addWordAction(_ sender: Any) {
         processTextfieldInput()
     }

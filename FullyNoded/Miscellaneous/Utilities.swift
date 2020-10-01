@@ -161,7 +161,6 @@ public extension Data {
 }
 
 public func impact() {
-    
     if #available(iOS 10.0, *) {
         let impact = UIImpactFeedbackGenerator()
         DispatchQueue.main.async {
@@ -170,7 +169,6 @@ public func impact() {
     } else {
         // Fallback on earlier versions
     }
-    
 }
 
 public extension String {
@@ -336,6 +334,13 @@ public func shakeAlert(viewToShake: UIView) {
         
         viewToShake.layer.add(animation, forKey: "position")
         
+    }
+}
+
+public extension String {
+    func condenseWhitespace() -> String {
+        let components = self.components(separatedBy: .whitespacesAndNewlines)
+        return components.filter { !$0.isEmpty }.joined(separator: " ")
     }
 }
 

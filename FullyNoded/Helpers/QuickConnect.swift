@@ -39,11 +39,6 @@ class QuickConnect {
             return
         }
         
-        guard rpcUser.isAlphanumeric && rpcPassword.isAlphanumeric else {
-            completion((false, "your rpc credentials are not alhpa numeric, this breaks the url for your node"))
-            return
-        }
-        
         func saveNode(_ node: [String:Any]) {
             CoreDataService.saveEntity(dict: node, entityName: .newNodes) { success in
                 if success {
