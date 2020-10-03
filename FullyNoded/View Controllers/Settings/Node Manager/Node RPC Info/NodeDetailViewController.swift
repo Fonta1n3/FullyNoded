@@ -178,23 +178,13 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             }
             
             if rpcUserField.text != "" {
-                if (rpcUserField.text!).isAlphanumeric {
-                    guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
-                    newNode["rpcuser"] = enc
-                } else {
-                    showAlert(vc: self, title: "Only alphanumeric characters allowed in RPC username", message: "")
-                    return
-                }
+                guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
+                newNode["rpcuser"] = enc
             }
             
             if rpcPassword.text != "" {
-                if rpcPassword.text!.isAlphanumeric {
-                    guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
-                    newNode["rpcpassword"] = enc
-                } else {
-                    showAlert(vc: self, title: "Only alphanumeric characters allowed in RPC password", message: "")
-                    return
-                }
+                guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
+                newNode["rpcpassword"] = enc
             }
             
             guard let encryptedOnionAddress = encryptedValue((onionAddressField.text)!.dataUsingUTF8StringEncoding)  else { return }
@@ -246,28 +236,20 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             }
             
             if rpcUserField.text != "" {
-                if rpcUserField.text!.isAlphanumeric {
-                    guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
-                    CoreDataService.update(id: id, keyToUpdate: "rpcuser", newValue: enc, entity: .newNodes) { success in
-                        if !success {
-                            displayAlert(viewController: self, isError: true, message: "error updating rpc username")
-                        }
+                guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
+                CoreDataService.update(id: id, keyToUpdate: "rpcuser", newValue: enc, entity: .newNodes) { success in
+                    if !success {
+                        displayAlert(viewController: self, isError: true, message: "error updating rpc username")
                     }
-                } else {
-                    showAlert(vc: self, title: "Only alphanumeric characters allowed in RPC username", message: "")
                 }
             }
             
             if rpcPassword.text != "" {
-                if rpcPassword.text!.isAlphanumeric {
-                    guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
-                    CoreDataService.update(id: id, keyToUpdate: "rpcpassword", newValue: enc, entity: .newNodes) { success in
-                        if !success {
-                            displayAlert(viewController: self, isError: true, message: "error updating rpc password")
-                        }
+                guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
+                CoreDataService.update(id: id, keyToUpdate: "rpcpassword", newValue: enc, entity: .newNodes) { success in
+                    if !success {
+                        displayAlert(viewController: self, isError: true, message: "error updating rpc password")
                     }
-                } else {
-                    showAlert(vc: self, title: "Only alphanumeric characters allowed in RPC password", message: "")
                 }
             }
             
