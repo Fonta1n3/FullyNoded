@@ -72,10 +72,14 @@ enum Keys {
     }
     
     static func xpub(path: String, masterKey: String) -> String? {
-        guard let hdMasterKey = HDKey(masterKey),
-              let path = BIP32Path(path),
-              let accountKey = try? hdMasterKey.derive(path) else { return nil }
-        
-        return accountKey.xpub
+        if path == "m" {
+            return HDKey(masterKey)?.xpub
+        } else {
+            guard let hdMasterKey = HDKey(masterKey),
+                  let path = BIP32Path(path),
+                  let accountKey = try? hdMasterKey.derive(path) else { return nil }
+            
+            return accountKey.xpub
+        }
     }
 }

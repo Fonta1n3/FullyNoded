@@ -104,6 +104,19 @@ class Signer {
                                     }
                                 }
                             }
+                        } else {
+                            // Libwally does not like signing with direct decendants of m (e.g. m/0/0), so if above fails we can try and fall back on this, deriving child keys directly from root xprv.
+                            if let origins = input.origins {
+                                for origin in origins {
+                                    if let path = BIP32Path(origin.value.path.description.replacingOccurrences(of: "m/", with: "")) {
+                                        if let childKey = try? key.derive(path) {
+                                            if let privKey = childKey.privKey {
+                                                signableKeys.append(privKey.wif)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                         /// Once the above loops complete we remove an duplicate signing keys from the array then sign the psbt with each unique key.
                         if i + 1 == xprvsToSignWith.count && x + 1 == inputs.count {
@@ -133,9 +146,11 @@ class Signer {
             for (i, s) in seedsToSignWith.enumerated() {
                 let encryptedSeed = s["words"] as! Data
                 guard let seed = Crypto.decrypt(encryptedSeed) else { return }
+                
                 if let words = String(data: seed, encoding: .utf8) {
                     if let encryptedPassphrase = s["passphrase"] as? Data {
                         guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase) else { return }
+                        
                         if let passphrase = String(data: decryptedPassphrase, encoding: .utf8) {
                             if let masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: passphrase) {
                                 if let hdkey = HDKey(masterKey) {

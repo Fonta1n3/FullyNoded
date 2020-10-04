@@ -215,12 +215,9 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     
     private func findSigner() {
         CoreDataService.retrieveEntity(entityName: .signers) { [weak self] signers in
-            guard let signers = signers else { return }
-            guard signers.count > 0 else {
-                DispatchQueue.main.async { [weak self] in
-                    self?.detailTable.reloadData()
-                }
-                return
+            guard let signers = signers, signers.count > 0 else { return }
+            DispatchQueue.main.async {
+                self?.detailTable.reloadData()
             }
             self?.parseSigners(signers)
         }
@@ -246,14 +243,14 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     private func parseWords(_ decryptedData: Data, _ signer: SignerStruct) {
         let descriptorParser = DescriptorParser()
         let descriptor = descriptorParser.descriptor(self.wallet.receiveDescriptor)
-        if let words = String(bytes: decryptedData, encoding: .utf8) {
-            if signer.passphrase != nil {
-                parsePassphrase(words, signer.passphrase!, descriptor)
-            } else {
-                if let masterKey = Keys.masterKey(words: words, coinType: self.coinType, passphrase: "") {
-                    self.crossCheckXpubs(descriptor, masterKey, words)
-                }
-            }
+        guard let words = String(bytes: decryptedData, encoding: .utf8) else { return }
+        
+        if signer.passphrase != nil {
+            parsePassphrase(words, signer.passphrase!, descriptor)
+        } else {
+            guard let masterKey = Keys.masterKey(words: words, coinType: self.coinType, passphrase: "") else { return }
+            
+            self.crossCheckXpubs(descriptor, masterKey, words)
         }
     }
     
@@ -274,7 +271,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                     if xpub == derivedXpub {
                         self.signer += words + "\n\n"
                     }
-                }
+                }                
             }
         } else {
             if let derivedXpub = Keys.xpub(path: descriptor.derivation, masterKey: masterKey) {
