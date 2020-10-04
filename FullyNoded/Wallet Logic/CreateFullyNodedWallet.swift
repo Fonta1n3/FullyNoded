@@ -11,6 +11,12 @@ import LibWally
 
 enum Keys {
     
+    static func vaildPath(_ path: String) -> Bool {
+        guard BIP32Path(path) != nil else { return false }
+        
+        return true
+    }
+    
     static func donationAddress() -> String? {
         let randomInt = Int.random(in: 0..<10000)
         
