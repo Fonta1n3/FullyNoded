@@ -10,6 +10,7 @@ import UIKit
 
 class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
     
+    var isEditingNow = false
     var id:UUID!
     @IBOutlet weak var labelField: UITextField!
     @IBOutlet weak var wordsField: UITextView!
@@ -162,23 +163,31 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
     }
     
     private func updateLabel(_ label: String) {
-        CoreDataService.update(id: id, keyToUpdate: "label", newValue: label, entity: .signers) { [unowned vc = self] (success) in
+        CoreDataService.update(id: id, keyToUpdate: "label", newValue: label, entity: .signers) { [weak self] (success) in
+            guard let self = self else { return }
+            
             if success {
-                showAlert(vc: vc, title: "Success ✅", message: "Signer's label updated.")
+                self.isEditingNow = false
+                showAlert(vc: self, title: "Success ✅", message: "Signer's label updated.")
             } else {
-                showAlert(vc: vc, title: "Error", message: "Signer's label did not update.")
+                showAlert(vc: self, title: "Error", message: "Signer's label did not update.")
             }
         }
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
-        if textField.text != "" {
+        if textField.text != "" && isEditingNow {
             updateLabel(textField.text!)
         }
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.endEditing(true)
+        return true
+    }
+    
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        isEditingNow = true
         return true
     }
     

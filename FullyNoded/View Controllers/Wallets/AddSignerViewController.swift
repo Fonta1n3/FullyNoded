@@ -391,7 +391,7 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
             
             if let _ = BIP39Mnemonic(vc.justWords.joined(separator: " ")) {
                 
-                vc.validWordsAdded()
+                //vc.validWordsAdded()
                 
             } else {
                                     
