@@ -9,7 +9,7 @@
 import UIKit
 
 class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
-    // TODO: Ask Fontaine
+    
     private var isSweeping = false
     private var amountToSend = String()
     private let amountInput = UITextField()
@@ -18,10 +18,10 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     private var psbt = ""
     private var amountTotal = 0.0
     private let refresher = UIRefreshControl()
-    private var unspentUtxos = [UTXO]()
+    private var unlockedUtxos = [UtxosStruct]()
     private var inputArray = [Any]()
     private var address = ""
-    private var selectedUTXOs = Set<UTXO>()
+    private var selectedUTXOs = [UtxosStruct]()
     private var spinner = ConnectingView()
     private var nativeSegwit = Bool()
     private var p2shSegwit = Bool()
@@ -30,6 +30,8 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     private let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     private let blurView2 = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     private let sweepButtonView = Bundle.main.loadNibNamed("KeyPadButtonView", owner: self, options: nil)?.first as! UIView?
+    private var alertStyle = UIAlertController.Style.actionSheet
+    
     @IBOutlet weak private var tableView: UITableView!
     
     override func viewDidLoad() {
@@ -40,13 +42,15 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         tableView.dataSource = self
         tableView.register(UINib(nibName: UTXOCell.identifier, bundle: nil), forCellReuseIdentifier: UTXOCell.identifier)
         configureAmountView()
-        tableView.tableFooterView = UIView(frame: .zero)
         refresher.tintColor = UIColor.white
         refresher.addTarget(self, action: #selector(loadUnlockedUtxos), for: UIControl.Event.valueChanged)
         tableView.addSubview(refresher)
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         blurView2.addGestureRecognizer(tapGesture)
+        if (UIDevice.current.userInterfaceIdiom == .pad) {
+          alertStyle = UIAlertController.Style.alert
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -98,15 +102,14 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         
     }
     
-    // TODO: Go over this with Fontaine
     @IBAction private func consolidate(_ sender: Any) {
-        if unspentUtxos.count > 0 {
+        if unlockedUtxos.count > 0 {
             if selectedUTXOs.count > 0 {
                 //consolidate selected utxos only
             } else {
                 //consolidate them all
-                unspentUtxos.forEach {
-                    selectedUTXOs.insert($0)
+                for utxo in unlockedUtxos {
+                    selectedUTXOs.append(utxo)
                 }
             }
             getAddressSettings()
@@ -263,7 +266,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         self.amountInput.text = "0.0"
         
         let button = UIButton()
-        button.setImage(UIImage(systemName: "play.rectangle"), for: .normal)
+        button.setImage(UIImage(systemName: "link"), for: .normal)
         button.frame = CGRect(x: 0, y: 140, width: self.amountView.frame.width, height: 60)
         button.addTarget(self, action: #selector(closeAmount), for: .touchUpInside)
         button.tintColor = .systemTeal
@@ -296,7 +299,18 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         
     }
     
+    private func updateSelectedUtxos() {
+        selectedUTXOs.removeAll()
+        
+        for utxo in unlockedUtxos {
+            if utxo.isSelected {
+                selectedUTXOs.append(utxo)
+            }
+        }
+    }
+    
     @IBAction private func createRaw(_ sender: Any) {
+        
         if selectedUTXOs.count > 0 {
             
             updateInputs()
@@ -314,17 +328,13 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
 
             } else {
 
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "Select a UTXO first")
+                showAlert(vc: self, title: "Select a UTXO first", message: "The 🔗 button allows you to create a transaction using only the utxo's you select here, to select a utxo just tap it.")
 
             }
             
         } else {
             
-            displayAlert(viewController: self,
-                         isError: true,
-                         message: "Select a UTXO first")
+            showAlert(vc: self, title: "Select a UTXO first", message: "")
             
         }
     }
@@ -341,42 +351,42 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    private func lock(_ utxo: UTXO, completion: ((Result<Void, MakeRPCCallError>) -> Void)? = nil) {
-        guard let index = unspentUtxos.firstIndex(of: utxo) else { return }
-        
-        unspentUtxos.remove(at: index)
-        selectedUTXOs.remove(utxo)
-        
+    private func lock(_ utxo: UtxosStruct) {
         spinner.addConnectingView(vc: self, description: "locking...")
         
-        Reducer.lock(utxo) { [weak self] result in
-            guard let self = self else { return }            
-            
-            if case .failure(let error) = result {
-                self.loadUnlockedUtxos()
-                
-                switch error {
-                case .description(let errorMessage):
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        
-                        self.spinner.removeConnectingView()
-                        self.tableView.reloadData()
-                    }
-                    displayAlert(viewController: self, isError: true, message: errorMessage)
+        let param = "false, [{\"txid\":\"\(utxo.txid)\",\"vout\":\(utxo.vout)}]"
+        
+        Reducer.makeCommand(command: .lockunspent, param: param) { (response, errorMessage) in
+            guard let success = response as? Bool else {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.loadUnlockedUtxos()
+                    displayAlert(viewController: self, isError: true, message: errorMessage ?? "unknown error")
                 }
-            } else {
+                
+                return
+            }
+            
+            if success {
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
                     // Only save UTXO's when they get locked, delete them from storage when they get unlocked.
                     self.saveUtxoLocally(utxo)
-                    self.spinner.removeConnectingView()
-                    self.tableView.reloadData()
+                    self.loadUnlockedUtxos()
                 }
+                
                 showAlert(vc: self, title: "UTXO Locked 🔐", message: "You can tap the locked button to see your locked utxo's and unlock them. Be aware if your node reboots all utxo's will be unlocked by default!")
+                
+            } else {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.loadUnlockedUtxos()
+                    displayAlert(viewController: self, isError: true, message: "utxo was not locked")
+                }
+                
             }
-            
-            completion?(result)
         }
     }
     
@@ -401,60 +411,69 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         
     }
     
+    private func finishedLoading() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.updateSelectedUtxos()
+            self.tableView.isUserInteractionEnabled = true
+            self.tableView.reloadData()
+            self.tableView.setContentOffset(.zero, animated: true)
+            self.removeSpinner()
+        }
+    }
+    
     @objc private func loadUnlockedUtxos() {
-        unspentUtxos = []
+        unlockedUtxos.removeAll()
+        
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
             self.tableView.isUserInteractionEnabled = false
-            self.tableView.reloadData()
             self.addSpinner()
         }
         
-        Reducer.listUnspentUTXOs { [weak self] result in
-            guard let self = self else { return }
-            
-            switch result {
-            case .success(let utxos):
-                self.unspentUtxos = utxos.sorted { $0.confirmations ?? 0 < $1.confirmations ?? 0 }
-                DispatchQueue.main.async {
-                    self.executeNodeCommand(method: .getnetworkinfo, param: "") // TODO: Ask Fontaine what this does
-                }
-                
-                if self.unspentUtxos.isEmpty {
-                    displayAlert(viewController: self, isError: true, message: "No UTXO's")
-                }
-            case .failure(let error):
-                switch error {
-                case .description(let description):
-                    displayAlert(viewController: self, isError: true, message: description)
-                }
+        Reducer.makeCommand(command: .listunspent, param: "0") { (response, errorMessage) in
+            guard let utxos = response as? NSArray else {
+                self.finishedLoading()
+                showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown error fecthing your utxos")
+                return
             }
             
-            DispatchQueue.main.async {
-                self.removeSpinner()
-                self.tableView.reloadData()
-                self.tableView.isUserInteractionEnabled = true
+            guard utxos.count > 0 else {
+                self.finishedLoading()
+                showAlert(vc: self, title: "No UTXO's", message: "")
+                return
+            }
+            
+            for (i, utxo) in utxos.enumerated() {
+                guard let utxoDict = utxo as? [String:Any] else { return }
+                self.unlockedUtxos.append(UtxosStruct(dictionary: utxoDict))
+                
+                if i + 1 == utxos.count {
+                    self.unlockedUtxos = self.unlockedUtxos.sorted { $0.confs ?? 0 < $1.confs ?? 0 }
+                    self.finishedLoading()
+                }
             }
         }
-        
     }
     
-    private func saveUtxoLocally(_ utxo: UTXO) {
+    private func saveUtxoLocally(_ utxo: UtxosStruct) {
         activeWallet { (wallet) in
             // Only save utxos for Fully Noded wallets
             guard let wallet = wallet else { return }
+            
             var dict = [String:Any]()
             dict["txid"] = utxo.txid
             dict["vout"] = utxo.vout
-            dict["label"] = utxo.addressLabel ?? ""
+            dict["label"] = utxo.label
             dict["id"] = UUID()
             dict["walletId"] = wallet.id
             dict["address"] = utxo.address
             dict["amount"] = utxo.amount
             dict["desc"] = utxo.desc
             dict["solvable"] = utxo.solvable
-            dict["confs"] = utxo.confirmations
+            dict["confirmations"] = utxo.confs
             dict["safe"] = utxo.safe
             dict["spendable"] = utxo.spendable
             
@@ -537,12 +556,67 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
+    private func noAddressOnClipboard() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            
+            let title = "You do not have a valid address copied on your clipboard"
+            let message = "You can either copy a valid address or scan an address as a QR code to create a transaction using the selected utxo's. For the best experience copy the recipient address to your clipboard then select the utxo's you want to spend."
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: alertStyle)
+            
+            alert.addAction(UIAlertAction(title: "scan an address", style: .default, handler: { action in
+                self.performSegue(withIdentifier: "segueToGetAddressFromUtxos", sender: self)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
     private func getAddress() {
         DispatchQueue.main.async { [weak self] in
-            self?.blurView2.removeFromSuperview()
-            self?.amountView.removeFromSuperview()
-            self?.amountInput.removeFromSuperview()
-            self?.performSegue(withIdentifier: "segueToGetAddressFromUtxos", sender: self)
+            guard let self = self else { return }
+            
+            self.blurView2.removeFromSuperview()
+            self.amountView.removeFromSuperview()
+            self.amountInput.removeFromSuperview()
+            
+            guard let address = UIPasteboard.general.string, self.validAddress(address) else {
+                self.noAddressOnClipboard()
+                return
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                let title = "You have a valid address on your clipboard"
+                let message = "Would you like to create a transaction that spends the selected utxo's to \(address)"
+                
+                let alert = UIAlertController(title: title, message: message, preferredStyle: self.alertStyle)
+                
+                alert.addAction(UIAlertAction(title: "create transaction", style: .default, handler: { action in
+                    self.spinner.addConnectingView(vc: self, description: "creating transaction...")
+                    self.address = address
+                    self.createRawNow()
+                }))
+                
+                alert.addAction(UIAlertAction(title: "scan a different address", style: .default, handler: { action in
+                    self.performSegue(withIdentifier: "segueToGetAddressFromUtxos", sender: self)
+                }))
+                
+                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+                alert.popoverPresentationController?.sourceView = self.view
+                
+                self.present(alert, animated: true, completion: nil)
+            }
         }
     }
     
@@ -650,6 +724,12 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     
     // MARK: TEXTFIELD METHODS
     
+    private func validAddress(_ string: String) -> Bool {
+        let addressParser = AddressParser()
+        let errorBool = addressParser.parseAddress(url: string).errorBool
+        return !errorBool
+    }
+    
     private func processBIP21(url: String) {
         let addressParser = AddressParser()
         let errorBool = addressParser.parseAddress(url: url).errorBool
@@ -699,10 +779,10 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 vc.inputArray = inputArray
             }
             
-        case "getUTXOinfo":
-            if let vc = segue.destination as? GetInfoViewController, let utxo = sender as? UTXO {
-                vc.configure(utxo: utxo)
-            }
+//        case "getUTXOinfo":
+//            if let vc = segue.destination as? GetInfoViewController, let utxo = sender as? UtxosStruct {
+//                vc.configure(utxo: utxo)
+//            }
             
         case "segueToGetAddressFromUtxos":
             if let vc = segue.destination as? QRScannerViewController {
@@ -733,30 +813,18 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     
 }
 
-extension Int {
-    
-    var avoidNotation: String {
-        
-        let numberFormatter = NumberFormatter()
-        numberFormatter.maximumFractionDigits = 8
-        numberFormatter.numberStyle = .decimal
-        return numberFormatter.string(for: self) ?? ""
-        
-    }
-}
-
 
 // MARK: UTXOCellDelegate
 
 extension UTXOViewController: UTXOCellDelegate {
     
-    func didTapToLock(_ utxo: UTXO) {
+    func didTapToLock(_ utxo: UtxosStruct) {
         lock(utxo)
     }
     
-    func didTapInfoFor(_ utxo: UTXO) {
-        performSegue(withIdentifier: "getUTXOinfo", sender: utxo)
-    }
+//    func didTapInfoFor(_ utxo: UtxosStruct) {
+//        performSegue(withIdentifier: "getUTXOinfo", sender: utxo)
+//    }
     
 }
 
@@ -767,16 +835,15 @@ extension UTXOViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: UTXOCell.identifier, for: indexPath) as! UTXOCell
-        let utxo = unspentUtxos[indexPath.section]
-        let isSelected = selectedUTXOs.contains(utxo)
+        let utxo = unlockedUtxos[indexPath.section]
         
-        cell.configure(utxo: utxo, isSelected: isSelected, isLocked: false, delegate: self)
+        cell.configure(utxo: utxo, isLocked: false, delegate: self)
         
         return cell
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return unspentUtxos.count
+        return unlockedUtxos.count
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -801,41 +868,20 @@ extension UTXOViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
         let cell = tableView.cellForRow(at: indexPath) as! UTXOCell
-        let utxo = unspentUtxos[indexPath.section]
+        let isSelected = unlockedUtxos[indexPath.section].isSelected
         
-        if selectedUTXOs.contains(utxo) {
-            selectedUTXOs.remove(utxo)
+        if isSelected {
             cell.deselectedAnimation()
         } else {
-            selectedUTXOs.insert(utxo)
             cell.selectedAnimation()
         }
         
+        unlockedUtxos[indexPath.section].isSelected = !isSelected
+        
+        updateSelectedUtxos()
+        
         tableView.deselectRow(at: indexPath, animated: false)
-    }
-    
-    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        
-        let lock = UIContextualAction(style: .destructive, title: "Lock") { [weak self] (contextualAction, view, boolValue) in
-            guard let self = self else { return }
-            
-            tableView.isUserInteractionEnabled = false
-            
-            let utxo = self.unspentUtxos[indexPath.section]
-            self.lock(utxo) { result in
-                
-                DispatchQueue.main.async {
-                    tableView.isUserInteractionEnabled = true
-                    self.tableView.reloadData()
-                }
-            }
-        }
-        
-        lock.backgroundColor = .systemRed
-        let swipeActions = UISwipeActionsConfiguration(actions: [lock])
-        return swipeActions
     }
     
 }

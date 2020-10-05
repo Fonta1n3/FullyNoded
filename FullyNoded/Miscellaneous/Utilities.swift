@@ -320,6 +320,18 @@ public func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
     
 }
 
+public extension Int {
+    
+    var avoidNotation: String {
+        
+        let numberFormatter = NumberFormatter()
+        numberFormatter.maximumFractionDigits = 8
+        numberFormatter.numberStyle = .decimal
+        return numberFormatter.string(for: self) ?? ""
+        
+    }
+}
+
 public func shakeAlert(viewToShake: UIView) {
     print("shakeAlert")
     
@@ -334,6 +346,17 @@ public func shakeAlert(viewToShake: UIView) {
         
         viewToShake.layer.add(animation, forKey: "position")
         
+    }
+}
+
+public extension Encodable {
+
+    /// Encode into JSON and return `Data`
+    func jsonData() throws -> Data {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        encoder.dateEncodingStrategy = .iso8601
+        return try encoder.encode(self)
     }
 }
 

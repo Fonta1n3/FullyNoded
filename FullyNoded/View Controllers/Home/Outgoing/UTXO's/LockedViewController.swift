@@ -10,7 +10,7 @@ import UIKit
 
 class LockedViewController: UIViewController {
     
-    private var lockedUtxos = [UTXO]()
+    private var lockedUtxos = [UtxosStruct]()
     let spinner = ConnectingView()
     var selectedVout = Int()
     var selectedTxid = ""
@@ -29,78 +29,72 @@ class LockedViewController: UIViewController {
         loadLockedUTxos()
     }
     
+    private func finishedLoading() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.spinner.removeConnectingView()
+            self.tableView.reloadData()
+            self.tableView.isUserInteractionEnabled = true
+        }
+    }
+    
     private func loadLockedUTxos() {
         lockedUtxos.removeAll()
         
-        Reducer.listLockedUTXOs { [weak self] result in
+        Reducer.makeCommand(command: .listlockunspent, param: "") { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
-            switch result {
-            case .success(var utxos):
-                
-                CoreDataService.retrieveEntity(entityName: .utxos) { savedLockedUtxos in
-                    guard let savedLockedUtxos = savedLockedUtxos, savedLockedUtxos.count > 0 else {
-                        
-                        self.lockedUtxos = utxos.sorted { $0.confirmations ?? 0 < $1.confirmations ?? 0 }
-                        
-                        if self.lockedUtxos.isEmpty {
-                            displayAlert(viewController: self, isError: true, message: "No locked UTXO's")
-                        }
-                        
-                        return
-                    }
-                    
-                    for savedLockedUtxo in savedLockedUtxos {
-                        let savedUtxoStruct = UtxosStruct(dictionary: savedLockedUtxo)
-                        let savedUtxoOutpoint = savedUtxoStruct.txid + "\(savedUtxoStruct.vout)"
-                        var isSaved = false
-                        
-                        for (i, utxo) in utxos.enumerated() {
-                            let outpoint = utxo.txid + "\(utxo.vout)"
-                            isSaved = outpoint == savedUtxoOutpoint
-                            
-                            if isSaved {
-                                
-                                let updatedUtxo:UTXO = UTXO(txid: savedUtxoStruct.txid,
-                                                            vout: Int(savedUtxoStruct.vout),
-                                                            address: savedUtxoStruct.address,
-                                                            addressLabel: savedUtxoStruct.label,
-                                                            pubKey: "",
-                                                            amount: savedUtxoStruct.amount,
-                                                            confirmations: Int(savedUtxoStruct.confs),
-                                                            spendable: savedUtxoStruct.spendable,
-                                                            solvable: savedUtxoStruct.solvable,
-                                                            safe: savedUtxoStruct.safe,
-                                                            desc: savedUtxoStruct.desc)
-                                
-                                utxos[i] = updatedUtxo
-                            }
-                        }
-                    }
-                    
-                    self.lockedUtxos = utxos.sorted { $0.confirmations ?? 0 < $1.confirmations ?? 0 }
-                    
-                    if self.lockedUtxos.isEmpty {
-                        displayAlert(viewController: self, isError: true, message: "No locked UTXO's")
-                    }
-                }
-                
-            case .failure(let error):
-                switch error {
-                case .description(let description):
-                    displayAlert(viewController: self, isError: true, message: description)
-                }
+            guard let locked = response as? NSArray else {
+                self.finishedLoading()
+                displayAlert(viewController: self, isError: true, message: errorMessage ?? "unknown error")
+                return
             }
             
-            DispatchQueue.main.async {
-                self.spinner.removeConnectingView()
-                self.tableView.reloadData()
-                self.tableView.isUserInteractionEnabled = true
+            guard locked.count > 0 else {
+                self.finishedLoading()
+                showAlert(vc: self, title: "No locked UTXO's", message: "")
+                return
+            }
+            
+            for lockedUtxo in locked {
+                guard let utxoDict = lockedUtxo as? [String:Any] else {
+                    displayAlert(viewController: self, isError: true, message: "Error decoding your locked UTXO's")
+                    return
+                }
+                
+                let utxoStruct = UtxosStruct(dictionary: utxoDict)
+                self.lockedUtxos.append(utxoStruct)
+            }
+            
+            CoreDataService.retrieveEntity(entityName: .utxos) { savedLockedUtxos in
+                guard let savedLockedUtxos = savedLockedUtxos, savedLockedUtxos.count > 0 else {
+                    self.finishedLoading()
+                    return
+                }
+                
+                for savedLockedUtxo in savedLockedUtxos {
+                    let savedUtxoStruct = UtxosStruct(dictionary: savedLockedUtxo)
+                    let savedUtxoOutpoint = savedUtxoStruct.txid + "\(savedUtxoStruct.vout)"
+                    var isSaved = false
+                    
+                    for (i, utxo) in self.lockedUtxos.enumerated() {
+                        let outpoint = utxo.txid + "\(utxo.vout)"
+                        isSaved = outpoint == savedUtxoOutpoint
+                        
+                        if isSaved {
+                            self.lockedUtxos[i] = savedUtxoStruct
+                        }
+                    }
+                }
+                
+                self.lockedUtxos = self.lockedUtxos.sorted { $0.confs ?? 0 < $1.confs ?? 0 }
+                self.finishedLoading()
             }
         }
     }
     
-    private func deleteLocalUtxo(_ utxo: UTXO) {
+    private func deleteLocalUtxo(_ utxo: UtxosStruct) {
         CoreDataService.retrieveEntity(entityName: .utxos) { (utxos) in
             guard let utxos = utxos else { return }
             
@@ -111,8 +105,9 @@ class LockedViewController: UIViewController {
                 let existingUtxoOutpoint = existingUtxoStruct.txid + "\(existingUtxoStruct.vout)"
                 
                 if outpoint == existingUtxoOutpoint {
+                    guard let id = existingUtxoStruct.id else { return }
                     
-                    CoreDataService.deleteEntity(id: existingUtxoStruct.id, entityName: .utxos) { success in
+                    CoreDataService.deleteEntity(id: id, entityName: .utxos) { success in
                         #if DEBUG
                             print("deleted utxo from local storage: \(success)")
                         #endif
@@ -122,41 +117,40 @@ class LockedViewController: UIViewController {
         }
     }
     
-    private func unLock(_ utxo: UTXO, completion: ((Result<Void, MakeRPCCallError>) -> Void)? = nil) {
-        guard let index = lockedUtxos.firstIndex(of: utxo) else { return }
-        
-        lockedUtxos.remove(at: index)
-        
+    private func unlock(_ utxo: UtxosStruct) {
         spinner.addConnectingView(vc: self, description: "unlocking...")
+        let param = "true, [{\"txid\":\"\(utxo.txid)\",\"vout\":\(utxo.vout)}]"
         
-        Reducer.unlock(utxo) { [weak self] result in
-            guard let self = self else { return }
-            
-            if case .failure(let error) = result {
-                self.loadLockedUTxos()
-                
-                switch error {
-                case .description(let errorMessage):
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        
-                        self.spinner.removeConnectingView()
-                        self.tableView.reloadData()
-                    }
-                    displayAlert(viewController: self, isError: true, message: errorMessage)
+        Reducer.makeCommand(command: .lockunspent, param: param) { (response, errorMessage) in
+            guard let success = response as? Bool else {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.loadLockedUTxos()
+                    displayAlert(viewController: self, isError: true, message: errorMessage ?? "unknown error")
                 }
+                
+                return
+            }
+            
+            if success {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    // Delete them from storage when they get unlocked.
+                    self.deleteLocalUtxo(utxo)
+                    self.loadLockedUTxos()
+                }
+                
+                showAlert(vc: self, title: "UTXO Unlocked 🔓", message: "")
+                
             } else {
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
-                    // Only save UTXO's when they get locked, delete them from storage when they get unlocked.
-                    self.deleteLocalUtxo(utxo)
-                    self.spinner.removeConnectingView()
-                    self.tableView.reloadData()
+                    
+                    self.loadLockedUTxos()
+                    displayAlert(viewController: self, isError: true, message: "utxo was not locked")
                 }
-                showAlert(vc: self, title: "UTXO Unlocked 🔓", message: "")
             }
-            
-            completion?(result)
         }
     }
 }
@@ -165,13 +159,13 @@ class LockedViewController: UIViewController {
 
 extension LockedViewController: UTXOCellDelegate {
     
-    func didTapToLock(_ utxo: UTXO) {
-        unLock(utxo)
+    func didTapToLock(_ utxo: UtxosStruct) {
+        unlock(utxo)
     }
     
-    func didTapInfoFor(_ utxo: UTXO) {
-        performSegue(withIdentifier: "getUTXOinfo", sender: utxo)
-    }
+//    func didTapInfoFor(_ utxo: UtxosStruct) {
+//        performSegue(withIdentifier: "getUTXOinfo", sender: utxo)
+//    }
     
 }
 
@@ -184,7 +178,7 @@ extension LockedViewController: UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: UTXOCell.identifier, for: indexPath) as! UTXOCell
         let utxo = lockedUtxos[indexPath.section]
         
-        cell.configure(utxo: utxo, isSelected: false, isLocked: true, delegate: self)
+        cell.configure(utxo: utxo, isLocked: true, delegate: self)
         
         return cell
     }
@@ -211,28 +205,6 @@ extension LockedViewController: UITableViewDelegate {
         let headerView = UIView()
         headerView.backgroundColor = .clear
         return headerView
-    }
-    
-    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        
-        let unlock = UIContextualAction(style: .destructive, title: "Unlock") { [weak self] (contextualAction, view, boolValue) in
-            guard let self = self else { return }
-            
-            tableView.isUserInteractionEnabled = false
-            
-            let utxo = self.lockedUtxos[indexPath.section]
-            self.unLock(utxo) { result in
-                
-                DispatchQueue.main.async {
-                    tableView.isUserInteractionEnabled = true
-                    self.tableView.reloadData()
-                }
-            }
-        }
-        
-        unlock.backgroundColor = .systemRed
-        let swipeActions = UISwipeActionsConfiguration(actions: [unlock])
-        return swipeActions
     }
     
 }

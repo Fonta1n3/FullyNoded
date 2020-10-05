@@ -53,7 +53,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     var alertMessage = ""
     
     var address = ""
-    private var utxo: UTXO?
+    //private var utxo: UtxosStruct?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -66,11 +66,11 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         setupTextField()
     }
     
-    /// Call this method to confgure the view controller when used to show a utxo.
-    /// - Parameter utxo: utxo to be shown
-    func configure(utxo: UTXO) {
-        self.utxo = utxo
-    }
+//    /// Call this method to confgure the view controller when used to show a utxo.
+//    /// - Parameter utxo: utxo to be shown
+//    func configure(utxo: UtxosStruct) {
+//        self.utxo = utxo
+//    }
     
     private func setupTextField() {
         textView.textContainer.lineBreakMode = .byCharWrapping
@@ -230,16 +230,16 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
             self.executeNodeCommand(method: .getwalletinfo, param: "")
         }
         
-        if let utxo = utxo {
-            command = "listunspent"
-            titleString = "UTXO"
-            DispatchQueue.main.async {
-                self.textView.text = self.format(utxo)
-                self.textField.alpha = 0
-                self.goButtonOutlet.alpha = 0
-                self.spinner.removeConnectingView()
-            }
-        }
+//        if let utxo = utxo {
+//            command = "listunspent"
+//            titleString = "UTXO"
+//            DispatchQueue.main.async {
+//                self.textView.text = self.utxo.jsonDict()
+//                self.textField.alpha = 0
+//                self.goButtonOutlet.alpha = 0
+//                self.spinner.removeConnectingView()
+//            }
+//        }
         
         if getTxoutset {
             command = "gettxoutsetinfo"
@@ -261,17 +261,17 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
     }
     // TODO: As Fontane about "safe" property
-    private func format(_ utxo: UTXO) -> String {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
-        let json: String
-        if let data = try? encoder.encode(utxo), let jsonString = String(data: data, encoding: .utf8) {
-            json = jsonString
-        } else {
-            json = ""
-        }
-        return json
-    }
+//    private func format(_ utxo: UtxosStruct) -> String {
+//        let encoder = JSONEncoder()
+//        encoder.outputFormatting = .prettyPrinted
+//        let json: String
+//        if let data = try? encoder.encode(utxo), let jsonString = String(data: data, encoding: .utf8) {
+//            json = jsonString
+//        } else {
+//            json = ""
+//        }
+//        return json
+//    }
     
     private func hideParam() {
         goButtonOutlet.isEnabled = false

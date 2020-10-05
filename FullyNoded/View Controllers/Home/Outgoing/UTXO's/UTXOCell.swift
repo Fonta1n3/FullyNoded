@@ -9,20 +9,20 @@
 import UIKit
 
 protocol UTXOCellDelegate: class {
-    func didTapToLock(_ utxo: UTXO)
-    func didTapInfoFor(_ utxo: UTXO)
+    func didTapToLock(_ utxo: UtxosStruct)
+    //func didTapInfoFor(_ utxo: UtxosStruct)
 }
 
 class UTXOCell: UITableViewCell {
     
     static let identifier = "UTXOCell"
-    private var utxo: UTXO!
+    private var utxo: UtxosStruct!
     private var isLocked: Bool!
     private unowned var delegate: UTXOCellDelegate!
     
-    @IBOutlet private weak var roundeBackgroundView: UIView!
+    @IBOutlet public weak var roundeBackgroundView: UIView!
     @IBOutlet private weak var walletLabel: UILabel!// an address label
-    @IBOutlet private weak var checkMarkImageView: UIImageView!
+    @IBOutlet public weak var checkMarkImageView: UIImageView!
     @IBOutlet private weak var confirmationsLabel: UILabel!
     @IBOutlet private weak var spendableLabel: UILabel!
     @IBOutlet private weak var solvableLabel: UILabel!
@@ -58,16 +58,18 @@ class UTXOCell: UITableViewCell {
         isSolvableImageView.tintColor = .white
         isDustImageView.tintColor = .white
         
+        infoButtonOutlet.alpha = 0
+        
         selectionStyle = .none
     }
     
-    func configure(utxo: UTXO, isSelected: Bool, isLocked: Bool, delegate: UTXOCellDelegate) {
+    func configure(utxo: UtxosStruct, isLocked: Bool, delegate: UTXOCellDelegate) {
         self.utxo = utxo
         self.isLocked = isLocked
         self.delegate = delegate
         
         txidLabel.text = utxo.txid
-        walletLabel.text = utxo.addressLabel
+        walletLabel.text = utxo.label
         addressLabel.text = "Address: \(utxo.address ?? "unknown")"
         txidLabel.text = "TXID: \(utxo.txid)"
         voutLabel.text = "vout #\(utxo.vout)"
@@ -75,11 +77,11 @@ class UTXOCell: UITableViewCell {
         if isLocked {
             lockButtonOutlet.setImage(UIImage(systemName: "lock"), for: .normal)
             lockButtonOutlet.tintColor = .systemPink
-            infoButtonOutlet.alpha = 0
+            //infoButtonOutlet.alpha = 0
         } else {
             lockButtonOutlet.setImage(UIImage(systemName: "lock.open"), for: .normal)
             lockButtonOutlet.tintColor = .systemTeal
-            infoButtonOutlet.alpha = 1
+            //infoButtonOutlet.alpha = 1
         }
         
         if utxo.desc != nil {
@@ -112,7 +114,7 @@ class UTXOCell: UITableViewCell {
             amountLabel.text = "?"
         }
 
-        if isSelected {
+        if utxo.isSelected {
             checkMarkImageView.alpha = 1
             self.roundeBackgroundView.backgroundColor = .darkGray
         } else {
@@ -141,14 +143,14 @@ class UTXOCell: UITableViewCell {
             isSolvableBackground.backgroundColor = .clear
         }
         
-        if utxo.confirmations != nil {
-            if utxo.confirmations == 0 {
+        if utxo.confs != nil {
+            if Int(utxo.confs!) == 0 {
                 confirmationsLabel.textColor = .systemRed
             } else {
                 confirmationsLabel.textColor = .systemGreen
             }
             
-            confirmationsLabel.text = "\(utxo.confirmations!) confs"
+            confirmationsLabel.text = "\(utxo.confs!) confs"
         } else {
             confirmationsLabel.text = "?"
             confirmationsLabel.textColor = .lightGray
@@ -215,45 +217,6 @@ class UTXOCell: UITableViewCell {
     }
     
     @IBAction func infoButtonTapped(_ sender: Any) {
-        delegate.didTapInfoFor(utxo)
+        //delegate.didTapInfoFor(utxo)
     }
-}
-
-// TODO: Move to its own file
-struct UTXO: Equatable, Hashable, Codable {
-    
-    let txid: String
-    let vout: Int
-    let address: String?
-    let addressLabel: String?
-    let pubKey: String?
-    let amount: Double?
-    let confirmations: Int?
-    let spendable: Bool?
-    let solvable: Bool?
-    let safe: Bool?
-    let desc: String?
-    
-    enum CodingKeys: String, CodingKey {
-        case txid
-        case vout
-        case address
-        case addressLabel = "label"
-        case pubKey = "scriptPubKey"
-        case amount
-        case confirmations
-        case spendable
-        case solvable
-        case safe
-        case desc
-    }
-}
-
-// MARK: Equatable
-extension UTXO {
-    
-    static func == (lhs: Self, rhs: Self) -> Bool {
-        return lhs.txid == rhs.txid && lhs.vout == rhs.vout
-    }
-    
 }
