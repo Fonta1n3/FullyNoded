@@ -21,7 +21,6 @@
 		D0126FF022443D1100412629 /* whitePlus.png in Resources */ = {isa = PBXBuildFile; fileRef = D0126FEF22443D1100412629 /* whitePlus.png */; };
 		D0126FF622446E3800412629 /* InvoiceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0126FF522446E3800412629 /* InvoiceViewController.swift */; };
 		D0126FF82244842000412629 /* bWhite.png in Resources */ = {isa = PBXBuildFile; fileRef = D0126FF72244842000412629 /* bWhite.png */; };
-		D01872972526144400D3D937 /* Base64FS.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01872962526144400D3D937 /* Base64FS.swift */; };
 		D0196DD721B5AB300081E0AB /* KeyPadButtonView.xib in Resources */ = {isa = PBXBuildFile; fileRef = D0196DD621B5AB300081E0AB /* KeyPadButtonView.xib */; };
 		D0196DDB21B5AC5F0081E0AB /* KeyPad.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0196DDA21B5AC5F0081E0AB /* KeyPad.swift */; };
 		D020480F249605AB00EF52DB /* ActiveWalletsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D020480E249605AB00EF52DB /* ActiveWalletsViewController.swift */; };
@@ -210,7 +209,6 @@
 		D0126FEF22443D1100412629 /* whitePlus.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whitePlus.png; sourceTree = "<group>"; };
 		D0126FF522446E3800412629 /* InvoiceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceViewController.swift; sourceTree = "<group>"; };
 		D0126FF72244842000412629 /* bWhite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = bWhite.png; sourceTree = "<group>"; };
-		D01872962526144400D3D937 /* Base64FS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Base64FS.swift; sourceTree = "<group>"; };
 		D0196DD621B5AB300081E0AB /* KeyPadButtonView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = KeyPadButtonView.xib; sourceTree = "<group>"; };
 		D0196DDA21B5AC5F0081E0AB /* KeyPad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyPad.swift; sourceTree = "<group>"; };
 		D020480E249605AB00EF52DB /* ActiveWalletsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWalletsViewController.swift; sourceTree = "<group>"; };
@@ -592,7 +590,6 @@
 			children = (
 				D0E9B63B211A94C600B416E7 /* Utilities.swift */,
 				D0233F292361EB8C0041FFBA /* Base32 Key Gen */,
-				D01872962526144400D3D937 /* Base64FS.swift */,
 			);
 			path = Miscellaneous;
 			sourceTree = "<group>";
@@ -1168,7 +1165,6 @@
 				D0D71DA32351F835005CCDB9 /* UtilitieMenuViewController.swift in Sources */,
 				D03968B1246F6CBA0010D821 /* Crypto.swift in Sources */,
 				D0452ADD224743C50013E225 /* LogInViewController.swift in Sources */,
-				D01872972526144400D3D937 /* Base64FS.swift in Sources */,
 				D02958D3234F82E000ED8F72 /* IdentityViewController.swift in Sources */,
 				D09A330324A86C7C009FA0B2 /* Signer.swift in Sources */,
 				D0EC748A227DF06E001489B9 /* CreateUnsigned.swift in Sources */,
@@ -1411,7 +1407,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 252;
+				CURRENT_PROJECT_VERSION = 253;
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1425,7 +1421,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.332;
+				MARKETING_VERSION = 1.333;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1450,7 +1446,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 252;
+				CURRENT_PROJECT_VERSION = 253;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
@@ -1466,7 +1462,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.332;
+				MARKETING_VERSION = 1.333;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";

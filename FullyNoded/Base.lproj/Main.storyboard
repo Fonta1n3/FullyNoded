@@ -2723,7 +2723,7 @@
                                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                             <textInputTraits key="textInputTraits" keyboardType="numberPad"/>
                                                         </textField>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Signer:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mhe-i1-83X">
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Signer (master key fingeprint):" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mhe-i1-83X">
                                                             <rect key="frame" x="0.0" y="751" width="345" height="20.5"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -7117,7 +7117,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="ywj-ud-JRK"/>
         <segue reference="oY9-Pq-H5b"/>
         <segue reference="2DM-Bo-8hK"/>
-        <segue reference="aV5-mq-s3Q"/>
+        <segue reference="zi9-mK-A5a"/>
         <segue reference="g7x-oO-Buw"/>
         <segue reference="BVG-ie-esh"/>
         <segue reference="Ikt-mc-dmE"/>

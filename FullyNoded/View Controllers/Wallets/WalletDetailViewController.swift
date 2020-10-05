@@ -269,14 +269,18 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             for (x, xpub) in descriptor.multiSigKeys.enumerated() {
                 if let derivedXpub = Keys.xpub(path: descriptor.derivationArray[x], masterKey: masterKey) {
                     if xpub == derivedXpub {
-                        self.signer += words + "\n\n"
+                        guard let fingerprint = Keys.fingerprint(masterKey: masterKey) else { return }
+                        
+                        self.signer += fingerprint + "\n\n"
                     }
                 }                
             }
         } else {
             if let derivedXpub = Keys.xpub(path: descriptor.derivation, masterKey: masterKey) {
                 if descriptor.accountXpub == derivedXpub {
-                    self.signer = words
+                    guard let fingerprint = Keys.fingerprint(masterKey: masterKey) else { return }
+                    
+                    self.signer += fingerprint + "\n\n"
                 }
             }
         }
