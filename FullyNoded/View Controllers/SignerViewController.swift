@@ -27,7 +27,7 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
         configureTextView()
         
         if psbt != "" {
-            psbt = (psbt.replacingOccurrences(of: "\n", with: "")).condenseWhitespace()
+            psbt = processedText(psbt)
             textView.text = psbt
             
             if export {
@@ -37,9 +37,8 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
             }
             
         } else if txn != "" {
-            txn = (txn.replacingOccurrences(of: "\n", with: "")).condenseWhitespace()
+            txn = processedText(txn)
             segueToBroadcast()
-            
         }
         
         if (UIDevice.current.userInterfaceIdiom == .pad) {
@@ -68,6 +67,10 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
                 self.getPsbt(chain: chain)
             }
         }
+    }
+    
+    private func processedText(_ text: String) -> String {
+        return (text.replacingOccurrences(of: "\n", with: "")).condenseWhitespace()
     }
     
     private func segueToBroadcast() {
@@ -272,7 +275,7 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.txn = self.txn.replacingOccurrences(of: "\n", with: "").condenseWhitespace()
+            self.txn = self.processedText(self.txn)
             self.segueToBroadcast()
         }
     }
