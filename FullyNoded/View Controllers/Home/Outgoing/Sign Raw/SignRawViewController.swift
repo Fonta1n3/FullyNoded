@@ -442,9 +442,8 @@ class SignRawViewController: UIViewController, UITextFieldDelegate, UITextViewDe
                 }
             }
         } else if segue.identifier == "segueToBroadcastFromTxSigner" {
-            if let vc = segue.destination as? SignerViewController {
-                vc.txn = self.txn
-                vc.txnUnsigned = self.unsignedTxn
+            if let vc = segue.destination as? VerifyTransactionViewController {
+                vc.signedRawTx = self.unsignedTxn
             }
         }
     }

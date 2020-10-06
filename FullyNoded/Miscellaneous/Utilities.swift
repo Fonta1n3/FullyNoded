@@ -74,54 +74,54 @@ public func showAlert(vc: UIViewController?, title: String, message: String) {
 }
 
 public func exportPsbtToURL(data: Data) -> URL? {
-  let documents = FileManager.default.urls(
-    for: .documentDirectory,
-    in: .userDomainMask
-  ).first
-  guard let path = documents?.appendingPathComponent("/FullyNodedPSBT.psbt") else {
-    return nil
-  }
-  do {
-    try data.write(to: path, options: .atomicWrite)
-    return path
-  } catch {
-    print(error.localizedDescription)
-    return nil
-  }
+    let documents = FileManager.default.urls(
+        for: .documentDirectory,
+        in: .userDomainMask
+    ).first
+    guard let path = documents?.appendingPathComponent("/FullyNodedPSBT.psbt") else {
+        return nil
+    }
+    do {
+        try data.write(to: path, options: .atomicWrite)
+        return path
+    } catch {
+        print(error.localizedDescription)
+        return nil
+    }
 }
 
 public func exportMultisigWalletToURL(data: Data) -> URL? {
-  let documents = FileManager.default.urls(
-    for: .documentDirectory,
-    in: .userDomainMask
-  ).first
-  guard let path = documents?.appendingPathComponent("/FullyNodedMultisig.txt") else {
-    return nil
-  }
-  do {
-    try data.write(to: path, options: .atomicWrite)
-    return path
-  } catch {
-    print(error.localizedDescription)
-    return nil
-  }
+    let documents = FileManager.default.urls(
+        for: .documentDirectory,
+        in: .userDomainMask
+    ).first
+    guard let path = documents?.appendingPathComponent("/FullyNodedMultisig.txt") else {
+        return nil
+    }
+    do {
+        try data.write(to: path, options: .atomicWrite)
+        return path
+    } catch {
+        print(error.localizedDescription)
+        return nil
+    }
 }
 
 public func exportWalletJson(name: String, data: Data) -> URL? {
-  let documents = FileManager.default.urls(
-    for: .documentDirectory,
-    in: .userDomainMask
-  ).first
-  guard let path = documents?.appendingPathComponent("/\(name).json") else {
-    return nil
-  }
-  do {
-    try data.write(to: path, options: .atomicWrite)
-    return path
-  } catch {
-    print(error.localizedDescription)
-    return nil
-  }
+    let documents = FileManager.default.urls(
+        for: .documentDirectory,
+        in: .userDomainMask
+    ).first
+    guard let path = documents?.appendingPathComponent("/\(name).json") else {
+        return nil
+    }
+    do {
+        try data.write(to: path, options: .atomicWrite)
+        return path
+    } catch {
+        print(error.localizedDescription)
+        return nil
+    }
 }
 
 public extension Dictionary {

@@ -2723,7 +2723,7 @@
                                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                             <textInputTraits key="textInputTraits" keyboardType="numberPad"/>
                                                         </textField>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Signer (master key fingeprint):" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mhe-i1-83X">
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Signer (master key fingerprint):" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mhe-i1-83X">
                                                             <rect key="frame" x="0.0" y="751" width="345" height="20.5"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -4353,7 +4353,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
             </objects>
             <point key="canvasLocation" x="-2791.1999999999998" y="375.56221889055473"/>
         </scene>
-        <!--v0.1.89-->
+        <!--v0.1.90-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -4501,7 +4501,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                         <viewLayoutGuide key="safeArea" id="Cze-jj-bFe"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="v0.1.89" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="v0.1.90" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
@@ -5958,7 +5958,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <outlet property="receivingField" destination="S8M-5W-w3U" id="wHY-tR-v1i"/>
                         <outlet property="spendingField" destination="8rW-K0-HkR" id="AzZ-ug-t07"/>
                         <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScannerFromUnsigned" id="lXT-j3-Pov"/>
-                        <segue destination="nyf-66-vKN" kind="show" identifier="segueToExporterFromUnsigned" id="g7x-oO-Buw"/>
+                        <segue destination="XA2-Lt-01p" kind="show" identifier="segueToExporterFromUnsigned" id="6nC-9a-Hyg"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="hWu-22-Vt9" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -6122,7 +6122,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <outlet property="unsignOutlet" destination="NEN-oP-8fX" id="txc-oh-pJ5"/>
                         <outlet property="unsignedTextView" destination="xcj-ZD-du1" id="akD-Z0-dzr"/>
                         <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScannerFromTxSigner" id="9m9-PM-uRL"/>
-                        <segue destination="nyf-66-vKN" kind="show" identifier="segueToBroadcastFromTxSigner" id="qEx-f1-FOS"/>
+                        <segue destination="XA2-Lt-01p" kind="show" identifier="segueToBroadcastFromTxSigner" id="Zpw-ei-e3S"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="QLf-jx-ZWR" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -7116,10 +7116,10 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="ywj-ud-JRK"/>
         <segue reference="oY9-Pq-H5b"/>
-        <segue reference="2DM-Bo-8hK"/>
-        <segue reference="zi9-mK-A5a"/>
-        <segue reference="g7x-oO-Buw"/>
-        <segue reference="BVG-ie-esh"/>
+        <segue reference="9m9-PM-uRL"/>
+        <segue reference="NFj-Y4-lQE"/>
+        <segue reference="8yc-oK-dlC"/>
+        <segue reference="Zpw-ei-e3S"/>
         <segue reference="Ikt-mc-dmE"/>
         <segue reference="6HW-Pq-bwM"/>
         <segue reference="U54-oe-CeC"/>
