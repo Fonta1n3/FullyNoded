@@ -52,6 +52,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         if (UIDevice.current.userInterfaceIdiom == .pad) {
           alertStyle = UIAlertController.Style.alert
         }
+        
         load()
     }
     
@@ -63,7 +64,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
     }
     
-    
     @IBAction func sendOrExportAction(_ sender: Any) {
         if signedRawTx != "" {
             broadcast()
@@ -72,27 +72,25 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
     }
     
-    
     private func load() {
         spinner.addConnectingView(vc: self, description: "verifying....")
-        let fiatConverter = FiatConverter.sharedInstance
-        fiatConverter.getFxRate { [weak self] exchangeRate in
-            if exchangeRate != nil {
-                self?.fxRate = exchangeRate!
-            }
-            if self?.unsignedPsbt == "" {
-                if self != nil {
-                    self?.executeNodeCommand(method: .decoderawtransaction, param: "\"\(self!.signedRawTx)\"")
-                }
+        
+        FiatConverter.sharedInstance.getFxRate { [weak self] exchangeRate in
+            guard let self = self else { return }
+            
+            self.fxRate = exchangeRate
+            
+            if self.unsignedPsbt == "" {
+                self.executeNodeCommand(method: .decoderawtransaction, param: "\"\(self.signedRawTx)\"")
             } else {
-                let exportImage = UIImage(systemName: "arrowshape.turn.up.right")!
+                let exportImage = UIImage(systemName: "arrowshape.turn.up.right")
+                
                 DispatchQueue.main.async {
-                    self?.sendButtonOutlet.setImage(exportImage, for: .normal)
-                    self?.sendButtonOutlet.setTitle("  Export PSBT", for: .normal)
+                    self.sendButtonOutlet.setImage(exportImage, for: .normal)
+                    self.sendButtonOutlet.setTitle("  Export PSBT", for: .normal)
                 }
-                if self != nil {
-                    self?.executeNodeCommand(method: .decodepsbt, param: "\"\(self!.unsignedPsbt)\"")
-                }
+                
+                self.executeNodeCommand(method: .decodepsbt, param: "\"\(self.unsignedPsbt)\"")
             }
         }
     }
@@ -105,58 +103,85 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
         func send() {
             Reducer.makeCommand(command: .sendrawtransaction, param: param) { [weak self] (response, errorMessage) in
-                if let _ = response as? String {
-                    DispatchQueue.main.async { [weak self] in
-                        self?.spinner.removeConnectingView()
-                        self?.navigationItem.title = "Sent ✓"
-                        self?.sendButtonOutlet.alpha = 0
-                        displayAlert(viewController: self, isError: false, message: "Transaction sent ✓")
-                    }
-                } else {
-                    self?.spinner.removeConnectingView()
+                guard let self = self else { return }
+                
+                guard let _ = response as? String else {
+                    self.spinner.removeConnectingView()
                     displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
+                    return
+                }
+                
+                DispatchQueue.main.async {
+                    self.spinner.removeConnectingView()
+                    self.navigationItem.title = "Sent ✓"
+                    self.sendButtonOutlet.alpha = 0
+                    displayAlert(viewController: self, isError: false, message: "Transaction sent ✓")
                 }
             }
         }
         
         func decodePsbt() {
             Reducer.makeCommand(command: .decodepsbt, param: param) { [weak self] (object, errorDesc) in
-                if let dict = object as? NSDictionary {
-                    self?.psbtDict = dict
-                    if let inputs = dict["inputs"] as? NSArray {
-                        if inputs.count > 0 {
-                            for input in inputs {
-                                if let signatures = (input as! NSDictionary)["partial_signatures"] as? NSDictionary {
-                                    for (key, value) in signatures {
-                                        self?.signatures.append(["\(key)":(value as! String)])
-                                    }
+                guard let self = self else { return }
+                
+                guard let dict = object as? NSDictionary else {
+                    self.spinner.removeConnectingView()
+                    displayAlert(viewController: self, isError: true, message: errorDesc ?? "")
+                    return
+                }
+                
+                self.psbtDict = dict
+                
+                if let inputs = dict["inputs"] as? NSArray, inputs.count > 0 {
+                    for input in inputs {
+                        if let inputDict = input as? NSDictionary {
+                            if let signatures = inputDict["partial_signatures"] as? NSDictionary {
+                                for (key, value) in signatures {
+                                    self.signatures.append(["\(key)":(value as? String ?? "")])
                                 }
                             }
                         }
                     }
-                    if let txDict = dict["tx"] as? NSDictionary {
-                        self?.txSize = txDict["vsize"] as! Int
-                        self?.txid = txDict["txid"] as! String
-                        self?.parseTransaction(tx: txDict)
+                }
+                
+                if let txDict = dict["tx"] as? NSDictionary {
+                    
+                    if let size = txDict["vsize"] as? Int {
+                        self.txSize = size
                     }
-                } else {
-                    self?.spinner.removeConnectingView()
-                    displayAlert(viewController: self, isError: true, message: errorDesc ?? "")
+                    
+                    if let id = txDict["txid"] as? String {
+                        self.txid = id
+                    }
+                    
+                    self.parseTransaction(tx: txDict)
                 }
             }
         }
         
         func decodeTx() {
-            Reducer.makeCommand(command: .decoderawtransaction, param: param) { [unowned vc = self] (object, errorDesc) in
-                if let dict = object as? NSDictionary {
-                    vc.txSize = dict["vsize"] as! Int
-                    vc.txid = dict["txid"] as! String
-                    vc.signedTxInputs = dict["vin"] as! NSArray
-                    vc.parseTransaction(tx: dict)
-                } else {
-                    vc.spinner.removeConnectingView()
-                    displayAlert(viewController: vc, isError: true, message: errorDesc ?? "")
+            Reducer.makeCommand(command: .decoderawtransaction, param: param) { [weak self] (object, errorDesc) in
+                guard let self = self else { return }
+                
+                guard let dict = object as? NSDictionary else {
+                    self.spinner.removeConnectingView()
+                    displayAlert(viewController: self, isError: true, message: errorDesc ?? "")
+                    return
                 }
+                
+                if let size = dict["vsize"] as? Int {
+                    self.txSize = size
+                }
+                
+                if let id = dict["txid"] as? String {
+                    self.txid = id
+                }
+                
+                if let inputs = dict["vin"] as? NSArray {
+                    self.signedTxInputs = inputs
+                }
+                
+                self.parseTransaction(tx: dict)
             }
         }
         
@@ -176,10 +201,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     func parseTransaction(tx: NSDictionary) {
-        let inputs = tx["vin"] as! NSArray
-        let outputs = tx["vout"] as! NSArray
-        parseOutputs(outputs: outputs)
-        parseInputs(inputs: inputs, completion: getFirstInputInfo)
+        if let inputs = tx["vin"] as? NSArray, let outputs = tx["vout"] as? NSArray {
+            parseOutputs(outputs: outputs)
+            parseInputs(inputs: inputs, completion: getFirstInputInfo)
+        }
     }
     
     func getFirstInputInfo() {
@@ -189,102 +214,118 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     func getInputInfo(index: Int) {
         let dict = inputArray[index]
-        let txid = dict["txid"] as! String
-        let vout = dict["vout"] as! Int
-        parsePrevTx(method: .gettransaction, param: "\"\(txid)\", true", vout: vout, txid: txid)
+        if let txid = dict["txid"] as? String, let vout = dict["vout"] as? Int {
+            parsePrevTx(method: .gettransaction, param: "\"\(txid)\", true", vout: vout, txid: txid)
+        }
     }
     
     func parseInputs(inputs: NSArray, completion: @escaping () -> Void) {
         for (index, i) in inputs.enumerated() {
-            let input = i as! NSDictionary
-            let txid = input["txid"] as! String
-            let vout = input["vout"] as! Int
-            let dict = ["inputNumber":index + 1, "txid":txid, "vout":vout as Any] as [String : Any]
-            inputArray.append(dict)
-            if index + 1 == inputs.count {
-                completion()
+            if let input = i as? NSDictionary {
+                if let txid = input["txid"] as? String, let vout = input["vout"] as? Int {
+                    let dict = ["inputNumber":index + 1, "txid":txid, "vout":vout as Any] as [String : Any]
+                    inputArray.append(dict)
+                    
+                    if index + 1 == inputs.count {
+                        completion()
+                    }
+                }
             }
         }
     }
     
     func parseOutputs(outputs: NSArray) {
         for (i, o) in outputs.enumerated() {
-            let output = o as! NSDictionary
-            let scriptpubkey = output["scriptPubKey"] as! NSDictionary
-            let addresses = scriptpubkey["addresses"] as? NSArray ?? []
-            let amount = output["value"] as! Double
-            let number = i + 1
-            var addressString = ""
-            if addresses.count > 1 {
-                for a in addresses {
-                    addressString += a as! String + " "
-                }
-            } else {
-                addressString = addresses[0] as! String
-            }
-            outputTotal += amount
-            var isChange = true
-            for recipient in recipients {
-                if addressString == recipient {
-                    isChange = false
-                }
-            }
-            if sweeping {
-                isChange = false
-            }
-            var amountString = amount.avoidNotation
-            if fxRate != nil {
-                amountString += " btc / \(fiatAmount(btc: amount))"
-            }
-            let outputDict:[String:Any] = [
-                "index": number,
-                "amount": amountString,
-                "address": addressString,
-                "isChange": isChange,
-                "isOurs": false,// Hardcode at this stage and update before displaying
-                "isDust": amount < 0.00020000
-            ]
-            outputArray.append(outputDict)
-        }
-    }
-    
-    func parsePrevTxOutput(outputs: NSArray, vout: Int) {
-        if outputs.count > 0 {
-            for o in outputs {
-                let output = o as! NSDictionary
-                let n = output["n"] as! Int
-                
-                if n == vout {
-                    //this is our inputs output, we can now get the amount and address for the input (PITA)
-                    let scriptpubkey = output["scriptPubKey"] as! NSDictionary
-                    let addresses = scriptpubkey["addresses"] as! NSArray
-                    let amount = output["value"] as! Double
+            if let output = o as? NSDictionary {
+                if let scriptpubkey = output["scriptPubKey"] as? NSDictionary, let amount = output["value"] as? Double {
+                    let addresses = scriptpubkey["addresses"] as? NSArray ?? []
+                    let number = i + 1
                     var addressString = ""
                     
                     if addresses.count > 1 {
                         for a in addresses {
                             addressString += a as! String + " "
                         }
-                        
                     } else {
                         addressString = addresses[0] as! String
                     }
                     
-                    inputTotal += amount
+                    outputTotal += amount
+                    var isChange = true
+                    
+                    for recipient in recipients {
+                        if addressString == recipient {
+                            isChange = false
+                        }
+                    }
+                    
+                    if sweeping {
+                        isChange = false
+                    }
+                    
                     var amountString = amount.avoidNotation
+                    
                     if fxRate != nil {
                         amountString += " btc / \(fiatAmount(btc: amount))"
                     }
                     
-                    let inputDict:[String:Any] = [
-                        "index": index + 1,
+                    let outputDict:[String:Any] = [
+                        "index": number,
                         "amount": amountString,
                         "address": addressString,
+                        "isChange": isChange,
                         "isOurs": false,// Hardcode at this stage and update before displaying
                         "isDust": amount < 0.00020000
                     ]
                     
-                    inputTableArray.append(inputDict)
+                    outputArray.append(outputDict)
+                }
+            }
+        }
+    }
+    
+    func parsePrevTxOutput(outputs: NSArray, vout: Int) {
+        if outputs.count > 0 {
+            for o in outputs {
+                if let output = o as? NSDictionary {
+                    if let n = output["n"] as? Int {
+                        if n == vout {
+                            //this is our inputs output, we can now get the amount and address for the input (PITA)
+                            var addressString = ""
+                            
+                            if let scriptpubkey = output["scriptPubKey"] as? NSDictionary {
+                                if let addresses = scriptpubkey["addresses"] as? NSArray {
+                                    if addresses.count > 1 {
+                                        for a in addresses {
+                                            addressString += a as! String + " "
+                                        }
+                                        
+                                    } else {
+                                        addressString = addresses[0] as! String
+                                    }
+                                }
+                            }
+                            
+                            if let amount = output["value"] as? Double {
+                                inputTotal += amount
+                                var amountString = amount.avoidNotation
+                                
+                                if fxRate != nil {
+                                    amountString += " btc / \(fiatAmount(btc: amount))"
+                                }
+                                
+                                let inputDict:[String:Any] = [
+                                    "index": index + 1,
+                                    "amount": amountString,
+                                    "address": addressString,
+                                    "isOurs": false,// Hardcode at this stage and update before displaying
+                                    "isDust": amount < 0.00020000
+                                ]
+                                
+                                inputTableArray.append(inputDict)
+                            }
+                        }
+                    }
                 }
             }
         } else {
