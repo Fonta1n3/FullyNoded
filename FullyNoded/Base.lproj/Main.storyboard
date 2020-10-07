@@ -1845,7 +1845,6 @@
                         </rightBarButtonItems>
                     </navigationItem>
                     <connections>
-                        <outlet property="fxRateLabel" destination="2C0-Qi-YJ6" id="tHt-7M-rA8"/>
                         <outlet property="signOutlet" destination="gvm-av-mkc" id="P8U-bs-Ug4"/>
                         <outlet property="textView" destination="WrC-5O-YmB" id="j0W-9j-poL"/>
                         <outlet property="titleLabel" destination="cgu-5V-2yM" id="2aa-V4-Bvd"/>
@@ -6196,7 +6195,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                     <connections>
                         <outlet property="textView" destination="PBv-v1-qQw" id="Uzl-J5-pSf"/>
                         <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueFromToolstoScan" id="nyo-So-jGt"/>
-                        <segue destination="nyf-66-vKN" kind="show" identifier="segueToBroadcasterFromTools" id="QQc-De-4T9"/>
+                        <segue destination="XA2-Lt-01p" kind="show" identifier="segueToBroadcasterFromTools" id="Kd4-zZ-oMj"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="a1J-Jj-dXe" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -7116,10 +7115,10 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="ywj-ud-JRK"/>
         <segue reference="oY9-Pq-H5b"/>
-        <segue reference="9m9-PM-uRL"/>
+        <segue reference="nyo-So-jGt"/>
         <segue reference="NFj-Y4-lQE"/>
-        <segue reference="8yc-oK-dlC"/>
-        <segue reference="Zpw-ei-e3S"/>
+        <segue reference="vxK-yE-HH1"/>
+        <segue reference="Kd4-zZ-oMj"/>
         <segue reference="Ikt-mc-dmE"/>
         <segue reference="6HW-Pq-bwM"/>
         <segue reference="U54-oe-CeC"/>

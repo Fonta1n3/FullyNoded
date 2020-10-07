@@ -15,7 +15,7 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
     var psbt = ""
     var txn = ""
     var broadcast = false
-    var export = false
+    //var export = false
     var alertStyle = UIAlertController.Style.actionSheet
     
     @IBOutlet weak private var textView: UITextView!
@@ -30,11 +30,12 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
             psbt = processedText(psbt)
             textView.text = psbt
             
-            if export {
-                segueToBroadcast()
-            } else {
-                spinner.addConnectingView(vc: self, description: "checking which network the node is on...")
-            }
+//            if export {
+//                segueToBroadcast()
+//            } else {
+//                spinner.addConnectingView(vc: self, description: "checking which network the node is on...")
+//            }
+            spinner.addConnectingView(vc: self, description: "checking which network the node is on...")
             
         } else if txn != "" {
             txn = processedText(txn)
@@ -47,7 +48,8 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        if !export {
+        //if !export {
+        if psbt != "" {
             Reducer.makeCommand(command: .getblockchaininfo, param: "") { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
@@ -67,6 +69,8 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
                 self.getPsbt(chain: chain)
             }
         }
+            
+        //}
     }
     
     private func processedText(_ text: String) -> String {

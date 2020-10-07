@@ -630,13 +630,11 @@ class ProcessPSBTViewController: UIViewController {
         switch segue.identifier {
             
         case "segueToBroadcasterFromTools":
-            if let vc = segue.destination as? SignerViewController {
+            if let vc = segue.destination as? VerifyTransactionViewController {
                 if psbt != "" {
-                    vc.psbt = psbt
-                    vc.export = true
+                    vc.unsignedPsbt = psbt
                 } else if signedTx != "" {
-                    vc.txn = signedTx
-                    vc.broadcast = true
+                    vc.signedRawTx = signedTx
                 }
             }
             
