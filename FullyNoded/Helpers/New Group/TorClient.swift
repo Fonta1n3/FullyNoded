@@ -72,36 +72,36 @@ class TorClient {
                 
                 self.thread = nil
                 
-                    self.config.options = [
-                        "DNSPort": "12345",
-                        "AutomapHostsOnResolve": "1",
-                        "SocksPort": "19050",//OnionTrafficOnly
-                        "AvoidDiskWrites": "1",
-                        "ClientOnionAuthDir": "\(self.authDirPath)",
-                        "LearnCircuitBuildTimeout": "1",
-                        "NumEntryGuards": "8",
-                        "SafeSocks": "1",
-                        "LongLivedPorts": "80,443",
-                        "NumCPUs": "2",
-                        "DisableDebuggerAttachment": "1",
-                        "SafeLogging": "1"
-                        //"ExcludeExitNodes": "1",
-                        //"StrictNodes": "1"
-                    ]
-                    
-                    //self?.config.arguments = ["--defaults-torrc \(NSTemporaryDirectory()).torrc"]
-                    self.config.cookieAuthentication = true
-                    self.config.dataDirectory = URL(fileURLWithPath: self.torPath())
-                    self.config.controlSocket = self.config.dataDirectory?.appendingPathComponent("cp")
-                    self.thread = TorThread(configuration: self.config)
-                    
-                    // Initiate the controller.
-                    if self.controller == nil {
-                        self.controller = TorController(socketURL: self.config.controlSocket!)
-                    }
-                    
-                    // Start a tor thread.
-                    self.thread?.start()
+                self.config.options = [
+                    "DNSPort": "12345",
+                    "AutomapHostsOnResolve": "1",
+                    "SocksPort": "19050",//OnionTrafficOnly
+                    "AvoidDiskWrites": "1",
+                    "ClientOnionAuthDir": "\(self.authDirPath)",
+                    "LearnCircuitBuildTimeout": "1",
+                    "NumEntryGuards": "8",
+                    "SafeSocks": "1",
+                    "LongLivedPorts": "80,443",
+                    "NumCPUs": "2",
+                    "DisableDebuggerAttachment": "1",
+                    "SafeLogging": "1"
+                    //"ExcludeExitNodes": "1",
+                    //"StrictNodes": "1"
+                ]
+                
+                //self?.config.arguments = ["--defaults-torrc \(NSTemporaryDirectory()).torrc"]
+                self.config.cookieAuthentication = true
+                self.config.dataDirectory = URL(fileURLWithPath: self.torPath())
+                self.config.controlSocket = self.config.dataDirectory?.appendingPathComponent("cp")
+                self.thread = TorThread(configuration: self.config)
+                
+                // Initiate the controller.
+                if self.controller == nil {
+                    self.controller = TorController(socketURL: self.config.controlSocket!)
+                }
+                
+                // Start a tor thread.
+                self.thread?.start()
                 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                     // Connect Tor controller.
@@ -270,24 +270,9 @@ class TorClient {
                         
                         let file = URL(fileURLWithPath: self.authDirPath, isDirectory: true).appendingPathComponent(suffix)
                         
-                        do {
-                            try authString.write(to: file, atomically: true, encoding: .utf8)
-                            
-                            do {
-                                
-                                if #available(iOS 9.0, *) {
-                                    try (file as NSURL).setResourceValue(URLFileProtection.complete, forKey: .fileProtectionKey)
-                                } else {
-                                    print("error setting file protection")
-                                }
-                                
-                            } catch {
-                                print("error setting file protection")
-                            }
-                            
-                        } catch {
-                            print("failed writing auth key")
-                        }
+                        try? authString.write(to: file, atomically: true, encoding: .utf8)
+                        
+                        try? (file as NSURL).setResourceValue(URLFileProtection.complete, forKey: .fileProtectionKey)
                     }
                     
                     if i + 1 == nodes.count {

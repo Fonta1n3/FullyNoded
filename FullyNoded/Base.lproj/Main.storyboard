@@ -754,12 +754,6 @@
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2nt-hF-coL">
-                                <rect key="frame" x="8" y="123" width="359" height="0.0"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo_grey.png" translatesAutoresizingMaskIntoConstraints="NO" id="pxd-zp-3XW">
                                 <rect key="frame" x="16" y="71" width="41" height="40"/>
                                 <constraints>
@@ -767,19 +761,33 @@
                                     <constraint firstAttribute="height" constant="40" id="NAP-2D-T6Y"/>
                                 </constraints>
                             </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="   " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2nt-hF-coL">
+                                <rect key="frame" x="8" y="59" width="359" height="14.5"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="wCS-gO-C3d">
+                                <rect key="frame" x="16" y="81" width="343" height="2"/>
+                                <color key="progressTintColor" systemColor="systemBlueColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="trackTintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </progressView>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="PnO-jn-Gk8" firstAttribute="leading" secondItem="pxd-zp-3XW" secondAttribute="trailing" constant="8" id="0Dl-YX-15c"/>
+                            <constraint firstItem="wCS-gO-C3d" firstAttribute="trailing" secondItem="Xal-ei-X51" secondAttribute="trailingMargin" id="2Id-JS-xHC"/>
                             <constraint firstItem="pxd-zp-3XW" firstAttribute="top" secondItem="ioR-4d-qfe" secondAttribute="top" constant="27" id="8GV-rr-whH"/>
                             <constraint firstItem="PnO-jn-Gk8" firstAttribute="top" secondItem="ioR-4d-qfe" secondAttribute="top" constant="30" id="I0x-qv-YQG"/>
+                            <constraint firstItem="wCS-gO-C3d" firstAttribute="top" secondItem="2nt-hF-coL" secondAttribute="bottom" constant="7.5" id="MVp-pS-OHD"/>
                             <constraint firstItem="ioR-4d-qfe" firstAttribute="trailing" secondItem="PnO-jn-Gk8" secondAttribute="trailing" constant="16" id="NcH-9g-yyp"/>
+                            <constraint firstItem="wCS-gO-C3d" firstAttribute="leading" secondItem="Xal-ei-X51" secondAttribute="leadingMargin" id="Sj0-gj-6f9"/>
                             <constraint firstItem="pxd-zp-3XW" firstAttribute="leading" secondItem="ioR-4d-qfe" secondAttribute="leading" constant="16" id="TaT-ds-p8M"/>
                             <constraint firstItem="2nt-hF-coL" firstAttribute="leading" secondItem="ioR-4d-qfe" secondAttribute="leading" constant="8" id="WFr-Zm-8cB"/>
+                            <constraint firstItem="2nt-hF-coL" firstAttribute="top" secondItem="ioR-4d-qfe" secondAttribute="top" constant="15" id="WzF-Bz-edw"/>
                             <constraint firstItem="WFU-Fl-Gfe" firstAttribute="top" secondItem="PnO-jn-Gk8" secondAttribute="bottom" constant="28" id="aC3-aR-8Ag"/>
                             <constraint firstItem="ioR-4d-qfe" firstAttribute="trailing" secondItem="WFU-Fl-Gfe" secondAttribute="trailing" id="bj2-pg-lic"/>
                             <constraint firstItem="ioR-4d-qfe" firstAttribute="bottom" secondItem="WFU-Fl-Gfe" secondAttribute="bottom" id="gd4-rE-ZJc"/>
-                            <constraint firstItem="2nt-hF-coL" firstAttribute="top" secondItem="PnO-jn-Gk8" secondAttribute="bottom" constant="15" id="ivv-zN-7SJ"/>
                             <constraint firstItem="ioR-4d-qfe" firstAttribute="trailing" secondItem="2nt-hF-coL" secondAttribute="trailing" constant="8" id="xHC-7N-7xo"/>
                             <constraint firstItem="WFU-Fl-Gfe" firstAttribute="leading" secondItem="ioR-4d-qfe" secondAttribute="leading" id="y2z-ak-hGg"/>
                         </constraints>
@@ -807,6 +815,7 @@
                     <connections>
                         <outlet property="headerLabel" destination="PnO-jn-Gk8" id="J3T-P9-QBG"/>
                         <outlet property="mainMenu" destination="WFU-Fl-Gfe" id="lGR-uB-jyD"/>
+                        <outlet property="progressView" destination="wCS-gO-C3d" id="Yo5-kq-6j2"/>
                         <outlet property="torProgressLabel" destination="2nt-hF-coL" id="Jrh-ei-tN4"/>
                         <segue destination="bKH-sI-MiM" kind="presentation" identifier="lockScreen" modalPresentationStyle="fullScreen" id="UBf-qr-XYG"/>
                         <segue destination="6nj-bF-aCc" kind="show" identifier="showDetailSegue" id="d35-nk-fhY"/>
@@ -5561,7 +5570,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                             </label>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="U8O-yQ-otK">
                                 <rect key="frame" x="16" y="113.5" width="343" height="553.5"/>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="activeWallet" rowHeight="54" id="yHC-bM-Lzg">
                                         <rect key="frame" x="15" y="55.5" width="313" height="54"/>
@@ -7105,7 +7114,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="qed-hl-jG5"/>
+        <segue reference="UBf-qr-XYG"/>
         <segue reference="dhu-ZV-762"/>
         <segue reference="EZr-Ut-goC"/>
         <segue reference="XQE-Ek-uZu"/>
@@ -7116,7 +7125,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="ywj-ud-JRK"/>
         <segue reference="oY9-Pq-H5b"/>
         <segue reference="nyo-So-jGt"/>
-        <segue reference="NFj-Y4-lQE"/>
+        <segue reference="aV5-mq-s3Q"/>
         <segue reference="vxK-yE-HH1"/>
         <segue reference="Kd4-zZ-oMj"/>
         <segue reference="Ikt-mc-dmE"/>

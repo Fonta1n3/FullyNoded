@@ -8,7 +8,7 @@
 
 import UIKit
 
-class MainMenuViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UINavigationControllerDelegate, OnionManagerDelegate {
+class MainMenuViewController: UIViewController {
     
     weak var mgr = TorClient.sharedInstance
     let backView = UIView()
@@ -40,6 +40,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     var feeInfo:FeeInfo!
     @IBOutlet weak var headerLabel: UILabel!
     @IBOutlet weak var torProgressLabel: UILabel!
+    @IBOutlet weak var progressView: UIProgressView!
     
     private enum Section: Int {
         case verificationProgress
@@ -70,6 +71,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         setFeeTarget()
         NotificationCenter.default.addObserver(self, selector: #selector(refreshNode), name: .refreshNode, object: nil)
         torProgressLabel.layer.zPosition = 1
+        progressView.layer.zPosition = 1
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -77,10 +79,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             addlaunchScreen()
             if !firstTimeHere() {
                 displayAlert(viewController: self, isError: true, message: "there was a critical error setting your devices encryption key, please delete and reinstall the app")
-                
             } else {
                 if mgr?.state != .started && mgr?.state != .connected  {
-                    displayAlert(viewController: self, isError: false, message: "Tor is bootstrapping, please wait")
                     mgr?.start(delegate: self)
                 }
             }
@@ -89,39 +89,43 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     @IBAction func showRemoteControl(_ sender: Any) {
         #if targetEnvironment(macCatalyst)
-            // Code specific to Mac.
-            if activeNode != nil {
-                let nodeStruct = NodeStruct(dictionary: activeNode!)
-                var prefix = "btcrpc"
-                if nodeStruct.isLightning {
-                    prefix = "clightning-rpc"
-                }
-                
-                let address = decryptedValue(nodeStruct.onionAddress!)
-                let rpcusername = decryptedValue(nodeStruct.rpcuser!)
-                let rpcpassword = decryptedValue(nodeStruct.rpcpassword!)
-                
-                let macName = UIDevice.current.name
-                
-                if address.contains("127.0.0.1") || address.contains("localhost") || address.contains(macName) {
-                    var hostname = mgr?.hostname()
-                    if hostname != nil {
-                        hostname = hostname?.replacingOccurrences(of: "\n", with: "")
-                        DispatchQueue.main.async { [weak self] in
-                            self?.host = "\(prefix)://\(rpcusername):\(rpcpassword)@\(hostname!):11221/?label=\(nodeStruct.label.replacingOccurrences(of: " ", with: "%20"))"
-                            self?.performSegue(withIdentifier: "segueToRemoteControl", sender: self)
-                        }
-                    } else {
-                        showAlert(vc: self, title: "Ooops", message: "There was an error getting your hostname for remote connection... Please make sure you are connected to the internet and that Tor successfully bootstrapped.")
-                    }
-                } else {
-                    showAlert(vc: self, title: "Ooops", message: "This feature can only be used with nodes which are running on the same computer as Fully Noded - Desktop.\n\nTo take advantage of this feature just download Bitcoin Core and run it.\n\nThen add your local node to Fully Noded - Desktop using 127.0.0.1:8332 as the address.\n\nYou can then tap this button to get a QR code which will allow you to connect your node via your iPhone or iPad on the mobile app.")
-                }
+        // Code specific to Mac.
+        guard let activeNode = activeNode else { return }
+        
+        let nodeStruct = NodeStruct(dictionary: activeNode)
+        var prefix = "btcrpc"
+        if nodeStruct.isLightning {
+            prefix = "clightning-rpc"
+        }
+        
+        let address = decryptedValue(nodeStruct.onionAddress!)
+        let rpcusername = decryptedValue(nodeStruct.rpcuser!)
+        let rpcpassword = decryptedValue(nodeStruct.rpcpassword!)
+        
+        let macName = UIDevice.current.name
+        
+        if address.contains("127.0.0.1") || address.contains("localhost") || address.contains(macName) {
+            
+            guard var hostname = mgr?.hostname() else {
+                showAlert(vc: self, title: "Ooops", message: "There was an error getting your hostname for remote connection... Please make sure you are connected to the internet and that Tor successfully bootstrapped.")
+                return
             }
-
+            
+            hostname = hostname.replacingOccurrences(of: "\n", with: "")
+            
+            DispatchQueue.main.async { [weak self] in
+                let label = nodeStruct.label.replacingOccurrences(of: " ", with: "%20")
+                self?.host = "\(prefix)://\(rpcusername):\(rpcpassword)@\(hostname):11221/?label=\(label)"
+                self?.performSegue(withIdentifier: "segueToRemoteControl", sender: self)
+            }
+            
+        } else {
+            showAlert(vc: self, title: "Ooops", message: "This feature can only be used with nodes which are running on the same computer as Fully Noded - Desktop.\n\nTo take advantage of this feature just download Bitcoin Core and run it.\n\nThen add your local node to Fully Noded - Desktop using 127.0.0.1:8332 as the address.\n\nYou can then tap this button to get a QR code which will allow you to connect your node via your iPhone or iPad on the mobile app.")
+        }
+        
         #else
-            // Code to exclude from Mac.
-            showAlert(vc: self, title: "Ooops", message: "This is a macOS feature only, when you use Fully Noded - Desktop, it has the ability to display a QR code you can scan with your iPhone or iPad to connect to your node remotely.")
+        // Code to exclude from Mac.
+        showAlert(vc: self, title: "Ooops", message: "This is a macOS feature only, when you use Fully Noded - Desktop, it has the ability to display a QR code you can scan with your iPhone or iPad to connect to your node remotely.")
         #endif
         
     }
@@ -130,29 +134,6 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     @IBAction func showLightningNode(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             self?.performSegue(withIdentifier: "segueToLightningNode", sender: self)
-        }
-    }
-    
-    func torConnProgress(_ progress: Int) {
-        DispatchQueue.main.async { [weak self] in
-            self?.torProgressLabel.text = "Tor progress: \(progress)%"
-        }
-    }
-    
-    func torConnFinished() {
-        viewHasLoaded = true
-        removeBackView()
-        loadTable()
-        displayAlert(viewController: self, isError: false, message: "Tor finished bootstrapping")
-        DispatchQueue.main.async { [weak self] in
-            self?.torProgressLabel.isHidden = true
-        }
-    }
-    
-    func torConnDifficulties() {
-        displayAlert(viewController: self, isError: true, message: "We are having issues connecting tor")
-        DispatchQueue.main.async { [weak self] in
-            self?.torProgressLabel.isHidden = true
         }
     }
     
@@ -171,20 +152,23 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     private func loadTable() {
-        getNodes { [unowned vc = self] nodeArray in
-            if nodeArray != nil {
-                if nodeArray!.count > 0 {
-                    vc.loopThroughNodes(nodes: nodeArray!)
-                } else {
-                    vc.removeLoader()
-                    DispatchQueue.main.async { [unowned vc = self] in
-                        vc.performSegue(withIdentifier: "segueToAddANode", sender: vc)
-                    }
+        getNodes { [weak self] nodeArray in
+            guard let self = self else { return }
+            
+            guard let nodeArray = nodeArray, nodeArray.count > 0 else {
+                self.removeLoader()
+                
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.performSegue(withIdentifier: "segueToAddANode", sender: self)
                 }
-            } else {
-                vc.removeLoader()
+                
+                return
             }
-            vc.initialLoad = false
+            
+            self.loopThroughNodes(nodes: nodeArray)
+            self.initialLoad = false
         }
     }
     
@@ -216,8 +200,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         } else {
             checkIfNodesChanged(newNodeId: nodeStruct.id!)
         }
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.headerLabel.text = nodeStruct.label
+        DispatchQueue.main.async { [weak self] in
+            self?.headerLabel.text = nodeStruct.label
         }
     }
     
@@ -235,8 +219,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         peerInfo = nil
         feeInfo = nil
         networkInfo = nil
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.mainMenu.reloadData()
+        DispatchQueue.main.async { [weak self] in
+            self?.mainMenu.reloadData()
         }
         refreshDataNow()
     }
@@ -252,8 +236,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     
     func showUnlockScreen() {
         if KeyChain.getData("UnlockPassword") != nil {
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.performSegue(withIdentifier: "lockScreen", sender: vc)
+            DispatchQueue.main.async { [weak self] in
+                self?.performSegue(withIdentifier: "lockScreen", sender: self)
             }
         }
     }
@@ -430,6 +414,376 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         }
         return cell
     }
+    
+    private func segueToShowDetail() {
+        DispatchQueue.main.async { [weak self] in
+            self?.performSegue(withIdentifier: "showDetailSegue", sender: self)
+        }
+    }
+    
+    func loadTableData() {
+        displayAlert(viewController: self, isError: false, message: "bitcoin-cli getblockchaininfo")
+        NodeLogic.loadBlockchainInfo { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            guard let response = response else {
+                self.removeLoader()
+                
+                guard let errorMessage = errorMessage else {
+                    displayAlert(viewController: self, isError: true, message: "unknown error")
+                    return
+                }
+                
+                if errorMessage.contains("Loading block index") || errorMessage.contains("Verifying") || errorMessage.contains("Rewinding") {
+                    showAlert(vc: self, title: "", message: "Your node is still getting warmed up! Wait 15 seconds and tap the refresh button to try again")
+                    
+                } else if errorMessage.contains("Could not connect to the server.") {
+                    showAlert(vc: self, title: "", message: "Looks like your node is not on, make sure it is running and try again.")
+                    
+                } else if errorMessage.contains("unknown error") {
+                    showAlert(vc: self, title: "", message: "We got a strange response from your node, first of all make 100% sure your credentials are correct, if they are then your node could be overloaded... Either wait a few minutes and try again or reboot Tor on your node, if that fails reboot your node too, force quit Fully Noded and open it again.")
+                    
+                } else if errorMessage.contains("timed out") || errorMessage.contains("The Internet connection appears to be offline") {
+                    showAlert(vc: self, title: "", message: "Hmmm we are not getting a response from your node, you can try rebooting Tor on your node and force quitting Fully Noded and reopening it, that generally fixes the issue.")
+                    
+                } else {
+                    displayAlert(viewController: self, isError: true, message: errorMessage)
+                }
+                
+                return
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.blockchainInfo = BlockchainInfo(dictionary: response)
+                self.mainMenu.reloadSections(IndexSet(arrayLiteral: 0, 3, 5, 7, 8, 9), with: .fade)
+                self.getPeerInfo()
+            }
+        }
+    }
+    
+    private func getPeerInfo() {
+        displayAlert(viewController: self, isError: false, message: "bitcoin-cli getpeerinfo")
+        NodeLogic.getPeerInfo { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            guard let response = response else {
+                self.removeLoader()
+                displayAlert(viewController: self, isError: true, message: errorMessage ?? "unknown error")
+                return
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.peerInfo = PeerInfo(dictionary: response)
+                self.mainMenu.reloadSections(IndexSet(arrayLiteral: 4), with: .fade)
+                self.getNetworkInfo()
+            }
+        }
+    }
+    
+    private func getNetworkInfo() {
+        displayAlert(viewController: self, isError: false, message: "bitcoin-cli getnetworkinfo")
+        NodeLogic.getNetworkInfo { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            guard let response = response else {
+                self.removeLoader()
+                displayAlert(viewController: self, isError: true, message: errorMessage!)
+                return
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.networkInfo = NetworkInfo(dictionary: response)
+                self.mainMenu.reloadSections(IndexSet(arrayLiteral: 2, 12), with: .fade)
+                self.getMiningInfo()
+            }
+        }
+    }
+    
+    private func getMiningInfo() {
+        displayAlert(viewController: self, isError: false, message: "bitcoin-cli getmininginfo")
+        NodeLogic.getMiningInfo { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            guard let response = response else {
+                self.removeLoader()
+                displayAlert(viewController: self, isError: true, message: errorMessage ?? "unknown error")
+                return
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.miningInfo = MiningInfo(dictionary: response)
+                self.mainMenu.reloadSections(IndexSet(arrayLiteral: 6), with: .fade)
+                self.getUptime()
+            }
+        }
+    }
+    
+    private func getUptime() {
+        displayAlert(viewController: self, isError: false, message: "bitcoin-cli getuptime")
+        NodeLogic.getUptime { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            guard let response = response else {
+                self.removeLoader()
+                displayAlert(viewController: self, isError: true, message: errorMessage ?? "unknown error")
+                return
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.uptimeInfo = Uptime(dictionary: response)
+                self.mainMenu.reloadSections(IndexSet(arrayLiteral: 13), with: .fade)
+                self.getMempoolInfo()
+            }
+        }
+    }
+    
+    private func getMempoolInfo() {
+        displayAlert(viewController: self, isError: false, message: "bitcoin-cli getmempoolinfo")
+        NodeLogic.getMempoolInfo { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            guard let response = response else {
+                self.removeLoader()
+                displayAlert(viewController: self, isError: true, message: errorMessage ?? "unknown error")
+                return
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.mempoolInfo = MempoolInfo(dictionary: response)
+                self.mainMenu.reloadSections(IndexSet(arrayLiteral: 10), with: .fade)
+                self.getFeeInfo()
+            }
+        }
+    }
+    
+    private func getFeeInfo() {
+        displayAlert(viewController: self, isError: false, message: "bitcoin-cli estimatesmartfee")
+        NodeLogic.estimateSmartFee { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            guard let response = response else {
+                self.removeLoader()
+                displayAlert(viewController: self, isError: true, message: errorMessage ?? "unknown error")
+                return
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.feeInfo = FeeInfo(dictionary: response)
+                self.mainMenu.reloadSections(IndexSet(arrayLiteral: 11, 1), with: .fade)
+                self.removeLoader()
+            }
+        }
+    }
+    
+    //MARK: User Interface
+    
+    func addlaunchScreen() {
+        if let _ = self.tabBarController {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.backView.alpha = 0
+                self.backView.frame = self.tabBarController!.view.frame
+                self.backView.backgroundColor = .black
+                let imageView = UIImageView()
+                imageView.frame = CGRect(x: self.view.center.x - 75, y: self.view.center.y - 75, width: 150, height: 150)
+                imageView.image = UIImage(named: "logo_grey.png")
+                self.backView.addSubview(imageView)
+                self.view.addSubview(self.backView)
+                
+                UIView.animate(withDuration: 0.8, animations: {
+                    self.backView.alpha = 1
+                })
+            }
+        }
+    }
+    
+    func removeLoader() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.spinner.stopAnimating()
+            self.spinner.alpha = 0
+            self.refreshButton = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(self.refreshData(_:)))
+            self.refreshButton.tintColor = UIColor.lightGray.withAlphaComponent(1)
+            self.navigationItem.setRightBarButton(self.refreshButton, animated: true)
+            self.viewHasLoaded = true
+        }
+    }
+    
+    func removeBackView() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            UIView.animate(withDuration: 0.3, animations: { [weak self] in
+                guard let self = self else { return }
+                
+                self.backView.alpha = 0
+                self.mainMenu.alpha = 1
+            }) { (_) in
+                self.backView.removeFromSuperview()
+            }
+        }
+    }
+    
+    func reloadTable() {
+        //used when user switches between nodes so old node data is not displayed
+        
+        DispatchQueue.main.async {
+            
+            self.mainMenu.reloadData()
+            
+        }
+        
+    }
+    
+    func getNodes(completion: @escaping (([[String:Any]]?)) -> Void) {
+        nodes.removeAll()
+        CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
+            if nodes != nil {
+                completion(nodes!)
+            } else {
+                displayAlert(viewController: self, isError: true, message: "error getting nodes from coredata")
+                completion(nil)
+            }
+        }
+    }
+    
+    private func setFeeTarget() {
+        if ud.object(forKey: "feeTarget") == nil {
+            ud.set(432, forKey: "feeTarget")
+        }
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        
+        switch segue.identifier {
+            
+        case "showDetailSegue":
+            
+            if let vc = segue.destination as? ShowDetailViewController {
+                vc.command = command
+                vc.iconImage = detailImage
+                vc.backgroundTint = detailImageTint
+                vc.detailHeaderText = detailHeaderText
+                vc.detailSubheaderText = detailSubheaderText
+                vc.detailTextDescription = detailTextDescription
+            }
+            
+        case "segueToAddANode":
+            
+            if let vc = segue.destination as? NodeDetailViewController {
+                vc.createNew = true
+                vc.isLightning = false
+            }
+            
+        case "segueToRemoteControl":
+            
+            if let vc = segue.destination as? QRDisplayerViewController {
+                vc.text = host
+                vc.headerIcon = UIImage(systemName: "antenna.radiowaves.left.and.right")
+                vc.headerText = "Remote Control - Quick Connect"
+                vc.descriptionText = "Fully Noded macOS hosts a secure hidden service for your node which can be used to remotely connect to it.\n\nSimply scan this QR with your iPhone or iPad using the Fully Noded iOS app and connect to your node remotely from anywhere in the world!"
+            }
+            
+        default:
+            break
+        }
+        
+    }
+    
+    //MARK: Helpers
+    
+    func firstTimeHere() -> Bool {
+        return FirstTime.firstTimeHere()
+    }
+    
+}
+
+// MARK: Helpers
+
+extension MainMenuViewController {
+    
+    private func headerName(for section: Section) -> String {
+        switch section {
+        case .verificationProgress:
+            return "Verification progress"
+        case .totalSupply:
+            return "Total supply"
+        case .nodeVersion:
+            return "Node version"
+        case .blockchainNetwork:
+            return "Blockchain network"
+        case .peerConnections:
+            return "Peer connections"
+        case .blockchainState:
+            return "Blockchain state"
+        case .miningHashrate:
+            return "Mining hashrate"
+        case .currentBlockHeight:
+            return "Current blockheight"
+        case .miningDifficulty:
+            return "Mining difficulty"
+        case .blockchainSizeOnDisc:
+            return "Blockchain size on disc"
+        case .memPool:
+            return "Node's mempool"
+        case .feeRate:
+            return "Fee rate"
+        case .p2pHiddenService:
+            return "P2P hidden service"
+        case .nodeUptime:
+            return "Node uptime"
+        }
+    }
+    
+}
+
+extension MainMenuViewController: OnionManagerDelegate {
+    
+    func torConnProgress(_ progress: Int) {
+        DispatchQueue.main.async { [weak self] in
+            self?.torProgressLabel.text = "Tor bootstrapping \(progress)% complete"
+            self?.progressView.setProgress(Float(Double(progress) / 100.0), animated: true)
+        }
+    }
+    
+    func torConnFinished() {
+        viewHasLoaded = true
+        removeBackView()
+        loadTable()
+        displayAlert(viewController: self, isError: false, message: "Tor finished bootstrapping")
+        DispatchQueue.main.async { [weak self] in
+            self?.torProgressLabel.isHidden = true
+            self?.progressView.isHidden = true
+        }
+    }
+    
+    func torConnDifficulties() {
+        displayAlert(viewController: self, isError: true, message: "We are having issues connecting tor")
+        DispatchQueue.main.async { [weak self] in
+            self?.torProgressLabel.isHidden = true
+            self?.progressView.isHidden = true
+        }
+    }
+    
+}
+
+extension MainMenuViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch Section(rawValue: indexPath.section) {
@@ -651,309 +1005,11 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         }
     }
     
-    private func segueToShowDetail() {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "showDetailSegue", sender: vc)
-        }
-    }
-    
-    func loadTableData() {
-        displayAlert(viewController: self, isError: false, message: "bitcoin-cli getblockchaininfo")
-        NodeLogic.loadBlockchainInfo { [unowned vc = self] (response, errorMessage) in
-            if response != nil {
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.blockchainInfo = BlockchainInfo(dictionary: response!)
-                    vc.mainMenu.reloadSections(IndexSet(arrayLiteral: 0, 3, 5, 7, 8, 9), with: .fade)
-                    vc.getPeerInfo()
-                }
-            } else if errorMessage != nil {
-                vc.removeLoader()
-                
-                if errorMessage!.contains("Loading block index") || errorMessage!.contains("Verifying") || errorMessage!.contains("Rewinding") {
-                    displayAlert(viewController: self, isError: true, message: "Your node is still getting warmed up! Wait 15 seconds and tap the refresh button to try again")
-                    
-                } else if errorMessage!.contains("Could not connect to the server.") {
-                    displayAlert(viewController: self, isError: true, message: "Looks like your node is not on, make sure it is running and try again.")
-                    
-                } else if errorMessage!.contains("unknown error") {
-                    displayAlert(viewController: self, isError: true, message: "We got a strange response from your node, first of all make 100% sure your credentials are correct, if they are then your node could be overloaded... Either wait a few minutes and try again or reboot Tor on your node, if that fails reboot your node too, force quit Fully Noded and open it again.")
-                    
-                } else if errorMessage!.contains("timed out") || errorMessage!.contains("The Internet connection appears to be offline") {
-                    displayAlert(viewController: self, isError: true, message: "Hmmm we are not getting a response from your node, you can try rebooting Tor on your node and force quitting Fully Noded and reopening it, that generally fixes the issue.")
-                    
-                } else {
-                    displayAlert(viewController: self, isError: true, message: errorMessage!)
-                }
-            }
-        }
-    }
-    
-    private func getPeerInfo() {
-        displayAlert(viewController: self, isError: false, message: "bitcoin-cli getpeerinfo")
-        NodeLogic.getPeerInfo { [unowned vc = self] (response, errorMessage) in
-            if response != nil {
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.peerInfo = PeerInfo(dictionary: response!)
-                    vc.mainMenu.reloadSections(IndexSet(arrayLiteral: 4), with: .fade)
-                    vc.getNetworkInfo()
-                }
-            } else {
-                vc.removeLoader()
-                displayAlert(viewController: self, isError: true, message: errorMessage!)
-            }
-        }
-    }
-    
-    private func getNetworkInfo() {
-        displayAlert(viewController: self, isError: false, message: "bitcoin-cli getnetworkinfo")
-        NodeLogic.getNetworkInfo { [unowned vc = self] (response, errorMessage) in
-            if response != nil {
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.networkInfo = NetworkInfo(dictionary: response!)
-                    vc.mainMenu.reloadSections(IndexSet(arrayLiteral: 2, 12), with: .fade)
-                    vc.getMiningInfo()
-                }
-            } else {
-                vc.removeLoader()
-                displayAlert(viewController: self, isError: true, message: errorMessage!)
-            }
-        }
-    }
-    
-    private func getMiningInfo() {
-        displayAlert(viewController: self, isError: false, message: "bitcoin-cli getmininginfo")
-        NodeLogic.getMiningInfo { [unowned vc = self] (response, errorMessage) in
-            if response != nil {
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.miningInfo = MiningInfo(dictionary: response!)
-                    vc.mainMenu.reloadSections(IndexSet(arrayLiteral: 6), with: .fade)
-                    vc.getUptime()
-                }
-            } else {
-                vc.removeLoader()
-                displayAlert(viewController: self, isError: true, message: errorMessage!)
-            }
-        }
-    }
-    
-    private func getUptime() {
-        displayAlert(viewController: self, isError: false, message: "bitcoin-cli getuptime")
-        NodeLogic.getUptime { [unowned vc = self] (response, errorMessage) in
-            if response != nil {
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.uptimeInfo = Uptime(dictionary: response!)
-                    vc.mainMenu.reloadSections(IndexSet(arrayLiteral: 13), with: .fade)
-                    vc.getMempoolInfo()
-                }
-            } else {
-                vc.removeLoader()
-                displayAlert(viewController: self, isError: true, message: errorMessage!)
-            }
-        }
-    }
-    
-    private func getMempoolInfo() {
-        displayAlert(viewController: self, isError: false, message: "bitcoin-cli getmempoolinfo")
-        NodeLogic.getMempoolInfo { [unowned vc = self] (response, errorMessage) in
-            if response != nil {
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.mempoolInfo = MempoolInfo(dictionary: response!)
-                    vc.mainMenu.reloadSections(IndexSet(arrayLiteral: 10), with: .fade)
-                    vc.getFeeInfo()
-                }
-            } else {
-                vc.removeLoader()
-                displayAlert(viewController: self, isError: true, message: errorMessage!)
-            }
-        }
-    }
-    
-    private func getFeeInfo() {
-        displayAlert(viewController: self, isError: false, message: "bitcoin-cli estimatesmartfee")
-        NodeLogic.estimateSmartFee { [unowned vc = self] (response, errorMessage) in
-            if response != nil {
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.feeInfo = FeeInfo(dictionary: response!)
-                    vc.mainMenu.reloadSections(IndexSet(arrayLiteral: 11, 1), with: .fade)
-                    vc.removeLoader()
-                }
-            } else {
-                vc.removeLoader()
-                displayAlert(viewController: self, isError: true, message: errorMessage!)
-            }
-        }
-    }
-    
-    //MARK: User Interface
-    
-    func addlaunchScreen() {
-
-        if let _ = self.tabBarController {
-            
-            DispatchQueue.main.async {
-                self.backView.alpha = 0
-                self.backView.frame = self.tabBarController!.view.frame
-                self.backView.backgroundColor = .black
-                let imageView = UIImageView()
-                imageView.frame = CGRect(x: self.view.center.x - 75, y: self.view.center.y - 75, width: 150, height: 150)
-                imageView.image = UIImage(named: "logo_grey.png")
-                self.backView.addSubview(imageView)
-                self.view.addSubview(self.backView)
-                
-                UIView.animate(withDuration: 0.8, animations: {
-                    self.backView.alpha = 1
-                })
-                
-            }
-            
-        }
-        
-    }
-    
-    func removeLoader() {
-        
-        DispatchQueue.main.async { [unowned vc = self] in
-            
-            vc.spinner.stopAnimating()
-            vc.spinner.alpha = 0
-            
-            vc.refreshButton = UIBarButtonItem(barButtonSystemItem: .refresh, target: vc, action: #selector(vc.refreshData(_:)))
-            
-            vc.refreshButton.tintColor = UIColor.lightGray.withAlphaComponent(1)
-            
-            vc.navigationItem.setRightBarButton(vc.refreshButton,
-                                                  animated: true)
-            
-            vc.viewHasLoaded = true
-            
-        }
-        
-    }
-    
-    func removeBackView() {
-        
-        DispatchQueue.main.async {
-            
-            UIView.animate(withDuration: 0.3, animations: {
-                self.backView.alpha = 0
-                self.mainMenu.alpha = 1
-            }) { (_) in
-                self.backView.removeFromSuperview()
-            }
-            
-        }
-        
-    }
-    
-    func reloadTable() {
-        //used when user switches between nodes so old node data is not displayed
-        
-        DispatchQueue.main.async {
-            
-            self.mainMenu.reloadData()
-            
-        }
-        
-    }
-    
-    func getNodes(completion: @escaping (([[String:Any]]?)) -> Void) {
-        nodes.removeAll()
-        CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
-            if nodes != nil {
-                completion(nodes!)
-            } else {
-                displayAlert(viewController: self, isError: true, message: "error getting nodes from coredata")
-                completion(nil)
-            }
-        }
-    }
-    
-    private func setFeeTarget() {
-        if ud.object(forKey: "feeTarget") == nil {
-            ud.set(432, forKey: "feeTarget")
-        }
-    }
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        
-        switch segue.identifier {
-            
-        case "showDetailSegue":
-            
-            if let vc = segue.destination as? ShowDetailViewController {
-                vc.command = command
-                vc.iconImage = detailImage
-                vc.backgroundTint = detailImageTint
-                vc.detailHeaderText = detailHeaderText
-                vc.detailSubheaderText = detailSubheaderText
-                vc.detailTextDescription = detailTextDescription
-            }
-            
-        case "segueToAddANode":
-            
-            if let vc = segue.destination as? NodeDetailViewController {
-                vc.createNew = true
-                vc.isLightning = false
-            }
-            
-        case "segueToRemoteControl":
-            
-            if let vc = segue.destination as? QRDisplayerViewController {
-                vc.text = host
-                vc.headerIcon = UIImage(systemName: "antenna.radiowaves.left.and.right")
-                vc.headerText = "Remote Control - Quick Connect"
-                vc.descriptionText = "Fully Noded macOS hosts a secure hidden service for your node which can be used to remotely connect to it.\n\nSimply scan this QR with your iPhone or iPad using the Fully Noded iOS app and connect to your node remotely from anywhere in the world!"
-            }
-            
-        default:
-            break
-        }
-        
-    }
-    
-    //MARK: Helpers
-    
-    func firstTimeHere() -> Bool {
-        return FirstTime.firstTimeHere()
-    }
-    
 }
 
-// MARK: Helpers
+extension MainMenuViewController: UITableViewDataSource {}
 
-extension MainMenuViewController {
-    
-    private func headerName(for section: Section) -> String {
-        switch section {
-        case .verificationProgress:
-            return "Verification progress"
-        case .totalSupply:
-            return "Total supply"
-        case .nodeVersion:
-            return "Node version"
-        case .blockchainNetwork:
-            return "Blockchain network"
-        case .peerConnections:
-            return "Peer connections"
-        case .blockchainState:
-            return "Blockchain state"
-        case .miningHashrate:
-            return "Mining hashrate"
-        case .currentBlockHeight:
-            return "Current blockheight"
-        case .miningDifficulty:
-            return "Mining difficulty"
-        case .blockchainSizeOnDisc:
-            return "Blockchain size on disc"
-        case .memPool:
-            return "Node's mempool"
-        case .feeRate:
-            return "Fee rate"
-        case .p2pHiddenService:
-            return "P2P hidden service"
-        case .nodeUptime:
-            return "Node uptime"
-        }
-    }
-    
-}
+extension MainMenuViewController: UINavigationControllerDelegate {}
+
+
+
