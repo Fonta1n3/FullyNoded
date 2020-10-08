@@ -32,7 +32,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
     
     
     @IBAction func showHelp(_ sender: Any) {
-        let message = "These are the wallets you created via \"Create a Fully Noded Wallet\". They are special wallets which utilize your node in a smarter way then manual Bitcoin Core wallet creation. You will only see \"Fully Noded Wallets\" here. You can activate/deactivate them, rename them, and delete them here by tapping the > button. In the detail view you have more powerful options related to your wallet, to read about it tap the > button to see the detail view and tap the help button there."
+        let message = "These are the wallets you created via \"Create a Fully Noded Wallet\". They are special wallets which utilize your node in a smarter way than manual Bitcoin Core wallet creation. You will only see \"Fully Noded Wallets\" here. You can activate/deactivate them, rename them, and delete them here by tapping the > button. In the detail view you have more powerful options related to your wallet, to read about it tap the > button to see the detail view and tap the help button there."
         showAlert(vc: self, title: "Fully Noded Wallets", message: message)
     }
     
