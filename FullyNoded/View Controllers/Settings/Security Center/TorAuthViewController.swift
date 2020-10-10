@@ -12,10 +12,6 @@ class TorAuthViewController: UIViewController, UITextFieldDelegate {
     
     @IBOutlet weak var textField: UITextField!
     @IBOutlet weak var publickKeyLabel: UILabel!
-    let qrScanner = QRScanner()
-    var scannerShowing = false
-    let imageView = UIImageView()
-    var isFirstTime = Bool()
     var text = "Add"
     
     override func viewDidLoad() {

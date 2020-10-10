@@ -16,10 +16,13 @@ class AddLabelViewController: UIViewController, UITextFieldDelegate {
     var isPrivKey = Bool()
     var isDescriptor = Bool()
     @IBOutlet var labelOutlet: UILabel!
+    @IBOutlet weak var addLabelOutlet: UIButton!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         textField.delegate = self
+        addLabelOutlet.clipsToBounds = true
+        addLabelOutlet.layer.cornerRadius = 8
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)

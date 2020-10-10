@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ImportXpubViewController: UIViewController {
+class ImportXpubViewController: UIViewController, UITextFieldDelegate {
     
     @IBOutlet weak var importOutlet: UIButton!
     @IBOutlet weak var textField: UITextField!
@@ -77,7 +77,16 @@ class ImportXpubViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        textField.delegate = self
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
+        tapGesture.numberOfTapsRequired = 1
+        self.view.addGestureRecognizer(tapGesture)
         setCoinType()
+    }
+    
+    @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
+        textField.resignFirstResponder()
     }
     
     private func showError(_ error: String) {

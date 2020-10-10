@@ -67,6 +67,7 @@ class MainMenuViewController: UIViewController {
         initialLoad = true
         viewHasLoaded = false
         addNavBarSpinner()
+        addlaunchScreen()
         showUnlockScreen()
         setFeeTarget()
         NotificationCenter.default.addObserver(self, selector: #selector(refreshNode), name: .refreshNode, object: nil)
@@ -76,7 +77,6 @@ class MainMenuViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         if initialLoad {
-            addlaunchScreen()
             if !firstTimeHere() {
                 displayAlert(viewController: self, isError: true, message: "there was a critical error setting your devices encryption key, please delete and reinstall the app")
             } else {
@@ -596,7 +596,7 @@ class MainMenuViewController: UIViewController {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
-                self.backView.alpha = 0
+                //self.backView.alpha = 0
                 self.backView.frame = self.tabBarController!.view.frame
                 self.backView.backgroundColor = .black
                 let imageView = UIImageView()
@@ -605,9 +605,9 @@ class MainMenuViewController: UIViewController {
                 self.backView.addSubview(imageView)
                 self.view.addSubview(self.backView)
                 
-                UIView.animate(withDuration: 0.8, animations: {
-                    self.backView.alpha = 1
-                })
+//                UIView.animate(withDuration: 0.8, animations: {
+//                    self.backView.alpha = 1
+//                })
             }
         }
     }

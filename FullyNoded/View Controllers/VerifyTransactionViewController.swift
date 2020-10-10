@@ -46,6 +46,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         verifyTable.delegate = self
         verifyTable.dataSource = self
         
+        sendButtonOutlet.clipsToBounds = true
+        sendButtonOutlet.layer.cornerRadius = 8
+        
         let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         view.addGestureRecognizer(tap)
         

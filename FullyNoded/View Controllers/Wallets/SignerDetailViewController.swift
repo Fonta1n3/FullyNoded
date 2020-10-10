@@ -120,19 +120,31 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
             self.labelField.text = signer.label
             self.dateLabel.text = "  " +  self.formattedDate(signer.added)
             
-            guard let decrypted = Crypto.decrypt(signer.words) else { return }
-            
-            if let words = String(bytes: decrypted, encoding: .utf8) {
-                self.wordsField.text = words
+            guard var decrypted = Crypto.decrypt(signer.words),
+                var words = String(bytes: decrypted, encoding: .utf8) else {
+                    return
             }
             
+            var arr = words.split(separator: " ")
+            
+            for (i, _) in arr.enumerated() {
+                if i > 0 && i < arr.count - 1 {
+                    arr[i] = "******"
+                }
+            }
+            
+            self.wordsField.text = arr.joined(separator: " ")
+            
+            decrypted = Data()
+            words = ""
+            
             if signer.passphrase != nil {
-                guard let decrypted = Crypto.decrypt(signer.passphrase!) else { return }
-                
-                if let passphrase = String(bytes: decrypted, encoding: .utf8) {
-                    self.passphraseLabel.text = "  " + passphrase
+                guard let decrypted = Crypto.decrypt(signer.passphrase!),
+                    let passphrase = String(bytes: decrypted, encoding: .utf8) else {
+                        return
                 }
                 
+                self.passphraseLabel.text = "  " + passphrase
             } else {
                 self.passphraseLabel.text = "  ** no passphrase **"
             }
@@ -142,12 +154,16 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
     }
     
     private func setFingerprint(_ encryptedWords: Data) {
-        guard let decryptedWords = Crypto.decrypt(encryptedWords),
-            let words = String(bytes: decryptedWords, encoding: .utf8),
-            let mk = Keys.masterKey(words: words, coinType: "0", passphrase: ""),
+        guard var decryptedWords = Crypto.decrypt(encryptedWords),
+            var words = String(bytes: decryptedWords, encoding: .utf8),
+            var mk = Keys.masterKey(words: words, coinType: "0", passphrase: ""),
             let fingerprint = Keys.fingerprint(masterKey: mk) else {
                 return
         }
+        
+        decryptedWords = Data()
+        words = ""
+        mk = ""
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }

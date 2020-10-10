@@ -748,7 +748,7 @@
                                     <outlet property="delegate" destination="XmP-lK-cua" id="wm7-vQ-AYN"/>
                                 </connections>
                             </tableView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Active Node" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PnO-jn-Gk8">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="    " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PnO-jn-Gk8">
                                 <rect key="frame" x="65" y="74" width="294" height="34"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="28"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -838,8 +838,8 @@
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="AHi-sk-wZC">
                                 <rect key="frame" x="0.0" y="44" width="375" height="565"/>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <color key="separatorColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="separatorColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="cell" textLabel="jq6-9M-iiP" rowHeight="90" style="IBUITableViewCellStyleDefault" id="i1z-VU-l6p">
                                         <rect key="frame" x="0.0" y="28" width="375" height="90"/>
@@ -863,11 +863,13 @@
                             </tableView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="0gk-sp-OBF">
                                 <rect key="frame" x="0.0" y="610" width="375" height="57"/>
-                                <color key="backgroundColor" systemColor="systemBlueColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="57" id="O6g-sf-lPq"/>
                                 </constraints>
-                                <state key="normal" title="tap here to import"/>
+                                <state key="normal" title="tap here to import">
+                                    <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
                                 <connections>
                                     <action selector="importNow:" destination="gtC-x0-wli" eventType="touchUpInside" id="p1p-9G-3Hx"/>
                                 </connections>
@@ -3134,24 +3136,58 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="6B1-3x-KdI">
-                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
-                            </imageView>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="pTq-E9-giu">
+                                <rect key="frame" x="16" y="122.5" width="343" height="34"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits"/>
+                            </textField>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Add your key" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jyF-jg-2cT">
+                                <rect key="frame" x="16" y="67" width="165" height="33.5"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="28"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Adt-ze-E3l">
+                                <rect key="frame" x="60" y="173" width="255" height="40"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="255" id="DpR-tS-BaR"/>
+                                    <constraint firstAttribute="height" constant="40" id="nvV-ar-rXL"/>
+                                </constraints>
+                                <state key="normal" title="next">
+                                    <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="nextAction:" destination="pBU-jm-875" eventType="touchUpInside" id="s6K-lA-X2C"/>
+                                </connections>
+                            </button>
                         </subviews>
-                        <color key="backgroundColor" red="0.078040815890000004" green="0.090017892419999995" blue="0.10251823810000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="6B1-3x-KdI" firstAttribute="top" secondItem="Upe-qb-TZs" secondAttribute="top" id="k03-na-ZEq"/>
-                            <constraint firstItem="6B1-3x-KdI" firstAttribute="bottom" secondItem="nll-eS-LUG" secondAttribute="bottom" id="sQn-fl-BHS"/>
-                            <constraint firstItem="6B1-3x-KdI" firstAttribute="leading" secondItem="nll-eS-LUG" secondAttribute="leading" id="ujZ-hI-r3h"/>
-                            <constraint firstItem="6B1-3x-KdI" firstAttribute="trailing" secondItem="nll-eS-LUG" secondAttribute="trailing" id="zsl-oG-tdn"/>
+                            <constraint firstItem="nll-eS-LUG" firstAttribute="trailing" secondItem="pTq-E9-giu" secondAttribute="trailing" constant="16" id="87z-kh-ljy"/>
+                            <constraint firstItem="Adt-ze-E3l" firstAttribute="centerX" secondItem="Upe-qb-TZs" secondAttribute="centerX" id="Hj7-9I-cHt"/>
+                            <constraint firstItem="jyF-jg-2cT" firstAttribute="top" secondItem="nll-eS-LUG" secondAttribute="top" constant="23" id="gBK-VW-yVk"/>
+                            <constraint firstItem="pTq-E9-giu" firstAttribute="leading" secondItem="nll-eS-LUG" secondAttribute="leading" constant="16" id="mue-nr-Jx1"/>
+                            <constraint firstItem="pTq-E9-giu" firstAttribute="top" secondItem="jyF-jg-2cT" secondAttribute="bottom" constant="22" id="pF3-xy-xKc"/>
+                            <constraint firstItem="Adt-ze-E3l" firstAttribute="top" secondItem="pTq-E9-giu" secondAttribute="bottom" constant="16.5" id="tkK-Wc-C2g"/>
+                            <constraint firstItem="jyF-jg-2cT" firstAttribute="leading" secondItem="nll-eS-LUG" secondAttribute="leading" constant="16" id="zJb-aj-Krd"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="nll-eS-LUG"/>
                     </view>
-                    <navigationItem key="navigationItem" id="FP9-tP-ODK"/>
+                    <navigationItem key="navigationItem" id="FP9-tP-ODK">
+                        <barButtonItem key="rightBarButtonItem" image="qrcode.viewfinder" catalog="system" id="g0t-Wn-it6">
+                            <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <connections>
+                                <action selector="scanQrAction:" destination="pBU-jm-875" id="4eZ-pc-Aob"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
-                        <outlet property="qrView" destination="6B1-3x-KdI" id="4oE-U5-2d7"/>
+                        <outlet property="nextButtonOutlet" destination="Adt-ze-E3l" id="hSp-DK-ZJs"/>
+                        <outlet property="textField" destination="pTq-E9-giu" id="Wi8-yA-3VR"/>
                         <segue destination="Hww-Qm-Hos" kind="show" identifier="showKeyDetails" id="XYa-A2-HkD"/>
                         <segue destination="gtC-x0-wli" kind="show" identifier="showDescriptorKeys" id="q4a-aR-3wO"/>
+                        <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScanPrivKey" id="vy1-e7-rQN"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="IBK-3t-b6g" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -3290,12 +3326,12 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Give the addresses a label so you can easily look them up" lineBreakMode="tailTruncation" numberOfLines="7" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="41X-LM-mml">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Add a label" lineBreakMode="tailTruncation" numberOfLines="7" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="41X-LM-mml">
                                 <rect key="frame" x="16" y="64" width="343" height="73"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="73" id="xtY-Ka-kVA"/>
                                 </constraints>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="28"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
@@ -3306,14 +3342,15 @@
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                             </textField>
                             <button opaque="NO" tag="8" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="I35-cn-vrC">
-                                <rect key="frame" x="16" y="187" width="343" height="53"/>
+                                <rect key="frame" x="88.5" y="187" width="198" height="44"/>
                                 <color key="backgroundColor" red="0.12791608967551313" green="0.14715240112100464" blue="0.16878568733857868" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="53" id="hFf-GN-Eg5"/>
+                                    <constraint firstAttribute="width" constant="198" id="2qS-cL-Lin"/>
+                                    <constraint firstAttribute="height" constant="44" id="bhU-0E-CoL"/>
                                 </constraints>
-                                <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="17"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <state key="normal" title="Next">
+                                <state key="normal" title="next">
                                     <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <connections>
@@ -3321,22 +3358,22 @@
                                 </connections>
                             </button>
                         </subviews>
-                        <color key="backgroundColor" red="0.078040815889835358" green="0.090017892420291901" blue="0.1025182381272316" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="I35-cn-vrC" firstAttribute="top" secondItem="Top-LU-ubL" secondAttribute="bottom" constant="8" id="AZj-dW-YlZ"/>
-                            <constraint firstItem="I35-cn-vrC" firstAttribute="leading" secondItem="Dc3-5z-gLj" secondAttribute="leading" constant="16" id="Ha6-fc-bsP"/>
-                            <constraint firstItem="Dc3-5z-gLj" firstAttribute="trailing" secondItem="I35-cn-vrC" secondAttribute="trailing" constant="16" id="JVY-gw-SqY"/>
                             <constraint firstItem="41X-LM-mml" firstAttribute="leading" secondItem="Dc3-5z-gLj" secondAttribute="leading" constant="16" id="Jv0-Sm-8OQ"/>
                             <constraint firstItem="Top-LU-ubL" firstAttribute="top" secondItem="41X-LM-mml" secondAttribute="bottom" constant="8" id="Ond-6u-zn9"/>
                             <constraint firstItem="Dc3-5z-gLj" firstAttribute="trailing" secondItem="Top-LU-ubL" secondAttribute="trailing" constant="16" id="Wgm-9l-OJT"/>
                             <constraint firstItem="Dc3-5z-gLj" firstAttribute="trailing" secondItem="41X-LM-mml" secondAttribute="trailing" constant="16" id="Yhq-hb-fDh"/>
                             <constraint firstItem="41X-LM-mml" firstAttribute="top" secondItem="Dc3-5z-gLj" secondAttribute="top" constant="20" id="rZk-qs-5Cu"/>
+                            <constraint firstItem="I35-cn-vrC" firstAttribute="centerX" secondItem="le1-Uj-08l" secondAttribute="centerX" id="v9A-0u-1Xg"/>
                             <constraint firstItem="Top-LU-ubL" firstAttribute="leading" secondItem="Dc3-5z-gLj" secondAttribute="leading" constant="16" id="vfR-XZ-6yY"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="Dc3-5z-gLj"/>
                     </view>
                     <navigationItem key="navigationItem" id="Zze-0x-8iZ"/>
                     <connections>
+                        <outlet property="addLabelOutlet" destination="I35-cn-vrC" id="nYj-Up-zyY"/>
                         <outlet property="labelOutlet" destination="41X-LM-mml" id="A6J-kM-Q5W"/>
                         <outlet property="textField" destination="Top-LU-ubL" id="Xa8-e3-sLG"/>
                         <segue destination="cZc-Ap-mkZ" kind="show" identifier="goToParent" id="ra5-Ko-OD7"/>
@@ -3433,13 +3470,13 @@ address prefix: 1</string>
                             </switch>
                             <button opaque="NO" tag="8" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Txl-uD-Les">
                                 <rect key="frame" x="0.0" y="614" width="375" height="53"/>
-                                <color key="backgroundColor" red="0.084890075029999998" green="0.3978849351" blue="0.86794960499999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="53" id="EAm-ab-Wgl"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="17"/>
                                 <state key="normal" title="Next">
-                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <connections>
                                     <action selector="nextAction:" destination="cZc-Ap-mkZ" eventType="touchUpInside" id="EX8-bg-V2F"/>
@@ -3521,7 +3558,7 @@ address prefix: 1</string>
                                 <nil key="highlightedColor"/>
                             </label>
                         </subviews>
-                        <color key="backgroundColor" red="0.078040815889835358" green="0.090017892420291901" blue="0.1025182381272316" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="yGN-Mr-yad" firstAttribute="leading" secondItem="ICU-Rj-3rT" secondAttribute="leading" constant="94" id="074-bJ-NMj"/>
                             <constraint firstItem="uz3-GO-Wz6" firstAttribute="centerX" secondItem="Ouj-Ww-Exb" secondAttribute="centerX" id="1SQ-2l-fcw"/>
@@ -3616,13 +3653,13 @@ address prefix: 1</string>
                             </label>
                             <button opaque="NO" tag="8" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Nh9-GE-lKI">
                                 <rect key="frame" x="0.0" y="614" width="375" height="53"/>
-                                <color key="backgroundColor" red="0.084890075029999998" green="0.3978849351" blue="0.86794960499999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="53" id="CCH-nn-Th0"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="17"/>
                                 <state key="normal" title="Next">
-                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <connections>
                                     <action selector="nextAction:" destination="g4K-ZQ-445" eventType="touchUpInside" id="hY2-NC-GgE"/>
@@ -3643,7 +3680,7 @@ The range represents the index of the derived addresses</string>
                                 <nil key="highlightedColor"/>
                             </label>
                         </subviews>
-                        <color key="backgroundColor" red="0.078040815889835358" green="0.090017892420291901" blue="0.1025182381272316" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="Nh9-GE-lKI" firstAttribute="trailing" secondItem="2bs-9a-EsW" secondAttribute="trailing" id="1Td-5e-xXb"/>
                             <constraint firstItem="2bs-9a-EsW" firstAttribute="trailing" secondItem="cod-Ht-fNQ" secondAttribute="trailing" constant="16" id="3Dr-Jd-Ea3"/>
@@ -3676,13 +3713,13 @@ The range represents the index of the derived addresses</string>
                         <subviews>
                             <button opaque="NO" tag="8" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="RsN-wp-34E">
                                 <rect key="frame" x="0.0" y="614" width="375" height="53"/>
-                                <color key="backgroundColor" red="0.084890075029999998" green="0.3978849351" blue="0.86794960499999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="53" id="lz6-CV-rjt"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="17"/>
                                 <state key="normal" title="Next">
-                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <connections>
                                     <action selector="nextAction:" destination="YCs-N7-5az" eventType="touchUpInside" id="O4l-Ul-Zye"/>
@@ -3721,7 +3758,7 @@ The range represents the index of the derived addresses</string>
                                 </connections>
                             </switch>
                         </subviews>
-                        <color key="backgroundColor" red="0.078040815889835358" green="0.090017892420291901" blue="0.1025182381272316" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="tQw-JJ-blT" firstAttribute="centerX" secondItem="LJv-zM-azM" secondAttribute="centerX" id="06N-47-apC"/>
                             <constraint firstItem="RsN-wp-34E" firstAttribute="leading" secondItem="znz-19-Xms" secondAttribute="leading" id="5wR-vn-SLE"/>
@@ -3779,13 +3816,13 @@ The range represents the index of the derived addresses</string>
                             </label>
                             <button opaque="NO" tag="8" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6qa-Vq-CtQ">
                                 <rect key="frame" x="0.0" y="614" width="375" height="53"/>
-                                <color key="backgroundColor" red="0.084890075029999998" green="0.3978849351" blue="0.86794960499999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="53" id="JZx-PY-xqc"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="17"/>
                                 <state key="normal" title="Next">
-                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <connections>
                                     <action selector="nextAction:" destination="Of4-yh-0Y6" eventType="touchUpInside" id="ctC-4I-lG4"/>
@@ -3805,7 +3842,7 @@ The range represents the index of the derived addresses</string>
                                 </connections>
                             </switch>
                         </subviews>
-                        <color key="backgroundColor" red="0.078040815890000004" green="0.090017892419999995" blue="0.10251823810000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="wQ1-Bd-CMl" firstAttribute="top" secondItem="JW2-a8-GXe" secondAttribute="top" constant="20" id="3a6-V2-sg4"/>
                             <constraint firstItem="wQ1-Bd-CMl" firstAttribute="leading" secondItem="JW2-a8-GXe" secondAttribute="leading" constant="16" id="5Lu-jT-6iU"/>
@@ -3853,13 +3890,13 @@ The range represents the index of the derived addresses</string>
                             </label>
                             <button opaque="NO" tag="8" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rXN-gh-h77">
                                 <rect key="frame" x="0.0" y="614" width="375" height="53"/>
-                                <color key="backgroundColor" red="0.084890075029999998" green="0.3978849351" blue="0.86794960499999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="53" id="KAG-eT-XIP"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="17"/>
                                 <state key="normal" title="Next">
-                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <connections>
                                     <action selector="nextAction:" destination="VYc-9a-4kI" eventType="touchUpInside" id="uR8-Wz-chr"/>
@@ -3890,7 +3927,7 @@ A full rescan will take around an hour to complete.</string>
                                 </date>
                             </datePicker>
                         </subviews>
-                        <color key="backgroundColor" red="0.078040815890000004" green="0.090017892419999995" blue="0.10251823810000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="INN-r0-DiZ" firstAttribute="leading" secondItem="JHp-gP-77k" secondAttribute="leading" id="6vu-Uh-mDB"/>
                             <constraint firstItem="BYf-oB-nGS" firstAttribute="leading" secondItem="JHp-gP-77k" secondAttribute="leading" constant="16" id="7xu-Cu-af5"/>
@@ -3930,13 +3967,13 @@ A full rescan will take around an hour to complete.</string>
                         <subviews>
                             <button opaque="NO" tag="8" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="k6o-pk-IXJ">
                                 <rect key="frame" x="0.0" y="614" width="375" height="53"/>
-                                <color key="backgroundColor" red="0.084890075029999998" green="0.3978849351" blue="0.86794960499999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="53" id="dQO-y8-sc4"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" name="HiraginoSans-W6" family="Hiragino Sans" pointSize="17"/>
                                 <state key="normal" title="Next">
-                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <connections>
                                     <action selector="nextAction:" destination="wkl-tO-L4u" eventType="touchUpInside" id="WuK-tE-dgp"/>
@@ -3973,7 +4010,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                             </textField>
                         </subviews>
-                        <color key="backgroundColor" red="0.078040815890000004" green="0.090017892419999995" blue="0.10251823810000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="k6o-pk-IXJ" firstAttribute="trailing" secondItem="eNE-iz-B6H" secondAttribute="trailing" id="Atu-fr-RPE"/>
                             <constraint firstItem="eNE-iz-B6H" firstAttribute="trailing" secondItem="Q7f-As-DVO" secondAttribute="trailing" constant="16" id="C9L-kb-eY4"/>
@@ -4008,28 +4045,62 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="07o-7z-HG1">
-                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
-                            </imageView>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Qla-Q9-vok">
+                                <rect key="frame" x="16" y="121.5" width="343" height="34"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits"/>
+                            </textField>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Add your key" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3dQ-dq-fQP">
+                                <rect key="frame" x="16" y="66" width="165" height="33.5"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="28"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="H1U-lX-bMW">
+                                <rect key="frame" x="60" y="172" width="255" height="40"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="40" id="g0v-26-eZ4"/>
+                                    <constraint firstAttribute="width" constant="255" id="jGX-MB-xl3"/>
+                                </constraints>
+                                <state key="normal" title="next">
+                                    <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="nextAction:" destination="rjW-uh-Wra" eventType="touchUpInside" id="wLS-tp-HSI"/>
+                                </connections>
+                            </button>
                         </subviews>
-                        <color key="backgroundColor" red="0.078040815890000004" green="0.090017892419999995" blue="0.10251823810000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="07o-7z-HG1" firstAttribute="bottom" secondItem="ZM4-Zi-J4V" secondAttribute="bottom" id="2Cb-a5-EJ6"/>
-                            <constraint firstItem="07o-7z-HG1" firstAttribute="leading" secondItem="ZM4-Zi-J4V" secondAttribute="leading" id="8eM-S1-3ls"/>
-                            <constraint firstItem="07o-7z-HG1" firstAttribute="top" secondItem="fXd-e7-EVK" secondAttribute="top" id="TgV-we-oko"/>
-                            <constraint firstItem="07o-7z-HG1" firstAttribute="trailing" secondItem="ZM4-Zi-J4V" secondAttribute="trailing" id="ybU-Xc-xjz"/>
+                            <constraint firstItem="Qla-Q9-vok" firstAttribute="leading" secondItem="ZM4-Zi-J4V" secondAttribute="leading" constant="16" id="0NO-aH-Uj8"/>
+                            <constraint firstItem="Qla-Q9-vok" firstAttribute="top" secondItem="3dQ-dq-fQP" secondAttribute="bottom" constant="22" id="EVX-WL-3iS"/>
+                            <constraint firstItem="H1U-lX-bMW" firstAttribute="top" secondItem="Qla-Q9-vok" secondAttribute="bottom" constant="16.5" id="FYh-VX-079"/>
+                            <constraint firstItem="3dQ-dq-fQP" firstAttribute="leading" secondItem="ZM4-Zi-J4V" secondAttribute="leading" constant="16" id="OK2-yN-SYV"/>
+                            <constraint firstItem="ZM4-Zi-J4V" firstAttribute="trailing" secondItem="Qla-Q9-vok" secondAttribute="trailing" constant="16" id="if1-rt-xvP"/>
+                            <constraint firstItem="3dQ-dq-fQP" firstAttribute="top" secondItem="ZM4-Zi-J4V" secondAttribute="top" constant="22" id="lYS-1g-oUf"/>
+                            <constraint firstItem="H1U-lX-bMW" firstAttribute="centerX" secondItem="fXd-e7-EVK" secondAttribute="centerX" id="www-E6-c4u"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="ZM4-Zi-J4V"/>
                     </view>
-                    <navigationItem key="navigationItem" id="xlg-uf-hqo"/>
+                    <navigationItem key="navigationItem" id="xlg-uf-hqo">
+                        <barButtonItem key="rightBarButtonItem" image="qrcode.viewfinder" catalog="system" id="0KL-c7-yfQ">
+                            <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <connections>
+                                <action selector="scanQrAction:" destination="rjW-uh-Wra" id="IV9-Qv-tYX"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
-                        <outlet property="imageView" destination="07o-7z-HG1" id="GQb-A3-nv3"/>
+                        <outlet property="nextOutlet" destination="H1U-lX-bMW" id="KSL-Jj-DHn"/>
+                        <outlet property="textField" destination="Qla-Q9-vok" id="eQb-2Q-B7y"/>
                         <segue destination="gtC-x0-wli" kind="show" identifier="goDisplayKeys" id="G1i-Bv-OSl"/>
+                        <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToGetExtendedKey" id="2wf-ra-Jju"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="MKN-TO-4eQ" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-5913" y="5615"/>
+            <point key="canvasLocation" x="-5914.3999999999996" y="5614.5427286356826"/>
         </scene>
         <!--Create Raw Tx View Controller-->
         <scene sceneID="nPC-E2-jSN">
@@ -7117,18 +7188,18 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="UBf-qr-XYG"/>
         <segue reference="dhu-ZV-762"/>
         <segue reference="EZr-Ut-goC"/>
-        <segue reference="XQE-Ek-uZu"/>
-        <segue reference="Ear-8U-mw8"/>
-        <segue reference="upA-ZA-3fA"/>
+        <segue reference="RbT-dI-IvI"/>
+        <segue reference="IVc-aG-8QZ"/>
+        <segue reference="cvp-U1-bU5"/>
         <segue reference="AYh-di-V7O"/>
-        <segue reference="kq8-dj-bJ2"/>
-        <segue reference="ywj-ud-JRK"/>
+        <segue reference="X76-BN-dSF"/>
+        <segue reference="HNI-HG-9ZQ"/>
         <segue reference="oY9-Pq-H5b"/>
-        <segue reference="nyo-So-jGt"/>
+        <segue reference="vy1-e7-rQN"/>
         <segue reference="aV5-mq-s3Q"/>
         <segue reference="vxK-yE-HH1"/>
         <segue reference="Kd4-zZ-oMj"/>
-        <segue reference="Ikt-mc-dmE"/>
+        <segue reference="XYa-A2-HkD"/>
         <segue reference="6HW-Pq-bwM"/>
         <segue reference="U54-oe-CeC"/>
     </inferredMetricsTieBreakers>

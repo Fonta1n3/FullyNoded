@@ -69,7 +69,6 @@
 		D05692E321434452006DF0F4 /* MainMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05692E221434452006DF0F4 /* MainMenuViewController.swift */; };
 		D05692E92144AC13006DF0F4 /* back.png in Resources */ = {isa = PBXBuildFile; fileRef = D05692E82144AC13006DF0F4 /* back.png */; };
 		D058F3C2226D9DED00CF4BE9 /* OutgoingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D058F3C1226D9DED00CF4BE9 /* OutgoingsTableViewController.swift */; };
-		D05D972C2264104D0035F1DE /* QRScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05D972B2264104D0035F1DE /* QRScanner.swift */; };
 		D05D9730226425730035F1DE /* images.png in Resources */ = {isa = PBXBuildFile; fileRef = D05D972F226425730035F1DE /* images.png */; };
 		D05D9732226433B60035F1DE /* strobe.png in Resources */ = {isa = PBXBuildFile; fileRef = D05D9731226433B60035F1DE /* strobe.png */; };
 		D05D973422647CE60035F1DE /* QRGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05D973322647CE60035F1DE /* QRGenerator.swift */; };
@@ -259,7 +258,6 @@
 		D05692E221434452006DF0F4 /* MainMenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuViewController.swift; sourceTree = "<group>"; };
 		D05692E82144AC13006DF0F4 /* back.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = back.png; sourceTree = "<group>"; };
 		D058F3C1226D9DED00CF4BE9 /* OutgoingsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutgoingsTableViewController.swift; sourceTree = "<group>"; };
-		D05D972B2264104D0035F1DE /* QRScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScanner.swift; sourceTree = "<group>"; };
 		D05D972F226425730035F1DE /* images.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = images.png; sourceTree = "<group>"; };
 		D05D9731226433B60035F1DE /* strobe.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = strobe.png; sourceTree = "<group>"; };
 		D05D973322647CE60035F1DE /* QRGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRGenerator.swift; sourceTree = "<group>"; };
@@ -523,7 +521,6 @@
 			children = (
 				D08495FD22EBCA97003FE8EB /* Number Pad */,
 				D08495FE22EBCABC003FE8EB /* Spinner View */,
-				D08495FF22EBCAE9003FE8EB /* QR Scanner */,
 				D084960022EBCAF7003FE8EB /* QR Generator */,
 				D084960122EBCB04003FE8EB /* Alert View */,
 			);
@@ -800,14 +797,6 @@
 				D02094F2225936D2002E8E7A /* ConnectingView.swift */,
 			);
 			path = "Spinner View";
-			sourceTree = "<group>";
-		};
-		D08495FF22EBCAE9003FE8EB /* QR Scanner */ = {
-			isa = PBXGroup;
-			children = (
-				D05D972B2264104D0035F1DE /* QRScanner.swift */,
-			);
-			path = "QR Scanner";
 			sourceTree = "<group>";
 		};
 		D084960022EBCAF7003FE8EB /* QR Generator */ = {
@@ -1217,7 +1206,6 @@
 				D0D4B9A624DA616300572811 /* Lightning.swift in Sources */,
 				D07E0DE822F9570A00A81FA8 /* WalletCreatorViewController.swift in Sources */,
 				D0AD9B6823E7ECC20032C607 /* SceneDelegate.swift in Sources */,
-				D05D972C2264104D0035F1DE /* QRScanner.swift in Sources */,
 				D0C20ED824A6E2FF00C62AA4 /* MiningInfo.swift in Sources */,
 				D0560EE92277F75900C3E909 /* UTXOViewController.swift in Sources */,
 				D0257E6524D6C5F5000EB854 /* LightningRPC.swift in Sources */,

@@ -29,17 +29,8 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     var getUtxos = Bool()
     var getTxoutset = Bool()
     var deriveAddresses = Bool()
-    
     let spinner = ConnectingView()
-    let qrScanner = QRScanner()
-    
-    var isTorchOn = Bool()
-    var blurArray = [UIVisualEffectView]()
-    var scannerShowing = false
-    var isFirstTime = Bool()
-    
-    let blurView = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
-    
+            
     @IBOutlet weak var goButtonOutlet: UIButton!
     @IBOutlet weak var textField: UITextField!
     @IBOutlet var textView: UITextView!
@@ -51,9 +42,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     var addressArray = NSArray()
     var infoArray = [NSDictionary]()
     var alertMessage = ""
-    
     var address = ""
-    //private var utxo: UtxosStruct?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -65,12 +54,6 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         getInfo()
         setupTextField()
     }
-    
-//    /// Call this method to confgure the view controller when used to show a utxo.
-//    /// - Parameter utxo: utxo to be shown
-//    func configure(utxo: UtxosStruct) {
-//        self.utxo = utxo
-//    }
     
     private func setupTextField() {
         textView.textContainer.lineBreakMode = .byCharWrapping
@@ -230,17 +213,6 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
             self.executeNodeCommand(method: .getwalletinfo, param: "")
         }
         
-//        if let utxo = utxo {
-//            command = "listunspent"
-//            titleString = "UTXO"
-//            DispatchQueue.main.async {
-//                self.textView.text = self.utxo.jsonDict()
-//                self.textField.alpha = 0
-//                self.goButtonOutlet.alpha = 0
-//                self.spinner.removeConnectingView()
-//            }
-//        }
-        
         if getTxoutset {
             command = "gettxoutsetinfo"
             DispatchQueue.main.async {
@@ -252,26 +224,10 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         }
         
         DispatchQueue.main.async {
-            if placeholder != "" {
-                self.qrScanner.textField.attributedPlaceholder = NSAttributedString(string: placeholder,
-                                                                                    attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
-            }
             self.label.text = titleString
         }
         
     }
-    // TODO: As Fontane about "safe" property
-//    private func format(_ utxo: UtxosStruct) -> String {
-//        let encoder = JSONEncoder()
-//        encoder.outputFormatting = .prettyPrinted
-//        let json: String
-//        if let data = try? encoder.encode(utxo), let jsonString = String(data: data, encoding: .utf8) {
-//            json = jsonString
-//        } else {
-//            json = ""
-//        }
-//        return json
-//    }
     
     private func hideParam() {
         goButtonOutlet.isEnabled = false
@@ -376,15 +332,6 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     }
     
     func makeCommand(param: String) {
-        
-        DispatchQueue.main.async {
-            self.qrScanner.textField.resignFirstResponder()
-            for blur in self.blurArray {
-                blur.removeFromSuperview()
-            }
-            self.blurView.removeFromSuperview()
-            self.qrScanner.removeScanner()
-        }
         
         if deriveAddresses {
             let params = "\"\(param)\", [0,2500]"
