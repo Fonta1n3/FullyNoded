@@ -1026,6 +1026,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             }))
             
             alert.addAction(UIAlertAction(title: "QR", style: .default, handler: { action in
+                self.unsignedPsbt = psbt
                 self.exportAsQR()
             }))
             
@@ -1108,7 +1109,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             if let vc = segue.destination as? QRDisplayerViewController {
                 
                 if unsignedPsbt != "" {
-                    vc.text = unsignedPsbt
+                    vc.psbt = unsignedPsbt
                     vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
                     vc.headerText = "PSBT"
                     vc.descriptionText = "This psbt still needs more signatures to be complete, you can share it with another signer."

@@ -15,7 +15,6 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
     var psbt = ""
     var txn = ""
     var broadcast = false
-    //var export = false
     var alertStyle = UIAlertController.Style.actionSheet
     
     @IBOutlet weak private var textView: UITextView!
@@ -24,18 +23,15 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        signOutlet.clipsToBounds = true
+        signOutlet.layer.cornerRadius = 8
+        
         configureTextView()
         
         if psbt != "" {
             psbt = processedText(psbt)
             textView.text = psbt
-            
-//            if export {
-//                segueToBroadcast()
-//            } else {
-//                spinner.addConnectingView(vc: self, description: "checking which network the node is on...")
-//            }
-            spinner.addConnectingView(vc: self, description: "checking which network the node is on...")
             
         } else if txn != "" {
             txn = processedText(txn)
@@ -48,30 +44,42 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        //if !export {
         if psbt != "" {
-            Reducer.makeCommand(command: .getblockchaininfo, param: "") { [weak self] (response, errorMessage) in
-                guard let self = self else { return }
-                
-                guard let dict = response as? NSDictionary, let network = dict["chain"] as? String else {
-                    self.showError(error: "error getting network type: \(errorMessage ?? "unknown")")
-                    return
-                }
-                
-                var chain:Network!
-                
-                if network == "main" {
-                    chain = .mainnet
-                } else {
-                    chain = .testnet
-                }
-                
-                self.getPsbt(chain: chain)
-            }
+            getChain()
         }
-            
-        //}
     }
+    
+    private func getChain() {
+        spinner.addConnectingView(vc: self, description: "checking which network the node is on...")
+        
+        Reducer.makeCommand(command: .getblockchaininfo, param: "") { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            guard let dict = response as? NSDictionary, let network = dict["chain"] as? String else {
+                self.showError(error: "error getting network type: \(errorMessage ?? "unknown")")
+                return
+            }
+            
+            var chain:Network!
+            
+            if network == "main" {
+                chain = .mainnet
+            } else {
+                chain = .testnet
+            }
+            
+            self.getPsbt(chain: chain)
+        }
+    }
+    
+    @IBAction func scanQrAction(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.performSegue(withIdentifier: "segueToScanPsbtUr", sender: self)
+        }
+    }
+    
     
     private func processedText(_ text: String) -> String {
         return (text.replacingOccurrences(of: "\n", with: "")).condenseWhitespace()
@@ -317,6 +325,18 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
             if let vc = segue.destination as? VerifyTransactionViewController {
                 vc.signedRawTx = txn
                 vc.unsignedPsbt = psbt
+            }
+        }
+        
+        if segue.identifier == "segueToScanPsbtUr" {
+            guard let vc = segue.destination as? QRScannerViewController else { return }
+            
+            vc.isUrPsbt = true
+            vc.onAddressDoneBlock = { [weak self] psbt in
+                guard let self = self, let psbt = psbt else { return }
+                
+                self.psbt = psbt
+                self.getChain()
             }
         }
     }

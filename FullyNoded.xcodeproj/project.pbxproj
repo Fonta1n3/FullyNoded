@@ -128,6 +128,8 @@
 		D0AD9B6823E7ECC20032C607 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0AD9B6723E7ECC20032C607 /* SceneDelegate.swift */; };
 		D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B3149E216C4DB1008FDC53 /* CreateRawTxViewController.swift */; };
 		D0B80A892516020A006B88F0 /* ImportXpubViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B80A882516020A006B88F0 /* ImportXpubViewController.swift */; };
+		D0C1F9132531E5970079C2B8 /* URKit in Frameworks */ = {isa = PBXBuildFile; productRef = D0C1F9122531E5970079C2B8 /* URKit */; };
+		D0C1F9152531E71F0079C2B8 /* UR.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C1F9142531E71F0079C2B8 /* UR.swift */; };
 		D0C20ED224A6DB9D00C62AA4 /* BlockchainInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20ED124A6DB9D00C62AA4 /* BlockchainInfo.swift */; };
 		D0C20ED424A6DFE600C62AA4 /* PeerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20ED324A6DFE500C62AA4 /* PeerInfo.swift */; };
 		D0C20ED624A6E19600C62AA4 /* NetworkInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20ED524A6E19600C62AA4 /* NetworkInfo.swift */; };
@@ -315,6 +317,7 @@
 		D0AD9B6723E7ECC20032C607 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		D0B3149E216C4DB1008FDC53 /* CreateRawTxViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateRawTxViewController.swift; sourceTree = "<group>"; };
 		D0B80A882516020A006B88F0 /* ImportXpubViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportXpubViewController.swift; sourceTree = "<group>"; };
+		D0C1F9142531E71F0079C2B8 /* UR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UR.swift; sourceTree = "<group>"; };
 		D0C20ED124A6DB9D00C62AA4 /* BlockchainInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockchainInfo.swift; sourceTree = "<group>"; };
 		D0C20ED324A6DFE500C62AA4 /* PeerInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerInfo.swift; sourceTree = "<group>"; };
 		D0C20ED524A6E19600C62AA4 /* NetworkInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkInfo.swift; sourceTree = "<group>"; };
@@ -357,6 +360,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D0C1F9132531E5970079C2B8 /* URKit in Frameworks */,
 				D06FD7CB2506155C00481185 /* CLibWally.xcframework in Frameworks */,
 				D06FD7CD2506156A00481185 /* LibWally.xcframework in Frameworks */,
 				D03FC07C2508850600450B45 /* Tor-3.xcframework in Frameworks */,
@@ -562,6 +566,7 @@
 				D0F3918F24BFE48600EA8A2A /* AccountMap.swift */,
 				D0257E6424D6C5F5000EB854 /* LightningRPC.swift */,
 				D06FD7CF25062F7A00481185 /* GetTx.swift */,
+				D0C1F9142531E71F0079C2B8 /* UR.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -942,6 +947,9 @@
 			dependencies = (
 			);
 			name = FullyNoded;
+			packageProductDependencies = (
+				D0C1F9122531E5970079C2B8 /* URKit */,
+			);
 			productName = BitSense;
 			productReference = D00B9A242111427200E8B95A /* FullyNoded.app */;
 			productType = "com.apple.product-type.application";
@@ -1012,6 +1020,9 @@
 				Base,
 			);
 			mainGroup = D00B9A1B2111427200E8B95A;
+			packageReferences = (
+				D0C1F9112531E5960079C2B8 /* XCRemoteSwiftPackageReference "URKit" */,
+			);
 			productRefGroup = D00B9A252111427200E8B95A /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -1113,6 +1124,7 @@
 				D02094F02257FB78002E8E7A /* FirstTime.swift in Sources */,
 				D0560EEF22784E9D00C3E909 /* UnsignedViewController.swift in Sources */,
 				D069052124EA8E95007F939D /* LightningChannelsViewController.swift in Sources */,
+				D0C1F9152531E71F0079C2B8 /* UR.swift in Sources */,
 				D0B80A892516020A006B88F0 /* ImportXpubViewController.swift in Sources */,
 				D058F3C2226D9DED00CF4BE9 /* OutgoingsTableViewController.swift in Sources */,
 				D0C20EE024A6EF3800C62AA4 /* Balances.swift in Sources */,
@@ -1395,7 +1407,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 254;
+				CURRENT_PROJECT_VERSION = 255;
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1409,7 +1421,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.334;
+				MARKETING_VERSION = 1.335;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1434,7 +1446,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 254;
+				CURRENT_PROJECT_VERSION = 255;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
@@ -1450,7 +1462,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.334;
+				MARKETING_VERSION = 1.335;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1543,6 +1555,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D0C1F9112531E5960079C2B8 /* XCRemoteSwiftPackageReference "URKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/BlockchainCommons/URKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D0C1F9122531E5970079C2B8 /* URKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D0C1F9112531E5960079C2B8 /* XCRemoteSwiftPackageReference "URKit" */;
+			productName = URKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 
 /* Begin XCVersionGroup section */
 		D0C4EE6D24F0EC9B003C929A /* BitSense.xcdatamodeld */ = {

@@ -73,6 +73,7 @@ class MainMenuViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(refreshNode), name: .refreshNode, object: nil)
         torProgressLabel.layer.zPosition = 1
         progressView.layer.zPosition = 1
+        progressView.setNeedsFocusUpdate()
     }
     
     override func viewDidAppear(_ animated: Bool) {

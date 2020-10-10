@@ -6,6 +6,7 @@
 //  Copyright © 2020 Fontaine. All rights reserved.
 //
 
+import URKit
 import AVFoundation
 import UIKit
 
@@ -27,18 +28,27 @@ class QRScannerViewController: UIViewController {
     var isScanningAddress = Bool()
     var onQuickConnectDoneBlock : ((String?) -> Void)?
     var onAddressDoneBlock : ((String?) -> Void)?
+    var isUrPsbt = Bool()
+    var decoder:URDecoder!
     private let spinner = ConnectingView()
     private let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     private var blurArray = [UIVisualEffectView]()
     private var isTorchOn = Bool()
     
     @IBOutlet weak private var scannerView: UIImageView!
+    @IBOutlet weak private var progressDescriptionLabel: UILabel!
+    @IBOutlet weak private var progressView: UIProgressView!
+    @IBOutlet weak var backgroundView: UIVisualEffectView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        backgroundView.alpha = 0
+        progressDescriptionLabel.alpha = 0
+        progressView.alpha = 0
         configureScanner()
         spinner.addConnectingView(vc: self, description: "")
+        decoder = URDecoder()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -107,6 +117,7 @@ class QRScannerViewController: UIViewController {
         blur.clipsToBounds = true
         blur.layer.cornerRadius = frame.width / 2
         blur.contentView.addSubview(button)
+        blurArray.append(blur)
         scannerView.addSubview(blur)
     }
     
@@ -117,9 +128,63 @@ class QRScannerViewController: UIViewController {
         }
     }
     
+    private func stopScanning(_ psbt: String) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.removeScanner()
+            
+            self.dismiss(animated: true) {
+                self.onAddressDoneBlock!(psbt)
+            }
+        }
+    }
+    
+    private func processUrPsbt(text: String) {
+        // Stop if we're already done with the decode.
+        guard decoder.result == nil else {
+            guard let result = try? decoder.result?.get(), let psbt = URHelper.psbtUrToBase64Text(result) else { return }
+            stopScanning(psbt)
+            return
+        }
+
+        decoder.receivePart(text.lowercased())
+        
+        let expectedParts = decoder.expectedPartCount ?? 0
+        
+        guard expectedParts != 0 else {
+            guard let result = try? decoder.result?.get(), let psbt = URHelper.psbtUrToBase64Text(result) else { return }
+            stopScanning(psbt)
+            return
+        }
+        
+        let percentageCompletion = "\(Int(decoder.estimatedPercentComplete * 100))% complete"
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            if self.blurArray.count > 0 {
+                for i in self.blurArray {
+                    i.removeFromSuperview()
+                }
+                self.blurArray.removeAll()
+            }
+            
+            self.progressView.setProgress(Float(self.decoder.estimatedPercentComplete), animated: false)
+            self.progressDescriptionLabel.text = percentageCompletion
+            self.backgroundView.alpha = 1
+            self.progressView.alpha = 1
+            self.progressDescriptionLabel.alpha = 1
+        }
+    }
+    
     private func process(text: String) {
-        spinner.addConnectingView(vc: self, description: "processing...")
-        if isAccountMap {
+        //spinner.addConnectingView(vc: self, description: "processing...")
+        
+        if isUrPsbt {
+            processUrPsbt(text: text)
+            
+        } else if isAccountMap {
             if let data = text.data(using: .utf8) {
                 do {
                     let accountMap = try JSONSerialization.jsonObject(with: data, options: []) as! [String:Any]

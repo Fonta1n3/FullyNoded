@@ -321,20 +321,15 @@ public func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
 }
 
 public extension Int {
-    
     var avoidNotation: String {
-        
         let numberFormatter = NumberFormatter()
         numberFormatter.maximumFractionDigits = 8
         numberFormatter.numberStyle = .decimal
         return numberFormatter.string(for: self) ?? ""
-        
     }
 }
 
 public func shakeAlert(viewToShake: UIView) {
-    print("shakeAlert")
-    
     let animation = CABasicAnimation(keyPath: "position")
     animation.duration = 0.07
     animation.repeatCount = 4
@@ -343,9 +338,7 @@ public func shakeAlert(viewToShake: UIView) {
     animation.toValue = NSValue(cgPoint: CGPoint(x: viewToShake.center.x + 10, y: viewToShake.center.y))
     
     DispatchQueue.main.async {
-        
         viewToShake.layer.add(animation, forKey: "position")
-        
     }
 }
 
@@ -358,6 +351,15 @@ public extension Encodable {
         encoder.dateEncodingStrategy = .iso8601
         return try encoder.encode(self)
     }
+}
+
+public extension UIView {
+    #if targetEnvironment(macCatalyst)
+    @objc(_focusRingType)
+    var focusRingType: UInt {
+        return 1 //NSFocusRingTypeNone
+    }
+    #endif
 }
 
 public extension String {
@@ -452,4 +454,29 @@ public extension UIDevice {
         return mapToDevice(identifier: identifier)
     }()
     
+}
+
+extension String {
+    var utf8: Data {
+        return data(using: .utf8)!
+    }
+}
+
+extension Data {
+    static func random(_ len: Int) -> Data {
+        let values = (0 ..< len).map { _ in UInt8.random(in: 0 ... 255) }
+        return Data(values)
+    }
+
+    var bytes: [UInt8] {
+        var b: [UInt8] = []
+        b.append(contentsOf: self)
+        return b
+    }
+}
+
+extension Array where Element == UInt8 {
+    var data: Data {
+        Data(self)
+    }
 }

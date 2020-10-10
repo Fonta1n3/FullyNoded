@@ -7,15 +7,25 @@
 //
 
 import UIKit
+import URKit
 
 class QRDisplayerViewController: UIViewController {
     
     var text = ""
+    var psbt = ""
     var tapQRGesture = UITapGestureRecognizer()
     var tapTextViewGesture = UITapGestureRecognizer()
     var headerText = ""
     var descriptionText = ""
     var headerIcon: UIImage!
+    var spinner = ConnectingView()
+    let qrGenerator = QRGenerator()
+    
+    private var encoder:UREncoder!
+    private var timer: Timer?
+    private var parts = [String]()
+    private var ur: UR!
+    private var partIndex = 0
     
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var textView: UITextView!
@@ -28,10 +38,17 @@ class QRDisplayerViewController: UIViewController {
         headerLabel.text = headerText
         headerImage.image = headerIcon
         imageView.isUserInteractionEnabled = true
-        imageView.image = qR()
         textView.text = descriptionText
         tapQRGesture = UITapGestureRecognizer(target: self, action: #selector(shareQRCode(_:)))
         imageView.addGestureRecognizer(tapQRGesture)
+        
+        if psbt != "" {
+            spinner.addConnectingView(vc: self, description: "loading QR parts...")
+            imageView.isUserInteractionEnabled = false
+            convertPsbtToUrParts()
+        } else {
+            imageView.image = qR()
+        }
     }
     
     @IBAction func closeAction(_ sender: Any) {
@@ -41,7 +58,6 @@ class QRDisplayerViewController: UIViewController {
     }
     
     private func qR() -> UIImage {
-        let qrGenerator = QRGenerator()
         qrGenerator.textInput = text
         return qrGenerator.getQRCode()
     }
@@ -56,15 +72,40 @@ class QRDisplayerViewController: UIViewController {
         self.present(activityController, animated: true) {}
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    @objc func animate() {
+        showQR(parts[partIndex])
+        
+        if partIndex < parts.count - 1 {
+            partIndex += 1
+        } else {
+            partIndex = 0
+        }
     }
-    */
+    
+    private func showQR(_ string: String) {
+        qrGenerator.textInput = string
+        imageView.image = qrGenerator.getQRCode()
+    }
+    
+    private func convertPsbtToUrParts() {
+        guard let b64 = Data(base64Encoded: psbt), let ur = URHelper.psbtUr(b64) else { return }
+        let encoder = UREncoder(ur, maxFragmentLen: 250)
+        weak var timer: Timer?
+        
+        timer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            
+            let part = encoder.nextPart()
+            let index = encoder.seqNum
+            
+            if index <= encoder.seqLen {
+                self.parts.append(part.uppercased())
+            } else {
+                self.spinner.removeConnectingView()
+                timer?.invalidate()
+                timer = Timer.scheduledTimer(timeInterval: 0.4, target: self, selector: #selector(self.animate), userInfo: nil, repeats: true)
+            }
+        }
+    }
 
 }
