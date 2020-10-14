@@ -10,7 +10,7 @@ import UIKit
 
 protocol UTXOCellDelegate: class {
     func didTapToLock(_ utxo: UtxosStruct)
-    //func didTapInfoFor(_ utxo: UtxosStruct)
+    func didTapToEditLabel(_ utxo: UtxosStruct)
 }
 
 class UTXOCell: UITableViewCell {
@@ -37,7 +37,9 @@ class UTXOCell: UITableViewCell {
     @IBOutlet private weak var isDustBackground: UIView!
     @IBOutlet private weak var isDustImageView: UIImageView!
     @IBOutlet private weak var lockButtonOutlet: UIButton!
-    @IBOutlet private weak var infoButtonOutlet: UIButton!
+    @IBOutlet private weak var labelButtonOutlet: UIButton!
+    @IBOutlet private weak var fiatLabel: UILabel!
+    
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -58,30 +60,28 @@ class UTXOCell: UITableViewCell {
         isSolvableImageView.tintColor = .white
         isDustImageView.tintColor = .white
         
-        infoButtonOutlet.alpha = 0
-        
         selectionStyle = .none
     }
     
-    func configure(utxo: UtxosStruct, isLocked: Bool, delegate: UTXOCellDelegate) {
+    func configure(utxo: UtxosStruct, isLocked: Bool, fxRate: Double?, delegate: UTXOCellDelegate) {
         self.utxo = utxo
         self.isLocked = isLocked
         self.delegate = delegate
         
         txidLabel.text = utxo.txid
-        walletLabel.text = utxo.label
-        addressLabel.text = "Address: \(utxo.address ?? "unknown")"
-        txidLabel.text = "TXID: \(utxo.txid)"
-        voutLabel.text = "vout #\(utxo.vout)"
+        walletLabel.text = utxo.label ?? "No label"
+        addressLabel.text = "address: \(utxo.address ?? "unknown")"
+        txidLabel.text = "txid: \(utxo.txid)"
+        voutLabel.text = "vout #: \(utxo.vout)"
         
         if isLocked {
             lockButtonOutlet.setImage(UIImage(systemName: "lock"), for: .normal)
             lockButtonOutlet.tintColor = .systemPink
-            //infoButtonOutlet.alpha = 0
+            labelButtonOutlet.alpha = 0
         } else {
             lockButtonOutlet.setImage(UIImage(systemName: "lock.open"), for: .normal)
             lockButtonOutlet.tintColor = .systemTeal
-            //infoButtonOutlet.alpha = 1
+            labelButtonOutlet.alpha = 1
         }
         
         if utxo.desc != nil {
@@ -108,6 +108,11 @@ class UTXOCell: UITableViewCell {
                 isDustImageView.image = UIImage(systemName: "checkmark")
                 isDustBackground.backgroundColor = .darkGray
             }
+            
+            if fxRate != nil {
+                fiatLabel.text = "$\((utxo.amount! * fxRate!).rounded().withCommas())"
+            }
+            
         }  else {
             isDustImageView.image = UIImage(systemName: "questionmark")
             isDustBackground.backgroundColor = .clear
@@ -212,11 +217,12 @@ class UTXOCell: UITableViewCell {
         }
     }
     
+    @IBAction func labelButtonTapped(_ sender: Any) {
+        delegate.didTapToEditLabel(utxo)
+    }
+    
     @IBAction func lockButtonTapped(_ sender: Any) {
         delegate.didTapToLock(utxo)
     }
-    
-    @IBAction func infoButtonTapped(_ sender: Any) {
-        //delegate.didTapInfoFor(utxo)
-    }
+
 }

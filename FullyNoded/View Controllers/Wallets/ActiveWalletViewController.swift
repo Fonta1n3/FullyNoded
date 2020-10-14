@@ -29,6 +29,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     var walletLabel:String!
     var wallet:Wallet?
     var isBolt11 = false
+    var fxRate:Double?
     @IBOutlet weak var sendView: UIView!
     @IBOutlet weak var invoiceView: UIView!
     @IBOutlet weak var utxosView: UIView!
@@ -395,24 +396,6 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     
     @objc func refreshWallet() {
         refreshAll()
-//        existingWallet = ""
-//        activeWallet { [unowned vc = self] (wallet) in
-//            if wallet != nil {
-//                vc.wallet = wallet!
-//                vc.id = wallet!.id
-//                vc.walletLabel = wallet!.label
-//            } else {
-//                vc.walletLabel = nil
-//            }
-//            DispatchQueue.main.async { [unowned vc = self] in
-//                vc.addNavBarSpinner()
-//                NodeLogic.walletDisabled = false
-//                vc.sectionZeroLoaded = false
-//                vc.transactionArray.removeAll()
-//                vc.walletTable.reloadData()
-//                vc.reloadWalletData()
-//            }
-//        }
     }
     
     private func checkIfWalletsChanged() {
@@ -480,6 +463,7 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         let fx = FiatConverter.sharedInstance
         fx.getFxRate { [unowned vc = self] rate in
             if rate != nil {
+                vc.fxRate = rate
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.fxRateLabel.text = "$\(rate!.withCommas()) / btc"
                 }
@@ -626,6 +610,10 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
         switch segue.identifier {
+            
+        case "segueToUtxos":
+            guard let vc = segue.destination as? UTXOViewController else { fallthrough }
+            vc.fxRate = fxRate
             
         case "segueToActiveWalletDetail":
             

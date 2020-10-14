@@ -11,15 +11,14 @@ import LibWally
 
 class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
 
+    @IBOutlet weak var wordView: UITextView!
     @IBOutlet weak var textView: UITextField!
-    @IBOutlet weak var wordView: UIView!
     @IBOutlet weak var passphraseField: UITextField!
     @IBOutlet weak var addSignerOutlet: UIButton!
     
     var addedWords = [String]()
     var justWords = [String]()
     var bip39Words = [String]()
-    let label = UILabel()
     var autoCompleteCharacterCount = 0
     var timer = Timer()
     
@@ -34,6 +33,8 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
         wordView.layer.cornerRadius = 8
         wordView.layer.borderColor = UIColor.lightGray.cgColor
         wordView.layer.borderWidth = 0.5
+        addSignerOutlet.clipsToBounds = true
+        addSignerOutlet.layer.cornerRadius = 8
         bip39Words = Words.valid
         updatePlaceHolder(wordNumber: 1)
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
@@ -56,8 +57,7 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
             
             DispatchQueue.main.async { [unowned vc = self] in
                 
-                vc.label.removeFromSuperview()
-                vc.label.text = ""
+                vc.wordView.text = ""
                 vc.addedWords.removeAll()
                 vc.justWords.remove(at: vc.justWords.count - 1)
                 
@@ -71,12 +71,7 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
                     }
                 }
                 
-                vc.label.textColor = .systemGreen
-                vc.label.text = vc.addedWords.joined(separator: "")
-                vc.label.frame = CGRect(x: 16, y: 0, width: vc.wordView.frame.width - 32, height: vc.wordView.frame.height - 10)
-                vc.label.numberOfLines = 0
-                vc.label.sizeToFit()
-                vc.wordView.addSubview(vc.label)
+                vc.wordView.text = vc.addedWords.joined(separator: "")
                 
                 if let _ = BIP39Mnemonic(vc.justWords.joined(separator: " ")) {
                     
@@ -372,8 +367,7 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
         
         DispatchQueue.main.async { [unowned vc = self] in
             
-            vc.label.removeFromSuperview()
-            vc.label.text = ""
+            vc.wordView.text = ""
             vc.addedWords.removeAll()
             vc.justWords = words
             
@@ -382,12 +376,7 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
                 vc.updatePlaceHolder(wordNumber: i + 2)
             }
             
-            vc.label.textColor = .systemGreen
-            vc.label.text = vc.addedWords.joined(separator: "")
-            vc.label.frame = CGRect(x: 16, y: 0, width: vc.wordView.frame.width - 32, height: vc.wordView.frame.height - 10)
-            vc.label.numberOfLines = 0
-            vc.label.sizeToFit()
-            vc.wordView.addSubview(vc.label)
+            vc.wordView.text = vc.addedWords.joined(separator: "")
             
             if let _ = BIP39Mnemonic(vc.justWords.joined(separator: " ")) {
                 
@@ -407,8 +396,7 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
         
         DispatchQueue.main.async { [unowned vc = self] in
             
-            vc.label.removeFromSuperview()
-            vc.label.text = ""
+            vc.wordView.text = ""
             vc.addedWords.removeAll()
             vc.justWords.append(word)
             
@@ -419,12 +407,7 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
                 
             }
             
-            vc.label.textColor = .systemGreen
-            vc.label.text = vc.addedWords.joined(separator: "")
-            vc.label.frame = CGRect(x: 16, y: 0, width: vc.wordView.frame.width - 32, height: vc.wordView.frame.height - 10)
-            vc.label.numberOfLines = 0
-            vc.label.sizeToFit()
-            vc.wordView.addSubview(vc.label)
+            vc.wordView.text = vc.addedWords.joined(separator: "")
             
             if let _ = BIP39Mnemonic(vc.justWords.joined(separator: " ")) {
                 vc.validWordsAdded()

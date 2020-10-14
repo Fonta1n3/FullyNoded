@@ -41,6 +41,7 @@ class MainMenuViewController: UIViewController {
     @IBOutlet weak var headerLabel: UILabel!
     @IBOutlet weak var torProgressLabel: UILabel!
     @IBOutlet weak var progressView: UIProgressView!
+    @IBOutlet weak var blurView: UIVisualEffectView!
     
     private enum Section: Int {
         case verificationProgress
@@ -71,6 +72,10 @@ class MainMenuViewController: UIViewController {
         showUnlockScreen()
         setFeeTarget()
         NotificationCenter.default.addObserver(self, selector: #selector(refreshNode), name: .refreshNode, object: nil)
+        blurView.clipsToBounds = true
+        blurView.layer.cornerRadius = 8
+        blurView.layer.zPosition = 1
+        blurView.alpha = 0
         torProgressLabel.layer.zPosition = 1
         progressView.layer.zPosition = 1
         progressView.setNeedsFocusUpdate()
@@ -760,6 +765,7 @@ extension MainMenuViewController: OnionManagerDelegate {
         DispatchQueue.main.async { [weak self] in
             self?.torProgressLabel.text = "Tor bootstrapping \(progress)% complete"
             self?.progressView.setProgress(Float(Double(progress) / 100.0), animated: true)
+            self?.blurView.alpha = 1
         }
     }
     
@@ -771,6 +777,7 @@ extension MainMenuViewController: OnionManagerDelegate {
         DispatchQueue.main.async { [weak self] in
             self?.torProgressLabel.isHidden = true
             self?.progressView.isHidden = true
+            self?.blurView.isHidden = true
         }
     }
     
@@ -779,6 +786,7 @@ extension MainMenuViewController: OnionManagerDelegate {
         DispatchQueue.main.async { [weak self] in
             self?.torProgressLabel.isHidden = true
             self?.progressView.isHidden = true
+            self?.blurView.isHidden = true
         }
     }
     

@@ -78,6 +78,8 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        importOutlet.clipsToBounds = true
+        importOutlet.layer.cornerRadius = 8
         textField.delegate = self
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
         tapGesture.numberOfTapsRequired = 1

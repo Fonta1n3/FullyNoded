@@ -19,6 +19,8 @@ class TransactionViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         bumpButtonOutlet.alpha = 0
+        bumpButtonOutlet.clipsToBounds = true
+        bumpButtonOutlet.layer.cornerRadius = 8
         textView.layer.borderColor = UIColor.lightGray.cgColor
         textView.layer.borderWidth = 0.5
         textView.clipsToBounds = true

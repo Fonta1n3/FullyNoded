@@ -14,6 +14,7 @@ class LockedViewController: UIViewController {
     let spinner = ConnectingView()
     var selectedVout = Int()
     var selectedTxid = ""
+    var fxRate:Double?
     @IBOutlet var tableView: UITableView!
     
     override func viewDidLoad() {
@@ -163,6 +164,10 @@ extension LockedViewController: UTXOCellDelegate {
         unlock(utxo)
     }
     
+    func didTapToEditLabel(_ utxo: UtxosStruct) {
+        
+    }
+    
 //    func didTapInfoFor(_ utxo: UtxosStruct) {
 //        performSegue(withIdentifier: "getUTXOinfo", sender: utxo)
 //    }
@@ -178,7 +183,7 @@ extension LockedViewController: UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: UTXOCell.identifier, for: indexPath) as! UTXOCell
         let utxo = lockedUtxos[indexPath.section]
         
-        cell.configure(utxo: utxo, isLocked: true, delegate: self)
+        cell.configure(utxo: utxo, isLocked: true, fxRate: fxRate, delegate: self)
         
         return cell
     }

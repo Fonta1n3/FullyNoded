@@ -31,6 +31,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     private let blurView2 = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     private let sweepButtonView = Bundle.main.loadNibNamed("KeyPadButtonView", owner: self, options: nil)?.first as! UIView?
     private var alertStyle = UIAlertController.Style.actionSheet
+    var fxRate:Double?
     
     @IBOutlet weak private var tableView: UITableView!
     
@@ -348,6 +349,66 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             self.blurView2.removeFromSuperview()
             self.amountView.removeFromSuperview()
             self.amountInput.removeFromSuperview()
+        }
+    }
+    
+    private func editLabel(_ utxo: UtxosStruct) {
+        guard let address = utxo.address, let isHot = utxo.spendable else {
+            showAlert(vc: self, title: "Ooops", message: "We not have an address or info on whether that utxo is watch-only or not.")
+            return
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let title = "Edit utxo label"
+            let message = ""
+            let style = UIAlertController.Style.alert
+            let alert = UIAlertController(title: title, message: message, preferredStyle: style)
+            
+            let save = UIAlertAction(title: "save", style: .default) { [weak self] (alertAction) in
+                guard let self = self else { return }
+                
+                guard let textFields = alert.textFields, let label = textFields[0].text else {
+                    showAlert(vc: self, title: "Ooops", message: "Something went wrong here, the textfield is not accessible...")
+                    return
+                }
+                
+                self.spinner.addConnectingView(vc: self, description: "updating utxo label")
+                
+                let param = "[{ \"scriptPubKey\": { \"address\": \"\(address)\" }, \"label\": \"\(label)\", \"timestamp\": \"now\", \"watchonly\": \(!isHot), \"keypool\": false, \"internal\": false }], ''{\"rescan\": false}''"
+                
+                Reducer.makeCommand(command: .importmulti, param: param) { [weak self] (response, errorMessage) in
+                    guard let self = self else { return }
+                    
+                    guard let result = response as? NSArray,
+                        let dict = result[0] as? NSDictionary,
+                        let success = dict["success"] as? Bool,
+                        success else {
+                        self.spinner.removeConnectingView()
+                        showAlert(vc: self, title: "Something went wrong...", message: "error: \(errorMessage ?? "unknown error")")
+                        return
+                    }
+                    
+                    showAlert(vc: self, title: "Label updated ✅", message: "")
+                    
+                    DispatchQueue.main.async { [weak self] in
+                        self?.loadUnlockedUtxos()
+                    }
+                    
+                    self.spinner.removeConnectingView()
+                }
+            }
+            
+            alert.addTextField { (textField) in
+                textField.placeholder = "Add a Label"
+                textField.keyboardAppearance = .dark
+            }
+            
+            alert.addAction(save)
+            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
+            alert.addAction(cancel)
+            self.present(alert, animated:true, completion: nil)
         }
     }
     
@@ -779,11 +840,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 vc.inputArray = inputArray
             }
             
-//        case "getUTXOinfo":
-//            if let vc = segue.destination as? GetInfoViewController, let utxo = sender as? UtxosStruct {
-//                vc.configure(utxo: utxo)
-//            }
-            
         case "segueToGetAddressFromUtxos":
             if let vc = segue.destination as? QRScannerViewController {
                 vc.isScanningAddress = true
@@ -822,9 +878,9 @@ extension UTXOViewController: UTXOCellDelegate {
         lock(utxo)
     }
     
-//    func didTapInfoFor(_ utxo: UtxosStruct) {
-//        performSegue(withIdentifier: "getUTXOinfo", sender: utxo)
-//    }
+    func didTapToEditLabel(_ utxo: UtxosStruct) {
+        editLabel(utxo)
+    }
     
 }
 
@@ -837,7 +893,7 @@ extension UTXOViewController: UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: UTXOCell.identifier, for: indexPath) as! UTXOCell
         let utxo = unlockedUtxos[indexPath.section]
         
-        cell.configure(utxo: utxo, isLocked: false, delegate: self)
+        cell.configure(utxo: utxo, isLocked: false, fxRate: fxRate, delegate: self)
         
         return cell
     }

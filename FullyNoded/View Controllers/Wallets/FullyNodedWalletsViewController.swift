@@ -10,18 +10,186 @@ import UIKit
 
 class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
+    @IBOutlet weak var fxRateLabel: UILabel!
+    @IBOutlet weak var balanceFiatLabel: UILabel!
+    @IBOutlet weak var totalBalanceLabel: UILabel!
     @IBOutlet weak var walletsTable: UITableView!
+    
     var wallets = [[String:Any]]()
     var walletId:UUID!
+    var index = 0
+    var existingActiveWalletName = ""
+    var totalBtcBalance = 0.0
+    var fxRate = 0.0
+    var bitcoinCoreWallets = [String]()
+    let spinner = ConnectingView()
+    var initialLoad = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         walletsTable.delegate = self
         walletsTable.dataSource = self
+        totalBalanceLabel.alpha = 0
+        totalBalanceLabel.text = ""
+        balanceFiatLabel.alpha = 0
+        balanceFiatLabel.text = ""
+        fxRateLabel.alpha = 0
+        fxRateLabel.text = ""
+        existingActiveWalletName = UserDefaults.standard.object(forKey: "walletName") as? String ?? ""
+        spinner.addConnectingView(vc: self, description: "getting total balance...")
+        initialLoad = true
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        getWallets()
+        getBitcoinCoreWallets()
+    }
+    
+    private func getBitcoinCoreWallets() {
+        bitcoinCoreWallets.removeAll()
+        Reducer.makeCommand(command: .listwalletdir, param: "") { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            guard let dict = response as? NSDictionary else {
+                DispatchQueue.main.async {
+                    self.spinner.removeConnectingView()
+                    self.initialLoad = false
+                    displayAlert(viewController: self, isError: true, message: "error getting wallets: \(errorMessage ?? "")")
+                }
+                return
+            }
+            
+            self.parseWallets(walletDict: dict)
+        }
+    }
+    
+    private func parseWallets(walletDict: NSDictionary) {
+        guard let walletArr = walletDict["wallets"] as? NSArray else { return }
+        
+        for (i, wallet) in walletArr.enumerated() {
+            guard let walletDict = wallet as? NSDictionary,
+                let walletName = walletDict["name"] as? String else {
+                    self.initialLoad = false
+                    return
+            }
+            
+            bitcoinCoreWallets.append(walletName)
+            
+            if i + 1 == walletArr.count {
+                getFullyNodedWallets()
+            }
+        }
+    }
+    
+    private func getFullyNodedWallets() {
+        wallets.removeAll()
+        CoreDataService.retrieveEntity(entityName: .wallets) { [weak self] ws in
+            guard let self = self else { return }
+            
+            guard let ws = ws, ws.count > 0 else {
+                let title = "No Fully Noded Wallets"
+                let message = "Looks like you have not yet created any Fully Noded wallets, on the active wallet tab you can tap the plus sign (top left) to create a Fully Noded wallet."
+                self.initialLoad = false
+                showAlert(vc: self, title: title, message: message)
+                
+                return
+            }
+                        
+            for (i, wallet) in ws.enumerated() {
+                let walletStruct = Wallet(dictionary: wallet)
+                
+                for bitcoinCoreWallet in self.bitcoinCoreWallets {
+                    if bitcoinCoreWallet == walletStruct.name {
+                        self.wallets.append(wallet)
+                    }
+                }
+                
+                if i + 1 == ws.count {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        
+                        self.walletsTable.reloadData()
+                        self.loadTotalBalance()
+                    }
+                }
+            }
+        }
+    }
+    
+    private func loadTotalBalance() {
+        if !initialLoad {
+            spinner.addConnectingView(vc: self, description: "getting total balance...")
+        }
+        
+        FiatConverter.sharedInstance.getFxRate { [weak self] fxRate in
+            guard let self = self else { return }
+            
+            guard let fxRate = fxRate else { return }
+            guard self.wallets.count > 0 else { return }
+            self.fxRate = fxRate
+            self.getTotals()
+        }
+    }
+    
+    private func getTotals() {
+        if index < wallets.count {
+            let wallet = wallets[index]
+            let walletStruct = Wallet(dictionary: wallet)
+            UserDefaults.standard.set(walletStruct.name, forKey: "walletName")
+            
+            Reducer.makeCommand(command: .listunspent, param: "0") { [weak self] (response, errorMessage) in
+                guard let self = self else { return }
+                
+                guard let utxos = response as? NSArray else {
+                    self.spinner.removeConnectingView()
+                    
+                    guard let errorMessage = errorMessage else {
+                        showAlert(vc: self, title: "Ooops", message: "There was an unknown error getting your balances")
+                        UserDefaults.standard.set(self.existingActiveWalletName, forKey: "walletName")
+                        self.initialLoad = false
+                        return
+                    }
+                    
+                    showAlert(vc: self, title: "Ooops", message: "There was an error getting your balances: \(errorMessage)")
+                    UserDefaults.standard.set(self.existingActiveWalletName, forKey: "walletName")
+                    self.initialLoad = false
+                    return
+                }
+                
+                if utxos.count > 0 {
+                    for (x, utxo) in utxos.enumerated() {
+                        let utxoDict = utxo as! NSDictionary
+                        let balance = utxoDict["amount"] as! Double
+                        self.totalBtcBalance += balance
+                        
+                        if x + 1 == utxos.count {
+                            self.index += 1
+                            self.getTotals()
+                        }
+                    }
+                } else {
+                    self.index += 1
+                    self.getTotals()
+                }
+            }
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                UserDefaults.standard.set(self.existingActiveWalletName, forKey: "walletName")
+                
+                let roundedFiat = Int(self.totalBtcBalance * self.fxRate)
+                
+                self.totalBalanceLabel.text = "\(self.totalBtcBalance.avoidNotation) btc"
+                self.totalBalanceLabel.alpha = 1
+                self.fxRateLabel.text = "$\(self.fxRate.withCommas()) / 1 btc"
+                self.fxRateLabel.alpha = 1
+                self.balanceFiatLabel.text = "$\(roundedFiat.withCommas())"
+                self.balanceFiatLabel.alpha = 1
+                self.initialLoad = false
+                self.spinner.removeConnectingView()
+            }
+        }
     }
     
     @IBAction func goToSigners(_ sender: Any) {
@@ -33,28 +201,6 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
     @IBAction func showHelp(_ sender: Any) {
         let message = "These are the wallets you created via \"Create a Fully Noded Wallet\". They are special wallets which utilize your node in a smarter way than manual Bitcoin Core wallet creation. You will only see \"Fully Noded Wallets\" here. You can activate/deactivate them, rename them, and delete them here by tapping the > button. In the detail view you have more powerful options related to your wallet, to read about it tap the > button to see the detail view and tap the help button there."
         showAlert(vc: self, title: "Fully Noded Wallets", message: message)
-    }
-    
-    private func getWallets() {
-        wallets.removeAll()
-        CoreDataService.retrieveEntity(entityName: .wallets) { [unowned vc = self] ws in
-            if ws != nil {
-                if ws!.count > 0 {
-                    for (i, wallet) in ws!.enumerated() {
-                        vc.wallets.append(wallet)
-                        if i + 1 == ws!.count {
-                            DispatchQueue.main.async { [unowned vc = self] in
-                                vc.walletsTable.reloadData()
-                            }
-                        }
-                    }
-                } else {
-                    showAlert(vc: vc, title: "No Fully Noded Wallets", message: "Looks like you have not yet created any Fully Noded wallets, on the active wallet tab you can tap the plus sign (top left) to create a Fully Noded wallet.")
-                }
-            } else {
-                showAlert(vc: vc, title: "No Fully Noded Wallets", message: "Looks like you have not yet created any Fully Noded wallets, on the active wallet tab you can tap the plus sign (top left) to create a Fully Noded wallet.")
-            }
-        }
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -83,7 +229,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
         toggle.restorationIdentifier = "\(indexPath.section)"
         button.addTarget(self, action: #selector(goToDetail(_:)), for: .touchUpInside)
         toggle.addTarget(self, action: #selector(toggleAction(_:)), for: .valueChanged)
-        if UserDefaults.standard.object(forKey: "walletName") as? String == walletStruct.name {
+        if self.existingActiveWalletName == walletStruct.name {
             toggle.setOn(true, animated: true)
         } else {
             toggle.setOn(false, animated: true)
@@ -96,14 +242,18 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
             if let section = Int(sender.restorationIdentifier!) {
                 let name = Wallet(dictionary: wallets[section]).name
                 if sender.isOn {
-                    DispatchQueue.main.async {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        
+                        self.existingActiveWalletName = name
                         UserDefaults.standard.set(name, forKey: "walletName")
                         NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                     }
                 } else {
                     UserDefaults.standard.removeObject(forKey: "walletName")
                 }
-                getWallets()
+                //getActiveNode()
+                getFullyNodedWallets()
             }
         }
     }

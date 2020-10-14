@@ -75,8 +75,16 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
     }
     
+    private func updateLabel(_ text: String) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.spinner.label.text = text
+        }
+    }
+    
     private func load() {
-        spinner.addConnectingView(vc: self, description: "verifying....")
+        spinner.addConnectingView(vc: self, description: "getting exchange rate....")
         
         FiatConverter.sharedInstance.getFxRate { [weak self] exchangeRate in
             guard let self = self else { return }
@@ -84,8 +92,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             self.fxRate = exchangeRate
             
             if self.unsignedPsbt == "" {
+                self.updateLabel("decoding raw transaction...")
                 self.executeNodeCommand(method: .decoderawtransaction, param: "\"\(self.signedRawTx)\"")
             } else {
+                self.updateLabel("decoding psbt...")
                 let exportImage = UIImage(systemName: "arrowshape.turn.up.right")
                 
                 DispatchQueue.main.async {
@@ -362,6 +372,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     private func verifyInputs() {
         if index < inputTableArray.count {
+            self.updateLabel("verifiying input #\(self.index + 1) out of \(self.inputTableArray.count)")
+            
             if let address = inputTableArray[index]["address"] as? String {
                 Reducer.makeCommand(command: .getaddressinfo, param: "\"\(address)\"") { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
@@ -452,6 +464,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     private func verifyOutputs() {
         if index < outputArray.count {
+            self.updateLabel("verifiying output #\(self.index + 1) out of \(self.outputArray.count)")
+            
             if let address = outputArray[index]["address"] as? String {
                 Reducer.makeCommand(command: .getaddressinfo, param: "\"\(address)\"") { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
@@ -495,6 +509,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 return
             }
             
+            updateLabel("verifying mempool accept...")
+            
             Reducer.makeCommand(command: .testmempoolaccept, param: "[\"\(signedRawTx)\"]") { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
@@ -514,6 +530,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     private func getFeeRate() {
         let target = UserDefaults.standard.object(forKey: "feeTarget") as? Int ?? 432
+        updateLabel("estimating smart fee...")
         Reducer.makeCommand(command: .estimatesmartfee, param: "\(target)") { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
@@ -545,6 +562,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     func parsePrevTx(method: BTC_CLI_COMMAND, param: String, vout: Int, txid: String) {
         
         func decodeRaw() {
+            updateLabel("decoding inputs previous output...")
             Reducer.makeCommand(command: .decoderawtransaction, param: param) { [weak self] (object, errorDescription) in
                 guard let self = self else { return }
                 
@@ -559,6 +577,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
         
         func getRawTx() {
+            updateLabel("fetching inputs previous output...")
             Reducer.makeCommand(command: .gettransaction, param: param) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 

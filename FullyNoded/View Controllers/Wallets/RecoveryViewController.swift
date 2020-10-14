@@ -22,19 +22,19 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
     var addedWords = [String]()
     var justWords = [String]()
     var bip39Words = [String]()
-    let label = UILabel()
     var autoCompleteCharacterCount = 0
     var timer = Timer()
     var blockheight:Int64!
     
+    @IBOutlet weak var wordView: UITextView!
     @IBOutlet weak var textField: UITextField!
-    @IBOutlet weak var wordView: UIView!
     @IBOutlet weak var recoverOutlet: UIButton!
     @IBOutlet weak var accountField: UITextField!
     @IBOutlet weak var passphraseField: UITextField!
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         navigationController?.delegate = self
         passphraseField.delegate = self
         accountField.delegate = self
@@ -675,7 +675,7 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
         CoreDataService.saveEntity(dict: dict, entityName: .wallets) { [unowned vc = self] success in
             if success {
                 NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-                vc.label.text = ""
+                vc.wordView.text = ""
                 vc.spinner.removeConnectingView()
                 DispatchQueue.main.async {
                     vc.navigationController?.popToRootViewController(animated: true)
@@ -690,8 +690,7 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
             
             DispatchQueue.main.async { [unowned vc = self] in
                 
-                vc.label.removeFromSuperview()
-                vc.label.text = ""
+                vc.wordView.text = ""
                 vc.addedWords.removeAll()
                 vc.justWords.remove(at: vc.justWords.count - 1)
                 
@@ -705,12 +704,7 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
                     }
                 }
                 
-                vc.label.textColor = .systemGreen
-                vc.label.text = vc.addedWords.joined(separator: "")
-                vc.label.frame = CGRect(x: 16, y: 0, width: vc.wordView.frame.width - 32, height: vc.wordView.frame.height - 10)
-                vc.label.numberOfLines = 0
-                vc.label.sizeToFit()
-                vc.wordView.addSubview(vc.label)
+                vc.wordView.text = vc.addedWords.joined(separator: "")
                 
                 if let _ = BIP39Mnemonic(vc.justWords.joined(separator: " ")) {
                     
@@ -728,8 +722,6 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
     }
     
     private func processTextfieldInput() {
-        print("processTextfieldInput")
-        
         if textField.text != "" {
             
             //check if user pasted more then one word
@@ -949,8 +941,7 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
         
         DispatchQueue.main.async { [unowned vc = self] in
             
-            vc.label.removeFromSuperview()
-            vc.label.text = ""
+            vc.wordView.text = ""
             vc.addedWords.removeAll()
             vc.justWords = words
             
@@ -959,12 +950,7 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
                 vc.updatePlaceHolder(wordNumber: i + 2)
             }
             
-            vc.label.textColor = .systemGreen
-            vc.label.text = vc.addedWords.joined(separator: "")
-            vc.label.frame = CGRect(x: 16, y: 0, width: vc.wordView.frame.width - 32, height: vc.wordView.frame.height - 10)
-            vc.label.numberOfLines = 0
-            vc.label.sizeToFit()
-            vc.wordView.addSubview(vc.label)
+            vc.wordView.text = vc.addedWords.joined(separator: "")
             
             if let _ = BIP39Mnemonic(vc.justWords.joined(separator: " ")) {
                 
@@ -984,8 +970,7 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
         
         DispatchQueue.main.async { [unowned vc = self] in
             
-            vc.label.removeFromSuperview()
-            vc.label.text = ""
+            vc.wordView.text = ""
             vc.addedWords.removeAll()
             vc.justWords.append(word)
             
@@ -996,16 +981,12 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
                 
             }
             
-            vc.label.textColor = .systemGreen
-            vc.label.text = vc.addedWords.joined(separator: "")
-            vc.label.frame = CGRect(x: 16, y: 0, width: vc.wordView.frame.width - 32, height: vc.wordView.frame.height - 10)
-            vc.label.numberOfLines = 0
-            vc.label.sizeToFit()
-            vc.wordView.addSubview(vc.label)
+            vc.wordView.text = vc.addedWords.joined(separator: "")
             
             if let _ = BIP39Mnemonic(vc.justWords.joined(separator: " ")) {
                 vc.validWordsAdded()
             }
+            
             vc.textField.becomeFirstResponder()
             
         }
