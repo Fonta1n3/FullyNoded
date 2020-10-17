@@ -59,6 +59,21 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         load()
     }
     
+    private func copy(_ text: String) {
+        DispatchQueue.main.async {
+            UIPasteboard.general.string = text
+        }
+    }
+    
+    @IBAction func copyAction(_ sender: Any) {
+        if signedRawTx != "" {
+            copy(signedRawTx)
+        } else {
+            copy(unsignedPsbt)
+        }
+        displayAlert(viewController: self, isError: false, message: "copied to clipboard ✓")
+    }
+    
     @IBAction func exportAction(_ sender: Any) {
         if signedRawTx != "" {
             exportTxn(txn: signedRawTx)
@@ -530,7 +545,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     private func getFeeRate() {
         let target = UserDefaults.standard.object(forKey: "feeTarget") as? Int ?? 432
+        
         updateLabel("estimating smart fee...")
+        
         Reducer.makeCommand(command: .estimatesmartfee, param: "\(target)") { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             

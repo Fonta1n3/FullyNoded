@@ -12,21 +12,23 @@ import UIKit
 import LocalAuthentication
 
 class LogInViewController: UIViewController, UITextFieldDelegate {
-
+    
+    var onDoneBlock: (() -> Void)?
     let passwordInput = UITextField()
-    let portInput = UITextField()
-    let labelTitle = UILabel()
     let lockView = UIView()
     let touchIDButton = UIButton()
     let imageView = UIImageView()
     let fingerPrintView = UIImageView()
     let nextButton = UIButton()
+    let nextAttemptLabel = UILabel()
+    var timeToDisable = 2.0
+    var timer: Timer?
+    var secondsRemaining = 2
     
     override func viewDidLoad() {
         super.viewDidLoad()
                 
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
-        
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
         
@@ -35,7 +37,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         lockView.backgroundColor = UIColor.black
         lockView.alpha = 1
         
-        imageView.image = UIImage(named: "ItunesArtwork@2x.png")
+        imageView.image = UIImage(named: "logo_grey.png")
         imageView.alpha = 1
         
         passwordInput.keyboardType = UIKeyboardType.default
@@ -51,246 +53,224 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         passwordInput.layer.borderWidth = 0.5
         passwordInput.layer.borderColor = UIColor.lightGray.cgColor
         
-        labelTitle.font = UIFont.systemFont(ofSize: 30)
-        labelTitle.textColor = .lightGray
-        labelTitle.alpha = 0
-        labelTitle.numberOfLines = 0
-        labelTitle.text = "Unlock"
-        labelTitle.textAlignment = .center
+        #if targetEnvironment(macCatalyst)
         
-        touchIDButton.setImage(UIImage(named: "whiteFingerPrint.png"), for: .normal)
-        touchIDButton.backgroundColor = UIColor.clear
-        touchIDButton.alpha = 0
-        touchIDButton.addTarget(self, action: #selector(authenticationWithTouchID), for: .touchUpInside)
+        #else
+            touchIDButton.setImage(UIImage(named: "whiteFingerPrint.png"), for: .normal)
+            touchIDButton.backgroundColor = UIColor.clear
+            touchIDButton.alpha = 0
+            touchIDButton.addTarget(self, action: #selector(authenticationWithTouchID), for: .touchUpInside)
+        #endif
         
         view.addSubview(lockView)
         
+        guard let timeToDisableOnKeychain = KeyChain.getData("TimeToDisable") else {
+            let _ = KeyChain.set("2.0".dataUsingUTF8StringEncoding, forKey: "TimeToDisable")
+            return
+        }
+        
+        guard let time = Double(timeToDisableOnKeychain.utf8) else { return }
+        
+        timeToDisable = time
+        secondsRemaining = Int(timeToDisable)
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        
         imageView.removeFromSuperview()
         lockView.addSubview(imageView)
         
         passwordInput.removeFromSuperview()
         lockView.addSubview(passwordInput)
         
-        labelTitle.removeFromSuperview()
-        lockView.addSubview(labelTitle)
-        
         addNextButton(inputView: self.passwordInput)
         
         let ud = UserDefaults.standard
         
         if ud.object(forKey: "bioMetricsDisabled") == nil {
-            
             touchIDButton.removeFromSuperview()
             lockView.addSubview(touchIDButton)
-            
         }
         
         showUnlockScreen()
         
         DispatchQueue.main.async {
-            
             UIImpactFeedbackGenerator().impactOccurred()
-            
         }
         
         if ud.object(forKey: "bioMetricsDisabled") == nil {
-            
             authenticationWithTouchID()
-            
         }
         
+        configureTimeoutLabel()
+        if timeToDisable > 2.0 {
+            disable()
+        }
     }
     
     override func viewDidLayoutSubviews() {
-        
         lockView.frame = self.view.frame
         imageView.frame = CGRect(x: self.view.center.x - 40, y: 40, width: 80, height: 80)
         passwordInput.frame = CGRect(x: 50, y: imageView.frame.maxY + 80, width: view.frame.width - 100, height: 50)
-        labelTitle.frame = CGRect(x: self.view.center.x - ((view.frame.width - 10) / 2), y: passwordInput.frame.minY - 50, width: view.frame.width - 10, height: 50)
-        nextButton.frame = CGRect(x: self.view.center.x - 40, y: passwordInput.frame.maxY + 5, width: 80, height: 55)
+        nextButton.frame = CGRect(x: self.view.center.x - 40, y: passwordInput.frame.maxY + 15, width: 80, height: 35)
         touchIDButton.frame = CGRect(x: self.view.center.x - 30, y: self.nextButton.frame.maxY + 20, width: 60, height: 60)
-        
     }
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
-        
         DispatchQueue.main.async {
-            
             self.passwordInput.resignFirstResponder()
-            
         }
-        
     }
     
     func addNextButton(inputView: UITextField) {
-        
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
             self.nextButton.removeFromSuperview()
             self.nextButton.showsTouchWhenHighlighted = true
             self.nextButton.setTitle("next", for: .normal)
             self.nextButton.setTitleColor(.systemTeal, for: .normal)
-            self.nextButton.titleLabel?.font = UIFont.systemFont(ofSize: 20)
+            self.nextButton.titleLabel?.font = UIFont.systemFont(ofSize: 17)
             self.nextButton.addTarget(self, action: #selector(self.nextButtonAction), for: .touchUpInside)
+            self.nextButton.backgroundColor = #colorLiteral(red: 0.1215686275, green: 0.1294117647, blue: 0.1411764706, alpha: 1)
+            self.nextButton.clipsToBounds = true
+            self.nextButton.layer.cornerRadius = 8
             self.view.addSubview(self.nextButton)
-            
         }
-        
     }
     
     func showUnlockScreen() {
         UIView.animate(withDuration: 0.2, animations: {
             self.passwordInput.alpha = 1
-            self.labelTitle.alpha = 1
             self.touchIDButton.alpha = 1
         })
     }
     
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        self.view.endEditing(true)
-        return false
-    }
-    
     @objc func nextButtonAction() {
-        
-        self.view.endEditing(true)
-        
-    }
-    
-    func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason) {
-        print("textFieldDidEndEditing")
-        
-        switch textField {
-            
-        case self.passwordInput:
-            
-            if self.passwordInput.text != "" {
-                
-                self.checkPassword(password: self.passwordInput.text!)
-                
-            } else {
-                
-                shakeAlert(viewToShake: self.passwordInput)
-            }
-            
-        default:
-            
-            break
-            
+        guard passwordInput.text != "" else {
+            shakeAlert(viewToShake: passwordInput)
+            return
         }
         
+        passwordInput.resignFirstResponder()
+        checkPassword(password: passwordInput.text!)
+    }
+    
+    private func unlock() {
+        let _ = KeyChain.set("2.0".dataUsingUTF8StringEncoding, forKey: "TimeToDisable")
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.touchIDButton.removeFromSuperview()
+            self.nextButton.removeFromSuperview()
+            
+            UIView.animate(withDuration: 0.2, animations: {
+                self.passwordInput.alpha = 0
+                
+            }, completion: { _ in
+                self.passwordInput.text = ""
+                self.imageView.removeFromSuperview()
+                self.passwordInput.removeFromSuperview()
+                
+                DispatchQueue.main.async {
+                    self.dismiss(animated: true) {
+                        self.onDoneBlock!()
+                    }
+                }
+            })
+        }
     }
 
     func checkPassword(password: String) {
+        guard let passwordData = KeyChain.getData("UnlockPassword") else { return }
         
-        if let passwordData = KeyChain.getData("UnlockPassword") {
+        let retrievedPassword = passwordData.utf8
+        
+        let hashedPassword = Crypto.sha256hash(password)
+        guard let hexData = Data(hashedPassword) else { return }
+        
+        /// Overwrite users password with the hash of the password, sorry I did not do this before...
+        if password == retrievedPassword {
+            let _ = KeyChain.set(hexData, forKey: "UnlockPassword")
+            unlock()
             
-            let retrievedPassword = passwordData.utf8
-            
-            if self.passwordInput.text! == retrievedPassword {
-                
-                self.touchIDButton.removeFromSuperview()
-                self.nextButton.removeFromSuperview()
-                
-                UIView.animate(withDuration: 0.2, animations: {
-                    
-                    self.passwordInput.alpha = 0
-                    self.labelTitle.alpha = 0
-                    
-                }, completion: { _ in
-                    
-                    self.passwordInput.text = ""
-                    self.labelTitle.text = ""
-                    self.imageView.removeFromSuperview()
-                    self.passwordInput.removeFromSuperview()
-                    
-                    DispatchQueue.main.async {
-                        self.dismiss(animated: true, completion: nil)
-                    }
-                    
-                })
-                
+        } else {
+            if hexData.hexString == passwordData.hexString {
+                unlock()
             } else {
-                
-                displayAlert(viewController: self, isError: true, message: "Wrong password")
+                timeToDisable = timeToDisable * 2.0
+                guard KeyChain.set("\(timeToDisable)".dataUsingUTF8StringEncoding, forKey: "TimeToDisable") else {
+                    showAlert(vc: self, title: "Unable to set timeout", message: "This means something is very wrong, the device has probably been jailbroken or is corrupted")
+                    return
+                }
+                secondsRemaining = Int(timeToDisable)
+                disable()
             }
-            
         }
-        
     }
     
-    func unlock() {
-        
-        self.nextButton.removeFromSuperview()
-        self.touchIDButton.removeFromSuperview()
-        
-        UIView.animate(withDuration: 0.2, animations: {
+    private func configureTimeoutLabel() {
+        nextAttemptLabel.textColor = .lightGray
+        nextAttemptLabel.frame = CGRect(x: 0, y: view.frame.maxY - 50, width: view.frame.width, height: 50)
+        nextAttemptLabel.textAlignment = .center
+        nextAttemptLabel.text = ""
+        view.addSubview(nextAttemptLabel)
+    }
+    
+    private func disable() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
             
             self.passwordInput.alpha = 0
-            self.labelTitle.alpha = 0
-            
-        }, completion: { _ in
-            
-            self.passwordInput.text = ""
-            self.labelTitle.text = ""
-            self.imageView.removeFromSuperview()
-            self.passwordInput.removeFromSuperview()
-            
-            //check if user has saved username and password to node
-            DispatchQueue.main.async {
-                self.dismiss(animated: true, completion: nil)
-            }
-            
-        })
+            self.passwordInput.isUserInteractionEnabled = false
+            self.nextButton.removeTarget(self, action: #selector(self.nextButtonAction), for: .touchUpInside)
+            self.nextButton.alpha = 0
+        }
         
+        timer?.invalidate()
+        
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                if self.secondsRemaining == 0 {
+                    self.timer?.invalidate()
+                    self.nextAttemptLabel.text = ""
+                    self.nextButton.addTarget(self, action: #selector(self.nextButtonAction), for: .touchUpInside)
+                    self.nextButton.alpha = 1
+                    self.passwordInput.alpha = 1
+                    self.passwordInput.isUserInteractionEnabled = true
+                } else {
+                    self.secondsRemaining -= 1
+                    self.nextAttemptLabel.text = "try again in \(self.secondsRemaining) seconds"
+                }
+            }
+        }
+        
+        showAlert(vc: self, title: "Wrong password", message: "")
     }
     
     @objc func authenticationWithTouchID() {
-        print("authenticationWithTouchID")
-        
         let localAuthenticationContext = LAContext()
         localAuthenticationContext.localizedFallbackTitle = "Use Password"
-        
         var authError: NSError?
         let reasonString = "To Unlock"
         
         if localAuthenticationContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &authError) {
-            
             localAuthenticationContext.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reasonString) { success, evaluateError in
-                
                 if success {
-                    print("success")
-                    
                     DispatchQueue.main.async {
-                        
                         self.unlock()
-                        
                     }
-                    
                 } else {
-                    
-                    guard let error = evaluateError else {
-                        
-                        return
-                        
-                    }
+                    guard let error = evaluateError else { return }
                     
                     print(self.evaluateAuthenticationPolicyMessageForLA(errorCode: error._code))
-                    
                 }
-                
             }
             
         } else {
             
-            guard let error = authError else {
-                
-                return
-                
-            }
+            guard let error = authError else { return }
             
             //TODO: Show appropriate alert if biometry/TouchID/FaceID is lockout or not enrolled
             if self.evaluateAuthenticationPolicyMessageForLA(errorCode: error._code) != "Too many failed attempts." {

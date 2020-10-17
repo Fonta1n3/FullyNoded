@@ -21,20 +21,23 @@ class AppPasswordViewController: UIViewController, UITextFieldDelegate, UINaviga
         
         navigationController?.delegate = self
         textField.delegate = self
+        
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         view.addGestureRecognizer(tapGesture)
         
+        buttonOutlet.clipsToBounds = true
+        buttonOutlet.layer.cornerRadius = 8
+        buttonOutlet.showsTouchWhenHighlighted = true
+        
         if KeyChain.getData("UnlockPassword") != nil {
             isResetting = true
             titleLabel.text = "Confirm existing password"
-            let image = UIImage(systemName: "checkmark.circle")
-            buttonOutlet.setImage(image, for: .normal)
+            buttonOutlet.setTitle("confirm", for: .normal)
         } else {
             isResetting = false
-            titleLabel.text = "Add unlock password"
-            let image = UIImage(systemName: "plus")
-            buttonOutlet.setImage(image, for: .normal)
+            titleLabel.text = "Create an unlock password"
+            buttonOutlet.setTitle("save", for: .normal)
         }
     }
     
@@ -51,55 +54,70 @@ class AppPasswordViewController: UIViewController, UITextFieldDelegate, UINaviga
         }
     }
     
+    private func updateViewToAddNewPassword() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.textField.text = ""
+            self.titleLabel.text = "Add new unlock password"
+            self.buttonOutlet.setTitle("save", for: .normal)
+            self.isResetting = false
+            showAlert(vc: self, title: "Password confirmed ✓", message: "Correct password, now you may add a new one")
+            self.textField.becomeFirstResponder()
+        }
+    }
+    
     private func confirmExistsingMatches() {
-        if textField.text != "" && exisitingPassword() != "" {
-            if textField.text! == exisitingPassword() {
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.textField.text = ""
-                    vc.titleLabel.text = "Add new unlock password"
-                    let image = UIImage(systemName: "plus")
-                    vc.buttonOutlet.setImage(image, for: .normal)
-                    vc.isResetting = false
-                    displayAlert(viewController: vc, isError: false, message: "Correct password, now add a new one")
-                    vc.textField.becomeFirstResponder()
-                }
+        guard let text = textField.text, text != "", let existingHash = exisitingPassword() else { return }
+                
+        /// Include to guarantee backwards compatibility
+        if text == existingHash.utf8 {
+            updateViewToAddNewPassword()
+            
+        } else {
+            guard let hash = hash(text) else { return }
+            
+            if hash == existingHash {
+                updateViewToAddNewPassword()
+                
             } else {
                 showAlert(vc: self, title: "Error", message: "That password does not match your existing password!")
             }
         }
     }
     
-    private func exisitingPassword() -> String {
-        if KeyChain.getData("UnlockPassword") != nil {
-            let passwordData = KeyChain.getData("UnlockPassword")
-            return passwordData!.utf8
-        } else {
-            return ""
-        }
+    private func exisitingPassword() -> Data? {
+        return KeyChain.getData("UnlockPassword")
+    }
+    
+    private func hash(_ text: String) -> Data? {
+        return Data(Crypto.sha256hash(text))
     }
     
     private func setNewPassword() {
         if firstPassword != "" {
             /// We know we are confirming.
-            if textField.text != "" {
-                if firstPassword == textField.text {
-                    setPassword(textField.text!)
-                } else {
-                    showAlert(vc: self, title: "Error", message: "Passwords did not match!")
-                }
+            guard textField.text != "", let hex = hash(textField.text!)?.hexString, firstPassword == hex else {
+                showAlert(vc: self, title: "Error", message: "Passwords did not match!")
+                return
             }
+                        
+            setPassword(hex)
         } else {
             setLockPassword()
         }
     }
     
     private func setPassword(_ text: String) {
-        let data = text.dataUsingUTF8StringEncoding
+        guard let data = Data(text) else { return }
+        
         if KeyChain.set(data, forKey: "UnlockPassword") {
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.textField.text = ""
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.textField.text = ""
             }
-            //displayAlert(viewController: self, isError: false, message: "password set, you may now go back")
+            
             passwordSet()
             
         } else {
@@ -112,31 +130,44 @@ class AppPasswordViewController: UIViewController, UITextFieldDelegate, UINaviga
     }
     
     private func setLockPassword() {
-        if textField.text != "" {
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.titleLabel.text = "Confirm the new password"
-                vc.firstPassword = vc.textField.text!
-                vc.textField.text = ""
-                let image = UIImage(systemName: "checkmark.circle")
-                vc.buttonOutlet.setImage(image, for: .normal)
-                displayAlert(viewController: vc, isError: false, message: "confirm the new password")
-                vc.textField.becomeFirstResponder()
-            }
-        } else {
+        guard let newPassword = textField.text, newPassword != "" else {
             shakeAlert(viewToShake: textField)
+            return
         }
+        
+        guard newPassword.count > 7 else {
+            showAlert(vc: self, title: "That is not secure!", message: "Your password needs to be at least 8 characters in length.")
+            return
+        }
+        
+        guard !newPassword.isNumber else {
+            showAlert(vc: self, title: "That is not secure!", message: "Your password is a password, not a pin. Ideally, it should include numbers and letters. Numeric passwords are not allowed.")
+            return
+        }
+        
+        guard let data = hash(newPassword) else {
+            shakeAlert(viewToShake: textField)
+            return
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.titleLabel.text = "Confirm the new password"
+            self.firstPassword = data.hexString
+            self.textField.text = ""
+            self.buttonOutlet.setTitle("confirm", for: .normal)
+            showAlert(vc: self, title: "Great, now enter it again", message: "This ensures you have not made any typos when creating a new password.")
+            self.textField.becomeFirstResponder()
+        }
+        
     }
     
     private func passwordSet() {
         DispatchQueue.main.async { [weak self] in
-            var alertStyle = UIAlertController.Style.actionSheet
-            if (UIDevice.current.userInterfaceIdiom == .pad) {
-                alertStyle = UIAlertController.Style.alert
-            }
+            let alert = UIAlertController(title: "Password set 🔐", message: "⚠️ Do not forget it! ⚠️\n\nForgetting this password will mean the app becomes completely bricked!\n\nIt is important to keep backups of all your wallets and signers incase you do", preferredStyle: UIAlertController.Style.alert)
             
-            let alert = UIAlertController(title: "Password set 🔐", message: "", preferredStyle: alertStyle)
-            
-            alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
+            alert.addAction(UIAlertAction(title: "I understand", style: .destructive, handler: { action in
                 DispatchQueue.main.async { [weak self] in
                     self?.navigationController?.popToRootViewController(animated: true)
                 }
@@ -147,4 +178,10 @@ class AppPasswordViewController: UIViewController, UITextFieldDelegate, UINaviga
         }
     }
 
+}
+
+extension String  {
+    var isNumber: Bool {
+        return !isEmpty && rangeOfCharacter(from: CharacterSet.decimalDigits.inverted) == nil
+    }
 }

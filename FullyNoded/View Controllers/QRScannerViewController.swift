@@ -43,6 +43,8 @@ class QRScannerViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        backgroundView.clipsToBounds = true
+        backgroundView.layer.cornerRadius = 8
         backgroundView.alpha = 0
         progressDescriptionLabel.alpha = 0
         progressView.alpha = 0
@@ -237,12 +239,14 @@ class QRScannerViewController: UIViewController {
     
     private func configureCloseButton() {
         closeButton.frame = CGRect(x: view.frame.midX - 15, y: view.frame.maxY - 150, width: 30, height: 30)
+        closeButton.showsTouchWhenHighlighted = true
         closeButton.setImage(UIImage(named: "Image-10"), for: .normal)
     }
     
     private func configureTorchButton() {
         torchButton.frame = CGRect(x: 17.5, y: 17.5, width: 35, height: 35)
         torchButton.setImage(UIImage(named: "strobe.png"), for: .normal)
+        torchButton.showsTouchWhenHighlighted = true
         addShadow(view: torchButton)
     }
     
@@ -350,7 +354,7 @@ class QRScannerViewController: UIViewController {
             self.textField.removeFromSuperview()
             self.torchButton.removeFromSuperview()
             self.uploadButton.removeFromSuperview()
-            self.scannerView.removeFromSuperview()
+            //self.scannerView.removeFromSuperview()
         }
     }
     

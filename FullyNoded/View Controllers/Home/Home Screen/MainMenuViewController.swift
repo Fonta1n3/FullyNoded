@@ -24,6 +24,7 @@ class MainMenuViewController: UIViewController {
     var refreshButton = UIBarButtonItem()
     var dataRefresher = UIBarButtonItem()
     var viewHasLoaded = false
+    var isUnlocked = false
     var nodeLabel = ""
     var detailImage = UIImage()
     var detailImageTint = UIColor()
@@ -87,7 +88,13 @@ class MainMenuViewController: UIViewController {
                 displayAlert(viewController: self, isError: true, message: "there was a critical error setting your devices encryption key, please delete and reinstall the app")
             } else {
                 if mgr?.state != .started && mgr?.state != .connected  {
-                    mgr?.start(delegate: self)
+                    if KeyChain.getData("UnlockPassword") != nil {
+                        if isUnlocked {
+                            mgr?.start(delegate: self)
+                        }
+                    } else {
+                        mgr?.start(delegate: self)
+                    }
                 }
             }
         }
@@ -234,10 +241,6 @@ class MainMenuViewController: UIViewController {
     func refreshDataNow() {
         addNavBarSpinner()
         loadTable()
-    }
-    
-    @IBAction func lockButton(_ sender: Any) {
-        showUnlockScreen()
     }
     
     func showUnlockScreen() {
@@ -678,6 +681,18 @@ class MainMenuViewController: UIViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
         switch segue.identifier {
+            
+        case "lockScreen":
+            guard let vc = segue.destination as? LogInViewController else { fallthrough }
+            
+            vc.onDoneBlock = { [weak self] in
+                guard let self = self else { return }
+                
+                self.isUnlocked = true
+                if self.mgr?.state != .started && self.mgr?.state != .connected  {
+                    self.mgr?.start(delegate: self)
+                }
+            }
             
         case "showDetailSegue":
             

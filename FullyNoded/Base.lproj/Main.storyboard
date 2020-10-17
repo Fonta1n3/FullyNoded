@@ -532,6 +532,7 @@
                         <segue destination="TDC-7I-IgK" kind="show" identifier="segueToWallets" id="vi7-1c-2H7"/>
                         <segue destination="l8t-Do-K11" kind="show" identifier="segueToActiveWalletDetail" id="IAz-j1-Gq6"/>
                         <segue destination="nyf-66-vKN" kind="show" identifier="segueToSignSomething" id="8yc-oK-dlC"/>
+                        <segue destination="bWB-tp-pgw" kind="show" identifier="segueToAddPassword" id="DLx-HT-rGm"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="jDi-KB-cQL" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -1782,12 +1783,20 @@
                         <viewLayoutGuide key="safeArea" id="c3Z-69-hpk"/>
                     </view>
                     <navigationItem key="navigationItem" id="2eo-7r-TL3">
-                        <barButtonItem key="rightBarButtonItem" image="square.and.arrow.up" catalog="system" id="xw0-f1-kmx">
-                            <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                            <connections>
-                                <action selector="exportAction:" destination="XA2-Lt-01p" id="laq-2D-Gj3"/>
-                            </connections>
-                        </barButtonItem>
+                        <rightBarButtonItems>
+                            <barButtonItem image="square.and.arrow.up" catalog="system" id="xw0-f1-kmx">
+                                <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <connections>
+                                    <action selector="exportAction:" destination="XA2-Lt-01p" id="laq-2D-Gj3"/>
+                                </connections>
+                            </barButtonItem>
+                            <barButtonItem image="doc.on.doc" catalog="system" id="kGi-WC-UV0">
+                                <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <connections>
+                                    <action selector="copyAction:" destination="XA2-Lt-01p" id="1nw-Ij-LGN"/>
+                                </connections>
+                            </barButtonItem>
+                        </rightBarButtonItems>
                     </navigationItem>
                     <connections>
                         <outlet property="sendButtonOutlet" destination="aEI-tU-Uus" id="mmS-oL-ePE"/>
@@ -5170,9 +5179,9 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="G5O-Yl-luJ">
-                                <rect key="frame" x="16" y="161" width="315" height="34"/>
+                                <rect key="frame" x="16" y="161" width="343" height="34"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="next" secureTextEntry="YES" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
+                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="next" secureTextEntry="YES" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no" textContentType="new-password"/>
                             </textField>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="App Password" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tL2-J8-k43">
                                 <rect key="frame" x="16" y="64" width="182" height="34"/>
@@ -5187,13 +5196,14 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hIn-Uo-p04">
-                                <rect key="frame" x="339" y="167" width="20" height="22"/>
+                                <rect key="frame" x="140" y="203" width="95" height="34"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="20" id="6ep-yB-bD0"/>
-                                    <constraint firstAttribute="height" constant="22" id="DI5-AZ-21i"/>
+                                    <constraint firstAttribute="height" constant="34" id="8Yd-Hp-6KQ"/>
+                                    <constraint firstAttribute="width" constant="95" id="chP-l5-TDF"/>
                                 </constraints>
                                 <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <state key="normal" image="plus.circle" catalog="system">
+                                <state key="normal" title="save">
                                     <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <connections>
@@ -5204,14 +5214,14 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="tL2-J8-k43" firstAttribute="top" secondItem="PoV-6L-X84" secondAttribute="top" constant="20" id="0Ix-aV-P0a"/>
-                            <constraint firstItem="hIn-Uo-p04" firstAttribute="leading" secondItem="G5O-Yl-luJ" secondAttribute="trailing" constant="8" id="0gD-OM-Yw6"/>
                             <constraint firstItem="G5O-Yl-luJ" firstAttribute="top" secondItem="awR-fG-6eE" secondAttribute="bottom" constant="8" id="2fa-ID-XkN"/>
-                            <constraint firstItem="PoV-6L-X84" firstAttribute="trailing" secondItem="hIn-Uo-p04" secondAttribute="trailing" constant="16" id="IEo-qb-dvn"/>
+                            <constraint firstItem="hIn-Uo-p04" firstAttribute="centerX" secondItem="rbo-Xj-SVe" secondAttribute="centerX" id="693-r1-gvL"/>
+                            <constraint firstItem="PoV-6L-X84" firstAttribute="trailing" secondItem="G5O-Yl-luJ" secondAttribute="trailing" constant="16" id="Rfd-0P-g7E"/>
                             <constraint firstItem="tL2-J8-k43" firstAttribute="leading" secondItem="PoV-6L-X84" secondAttribute="leading" constant="16" id="Yru-hz-owd"/>
                             <constraint firstItem="awR-fG-6eE" firstAttribute="top" secondItem="tL2-J8-k43" secondAttribute="bottom" constant="34" id="a04-br-hOu"/>
                             <constraint firstItem="G5O-Yl-luJ" firstAttribute="leading" secondItem="PoV-6L-X84" secondAttribute="leading" constant="16" id="atT-Jd-HeH"/>
+                            <constraint firstItem="hIn-Uo-p04" firstAttribute="top" secondItem="G5O-Yl-luJ" secondAttribute="bottom" constant="8" id="jPB-oP-9LD"/>
                             <constraint firstItem="awR-fG-6eE" firstAttribute="leading" secondItem="PoV-6L-X84" secondAttribute="leading" constant="16" id="pFh-dj-SE5"/>
-                            <constraint firstItem="hIn-Uo-p04" firstAttribute="centerY" secondItem="G5O-Yl-luJ" secondAttribute="centerY" id="rcL-TW-JPH"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="PoV-6L-X84"/>
                     </view>
@@ -7278,17 +7288,18 @@ COLD means no keys will be generated and no private keys can be imported.</strin
     <inferredMetricsTieBreakers>
         <segue reference="qed-hl-jG5"/>
         <segue reference="dhu-ZV-762"/>
-        <segue reference="EZr-Ut-goC"/>
+        <segue reference="DLx-HT-rGm"/>
+        <segue reference="w2g-bl-j8v"/>
         <segue reference="RbT-dI-IvI"/>
         <segue reference="IVc-aG-8QZ"/>
         <segue reference="cvp-U1-bU5"/>
         <segue reference="AYh-di-V7O"/>
-        <segue reference="X76-BN-dSF"/>
+        <segue reference="kq8-dj-bJ2"/>
         <segue reference="HNI-HG-9ZQ"/>
-        <segue reference="oY9-Pq-H5b"/>
+        <segue reference="IAz-j1-Gq6"/>
         <segue reference="hWt-Pf-vqK"/>
         <segue reference="aV5-mq-s3Q"/>
-        <segue reference="vxK-yE-HH1"/>
+        <segue reference="8yc-oK-dlC"/>
         <segue reference="Kd4-zZ-oMj"/>
         <segue reference="j10-wi-hpr"/>
         <segue reference="6HW-Pq-bwM"/>
@@ -7328,7 +7339,6 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <image name="person.crop.circle.badge.exclam" catalog="system" width="128" height="101"/>
         <image name="play.rectangle" catalog="system" width="128" height="93"/>
         <image name="plus" catalog="system" width="128" height="113"/>
-        <image name="plus.circle" catalog="system" width="128" height="121"/>
         <image name="plus.rectangle" catalog="system" width="128" height="93"/>
         <image name="qrcode.viewfinder" catalog="system" width="128" height="114"/>
         <image name="questionmark.circle" catalog="system" width="128" height="121"/>

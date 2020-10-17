@@ -11,6 +11,7 @@ import UIKit
 @available(iOS 13.0, *)
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
+    weak var mgr = TorClient.sharedInstance
     var window: UIWindow?
     private var isBooting = true
     
@@ -40,24 +41,47 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func sceneWillEnterForeground(_ scene: UIScene) {
-        let mgr = TorClient.sharedInstance
-        if !isBooting && mgr.state != .started && mgr.state != .connected  {
-            mgr.start(delegate: nil)
+        if !isBooting {
+            if KeyChain.getData("UnlockPassword") != nil {
+                let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                if let loginVC = storyboard.instantiateViewController(identifier: "LogIn") as? LogInViewController {
+                    let topVC = self.window?.rootViewController?.topViewController()
+                    if topVC!.restorationIdentifier != "LogIn" {
+                        DispatchQueue.main.async {
+                            loginVC.modalPresentationStyle = .fullScreen
+                            topVC!.present(loginVC, animated: true, completion: nil)
+                        }
+                        
+                        loginVC.onDoneBlock = { [weak self] in
+                            guard let self = self else { return }
+                            if !self.isBooting && self.mgr?.state != .started && self.mgr?.state != .connected  {
+                                self.mgr?.start(delegate: nil)
+                            } else {
+                                self.isBooting = false
+                            }
+                        }
+                    }
+                }
+            } else {
+                if !isBooting && mgr?.state != .started && mgr?.state != .connected  {
+                    mgr?.start(delegate: nil)
+                } else {
+                    isBooting = false
+                }
+            }
         } else {
             isBooting = false
         }
-        
     }
 
     func sceneDidEnterBackground(_ scene: UIScene) {
-        let mgr = TorClient.sharedInstance
-        if mgr.state != .stopped {
-            mgr.state = .refreshing
-            mgr.resign()
-        }
-
         // Save changes in the application's managed object context when the application transitions to the background.
         (UIApplication.shared.delegate as? AppDelegate)?.saveContext()
+        
+        if mgr?.state != .stopped && mgr?.state != TorClient.TorState.none  {
+            mgr?.state = .refreshing
+            mgr?.resign()
+        }
     }
         
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {

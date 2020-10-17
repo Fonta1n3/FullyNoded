@@ -33,7 +33,7 @@ class ImportWallet {
         wallet["maxIndex"] = 2500
         wallet["index"] = 0
         
-        let descStruct = descriptorParser.descriptor(primDescriptor)
+        var descStruct = descriptorParser.descriptor(primDescriptor)
         
         if descStruct.isMulti {
             wallet["type"] = "Multi-Sig"
@@ -46,6 +46,48 @@ class ImportWallet {
         primDescriptor = primDescriptor.replacingOccurrences(of: "'", with: "h")
         let arr = primDescriptor.split(separator: "#")
         primDescriptor = "\(arr[0])"
+        descStruct = descriptorParser.descriptor(primDescriptor)
+        
+        // Sparrow wallet exports do not include range
+        if !primDescriptor.contains("/0/*") {
+            for key in descStruct.multiSigKeys {
+                print("key: \(key)")
+                if !key.contains("/0/*") {
+                    primDescriptor = primDescriptor.replacingOccurrences(of: key, with: key + "/0/*")
+                }
+            }
+        }
+        
+        descStruct = descriptorParser.descriptor(primDescriptor)
+        
+        // If the descriptor is multisig, we sort the keys lexicographically
+        if primDescriptor.contains(",") {
+            var dictArray = [[String:String]]()
+            
+            for keyWithPath in descStruct.keysWithPath {
+                let arr = keyWithPath.split(separator: "]")
+                let dict = ["path":"\(arr[0])]", "key": "\(arr[1].replacingOccurrences(of: "))", with: ""))"]
+                dictArray.append(dict)
+            }
+            
+            dictArray.sort(by: {($0["key"]!) < $1["key"]!})
+            
+            var sortedKeys = ""
+            
+            for (i, sortedItem) in dictArray.enumerated() {
+                let path = sortedItem["path"]!
+                let key = sortedItem["key"]!
+                let fullKey = path + key
+                sortedKeys += fullKey
+                
+                if i + 1 < dictArray.count {
+                    sortedKeys += ","
+                }
+            }
+            
+            let arr2 = primDescriptor.split(separator: ",")
+            primDescriptor = "\(arr2[0])," + sortedKeys + "))"
+        }
         
         func createWalletNow(_ recDesc: String, _ changeDesc: String) {
             // Use the sha256 hash of the checksum-less primary receive keypool desc as the wallet name so it has a deterministic identifier

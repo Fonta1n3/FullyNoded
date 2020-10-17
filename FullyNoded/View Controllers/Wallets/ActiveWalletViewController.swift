@@ -53,6 +53,26 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         loadTable()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        if KeyChain.getData("UnlockPassword") == nil {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                let alert = UIAlertController(title: "Whoa, you are not even using this app securely!", message: "You really ought to add a password that is used to brick the app if you are doing wallet related stuff!\n\nFully Noded does *not* store this password (only it's hash), when you unlock the app we hash the provided password to see if it matches the hash on your keychain.\n\nIf the hashes do not match a lock out period will double at each attempt. This ensures no one can brute force their way in incase you lose the device.\n\nEven if your device became completely hacked there is no password on it for anyone to hack.", preferredStyle: UIAlertController.Style.alert)
+                
+                alert.addAction(UIAlertAction(title: "set password", style: .default, handler: { action in
+                    DispatchQueue.main.async {
+                        self.performSegue(withIdentifier: "segueToAddPassword", sender: self)
+                    }
+                }))
+                
+                alert.addAction(UIAlertAction(title: "nah", style: .destructive, handler: { action in }))
+                alert.popoverPresentationController?.sourceView = self.view
+                self.present(alert, animated: true, completion: nil)
+            }
+        }
+    }
+    
     @IBAction func signAction(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             self?.performSegue(withIdentifier: "segueToSignSomething", sender: self)

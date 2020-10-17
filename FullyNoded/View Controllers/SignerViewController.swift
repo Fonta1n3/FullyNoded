@@ -108,10 +108,13 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
     }
     
     private func processPastedString(_ string: String) {
+        spinner.addConnectingView(vc: self, description: "checking which network the node is on...")
+        
         Reducer.makeCommand(command: .getblockchaininfo, param: "") { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             guard let dict = response as? NSDictionary, let network = dict["chain"] as? String else {
+                self.spinner.removeConnectingView()
                 self.showError(error: "We did not get a valid response from your node: \(errorMessage ?? "unknown error")")
                 return
             }
@@ -125,6 +128,7 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
             }
             
             guard let psbtTocheck = try? PSBT(string, chain) else {
+                self.spinner.removeConnectingView()
                 self.showError(error: "This button is for pasting the contents of your clipboard, make sure you copied a valid psbt in base64 format.  Whatever you have copied is not a psbt!")
                 return
             }
@@ -133,6 +137,8 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
             
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
+                
+                self.spinner.removeConnectingView()
                 
                 let alert = UIAlertController(title: "You have a valid psbt on your clipboard", message: "Would you like to process it? This will *not* broadcast the transaction we simply check if it is completed yet and add any missing info to the psbt that may not be there.", preferredStyle: self.alertStyle)
                 
