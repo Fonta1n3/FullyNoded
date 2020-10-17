@@ -508,12 +508,6 @@
                                     <action selector="getDetails:" destination="Dwu-lj-4IN" id="k5S-fX-wFj"/>
                                 </connections>
                             </barButtonItem>
-                            <barButtonItem title="Sign" image="signature" catalog="system" id="bKL-0I-7LO">
-                                <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <connections>
-                                    <action selector="signAction:" destination="Dwu-lj-4IN" id="dSM-6V-fHk"/>
-                                </connections>
-                            </barButtonItem>
                         </leftBarButtonItems>
                     </navigationItem>
                     <connections>
@@ -833,6 +827,12 @@
                                     <action selector="showRemoteControl:" destination="XmP-lK-cua" id="1fj-vG-Ade"/>
                                 </connections>
                             </barButtonItem>
+                            <barButtonItem image="wrench" catalog="system" id="XBu-v7-Ssp">
+                                <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <connections>
+                                    <action selector="goToTools:" destination="XmP-lK-cua" id="3N5-gw-GHF"/>
+                                </connections>
+                            </barButtonItem>
                         </leftBarButtonItems>
                     </navigationItem>
                     <connections>
@@ -846,6 +846,7 @@
                         <segue destination="u3j-cd-FEG" kind="show" identifier="segueToLightningNode" id="DF5-fx-Xqy"/>
                         <segue destination="GlR-4A-eAx" kind="show" identifier="segueToRemoteControl" id="aV5-mq-s3Q"/>
                         <segue destination="B99-yZ-naR" kind="show" identifier="segueToAddANode" id="dhu-ZV-762"/>
+                        <segue destination="fTf-eh-9Tk" kind="show" identifier="segueToTools" id="La3-qR-4jz"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dhK-90-srt" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -925,7 +926,7 @@
         <!--Utilitie Menu View Controller-->
         <scene sceneID="65A-Je-4un">
             <objects>
-                <viewController extendedLayoutIncludesOpaqueBars="YES" id="fTf-eh-9Tk" customClass="UtilitieMenuViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="fTf-eh-9Tk" customClass="UtilitieMenuViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="9ei-d7-Lou">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1005,7 +1006,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="h8h-eI-nNX" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-4199.1999999999998" y="-422.33883058470769"/>
+            <point key="canvasLocation" x="-4199" y="-490"/>
         </scene>
         <!--Get Info View Controller-->
         <scene sceneID="rVE-tx-gVr">
@@ -1239,7 +1240,7 @@
         <scene sceneID="lyI-Wq-XoX">
             <objects>
                 <navigationController extendedLayoutIncludesOpaqueBars="YES" id="2Yw-iO-uuQ" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="" image="wrench" catalog="system" id="4VZ-HS-vwd"/>
+                    <tabBarItem key="tabBarItem" title="" image="signature" catalog="system" id="4VZ-HS-vwd"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translucent="NO" id="1UV-eZ-dfB">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -1249,7 +1250,7 @@
                         </textAttributes>
                     </navigationBar>
                     <connections>
-                        <segue destination="fTf-eh-9Tk" kind="relationship" relationship="rootViewController" id="EaK-CF-pzh"/>
+                        <segue destination="nyf-66-vKN" kind="relationship" relationship="rootViewController" id="UEw-0i-vcI"/>
                     </connections>
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="eG7-X6-D6Z" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -1811,7 +1812,7 @@
         <!--Signer View Controller-->
         <scene sceneID="6ov-cz-KFR">
             <objects>
-                <viewController restorationIdentifier="signerVc" storyboardIdentifier="signerVc" extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="nyf-66-vKN" customClass="SignerViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController restorationIdentifier="signerVc" storyboardIdentifier="signerVc" extendedLayoutIncludesOpaqueBars="YES" id="nyf-66-vKN" customClass="SignerViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="j0q-oU-GGv">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1866,17 +1867,11 @@
                         <viewLayoutGuide key="safeArea" id="adl-yx-dXq"/>
                     </view>
                     <navigationItem key="navigationItem" id="gEL-E8-5mB">
-                        <rightBarButtonItems>
-                            <barButtonItem title="Item" image="list.bullet" catalog="system" id="zHs-Kt-VTj">
+                        <leftBarButtonItems>
+                            <barButtonItem image="qrcode.viewfinder" catalog="system" id="7ps-hK-qy3">
                                 <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <connections>
-                                    <action selector="addSignerAction:" destination="nyf-66-vKN" id="N3g-tA-eAn"/>
-                                </connections>
-                            </barButtonItem>
-                            <barButtonItem image="doc.on.clipboard" catalog="system" id="Z7e-kr-CW9">
-                                <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <connections>
-                                    <action selector="pasteAction:" destination="nyf-66-vKN" id="PkA-sg-2TO"/>
+                                    <action selector="scanQrAction:" destination="nyf-66-vKN" id="gZe-Ub-n2c"/>
                                 </connections>
                             </barButtonItem>
                             <barButtonItem image="square.and.arrow.down" catalog="system" id="3PO-ut-v8w">
@@ -1885,13 +1880,19 @@
                                     <action selector="uploadFileAction:" destination="nyf-66-vKN" id="gP1-1p-njv"/>
                                 </connections>
                             </barButtonItem>
-                            <barButtonItem image="qrcode.viewfinder" catalog="system" id="7ps-hK-qy3">
+                            <barButtonItem image="doc.on.clipboard" catalog="system" id="Z7e-kr-CW9">
                                 <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <connections>
-                                    <action selector="scanQrAction:" destination="nyf-66-vKN" id="gZe-Ub-n2c"/>
+                                    <action selector="pasteAction:" destination="nyf-66-vKN" id="PkA-sg-2TO"/>
                                 </connections>
                             </barButtonItem>
-                        </rightBarButtonItems>
+                        </leftBarButtonItems>
+                        <barButtonItem key="rightBarButtonItem" title="Item" image="list.bullet" catalog="system" id="zHs-Kt-VTj">
+                            <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <connections>
+                                <action selector="addSignerAction:" destination="nyf-66-vKN" id="N3g-tA-eAn"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
                     <connections>
                         <outlet property="signOutlet" destination="gvm-av-mkc" id="P8U-bs-Ug4"/>
@@ -4538,7 +4539,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
             </objects>
             <point key="canvasLocation" x="-2791.1999999999998" y="375.56221889055473"/>
         </scene>
-        <!--v0.1.92-->
+        <!--v0.1.93-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -4686,7 +4687,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                         <viewLayoutGuide key="safeArea" id="Cze-jj-bFe"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="v0.1.92" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="v0.1.93" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
@@ -7286,7 +7287,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="qed-hl-jG5"/>
+        <segue reference="UBf-qr-XYG"/>
         <segue reference="dhu-ZV-762"/>
         <segue reference="DLx-HT-rGm"/>
         <segue reference="w2g-bl-j8v"/>
@@ -7297,11 +7298,11 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="HNI-HG-9ZQ"/>
         <segue reference="IAz-j1-Gq6"/>
-        <segue reference="hWt-Pf-vqK"/>
+        <segue reference="YAg-Jp-RYL"/>
         <segue reference="aV5-mq-s3Q"/>
         <segue reference="8yc-oK-dlC"/>
-        <segue reference="Kd4-zZ-oMj"/>
-        <segue reference="j10-wi-hpr"/>
+        <segue reference="Jma-5H-zJx"/>
+        <segue reference="4EJ-HI-y5g"/>
         <segue reference="6HW-Pq-bwM"/>
         <segue reference="U54-oe-CeC"/>
     </inferredMetricsTieBreakers>

@@ -100,6 +100,15 @@ class MainMenuViewController: UIViewController {
         }
     }
     
+    @IBAction func goToTools(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.performSegue(withIdentifier: "segueToTools", sender: self)
+        }
+    }
+    
+    
     @IBAction func showRemoteControl(_ sender: Any) {
         #if targetEnvironment(macCatalyst)
         // Code specific to Mac.
