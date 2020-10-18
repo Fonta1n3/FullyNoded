@@ -132,10 +132,29 @@
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="yyx-fL-Koo">
-                                        <rect key="frame" x="165" y="58" width="125" height="35"/>
+                                        <rect key="frame" x="120" y="58" width="170" height="35"/>
                                         <subviews>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="yBn-mf-ozB">
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="c4p-rj-n0M">
                                                 <rect key="frame" x="0.0" y="0.0" width="35" height="35"/>
+                                                <subviews>
+                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="tce-QW-MDj">
+                                                        <rect key="frame" x="2.5" y="2.5" width="30" height="30"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" constant="30" id="3k9-hh-vzx"/>
+                                                            <constraint firstAttribute="height" constant="30" id="LJn-xF-FbB"/>
+                                                        </constraints>
+                                                    </imageView>
+                                                </subviews>
+                                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                                <constraints>
+                                                    <constraint firstItem="tce-QW-MDj" firstAttribute="centerX" secondItem="c4p-rj-n0M" secondAttribute="centerX" id="5Qn-mf-nH9"/>
+                                                    <constraint firstAttribute="height" constant="35" id="fMs-lJ-ruP"/>
+                                                    <constraint firstItem="tce-QW-MDj" firstAttribute="centerY" secondItem="c4p-rj-n0M" secondAttribute="centerY" id="jfa-5L-Fpe"/>
+                                                    <constraint firstAttribute="width" constant="35" id="kar-H2-WU2"/>
+                                                </constraints>
+                                            </view>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="yBn-mf-ozB">
+                                                <rect key="frame" x="45" y="0.0" width="35" height="35"/>
                                                 <subviews>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="6k0-Vs-kGa">
                                                         <rect key="frame" x="2.5" y="2.5" width="30" height="30"/>
@@ -154,7 +173,7 @@
                                                 </constraints>
                                             </view>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="d1H-k5-uLn">
-                                                <rect key="frame" x="45" y="0.0" width="35" height="35"/>
+                                                <rect key="frame" x="90" y="0.0" width="35" height="35"/>
                                                 <subviews>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="pey-jI-MkB">
                                                         <rect key="frame" x="2.5" y="2.5" width="30" height="30"/>
@@ -173,7 +192,7 @@
                                                 </constraints>
                                             </view>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="I5w-by-igz">
-                                                <rect key="frame" x="90" y="0.0" width="35" height="35"/>
+                                                <rect key="frame" x="135" y="0.0" width="35" height="35"/>
                                                 <subviews>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Htb-h1-62A">
                                                         <rect key="frame" x="2.5" y="2.5" width="30" height="30"/>
@@ -245,6 +264,8 @@
                 <outlet property="isSolvableImageView" destination="pey-jI-MkB" id="6yl-oM-ldK"/>
                 <outlet property="labelButtonOutlet" destination="nt0-Dg-BtN" id="MCg-JG-KPm"/>
                 <outlet property="lockButtonOutlet" destination="lOQ-5R-kEw" id="0fn-uH-Dfd"/>
+                <outlet property="reusedBackground" destination="c4p-rj-n0M" id="El1-Bl-BG5"/>
+                <outlet property="reusedImageView" destination="tce-QW-MDj" id="F7Q-Lk-Pvs"/>
                 <outlet property="roundeBackgroundView" destination="pXx-EG-WdU" id="cqz-ve-Gga"/>
                 <outlet property="solvableLabel" destination="YnX-hr-prN" id="0c3-UX-pIm"/>
                 <outlet property="spendableLabel" destination="wOA-wl-Py4" id="0Ah-mK-A5K"/>

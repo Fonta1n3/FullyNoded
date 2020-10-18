@@ -62,7 +62,9 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     
     @IBAction private func lockAction(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
-            self?.performSegue(withIdentifier: "goToLocked", sender: self)
+            guard let self = self else { return }
+            
+            self.performSegue(withIdentifier: "goToLocked", sender: self)
         }
     }
     
@@ -835,30 +837,35 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         switch segue.identifier {
             
+        case "goToLocked":
+            guard let vc = segue.destination as? LockedViewController else { fallthrough }
+            
+            vc.fxRate = fxRate
+            
         case "segueToSendFromUtxos":
-            if let vc = segue.destination as? CreateRawTxViewController {
-                vc.inputArray = inputArray
-            }
+            guard let vc = segue.destination as? CreateRawTxViewController else { fallthrough }
+            
+            vc.inputArray = inputArray
             
         case "segueToGetAddressFromUtxos":
-            if let vc = segue.destination as? QRScannerViewController {
-                vc.isScanningAddress = true
-                vc.onAddressDoneBlock = { [weak self] address in
-                    guard let address = address, let self = self else { return }
-                    
-                    self.spinner.addConnectingView(vc: self, description: "building psbt...")
-                    self.processBIP21(url: address)
-                }
+            guard let vc = segue.destination as? QRScannerViewController else { fallthrough }
+            
+            vc.isScanningAddress = true
+            vc.onAddressDoneBlock = { [weak self] address in
+                guard let address = address, let self = self else { return }
+                
+                self.spinner.addConnectingView(vc: self, description: "building psbt...")
+                self.processBIP21(url: address)
             }
             
         case "segueToBroadcasterFromUtxo":
-            if let vc = segue.destination as? VerifyTransactionViewController {
-                spinner.removeConnectingView()
-                if rawSigned != "" {
-                    vc.signedRawTx = rawSigned
-                } else if psbt != "" {
-                    vc.unsignedPsbt = psbt
-                }
+            guard let vc = segue.destination as? VerifyTransactionViewController else { fallthrough }
+            
+            spinner.removeConnectingView()
+            if rawSigned != "" {
+                vc.signedRawTx = rawSigned
+            } else if psbt != "" {
+                vc.unsignedPsbt = psbt
             }
             
         default:

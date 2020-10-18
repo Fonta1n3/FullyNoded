@@ -39,6 +39,8 @@ class UTXOCell: UITableViewCell {
     @IBOutlet private weak var lockButtonOutlet: UIButton!
     @IBOutlet private weak var labelButtonOutlet: UIButton!
     @IBOutlet private weak var fiatLabel: UILabel!
+    @IBOutlet private weak var reusedBackground: UIView!
+    @IBOutlet private weak var reusedImageView: UIImageView!
     
     
     override func awakeFromNib() {
@@ -51,14 +53,17 @@ class UTXOCell: UITableViewCell {
         isChangeBackground.clipsToBounds = true
         isSolvableBackground.clipsToBounds = true
         isDustBackground.clipsToBounds = true
+        reusedBackground.clipsToBounds = true
         
         isChangeBackground.layer.cornerRadius = 5
         isSolvableBackground.layer.cornerRadius = 5
         isDustBackground.layer.cornerRadius = 5
+        reusedBackground.layer.cornerRadius = 5
         
         isChangeImageView.tintColor = .white
         isSolvableImageView.tintColor = .white
         isDustImageView.tintColor = .white
+        reusedImageView.tintColor = .white
         
         selectionStyle = .none
     }
@@ -82,6 +87,21 @@ class UTXOCell: UITableViewCell {
             lockButtonOutlet.setImage(UIImage(systemName: "lock.open"), for: .normal)
             lockButtonOutlet.tintColor = .systemTeal
             labelButtonOutlet.alpha = 1
+        }
+        
+        if utxo.reused != nil {
+            if utxo.reused! {
+                reusedImageView.image = UIImage(systemName: "shield.slash")
+                reusedBackground.backgroundColor = .systemOrange
+            } else {
+                reusedImageView.image = UIImage(systemName: "shield")
+                reusedBackground.backgroundColor = .systemIndigo
+            }
+            reusedImageView.alpha = 1
+            reusedBackground.alpha = 1
+        } else {
+            reusedImageView.alpha = 0
+            reusedBackground.alpha = 0
         }
         
         if utxo.desc != nil {

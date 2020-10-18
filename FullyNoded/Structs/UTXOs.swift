@@ -23,6 +23,7 @@ public struct UtxosStruct: CustomStringConvertible, Codable {
     let safe: Bool?
     let spendable: Bool?
     var isSelected: Bool
+    let reused: Bool?
     
     init(dictionary: [String: Any]) {
         id = dictionary["id"] as? UUID
@@ -38,6 +39,7 @@ public struct UtxosStruct: CustomStringConvertible, Codable {
         spendable = dictionary["spendable"] as? Bool
         safe = dictionary["safe"] as? Bool
         isSelected = dictionary["isSelected"] as? Bool ?? false
+        reused = dictionary["reused"] as? Bool
     }
     
     public var description: String {
