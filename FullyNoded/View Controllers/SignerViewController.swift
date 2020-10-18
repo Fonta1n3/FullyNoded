@@ -44,8 +44,17 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        if psbt != "" {
-            getChain()
+        CoreDataService.retrieveEntity(entityName: .signers) { [weak self] signers in
+            guard let self = self else { return }
+            
+            guard let signers = signers, signers.count > 0 else {
+                showAlert(vc: self, title: "Looks like you have not yet added a signer!", message: "Tap the list button in the top right then the + button to add signers")
+                return
+            }
+            
+            if self.psbt != "" {
+                self.getChain()
+            }
         }
     }
     
@@ -161,11 +170,16 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
     
     @IBAction func pasteAction(_ sender: Any) {
         if let data = UIPasteboard.general.data(forPasteboardType: "com.apple.traditional-mac-plain-text") {
-            guard let string = String(bytes: data, encoding: .utf8) else { return }
+            guard let string = String(bytes: data, encoding: .utf8) else {
+                showAlert(vc: self, title: "Not a psbt?", message: "Looks like you do not have valid text on your clipboard")
+                return
+            }
             
             processPastedString(string)
         } else if let string = UIPasteboard.general.string {
            processPastedString(string)
+        } else {
+            showAlert(vc: self, title: "Nothing on the clipboard!", message: "Does not look like you have much on your clipboard, or if you do have something it is not text. You can copy and paste the base64 text of a psbt with this button.")
         }
     }
     
@@ -282,6 +296,12 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
     }
     
     @IBAction func signNow(_ sender: Any) {
+        guard textView.text != "" else {
+            showAlert(vc: self, title: "Add a psbt first", message: "There is nothing to sign, you can either paste one with the paste button, scan QR code(s) or import a .psbt file")
+            
+            return
+        }
+        
         if !broadcast {
             sign()
         } else {

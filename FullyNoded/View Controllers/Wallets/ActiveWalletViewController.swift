@@ -30,6 +30,8 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     var wallet:Wallet?
     var isBolt11 = false
     var fxRate:Double?
+    var alertStyle = UIAlertController.Style.actionSheet
+    
     @IBOutlet weak var sendView: UIView!
     @IBOutlet weak var invoiceView: UIView!
     @IBOutlet weak var utxosView: UIView!
@@ -49,8 +51,12 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         sectionZeroLoaded = false
         NotificationCenter.default.addObserver(self, selector: #selector(refreshWallet), name: .refreshWallet, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(addColdcard(_:)), name: .addColdCard, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(importWallet(_:)), name: .importWallet, object: nil)
         addNavBarSpinner()
         loadTable()
+        if (UIDevice.current.userInterfaceIdiom == .pad) {
+          alertStyle = UIAlertController.Style.alert
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -119,21 +125,49 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
         }
     }
     
+    @objc func importWallet(_ notification: NSNotification) {
+        let spinner = ConnectingView()
+        spinner.addConnectingView(vc: self, description: "importing your Coldcard wallet, this can take a minute...")
+        
+        guard let accountMap = notification.userInfo as? [String:Any] else {
+            showAlert(vc: self, title: "Ooops", message: "That file does not seem to be a compatible wallet import, please raise an issue on the github so we can add support for it.")
+            return
+        }
+        
+        ImportWallet.accountMap(accountMap) { [weak self] (success, errorDescription) in
+            guard let self = self else { return }
+            
+            guard success else {
+                spinner.removeConnectingView()
+                showAlert(vc: self, title: "Error importing wallet", message: errorDescription ?? "unknown")
+                return
+            }
+            
+            spinner.removeConnectingView()
+            showAlert(vc: self, title: "Wallet imported ✅", message: "It has been activated and is refreshing now.")
+            self.refreshWallet()
+        }
+    }
+    
     @objc func addColdcard(_ notification: NSNotification) {
-        print("addColdcard")
         let spinner = ConnectingView()
         spinner.addConnectingView(vc: self, description: "creating your Coldcard wallet, this can take a minute...")
-        if let dict = notification.userInfo as? [String:Any] {
-            ImportWallet.coldcard(dict: dict) { [unowned vc = self] (success, errorDescription) in
-                if success {
-                    print("success")
-                    spinner.removeConnectingView()
-                    vc.refreshWallet()
-                } else {
-                    spinner.removeConnectingView()
-                    showAlert(vc: vc, title: "Error creating Coldcard wallet", message: errorDescription ?? "unknown")
-                }
+        
+        guard let coldCard = notification.userInfo as? [String:Any] else {
+            showAlert(vc: self, title: "Ooops", message: "That file does not seem to be a compatible wallet import, please raise an issue on the github so we can add support for it.")
+            return
+        }
+        
+        ImportWallet.coldcard(dict: coldCard) { [unowned vc = self] (success, errorDescription) in
+            guard success else {
+                spinner.removeConnectingView()
+                showAlert(vc: self, title: "Error creating Coldcard wallet", message: errorDescription ?? "unknown")
+                return
             }
+            
+            spinner.removeConnectingView()
+            showAlert(vc: self, title: "Coldcard Wallet imported ✅", message: "It has been activated and is refreshing now.")
+            vc.refreshWallet()
         }
     }
     
@@ -421,128 +455,127 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     
     private func loadBalances() {
         NodeLogic.walletDisabled = walletDisabled
-        NodeLogic.loadBalances { [unowned vc = self] (response, errorMessage) in
-            if response != nil {
-                let str = Balances(dictionary: response!)
-                vc.onchainBalance = str.onchainBalance
-                vc.offchainBalance = str.offchainBalance
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.sectionZeroLoaded = true
-                    vc.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
-                    vc.loadSectionOne()
+        NodeLogic.loadBalances { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            guard let response = response else {
+                self.removeSpinner()
+                
+                guard let errorMessage = errorMessage else {
+                    return
                 }
-            } else if errorMessage != nil {
-                if errorMessage!.contains("Wallet file not specified (must request wallet RPC through") {
-                    vc.removeSpinner()
-                    vc.existingWallet = "multiple wallets"
-                    CoreDataService.retrieveEntity(entityName: .wallets) { (wallets) in
-                        if wallets != nil {
-                            if wallets!.count > 0 {
-                                vc.promptToChooseWallet()
-                            } else {
-                                vc.promptToCreateWallet()
-                            }
-                        } else {
-                            vc.promptToCreateWallet()
-                        }
-                    }
-                    
-                } else {
-                    vc.removeSpinner()
-                    displayAlert(viewController: vc, isError: true, message: errorMessage!)
+                
+                guard errorMessage.contains("Wallet file not specified (must request wallet RPC through") else {
+                    displayAlert(viewController: self, isError: true, message: errorMessage)
+                    return
                 }
+                
+                self.removeSpinner()
+                self.existingWallet = "multiple wallets"
+                self.chooseWallet()
+                
+                return
+            }
+            
+            let balances = Balances(dictionary: response)
+            self.onchainBalance = balances.onchainBalance
+            self.offchainBalance = balances.offchainBalance
+            
+            DispatchQueue.main.async {
+                self.sectionZeroLoaded = true
+                self.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
+                self.loadTransactions()
             }
         }
     }
     
-    func loadSectionOne() {
-        transactionArray.removeAll()
-        NodeLogic.walletDisabled = walletDisabled
-        NodeLogic.loadSectionTwo { [unowned vc = self] (response, errorMessage) in
-            if response != nil {
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.transactionArray = response!
-                    vc.walletTable.reloadData()
-                    vc.getFiatBalances()
-                }
-            } else {
-                vc.removeSpinner()
-                displayAlert(viewController: vc, isError: true, message: errorMessage ?? "unknown error loading transactions")
-            }
+    private func chooseWallet() {
+        CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
+            guard let wallets = wallets, wallets.count > 0 else { self.promptToCreateWallet(); return }
+            
+            self.promptToChooseWallet()
         }
     }
     
     private func getFiatBalances() {
-        let fx = FiatConverter.sharedInstance
-        fx.getFxRate { [unowned vc = self] rate in
-            if rate != nil {
-                vc.fxRate = rate
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.fxRateLabel.text = "$\(rate!.withCommas()) / btc"
-                }
-                if let onchainBalance = Double(vc.onchainBalance) {
-                    let onchainBalanceFiat = onchainBalance * rate!
-                    vc.onchainFiat = "$\(round(onchainBalanceFiat).withCommas())"
-                }
-                if let offchainBalance = Double(vc.offchainBalance) {
-                    let offchainBalanceFiat = offchainBalance * rate!
-                    vc.offchainFiat = "$\(round(offchainBalanceFiat).withCommas())"
-                }
-            } else {
-                vc.onchainFiat = ""
-                vc.offchainFiat = ""
+        FiatConverter.sharedInstance.getFxRate { [weak self] rate in
+            guard let self = self else { return }
+            
+            guard let rate = rate else {
+                self.onchainFiat = ""
+                self.offchainFiat = ""
+                return
             }
+            
+            self.fxRate = rate
+            
             DispatchQueue.main.async { [unowned vc = self] in
-                vc.walletTable.reloadSections(IndexSet(arrayLiteral: 0), with: .none)
-                vc.removeSpinner()
-                vc.getWalletInfo()
+                vc.fxRateLabel.text = "$\(rate.withCommas()) / btc"
+            }
+            
+            if let onchainBalance = Double(self.onchainBalance) {
+                let onchainBalanceFiat = onchainBalance * rate
+                self.onchainFiat = "$\(round(onchainBalanceFiat).withCommas())"
+            }
+            
+            if let offchainBalance = Double(self.offchainBalance) {
+                let offchainBalanceFiat = offchainBalance * rate
+                self.offchainFiat = "$\(round(offchainBalanceFiat).withCommas())"
+            }
+            
+            DispatchQueue.main.async {
+                self.walletTable.reloadSections(IndexSet(arrayLiteral: 0), with: .none)
+                self.removeSpinner()
+                self.getWalletInfo()
             }
         }
     }
     
     private func getWalletInfo() {
-        Reducer.makeCommand(command: .getwalletinfo, param: "") { (response, errorMessage) in
-            if let dict = response as? NSDictionary {
-                if let scanning = dict["scanning"] as? NSDictionary {
-                    if let progress = scanning["progress"] as? Double {
-                        showAlert(vc: self, title: "Wallet scanning \(Int(progress * 100))% complete", message: "Your wallet is currently rescanning the blockchain, you need to wait until it completes before you will see your balances and transactions.")
-                    }
-                }
+        Reducer.makeCommand(command: .getwalletinfo, param: "") { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            guard let dict = response as? NSDictionary,
+                let scanning = dict["scanning"] as? NSDictionary,
+                let progress = scanning["progress"] as? Double else {
+                return
             }
+            
+            showAlert(vc: self, title: "Wallet scanning \(Int(progress * 100))% complete", message: "Your wallet is currently rescanning the blockchain, you need to wait until it completes before you will see your balances and transactions.")
         }
     }
     
     private func promptToCreateWallet() {
-        DispatchQueue.main.async { [unowned vc = self] in
-            var alertStyle = UIAlertController.Style.actionSheet
-            if (UIDevice.current.userInterfaceIdiom == .pad) {
-              alertStyle = UIAlertController.Style.alert
-            }
-            let alert = UIAlertController(title: "Looks like you have not yet created a Fully Noded wallet, tap create to get started, if you are not yet ready you can always tap the + button in the top left.", message: "", preferredStyle: alertStyle)
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let alert = UIAlertController(title: "Looks like you have not yet created a Fully Noded wallet, tap create to get started, if you are not yet ready you can always tap the + button in the top left.", message: "", preferredStyle: self.alertStyle)
+            
             alert.addAction(UIAlertAction(title: "Create", style: .default, handler: { action in
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.performSegue(withIdentifier: "createFullyNodedWallet", sender: vc)
+                DispatchQueue.main.async {
+                    self.performSegue(withIdentifier: "createFullyNodedWallet", sender: self)
                 }
             }))
+            
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = vc.view
-            vc.present(alert, animated: true, completion: nil)
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
         }
     }
     
     private func promptToChooseWallet() {
-        DispatchQueue.main.async { [unowned vc = self] in
-            var alertStyle = UIAlertController.Style.actionSheet
-            if (UIDevice.current.userInterfaceIdiom == .pad) {
-              alertStyle = UIAlertController.Style.alert
-            }
-            let alert = UIAlertController(title: "None of your wallets seem to be toggled on, please choose which wallet you want to use.", message: "", preferredStyle: alertStyle)
-            alert.addAction(UIAlertAction(title: "Choose", style: .default, handler: { [unowned vc = self] action in
-                vc.goChooseWallet()
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let alert = UIAlertController(title: "None of your wallets seem to be toggled on, please choose which wallet you want to use.", message: "", preferredStyle: self.alertStyle)
+            
+            alert.addAction(UIAlertAction(title: "Choose", style: .default, handler: { action in
+                self.goChooseWallet()
             }))
+            
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = vc.view
-            vc.present(alert, animated: true, completion: nil)
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
         }
     }
     
@@ -554,31 +587,54 @@ class ActiveWalletViewController: UIViewController, UITableViewDelegate, UITable
     
     func reloadWalletData() {
         transactionArray.removeAll()
-        NodeLogic.loadBalances { [unowned
-            vc = self] (response, errorMessage) in
-            if errorMessage != nil {
-                vc.removeSpinner()
-                displayAlert(viewController: vc, isError: true, message: errorMessage!)
-            } else if response != nil {
-                let str = Balances(dictionary: response!)
-                vc.onchainBalance = str.onchainBalance
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.sectionZeroLoaded = true
-                    vc.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .none)
+        
+        NodeLogic.loadBalances { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            guard let response = response else {
+                self.removeSpinner()
+                
+                guard let errorMessage = errorMessage else {
+                    displayAlert(viewController: self, isError: true, message: "unknown error")
+                    return
                 }
-                NodeLogic.loadSectionTwo { [unowned vc = self] (response, errorMessage) in
-                    if errorMessage != nil {
-                        vc.removeSpinner()
-                        displayAlert(viewController: vc, isError: true, message: errorMessage!)
-                    } else if response != nil {
-                        DispatchQueue.main.async { [unowned vc = self] in
-                            vc.transactionArray = response!.reversed()
-                            vc.walletTable.reloadData()
-                            vc.removeSpinner()
-                            vc.getFiatBalances()
-                        }
-                    }
+                
+                displayAlert(viewController: self, isError: true, message: errorMessage)
+                return
+            }
+            
+            let balances = Balances(dictionary: response)
+            self.onchainBalance = balances.onchainBalance
+            
+            DispatchQueue.main.async {
+                self.sectionZeroLoaded = true
+                self.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .none)
+            }
+            
+            self.loadTransactions()
+        }
+    }
+    
+    private func loadTransactions() {
+        NodeLogic.walletDisabled = walletDisabled
+        NodeLogic.loadSectionTwo { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            guard let response = response else {
+                self.removeSpinner()
+                
+                guard let errorMessage = errorMessage else {
+                    return
                 }
+                
+                displayAlert(viewController: self, isError: true, message: errorMessage)
+                return
+            }
+            
+            DispatchQueue.main.async {
+                self.transactionArray = response.reversed()
+                self.walletTable.reloadData()
+                self.getFiatBalances()
             }
         }
     }

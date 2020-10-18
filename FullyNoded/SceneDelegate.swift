@@ -41,36 +41,37 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func sceneWillEnterForeground(_ scene: UIScene) {
-        if !isBooting {
-            if KeyChain.getData("UnlockPassword") != nil {
-                let storyboard = UIStoryboard(name: "Main", bundle: nil)
-                if let loginVC = storyboard.instantiateViewController(identifier: "LogIn") as? LogInViewController {
-                    let topVC = self.window?.rootViewController?.topViewController()
-                    if topVC!.restorationIdentifier != "LogIn" {
-                        DispatchQueue.main.async {
-                            loginVC.modalPresentationStyle = .fullScreen
-                            topVC!.present(loginVC, animated: true, completion: nil)
-                        }
-                        
-                        loginVC.onDoneBlock = { [weak self] in
-                            guard let self = self else { return }
-                            if !self.isBooting && self.mgr?.state != .started && self.mgr?.state != .connected  {
-                                self.mgr?.start(delegate: nil)
-                            } else {
-                                self.isBooting = false
-                            }
-                        }
-                    }
-                }
+        guard !isBooting else { isBooting = !isBooting; return }
+        
+        guard KeyChain.getData("UnlockPassword") != nil else {
+            if !isBooting && mgr?.state != .started && mgr?.state != .connected  {
+                mgr?.start(delegate: nil)
             } else {
-                if !isBooting && mgr?.state != .started && mgr?.state != .connected  {
-                    mgr?.start(delegate: nil)
-                } else {
-                    isBooting = false
-                }
+                isBooting = false
             }
-        } else {
-            isBooting = false
+            return
+        }
+        
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        
+        guard let loginVC = storyboard.instantiateViewController(identifier: "LogIn") as? LogInViewController,
+            let topVC = self.window?.rootViewController?.topViewController(),
+            topVC.restorationIdentifier != "LogIn" else {
+                return
+        }
+        
+        DispatchQueue.main.async {
+            loginVC.modalPresentationStyle = .fullScreen
+            topVC.present(loginVC, animated: true, completion: nil)
+        }
+        
+        loginVC.onDoneBlock = { [weak self] in
+            guard let self = self else { return }
+            if !self.isBooting && self.mgr?.state != .started && self.mgr?.state != .connected  {
+                self.mgr?.start(delegate: nil)
+            } else {
+                self.isBooting = false
+            }
         }
     }
 
@@ -86,126 +87,164 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
         let urlcontexts = URLContexts.first
-        if let url = urlcontexts?.url {
-            if url.pathExtension == "psbt" {
-                let needTo = url.startAccessingSecurityScopedResource()
-                do {
-                    let data = try Data(contentsOf: url.absoluteURL)
-                    let psbt = data.base64EncodedString()
-                    presentSigner(psbt: psbt)
-                } catch {
-                    print(error.localizedDescription)
-                }
-                if needTo {
-                  url.stopAccessingSecurityScopedResource()
-                }
-            } else if url.pathExtension == "txn" {
-                let needTo = url.startAccessingSecurityScopedResource()
-                do {
-                    let data = try Data(contentsOf: url.absoluteURL)
-                    if let txn = String(bytes: data, encoding: .utf8) {
-                        presentBroadcaster(txn: txn)
-                    }
-                } catch {
-                    
-                }
-                if needTo {
-                  url.stopAccessingSecurityScopedResource()
-                }
-            } else if url.pathExtension == "json" {
-                let needTo = url.startAccessingSecurityScopedResource()
-                do {
-                    let data = try Data(contentsOf: url.absoluteURL)
-                    let dict = try JSONSerialization.jsonObject(with: data, options: []) as! [String:Any]
-                    if let p2wsh_deriv = dict["p2wsh_deriv"] as? String {
-                        if p2wsh_deriv == "m/48'/0'/0'/2'" || p2wsh_deriv == "m/48'/1'/0'/2'" {
-                            if let zpub = dict["p2wsh"] as? String, let fingerprint = dict["xfp"] as? String {
-                                if let xpub = XpubConverter.convert(extendedKey: zpub) {
-                                    presentMultisigCreator(zpub: zpub, fingerprint: fingerprint, xpub: xpub)
-                                }
-                            }
-                        }
-                    } else if let _ = dict["chain"] as? String {
-                        print("coldcard single sig")
-                        presentWalletCreator(coldCard: dict)
-                    } else if let _ = dict["descriptor"] as? String {
-                        // Its an account map
-                        print("account map: \(dict)")
-                    }
-                } catch {}
-                if needTo {
-                  url.stopAccessingSecurityScopedResource()
-                }
-            } else {
-                addNode(url: "\(url)")
+        guard let url = urlcontexts?.url else { return }
+        
+        if url.pathExtension == "psbt" {
+            parsePsbt(url)
+        } else if url.pathExtension == "txn" {
+            parseTxn(url)
+        } else if url.pathExtension == "json" {
+            parseJsonFile(url)
+        } else {
+            addNode(url: "\(url)")
+        }
+    }
+    
+    private func parsePsbt(_ url: URL) {
+        let needTo = url.startAccessingSecurityScopedResource()
+        
+        guard let data = try? Data(contentsOf: url.absoluteURL) else { return }
+        
+        let psbt = data.base64EncodedString()
+        presentSigner(psbt: psbt)
+        
+        if needTo {
+            url.stopAccessingSecurityScopedResource()
+        }
+    }
+    
+    private func parseTxn(_ url: URL) {
+        let needTo = url.startAccessingSecurityScopedResource()
+        
+        guard let data = try? Data(contentsOf: url.absoluteURL), let txn = String(bytes: data, encoding: .utf8) else { return }
+        
+        presentBroadcaster(txn: txn)
+        
+        if needTo {
+          url.stopAccessingSecurityScopedResource()
+        }
+    }
+    
+    private func parseJsonFile(_ url: URL) {
+        let needTo = url.startAccessingSecurityScopedResource()
+        
+        guard let data = try? Data(contentsOf: url.absoluteURL),
+            let dict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] else {
+                return
+        }
+        
+        if let p2wsh_deriv = dict["p2wsh_deriv"] as? String {
+            guard p2wsh_deriv == "m/48'/0'/0'/2'" || p2wsh_deriv == "m/48'/1'/0'/2'",
+                let zpub = dict["p2wsh"] as? String,
+                let fingerprint = dict["xfp"] as? String,
+                let xpub = XpubConverter.convert(extendedKey: zpub) else {
+                    return
             }
+            
+            presentMultisigCreator(zpub: zpub, fingerprint: fingerprint, xpub: xpub)
+            
+        } else if let _ = dict["chain"] as? String {
+            presentWalletCreator(coldCard: dict)
+            
+        } else if let _ = dict["descriptor"] as? String {
+            presentWalletImporter(accountMap: dict)
+            
+        }
+        
+        if needTo {
+          url.stopAccessingSecurityScopedResource()
         }
     }
     
     private func addNode(url: String) {
-        QuickConnect.addNode(url: url) { (success, errorMessage) in
-            if success {
-                if !url.hasPrefix("clightning-rpc") {
-                    DispatchQueue.main.async {
-                        NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
-                    }
-                }
+        QuickConnect.addNode(url: url) { (success, _) in
+            guard success, !url.hasPrefix("clightning-rpc") else { return }
+            
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
             }
         }
     }
         
     private func presentSigner(psbt: String) {
         let storyBoard = UIStoryboard(name: "Main", bundle: nil)
-        if let signerVc = storyBoard.instantiateViewController(identifier: "signerVc") as? SignerViewController {
-            signerVc.psbt = psbt
-            if let window = self.window, let rootViewController = window.rootViewController {
-                var currentController = rootViewController
-                while let presentedController = currentController.presentedViewController {
-                    currentController = presentedController
-                }
-                currentController.present(signerVc, animated: true, completion: nil)
-            }
+        
+        guard let signerVc = storyBoard.instantiateViewController(identifier: "signerVc") as? SignerViewController,
+            let window = self.window,
+            let rootViewController = window.rootViewController else {
+            return
         }
+        
+        signerVc.psbt = psbt
+        
+        var currentController = rootViewController
+        
+        while let presentedController = currentController.presentedViewController {
+            currentController = presentedController
+        }
+        
+        currentController.present(signerVc, animated: true, completion: nil)
     }
     
     private func presentBroadcaster(txn: String) {
         let storyBoard = UIStoryboard(name: "Main", bundle: nil)
-        if let signerVc = storyBoard.instantiateViewController(identifier: "signerVc") as? SignerViewController {
-            signerVc.txn = txn
-            if let window = self.window, let rootViewController = window.rootViewController {
-                var currentController = rootViewController
-                while let presentedController = currentController.presentedViewController {
-                    currentController = presentedController
-                }
-                currentController.present(signerVc, animated: true, completion: nil)
-            }
+        
+        guard let signerVc = storyBoard.instantiateViewController(identifier: "signerVc") as? SignerViewController,
+            let window = self.window,
+            let rootViewController = window.rootViewController else {
+            return
         }
+        
+        signerVc.txn = txn
+        
+        var currentController = rootViewController
+        
+        while let presentedController = currentController.presentedViewController {
+            currentController = presentedController
+        }
+        
+        currentController.present(signerVc, animated: true, completion: nil)
     }
     
     private func presentMultisigCreator(zpub: String, fingerprint: String, xpub: String) {
-        //MultisigCreator
         let storyBoard = UIStoryboard(name: "Main", bundle: nil)
-        if let multisigCreator = storyBoard.instantiateViewController(identifier: "MultisigCreator") as? CreateMultisigViewController {
+        
+        guard let multisigCreator = storyBoard.instantiateViewController(identifier: "MultisigCreator") as? CreateMultisigViewController,
+            let window = self.window,
+            let rootViewController = window.rootViewController else {
+            return
+        }
+        
         multisigCreator.ccXfp = fingerprint
         multisigCreator.ccXpub = xpub
-            if let window = self.window, let rootViewController = window.rootViewController {
-                var currentController = rootViewController
-                while let presentedController = currentController.presentedViewController {
-                    currentController = presentedController
-                }
-                multisigCreator.modalPresentationStyle = .fullScreen
-                currentController.present(multisigCreator, animated: true, completion: nil)
-            }
+        
+        var currentController = rootViewController
+        
+        while let presentedController = currentController.presentedViewController {
+            currentController = presentedController
         }
+        
+        multisigCreator.modalPresentationStyle = .fullScreen
+        currentController.present(multisigCreator, animated: true, completion: nil)
     }
     
     private func presentWalletCreator(coldCard: [String:Any]) {
-        if let tabBarController = self.window!.rootViewController as? UITabBarController {
-            tabBarController.selectedIndex = 1
-            DispatchQueue.main.async {
-                NotificationCenter.default.post(name: .addColdCard, object: nil, userInfo: coldCard)
-            }
-            
+        guard let tabBarController = self.window!.rootViewController as? UITabBarController else { return }
+        
+        tabBarController.selectedIndex = 1
+        
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(name: .addColdCard, object: nil, userInfo: coldCard)
+        }
+    }
+    
+    private func presentWalletImporter(accountMap: [String:Any]) {
+        guard let tabBarController = self.window!.rootViewController as? UITabBarController else { return }
+        
+        tabBarController.selectedIndex = 1
+        
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(name: .importWallet, object: nil, userInfo: accountMap)
         }
     }
     
