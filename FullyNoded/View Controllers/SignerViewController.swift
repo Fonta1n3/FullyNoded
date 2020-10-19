@@ -41,6 +41,13 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
         if (UIDevice.current.userInterfaceIdiom == .pad) {
           alertStyle = UIAlertController.Style.alert
         }
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(broadcast(_:)), name: .broadcastTxn, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(signPsbt(_:)), name: .signPsbt, object: nil)
+        
+        if self.psbt != "" {
+            self.getChain()
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -51,11 +58,28 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
                 showAlert(vc: self, title: "Looks like you have not yet added a signer!", message: "Tap the list button in the top right then the + button to add signers")
                 return
             }
-            
-            if self.psbt != "" {
-                self.getChain()
-            }
         }
+    }
+    
+    @objc func signPsbt(_ notification: NSNotification) {
+        guard let psbtDict = notification.userInfo as? [String:Any], let psbt = psbtDict["psbt"] as? String else {
+            showAlert(vc: self, title: "Uh oh", message: "That does not appear to be a psbt...")
+            return
+        }
+        
+        DispatchQueue.main.async {
+            self.textView.text = psbt
+        }
+    }
+    
+    @objc func broadcast(_ notification: NSNotification) {
+        guard let txnDict = notification.userInfo as? [String:Any], let txn = txnDict["txn"] as? String else {
+            showAlert(vc: self, title: "Uh oh", message: "That does not appear to be a signed raw transaction...")
+            return
+        }
+        
+        self.txn = processedText(txn)
+        self.segueToBroadcast()
     }
     
     private func getChain() {

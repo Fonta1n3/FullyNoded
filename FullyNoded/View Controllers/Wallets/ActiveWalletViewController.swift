@@ -544,7 +544,7 @@ class ActiveWalletViewController: UIViewController {
             }
             
             DispatchQueue.main.async {
-                self.transactionArray = response//.reversed()
+                self.transactionArray = response
                 self.walletTable.reloadData()
                 self.getFiatBalances()
             }

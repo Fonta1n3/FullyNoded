@@ -167,43 +167,40 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
         
     private func presentSigner(psbt: String) {
-        let storyBoard = UIStoryboard(name: "Main", bundle: nil)
+//        let storyBoard = UIStoryboard(name: "Main", bundle: nil)
+//
+//        guard let signerVc = storyBoard.instantiateViewController(identifier: "signerVc") as? SignerViewController,
+//            let window = self.window,
+//            let rootViewController = window.rootViewController else {
+//            return
+//        }
+//
+//        signerVc.psbt = psbt
+//
+//        var currentController = rootViewController
+//
+//        while let presentedController = currentController.presentedViewController {
+//            currentController = presentedController
+//        }
+//
+//        currentController.present(signerVc, animated: true, completion: nil)
+        guard let tabBarController = self.window!.rootViewController as? UITabBarController else { return }
         
-        guard let signerVc = storyBoard.instantiateViewController(identifier: "signerVc") as? SignerViewController,
-            let window = self.window,
-            let rootViewController = window.rootViewController else {
-            return
+        tabBarController.selectedIndex = 2
+        
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(name: .signPsbt, object: nil, userInfo: ["psbt":psbt])
         }
-        
-        signerVc.psbt = psbt
-        
-        var currentController = rootViewController
-        
-        while let presentedController = currentController.presentedViewController {
-            currentController = presentedController
-        }
-        
-        currentController.present(signerVc, animated: true, completion: nil)
     }
     
     private func presentBroadcaster(txn: String) {
-        let storyBoard = UIStoryboard(name: "Main", bundle: nil)
+       guard let tabBarController = self.window!.rootViewController as? UITabBarController else { return }
         
-        guard let signerVc = storyBoard.instantiateViewController(identifier: "signerVc") as? SignerViewController,
-            let window = self.window,
-            let rootViewController = window.rootViewController else {
-            return
+        tabBarController.selectedIndex = 2
+        
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(name: .broadcastTxn, object: nil, userInfo: ["txn":txn])
         }
-        
-        signerVc.txn = txn
-        
-        var currentController = rootViewController
-        
-        while let presentedController = currentController.presentedViewController {
-            currentController = presentedController
-        }
-        
-        currentController.present(signerVc, animated: true, completion: nil)
     }
     
     private func presentMultisigCreator(zpub: String, fingerprint: String, xpub: String) {

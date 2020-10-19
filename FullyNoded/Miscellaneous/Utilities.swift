@@ -153,6 +153,8 @@ extension Notification.Name {
     public static let addColdCard = Notification.Name(rawValue: "addColdcard")
     public static let refreshUtxos = Notification.Name(rawValue: "refreshUtxos")
     public static let importWallet = Notification.Name(rawValue: "importWallet")
+    public static let broadcastTxn = Notification.Name(rawValue: "broadcastTxn")
+    public static let signPsbt = Notification.Name(rawValue: "signPsbt")
 }
 
 public extension Data {

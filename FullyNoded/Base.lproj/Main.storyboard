@@ -1823,7 +1823,7 @@
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="WrC-5O-YmB">
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="WrC-5O-YmB">
                                 <rect key="frame" x="16" y="117" width="343" height="457"/>
                                 <color key="backgroundColor" red="0.090418781725888353" green="0.090418781725888353" blue="0.090418781725888353" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -4539,7 +4539,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
             </objects>
             <point key="canvasLocation" x="-2791.1999999999998" y="375.56221889055473"/>
         </scene>
-        <!--v0.1.93-->
+        <!--v0.1.94-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -4687,7 +4687,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                         <viewLayoutGuide key="safeArea" id="Cze-jj-bFe"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="v0.1.93" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="v0.1.94" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
@@ -7287,7 +7287,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="UBf-qr-XYG"/>
+        <segue reference="ckQ-WD-ole"/>
         <segue reference="dhu-ZV-762"/>
         <segue reference="DLx-HT-rGm"/>
         <segue reference="w2g-bl-j8v"/>

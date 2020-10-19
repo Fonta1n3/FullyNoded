@@ -96,7 +96,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     func getInfo() {
                 
         var titleString = ""
-        var placeholder = ""
+        //var placeholder = ""
         
         if deriveAddresses {
             titleString = "Derive Addresses"
@@ -105,13 +105,13 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
         if getUtxos {
             titleString = "UTXO's"
-            placeholder = "address"
+            //placeholder = "address"
             command = "listunspent"
         }
         
         if getblock {
             titleString = "Block Info"
-            placeholder = "block hash"
+            //placeholder = "block hash"
             command = "getblock"
         }
         
@@ -125,13 +125,13 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         if getTransaction {
             command = "gettransaction"
             titleString = "Transaction"
-            placeholder = "transaction ID"
+            //placeholder = "transaction ID"
         }
         
         if getaddressesbylabel {
             command = "getaddressesbylabel"
             titleString = "Address By Label"
-            placeholder = "label"
+            ////placeholder = "label"
             
             if labelToSearch != "" {
                 titleString = "Imported key info"
@@ -163,7 +163,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         
         if decodeScript {
             command = "decodescript"
-            placeholder = "script"
+            //placeholder = "script"
             titleString = "Decoded Script"
         }
         
@@ -191,7 +191,7 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
         if getAddressInfo {
             command = "getaddressinfo"
             titleString = "Address Info"
-            placeholder = "address"
+            //placeholder = "address"
             
             if address != "" {
                 hideParam()
