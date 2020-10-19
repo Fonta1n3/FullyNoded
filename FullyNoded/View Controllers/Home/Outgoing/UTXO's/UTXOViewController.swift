@@ -115,15 +115,45 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                     selectedUTXOs.append(utxo)
                 }
             }
+            
             getAddressSettings()
             updateInputs()
+            
             self.spinner.addConnectingView(vc: self, description: "Consolidating UTXO's")
+            
+            var param = ""
+            
             if self.nativeSegwit {
-                self.executeNodeCommand(method: .getnewaddress, param: "\"\", \"bech32\"")
+                param = "\"\", \"bech32\""
             } else if self.legacy {
-                self.executeNodeCommand(method: .getnewaddress, param: "\"\", \"legacy\"")
-            } else if self.p2shSegwit {
-                self.executeNodeCommand(method: .getnewaddress, param: "")
+                param = "\"\", \"legacy\""
+            }
+            
+            activeWallet { wallet in
+                guard let wallet = wallet else { return }
+                
+                let descriptorParser = DescriptorParser()
+                let descriptorStruct = descriptorParser.descriptor(wallet.receiveDescriptor)
+                
+                guard descriptorStruct.isMulti else {
+                    self.executeNodeCommand(method: .getnewaddress, param: param)
+                    return
+                }
+                
+                let index = Int(wallet.index) + 1
+                
+                CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(index), entity: .wallets) { success in
+                    if success {
+                        Reducer.makeCommand(command: .deriveaddresses, param: "\"\(wallet.changeDescriptor)\", [\(index),\(index)]") { (response, errorMessage) in
+                            guard let result = response as? NSArray, let changeAddress = result[0] as? String else {
+                                showAlert(vc: self, title: "Uhoh", message: "There was an issue getting an address to consolidate your multisig wallet to: \(errorMessage ?? "unknown")")
+                                return
+                            }
+                            
+                            self.consolidateToAddress(changeAddress)
+                        }
+                    }
+                }
             }
         } else {
             displayAlert(viewController: self, isError: true, message: "No UTXO's to consolidate")
@@ -564,30 +594,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             switch method {
             case .getnewaddress:
                 if let address = response as? String {
-                    var total = Double()
-                    var miningFee = 0.00000100//No good way to do fee estimation when manually selecting utxos (for now), if the wallet knows about the utxo's we can set a low ball fee and always use rbf. For now we hardcode 100 sats per input as the fee.
-                    for utxo in self.selectedUTXOs { // TODO: Make method to adhere to DRY
-                        miningFee += 0.00000100
-                        total += utxo.amount ?? 0.0
-                    }
-                    let roundedAmount = rounded(number: total - miningFee)
-                    let rawTransaction = SendUTXO()
-                    rawTransaction.addressToPay = address
-                    rawTransaction.sweep = true
-                    rawTransaction.amount = roundedAmount
-                    rawTransaction.inputArray = self.inputArray
-                    rawTransaction.createRawTransaction { [weak self] (signedTx, psbt, errorMessage) in
-                        if signedTx != nil {
-                            self!.rawSigned = signedTx!
-                            self!.displayRaw(raw: self!.rawSigned)
-                        } else if psbt != nil {
-                            self!.psbt = psbt!
-                            self!.displayRaw(raw: self!.psbt)
-                        } else {
-                            self!.spinner.removeConnectingView()
-                            displayAlert(viewController: self, isError: true, message: errorMessage ?? "unknown error")
-                        }
-                    }
+                    self.consolidateToAddress(address)
                 }
                 
             case .getrawchangeaddress:
@@ -599,6 +606,33 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 break
             }
             
+        }
+    }
+    
+    private func consolidateToAddress(_ address: String) {
+        var total = Double()
+        var miningFee = 0.00000100//No good way to do fee estimation when manually selecting utxos (for now), if the wallet knows about the utxo's we can set a low ball fee and always use rbf. For now we hardcode 100 sats per input as the fee.
+        for utxo in self.selectedUTXOs { // TODO: Make method to adhere to DRY
+            miningFee += 0.00000100
+            total += utxo.amount ?? 0.0
+        }
+        let roundedAmount = rounded(number: total - miningFee)
+        let rawTransaction = SendUTXO()
+        rawTransaction.addressToPay = address
+        rawTransaction.sweep = true
+        rawTransaction.amount = roundedAmount
+        rawTransaction.inputArray = self.inputArray
+        rawTransaction.createRawTransaction { [weak self] (signedTx, psbt, errorMessage) in
+            if signedTx != nil {
+                self!.rawSigned = signedTx!
+                self!.displayRaw(raw: self!.rawSigned)
+            } else if psbt != nil {
+                self!.psbt = psbt!
+                self!.displayRaw(raw: self!.psbt)
+            } else {
+                self!.spinner.removeConnectingView()
+                displayAlert(viewController: self, isError: true, message: errorMessage ?? "unknown error")
+            }
         }
     }
     
