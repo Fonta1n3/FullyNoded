@@ -24,6 +24,12 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        #if targetEnvironment(macCatalyst)
+            textView.isEditable = true
+        #else
+            textView.isEditable = false
+        #endif
+        
         signOutlet.clipsToBounds = true
         signOutlet.layer.cornerRadius = 8
         
@@ -61,6 +67,19 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
         }
     }
     
+    @IBAction func clearAction(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.textView.text = ""
+            self.psbt = ""
+            self.txn = ""
+            self.signOutlet.setTitle("sign", for: .normal)
+            self.broadcast = false
+        }
+    }
+    
+    
     @objc func signPsbt(_ notification: NSNotification) {
         guard let psbtDict = notification.userInfo as? [String:Any], let psbt = psbtDict["psbt"] as? String else {
             showAlert(vc: self, title: "Uh oh", message: "That does not appear to be a psbt...")
@@ -68,7 +87,9 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
         }
         
         DispatchQueue.main.async {
+            self.psbt = self.processedText(psbt)
             self.textView.text = psbt
+            self.updateLabelsForPsbt()
         }
     }
     
@@ -78,8 +99,13 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
             return
         }
         
-        self.txn = processedText(txn)
-        self.segueToBroadcast()
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.txn = self.processedText(txn)
+            self.textView.text = self.txn
+            self.updateLabelsForTxn()
+        }
     }
     
     private func getChain() {
@@ -161,8 +187,22 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
             }
             
             guard let psbtTocheck = try? PSBT(string, chain) else {
-                self.spinner.removeConnectingView()
-                self.showError(error: "This button is for pasting the contents of your clipboard, make sure you copied a valid psbt in base64 format.  Whatever you have copied is not a psbt!")
+                
+                guard let _ = Transaction(string) else {
+                    self.spinner.removeConnectingView()
+                    self.showError(error: "This button is for pasting the contents of your clipboard, make sure you copied a valid psbt or raw transaction.")
+                    return
+                }
+                
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.spinner.removeConnectingView()
+                    self.txn = string
+                    self.textView.text = string
+                    self.updateLabelsForTxn()
+                }
+                
                 return
             }
             
@@ -172,6 +212,8 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
                 guard let self = self else { return }
                 
                 self.spinner.removeConnectingView()
+                self.textView.text = self.psbt
+                self.updateLabelsForPsbt()
                 
                 let alert = UIAlertController(title: "You have a valid psbt on your clipboard", message: "Would you like to process it? This will *not* broadcast the transaction we simply check if it is completed yet and add any missing info to the psbt that may not be there.", preferredStyle: self.alertStyle)
                 
@@ -236,17 +278,56 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
     
     
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-        guard controller.documentPickerMode == .import, let data = try? Data(contentsOf: urls[0].absoluteURL) else {
-            spinner.removeConnectingView()
-            showAlert(vc: self, title: "Ooops", message: "That is not a recognized format, generally it will be a .json file.")
+        guard controller.documentPickerMode == .import else { return }
+        
+        guard let text = try? String(contentsOf: urls[0].absoluteURL), let _ = Transaction(text) else {
+            
+            guard let data = try? Data(contentsOf: urls[0].absoluteURL) else {
+                spinner.removeConnectingView()
+                showAlert(vc: self, title: "Ooops", message: "That is not a recognized format, generally it will be a .psbt or .txn file.")
+                return
+            }
+            
+            psbt = data.base64EncodedString()
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.spinner.removeConnectingView()
+                self.textView.text = self.psbt
+                self.updateLabelsForPsbt()
+            }
+            
             return
         }
-        
-        psbt = data.base64EncodedString()
+                    
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.textView.text = self.psbt
+            self.spinner.removeConnectingView()
+            self.txn = text
+            self.textView.text = text
+            self.updateLabelsForTxn()
+        }
+    }
+    
+    private func updateLabelsForTxn() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.psbt = ""
+            self.broadcast = true
+            self.signOutlet.setTitle("verify", for: .normal)
+        }
+    }
+    
+    private func updateLabelsForPsbt() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.txn = ""
+            self.broadcast = false
+            self.signOutlet.setTitle("sign", for: .normal)
         }
     }
     
