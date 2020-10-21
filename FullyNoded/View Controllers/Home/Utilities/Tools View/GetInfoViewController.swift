@@ -28,18 +28,11 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     var getblock = Bool()
     var getUtxos = Bool()
     var getTxoutset = Bool()
-    
-    let creatingView = ConnectingView()
-    let qrScanner = QRScanner()
-    
-    var isTorchOn = Bool()
-    var blurArray = [UIVisualEffectView]()
-    var scannerShowing = false
-    var isFirstTime = Bool()
-    
-    let blurView = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
-    
-    @IBOutlet var imageView: UIImageView!
+    var deriveAddresses = Bool()
+    let spinner = ConnectingView()
+            
+    @IBOutlet weak var goButtonOutlet: UIButton!
+    @IBOutlet weak var textField: UITextField!
     @IBOutlet var textView: UITextView!
     @IBOutlet weak var label: UILabel!
     
@@ -49,351 +42,257 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     var addressArray = NSArray()
     var infoArray = [NSDictionary]()
     var alertMessage = ""
-    
     var address = ""
     
-    var utxo = NSDictionary()
-    var isUtxo = Bool()
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
+        tapGesture.numberOfTapsRequired = 1
+        self.view.addGestureRecognizer(tapGesture)
+        
+        getInfo()
+        setupTextField()
+    }
+    
+    private func setupTextField() {
+        textView.textContainer.lineBreakMode = .byCharWrapping
+        textView.clipsToBounds = true
+        textView.layer.cornerRadius = 8
+        textView.layer.borderWidth = 0.5
+        textView.layer.borderColor = UIColor.lightGray.cgColor
+    }
+    
+    @IBAction func scanQr(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            self?.performSegue(withIdentifier: "segueToGoGetInfoScan", sender: self)
+        }
+    }
     
     @IBAction func getHelp(_ sender: Any) {
         getInfoHelpText()
     }
     
     private func showHelp() {
-        DispatchQueue.main.async { [unowned vc = self] in
-                   vc.performSegue(withIdentifier: "segueToShowHelp", sender: vc)
-               }
-    }
-    
-    func scan() {
-        
-        scannerShowing = true
-        textView.resignFirstResponder()
-        
-        if isFirstTime {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
             
-            DispatchQueue.main.async {
-                
-                self.qrScanner.scanQRCode()
-                self.addScannerButtons()
-                self.imageView.addSubview(self.qrScanner.closeButton)
-                self.isFirstTime = false
-                
-                UIView.animate(withDuration: 0.3, animations: {
-                    
-                    self.imageView.alpha = 1
-                    
-                }, completion: { _ in
-                    
-                    self.creatingView.removeConnectingView()
-                    
-                })
-                
-            }
-            
-        } else {
-            
-            self.qrScanner.startScanner()
-            self.addScannerButtons()
-            
-            DispatchQueue.main.async {
-                
-                UIView.animate(withDuration: 0.3, animations: {
-                    
-                    self.imageView.alpha = 1
-                    
-                })
-                
-            }
-            
+            self.performSegue(withIdentifier: "segueToShowHelp", sender: self)
         }
-        
     }
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        textView.clipsToBounds = true
-        textView.layer.cornerRadius = 8
-        textView.layer.borderWidth = 0.5
-        textView.layer.borderColor = UIColor.lightGray.cgColor
-        configureScanner()
-        
-        let tapGesture = UITapGestureRecognizer(target: self,
-                                                action: #selector(self.dismissKeyboard (_:)))
-        
-        tapGesture.numberOfTapsRequired = 1
-        self.view.addGestureRecognizer(tapGesture)
-        
-        getInfo()
-        
+    @IBAction func goAction(_ sender: Any) {
+        spinner.addConnectingView(vc: self, description: "")
+        makeCommand(param: textField.text ?? "")
     }
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
-        
         DispatchQueue.main.async {
-            
             self.textView.resignFirstResponder()
-            
+            self.textField.resignFirstResponder()
         }
-        
     }
     
     func getInfo() {
-        
-        creatingView.addConnectingView(vc: self,
-                                       description: "")
-        
+                
         var titleString = ""
-        var placeholder = ""
+        //var placeholder = ""
+        
+        if deriveAddresses {
+            titleString = "Derive Addresses"
+            command = "deriveaddresses"
+        }
         
         if getUtxos {
-            
             titleString = "UTXO's"
-            placeholder = "address"
+            //placeholder = "address"
             command = "listunspent"
-            scan()
-            
         }
         
         if getblock {
-            
             titleString = "Block Info"
-            placeholder = "block hash"
+            //placeholder = "block hash"
             command = "getblock"
-            scan()
-            
         }
         
         if getbestblockhash {
-            
             command = "getbestblockhash"
             titleString = "Latest Block"
-            executeNodeCommand(method: .getbestblockhash,
-                               param: "")
-            
+            hideParam()
+            executeNodeCommand(method: .getbestblockhash, param: "")
         }
         
         if getTransaction {
-            
             command = "gettransaction"
             titleString = "Transaction"
-            placeholder = "transaction ID"
-            scan()
-            
+            //placeholder = "transaction ID"
         }
         
         if getaddressesbylabel {
-            
             command = "getaddressesbylabel"
             titleString = "Address By Label"
-            placeholder = "label"
+            ////placeholder = "label"
             
             if labelToSearch != "" {
-                
                 titleString = "Imported key info"
-                
+                hideParam()
+                executeNodeCommand(method: .getaddressesbylabel, param: "\"\(labelToSearch)\"")
             }
-            
-            if labelToSearch != "" {
-                
-                executeNodeCommand(method: .getaddressesbylabel,
-                                   param: "\"\(labelToSearch)\"")
-                
-            } else {
-                
-                scan()
-                
-            }
-            
         }
         
         if listLabels {
-            
             command = "listlabels"
             titleString = "Labels"
-            self.executeNodeCommand(method: .listlabels,
-                                    param: "")
-            
+            hideParam()
+            self.executeNodeCommand(method: .listlabels, param: "")
         }
         
         if getMempoolInfo {
-            
             command = "getmempoolinfo"
             titleString = "Mempool Info"
-            self.executeNodeCommand(method: .getmempoolinfo,
-                                    param: "")
+            hideParam()
+            self.executeNodeCommand(method: .getmempoolinfo, param: "")
         }
         
         if getPeerInfo {
-            
             command = "getpeerinfo"
             titleString = "Peer Info"
-            self.executeNodeCommand(method: .getpeerinfo,
-                                    param: "")
-            
+            hideParam()
+            self.executeNodeCommand(method: .getpeerinfo, param: "")
         }
         
         if decodeScript {
-            
             command = "decodescript"
-            placeholder = "script"
+            //placeholder = "script"
             titleString = "Decoded Script"
-            scan()
-            
         }
         
         if getMiningInfo {
-            
             command = "getmininginfo"
             titleString = "Mining Info"
-            self.executeNodeCommand(method: .getmininginfo,
-                                    param: "")
+            hideParam()
+            self.executeNodeCommand(method: .getmininginfo, param: "")
         }
         
         if getNetworkInfo {
-            
             command = "getnetworkinfo"
             titleString = "Network Info"
-            self.executeNodeCommand(method: .getnetworkinfo,
-                                    param: "")
-            
+            hideParam()
+            self.executeNodeCommand(method: .getnetworkinfo, param: "")
         }
         
         if getBlockchainInfo {
-            
             command = "getblockchaininfo"
             titleString = "Blockchain Info"
-            self.executeNodeCommand(method: .getblockchaininfo,
-                                    param: "")
-            
+            hideParam()
+            self.executeNodeCommand(method: .getblockchaininfo, param: "")
         }
         
         if getAddressInfo {
-            
             command = "getaddressinfo"
             titleString = "Address Info"
-            placeholder = "address"
+            //placeholder = "address"
             
-            if address == "" {
-                
-                scan()
-                
-            } else {
-                
-                getAddressInfo(address: address)
-                
+            if address != "" {
+                hideParam()
+                makeCommand(param: address)
             }
-            
         }
         
         if listAddressGroups {
-            
             command = "listaddressgroupings"
             titleString = "Address Groups"
-            self.executeNodeCommand(method: .listaddressgroupings,
-                                    param: "")
-            
+            hideParam()
+            self.executeNodeCommand(method: .listaddressgroupings, param: "")
         }
         
         if getWalletInfo {
-            
             command = "getwalletinfo"
             titleString = "Wallet Info"
-            self.executeNodeCommand(method: .getwalletinfo,
-                                    param: "")
-            
-        }
-        
-        if isUtxo {
-            
-            command = "listunspent"
-            titleString = "UTXO"
-            
-            DispatchQueue.main.async {
-                
-                self.textView.text = "\(self.utxo)"
-                self.creatingView.removeConnectingView()
-                
-            }
-            
+            hideParam()
+            self.executeNodeCommand(method: .getwalletinfo, param: "")
         }
         
         if getTxoutset {
-            
             command = "gettxoutsetinfo"
             DispatchQueue.main.async {
-                self.creatingView.label.text = "this can take awhile..."
+                self.spinner.label.text = "this can take awhile..."
             }
-            
             titleString = "UTXO Set Info"
-            self.executeNodeCommand(method: .gettxoutsetinfo,
-                                    param: "")
-            
+            hideParam()
+            self.executeNodeCommand(method: .gettxoutsetinfo, param: "")
         }
         
         DispatchQueue.main.async {
-            
-            if placeholder != "" {
-                
-                self.qrScanner.textField.attributedPlaceholder = NSAttributedString(string: placeholder,
-                                                                                    attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
-                
-            }
-            
             self.label.text = titleString
-            
         }
         
     }
     
+    private func hideParam() {
+        goButtonOutlet.isEnabled = false
+        goButtonOutlet.alpha = 0
+        textField.alpha = 0
+    }
+    
     private func setTextView(text: String) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.textView.text = text
-            vc.creatingView.removeConnectingView()
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.textView.text = text
+            self.spinner.removeConnectingView()
         }
     }
     
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
-        Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+        spinner.addConnectingView(vc: self, description: "")
+        
+        Reducer.makeCommand(command: method, param: param) { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
             if errorMessage == nil {
                 switch method {
+                case .deriveaddresses:
+                    if let addresses = response as? NSArray {
+                        self.setTextView(text: "\(addresses)")
+                    }
+                
                 case .listunspent:
                     if let result = response as? NSArray {
-                        vc.setTextView(text: "\(result)")
+                        self.setTextView(text: "\(result)")
                     }
                     
                 case .getaddressesbylabel:
                     if let result = response as? NSDictionary {
-                        if vc.labelToSearch != "" {
-                            vc.addressArray = result.allKeys as NSArray
-                            vc.parseAddresses(addresses: vc.addressArray, index: 0)
+                        if self.labelToSearch != "" {
+                            self.addressArray = result.allKeys as NSArray
+                            self.parseAddresses(addresses: self.addressArray, index: 0)
                         } else {
-                            vc.setTextView(text: "\(result)")
+                            self.setTextView(text: "\(result)")
                         }
                     }
                     
                 case .getaddressinfo:
                     if let result = response as? NSDictionary {
-                        if vc.address != "" {
-                            vc.setTextView(text: "\(result)")
+                        if self.address != "" {
+                            self.setTextView(text: "\(result)")
                         } else {
-                            vc.infoArray.append(result)
-                            if vc.addressArray.count > 0 {
-                                if vc.indexToParse < vc.addressArray.count {
-                                    vc.indexToParse += 1
-                                    vc.parseAddresses(addresses: vc.addressArray, index: vc.indexToParse)
+                            self.infoArray.append(result)
+                            if self.addressArray.count > 0 {
+                                if self.indexToParse < self.addressArray.count {
+                                    self.indexToParse += 1
+                                    self.parseAddresses(addresses: self.addressArray, index: self.indexToParse)
                                 }
-                                if vc.indexToParse == vc.addressArray.count {
-                                    vc.setTextView(text: "\(vc.infoArray)")
-                                    if vc.alertMessage != "" {
-                                        displayAlert(viewController: vc, isError: false, message: vc.alertMessage)
+                                if self.indexToParse == self.addressArray.count {
+                                    self.setTextView(text: "\(self.infoArray)")
+                                    if self.alertMessage != "" {
+                                        displayAlert(viewController: self, isError: false, message: self.alertMessage)
                                     }
                                 }
                             } else {
-                                DispatchQueue.main.async { [unowned vc = self] in
-                                    vc.textView.text = "\(result)"
-                                    vc.creatingView.removeConnectingView()
+                                DispatchQueue.main.async {
+                                    self.textView.text = "\(result)"
+                                    self.spinner.removeConnectingView()
                                 }
                             }
                         }
@@ -401,303 +300,67 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
                     
                 case .listaddressgroupings, .getpeerinfo, .listlabels:
                     if let result = response as? NSArray {
-                        vc.setTextView(text: "\(result)")
+                        self.setTextView(text: "\(result)")
                     }
                     
                 case .getbestblockhash:
                     if let result = response as? String {
-                        vc.setTextView(text: result)
+                        self.setTextView(text: result)
                     }
                     
                 default:
                     if let result = response as? NSDictionary {
-                        vc.setTextView(text: "\(result)")
+                        self.setTextView(text: "\(result)")
                     }
                 }
             } else {
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.creatingView.removeConnectingView()
-                    displayAlert(viewController: vc, isError: true, message: errorMessage!)
+                DispatchQueue.main.async {
+                    self.spinner.removeConnectingView()
+                    displayAlert(viewController: self, isError: true, message: errorMessage!)
                 }
             }
         }
     }
     
     func parseAddresses(addresses: NSArray, index: Int) {
-        print("parseAddresses")
-        
         for (i, address) in addresses.enumerated() {
-            
             if i == index {
-                
                 let addr = address as! String
-                
-                executeNodeCommand(method: .getaddressinfo,
-                                   param: "\"\(addr)\"")
-                
+                executeNodeCommand(method: .getaddressinfo, param: "\"\(addr)\"")
             }
-            
         }
-        
     }
     
-    func configureScanner() {
+    func makeCommand(param: String) {
         
-        isFirstTime = true
-        
-        imageView.alpha = 0
-        imageView.frame = view.frame
-        imageView.isUserInteractionEnabled = true
-        
-        blurView.isUserInteractionEnabled = true
-        
-        blurView.frame = CGRect(x: view.frame.minX + 10,
-                                y: 100,
-                                width: view.frame.width - 20,
-                                height: 50)
-        
-        blurView.layer.cornerRadius = 10
-        blurView.clipsToBounds = true
-        
-        qrScanner.uploadButton.addTarget(self, action: #selector(chooseQRCodeFromLibrary),
-                                         for: .touchUpInside)
-        
-        qrScanner.textField.delegate = self
-        qrScanner.closeButton.alpha = 0
-        qrScanner.keepRunning = false
-        qrScanner.vc = self
-        qrScanner.imageView = imageView
-        qrScanner.textFieldPlaceholder = "scan QR or paste here"
-        
-        qrScanner.completion = { self.getQRCode() }
-        qrScanner.didChooseImage = { self.didPickImage() }
-        
-        qrScanner.uploadButton.addTarget(self,
-                                         action: #selector(self.chooseQRCodeFromLibrary),
-                                         for: .touchUpInside)
-        
-        qrScanner.torchButton.addTarget(self,
-                                        action: #selector(toggleTorch),
-                                        for: .touchUpInside)
-        
-        isTorchOn = false
-        
-    }
-    
-    @objc func chooseQRCodeFromLibrary() {
-        
-        qrScanner.chooseQRCodeFromLibrary()
-        
-    }
-    
-    func addScannerButtons() {
-        
-        imageView.addSubview(blurView)
-        blurView.contentView.addSubview(qrScanner.textField)
-        
-        self.addBlurView(frame: CGRect(x: self.imageView.frame.maxX - 80,
-                                       y: self.imageView.frame.maxY - 80,
-                                       width: 70,
-                                       height: 70), button: self.qrScanner.uploadButton)
-        
-        self.addBlurView(frame: CGRect(x: 10,
-                                       y: self.imageView.frame.maxY - 80,
-                                       width: 70,
-                                       height: 70), button: self.qrScanner.torchButton)
-        
-    }
-    
-    @objc func back() {
-        print("back")
-        
-        DispatchQueue.main.async {
-            
-            self.imageView.alpha = 0
-            self.scannerShowing = false
-            
-        }
-        
-    }
-    
-    @objc func toggleTorch() {
-        
-        if isTorchOn {
-            
-            qrScanner.toggleTorch(on: false)
-            isTorchOn = false
-            
-        } else {
-            
-            qrScanner.toggleTorch(on: true)
-            isTorchOn = true
-            
-        }
-        
-    }
-    
-    func addBlurView(frame: CGRect, button: UIButton) {
-        
-        button.removeFromSuperview()
-        let blur = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
-        blur.frame = frame
-        blur.clipsToBounds = true
-        blur.layer.cornerRadius = frame.width / 2
-        blur.contentView.addSubview(button)
-        self.imageView.addSubview(blur)
-        
-    }
-    
-    func getQRCode() {
-        
-        back()
-        let stringURL = qrScanner.stringToReturn
-        getAddressInfo(address: stringURL)
-        
-    }
-    
-    func didPickImage() {
-        
-        back()
-        let qrString = qrScanner.qrString
-        getAddressInfo(address: qrString)
-        
-    }
-    
-    func textViewDidBeginEditing(_ textView: UITextView) {
-        
-        if textView.text != "" {
-            
-            textView.becomeFirstResponder()
-            
-        } else {
-            
-            if let string = UIPasteboard.general.string {
-                
-                textView.resignFirstResponder()
-                textView.text = string
-                
-            } else {
-                
-                textView.becomeFirstResponder()
-                
-            }
-            
-        }
-        
-    }
-    
-    func getAddressInfo(address: String) {
-        
-        DispatchQueue.main.async {
-            
-            self.qrScanner.textField.resignFirstResponder()
-            
-            for blur in self.blurArray {
-                
-                blur.removeFromSuperview()
-                
-            }
-            
-            self.blurView.removeFromSuperview()
-            self.qrScanner.removeScanner()
-            
-        }
-        
-        if isTorchOn {
-            
-            toggleTorch()
-            
-        }
-        
-        DispatchQueue.main.async {
-            
-            let impact = UIImpactFeedbackGenerator()
-            impact.impactOccurred()
-            
+        if deriveAddresses {
+            let params = "\"\(param)\", [0,2500]"
+            self.executeNodeCommand(method: .deriveaddresses, param: params)
         }
         
         if getUtxos {
-            
-            let param = "0, 9999999, [\"\(address)\"]"
-            
-            self.executeNodeCommand(method: .listunspent,
-                                    param: param)
-            
+            let params = "0, 9999999, [\"\(param)\"]"
+            self.executeNodeCommand(method: .listunspent, param: params)
         }
         
         if getAddressInfo {
-            
-            self.executeNodeCommand(method: .getaddressinfo,
-                                    param: "\"\(address)\"")
-            
+            self.executeNodeCommand(method: .getaddressinfo, param: "\"\(param)\"")
         }
         
         if decodeScript {
-            
-            self.executeNodeCommand(method: .decodescript,
-                                    param: "\"\(address)\"")
-            
+            self.executeNodeCommand(method: .decodescript, param: "\"\(param)\"")
         }
         
         if getaddressesbylabel {
-            
-            self.executeNodeCommand(method: .getaddressesbylabel,
-                                    param: "\"\(address)\"")
-            
+            self.executeNodeCommand(method: .getaddressesbylabel, param: "\"\(param)\"")
         }
         
         if getTransaction {
-            
-            self.executeNodeCommand(method: .getrawtransaction,
-                                    param: "\"\(address)\", true")
-            
+            self.executeNodeCommand(method: .getrawtransaction, param: "\"\(param)\", true")
         }
         
         if getblock {
-            
-            self.executeNodeCommand(method: .getblock,
-                                    param: "\"\(address)\"")
-            
-        }
-        
-    }
-    
-    func textFieldDidBeginEditing(_ textField: UITextField) {
-        
-        if textField.text != "" {
-            
-            textField.becomeFirstResponder()
-            
-        } else {
-            
-            if let string = UIPasteboard.general.string {
-                
-                textField.resignFirstResponder()
-                textField.text = string
-                getAddressInfo(address: string)
-                
-                creatingView.addConnectingView(vc: self,
-                                               description: "")
-                
-            } else {
-                
-                textField.becomeFirstResponder()
-                
-            }
-            
-        }
-        
-    }
-    
-    func textFieldDidEndEditing(_ textField: UITextField) {
-        
-        if textField.text != "" {
-            
-            getAddressInfo(address: textField.text!)
-            
-            creatingView.addConnectingView(vc: self,
-                                           description: "getting info")
-            
+            self.executeNodeCommand(method: .getblock, param: "\"\(param)\"")
         }
         
     }
@@ -705,11 +368,13 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     private func getInfoHelpText() {
         let connectingView = ConnectingView()
         connectingView.addConnectingView(vc: self, description: "help \(command)...")
-        Reducer.makeCommand(command: .help, param: "\"\(command)\"") { [unowned vc = self] (response, errorMessage) in
+        Reducer.makeCommand(command: .help, param: "\"\(command)\"") { [weak self] (response, errorMessage) in
             connectingView.removeConnectingView()
             if let text = response as? String {
-                vc.helpText = text
-                vc.showHelp()
+                guard let self = self else { return }
+                
+                self.helpText = text
+                self.showHelp()
             }
         }
     }
@@ -719,6 +384,18 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
             if let vc = segue.destination as? HelpViewController {
                 vc.labelText = command
                 vc.textViewText = helpText
+            }
+        }
+        if segue.identifier == "segueToGoGetInfoScan" {
+            if let vc = segue.destination as? QRScannerViewController {
+                vc.isScanningAddress = true
+                vc.onAddressDoneBlock = { [weak self] item in
+                    if item != nil {
+                        DispatchQueue.main.async {
+                            self?.textField.text = item
+                        }
+                    }
+                }
             }
         }
     }

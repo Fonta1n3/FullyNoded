@@ -41,6 +41,7 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
     var broadcast = Bool()
     var verify = Bool()
     var combinePSBT = Bool()
+    var deriveAddresses = Bool()
     @IBOutlet weak var table: UITableView!
     
     override func viewDidLoad() {
@@ -78,6 +79,7 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
         convert = false
         txChain = false
         combinePSBT = false
+        deriveAddresses = false
         firstLink = ""
     }
     
@@ -91,7 +93,7 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
         case 0: return 2
         case 1: return 8
         case 2: return 12
-        case 3: return 7
+        case 3: return 8
         case 4: return 2
         case 5: return 1
         default: return 0}
@@ -157,6 +159,7 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
             case 4: label.text = "List Labels"
             case 5: label.text = "Addresses By Label"
             case 6: label.text = "UTXO's By Address"
+            case 7: label.text = "Derive Addresses"
             default:break}
             
         case 4:
@@ -261,6 +264,7 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
             case 4: self.listLabels = true
             case 5: self.getaddressesbylabel = true
             case 6: self.getUtxos = true
+            case 7: self.deriveAddresses = true
             default:break}
             segue(to: "goGetInfo")
             
@@ -413,6 +417,7 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
                 vc.getblock = self.getblock
                 vc.getUtxos = self.getUtxos
                 vc.getTxoutset = self.getTxoutset
+                vc.deriveAddresses = self.deriveAddresses
             }
             
         case "goSign":

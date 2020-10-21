@@ -165,13 +165,7 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
     }
     
     private func encryptedValue(_ decryptedValue: Data) -> Data? {
-        var encryptedValue:Data?
-        Crypto.encryptData(dataToEncrypt: decryptedValue) { encryptedData in
-            if encryptedData != nil {
-                encryptedValue = encryptedData!
-            }
-        }
-        return encryptedValue
+        return Crypto.encrypt(decryptedValue)
     }
     
     func importHDMusig() {
@@ -342,8 +336,13 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
     }
     
     private func importSuccess() {
+        print("importSuccess")
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Keys imported successfully!", message: "If you selected a rescan date your node will now be rescanning, you will need to wait for the rescan to complete before your balances will show up. You can check the scan status in Tools > Get Wallet Info. Tap Done to go back.", preferredStyle: .actionSheet)
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "Keys imported successfully!", message: "If you selected a rescan date your node will now be rescanning, you will need to wait for the rescan to complete before your balances will show up. You can check the scan status in Tools > Get Wallet Info. Tap Done to go back.", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.navigationController?.popToRootViewController(animated: true)
@@ -355,8 +354,13 @@ class ImportExtendedKeysViewController: UIViewController, UITableViewDelegate, U
     }
     
     private func importWithWarning(warning: String) {
+        print("importWithWarning")
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Keys imported with a warning!", message: "Warning: \(warning)\n\nIf you selected a rescan date your node will now be rescanning, you will need to wait for the rescan to complete before your balances will show up. You can check the scan status in Tools > Get Wallet Info. Tap Done to go back.", preferredStyle: .actionSheet)
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "Keys imported with a warning!", message: "Warning: \(warning)\n\nIf you selected a rescan date your node will now be rescanning, you will need to wait for the rescan to complete before your balances will show up. You can check the scan status in Tools > Get Wallet Info. Tap Done to go back.", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.navigationController?.popToRootViewController(animated: true)

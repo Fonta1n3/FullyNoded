@@ -12,12 +12,8 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
     
     var dict = [String:Any]()
     
-    let qrScanner = QRScanner()
-    var isTorchOn = Bool()
-    let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     let connectingView = ConnectingView()
     
-    @IBOutlet var imageView: UIImageView!
     var descriptor = ""
     var label = ""
     var range = "0 to 199"
@@ -29,120 +25,36 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
     var isChange = Bool()
     
     var keyArray = NSArray()
+    @IBOutlet weak private var nextOutlet: UIButton!
+    @IBOutlet weak private var textField: UITextField!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        qrScanner.textField.delegate = self
+        textField.delegate = self
+        nextOutlet.layer.cornerRadius = 8
         
-        let tapGesture = UITapGestureRecognizer(target: self,
-                                                action: #selector(self.dismissKeyboard (_:)))
-        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
-        
-        blurView.frame = CGRect(x: view.frame.minX + 10,
-                                y: navigationController!.navigationBar.frame.maxY + 10,
-                                width: view.frame.width - 20,
-                                height: 50)
-        
-        blurView.layer.cornerRadius = 10
-        blurView.clipsToBounds = true
-        
-        qrScanner.textFieldPlaceholder = "scan QR or type/paste here"
-        qrScanner.keepRunning = false
-        
-        qrScanner.uploadButton.addTarget(self,
-                                         action: #selector(self.chooseQRCodeFromLibrary),
-                                         for: .touchUpInside)
-        
-        qrScanner.torchButton.addTarget(self,
-                                        action: #selector(toggleTorch),
-                                        for: .touchUpInside)
-        
-        isTorchOn = false
-        addScanner()
-        
     }
     
-    @objc func chooseQRCodeFromLibrary() {
-        
-        qrScanner.chooseQRCodeFromLibrary()
-        
-    }
-    
-    func addShadow(view: UIView) {
-        
-        view.layer.shadowColor = UIColor.black.cgColor
-        
-        view.layer.shadowOffset = CGSize(width: 1.5,
-                                         height: 1.5)
-        
-        view.layer.shadowRadius = 1.5
-        view.layer.shadowOpacity = 0.5
-        
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        
-        if isTorchOn {
+    @IBAction func scanQrAction(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
             
-            toggleTorch()
-            qrScanner.removeScanner()
-            
+            self.performSegue(withIdentifier: "segueToGetExtendedKey", sender: self)
         }
-        
     }
     
-    override func viewDidAppear(_ animated: Bool) {
+    @IBAction func nextAction(_ sender: Any) {
+        guard let key = textField.text, key != "" else { return }
         
-        qrScanner.textField.removeFromSuperview()
-        blurView.removeFromSuperview()
-        view.addSubview(blurView)
-        blurView.contentView.addSubview(qrScanner.textField)
-        
-        addBlurView(frame: CGRect(x: view.frame.maxX - 80,
-                                  y: imageView.frame.maxY - 80,
-                                  width: 70,
-                                  height: 70), button: qrScanner.uploadButton)
-        
-        addBlurView(frame: CGRect(x: 10,
-                                  y: imageView.frame.maxY - 80,
-                                  width: 70,
-                                  height: 70), button: qrScanner.torchButton)
-        
+        setValues(key: key)
     }
     
-    @objc func toggleTorch() {
-        
-        if isTorchOn {
-            
-            qrScanner.toggleTorch(on: false)
-            isTorchOn = false
-            
-        } else {
-            
-            qrScanner.toggleTorch(on: true)
-            isTorchOn = true
-            
-        }
-        
-    }
-    
-    func addScanner() {
-        
-        qrScanner.uploadButton.addTarget(self,
-                                         action: #selector(chooseQRCodeFromLibrary),
-                                         for: .touchUpInside)
-        
-        qrScanner.keepRunning = false
-        imageView.frame = view.frame
-        qrScanner.imageView = imageView
-        qrScanner.vc = self
-        qrScanner.scanQRCode()
-        qrScanner.completion = { self.getQRCode() }
-        qrScanner.didChooseImage = { self.didPickImage() }
-        
+    @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
+        textField.resignFirstResponder()
     }
     
     func setValues(key: String) {
@@ -217,55 +129,6 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
             displayAlert(viewController: self, isError: true, message: "invalid key")
             
         }
-        
-    }
-    
-    func getQRCode() {
-        
-        let stringURL = qrScanner.stringToReturn
-        setValues(key: stringURL)
-        
-    }
-    
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        print("textFieldShouldReturn")
-        
-        let txt = qrScanner.textField.text
-        
-        if txt != "" {
-            
-            setValues(key: txt!)
-            
-        }
-        
-        textField.resignFirstResponder()
-        
-        return true
-    }
-    
-    @objc func dismissKeyboard (_ sender: UITapGestureRecognizer) {
-        
-        qrScanner.textField.resignFirstResponder()
-        
-    }
-    
-    func didPickImage() {
-        
-        let qrString = qrScanner.qrString
-        setValues(key: qrString)
-        
-    }
-    
-    func addBlurView(frame: CGRect, button: UIButton) {
-        
-        button.removeFromSuperview()
-        let blur = UIVisualEffectView()
-        blur.effect = UIBlurEffect(style: UIBlurEffect.Style.dark)
-        blur.frame = frame
-        blur.clipsToBounds = true
-        blur.layer.cornerRadius = frame.width / 2
-        blur.contentView.addSubview(button)
-        view.addSubview(blur)
         
     }
     
@@ -372,7 +235,6 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
             if let addressesCheck = response as? NSArray {
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.keyArray = addressesCheck
-                    vc.qrScanner.removeFromSuperview()
                     vc.connectingView.removeConnectingView()
                     vc.performSegue(withIdentifier: "goDisplayKeys", sender: vc)
                 }
@@ -501,10 +363,19 @@ class ScanExtendedKeyViewController: UIViewController, UITextFieldDelegate {
                 
             }
             
+        case "segueToGetExtendedKey":
+            guard let vc = segue.destination as? QRScannerViewController else { fallthrough }
+            
+            vc.isScanningAddress = true
+            
+            vc.onAddressDoneBlock = { [weak self] key in
+                guard let self = self, let key = key else { return }
+                                
+                self.setValues(key: key)
+            }
+            
         default:
-            
             break
-            
         }
     }
     

@@ -31,31 +31,35 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
     }
     
     @IBAction func addWallet(_ sender: Any) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "addWallet", sender: vc)
+        DispatchQueue.main.async { [weak self] in
+            self?.performSegue(withIdentifier: "addWallet", sender: self)
         }
     }
     
     @IBAction func unloadAction(_ sender: Any) {
         connectingView.addConnectingView(vc: self, description: "getting all loaded wallets...")
-        Reducer.makeCommand(command: .listwallets, param: "") { [unowned vc = self] (response, errorMessage) in
-            if let loadedWallets = response as? NSArray {
-                for (i, w) in loadedWallets.enumerated() {
-                    if (w as! String) != "" {
-                        vc.walletsToUnload.append(w as! String)
-                    }
-                    if i + 1 == loadedWallets.count {
-                        if vc.walletsToUnload.count > 0 {
-                            vc.goUnload()
-                        } else {
-                            vc.connectingView.removeConnectingView()
-                            showAlert(vc: self, title: "Only the Default Wallet is loaded", message: "You can not unload the default wallet.")
-                        }
-                    }
-                }
-            } else {
-                vc.connectingView.removeConnectingView()
+        Reducer.makeCommand(command: .listwallets, param: "") { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            guard let loadedWallets = response as? NSArray else {
+                self.connectingView.removeConnectingView()
                 showAlert(vc: self, title: "Error", message: "There was an error getting your active wallets in order to deactivate them: \(errorMessage ?? "")")
+                return
+            }
+            
+            for (i, w) in loadedWallets.enumerated() {
+                if (w as! String) != "" {
+                    self.walletsToUnload.append(w as! String)
+                }
+                if i + 1 == loadedWallets.count {
+                    guard self.walletsToUnload.count > 0 else {
+                        self.connectingView.removeConnectingView()
+                        showAlert(vc: self, title: "Only the Default Wallet is loaded", message: "You can not unload the default wallet.")
+                        return
+                    }
+                    
+                    self.goUnload()
+                }
             }
         }
     }
@@ -64,20 +68,27 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
     
     func refresh() {
         connectingView.addConnectingView(vc: self, description: "getting wallets...")
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.activeWallets.removeAll()
-            vc.inactiveWallets.removeAll()
-            vc.wallets.removeAll()
-            vc.walletTable.reloadData()
-            Reducer.makeCommand(command: .listwalletdir, param: "") { [unowned vc = self] (response, errorMessage) in
-                if let dict =  response as? NSDictionary {
-                    vc.parseWallets(walletDict: dict)
-                } else {
-                    DispatchQueue.main.async { [unowned vc = self] in
-                        vc.connectingView.removeConnectingView()
-                        displayAlert(viewController: vc, isError: true, message: "error getting wallets: \(errorMessage ?? "")")
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.activeWallets.removeAll()
+            self.inactiveWallets.removeAll()
+            self.wallets.removeAll()
+            self.walletTable.reloadData()
+            Reducer.makeCommand(command: .listwalletdir, param: "") { [weak self] (response, errorMessage) in
+                guard let self = self else { return }
+                
+                guard let dict = response as? NSDictionary else {
+                    DispatchQueue.main.async { [weak self] in
+                         guard let self = self else { return }
+                        
+                        self.connectingView.removeConnectingView()
+                        displayAlert(viewController: self, isError: true, message: "error getting wallets: \(errorMessage ?? "")")
                     }
+                    return
                 }
+                
+                self.parseWallets(walletDict: dict)
             }
         }
     }
@@ -143,54 +154,61 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
     
     private func getAllActiveWallets() {
         connectingView.addConnectingView(vc: self, description: "getting all loaded wallets...")
-        Reducer.makeCommand(command: .listwallets, param: "") { [unowned vc = self] (response, errorMessage) in
-            if let loadedWallets = response as? NSArray {
-                if loadedWallets.count > 1 {
-                    for (i, w) in loadedWallets.enumerated() {
-                        if (w as! String) != "" {
-                            vc.walletsToUnload.append(w as! String)
-                        }
-                        if i + 1 == loadedWallets.count {
-                            if vc.walletsToUnload.count > 0 {
-                                vc.promptToUnloadWallets()
-                            } else {
-                                vc.connectingView.removeConnectingView()
-                                UserDefaults.standard.removeObject(forKey: "walletName")
-                            }
-                        }
-                    }
-                } else {
-                    vc.connectingView.removeConnectingView()
-                }
-            } else {
-                vc.connectingView.removeConnectingView()
+        Reducer.makeCommand(command: .listwallets, param: "") { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            guard let loadedWallets = response as? NSArray else {
+                self.connectingView.removeConnectingView()
                 showAlert(vc: self, title: "Error", message: "There was an error getting your active wallets in order to deactivate them: \(errorMessage ?? "")")
+                return
+            }
+            
+            guard loadedWallets.count > 1 else {
+                self.connectingView.removeConnectingView()
+                return
+            }
+            
+            for (i, w) in loadedWallets.enumerated() {
+                if (w as! String) != "" {
+                    self.walletsToUnload.append(w as! String)
+                }
+                if i + 1 == loadedWallets.count {
+                    guard self.walletsToUnload.count > 0 else {
+                        self.connectingView.removeConnectingView()
+                        UserDefaults.standard.removeObject(forKey: "walletName")
+                        return
+                    }
+                    
+                    self.promptToUnloadWallets()
+                }
             }
         }
     }
     
     private func goUnload() {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "segueToUnloadWallets", sender: vc)
+        DispatchQueue.main.async { [weak self] in
+            self?.performSegue(withIdentifier: "segueToUnloadWallets", sender: self)
         }
     }
     
     private func promptToUnloadWallets() {
         connectingView.removeConnectingView()
-        DispatchQueue.main.async { [unowned vc = self] in
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
             var alertStyle = UIAlertController.Style.actionSheet
             if (UIDevice.current.userInterfaceIdiom == .pad) {
               alertStyle = UIAlertController.Style.alert
             }
             let alert = UIAlertController(title: "In order to use the default wallet you need to unload all loaded wallets.", message: "In the next view you can tap each wallet to unload them, ensure you unload them all.", preferredStyle: alertStyle)
-            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { [unowned vc = self] action in
-                vc.wallets.removeAll()
-                vc.walletTable.reloadData()
-                vc.goUnload()
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in
+                self.wallets.removeAll()
+                self.walletTable.reloadData()
+                self.goUnload()
             }))
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = vc.view
-            vc.present(alert, animated: true, completion: nil)
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
         }
     }
     
@@ -217,16 +235,18 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
             let dict = ["name":dictName, "isActive":isActive] as [String : Any]
             wallets.append(dict)
             if i + 1 == walletArr.count {
-                DispatchQueue.main.async { [unowned vc = self] in
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
                     if activeIndex > 0 {
-                        vc.wallets.swapAt(0, activeIndex)
+                        self.wallets.swapAt(0, activeIndex)
                     }
-                    vc.connectingView.removeConnectingView()
-                    vc.walletTable.reloadData()
-                    if vc.didChange {
+                    self.connectingView.removeConnectingView()
+                    self.walletTable.reloadData()
+                    if self.didChange {
                         NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-                        vc.didChange = false
-                        displayAlert(viewController: vc, isError: false, message: "Wallet set to active, refreshing home screen...")
+                        self.didChange = false
+                        displayAlert(viewController: self, isError: false, message: "Wallet set to active, refreshing home screen...")
                     }
                 }
             }

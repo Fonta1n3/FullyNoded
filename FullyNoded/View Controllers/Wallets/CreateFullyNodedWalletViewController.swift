@@ -7,14 +7,18 @@
 //
 
 import UIKit
+import AVFoundation
 
-class CreateFullyNodedWalletViewController: UIViewController, UINavigationControllerDelegate, UIDocumentPickerDelegate {
+class CreateFullyNodedWalletViewController: UIViewController, UINavigationControllerDelegate, UIDocumentPickerDelegate, UIImagePickerControllerDelegate {
     
     @IBOutlet weak var uploadOutlet: UIButton!
     @IBOutlet weak var multiSigOutlet: UIButton!
     @IBOutlet weak var singleSigOutlet: UIButton!
     @IBOutlet weak var recoveryOutlet: UIButton!
     @IBOutlet weak var importOutlet: UIButton!
+    @IBOutlet weak var importXpubOutlet: UIButton!
+    
+    let imagePicker = UIImagePickerController()
     var onDoneBlock:(((Bool)) -> Void)?
     var spinner = ConnectingView()
     var alertStyle = UIAlertController.Style.actionSheet
@@ -29,11 +33,25 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         importOutlet.layer.cornerRadius = 8
         multiSigOutlet.layer.cornerRadius = 8
         uploadOutlet.layer.cornerRadius = 8
+        importXpubOutlet.layer.cornerRadius = 8
         if (UIDevice.current.userInterfaceIdiom == .pad) {
           alertStyle = UIAlertController.Style.alert
         }
         checkPasteboard()
     }
+    
+    private func configureImagePicker() {
+        imagePicker.delegate = self
+        imagePicker.allowsEditing = false
+        imagePicker.sourceType = .photoLibrary
+    }
+    
+    @IBAction func importXpubAction(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            self?.performSegue(withIdentifier: "segueToImportXpub", sender: self)
+        }
+    }
+    
     
     @IBAction func uploadFileAction(_ sender: Any) {
         DispatchQueue.main.async { [unowned vc = self] in
@@ -77,9 +95,14 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     }
     
     @IBAction func importAction(_ sender: Any) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "segueToScanner", sender: vc)
-        }
+        #if targetEnvironment(macCatalyst)
+            configureImagePicker()
+            chooseQRCodeFromLibrary()
+        #else
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.performSegue(withIdentifier: "segueToScanner", sender: vc)
+            }
+        #endif
     }
     
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
@@ -187,6 +210,34 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         }
     }
     
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true, completion: nil)
+    }
+    
+    func chooseQRCodeFromLibrary() {
+        present(imagePicker, animated: true, completion: nil)
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        // Local variable inserted by Swift 4.2 migrator.
+        let info = convertFromUIImagePickerControllerInfoKeyDictionary(info)
+        if let pickedImage = info[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.originalImage)] as? UIImage {
+            let detector:CIDetector=CIDetector(ofType: CIDetectorTypeQRCode, context: nil, options: [CIDetectorAccuracy:CIDetectorAccuracyHigh])!
+            let ciImage:CIImage = CIImage(image:pickedImage)!
+            var qrCodeLink = ""
+            let features = detector.features(in: ciImage)
+            for feature in features as! [CIQRCodeFeature] {
+                qrCodeLink += feature.messageString!
+            }
+            AudioServicesPlaySystemSound(SystemSoundID(kSystemSoundID_Vibrate))
+            picker.dismiss(animated: true, completion: { [weak self] in
+                if let dict = try? JSONSerialization.jsonObject(with: qrCodeLink.dataUsingUTF8StringEncoding, options: []) as? [String:Any] {
+                    self?.promptToImportAccountMap(dict: dict)
+                }
+            })
+        }
+    }
+    
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
@@ -210,4 +261,13 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             }
         }
     }
+}
+
+fileprivate func convertFromUIImagePickerControllerInfoKeyDictionary(_ input: [UIImagePickerController.InfoKey: Any]) -> [String: Any] {
+    return Dictionary(uniqueKeysWithValues: input.map {key, value in (key.rawValue, value)})
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromUIImagePickerControllerInfoKey(_ input: UIImagePickerController.InfoKey) -> String {
+    return input.rawValue
 }

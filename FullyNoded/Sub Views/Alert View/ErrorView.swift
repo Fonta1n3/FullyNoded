@@ -55,7 +55,7 @@ class ErrorView: UIView {
         if isError {
             errorLabel.textColor = .systemRed
         } else {
-            errorLabel.textColor = .systemGreen
+            errorLabel.textColor = .lightGray
         }
         errorLabel.frame = CGRect(x: 5, y: -30, width: width - 10, height: 20)
         errorLabel.font = UIFont.systemFont(ofSize: 12)

@@ -9,7 +9,6 @@
 
 import Foundation
 import Tor
-import UIKit
 
 protocol OnionManagerDelegate: class {
     func torConnProgress(_ progress: Int)
@@ -33,7 +32,6 @@ class TorClient {
     private var thread: TorThread?
     private var controller: TorController?
     private var authDirPath = ""
-    private var torDirPath = ""
     var isRefreshing = false
     
     // The tor url session configuration.
@@ -45,13 +43,17 @@ class TorClient {
     
     // Start the tor client.
     func start(delegate: OnionManagerDelegate?) {
-        print("start")
+        print("start tor")
         
         weak var weakDelegate = delegate
         state = .started
         
-        sessionConfiguration.connectionProxyDictionary = [kCFProxyTypeKey: kCFProxyTypeSOCKS, kCFStreamPropertySOCKSProxyHost: "localhost", kCFStreamPropertySOCKSProxyPort: 19050]
+        sessionConfiguration.connectionProxyDictionary = [kCFProxyTypeKey: kCFProxyTypeSOCKS,
+                                                          kCFStreamPropertySOCKSProxyHost: "localhost",
+                                                          kCFStreamPropertySOCKSProxyPort: 19050]
+        
         session = URLSession(configuration: sessionConfiguration)
+        
         #if targetEnvironment(macCatalyst)
             // Code specific to Mac.
         #else
@@ -60,39 +62,38 @@ class TorClient {
         #endif
         
         //add V3 auth keys to ClientOnionAuthDir if any exist
-        let torDir = createTorDirectory()
+        createTorDirectory()
         authDirPath = createAuthDirectory()
         
-        clearAuthKeys {
+        clearAuthKeys { [weak self] in
+            guard let self = self else { return }
             
             self.addAuthKeysToAuthDirectory {
                 
                 self.thread = nil
-                                        
-                    self.config.options = [
-                        
-                        "DNSPort": "12345",
-                        "AutomapHostsOnResolve": "1",
-                        "SocksPort": "19050",//OnionTrafficOnly
-                        "AvoidDiskWrites": "1",
-                        "ClientOnionAuthDir": "\(self.authDirPath)",
-                        "LearnCircuitBuildTimeout": "1",
-                        "NumEntryGuards": "8",
-                        "SafeSocks": "1",
-                        "LongLivedPorts": "80,443",
-                        "NumCPUs": "2",
-                        "DisableDebuggerAttachment": "1",
-                        "SafeLogging": "1"
-                        //"ExcludeExitNodes": "1",
-                        //"StrictNodes": "1"
-                        
-                    ]
-                    
-                    self.config.cookieAuthentication = true
-                    self.config.dataDirectory = URL(fileURLWithPath: torDir)
-                    self.config.controlSocket = self.config.dataDirectory?.appendingPathComponent("cp")
-                    self.config.arguments = ["--ignore-missing-torrc"]
-                    self.thread = TorThread(configuration: self.config)
+                
+                self.config.options = [
+                    "DNSPort": "12345",
+                    "AutomapHostsOnResolve": "1",
+                    "SocksPort": "19050",//OnionTrafficOnly
+                    "AvoidDiskWrites": "1",
+                    "ClientOnionAuthDir": "\(self.authDirPath)",
+                    "LearnCircuitBuildTimeout": "1",
+                    "NumEntryGuards": "8",
+                    "SafeSocks": "1",
+                    "LongLivedPorts": "80,443",
+                    "NumCPUs": "2",
+                    "DisableDebuggerAttachment": "1",
+                    "SafeLogging": "1"
+                    //"ExcludeExitNodes": "1",
+                    //"StrictNodes": "1"
+                ]
+                
+                //self?.config.arguments = ["--defaults-torrc \(NSTemporaryDirectory()).torrc"]
+                self.config.cookieAuthentication = true
+                self.config.dataDirectory = URL(fileURLWithPath: self.torPath())
+                self.config.controlSocket = self.config.dataDirectory?.appendingPathComponent("cp")
+                self.thread = TorThread(configuration: self.config)
                 
                 // Initiate the controller.
                 if self.controller == nil {
@@ -104,260 +105,201 @@ class TorClient {
                 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                     // Connect Tor controller.
-                    
                     do {
-                        
                         if !(self.controller?.isConnected ?? false) {
-                            
                             do {
-                                
                                 try self.controller?.connect()
-                                
                             } catch {
-                                
                                 print("error=\(error)")
-                                
                             }
-                            
                         }
                         
                         let cookie = try Data(
                             contentsOf: self.config.dataDirectory!.appendingPathComponent("control_auth_cookie"),
                             options: NSData.ReadingOptions(rawValue: 0)
                         )
+                        
                         self.controller?.authenticate(with: cookie) { (success, error) in
-                            
                             if let error = error {
-                                
                                 print("error = \(error.localizedDescription)")
                                 return
-                                
                             }
                             
                             var progressObs: Any?
                             progressObs = self.controller?.addObserver(forStatusEvents: {
                                 (type: String, severity: String, action: String, arguments: [String : String]?) -> Bool in
-                                
                                 if arguments != nil {
-                                    
                                     if arguments!["PROGRESS"] != nil {
                                         let progress = Int(arguments!["PROGRESS"]!)!
                                         weakDelegate?.torConnProgress(progress)
                                         if progress >= 100 {
                                             self.controller?.removeObserver(progressObs)
                                         }
-                                        
                                         return true
-                                        
                                     }
-                                    
                                 }
-                                
                                 return false
-                                
                             })
                             
                             var observer: Any? = nil
                             observer = self.controller?.addObserver(forCircuitEstablished: { established in
-                                
                                 if established {
-                                    
                                     print("established")
                                     self.state = .connected
                                     weakDelegate?.torConnFinished()
                                     self.controller?.removeObserver(observer)
                                     
                                 } else if self.state == .refreshing {
-                                    
                                     self.state = .connected
                                     weakDelegate?.torConnFinished()
                                     self.controller?.removeObserver(observer)
-                                    
                                 }
-                                
                             })
-                            
                         }
-                        
                     } catch {
-                        
                         weakDelegate?.torConnDifficulties()
                         self.state = .none
-                        
                     }
-                    
                 }
-                
             }
-            
         }
-        
     }
     
     func resign() {
-        print("resign")
-        
         controller?.disconnect()
         controller = nil
         thread?.cancel()
         thread = nil
         clearAuthKeys {}
         state = .stopped
-        
     }
     
-    private func createTorDirectory() -> String {
-        print("createTorDirectory")
-        
-        torDirPath = self.getTorPath()
-        
+    private func createTorDirectory() {
         do {
-            
-            try FileManager.default.createDirectory(atPath: torDirPath, withIntermediateDirectories: true, attributes: [
-                FileAttributeKey.posixPermissions: 0o700
-                ])
-            
+            try FileManager.default.createDirectory(atPath: self.torPath(),
+                                                    withIntermediateDirectories: true,
+                                                    attributes: [FileAttributeKey.posixPermissions: 0o700])
         } catch {
-            
             print("Directory previously created.")
-            
         }
-        
-        return torDirPath
+        addTorrc()
+        createHiddenServiceDirectory()
     }
     
-    private func getTorPath() -> String {
-        print("getTorPath")
-        
-        var torDirectory = ""
-        
+    private func torPath() -> String {
         #if targetEnvironment(simulator)
-        print("is simulator")
-        
-        let path = NSSearchPathForDirectoriesInDomains(.applicationDirectory, .userDomainMask, true).first ?? ""
-        torDirectory = "\(path.split(separator: Character("/"))[0..<2].joined(separator: "/"))/.tor_tmp"
-        
+            let path = NSSearchPathForDirectoriesInDomains(.applicationDirectory, .userDomainMask, true).first ?? ""
+            return "\(path.split(separator: Character("/"))[0..<2].joined(separator: "/"))/.tor_tmp"
         #else
-        print("is device")
-        
-        torDirectory = "\(NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first ?? "")/tor"
+            return "\(NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first ?? "")/tor"
+        #endif
+    }
+    
+    private func addTorrc() {
+        #if targetEnvironment(macCatalyst)
+            // Code specific to Mac.
+            let torrcUrl = URL(fileURLWithPath: "/Users/\(NSUserName())/Library/Containers/com.fontaine.fullynodedmacos/Data/.torrc")
+            let torrc = Torrc.torrc.dataUsingUTF8StringEncoding
+            do {
+                try torrc.write(to: torrcUrl)
+            } catch {
+                print("an error happened while creating the file")
+            }
+        #elseif targetEnvironment(simulator)
+        #else
+//            let sourceURL = Bundle.main.bundleURL.appendingPathComponent(".torrc")
+//            let torrc = try? String(contentsOf: sourceURL, encoding: .utf8)
+//            print("sourceURL: \(sourceURL)")
+//            print("torrc: \(torrc)")
         
         #endif
-        
-        return torDirectory
-        
+    }
+    
+    private func createHiddenServiceDirectory() {
+        do {
+            try FileManager.default.createDirectory(atPath: "\(torPath())/host",
+                                                    withIntermediateDirectories: true,
+                                                    attributes: [FileAttributeKey.posixPermissions: 0o700])
+        } catch {
+            print("Directory previously created.")
+        }
+    }
+    
+    func hostname() -> String? {
+        let path = URL(fileURLWithPath: "/Users/\(NSUserName())/Library/Containers/com.fontaine.fullynodedmacos/Data/Library/Caches/tor/host/hostname")
+        return try? String(contentsOf: path, encoding: .utf8)
     }
     
     private func createAuthDirectory() -> String {
-        print("createAuthDirectory")
-        
         // Create tor v3 auth directory if it does not yet exist
-        let authPath = URL(fileURLWithPath: self.torDirPath, isDirectory: true).appendingPathComponent("onion_auth", isDirectory: true).path
+        let authPath = URL(fileURLWithPath: self.torPath(), isDirectory: true).appendingPathComponent("onion_auth", isDirectory: true).path
         
         do {
-            
-            try FileManager.default.createDirectory(atPath: authPath, withIntermediateDirectories: true, attributes: [
-                FileAttributeKey.posixPermissions: 0o700
-                ])
-            
+            try FileManager.default.createDirectory(atPath: authPath,
+                                                    withIntermediateDirectories: true,
+                                                    attributes: [FileAttributeKey.posixPermissions: 0o700])
         } catch {
-            
             print("Auth directory previously created.")
-            
         }
         
         return authPath
-        
     }
     
     private func addAuthKeysToAuthDirectory(completion: @escaping () -> Void) {
-        print("addAuthKeysToAuthDirectory")
-        let authPath = self.authDirPath
+        
         CoreDataService.retrieveEntity(entityName: .authKeys) { authKeys in
-            if authKeys != nil {
-                func decryptedValue(_ encryptedValue: Data) -> String {
-                    var decryptedValue = ""
-                    Crypto.decryptData(dataToDecrypt: encryptedValue) { decryptedData in
-                        if decryptedData != nil {
-                            decryptedValue = decryptedData!.utf8
-                        }
+            guard let authKeys = authKeys, authKeys.count > 0 else { completion(); return }
+            
+            let authKeysStr = AuthKeysStruct.init(dictionary: authKeys[0])
+            let authorizedKey = decryptedValue(authKeysStr.privateKey)
+            
+            CoreDataService.retrieveEntity(entityName: .newNodes) { [weak self] nodes in
+                guard let self = self, let nodes = nodes, nodes.count > 0 else { completion(); return }
+                
+                for (i, nodeDict) in nodes.enumerated() {
+                    let nodeStruct = NodeStruct(dictionary: nodeDict)
+                    
+                    if nodeStruct.isActive && nodeStruct.onionAddress != nil {
+                        let onionAddress = decryptedValue(nodeStruct.onionAddress!)
+                        let onionAddressArray = onionAddress.components(separatedBy: ".onion:")
+                        // Ensure we are actually V3 before adding auth
+                        guard onionAddressArray[0].count > 55 else { completion(); return }
+                        
+                        let authString = onionAddressArray[0] + ":descriptor:x25519:" + authorizedKey
+                        let suffix = "\(randomString(length: 10)).auth_private"
+                        
+                        let file = URL(fileURLWithPath: self.authDirPath, isDirectory: true).appendingPathComponent(suffix)
+                        
+                        try? authString.write(to: file, atomically: true, encoding: .utf8)
+                        
+                        try? (file as NSURL).setResourceValue(URLFileProtection.complete, forKey: .fileProtectionKey)
                     }
-                    return decryptedValue
-                }
-                if authKeys!.count > 0 {
-                    let authKeysStr = AuthKeysStruct.init(dictionary: authKeys![0])
-                    let authorizedKey = decryptedValue(authKeysStr.privateKey)
-                    CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
-                        if nodes != nil {
-                            for (i, nodeDict) in nodes!.enumerated() {
-                                let str = NodeStruct(dictionary: nodeDict)
-                                if str.isActive && str.onionAddress != nil {
-                                    let onionAddress = decryptedValue(str.onionAddress!)
-                                    let onionAddressArray = onionAddress.components(separatedBy: ".onion:")
-                                    let authString = onionAddressArray[0] + ":descriptor:x25519:" + authorizedKey
-                                    let file = URL(fileURLWithPath: authPath, isDirectory: true).appendingPathComponent("\(randomString(length: 10)).auth_private")
-                                    do {
-                                        try authString.write(to: file, atomically: true, encoding: .utf8)
-                                        print("successfully wrote authkey to file")
-                                        do {
-                                            if #available(iOS 9.0, *) {
-                                                try (file as NSURL).setResourceValue(URLFileProtection.complete, forKey: .fileProtectionKey)
-                                                print("success setting file protection")
-                                            } else {
-                                                print("error setting file protection")
-                                            }
-                                        } catch {
-                                           print("error setting file protection")
-                                        }
-                                    } catch {
-                                        print("failed writing auth key")
-                                    }
-                                }
-                                if i + 1 == nodes!.count {
-                                    completion()
-                                }
-                            }
-                        } else {
-                            completion()
-                        }
+                    
+                    if i + 1 == nodes.count {
+                        completion()
                     }
-                } else {
-                    completion()
                 }
-            } else {
-                completion()
-                print("error fetching nodes")
             }
         }
     }
     
     private func clearAuthKeys(completion: @escaping () -> Void) {
-        
-        //removes all authkeys
         let fileManager = FileManager.default
         let authPath = self.authDirPath
         
         do {
-            
             let filePaths = try fileManager.contentsOfDirectory(atPath: authPath)
             
             for filePath in filePaths {
-                
                 let url = URL(fileURLWithPath: authPath + "/" + filePath)
                 try fileManager.removeItem(at: url)
-                print("deleted key")
-                
             }
             
             completion()
-            
         } catch {
             
-            print("error deleting existing keys")
             completion()
-            
         }
-        
     }
     
     func turnedOff() -> Bool {

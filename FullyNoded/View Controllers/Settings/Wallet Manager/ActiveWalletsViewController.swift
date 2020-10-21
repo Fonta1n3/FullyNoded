@@ -13,11 +13,16 @@ class ActiveWalletsViewController: UIViewController, UITableViewDelegate, UITabl
     @IBOutlet weak var table: UITableView!
     var activeWallets:[String] = []
     var connectingView = ConnectingView()
+    var alertStyle = UIAlertController.Style.actionSheet
 
     override func viewDidLoad() {
         super.viewDidLoad()
         table.delegate = self
         table.dataSource = self
+        
+        if (UIDevice.current.userInterfaceIdiom == .pad) {
+          alertStyle = UIAlertController.Style.alert
+        }
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -44,39 +49,46 @@ class ActiveWalletsViewController: UIViewController, UITableViewDelegate, UITabl
     
     private func unloadWallet(wallet: String, index: Int) {
         connectingView.addConnectingView(vc: self, description: "unloading wallet...")
-        Reducer.makeCommand(command: .unloadwallet, param: "\"\(wallet)\"") { [unowned vc = self] (response, errorMessage) in
-            if errorMessage == nil {
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.activeWallets.remove(at: index)
-                    if vc.activeWallets.count == 0 {
-                        UserDefaults.standard.removeObject(forKey: "walletName")
-                        NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-                        vc.unloadedSuccess()
-                    }
-                    vc.table.reloadData()
-                    vc.connectingView.removeConnectingView()
+        Reducer.makeCommand(command: .unloadwallet, param: "\"\(wallet)\"") { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            guard let _ = response else {
+                self.connectingView.removeConnectingView()
+                showAlert(vc: self, title: "Error", message: "There was an error unloading your wallet: \(errorMessage!)")
+                return
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.activeWallets.remove(at: index)
+                
+                if self.activeWallets.count == 0 {
+                    UserDefaults.standard.removeObject(forKey: "walletName")
+                    NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+                    self.unloadedSuccess()
                 }
-            } else {
-                vc.connectingView.removeConnectingView()
-                showAlert(vc: vc, title: "Error", message: "There was an error unloading your wallet: \(errorMessage!)")
+                
+                self.table.reloadData()
+                self.connectingView.removeConnectingView()
             }
         }
     }
     
     private func unloadedSuccess() {
-        DispatchQueue.main.async { [unowned vc = self] in
-            var alertStyle = UIAlertController.Style.actionSheet
-            if (UIDevice.current.userInterfaceIdiom == .pad) {
-              alertStyle = UIAlertController.Style.alert
-            }
-            let alert = UIAlertController(title: "All wallets unloaded!", message: "You may now work with the default wallet, we are now refreshing the wallet screen. Tap Done to go back.", preferredStyle: alertStyle)
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let alert = UIAlertController(title: "All wallets unloaded!", message: "You may now work with the default wallet, we are now refreshing the wallet screen. Tap Done to go back.", preferredStyle: self.alertStyle)
             alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.navigationController?.popToRootViewController(animated: true)
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.navigationController?.popToRootViewController(animated: true)
                 }
             }))
-            alert.popoverPresentationController?.sourceView = vc.view
-            vc.present(alert, animated: true) {}
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true) {}
         }
     }
 }

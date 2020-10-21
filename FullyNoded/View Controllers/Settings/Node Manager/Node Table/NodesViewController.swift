@@ -78,13 +78,9 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     private func decryptedValue(_ encryptedValue: Data) -> String {
-        var decryptedValue = ""
-        Crypto.decryptData(dataToDecrypt: encryptedValue) { decryptedData in
-            if decryptedData != nil {
-                decryptedValue = decryptedData!.utf8
-            }
-        }
-        return decryptedValue
+        guard let decrypted = Crypto.decrypt(encryptedValue) else { return "" }
+        
+        return decrypted.utf8
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -295,14 +291,16 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     private func reduced(label: String) -> String {
-        let first = String(label.prefix(5))
-        let last = String(label.suffix(15))
-        return "\(first)...\(last)"
+        var first = String(label.prefix(25))
+        if label.count > 25 {
+            first += "..."
+        }
+        return "\(first)"
     }
     
     @IBAction func addNode(_ sender: Any) {
         DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "addNewNode", sender: vc)
+            vc.performSegue(withIdentifier: "segueToAddBitcoinCoreNode", sender: vc)
         }
     }
     
@@ -316,9 +314,10 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             }
         }
         
-        if segue.identifier == "addNewNode" {
-            if let vc = segue.destination as? ChooseConnectionTypeViewController {
-                vc.isUpdating = false
+        if segue.identifier == "segueToAddBitcoinCoreNode" {
+            if let vc = segue.destination as? NodeDetailViewController {
+                vc.createNew = true
+                vc.isLightning = false
             }
         }
         

@@ -54,4 +54,5 @@ class Reducer {
         }
         makeTorCommand()
     }
+
 }

@@ -11,6 +11,12 @@ import LibWally
 
 enum Keys {
     
+    static func vaildPath(_ path: String) -> Bool {
+        guard BIP32Path(path) != nil else { return false }
+        
+        return true
+    }
+    
     static func donationAddress() -> String? {
         let randomInt = Int.random(in: 0..<10000)
         
@@ -72,10 +78,14 @@ enum Keys {
     }
     
     static func xpub(path: String, masterKey: String) -> String? {
-        guard let hdMasterKey = HDKey(masterKey),
-              let path = BIP32Path(path),
-              let accountKey = try? hdMasterKey.derive(path) else { return nil }
-        
-        return accountKey.xpub
+        if path == "m" {
+            return HDKey(masterKey)?.xpub
+        } else {
+            guard let hdMasterKey = HDKey(masterKey),
+                  let path = BIP32Path(path),
+                  let accountKey = try? hdMasterKey.derive(path) else { return nil }
+            
+            return accountKey.xpub
+        }
     }
 }

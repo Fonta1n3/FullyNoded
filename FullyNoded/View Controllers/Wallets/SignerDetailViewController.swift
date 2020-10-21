@@ -10,6 +10,7 @@ import UIKit
 
 class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
     
+    var isEditingNow = false
     var id:UUID!
     @IBOutlet weak var labelField: UITextField!
     @IBOutlet weak var wordsField: UITextView!
@@ -113,40 +114,61 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
     }
     
     private func setFields(_ signer: SignerStruct) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.labelField.text = signer.label
-            vc.dateLabel.text = "  " +  vc.formattedDate(signer.added)
-            Crypto.decryptData(dataToDecrypt: signer.words) { (decrypted) in
-                if let words = String(bytes: decrypted!, encoding: .utf8) {
-                    vc.wordsField.text = words
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.labelField.text = signer.label
+            self.dateLabel.text = "  " +  self.formattedDate(signer.added)
+            
+            guard var decrypted = Crypto.decrypt(signer.words),
+                var words = String(bytes: decrypted, encoding: .utf8) else {
+                    return
+            }
+            
+            var arr = words.split(separator: " ")
+            
+            for (i, _) in arr.enumerated() {
+                if i > 0 && i < arr.count - 1 {
+                    arr[i] = "******"
                 }
             }
+            
+            self.wordsField.text = arr.joined(separator: " ")
+            
+            decrypted = Data()
+            words = ""
+            
             if signer.passphrase != nil {
-                Crypto.decryptData(dataToDecrypt: signer.passphrase!) { (decrypted) in
-                    if let passphrase = String(bytes: decrypted!, encoding: .utf8) {
-                        vc.passphraseLabel.text = "  " + passphrase
-                    }
+                guard let decrypted = Crypto.decrypt(signer.passphrase!),
+                    let passphrase = String(bytes: decrypted, encoding: .utf8) else {
+                        return
                 }
+                
+                self.passphraseLabel.text = "  " + passphrase
             } else {
-                vc.passphraseLabel.text = "  ** no passphrase **"
+                self.passphraseLabel.text = "  ** no passphrase **"
             }
-            vc.setFingerprint(signer.words)
+            
+            self.setFingerprint(signer.words)
         }
     }
     
     private func setFingerprint(_ encryptedWords: Data) {
-        Crypto.decryptData(dataToDecrypt: encryptedWords) { (decryptedWords) in
-            if decryptedWords != nil {
-                if let words = String(bytes: decryptedWords!, encoding: .utf8) {
-                    if let mk = Keys.masterKey(words: words, coinType: "0", passphrase: "") {
-                        if let fingerprint = Keys.fingerprint(masterKey: mk) {
-                            DispatchQueue.main.async { [unowned vc = self] in
-                                vc.fingerprintField.text = "  " + fingerprint
-                            }
-                        }
-                    }
-                }
-            }
+        guard var decryptedWords = Crypto.decrypt(encryptedWords),
+            var words = String(bytes: decryptedWords, encoding: .utf8),
+            var mk = Keys.masterKey(words: words, coinType: "0", passphrase: ""),
+            let fingerprint = Keys.fingerprint(masterKey: mk) else {
+                return
+        }
+        
+        decryptedWords = Data()
+        words = ""
+        mk = ""
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.fingerprintField.text = "  " + fingerprint
         }
     }
     
@@ -157,23 +179,31 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
     }
     
     private func updateLabel(_ label: String) {
-        CoreDataService.update(id: id, keyToUpdate: "label", newValue: label, entity: .signers) { [unowned vc = self] (success) in
+        CoreDataService.update(id: id, keyToUpdate: "label", newValue: label, entity: .signers) { [weak self] (success) in
+            guard let self = self else { return }
+            
             if success {
-                showAlert(vc: vc, title: "Success ✅", message: "Signer's label updated.")
+                self.isEditingNow = false
+                showAlert(vc: self, title: "Success ✅", message: "Signer's label updated.")
             } else {
-                showAlert(vc: vc, title: "Error", message: "Signer's label did not update.")
+                showAlert(vc: self, title: "Error", message: "Signer's label did not update.")
             }
         }
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
-        if textField.text != "" {
+        if textField.text != "" && isEditingNow {
             updateLabel(textField.text!)
         }
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.endEditing(true)
+        return true
+    }
+    
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        isEditingNow = true
         return true
     }
     

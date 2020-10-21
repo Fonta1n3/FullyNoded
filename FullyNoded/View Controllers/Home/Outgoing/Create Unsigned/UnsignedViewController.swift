@@ -362,6 +362,7 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        
         if segue.identifier == "segueToScannerFromUnsigned" {
             if let vc = segue.destination as? QRScannerViewController {
                 vc.isScanningAddress = true
@@ -371,9 +372,10 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
                     }
                 }
             }
+            
         } else if segue.identifier == "segueToExporterFromUnsigned" {
-            if let vc = segue.destination as? SignerViewController {
-                vc.txnUnsigned = self.unsignedTx
+            if let vc = segue.destination as? VerifyTransactionViewController {
+                vc.signedRawTx = self.unsignedTx
             }
         }
     }

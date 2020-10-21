@@ -9,30 +9,37 @@
 import Foundation
 import UIKit
 
+public func decryptedValue(_ encryptedValue: Data) -> String {
+    guard let decrypted = Crypto.decrypt(encryptedValue) else { return "" }
+    
+    return decrypted.utf8
+}
+
+/// Call this method to retrive active wallet. This method seaches the device's storage. NOT the node.
+/// - Parameter completion: Active wallet
 public func activeWallet(completion: @escaping ((Wallet?)) -> Void) {
-    var structToReturn:Wallet!
-    if let activeWalletName = UserDefaults.standard.object(forKey: "walletName") as? String {
-        CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
-            if wallets != nil {
-                if wallets!.count > 0 {
-                    for (i, w) in wallets!.enumerated() {
-                        let walletStruct = Wallet(dictionary: w)
-                        if walletStruct.name == activeWalletName {
-                            structToReturn = walletStruct
-                        }
-                        if i + 1 == wallets!.count {
-                            completion(structToReturn)
-                        }
-                    }
-                } else {
-                    completion(nil)
-                }
-            } else {
-                completion(nil)
+    guard let activeWalletName = UserDefaults.standard.object(forKey: "walletName") as? String else {
+        completion(nil)
+        return
+    }
+    
+    CoreDataService.retrieveEntity(entityName: .wallets) { walletDictionaries in
+        guard let walletDictionaries = walletDictionaries, !walletDictionaries.isEmpty else {
+            completion(nil)
+            return
+        }
+        
+        var foundWallet: Wallet?
+        
+        for walletDictionary in walletDictionaries where foundWallet == nil {
+            let wallet = Wallet(dictionary: walletDictionary)
+            
+            if wallet.name == activeWalletName {
+                foundWallet = wallet
             }
         }
-    } else {
-        completion(nil)
+        
+        completion(foundWallet)
     }
 }
 
@@ -57,60 +64,72 @@ public extension UITextView {
 }
 
 public func showAlert(vc: UIViewController?, title: String, message: String) {
-    if vc != nil {
+    if let vc = vc {
         DispatchQueue.main.async {
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in }))
-            vc!.present(alert, animated: true, completion: nil)
+            vc.present(alert, animated: true, completion: nil)
         }
     }
 }
 
 public func exportPsbtToURL(data: Data) -> URL? {
-  let documents = FileManager.default.urls(
-    for: .documentDirectory,
-    in: .userDomainMask
-  ).first
-  guard let path = documents?.appendingPathComponent("/FullyNodedPSBT.psbt") else {
-    return nil
-  }
-  do {
-    try data.write(to: path, options: .atomicWrite)
-    return path
-  } catch {
-    print(error.localizedDescription)
-    return nil
-  }
+    let documents = FileManager.default.urls(
+        for: .documentDirectory,
+        in: .userDomainMask
+    ).first
+    guard let path = documents?.appendingPathComponent("/FullyNodedPSBT.psbt") else {
+        return nil
+    }
+    do {
+        try data.write(to: path, options: .atomicWrite)
+        return path
+    } catch {
+        print(error.localizedDescription)
+        return nil
+    }
 }
 
 public func exportMultisigWalletToURL(data: Data) -> URL? {
-  let documents = FileManager.default.urls(
-    for: .documentDirectory,
-    in: .userDomainMask
-  ).first
-  guard let path = documents?.appendingPathComponent("/FullyNodedMultisig.txt") else {
-    return nil
-  }
-  do {
-    try data.write(to: path, options: .atomicWrite)
-    return path
-  } catch {
-    print(error.localizedDescription)
-    return nil
-  }
+    let documents = FileManager.default.urls(
+        for: .documentDirectory,
+        in: .userDomainMask
+    ).first
+    guard let path = documents?.appendingPathComponent("/FullyNodedMultisig.txt") else {
+        return nil
+    }
+    do {
+        try data.write(to: path, options: .atomicWrite)
+        return path
+    } catch {
+        print(error.localizedDescription)
+        return nil
+    }
+}
+
+public func exportWalletJson(name: String, data: Data) -> URL? {
+    let documents = FileManager.default.urls(
+        for: .documentDirectory,
+        in: .userDomainMask
+    ).first
+    guard let path = documents?.appendingPathComponent("/\(name).json") else {
+        return nil
+    }
+    do {
+        try data.write(to: path, options: .atomicWrite)
+        return path
+    } catch {
+        print(error.localizedDescription)
+        return nil
+    }
 }
 
 public extension Dictionary {
     func json() -> String? {
-        if let json = try? JSONSerialization.data(withJSONObject: self, options: []) {
-            if let jsonString = String(data: json, encoding: .utf8) {
-                return jsonString
-            } else {
-                return nil
-            }
-        } else {
-            return nil
-        }
+        guard let json = try? JSONSerialization.data(withJSONObject: self, options: []),
+              let jsonString = String(data: json, encoding: .utf8) else { return nil }
+        
+        return jsonString
     }
 }
 
@@ -133,20 +152,18 @@ extension Notification.Name {
     public static let refreshWallet = Notification.Name(rawValue: "refreshWallet")
     public static let addColdCard = Notification.Name(rawValue: "addColdcard")
     public static let refreshUtxos = Notification.Name(rawValue: "refreshUtxos")
+    public static let importWallet = Notification.Name(rawValue: "importWallet")
+    public static let broadcastTxn = Notification.Name(rawValue: "broadcastTxn")
+    public static let signPsbt = Notification.Name(rawValue: "signPsbt")
 }
 
 public extension Data {
     var utf8:String {
-        if let string = String(bytes: self, encoding: .utf8) {
-            return string
-        } else {
-            return ""
-        }
+        return String(bytes: self, encoding: .utf8) ?? ""
     }
 }
 
 public func impact() {
-    
     if #available(iOS 10.0, *) {
         let impact = UIImpactFeedbackGenerator()
         DispatchQueue.main.async {
@@ -155,7 +172,6 @@ public func impact() {
     } else {
         // Fallback on earlier versions
     }
-    
 }
 
 public extension String {
@@ -307,9 +323,16 @@ public func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
     
 }
 
+public extension Int {
+    var avoidNotation: String {
+        let numberFormatter = NumberFormatter()
+        numberFormatter.maximumFractionDigits = 8
+        numberFormatter.numberStyle = .decimal
+        return numberFormatter.string(for: self) ?? ""
+    }
+}
+
 public func shakeAlert(viewToShake: UIView) {
-    print("shakeAlert")
-    
     let animation = CABasicAnimation(keyPath: "position")
     animation.duration = 0.07
     animation.repeatCount = 4
@@ -318,9 +341,34 @@ public func shakeAlert(viewToShake: UIView) {
     animation.toValue = NSValue(cgPoint: CGPoint(x: viewToShake.center.x + 10, y: viewToShake.center.y))
     
     DispatchQueue.main.async {
-        
         viewToShake.layer.add(animation, forKey: "position")
-        
+    }
+}
+
+public extension Encodable {
+
+    /// Encode into JSON and return `Data`
+    func jsonData() throws -> Data {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        encoder.dateEncodingStrategy = .iso8601
+        return try encoder.encode(self)
+    }
+}
+
+public extension UIView {
+    #if targetEnvironment(macCatalyst)
+    @objc(_focusRingType)
+    var focusRingType: UInt {
+        return 1 //NSFocusRingTypeNone
+    }
+    #endif
+}
+
+public extension String {
+    func condenseWhitespace() -> String {
+        let components = self.components(separatedBy: .whitespacesAndNewlines)
+        return components.filter { !$0.isEmpty }.joined(separator: " ")
     }
 }
 
@@ -409,4 +457,29 @@ public extension UIDevice {
         return mapToDevice(identifier: identifier)
     }()
     
+}
+
+extension String {
+    var utf8: Data {
+        return data(using: .utf8)!
+    }
+}
+
+extension Data {
+    static func random(_ len: Int) -> Data {
+        let values = (0 ..< len).map { _ in UInt8.random(in: 0 ... 255) }
+        return Data(values)
+    }
+
+    var bytes: [UInt8] {
+        var b: [UInt8] = []
+        b.append(contentsOf: self)
+        return b
+    }
+}
+
+extension Array where Element == UInt8 {
+    var data: Data {
+        Data(self)
+    }
 }

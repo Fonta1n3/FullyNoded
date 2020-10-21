@@ -290,6 +290,9 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
         case "segueToShareLightningUrl":
             if let vc = segue.destination as? QRDisplayerViewController {
                 vc.text = url
+                vc.headerText = "Lightning URI"
+                vc.descriptionText = "This is your lightning node's address, others can scan this QR to add you as a peer or open a channel."
+                vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
             }
         case "segueToLightningChannels":
             if let vc = segue.destination as? LightningChannelsViewController {

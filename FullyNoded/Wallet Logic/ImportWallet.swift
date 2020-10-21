@@ -9,20 +9,32 @@
 import Foundation
 
 class ImportWallet {
-        
+    
+    static var index = 0
+    static var processedWatching = [String]()
+    static var isColdcard = false
+            
     class func accountMap(_ accountMap: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
         var wallet = [String:Any]()
+        var prefix = "FullyNoded"
+        if isColdcard {
+            prefix = "Coldcard"
+        }
         var keypool = Bool()
         let descriptorParser = DescriptorParser()
         var primDescriptor = accountMap["descriptor"] as! String
         let blockheight = accountMap["blockheight"] as! Int
         let label = accountMap["label"] as! String
+        let watching = accountMap["watching"] as? [String] ?? []
+        
         wallet["label"] = label
         wallet["id"] = UUID()
         wallet["blockheight"] = Int64(blockheight)
         wallet["maxIndex"] = 2500
         wallet["index"] = 0
-        let descStruct = descriptorParser.descriptor(primDescriptor)
+        
+        var descStruct = descriptorParser.descriptor(primDescriptor)
+        
         if descStruct.isMulti {
             wallet["type"] = "Multi-Sig"
             keypool = false
@@ -30,152 +42,156 @@ class ImportWallet {
             wallet["type"] = "Single-Sig"
             keypool = true
         }
+        
         primDescriptor = primDescriptor.replacingOccurrences(of: "'", with: "h")
         let arr = primDescriptor.split(separator: "#")
         primDescriptor = "\(arr[0])"
+        descStruct = descriptorParser.descriptor(primDescriptor)
         
-        func getDescriptorInfo(desc: String, completion: @escaping ((desc: String?, errorMessage: String?)) -> Void) {
-            Reducer.makeCommand(command: .getdescriptorinfo, param: "\"\(desc)\"") { (response, errorMessage) in
-                if let dict = response as? NSDictionary {
-                    if let updatedDescriptor = dict["descriptor"] as? String {
-                        completion((updatedDescriptor, nil))
-                    }
-                } else {
-                    completion((nil, errorMessage ?? "error getting descriptor info"))
+        // Sparrow wallet exports do not include range
+        if !primDescriptor.contains("/0/*") {
+            for key in descStruct.multiSigKeys {
+                print("key: \(key)")
+                if !key.contains("/0/*") {
+                    primDescriptor = primDescriptor.replacingOccurrences(of: key, with: key + "/0/*")
                 }
             }
         }
         
-        func importMulti(params: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-            Reducer.makeCommand(command: .importmulti, param: params) { (response, errorDescription) in
-                if let result = response as? NSArray {
-                    if result.count > 0 {
-                        if let dict = result[0] as? NSDictionary {
-                            if let success = dict["success"] as? Bool {
-                                completion((success, nil))
-                            } else {
-                                completion((false, errorDescription ?? "unknown error importing your keys"))
-                            }
+        descStruct = descriptorParser.descriptor(primDescriptor)
+        
+        // If the descriptor is multisig, we sort the keys lexicographically
+        if primDescriptor.contains(",") {
+            var dictArray = [[String:String]]()
+            
+            for keyWithPath in descStruct.keysWithPath {
+                let arr = keyWithPath.split(separator: "]")
+                let dict = ["path":"\(arr[0])]", "key": "\(arr[1].replacingOccurrences(of: "))", with: ""))"]
+                dictArray.append(dict)
+            }
+            
+            dictArray.sort(by: {($0["key"]!) < $1["key"]!})
+            
+            var sortedKeys = ""
+            
+            for (i, sortedItem) in dictArray.enumerated() {
+                let path = sortedItem["path"]!
+                let key = sortedItem["key"]!
+                let fullKey = path + key
+                sortedKeys += fullKey
+                
+                if i + 1 < dictArray.count {
+                    sortedKeys += ","
+                }
+            }
+            
+            let arr2 = primDescriptor.split(separator: ",")
+            primDescriptor = "\(arr2[0])," + sortedKeys + "))"
+        }
+        
+        func createWalletNow(_ recDesc: String, _ changeDesc: String) {
+            // Use the sha256 hash of the checksum-less primary receive keypool desc as the wallet name so it has a deterministic identifier
+            let walletName = "\(prefix)-\(Crypto.sha256hash(primDescriptor))"
+            
+            createWallet(walletName) { (name, errorMessage) in
+                guard let name = name else {
+                    UserDefaults.standard.removeObject(forKey: "walletName")
+                    completion((false, "error creatig wallet: \(errorMessage ?? "unknown error")"))
+                    return
+                }
+                
+                wallet["name"] = name
+                UserDefaults.standard.set(wallet["name"] as! String, forKey: "walletName")
+                
+                importReceiveDesc(recDesc, label, keypool) { (success, errorMessage) in
+                    guard success else {
+                        UserDefaults.standard.removeObject(forKey: "walletName")
+                        completion((false, "error importing receive descriptor: \(errorMessage ?? "unknown error")"))
+                        return
+                    }
+                    
+                    importChangeDesc(changeDesc, keypool) { (success, errorMessage) in
+                        guard success else {
+                            UserDefaults.standard.removeObject(forKey: "walletName")
+                            completion((false, "error importing change descriptor: \(errorMessage ?? "unknown error")"))
+                            return
                         }
-                    } else {
-                        completion((false, errorDescription ?? "unknown error importing your keys"))
-                    }
-                } else {
-                    completion((false, errorDescription ?? "unknown error importing your keys"))
-                }
-            }
-        }
-        
-        func saveLocally() {
-            CoreDataService.saveEntity(dict: wallet, entityName: .wallets) { (success) in
-                if success {
-                    completion((true, nil))
-                } else {
-                    completion((false, "error saving wallet locally"))
-                }
-            }
-        }
-        
-        func rescan() {
-            Reducer.makeCommand(command: .getblockchaininfo, param: "") { (response, errorMessage) in
-                if let dict = response as? NSDictionary {
-                    if let pruned = dict["pruned"] as? Bool {
-                        if pruned {
-                            if let pruneHeight = dict["pruneheight"] as? Int {
-                                Reducer.makeCommand(command: .rescanblockchain, param: "\(pruneHeight)") { (response, errorMessage) in
-                                    saveLocally()
+                        
+                        if watching.count > 0 {
+                            index = 0
+                            processedWatching.removeAll()
+                            
+                            importWatching(watching: watching) { (watchingArray, errorMessage) in
+                                guard let watchingArray = watchingArray else {
+                                    UserDefaults.standard.removeObject(forKey: "walletName")
+                                    completion((false, "error importing watching descriptors: \(errorMessage ?? "unknown error importing watching descriptors")"))
+                                    return
                                 }
-                            } else {
-                                completion((false, errorMessage ?? "error getting prune height"))
+                                
+                                wallet["watching"] = watchingArray
+                                rescan(wallet: wallet, completion: completion)
                             }
                         } else {
-                            Reducer.makeCommand(command: .rescanblockchain, param: "") { (response, errorMessage) in
-                                saveLocally()
-                            }
+                            rescan(wallet: wallet, completion: completion)
                         }
-                    } else {
-                        completion((false, errorMessage ?? "error getting prune info"))
                     }
-                } else {
-                     completion((false, errorMessage ?? "error getting blockchain info"))
-                }
-            }
-        }
-        
-        func createWallet(_ recDesc: String, _ changeDesc: String) {
-            let walletName = "FullyNoded-Import-\(randomString(length: 10))"
-            let param = "\"\(walletName)\", true, true, \"\", true"
-            Reducer.makeCommand(command: .createwallet, param: param) { (response, errorMessage) in
-                if let dict = response as? NSDictionary {
-                    if let name = dict["name"] as? String {
-                        wallet["name"] = name
-                        UserDefaults.standard.set(name, forKey: "walletName")
-                        let recParams = "[{ \"desc\": \"\(recDesc)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"label\": \"\(label)\", \"keypool\": \(keypool), \"internal\": false }], {\"rescan\": false}"
-                        importMulti(params: recParams) { (success, errorMessage) in
-                            if success {
-                                let changeParams = "[{ \"desc\": \"\(changeDesc)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"keypool\": \(keypool), \"internal\": true }], {\"rescan\": false}"
-                                importMulti(params: changeParams) { (changeImported, errorMessage) in
-                                    if success {
-                                        rescan()
-                                    } else {
-                                        completion((false, errorMessage ?? "error importing change keys"))
-                                    }
-                                }
-                            } else {
-                                completion((false, errorMessage ?? "error importing keys"))
-                            }
-                        }
-                    } else {
-                        completion((false, errorMessage ?? "error getting wallet name"))
-                    }
-                } else {
-                   completion((false, errorMessage ?? "error creating wallet"))
                 }
             }
         }
         
         getDescriptorInfo(desc: primDescriptor) { (recDesc, errorMessage) in
-            if recDesc != nil {
-                wallet["receiveDescriptor"] = recDesc!
-                getDescriptorInfo(desc: primDescriptor.replacingOccurrences(of: "/0/*", with: "/1/*")) { (changeDesc, errorMessage) in
-                    if changeDesc != nil {
-                        wallet["changeDescriptor"] = changeDesc!
-                        createWallet(recDesc!, changeDesc!)
+            guard let recDesc = recDesc else {
+                UserDefaults.standard.removeObject(forKey: "walletName")
+                completion((false, errorMessage ?? "error getting descriptor info"))
+                return
+            }
+            
+            wallet["receiveDescriptor"] = recDesc
+            
+            getDescriptorInfo(desc: primDescriptor.replacingOccurrences(of: "/0/*", with: "/1/*")) { (changeDesc, errorMessage) in
+                guard let changeDesc = changeDesc else {
+                    UserDefaults.standard.removeObject(forKey: "walletName")
+                    completion((false, errorMessage ?? "error getting change descriptor info"))
+                    return
+                }
+                
+                wallet["changeDescriptor"] = changeDesc
+                let hash = Crypto.sha256hash(primDescriptor)
+                
+                walletExistsOnNode(hash) { (existingWallet) in
+                    guard let existingWallet = existingWallet else {
+                        createWalletNow(recDesc, changeDesc)
+                        return
+                    }
+                    
+                    wallet["name"] = existingWallet
+                    UserDefaults.standard.set(wallet["name"] as! String, forKey: "walletName")
+                    
+                    if watching.count > 0 {
+                        index = 0
+                        processedWatching.removeAll()
+                        
+                        processWatching(watching: watching) { (watchingArray, errorMessage) in
+                            guard let watchingArray = watchingArray else {
+                                UserDefaults.standard.removeObject(forKey: "walletName")
+                                completion((false, "error processing watching descriptors: \(errorMessage ?? "unknown error")"))
+                                return
+                            }
+                            
+                            wallet["watching"] = watchingArray
+                            saveLocally(wallet: wallet, completion: completion)
+                        }
                     } else {
-                        completion((false, errorMessage ?? "error getting change descriptor info"))
+                        saveLocally(wallet: wallet, completion: completion)
                     }
                 }
-            } else {
-                completion((false, errorMessage ?? "error getting descriptor info"))
             }
         }
-        
     }
     
     class func coldcard(dict: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
-        /*
-         ["xfp": 0F056943, "bip49": {
-             "_pub" = upub5DMRSsh6mNaeiTXEzarZLvZezWp4cGhaDHjMz9iineDN8syqep2XHncDKFVtTUXY4fyKp12qDVVwdfq5rKkw2CDf5fy2gEHyh5NoTC6fiwm;
-             deriv = "m/49'/1'/0'";
-             first = 2NCAJ5wD4GvmW32GFLVybKPNphNU8UYoEJv;
-             name = "p2wpkh-p2sh";
-             xfp = FD3E8548;
-             xpub = tpubDCDqt7XXvhAYY9HSwrCXB7BXqYM4RXB8WFtKgtTXGa6u3U6EV1NJJRFTcuTRyhSY5Vreg1LP8aPdyiAPQGrDJLikkHoc7VQg6DA9NtUxHtj;
-         }, "xpub": tpubD6NzVbkrYhZ4XzL5Dhayo67Gorv1YMS7j8pRUvVMd5odC2LBPLAygka9p7748JtSq82FNGPppFEz5xxZUdasBRCqJqXvUHq6xpnsMcYJzeh, "bip44": {
-             deriv = "m/44'/1'/0'";
-             first = mtHSVByP9EYZmB26jASDdPVm19gvpecb5R;
-             name = p2pkh;
-             xfp = 92B53FD2;
-             xpub = tpubDCiHGUNYdRRBPNYm7CqeeLwPWfeb2ZT2rPsk4aEW3eUoJM93jbBa7hPpB1T9YKtigmjpxHrB1522kSsTxGm9V6cqKqrp1EDaYaeJZqcirYB;
-         }, "bip84": {
-             "_pub" = vpub5Y5a91QvDT3yog4bmgbqFo7GPXpRpozogzQeDArSPzsY8SKGHTgjSswhxhGkRonUQ9tyo9ZSQ1ecLKkVUyewWEUJZdwgUQycvG86FV7sdhZ;
-             deriv = "m/84'/1'/0'";
-             first = tb1qupyd58ndsh7lut0et0vtrq432jvu9jtdyws9n9;
-             name = p2wpkh;
-             xfp = AB82D43E;
-             xpub = tpubDC7jGaaSE66Pn4dgtbAAstde4bCyhSUs4r3P8WhMVvPByvcRrzrwqSvpF9Ghx83Z1LfVugGRrSBko5UEKELCz9HoMv5qKmGq3fqnnbS5E9r;
-         }, "chain": XTN, "account": 0]
-         */
+        isColdcard = true
+
         var wallet = [String:Any]()
         wallet["type"] = "Single-Sig"
         wallet["label"] = "Coldcard"
@@ -184,162 +200,180 @@ class ImportWallet {
         wallet["maxIndex"] = 2500
         wallet["index"] = 0
         
-        var watching:[String] = []
         let fingerprint = dict["xfp"] as! String
         
         let bip49 = dict["bip49"] as! NSDictionary
         let bipr49deriv = (bip49["deriv"] as! String).replacingOccurrences(of: "m", with: fingerprint)
         let bip49Xpub = (bip49["xpub"] as! String)
-        let bip49DescPrim = "sh(wpkh([\(bipr49deriv)]\(bip49Xpub)/0/*))"
-        let bip49DescChange = "sh(wpkh([\(bipr49deriv)]\(bip49Xpub)/1/*))"
+        let bip49DescPrim = "sh(wpkh([\(bipr49deriv.replacingOccurrences(of: "'", with: "h"))]\(bip49Xpub)/0/*))"
+        let bip49DescChange = "sh(wpkh([\(bipr49deriv.replacingOccurrences(of: "'", with: "h"))]\(bip49Xpub)/1/*))"
         
         let bip44 = dict["bip44"] as! NSDictionary
         let bipr44deriv = (bip44["deriv"] as! String).replacingOccurrences(of: "m", with: fingerprint)
         let bip44Xpub = (bip44["xpub"] as! String)
-        let bip44DescPrim = "pkh([\(bipr44deriv)]\(bip44Xpub)/0/*)"
-        let bip44DescChange = "pkh([\(bipr44deriv)]\(bip44Xpub)/1/*)"
+        let bip44DescPrim = "pkh([\(bipr44deriv.replacingOccurrences(of: "'", with: "h"))]\(bip44Xpub)/0/*)"
+        let bip44DescChange = "pkh([\(bipr44deriv.replacingOccurrences(of: "'", with: "h"))]\(bip44Xpub)/1/*)"
         
         let bip84 = dict["bip84"] as! NSDictionary
         let bipr84deriv = (bip84["deriv"] as! String).replacingOccurrences(of: "m", with: fingerprint)
         let bip84Xpub = (bip84["xpub"] as! String)
-        let bip84DescPrim = "wpkh([\(bipr84deriv)]\(bip84Xpub)/0/*)"
-        let bip84DescChange = "wpkh([\(bipr84deriv)]\(bip84Xpub)/1/*)"
+        let bip84DescPrim = "wpkh([\(bipr84deriv.replacingOccurrences(of: "'", with: "h"))]\(bip84Xpub)/0/*)"
         
-        func saveLocally() {
-            CoreDataService.saveEntity(dict: wallet, entityName: .wallets) { (success) in
-                if success {
-                    completion((true, nil))
-                } else {
-                    completion((false, "error saving wallet locally"))
-                }
-            }
-        }
+        let watching = [bip49DescPrim, bip49DescChange, bip44DescPrim, bip44DescChange]
+        wallet["descriptor"] = bip84DescPrim
+        wallet["watching"] = watching
         
-        func rescan() {
-            Reducer.makeCommand(command: .getblockchaininfo, param: "") { (response, errorMessage) in
-                if let dict = response as? NSDictionary {
-                    if let pruned = dict["pruned"] as? Bool {
-                        if pruned {
-                            if let pruneHeight = dict["pruneheight"] as? Int {
-                                Reducer.makeCommand(command: .rescanblockchain, param: "\(pruneHeight)") { (response, errorMessage) in
-                                    saveLocally()
-                                }
-                            } else {
-                                completion((false, errorMessage ?? "error getting prune height"))
-                            }
-                        } else {
-                            Reducer.makeCommand(command: .rescanblockchain, param: "") { (response, errorMessage) in
-                                saveLocally()
-                            }
-                        }
-                    } else {
-                        completion((false, errorMessage ?? "error getting prune info"))
-                    }
-                } else {
-                     completion((false, errorMessage ?? "error getting blockchain info"))
-                }
-            }
-        }
-        
-        func getDescriptorInfo(descriptor: String, completion: @escaping ((desc: String?, errorMessage: String?)) -> Void) {
-            Reducer.makeCommand(command: .getdescriptorinfo, param: "\"\(descriptor)\"") { (response, errorMessage) in
-                if let dict = response as? NSDictionary {
-                    if let updatedDescriptor = dict["descriptor"] as? String {
-                        completion((updatedDescriptor, nil))
-                    }
-                } else {
-                    completion((nil, errorMessage ?? "error getting descriptor info"))
-                }
-            }
-        }
-        
-        func importMulti(isChange: Bool, isKeypool: Bool, label: String, descriptor: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-            getDescriptorInfo(descriptor: descriptor) { (desc, errorMessage) in
-                if desc != nil {
-                    var params = "[{ \"desc\": \"\(desc!)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"label\": \"\(label)\", \"keypool\": \(isKeypool), \"internal\": \(isChange) }], {\"rescan\": false}"
-                    
-                    if isChange {
-                        params = "[{ \"desc\": \"\(desc!)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"keypool\": \(isKeypool), \"internal\": \(isChange) }], {\"rescan\": false}"
-                        wallet["changeDescriptor"] = desc!
-                    }
-                    
-                    if isKeypool && !isChange {
-                        wallet["receiveDescriptor"] = desc!
-                    } else if !isKeypool && !isChange {
-                        watching.append(desc!)
-                    }
-                    
-                    Reducer.makeCommand(command: .importmulti, param: params) { (response, errorDescription) in
-                        if let result = response as? NSArray {
-                            if result.count > 0 {
-                                if let dict = result[0] as? NSDictionary {
-                                    if let success = dict["success"] as? Bool {
-                                        completion((success, nil))
-                                    } else {
-                                        completion((false, errorDescription ?? "unknown error importing your keys"))
-                                    }
-                                }
-                            } else {
-                                completion((false, errorDescription ?? "unknown error importing your keys"))
-                            }
-                        } else {
-                            completion((false, errorDescription ?? "unknown error importing your keys"))
-                        }
-                    }
-                }
+        accountMap(wallet, completion: completion)
+    }
+    
+    class func createWallet(_ walletName: String, completion: @escaping ((name: String?, errorMessage: String?)) -> Void) {
+        let param = "\"\(walletName)\", true, true, \"\", true"
+        Reducer.makeCommand(command: .createwallet, param: param) { (response, errorMessage) in
+            guard let dict = response as? NSDictionary, let name = dict["name"] as? String else {
+                completion((nil, errorMessage))
+                return
             }
             
+            completion((name, nil))
         }
+    }
+    
+    class func importReceiveDesc(_ recDesc: String, _ label: String, _ keypool: Bool, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
+        let recParams = "[{ \"desc\": \"\(recDesc)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"label\": \"\(label)\", \"keypool\": \(keypool), \"internal\": false }], {\"rescan\": false}"
         
-        func createWallet() {
-            let walletName = "Coldcard-\(randomString(length: 10))"
-            let param = "\"\(walletName)\", true, true, \"\", true"
-            Reducer.makeCommand(command: .createwallet, param: param) { (response, errorMessage) in
-                if let dict = response as? NSDictionary {
-                    if let name = dict["name"] as? String {
-                        wallet["name"] = name
-                        UserDefaults.standard.set(name, forKey: "walletName")
-                        importMulti(isChange: false, isKeypool: true, label: "Coldcard-bip84", descriptor: bip84DescPrim) { (success, errorMessage) in
-                            if success {
-                                importMulti(isChange: true, isKeypool: true, label: "", descriptor: bip84DescChange) { (changeImported, errorMessage) in
-                                    if success {
-                                        importMulti(isChange: false, isKeypool: false, label: "Coldcard-bip44-receive", descriptor: bip44DescPrim) { (success, errorMessage) in
-                                            if success {
-                                                importMulti(isChange: false, isKeypool: false, label: "Coldcard-bip44-change", descriptor: bip44DescChange) { (success, errorMessage) in
-                                                    if success {
-                                                        importMulti(isChange: false, isKeypool: false, label: "Coldcard-bip49-receive", descriptor: bip49DescPrim) { (success, errorMessage) in
-                                                            if success {
-                                                                importMulti(isChange: false, isKeypool: false, label: "Coldcard-bip49-change", descriptor: bip49DescChange) { (success, errorMessage) in
-                                                                    if success {
-                                                                        wallet["watching"] = watching
-                                                                        rescan()
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    } else {
-                                        completion((false, errorMessage ?? "error importing change keys"))
-                                    }
-                                }
-                            } else {
-                                completion((false, errorMessage ?? "error importing keys"))
-                            }
-                        }
-                    } else {
-                        completion((false, errorMessage ?? "error getting wallet name"))
-                    }
-                } else {
-                   completion((false, errorMessage ?? "error creating wallet"))
-                }
+        importMultiDesc(params: recParams, completion: completion)
+    }
+    
+    class func importChangeDesc(_ changeDesc: String, _ keypool: Bool, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
+        let changeParams = "[{ \"desc\": \"\(changeDesc)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"keypool\": \(keypool), \"internal\": true }], {\"rescan\": false}"
+        
+        importMultiDesc(params: changeParams, completion: completion)
+    }
+    
+    class func walletExistsOnNode(_ hash: String, completion: @escaping ((String?)) -> Void) {
+        Reducer.makeCommand(command: .listwalletdir, param: "") { (response, errorMessage) in
+            if let wallets = response as? NSDictionary {
+                parseWallets(wallets, hash, completion: completion)
+            } else {
+                completion(nil)
             }
         }
+    }
+    
+    class func parseWallets(_ wallets: NSDictionary, _ hash: String, completion: @escaping ((String?)) -> Void) {
+        let walletArr = wallets["wallets"] as! NSArray
+        var existingWallet: String?
         
-        createWallet()
-        
+        for (i, wallet) in walletArr.enumerated() {
+            let walletDict = wallet as! NSDictionary
+            let walletName = walletDict["name"] as! String
+            
+            if walletName.contains(hash) {
+                existingWallet = walletName
+            }
+            
+            if i + 1 == walletArr.count {
+                completion(existingWallet)
+            }
+        }
+    }
+    
+    class func getDescriptorInfo(desc: String, completion: @escaping ((desc: String?, errorMessage: String?)) -> Void) {
+        Reducer.makeCommand(command: .getdescriptorinfo, param: "\"\(desc)\"") { (response, errorMessage) in
+            guard let dict = response as? NSDictionary, let updatedDescriptor = dict["descriptor"] as? String else {
+                completion((nil, errorMessage ?? "error getting descriptor info"))
+                return
+            }
+            
+            completion((updatedDescriptor, nil))
+        }
+    }
+    
+    class func saveLocally(wallet: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
+        CoreDataService.saveEntity(dict: wallet, entityName: .wallets) { (success) in
+            if success {
+                completion((true, nil))
+            } else {
+                completion((false, "error saving wallet locally"))
+            }
+        }
+    }
+    
+    class func rescan(wallet: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
+        Reducer.makeCommand(command: .getblockchaininfo, param: "") { (response, errorMessage) in
+            guard let dict = response as? NSDictionary, let pruned = dict["pruned"] as? Bool else {
+                completion((false, errorMessage ?? "error getting blockchain info"))
+                return
+            }
+            
+            if pruned {
+                guard let pruneHeight = dict["pruneheight"] as? Int else {
+                    completion((false, errorMessage ?? "error getting prune height"))
+                    return
+                }
+                
+                Reducer.makeCommand(command: .rescanblockchain, param: "\(pruneHeight)") { (_, _) in }
+                saveLocally(wallet: wallet, completion: completion)
+            } else {
+                Reducer.makeCommand(command: .rescanblockchain, param: "") { (_, _) in }
+                saveLocally(wallet: wallet, completion: completion)
+            }
+        }
+    }
+    
+    class func importMultiDesc(params: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
+        Reducer.makeCommand(command: .importmulti, param: params) { (response, errorDescription) in
+            guard let result = response as? NSArray, result.count > 0,
+                let dict = result[0] as? NSDictionary,
+                let success = dict["success"] as? Bool,
+                success else {
+                    completion((false, errorDescription ?? "unknown error importing your keys"))
+                    return
+            }
+            
+            completion((success, nil))
+        }
+    }
+    
+    class func importWatching(watching: [String], completion: @escaping ((watchingArray: [String]?, errorMessage: String?)) -> Void) {
+        if index < watching.count {
+            getDescriptorInfo(desc: watching[index]) { (desc, errMessage) in
+                guard let desc = desc else {
+                    completion((nil, errMessage))
+                    return
+                }
+                
+                let params = "[{ \"desc\": \"\(desc)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"label\": \"watching\", \"keypool\": false, \"internal\": false }], {\"rescan\": false}"
+                importMultiDesc(params: params) { (success, errorMessage) in
+                    if success {
+                        processedWatching.append(desc)
+                        index += 1
+                        importWatching(watching: watching, completion: completion)
+                    } else {
+                        completion((nil, "Error importing descriptor: \(errorMessage ?? "unknown error")"))
+                    }
+                }
+            }
+        } else {
+            completion((processedWatching, nil))
+        }
+    }
+    
+    class func processWatching(watching: [String], completion: @escaping ((watchingArray: [String]?, errorMessage: String?)) -> Void) {
+        if index < watching.count {
+            getDescriptorInfo(desc: watching[index]) { (desc, errMessage) in
+                guard let desc = desc else {
+                    completion((nil, errMessage))
+                    return
+                }
+                
+                processedWatching.append(desc)
+                index += 1
+                processWatching(watching: watching, completion: completion)
+            }
+        } else {
+            completion((processedWatching, nil))
+        }
     }
     
 }

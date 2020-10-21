@@ -39,7 +39,6 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         wordsTextView.layer.borderWidth = 0.5
         wordsTextView.delegate = self
         xpubField.delegate = self
-        derivationField.isUserInteractionEnabled = false
         spinner.addConnectingView(vc: self, description: "fetching chain type...")
         if ccXpub != "" && ccXfp != "" {
             closeOutlet.alpha = 1
@@ -62,6 +61,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         textView.resignFirstResponder()
         wordsTextView.resignFirstResponder()
         xpubField.resignFirstResponder()
+        derivationField.resignFirstResponder()
     }
     
     @IBAction func closeAction(_ sender: Any) {
@@ -83,14 +83,26 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     }
     
     @IBAction func addButton(_ sender: Any) {
-        if fingerprintField.text != "" && xpubField.text != "" {
-            textView.text += fingerprintField.text! + ":" + xpubField.text! + "\n\n"
+        let xpub = xpubField.text ?? ""
+        let fingerprint = fingerprintField.text ?? ""
+        
+        if fingerprint != "" && xpub != "" {
+            textView.text += fingerprint + ":" + xpub + "\n\n"
             wordsTextView.text = ""
             fingerprintField.text = ""
             xpubField.text = ""
-            showAlert(vc: self, title: "Key added ✅", message: "Key added to your soon to be created multisig wallet. Keep adding keys until you are ready to create the wallet.")
+            derivationField.isUserInteractionEnabled = false
+            
+        } else if fingerprint == "" && xpub != "" {
+            if let fp = Keys.fingerprint(masterKey: xpub) {
+                textView.text += fp + ":" + xpub + "\n\n"
+                wordsTextView.text = ""
+                fingerprintField.text = ""
+                xpubField.text = ""
+            }
+            derivationField.isUserInteractionEnabled = false
         } else {
-            showAlert(vc: self, title: "Error", message: "You must add both a valid extended public key and fingerprint")
+            showAlert(vc: self, title: "Error", message: "You must add a valid extended public key")
         }
     }
     
@@ -114,7 +126,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                         }
                     }
                     vc.spinner.removeConnectingView()
-                    showAlert(vc: vc, title: "Multisig Creator", message: "You can create a multisig wallet with this tool, all that is required are xpubs and the master key fingerprints.\n\nThis tool is for experts who have a solid understanding of multisig and how it works, the derivation is hard coded to m/48'/0'/0'/2', your xpub must be derived from this path!\n\nIf you want Fully Noded to create the keys for you you may tap the refresh button.\n\nOr you may supply your own xpub/Zpub or bip39 words.\n\nThis wallet will strictly be created as watch-only, you may add signers at anytime to Fully Noded seperately from this process.")
+                    showAlert(vc: vc, title: "Multisig Creator", message: "You can create/recover multisig wallets with this tool, all that is required are xpubs.\n\nThis tool is for users who have an understanding of multisig and how it works, the derivation default's to m/48'/0'/0'/2', you may set a custom derivation, your xpub's must be derived from this path!\n\nIf you want Fully Noded to create the xpub's for you you may tap the refresh button.\n\nAlternatively supply your own xpub/Zpub/tpub/Vpub or bip39 words.\n\nThis wallet will strictly be created as watch-only, any seed words generated or added will *NOT* be remembered and are *ONLY* used to derive xpub's, you may add the signers at anytime to Fully Noded seperately from this process via the signer view if you would like the app to sign your transactions.")
                 } else {
                     vc.spinner.removeConnectingView()
                     showAlert(vc: vc, title: "Error", message: "error fetching chain type: \(errorMessage ?? "")")
@@ -167,7 +179,11 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             }
             if fingerprint != "" {
                 if xpub != "" {
-                    keys += "[\(fingerprint!)/48'/\(cointType)'/0'/2']\(xpub!)/0/*"
+                    guard let derivationPathProcessed = derivationProcessed()?.replacingOccurrences(of: "m/", with: "") else {
+                        return
+                    }
+                    
+                    keys += "[\(fingerprint!)/\(derivationPathProcessed)]\(xpub!)/0/*"
                     keysString += "\(fingerprint!):\(xpub!)\n"
                     if i < parts.count - 1 {
                         keys += ","
@@ -197,29 +213,40 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     
     private func walletSuccessfullyCreated(mofn: String) {
         isDone = true
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.spinner.removeConnectingView()
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.spinner.removeConnectingView()
+            
             NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+            
             var alertStyle = UIAlertController.Style.actionSheet
+            
             if (UIDevice.current.userInterfaceIdiom == .pad) {
               alertStyle = UIAlertController.Style.alert
             }
-            let alert = UIAlertController(title: "\(mofn) successfully created ✓", message: "Tap export to get a .txt file which holds all necessary info to add your multisig wallet to other apps, this .txt file can be directly imported to a Coldcard via the SD card.", preferredStyle: alertStyle)
-            alert.addAction(UIAlertAction(title: "Export", style: .default, handler: { [unowned vc = self] action in
-                vc.export(mofn: mofn)
-            }))
+            
+            let alert = UIAlertController(title: "\(mofn) successfully created ✓", message: "The wallet has been activated and the wallet view is refreshing, tap done to go back", preferredStyle: alertStyle)
+            
+            if self.derivationField.text == "m/48'/1'/0'/2'" || self.derivationField.text == "m/48'/0'/0'/2'" {
+                alert.addAction(UIAlertAction(title: "Export", style: .default, handler: { action in
+                    self.export(mofn: mofn)
+                }))
+            }
+            
             alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { action in
                 DispatchQueue.main.async {
-                    if vc.navigationController != nil {
-                        vc.navigationController?.popToRootViewController(animated: true)
+                    if self.navigationController != nil {
+                        self.navigationController?.popToRootViewController(animated: true)
                     } else {
-                        vc.dismiss(animated: true, completion: nil)
+                        self.dismiss(animated: true, completion: nil)
                     }
                 }
             }))
+            
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in }))
-            alert.popoverPresentationController?.sourceView = vc.view
-            vc.present(alert, animated: true, completion: nil)
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
         }
     }
     
@@ -229,48 +256,75 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         }
     }
     
+    private func derivationProcessed() -> String? {
+        guard let text = derivationField.text?.replacingOccurrences(of: "’", with: "'"),
+            Keys.vaildPath(text.replacingOccurrences(of: "’", with: "'")) else {
+            return nil
+        }
+        
+        return text
+    }
+    
+    private func clear() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.wordsTextView.text = ""
+            self.fingerprintField.text = ""
+            self.xpubField.text = ""
+        }
+    }
+    
     private func convertWords(words: String) {
-        if let mk = Keys.masterKey(words: words, coinType: cointType, passphrase: "") {
-            if let fingerprint = Keys.fingerprint(masterKey: mk) {
-                if let xpub = Keys.xpub(path: "m/48'/\(cointType)'/0'/2'", masterKey: mk) {
-                    if let _ = XpubConverter.zpub(xpub: xpub) {
-                        DispatchQueue.main.async { [weak self] in
-                            if self != nil {
-                                self?.xpubField.text = xpub
-                                self?.fingerprintField.text = fingerprint
-                                self?.wordsTextView.text = words
-                                showAlert(vc: self, title: "Key generated ✅", message: "To use this key in the multisig wallet tap the + button.")
-                            }
-                        }
-                    }
-                }
-            }
-        } else {
-            wordsTextView.text = ""
-            fingerprintField.text = ""
-            xpubField.text = ""
-            showAlert(vc: self, title: "Invalid words", message: "The words need to conform with BIP39")
+        guard let mk = Keys.masterKey(words: words, coinType: cointType, passphrase: ""),
+            let fingerprint = Keys.fingerprint(masterKey: mk) else {
+                clear()
+                showAlert(vc: self, title: "Invalid words", message: "The words need to conform with BIP39")
+                return
+        }
+        
+        guard let derivationPath = derivationProcessed() else {
+            clear()
+            showAlert(vc: self, title: "Invalid derivation", message: "You must input a valid bip32 derivation path, when in doubt stick with the default")
+            return
+        }
+        
+        guard let xpub = Keys.xpub(path: derivationPath, masterKey: mk),
+            let _ = XpubConverter.zpub(xpub: xpub) else {
+                clear()
+                showAlert(vc: self, title: "Unable to derive xpub", message: "Looks like you added an invalid extended key")
+                return
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.xpubField.text = xpub
+            self.fingerprintField.text = fingerprint
+            self.wordsTextView.text = words
         }
     }
     
     private func export(mofn: String) {
-        let text = """
-        Name: Fully Noded
-        Policy: \(mofn)
-        Derivation: m/48'/\(cointType)'/0'/2'
-        Format: P2WSH
-        
-        \(keysString)
-        """
-        if let url = exportMultisigWalletToURL(data: text.dataUsingUTF8StringEncoding) {
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.textView.text = text
-                let activityViewController = UIActivityViewController(activityItems: ["Multisig Export", url], applicationActivities: nil)
-                if UIDevice.current.userInterfaceIdiom == .pad {
-                    activityViewController.popoverPresentationController?.sourceView = self.view
-                    activityViewController.popoverPresentationController?.sourceRect = CGRect(x: 0, y: 0, width: 100, height: 100)
+        if derivationField.text == "m/48'/1'/0'/2'" || derivationField.text == "m/48'/0'/0'/2'" {
+            let text = """
+            Name: Fully Noded
+            Policy: \(mofn)
+            Derivation: \(derivationField.text ?? "error getting the derivation path, you should report this issue")
+            Format: P2WSH
+            
+            \(keysString)
+            """
+            if let url = exportMultisigWalletToURL(data: text.dataUsingUTF8StringEncoding) {
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.textView.text = text
+                    let activityViewController = UIActivityViewController(activityItems: ["Multisig Export", url], applicationActivities: nil)
+                    if UIDevice.current.userInterfaceIdiom == .pad {
+                        activityViewController.popoverPresentationController?.sourceView = self.view
+                        activityViewController.popoverPresentationController?.sourceRect = CGRect(x: 0, y: 0, width: 100, height: 100)
+                    }
+                    vc.present(activityViewController, animated: true) {}
                 }
-                vc.present(activityViewController, animated: true) {}
             }
         }
     }
@@ -285,15 +339,6 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             convertWords(words: textView.text)
         }
     }
-    
-//    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
-//        if textView == wordsTextView && wordsTextView.text != "" {
-//            if let _ = Keys.masterKey(words: wordsTextView.text!, coinType: cointType, passphrase: "") {
-//                convertWords(words: textView.text)
-//            }
-//        }
-//        return true
-//    }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
         if textField == xpubField {
@@ -315,6 +360,14 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                         showAlert(vc: self, title: "Error", message: "Invalid extended key. It must be either an xpub, tpub, Zpub or Vpub")
                     }
                 }
+            }
+        }
+    }
+    
+    func textViewDidChange(_ textView: UITextView) {
+        if textView == wordsTextView {
+            if let _ = Keys.masterKey(words: textView.text, coinType: cointType, passphrase: "") {
+                convertWords(words: wordsTextView.text ?? "")
             }
         }
     }

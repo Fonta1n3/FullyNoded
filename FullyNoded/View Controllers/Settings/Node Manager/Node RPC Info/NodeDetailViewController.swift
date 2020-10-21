@@ -7,8 +7,9 @@
 //
 
 import UIKit
+import AVFoundation
 
-class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
+class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
     
     var selectedNode:[String:Any]?
     let cd = CoreDataService()
@@ -16,6 +17,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     var newNode = [String:Any]()
     var isInitialLoad = Bool()
     var isLightning = Bool()
+    var isHost = Bool()
+    var hostname: String?
+    let imagePicker = UIImagePickerController()
     
     @IBOutlet weak var scanQROutlet: UIBarButtonItem!
     @IBOutlet weak var header: UILabel!
@@ -36,7 +40,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         rpcUserField.delegate = self
         onionAddressField.delegate = self
         rpcPassword.isSecureTextEntry = true
-        onionAddressField.isSecureTextEntry = true
+        onionAddressField.isSecureTextEntry = false
         saveButton.clipsToBounds = true
         saveButton.layer.cornerRadius = 8
         if isLightning {
@@ -44,11 +48,11 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 deleteLightningOutlet.alpha = 1
             }
             header.text = "Lightning Node"
-            scanQROutlet.tintColor = UIColor.lightGray.withAlphaComponent(1)
+            //scanQROutlet.tintColor = UIColor.lightGray.withAlphaComponent(1)
         } else {
             deleteLightningOutlet.alpha = 0
             header.text = "Bitcoin Core Node"
-            scanQROutlet.tintColor = UIColor.lightGray.withAlphaComponent(0)
+            //scanQROutlet.tintColor = UIColor.lightGray.withAlphaComponent(0)
         }
     }
     
@@ -56,12 +60,48 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         loadValues()
     }
     
-    @IBAction func scanQuickConnect(_ sender: Any) {
-        DispatchQueue.main.async { [weak self] in
-            self?.performSegue(withIdentifier: "segueToScanNodeCreds", sender: self)
-        }
+    private func configureImagePicker() {
+        imagePicker.delegate = self
+        imagePicker.allowsEditing = false
+        imagePicker.sourceType = .photoLibrary
     }
     
+    @IBAction func showHostAction(_ sender: Any) {
+        #if targetEnvironment(macCatalyst)
+            // Code specific to Mac.
+            let hostAddress = onionAddressField.text ?? ""
+            let macName = UIDevice.current.name
+            if hostAddress.contains("127.0.0.1") || hostAddress.contains("localhost") || hostAddress.contains(macName) {
+                hostname = TorClient.sharedInstance.hostname()
+                if hostname != nil {
+                    hostname = hostname?.replacingOccurrences(of: "\n", with: "")
+                    isHost = true
+                    DispatchQueue.main.async { [unowned vc = self] in
+                        vc.performSegue(withIdentifier: "segueToExportNode", sender: vc)
+                    }
+                } else {
+                    showAlert(vc: self, title: "Ooops", message: "There was an error getting your hostname for remote connection... Please make sure you are connected to the internet and that Tor successfully bootstrapped.")
+                }
+            } else {
+                showAlert(vc: self, title: "Ooops", message: "This feature can only be used with nodes which are running on the same computer as Fully Noded - Desktop.\n\nTo take advantage of this feature just download Bitcoin Core and run it.\n\nThen add your local node to Fully Noded - Desktop using 127.0.0.1:8332 as the address.\n\nYou can then tap this button to get a QR code which will allow you to connect your node via your iPhone or iPad on the mobile app.")
+            }
+        #else
+            // Code to exclude from Mac.
+            showAlert(vc: self, title: "Ooops", message: "This is a macOS feature only, when you use Fully Noded - Desktop, it has the ability to display a QR code you can scan with your iPhone or iPad to connect to your node remotely.")
+        #endif
+    }
+    
+    
+    @IBAction func scanQuickConnect(_ sender: Any) {
+        #if targetEnvironment(macCatalyst)
+            configureImagePicker()
+            chooseQRCodeFromLibrary()
+        #else
+            DispatchQueue.main.async { [weak self] in
+                self?.performSegue(withIdentifier: "segueToScanNodeCreds", sender: self)
+            }
+        #endif
+    }
     
     private func deleteLightningNodeNow() {
         if selectedNode != nil {
@@ -104,7 +144,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         promptToDeleteLightningNode()
     }
     
-    
     @IBAction func goManageLightning(_ sender: Any) {
         if isLightning {
             DispatchQueue.main.async { [unowned vc = self] in
@@ -114,21 +153,19 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     @IBAction func exportNode(_ sender: Any) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "segueToExportNode", sender: vc)
+        if onionAddressField.text != "" && rpcPassword.text != "" && rpcUserField.text != "" {
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.performSegue(withIdentifier: "segueToExportNode", sender: vc)
+            }
+        } else {
+            showAlert(vc: self, title: "Ooops", message: "You can not export something that does not exist")
         }
     }
     
     @IBAction func save(_ sender: Any) {
         
         func encryptedValue(_ decryptedValue: Data) -> Data? {
-            var encryptedValue:Data?
-            Crypto.encryptData(dataToEncrypt: decryptedValue) { encryptedData in
-                if encryptedData != nil {
-                    encryptedValue = encryptedData!
-                }
-            }
-            return encryptedValue
+            return Crypto.encrypt(decryptedValue)
         }
         
         if createNew || selectedNode == nil {
@@ -141,31 +178,17 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             }
             
             if rpcUserField.text != "" {
-                if (rpcUserField.text!).isAlphanumeric {
-                    guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
-                    newNode["rpcuser"] = enc
-                } else {
-                    showAlert(vc: self, title: "Only alphanumeric characters allowed in RPC username", message: "")
-                    return
-                }
+                guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
+                newNode["rpcuser"] = enc
             }
             
             if rpcPassword.text != "" {
-                if rpcPassword.text!.isAlphanumeric {
-                    guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
-                    newNode["rpcpassword"] = enc
-                } else {
-                    showAlert(vc: self, title: "Only alphanumeric characters allowed in RPC password", message: "")
-                    return
-                }
+                guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
+                newNode["rpcpassword"] = enc
             }
             
-            if onionSane(onion: onionAddressField.text) {
-                guard let encryptedOnionAddress = encryptedValue((onionAddressField.text)!.dataUsingUTF8StringEncoding)  else { return }
-                newNode["onionAddress"] = encryptedOnionAddress
-            } else {
-                return
-            }
+            guard let encryptedOnionAddress = encryptedValue((onionAddressField.text)!.dataUsingUTF8StringEncoding)  else { return }
+            newNode["onionAddress"] = encryptedOnionAddress
             
             if nodeLabel.text != "" && rpcPassword.text != "" && rpcUserField.text != "" && onionAddressField.text != "" {
                 CoreDataService.retrieveEntity(entityName: .newNodes) { [unowned vc = self] nodes in
@@ -213,84 +236,33 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             }
             
             if rpcUserField.text != "" {
-                if rpcUserField.text!.isAlphanumeric {
-                    guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
-                    CoreDataService.update(id: id, keyToUpdate: "rpcuser", newValue: enc, entity: .newNodes) { success in
-                        if !success {
-                            displayAlert(viewController: self, isError: true, message: "error updating rpc username")
-                        }
+                guard let enc = encryptedValue((rpcUserField.text)!.dataUsingUTF8StringEncoding) else { return }
+                CoreDataService.update(id: id, keyToUpdate: "rpcuser", newValue: enc, entity: .newNodes) { success in
+                    if !success {
+                        displayAlert(viewController: self, isError: true, message: "error updating rpc username")
                     }
-                } else {
-                    showAlert(vc: self, title: "Only alphanumeric characters allowed in RPC username", message: "")
                 }
             }
             
             if rpcPassword.text != "" {
-                if rpcPassword.text!.isAlphanumeric {
-                    guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
-                    CoreDataService.update(id: id, keyToUpdate: "rpcpassword", newValue: enc, entity: .newNodes) { success in
-                        if !success {
-                            displayAlert(viewController: self, isError: true, message: "error updating rpc password")
-                        }
+                guard let enc = encryptedValue((rpcPassword.text)!.dataUsingUTF8StringEncoding) else { return }
+                CoreDataService.update(id: id, keyToUpdate: "rpcpassword", newValue: enc, entity: .newNodes) { success in
+                    if !success {
+                        displayAlert(viewController: self, isError: true, message: "error updating rpc password")
                     }
-                } else {
-                    showAlert(vc: self, title: "Only alphanumeric characters allowed in RPC password", message: "")
                 }
             }
             
-            if onionSane(onion: onionAddressField.text) {
-                let decryptedAddress = (onionAddressField.text)!.dataUsingUTF8StringEncoding
-                guard let encryptedOnionAddress = encryptedValue(decryptedAddress) else { return }
-                CoreDataService.update(id: id, keyToUpdate: "onionAddress", newValue: encryptedOnionAddress, entity: .newNodes) { [unowned vc = self] success in
-                    if success {
-                        vc.nodeAddedSuccess()
-                    } else {
-                        displayAlert(viewController: vc, isError: true, message: "Error updating node!")
-                    }
+            let decryptedAddress = (onionAddressField.text)!.dataUsingUTF8StringEncoding
+            guard let encryptedOnionAddress = encryptedValue(decryptedAddress) else { return }
+            CoreDataService.update(id: id, keyToUpdate: "onionAddress", newValue: encryptedOnionAddress, entity: .newNodes) { [unowned vc = self] success in
+                if success {
+                    vc.nodeAddedSuccess()
+                } else {
+                    displayAlert(viewController: vc, isError: true, message: "Error updating node!")
                 }
             }
         }
-    }
-    
-    private func onionSane(onion: String?) -> Bool {
-        return true
-//        if onion != "" {
-//            if onion!.contains(":") {
-//                if onion!.contains("127.0.0.1") {
-//                    return true
-//                } else {
-//                    let arr = onion!.split(separator: ".")
-//                    if ("\(arr[0])".count == 16 || "\(arr[0])".count == 56) && "\(arr[0])".isAlphanumeric {
-//                        if "\(arr[1])".contains(":") {
-//                            let arr1 = "\(arr[1])".split(separator: ":")
-//                            if arr1.count > 1 {
-//                                    if let _ = Int("\(arr1[1])") {
-//                                        return true
-//                                    } else {
-//                                        showAlert(vc: self, title: "Not a valid port", message: "")
-//                                        return false
-//                                    }
-//                            } else {
-//                                showAlert(vc: self, title: "No port added", message: "Ensure you add a port to the end of the onion url, for example heuehehe8444.onion:8332")
-//                                return false
-//                            }
-//                        } else {
-//                           showAlert(vc: self, title: "No port added", message: "Ensure you add a port to the end of the onion url, for example heuehehe8444.onion:8332")
-//                            return false
-//                        }
-//                    } else {
-//                        showAlert(vc: self, title: "Not a valid Tor V2/V3 hostname", message: "")
-//                        return false
-//                    }
-//                }
-//            } else {
-//               showAlert(vc: self, title: "Not a valid port", message: "")
-//                return false
-//            }
-//        } else {
-//            showAlert(vc: self, title: "Add an onion hostname", message: "")
-//            return false
-//        }
     }
     
     func configureTapGesture() {
@@ -302,13 +274,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     func loadValues() {
         
         func decryptedValue(_ encryptedValue: Data) -> String {
-            var decryptedValue = ""
-            Crypto.decryptData(dataToDecrypt: encryptedValue) { decryptedData in
-                if decryptedData != nil {
-                    decryptedValue = decryptedData!.utf8
-                }
-            }
-            return decryptedValue
+            guard let decrypted = Crypto.decrypt(encryptedValue) else { return "" }
+            
+            return decrypted.utf8
         }
         
         if selectedNode != nil {
@@ -352,7 +320,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 if let enc = node.onionAddress {
                     onionAddressField.text = decryptedValue(enc)
                 } else {
-                    onionAddressField.attributedPlaceholder = NSAttributedString(string: "83nd8e93djh.onion:8332",
+                    onionAddressField.attributedPlaceholder = NSAttributedString(string: "127.0.0.1:8332",
                                                                                  attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
                 }
                 
@@ -366,7 +334,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 nodeLabel.attributedPlaceholder = NSAttributedString(string: "Give your node a label",
                                                                      attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
                 
-                onionAddressField.attributedPlaceholder = NSAttributedString(string: "83nd8e93djh.onion:8332",
+                onionAddressField.attributedPlaceholder = NSAttributedString(string: "127.0.0.1:8332",
                                                                              attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
             }
         } else {
@@ -379,8 +347,19 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             nodeLabel.attributedPlaceholder = NSAttributedString(string: "Give your node a label",
                                                                  attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
             
-            onionAddressField.attributedPlaceholder = NSAttributedString(string: "83nd8e93djh.onion:8332",
+            onionAddressField.attributedPlaceholder = NSAttributedString(string: "127.0.0.1:8332",
                                                                          attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
+            var message = ""
+            #if targetEnvironment(macCatalyst)
+                onionAddressField.text = "127.0.0.1:8332"
+                message = "You can either enter your node credentials manually or tap the QR button to scan or upload a QuickConnect QR.\n\nBy default we make it as easy for you as we can by adding an address which will work for Bitcoin Core if it is running on this computer.\n\nJust add the rpcuser and rpcpassword which can be found in your bitcoin.conf file. On a mac this file can be found at /Library/Application Support/Bitcoin/bitcoin.conf\n\nIf you do not see rpcuser or rpcpassword in your bitcoin.conf just add them and save the changes, as an example:\n\nrpcuser=satoshiNakamoto\nrpcpassword=aReallyStrongPassword\n\nFor remote connections you may enter an onion address or a VPN address."
+            #else
+                message = "You can either enter your node credentials manually or tap the QR button to scan or upload a QuickConnect QR. For local nodes just add the IP of your node.\n\nFor remote connections you may enter an onion address or a VPN address.\n\nJust add the rpcuser and rpcpassword which can be found in your bitcoin.conf file. On a mac this file can be found at /Library/Application Support/Bitcoin/bitcoin.conf\n\nIf you do not see rpcuser or rpcpassword in your bitcoin.conf just add them and save the changes, as an example:\n\nrpcuser=satoshiNakamoto\nrpcpassword=aReallyStrongPassword"
+            #endif
+            
+            nodeLabel.text = "Bitcoin Core"
+            showAlert(vc: self, title: "First things first add a node ✅", message: message)
+            
         }
     }
     
@@ -407,7 +386,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                                 if (UIDevice.current.userInterfaceIdiom == .pad) {
                                   alertStyle = UIAlertController.Style.alert
                                 }
-                                let alert = UIAlertController(title: "Node saved successfully", message: "Your node has been saved and activated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection to your new node.", preferredStyle: alertStyle)
+                                let alert = UIAlertController(title: "Node added successfully ✅", message: "Your node has been saved and activated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection to your new node.", preferredStyle: alertStyle)
                                 alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                                     DispatchQueue.main.async { [unowned vc = self] in
                                         if !vc.isLightning {
@@ -445,7 +424,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                             if (UIDevice.current.userInterfaceIdiom == .pad) {
                               alertStyle = UIAlertController.Style.alert
                             }
-                                let alert = UIAlertController(title: "Node added successfully", message: "Your node has been added and activated. The home screen is automatically refreshing. Tap Done to go back.", preferredStyle: alertStyle)
+                                let alert = UIAlertController(title: "Node added successfully ✅", message: "Your node has been added and activated. The home screen is automatically refreshing. Tap Done to go back.", preferredStyle: alertStyle)
                                 alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                                     DispatchQueue.main.async { [unowned vc = self] in
                                         if !vc.isLightning {
@@ -484,7 +463,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                         if (UIDevice.current.userInterfaceIdiom == .pad) {
                           alertStyle = UIAlertController.Style.alert
                         }
-                            let alert = UIAlertController(title: "Node added successfully", message: "Your node has been added and activated. The home screen is automatically refreshing. Tap Done to go back.", preferredStyle: alertStyle)
+                            let alert = UIAlertController(title: "Node added successfully ✅", message: "Your node has been added and activated. The home screen is automatically refreshing. Tap Done to go back.", preferredStyle: alertStyle)
                             alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                                 DispatchQueue.main.async { [unowned vc = self] in
                                     if !vc.isLightning {
@@ -533,10 +512,42 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             if success {
                 if url.hasPrefix("clightning-rpc") {
                     self?.navigationController?.popViewController(animated: true)
+                } else {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
+                        self.navigationController?.popViewController(animated: true)
+                    }
                 }
             } else {
                 displayAlert(viewController: self, isError: true, message: "Error adding that node: \(errorMessage ?? "unknown")")
             }
+        }
+    }
+    
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true, completion: nil)
+    }
+    
+    func chooseQRCodeFromLibrary() {
+        present(imagePicker, animated: true, completion: nil)
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        // Local variable inserted by Swift 4.2 migrator.
+        let info = convertFromUIImagePickerControllerInfoKeyDictionary(info)
+        if let pickedImage = info[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.originalImage)] as? UIImage {
+            let detector:CIDetector=CIDetector(ofType: CIDetectorTypeQRCode, context: nil, options: [CIDetectorAccuracy:CIDetectorAccuracyHigh])!
+            let ciImage:CIImage = CIImage(image:pickedImage)!
+            var qrCodeLink = ""
+            let features = detector.features(in: ciImage)
+            for feature in features as! [CIQRCodeFeature] {
+                qrCodeLink += feature.messageString!
+            }
+            AudioServicesPlaySystemSound(SystemSoundID(kSystemSoundID_Vibrate))
+            picker.dismiss(animated: true, completion: { [weak self] in
+                self?.addBtcRpcQr(url: qrCodeLink)
+            })
         }
     }
     
@@ -547,7 +558,20 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 if isLightning {
                     prefix = "clightning-rpc"
                 }
-                vc.text = "\(prefix)://\(rpcUserField.text ?? ""):\(rpcPassword.text ?? "")@\(onionAddressField.text ?? "")/?label=\(nodeLabel.text?.replacingOccurrences(of: " ", with: "%20") ?? "")"
+                if isHost {
+                    vc.text = "\(prefix)://\(rpcUserField.text ?? ""):\(rpcPassword.text ?? "")@\(hostname!):11221/?label=\(nodeLabel.text?.replacingOccurrences(of: " ", with: "%20") ?? "")"
+                    vc.headerText = "Quick Connect - Remote Control"
+                    vc.descriptionText = "Fully Noded macOS hosts a secure hidden service for your node which can be used to remotely connect to it.\n\nSimply scan this QR with your iPhone or iPad using the Fully Noded iOS app and connect to your node remotely from anywhere in the world!"
+                    isHost = false
+                    vc.headerIcon = UIImage(systemName: "antenna.radiowaves.left.and.right")
+                    
+                } else {
+                    vc.text = "\(prefix)://\(rpcUserField.text ?? ""):\(rpcPassword.text ?? "")@\(onionAddressField.text ?? "")/?label=\(nodeLabel.text?.replacingOccurrences(of: " ", with: "%20") ?? "")"
+                    vc.headerText = "QuickConnect QR"
+                    vc.descriptionText = "You can share this QR with trusted others who you want to share your node with, they will have access to all wallets on your node! If you want to maintain privacy and share your node you can look at running Bitcoin Knots which allows you to configure specific wallets to be accessed by specific rpcuser's."
+                    vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+                }
+                
             }
         }
         
@@ -563,4 +587,13 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         }
     }
     
+}
+
+fileprivate func convertFromUIImagePickerControllerInfoKeyDictionary(_ input: [UIImagePickerController.InfoKey: Any]) -> [String: Any] {
+    return Dictionary(uniqueKeysWithValues: input.map {key, value in (key.rawValue, value)})
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromUIImagePickerControllerInfoKey(_ input: UIImagePickerController.InfoKey) -> String {
+    return input.rawValue
 }

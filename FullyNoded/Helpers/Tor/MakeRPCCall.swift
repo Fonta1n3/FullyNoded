@@ -8,6 +8,10 @@
 
 import Foundation
 
+enum MakeRPCCallError: Error {
+    case description(String)
+}
+
 class MakeRPCCall {
     
     static let sharedInstance = MakeRPCCall()
@@ -35,16 +39,6 @@ class MakeRPCCall {
                             activeNode = node
                         }
                     }
-                }
-                
-                func decryptedValue(_ encryptedValue: Data) -> String {
-                    var decryptedValue = ""
-                    Crypto.decryptData(dataToDecrypt: encryptedValue) { decryptedData in
-                        if decryptedData != nil {
-                            decryptedValue = decryptedData!.utf8
-                        }
-                    }
-                    return decryptedValue
                 }
                 
                 let node = NodeStruct(dictionary: activeNode)
@@ -80,12 +74,16 @@ class MakeRPCCall {
                 
                 var request = URLRequest(url: url)
                 var timeout = 10.0
-                if method == .gettxoutsetinfo {
-                    timeout = 500.0
+                
+                switch method {
+                case .gettxoutsetinfo:
+                    timeout = 1000.0
+                case .importmulti, .deriveaddresses, .loadwallet:
+                    timeout = 60.0
+                default:
+                    break
                 }
-                if method == .importmulti || method == .deriveaddresses {
-                    timeout = 30.0
-                }
+                
                 request.timeoutInterval = timeout
                 request.httpMethod = "POST"
                 request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
@@ -124,11 +122,9 @@ class MakeRPCCall {
                         } else {
                             
                             if let urlContent = data {
-                                
                                 vc.attempts = 0
                                 
                                 do {
-                                    
                                     let jsonAddressResult = try JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as! NSDictionary
                                     
                                     #if DEBUG
@@ -136,51 +132,39 @@ class MakeRPCCall {
                                     #endif
                                     
                                     if let errorCheck = jsonAddressResult["error"] as? NSDictionary {
-                                        
                                         var errorDesc = ""
-                                                                                
+                                        
                                         if let errorMessage = errorCheck["message"] as? String {
-                                            
                                             errorDesc = errorMessage
                                             
                                         } else {
-                                            
                                             errorDesc = "Uknown error"
                                             
                                         }
                                         
                                         completion((nil, errorDesc))
                                         
-                                        
                                     } else {
-                                        
                                         completion((jsonAddressResult["result"], nil))
                                         
                                     }
                                     
                                 } catch {
-                                    
                                     completion((nil, "unknown error"))
                                     
                                 }
-                                
                             }
-                            
                         }
-                        
                     }
-                    
                 }
-                
                 task.resume()
-                
             } else {
-                
                 completion((nil, "error getting nodes from core data"))
-                
             }
-            
         }
-        
     }
+    
 }
+
+
+

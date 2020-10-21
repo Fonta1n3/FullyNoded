@@ -31,6 +31,15 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
         isSingleKey = false
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        isSingleKey = false
+        isPrivKey = false
+        isPruned = false
+        isTestnet = false
+        isExtendedKey = false
+        isDescriptor = false
+    }
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
         case 0:

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		844D2A4B2512D4F60046372E /* UTXOCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844D2A492512D4F60046372E /* UTXOCell.swift */; };
+		844D2A4C2512D4F60046372E /* UTXOCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 844D2A4A2512D4F60046372E /* UTXOCell.xib */; };
 		D00B9A282111427200E8B95A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00B9A272111427200E8B95A /* AppDelegate.swift */; };
 		D00B9A2D2111427200E8B95A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D00B9A2B2111427200E8B95A /* Main.storyboard */; };
 		D00B9A322111427200E8B95A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D00B9A312111427200E8B95A /* Assets.xcassets */; };
@@ -22,7 +24,6 @@
 		D0196DD721B5AB300081E0AB /* KeyPadButtonView.xib in Resources */ = {isa = PBXBuildFile; fileRef = D0196DD621B5AB300081E0AB /* KeyPadButtonView.xib */; };
 		D0196DDB21B5AC5F0081E0AB /* KeyPad.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0196DDA21B5AC5F0081E0AB /* KeyPad.swift */; };
 		D020480F249605AB00EF52DB /* ActiveWalletsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D020480E249605AB00EF52DB /* ActiveWalletsViewController.swift */; };
-		D02094EE2256B06B002E8E7A /* Transition.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02094ED2256B06B002E8E7A /* Transition.swift */; };
 		D02094F02257FB78002E8E7A /* FirstTime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02094EF2257FB78002E8E7A /* FirstTime.swift */; };
 		D02094F3225936D2002E8E7A /* ConnectingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02094F2225936D2002E8E7A /* ConnectingView.swift */; };
 		D02152DC23666CB400AD9007 /* QuickConnect.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02152DB23666CB400AD9007 /* QuickConnect.swift */; };
@@ -56,6 +57,7 @@
 		D03FC07C2508850600450B45 /* Tor-3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D03FC07A250883D900450B45 /* Tor-3.xcframework */; };
 		D03FC07D2508850600450B45 /* Tor-3.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D03FC07A250883D900450B45 /* Tor-3.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D0410617224ED189004AC0D0 /* ObjectiveCHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = D0410616224ED189004AC0D0 /* ObjectiveCHeader.m */; };
+		D042FABC250C9F0600E99D9B /* Torrc.swift in Sources */ = {isa = PBXBuildFile; fileRef = D042FABB250C9F0600E99D9B /* Torrc.swift */; };
 		D044ED78235AF42D00300D62 /* ImportStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D044ED77235AF42D00300D62 /* ImportStruct.swift */; };
 		D0452AD42246C7830013E225 /* clear.png in Resources */ = {isa = PBXBuildFile; fileRef = D0452AD32246C7820013E225 /* clear.png */; };
 		D0452AD62246E0370013E225 /* whiteBroom.png in Resources */ = {isa = PBXBuildFile; fileRef = D0452AD52246E0370013E225 /* whiteBroom.png */; };
@@ -67,7 +69,6 @@
 		D05692E321434452006DF0F4 /* MainMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05692E221434452006DF0F4 /* MainMenuViewController.swift */; };
 		D05692E92144AC13006DF0F4 /* back.png in Resources */ = {isa = PBXBuildFile; fileRef = D05692E82144AC13006DF0F4 /* back.png */; };
 		D058F3C2226D9DED00CF4BE9 /* OutgoingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D058F3C1226D9DED00CF4BE9 /* OutgoingsTableViewController.swift */; };
-		D05D972C2264104D0035F1DE /* QRScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05D972B2264104D0035F1DE /* QRScanner.swift */; };
 		D05D9730226425730035F1DE /* images.png in Resources */ = {isa = PBXBuildFile; fileRef = D05D972F226425730035F1DE /* images.png */; };
 		D05D9732226433B60035F1DE /* strobe.png in Resources */ = {isa = PBXBuildFile; fileRef = D05D9731226433B60035F1DE /* strobe.png */; };
 		D05D973422647CE60035F1DE /* QRGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05D973322647CE60035F1DE /* QRGenerator.swift */; };
@@ -126,7 +127,9 @@
 		D0A7CF73227967F900B683A0 /* AddressParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A7CF72227967F900B683A0 /* AddressParser.swift */; };
 		D0AD9B6823E7ECC20032C607 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0AD9B6723E7ECC20032C607 /* SceneDelegate.swift */; };
 		D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B3149E216C4DB1008FDC53 /* CreateRawTxViewController.swift */; };
-		D0B6936E22B2412D00A2C3E6 /* ChooseConnectionTypeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B6936D22B2412D00A2C3E6 /* ChooseConnectionTypeViewController.swift */; };
+		D0B80A892516020A006B88F0 /* ImportXpubViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B80A882516020A006B88F0 /* ImportXpubViewController.swift */; };
+		D0C1F9132531E5970079C2B8 /* URKit in Frameworks */ = {isa = PBXBuildFile; productRef = D0C1F9122531E5970079C2B8 /* URKit */; };
+		D0C1F9152531E71F0079C2B8 /* UR.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C1F9142531E71F0079C2B8 /* UR.swift */; };
 		D0C20ED224A6DB9D00C62AA4 /* BlockchainInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20ED124A6DB9D00C62AA4 /* BlockchainInfo.swift */; };
 		D0C20ED424A6DFE600C62AA4 /* PeerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20ED324A6DFE500C62AA4 /* PeerInfo.swift */; };
 		D0C20ED624A6E19600C62AA4 /* NetworkInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20ED524A6E19600C62AA4 /* NetworkInfo.swift */; };
@@ -148,6 +151,7 @@
 		D0E2A1052496EE9400AE0C04 /* ActiveWalletViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E2A1042496EE9400AE0C04 /* ActiveWalletViewController.swift */; };
 		D0E51E592265640F005D1909 /* ErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E51E582265640F005D1909 /* ErrorView.swift */; };
 		D0E51E5B226592C9005D1909 /* NodeDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E51E5A226592C9005D1909 /* NodeDetailViewController.swift */; };
+		D0E54DD525207A1C00BD859E /* UTXOs.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E54DD425207A1C00BD859E /* UTXOs.swift */; };
 		D0E9B63C211A94C600B416E7 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E9B63B211A94C600B416E7 /* Utilities.swift */; };
 		D0EC748A227DF06E001489B9 /* CreateUnsigned.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EC7489227DF06E001489B9 /* CreateUnsigned.swift */; };
 		D0EC7490227F6977001489B9 /* SignRawViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EC748F227F6977001489B9 /* SignRawViewController.swift */; };
@@ -187,6 +191,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		844D2A492512D4F60046372E /* UTXOCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOCell.swift; sourceTree = "<group>"; };
+		844D2A4A2512D4F60046372E /* UTXOCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = UTXOCell.xib; sourceTree = "<group>"; };
 		A084FD782359F7B700DA63CF /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		D00B9A242111427200E8B95A /* FullyNoded.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FullyNoded.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D00B9A272111427200E8B95A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -207,7 +213,6 @@
 		D0196DD621B5AB300081E0AB /* KeyPadButtonView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = KeyPadButtonView.xib; sourceTree = "<group>"; };
 		D0196DDA21B5AC5F0081E0AB /* KeyPad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyPad.swift; sourceTree = "<group>"; };
 		D020480E249605AB00EF52DB /* ActiveWalletsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWalletsViewController.swift; sourceTree = "<group>"; };
-		D02094ED2256B06B002E8E7A /* Transition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transition.swift; sourceTree = "<group>"; };
 		D02094EF2257FB78002E8E7A /* FirstTime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstTime.swift; sourceTree = "<group>"; };
 		D02094F2225936D2002E8E7A /* ConnectingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectingView.swift; sourceTree = "<group>"; };
 		D02152DB23666CB400AD9007 /* QuickConnect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickConnect.swift; sourceTree = "<group>"; };
@@ -216,6 +221,7 @@
 		D0233F252361EA380041FFBA /* StringExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtension.swift; sourceTree = "<group>"; };
 		D0233F272361EA5F0041FFBA /* shim.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = shim.swift; sourceTree = "<group>"; };
 		D0257E6424D6C5F5000EB854 /* LightningRPC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LightningRPC.swift; sourceTree = "<group>"; };
+		D026E5C7253A79DB001F1054 /* AuthenticationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AuthenticationServices.framework; path = System/Library/Frameworks/AuthenticationServices.framework; sourceTree = SDKROOT; };
 		D02958D2234F82E000ED8F72 /* IdentityViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityViewController.swift; sourceTree = "<group>"; };
 		D02958D4235053B300ED8F72 /* SecurityCenterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityCenterViewController.swift; sourceTree = "<group>"; };
 		D02FE43223136A600048F8C4 /* NodeLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeLogic.swift; sourceTree = "<group>"; };
@@ -242,6 +248,8 @@
 		D03FC07A250883D900450B45 /* Tor-3.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = "Tor-3.xcframework"; sourceTree = "<group>"; };
 		D0410615224ED188004AC0D0 /* FullyNoded-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FullyNoded-Bridging-Header.h"; sourceTree = "<group>"; };
 		D0410616224ED189004AC0D0 /* ObjectiveCHeader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ObjectiveCHeader.m; sourceTree = "<group>"; };
+		D042FABB250C9F0600E99D9B /* Torrc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Torrc.swift; sourceTree = "<group>"; };
+		D042FAC1250DA86D00E99D9B /* .torrc */ = {isa = PBXFileReference; lastKnownFileType = text; path = .torrc; sourceTree = "<group>"; };
 		D044ED77235AF42D00300D62 /* ImportStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportStruct.swift; sourceTree = "<group>"; };
 		D0452AD32246C7820013E225 /* clear.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = clear.png; sourceTree = "<group>"; };
 		D0452AD52246E0370013E225 /* whiteBroom.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteBroom.png; sourceTree = "<group>"; };
@@ -253,7 +261,6 @@
 		D05692E221434452006DF0F4 /* MainMenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuViewController.swift; sourceTree = "<group>"; };
 		D05692E82144AC13006DF0F4 /* back.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = back.png; sourceTree = "<group>"; };
 		D058F3C1226D9DED00CF4BE9 /* OutgoingsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutgoingsTableViewController.swift; sourceTree = "<group>"; };
-		D05D972B2264104D0035F1DE /* QRScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScanner.swift; sourceTree = "<group>"; };
 		D05D972F226425730035F1DE /* images.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = images.png; sourceTree = "<group>"; };
 		D05D9731226433B60035F1DE /* strobe.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = strobe.png; sourceTree = "<group>"; };
 		D05D973322647CE60035F1DE /* QRGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRGenerator.swift; sourceTree = "<group>"; };
@@ -310,7 +317,8 @@
 		D0AC9D31234D079000290550 /* FullyNoded.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FullyNoded.entitlements; sourceTree = "<group>"; };
 		D0AD9B6723E7ECC20032C607 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		D0B3149E216C4DB1008FDC53 /* CreateRawTxViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateRawTxViewController.swift; sourceTree = "<group>"; };
-		D0B6936D22B2412D00A2C3E6 /* ChooseConnectionTypeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChooseConnectionTypeViewController.swift; sourceTree = "<group>"; };
+		D0B80A882516020A006B88F0 /* ImportXpubViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportXpubViewController.swift; sourceTree = "<group>"; };
+		D0C1F9142531E71F0079C2B8 /* UR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UR.swift; sourceTree = "<group>"; };
 		D0C20ED124A6DB9D00C62AA4 /* BlockchainInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockchainInfo.swift; sourceTree = "<group>"; };
 		D0C20ED324A6DFE500C62AA4 /* PeerInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerInfo.swift; sourceTree = "<group>"; };
 		D0C20ED524A6E19600C62AA4 /* NetworkInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkInfo.swift; sourceTree = "<group>"; };
@@ -334,6 +342,7 @@
 		D0E2A1042496EE9400AE0C04 /* ActiveWalletViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWalletViewController.swift; sourceTree = "<group>"; };
 		D0E51E582265640F005D1909 /* ErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorView.swift; sourceTree = "<group>"; };
 		D0E51E5A226592C9005D1909 /* NodeDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDetailViewController.swift; sourceTree = "<group>"; };
+		D0E54DD425207A1C00BD859E /* UTXOs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOs.swift; sourceTree = "<group>"; };
 		D0E9B63B211A94C600B416E7 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		D0EC7489227DF06E001489B9 /* CreateUnsigned.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateUnsigned.swift; sourceTree = "<group>"; };
 		D0EC748F227F6977001489B9 /* SignRawViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignRawViewController.swift; sourceTree = "<group>"; };
@@ -352,6 +361,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D0C1F9132531E5970079C2B8 /* URKit in Frameworks */,
 				D06FD7CB2506155C00481185 /* CLibWally.xcframework in Frameworks */,
 				D06FD7CD2506156A00481185 /* LibWally.xcframework in Frameworks */,
 				D03FC07C2508850600450B45 /* Tor-3.xcframework in Frameworks */,
@@ -403,7 +413,6 @@
 			children = (
 				D08495F822EBCA3F003FE8EB /* Node Table */,
 				D08495F922EBCA4A003FE8EB /* Node RPC Info */,
-				D08495FA22EBCA5E003FE8EB /* Connection Type */,
 				D082397824DAE4CB0098D4F4 /* LightningNodeManagerViewController.swift */,
 				D082397A24DBDB330098D4F4 /* AddPeerViewController.swift */,
 				D069051E24EA6C1F007F939D /* LightningPeersViewController.swift */,
@@ -517,7 +526,6 @@
 			children = (
 				D08495FD22EBCA97003FE8EB /* Number Pad */,
 				D08495FE22EBCABC003FE8EB /* Spinner View */,
-				D08495FF22EBCAE9003FE8EB /* QR Scanner */,
 				D084960022EBCAF7003FE8EB /* QR Generator */,
 				D084960122EBCB04003FE8EB /* Alert View */,
 			);
@@ -559,6 +567,7 @@
 				D0F3918F24BFE48600EA8A2A /* AccountMap.swift */,
 				D0257E6424D6C5F5000EB854 /* LightningRPC.swift */,
 				D06FD7CF25062F7A00481185 /* GetTx.swift */,
+				D0C1F9142531E71F0079C2B8 /* UR.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -582,7 +591,6 @@
 		D0286D6321E267AD00954991 /* Miscellaneous */ = {
 			isa = PBXGroup;
 			children = (
-				D02094ED2256B06B002E8E7A /* Transition.swift */,
 				D0E9B63B211A94C600B416E7 /* Utilities.swift */,
 				D0233F292361EB8C0041FFBA /* Base32 Key Gen */,
 			);
@@ -628,6 +636,7 @@
 				D09A331224AC4C93009FA0B2 /* Descriptor.swift */,
 				D09F9E4D24B06A63006B588C /* SignerStruct.swift */,
 				D0CC0E1F24F0F35A001BF905 /* Peers.swift */,
+				D0E54DD425207A1C00BD859E /* UTXOs.swift */,
 			);
 			path = Structs;
 			sourceTree = "<group>";
@@ -681,6 +690,8 @@
 			children = (
 				D0560EE82277F75900C3E909 /* UTXOViewController.swift */,
 				D08A92B6233E113B00409D6E /* LockedViewController.swift */,
+				844D2A492512D4F60046372E /* UTXOCell.swift */,
+				844D2A4A2512D4F60046372E /* UTXOCell.xib */,
 			);
 			path = "UTXO's";
 			sourceTree = "<group>";
@@ -690,6 +701,7 @@
 			children = (
 				D0855FC522B08EE000DBBFC2 /* TorClient.swift */,
 				D0A2918E225114670099A2F3 /* MakeRPCCall.swift */,
+				D042FABB250C9F0600E99D9B /* Torrc.swift */,
 			);
 			path = Tor;
 			sourceTree = "<group>";
@@ -776,14 +788,6 @@
 			path = "Node RPC Info";
 			sourceTree = "<group>";
 		};
-		D08495FA22EBCA5E003FE8EB /* Connection Type */ = {
-			isa = PBXGroup;
-			children = (
-				D0B6936D22B2412D00A2C3E6 /* ChooseConnectionTypeViewController.swift */,
-			);
-			path = "Connection Type";
-			sourceTree = "<group>";
-		};
 		D08495FD22EBCA97003FE8EB /* Number Pad */ = {
 			isa = PBXGroup;
 			children = (
@@ -799,14 +803,6 @@
 				D02094F2225936D2002E8E7A /* ConnectingView.swift */,
 			);
 			path = "Spinner View";
-			sourceTree = "<group>";
-		};
-		D08495FF22EBCAE9003FE8EB /* QR Scanner */ = {
-			isa = PBXGroup;
-			children = (
-				D05D972B2264104D0035F1DE /* QRScanner.swift */,
-			);
-			path = "QR Scanner";
 			sourceTree = "<group>";
 		};
 		D084960022EBCAF7003FE8EB /* QR Generator */ = {
@@ -845,6 +841,8 @@
 		D08C1FBB211147F600B7CA79 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D026E5C7253A79DB001F1054 /* AuthenticationServices.framework */,
+				D042FAC1250DA86D00E99D9B /* .torrc */,
 				D03FC07A250883D900450B45 /* Tor-3.xcframework */,
 				D06FD7C92506155B00481185 /* CLibWally.xcframework */,
 				D06FD7CA2506155B00481185 /* LibWally.xcframework */,
@@ -880,6 +878,7 @@
 				D09F9E4B24B0673C006B588C /* SignersViewController.swift */,
 				D09F9E4F24B1BAC3006B588C /* SignerDetailViewController.swift */,
 				D09F9E5124B1F8DE006B588C /* AddSignerViewController.swift */,
+				D0B80A882516020A006B88F0 /* ImportXpubViewController.swift */,
 			);
 			path = Wallets;
 			sourceTree = "<group>";
@@ -950,6 +949,9 @@
 			dependencies = (
 			);
 			name = FullyNoded;
+			packageProductDependencies = (
+				D0C1F9122531E5970079C2B8 /* URKit */,
+			);
 			productName = BitSense;
 			productReference = D00B9A242111427200E8B95A /* FullyNoded.app */;
 			productType = "com.apple.product-type.application";
@@ -1020,6 +1022,9 @@
 				Base,
 			);
 			mainGroup = D00B9A1B2111427200E8B95A;
+			packageReferences = (
+				D0C1F9112531E5960079C2B8 /* XCRemoteSwiftPackageReference "URKit" */,
+			);
 			productRefGroup = D00B9A252111427200E8B95A /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -1053,6 +1058,7 @@
 				D0126FF82244842000412629 /* bWhite.png in Resources */,
 				D05D9732226433B60035F1DE /* strobe.png in Resources */,
 				D06FD7D2250640F800481185 /* logo_grey.png in Resources */,
+				844D2A4C2512D4F60046372E /* UTXOCell.xib in Resources */,
 				D0FA417E213C7CED0028E4F8 /* whiteFingerPrint.png in Resources */,
 				D00B9A2D2111427200E8B95A /* Main.storyboard in Resources */,
 			);
@@ -1120,6 +1126,8 @@
 				D02094F02257FB78002E8E7A /* FirstTime.swift in Sources */,
 				D0560EEF22784E9D00C3E909 /* UnsignedViewController.swift in Sources */,
 				D069052124EA8E95007F939D /* LightningChannelsViewController.swift in Sources */,
+				D0C1F9152531E71F0079C2B8 /* UR.swift in Sources */,
+				D0B80A892516020A006B88F0 /* ImportXpubViewController.swift in Sources */,
 				D058F3C2226D9DED00CF4BE9 /* OutgoingsTableViewController.swift in Sources */,
 				D0C20EE024A6EF3800C62AA4 /* Balances.swift in Sources */,
 				D08A92B7233E113B00409D6E /* LockedViewController.swift in Sources */,
@@ -1167,6 +1175,7 @@
 				D08A92B1233B213300409D6E /* ChooseWalletViewController.swift in Sources */,
 				D0A2918F225114670099A2F3 /* MakeRPCCall.swift in Sources */,
 				D082397B24DBDB330098D4F4 /* AddPeerViewController.swift in Sources */,
+				844D2A4B2512D4F60046372E /* UTXOCell.swift in Sources */,
 				D0233F262361EA380041FFBA /* StringExtension.swift in Sources */,
 				D07EC09022DBFB5400F9160D /* JoinPSBTViewController.swift in Sources */,
 				D0C20EDE24A6E70A00C62AA4 /* SmartFee.swift in Sources */,
@@ -1186,9 +1195,9 @@
 				D03F65F124EFB25100901D06 /* KeySendViewController.swift in Sources */,
 				D0E51E5B226592C9005D1909 /* NodeDetailViewController.swift in Sources */,
 				D0233F222361E68F0041FFBA /* KeyGen.swift in Sources */,
+				D042FABC250C9F0600E99D9B /* Torrc.swift in Sources */,
 				D0126FF622446E3800412629 /* InvoiceViewController.swift in Sources */,
 				D0410617224ED189004AC0D0 /* ObjectiveCHeader.m in Sources */,
-				D0B6936E22B2412D00A2C3E6 /* ChooseConnectionTypeViewController.swift in Sources */,
 				D07E0DE622F9168F00A81FA8 /* WalletManagerViewController.swift in Sources */,
 				D0384E34246AC53B002FEE94 /* base58.c in Sources */,
 				D011702824EBA3CE00ACC44B /* ChannelDetailViewController.swift in Sources */,
@@ -1210,9 +1219,7 @@
 				D09A32FF24A8419D009FA0B2 /* CreateFullyNodedWallet.swift in Sources */,
 				D0D4B9A624DA616300572811 /* Lightning.swift in Sources */,
 				D07E0DE822F9570A00A81FA8 /* WalletCreatorViewController.swift in Sources */,
-				D02094EE2256B06B002E8E7A /* Transition.swift in Sources */,
 				D0AD9B6823E7ECC20032C607 /* SceneDelegate.swift in Sources */,
-				D05D972C2264104D0035F1DE /* QRScanner.swift in Sources */,
 				D0C20ED824A6E2FF00C62AA4 /* MiningInfo.swift in Sources */,
 				D0560EE92277F75900C3E909 /* UTXOViewController.swift in Sources */,
 				D0257E6524D6C5F5000EB854 /* LightningRPC.swift in Sources */,
@@ -1234,6 +1241,7 @@
 				D069051F24EA6C1F007F939D /* LightningPeersViewController.swift in Sources */,
 				D084960422EBCD3B003FE8EB /* GetInfoViewController.swift in Sources */,
 				D073E16E22558CDE0012A28C /* CoreDataService.swift in Sources */,
+				D0E54DD525207A1C00BD859E /* UTXOs.swift in Sources */,
 				D037C86E231BAFD2006C357D /* AddAsChangeViewController.swift in Sources */,
 				D0F3919224BFEBBB00EA8A2A /* QRDisplayerViewController.swift in Sources */,
 			);
@@ -1401,7 +1409,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 225;
+				CURRENT_PROJECT_VERSION = 263;
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1415,7 +1423,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.305;
+				MARKETING_VERSION = 1.343;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1440,7 +1448,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 225;
+				CURRENT_PROJECT_VERSION = 263;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
@@ -1456,7 +1464,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.305;
+				MARKETING_VERSION = 1.343;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1549,6 +1557,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D0C1F9112531E5960079C2B8 /* XCRemoteSwiftPackageReference "URKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/BlockchainCommons/URKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D0C1F9122531E5970079C2B8 /* URKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D0C1F9112531E5960079C2B8 /* XCRemoteSwiftPackageReference "URKit" */;
+			productName = URKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 
 /* Begin XCVersionGroup section */
 		D0C4EE6D24F0EC9B003C929A /* BitSense.xcdatamodeld */ = {

@@ -31,23 +31,30 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     
     private func setCoinType() {
         spinner.addConnectingView(vc: self, description: "fetching chain type...")
-        Reducer.makeCommand(command: .getblockchaininfo, param: "") { [unowned vc = self] (response, errorMessage) in
-            if let dict = response as? NSDictionary {
-                if let chain = dict["chain"] as? String {
-                    if chain == "test" {
-                        vc.coinType = "1"
+        
+        Reducer.makeCommand(command: .getblockchaininfo, param: "") { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            guard let dict = response as? NSDictionary,
+                let chain = dict["chain"] as? String else {
+                    self.showError(error: "Error getting blockchain info, please chack your connection to your node.")
+                    
+                    DispatchQueue.main.async {
+                        self.navigationController?.popToRootViewController(animated: true)
                     }
-                    if let blocks = dict["blocks"] as? Int {
-                        vc.blockheight = Int64(blocks)
-                    }
-                    vc.getWords()
-                }
-            } else {
-                vc.showError(error: "Error getting blockchain info, please chack your connection to your node.")
-                DispatchQueue.main.async {
-                    vc.navigationController?.popToRootViewController(animated: true)
-                }
+                    
+                    return
             }
+            
+            if chain == "test" {
+                self.coinType = "1"
+            }
+            
+            if let blocks = dict["blocks"] as? Int {
+                self.blockheight = Int64(blocks)
+            }
+            
+            self.getWords()
         }
     }
     
@@ -57,21 +64,28 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     }
     
     private func showError(error:String) {
-        DispatchQueue.main.async { [unowned vc = self] in
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
             UserDefaults.standard.removeObject(forKey: "walletName")
-            vc.textView.text = ""
-            vc.spinner.removeConnectingView()
-            showAlert(vc: vc, title: "Error", message: error)
+            self.textView.text = ""
+            self.spinner.removeConnectingView()
+            showAlert(vc: self, title: "Error", message: error)
         }
     }
     
     private func getWords() {
         spinner.addConnectingView(vc: self, description: "creating Fully Noded wallet...")
+        
         if let seed = Keys.seed() {
             getMasterKey(seed: seed)
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.textView.text = seed
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.textView.text = seed
             }
+            
         } else {
             showError(error: "Error deriving seed")
         }
@@ -86,22 +100,22 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     }
     
     private func getXpubFingerprint(masterKey: String) {
-        if let xpub = Keys.bip84AccountXpub(masterKey: masterKey, coinType: coinType, account: 0) {
-            if let fingerprint = Keys.fingerprint(masterKey: masterKey) {
-                createWallet(fingerprint: fingerprint, xpub: xpub) { [unowned vc = self] success in
-                    if success {
-                        DispatchQueue.main.async { [unowned vc = self] in
-                            vc.saveLocally(words: vc.textView.text)
-                        }
-                    } else {
-                        vc.showError(error: "Error creating wallet")
-                    }
+        guard let xpub = Keys.bip84AccountXpub(masterKey: masterKey, coinType: coinType, account: 0),
+            let fingerprint = Keys.fingerprint(masterKey: masterKey) else {
+                showError(error: "Error deriving fingerprint")
+                return
+        }
+        
+        createWallet(fingerprint: fingerprint, xpub: xpub) { [weak self] success in
+            guard let self = self else { return }
+            
+            if success {
+                DispatchQueue.main.async {
+                    self.saveLocally(words: self.textView.text)
                 }
             } else {
-                showError(error: "Error deriving fingerprint")
+                self.showError(error: "Error creating wallet")
             }
-        } else {
-            showError(error: "Error deriving xpub")
         }
     }
     
@@ -114,95 +128,101 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     }
     
     private func createWallet(fingerprint: String, xpub: String, completion: @escaping ((Bool)) -> Void) {
-        let walletName = "FullyNoded-Single-Sig-\(randomString(length: 10))"
+        primDesc = primaryDescriptor(fingerprint, xpub)
+        let walletName = "FullyNoded-\(Crypto.sha256hash(primDesc))"
         let param = "\"\(walletName)\", true, true, \"\", true"
-        Reducer.makeCommand(command: .createwallet, param: param) { [unowned vc = self] (response, errorMessage) in
-            if let dict = response as? NSDictionary {
-                if let name = dict["name"] as? String {
-                    UserDefaults.standard.set(name, forKey: "walletName")
-                    vc.name = name
-                    vc.importPrimaryKeys(desc: vc.primaryDescriptor(fingerprint, xpub)) { (success, errorMessage) in
-                        if success {
-                            vc.importChangeKeys(desc: vc.changeDescriptor(fingerprint, xpub)) { (changeImported, errorDesc) in
-                                if changeImported {
-                                    completion(true)
-                                } else {
-                                    vc.showError(error: "Error importing change keys: \(errorDesc ?? "unknown error")")
-                                }
-                            }
-                        } else {
-                            vc.showError(error: "Error importing primary keys: \(errorMessage ?? "unknown error")")
-                        }
+        
+        Reducer.makeCommand(command: .createwallet, param: param) { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            guard let dict = response as? NSDictionary,
+                let name = dict["name"] as? String else {
+                    self.showError(error: "Error creating wallet on your node: \(errorMessage ?? "unknown")")
+                    return
+            }
+            
+            self.importKeys(name, fingerprint, xpub, self.primDesc, completion: completion)
+        }
+    }
+    
+    private func importKeys(_ name: String, _ fingerprint: String, _ xpub: String, _ desc: String, completion: @escaping ((Bool)) -> Void) {
+        self.name = name
+        UserDefaults.standard.set(name, forKey: "walletName")
+        
+        self.importPrimaryKeys(desc: desc) { [weak self] (success, errorMessage) in
+            guard let self = self else { return }
+            
+            if success {
+                self.importChangeKeys(desc: self.changeDescriptor(fingerprint, xpub)) { (changeImported, errorDesc) in
+                    
+                    if changeImported {
+                        completion(true)
+                    } else {
+                        self.showError(error: "Error importing change keys: \(errorDesc ?? "unknown error")")
                     }
-                } else {
-                    vc.showError(error: "Error creating wallet on your node \(errorMessage ?? "unknown error")")
                 }
+                
             } else {
-                vc.showError(error: "Error creating wallet on your node: \(errorMessage ?? "unknown")")
+                self.showError(error: "Error importing primary keys: \(errorMessage ?? "unknown error")")
             }
         }
     }
     
     private func getDescriptorInfo(desc: String, completion: @escaping ((String?)) -> Void) {
         Reducer.makeCommand(command: .getdescriptorinfo, param: "\"\(desc)\"") { (response, errorMessage) in
-            if let dict = response as? NSDictionary {
-                if let updatedDescriptor = dict["descriptor"] as? String {
-                    completion((updatedDescriptor))
-                }
+            guard let dict = response as? NSDictionary,
+                let updatedDescriptor = dict["descriptor"] as? String else {
+                    completion(nil); return
             }
+            completion(updatedDescriptor)
         }
     }
     
     private func importPrimaryKeys(desc: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-        getDescriptorInfo(desc: desc) { [unowned vc = self] descriptor in
+        getDescriptorInfo(desc: desc) { [weak self] descriptor in
+            guard let self = self else { return }
+            
             if descriptor != nil {
-                vc.primDesc = descriptor!
+                self.primDesc = descriptor!
                 let params = "[{ \"desc\": \"\(descriptor!)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"label\": \"Fully Noded\", \"keypool\": true, \"internal\": false }], {\"rescan\": false}"
-                vc.importMulti(params: params, completion: completion)
+                self.importMulti(params: params, completion: completion)
             } else {
-                vc.showError(error: "error getting primary descriptor info")
+                self.showError(error: "error getting primary descriptor info")
             }
         }
     }
     
     private func importChangeKeys(desc: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-        getDescriptorInfo(desc: desc) { [unowned vc = self] descriptor in
+        getDescriptorInfo(desc: desc) { [weak self] descriptor in
+            guard let self = self else { return }
+            
             if descriptor != nil {
-                vc.changeDesc = descriptor!
+                self.changeDesc = descriptor!
                 let params = "[{ \"desc\": \"\(descriptor!)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"keypool\": true, \"internal\": true }], {\"rescan\": false}"
-                vc.importMulti(params: params, completion: completion)
+                self.importMulti(params: params, completion: completion)
             } else {
-                vc.showError(error: "error getting change descriptor info")
+                self.showError(error: "error getting change descriptor info")
             }
         }
     }
     
     private func importMulti(params: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
         Reducer.makeCommand(command: .importmulti, param: params) { (response, errorDescription) in
-            if let result = response as? NSArray {
-                if result.count > 0 {
-                    if let dict = result[0] as? NSDictionary {
-                        if let success = dict["success"] as? Bool {
-                            completion((success, nil))
-                        } else {
-                            completion((false, errorDescription ?? "unknown error importing your keys"))
-                        }
-                    }
-                } else {
+            guard let result = response as? NSArray,
+                result.count > 0,
+                let dict = result[0] as? NSDictionary,
+                let success = dict["success"] as? Bool else {
                     completion((false, errorDescription ?? "unknown error importing your keys"))
-                }
-            } else {
-                completion((false, errorDescription ?? "unknown error importing your keys"))
+                    return
             }
+            completion((success, errorDescription))
         }
     }
     
     private func saveLocally(words: String) {
-        Crypto.encryptData(dataToEncrypt: words.dataUsingUTF8StringEncoding) { [unowned vc = self] encryptedWords in
-            if encryptedWords != nil {
-                vc.saveSigner(encryptedSigner: encryptedWords!)
-            }
-        }
+        guard let encryptedWords = Crypto.encrypt(words.dataUsingUTF8StringEncoding) else { return }
+        
+        saveSigner(encryptedSigner: encryptedWords)
     }
     
     private func saveSigner(encryptedSigner: Data) {
@@ -228,16 +248,21 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         dict["index"] = Int64(0)
         dict["blockheight"] = blockheight
         dict["account"] = 0
-        CoreDataService.saveEntity(dict: dict, entityName: .wallets) { [unowned vc = self] success in
+        CoreDataService.saveEntity(dict: dict, entityName: .wallets) { [weak self] success in
+            guard let self = self else { return }
+            
             if success {
-                vc.spinner.removeConnectingView()
+                self.spinner.removeConnectingView()
+                
                 DispatchQueue.main.async {
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                 }
-                showAlert(vc: vc, title: "Success! ✅", message: "You created a Fully Noded single sig wallet, make sure you save your words so you can always recover this wallet if needed!")
+                
+                showAlert(vc: self, title: "Success! ✅", message: "You created a Fully Noded single sig wallet, make sure you save your words so you can always recover this wallet if needed!")
+                
             } else {
-                vc.spinner.removeConnectingView()
-                vc.showError(error: "Error saving your wallet to the device")
+                self.spinner.removeConnectingView()
+                self.showError(error: "Error saving your wallet to the device")
             }
         }
     }

@@ -11,15 +11,14 @@ import LibWally
 
 class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
 
+    @IBOutlet weak var wordView: UITextView!
     @IBOutlet weak var textView: UITextField!
-    @IBOutlet weak var wordView: UIView!
     @IBOutlet weak var passphraseField: UITextField!
     @IBOutlet weak var addSignerOutlet: UIButton!
     
     var addedWords = [String]()
     var justWords = [String]()
     var bip39Words = [String]()
-    let label = UILabel()
     var autoCompleteCharacterCount = 0
     var timer = Timer()
     
@@ -34,6 +33,8 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
         wordView.layer.cornerRadius = 8
         wordView.layer.borderColor = UIColor.lightGray.cgColor
         wordView.layer.borderWidth = 0.5
+        addSignerOutlet.clipsToBounds = true
+        addSignerOutlet.layer.cornerRadius = 8
         bip39Words = Words.valid
         updatePlaceHolder(wordNumber: 1)
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
@@ -47,7 +48,6 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
         saveLocally()
     }
     
-    
     @IBAction func addWordAction(_ sender: Any) {
         processTextfieldInput()
     }
@@ -57,8 +57,7 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
             
             DispatchQueue.main.async { [unowned vc = self] in
                 
-                vc.label.removeFromSuperview()
-                vc.label.text = ""
+                vc.wordView.text = ""
                 vc.addedWords.removeAll()
                 vc.justWords.remove(at: vc.justWords.count - 1)
                 
@@ -72,12 +71,7 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
                     }
                 }
                 
-                vc.label.textColor = .systemGreen
-                vc.label.text = vc.addedWords.joined(separator: "")
-                vc.label.frame = CGRect(x: 16, y: 0, width: vc.wordView.frame.width - 32, height: vc.wordView.frame.height - 10)
-                vc.label.numberOfLines = 0
-                vc.label.sizeToFit()
-                vc.wordView.addSubview(vc.label)
+                vc.wordView.text = vc.addedWords.joined(separator: "")
                 
                 if let _ = BIP39Mnemonic(vc.justWords.joined(separator: " ")) {
                     
@@ -201,25 +195,29 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
     }
     
     private func saveLocally() {
-        DispatchQueue.main.async { [unowned vc = self] in
-            Crypto.encryptData(dataToEncrypt: (vc.justWords.joined(separator: " ")).dataUsingUTF8StringEncoding) { [unowned vc = self] encryptedWords in
-                if encryptedWords != nil {
-                    DispatchQueue.main.async { [unowned vc = self] in
-                        if vc.passphraseField.text != "" {
-                            Crypto.encryptData(dataToEncrypt: (vc.passphraseField.text!).dataUsingUTF8StringEncoding) { encryptedPassphrase in
-                                if encryptedPassphrase != nil {
-                                    vc.saveSignerAndPassphrase(encryptedSigner: encryptedWords!, encryptedPassphrase: encryptedPassphrase!)
-                                } else {
-                                    vc.showError(error: "error encrypting your passphrase")
-                                }
-                            }
-                        } else {
-                            vc.saveSigner(encryptedSigner: encryptedWords!)
-                        }
-                    }
-                } else {
-                    vc.showError(error: "error encrypting your seed")
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let mnemonicData = self.justWords.joined(separator: " ").dataUsingUTF8StringEncoding
+            let passphrase = self.passphraseField.text ?? ""
+            
+            guard let encryptedWords = Crypto.encrypt(mnemonicData) else {
+                self.showError(error: "error encrypting your seed")
+                
+                return
+            }
+                        
+            if passphrase != "" {
+                guard let encryptedPassphrase = Crypto.encrypt(passphrase.dataUsingUTF8StringEncoding) else {
+                    self.showError(error: "error encrypting your passphrase")
+                    
+                    return
                 }
+                
+                self.saveSignerAndPassphrase(encryptedSigner: encryptedWords, encryptedPassphrase: encryptedPassphrase)
+            } else {
+                
+                self.saveSigner(encryptedSigner: encryptedWords)
             }
         }
     }
@@ -369,8 +367,7 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
         
         DispatchQueue.main.async { [unowned vc = self] in
             
-            vc.label.removeFromSuperview()
-            vc.label.text = ""
+            vc.wordView.text = ""
             vc.addedWords.removeAll()
             vc.justWords = words
             
@@ -379,16 +376,11 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
                 vc.updatePlaceHolder(wordNumber: i + 2)
             }
             
-            vc.label.textColor = .systemGreen
-            vc.label.text = vc.addedWords.joined(separator: "")
-            vc.label.frame = CGRect(x: 16, y: 0, width: vc.wordView.frame.width - 32, height: vc.wordView.frame.height - 10)
-            vc.label.numberOfLines = 0
-            vc.label.sizeToFit()
-            vc.wordView.addSubview(vc.label)
+            vc.wordView.text = vc.addedWords.joined(separator: "")
             
             if let _ = BIP39Mnemonic(vc.justWords.joined(separator: " ")) {
                 
-                vc.validWordsAdded()
+                //vc.validWordsAdded()
                 
             } else {
                                     
@@ -404,8 +396,7 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
         
         DispatchQueue.main.async { [unowned vc = self] in
             
-            vc.label.removeFromSuperview()
-            vc.label.text = ""
+            vc.wordView.text = ""
             vc.addedWords.removeAll()
             vc.justWords.append(word)
             
@@ -416,12 +407,7 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
                 
             }
             
-            vc.label.textColor = .systemGreen
-            vc.label.text = vc.addedWords.joined(separator: "")
-            vc.label.frame = CGRect(x: 16, y: 0, width: vc.wordView.frame.width - 32, height: vc.wordView.frame.height - 10)
-            vc.label.numberOfLines = 0
-            vc.label.sizeToFit()
-            vc.wordView.addSubview(vc.label)
+            vc.wordView.text = vc.addedWords.joined(separator: "")
             
             if let _ = BIP39Mnemonic(vc.justWords.joined(separator: " ")) {
                 vc.validWordsAdded()

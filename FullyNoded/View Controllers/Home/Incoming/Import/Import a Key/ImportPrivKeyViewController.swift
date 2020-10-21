@@ -11,10 +11,6 @@ import UIKit
 class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
     
     var isPruned = Bool()
-    @IBOutlet var qrView: UIImageView!
-    let qrScanner = QRScanner()
-    var isTorchOn = Bool()
-    let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     let connectingView = ConnectingView()
     var isAddress = false
     var isDescriptor = Bool()
@@ -29,14 +25,10 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
     var isWatchOnly = Bool()
     var keyArray = NSArray()
     var isScript = Bool()
+    @IBOutlet weak var nextButtonOutlet: UIButton!
+    @IBOutlet weak var textField: UITextField!
     
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        
-        return UIInterfaceOrientationMask.portrait
-        
-    }
-    
-    func addBlurView(frame: CGRect, button: UIButton) {
+   func addBlurView(frame: CGRect, button: UIButton) {
         
         button.removeFromSuperview()
         let blur = UIVisualEffectView()
@@ -52,37 +44,31 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        qrScanner.textField.delegate = self
-        
-        let tapGesture = UITapGestureRecognizer(target: self,
-                                                action: #selector(self.dismissKeyboard (_:)))
-        
+        textField.delegate = self
+        nextButtonOutlet.layer.cornerRadius = 8
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
-        
-        blurView.frame = CGRect(x: view.frame.minX + 10,
-                                y: navigationController!.navigationBar.frame.maxY + 10,
-                                width: view.frame.width - 20,
-                                height: 50)
-        
-        blurView.layer.cornerRadius = 10
-        blurView.clipsToBounds = true
-        
-        qrScanner.textFieldPlaceholder = "scan QR or type/paste here"
-        qrScanner.keepRunning = false
-        
-        qrScanner.uploadButton.addTarget(self,
-                                         action: #selector(self.chooseQRCodeFromLibrary),
-                                         for: .touchUpInside)
-        
-        qrScanner.torchButton.addTarget(self,
-                                        action: #selector(toggleTorch),
-                                        for: .touchUpInside)
-        
-        isTorchOn = false
-        addScanner()
         getValues()
+    }
+    
+    
+    @IBAction func scanQrAction(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.performSegue(withIdentifier: "segueToScanPrivKey", sender: self)
+        }
+    }
+    
+    @IBAction func nextAction(_ sender: Any) {
+        guard let key = textField.text, key != "" else { return }
         
+        parseKey(key: key)
+    }
+    
+    @objc func dismissKeyboard(_ sender: Any) {
+        textField.resignFirstResponder()
     }
     
     func getValues() {
@@ -93,86 +79,6 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
         isInternal = str.isInternal
         timestamp = str.timeStamp
         label = str.label
-        
-    }
-    
-    @objc func chooseQRCodeFromLibrary() {
-        
-        qrScanner.chooseQRCodeFromLibrary()
-        
-    }
-    
-    func addShadow(view: UIView) {
-        
-        view.layer.shadowColor = UIColor.black.cgColor
-        
-        view.layer.shadowOffset = CGSize(width: 1.5,
-                                         height: 1.5)
-        
-        view.layer.shadowRadius = 1.5
-        view.layer.shadowOpacity = 0.5
-        
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        
-        if isTorchOn {
-            
-            toggleTorch()
-            qrScanner.removeScanner()
-            
-        }
-        
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        
-        qrScanner.textField.removeFromSuperview()
-        blurView.removeFromSuperview()
-        view.addSubview(blurView)
-        blurView.contentView.addSubview(qrScanner.textField)
-        
-        addBlurView(frame: CGRect(x: view.frame.maxX - 80,
-                                  y: qrView.frame.maxY - 80,
-                                  width: 70,
-                                  height: 70), button: qrScanner.uploadButton)
-        
-        addBlurView(frame: CGRect(x: 10,
-                                  y: qrView.frame.maxY - 80,
-                                  width: 70,
-                                  height: 70), button: qrScanner.torchButton)
-        
-    }
-    
-    @objc func toggleTorch() {
-        
-        if isTorchOn {
-            
-            qrScanner.toggleTorch(on: false)
-            isTorchOn = false
-            
-        } else {
-            
-            qrScanner.toggleTorch(on: true)
-            isTorchOn = true
-            
-        }
-        
-    }
-    
-    func addScanner() {
-        
-        qrScanner.uploadButton.addTarget(self,
-                                         action: #selector(chooseQRCodeFromLibrary),
-                                         for: .touchUpInside)
-        
-        qrScanner.keepRunning = false
-        qrView.frame = view.frame
-        qrScanner.imageView = qrView
-        qrScanner.vc = self
-        qrScanner.scanQRCode()
-        qrScanner.completion = { self.getQRCode() }
-        qrScanner.didChooseImage = { self.didPickImage() }
         
     }
     
@@ -197,8 +103,6 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
     func parseKey(key: String) {
         
         importedKey = key
-        
-        qrScanner.textField.resignFirstResponder()
         
         func showError() {
             
@@ -424,44 +328,9 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    func getQRCode() {
-        
-        let stringURL = qrScanner.stringToReturn
-        parseKey(key: stringURL)
-        
-    }
-    
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        print("textFieldShouldReturn")
-        
-        if qrScanner.textField.text != "" {
-            
-            parseKey(key: qrScanner.textField.text!)
-            
-        }
-        
-        return true
-    }
-    
-    @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
-        
-        qrScanner.textField.resignFirstResponder()
-        
-    }
-    
-    func didPickImage() {
-        
-        let qrString = qrScanner.qrString
-        parseKey(key: qrString)
-        
-    }
-    
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
         Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
             if errorMessage == nil {
-                DispatchQueue.main.async {
-                    vc.qrScanner.removeFromSuperview()
-                }
                 switch method {
                 case .importprivkey:
                     vc.connectingView.removeConnectingView()
@@ -541,6 +410,17 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                 
             }
             
+        }
+        
+        if segue.identifier == "segueToScanPrivKey" {
+            guard let vc = segue.destination as? QRScannerViewController else { return }
+            
+            vc.isScanningAddress = true
+            vc.onAddressDoneBlock = { [weak self] key in
+                guard let self = self, let key = key else { return }
+                
+                self.parseKey(key: key)
+            }
         }
         
     }

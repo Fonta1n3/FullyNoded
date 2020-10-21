@@ -83,7 +83,7 @@ class Signer {
                 
             }
             xprvsToSignWith.removeAll()
-            let uniqueXprvs = Array(Set(xprvStrings))
+            var uniqueXprvs = Array(Set(xprvStrings))
             for uniqueXprv in uniqueXprvs {
                 if let xprv = HDKey(uniqueXprv) {
                     xprvsToSignWith.append(xprv)
@@ -104,21 +104,48 @@ class Signer {
                                     }
                                 }
                             }
+                        } else {
+                            // Libwally does not like signing with direct decendants of m (e.g. m/0/0), so if above fails we can try and fall back on this, deriving child keys directly from root xprv.
+                            if let origins = input.origins {
+                                for origin in origins {
+                                    if let path = BIP32Path(origin.value.path.description.replacingOccurrences(of: "m/", with: "")) {
+                                        if var childKey = try? key.derive(path) {
+                                            if var privKey = childKey.privKey {
+                                                signableKeys.append(privKey.wif)
+                                                // Overwite vars with dummies for security
+                                                privKey = Key("KwfUAErbeHJCafVr37aRnYcobent1tVV1iADD2k3T8VV1pD2qpWs", .mainnet)!
+                                                childKey = HDKey("xpub6FETvV487Sr4VSV9Ya5em5ZAug4dtnFwgnMG7TFAfkJDHoQ1uohXft49cFenfpJHbPueMnfyxtBoAuvSu7XNL9bbLzcM1QJCPwtofqv3dqC")!
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                         /// Once the above loops complete we remove an duplicate signing keys from the array then sign the psbt with each unique key.
                         if i + 1 == xprvsToSignWith.count && x + 1 == inputs.count {
-                            let uniqueSigners = Array(Set(signableKeys))
+                            var uniqueSigners = Array(Set(signableKeys))
                             if uniqueSigners.count > 0 {
                                 for (s, signer) in uniqueSigners.enumerated() {
-                                    if let signingKey = Key(signer, chain) {
+                                    if var signingKey = Key(signer, chain) {
                                         psbtToSign.sign(signingKey)
+                                        signingKey = Key("KwfUAErbeHJCafVr37aRnYcobent1tVV1iADD2k3T8VV1pD2qpWs", .mainnet)!
                                         /// Once we completed the signing loop we finalize with our node.
                                         if s + 1 == uniqueSigners.count {
+                                            xprvsToSignWith.removeAll()
+                                            xprvStrings.removeAll()
+                                            uniqueXprvs.removeAll()
+                                            uniqueSigners.removeAll()
+                                            signableKeys.removeAll()
                                             finalizeWithBitcoind()
                                         }
                                     }
                                 }
                             } else {
+                                xprvsToSignWith.removeAll()
+                                xprvStrings.removeAll()
+                                uniqueXprvs.removeAll()
+                                uniqueSigners.removeAll()
+                                signableKeys.removeAll()
                                 finalizeWithBitcoind()
                             }
                         }
@@ -132,32 +159,38 @@ class Signer {
             xprvsToSignWith.removeAll()
             for (i, s) in seedsToSignWith.enumerated() {
                 let encryptedSeed = s["words"] as! Data
-                Crypto.decryptData(dataToDecrypt: encryptedSeed) { seed in
-                    if seed != nil {
-                        if let words = String(data: seed!, encoding: .utf8) {
-                            if let encryptedPassphrase = s["passphrase"] as? Data {
-                                Crypto.decryptData(dataToDecrypt: encryptedPassphrase) { decryptedPassphrase in
-                                    if decryptedPassphrase != nil {
-                                        if let passphrase = String(data: decryptedPassphrase!, encoding: .utf8) {
-                                            if let masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: passphrase) {
-                                                if let hdkey = HDKey(masterKey) {
-                                                    xprvsToSignWith.append(hdkey)
-                                                    if i + 1 == seedsToSignWith.count {
-                                                        processWithActiveWallet()
-                                                    }
-                                                }
-                                            }
-                                        }
+                guard var seed = Crypto.decrypt(encryptedSeed) else { return }
+                
+                if var words = String(data: seed, encoding: .utf8) {
+                    seed = Data()
+                    
+                    if let encryptedPassphrase = s["passphrase"] as? Data {
+                        guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase) else { return }
+                        
+                        if let passphrase = String(data: decryptedPassphrase, encoding: .utf8) {
+                            if var masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: passphrase) {
+                                words = ""
+                                if var hdkey = HDKey(masterKey) {
+                                    masterKey = ""
+                                    xprvsToSignWith.append(hdkey)
+                                    hdkey = HDKey("xpub6FETvV487Sr4VSV9Ya5em5ZAug4dtnFwgnMG7TFAfkJDHoQ1uohXft49cFenfpJHbPueMnfyxtBoAuvSu7XNL9bbLzcM1QJCPwtofqv3dqC")!
+                                    if i + 1 == seedsToSignWith.count {
+                                        seedsToSignWith.removeAll()
+                                        processWithActiveWallet()
                                     }
                                 }
-                            } else {
-                                if let masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: "") {
-                                    if let hdkey = HDKey(masterKey) {
-                                        xprvsToSignWith.append(hdkey)
-                                        if i + 1 == seedsToSignWith.count {
-                                            processWithActiveWallet()
-                                        }
-                                    }
+                            }
+                        }
+                    } else {
+                        if var masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: "") {
+                            words = ""
+                            if var hdkey = HDKey(masterKey) {
+                                masterKey = ""
+                                xprvsToSignWith.append(hdkey)
+                                hdkey = HDKey("xpub6FETvV487Sr4VSV9Ya5em5ZAug4dtnFwgnMG7TFAfkJDHoQ1uohXft49cFenfpJHbPueMnfyxtBoAuvSu7XNL9bbLzcM1QJCPwtofqv3dqC")!
+                                if i + 1 == seedsToSignWith.count {
+                                    seedsToSignWith.removeAll()
+                                    processWithActiveWallet()
                                 }
                             }
                         }

@@ -31,7 +31,6 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
     }
     
-    
     private func loadData() {
         signers.removeAll()
         CoreDataService.retrieveEntity(entityName: .signers) { [unowned vc = self] encryptedSigners in
@@ -70,7 +69,6 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
         cell.layer.borderColor = UIColor.lightGray.cgColor
         cell.layer.borderWidth = 0.5
         let label = cell.viewWithTag(1) as! UILabel
-        let button = cell.viewWithTag(2) as! UIButton
         let image = cell.viewWithTag(3) as! UIImageView
         let background = cell.viewWithTag(4)!
         background.clipsToBounds = true
@@ -79,8 +77,6 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
         background.layer.cornerRadius = 5
         image.tintColor = .white
         image.image = icon
-        button.restorationIdentifier = "\(indexPath.section)"
-        button.addTarget(self, action: #selector(seeDetails(_:)), for: .touchUpInside)
         if signers.count > 0 {
             let s = SignerStruct(dictionary: signers[indexPath.section])
             if s.label == "Signer" {
@@ -92,13 +88,13 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
         return cell
     }
     
-    @objc func seeDetails(_ sender: UIButton) {
-        if sender.restorationIdentifier != nil {
-            if let int = Int(sender.restorationIdentifier!) {
-                id = SignerStruct(dictionary: signers[int]).id
-                segueToDetail()
-            }
-        }
+    func seeDetails(_ index: Int) {
+        id = SignerStruct(dictionary: signers[index]).id
+        segueToDetail()
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        seeDetails(indexPath.section)
     }
     
     private func segueToDetail() {

@@ -22,18 +22,19 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
     var addedWords = [String]()
     var justWords = [String]()
     var bip39Words = [String]()
-    let label = UILabel()
     var autoCompleteCharacterCount = 0
     var timer = Timer()
     var blockheight:Int64!
+    
+    @IBOutlet weak var wordView: UITextView!
     @IBOutlet weak var textField: UITextField!
-    @IBOutlet weak var wordView: UIView!
     @IBOutlet weak var recoverOutlet: UIButton!
     @IBOutlet weak var accountField: UITextField!
     @IBOutlet weak var passphraseField: UITextField!
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         navigationController?.delegate = self
         passphraseField.delegate = self
         accountField.delegate = self
@@ -47,11 +48,14 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
         bip39Words = Words.valid
         updatePlaceHolder(wordNumber: 1)
         accountField.text = "0"
+        
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
+        
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+        
         setCoinType()
     }
     
@@ -162,12 +166,14 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
     
     private func recoverNow() {
         spinner.addConnectingView(vc: self, description: "creating your recovery wallet...")
+        
         accountNumber = accountField.text ?? "0"
         let passphrase = passphraseField.text ?? ""
         let seed = justWords.joined(separator: " ")
-        createWallet { [unowned vc = self] success in
-            if success {
-                if let mk = Keys.masterKey(words: seed, coinType: vc.coinType, passphrase: passphrase) {
+        
+        if let mk = Keys.masterKey(words: seed, coinType: coinType, passphrase: passphrase) {
+            createWallet(mk: mk) { [unowned vc = self] success in
+                if success {
                     if vc.recoverSamourai {
                         vc.updateSpinnerText(text: "getting Samourai Bad Bank primary descriptor...")
                         vc.getDescriptorInfo(desc: vc.samouraiBadBankPrim(mk)) { [unowned vc = self] sam2DescPrim in
@@ -247,6 +253,8 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
                     }
                 }
             }
+        } else {
+            
         }
     }
     
@@ -551,8 +559,8 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
         return desc
     }
     
-    private func createWallet(completion: @escaping ((Bool)) -> Void) {
-        let walletName = "FullyNoded-Recovery-\(randomString(length: 10))"
+    private func createWallet(mk: String, completion: @escaping ((Bool)) -> Void) {
+        let walletName = "Recovery-\(Crypto.sha256hash(bip84PrimDesc(mk)))"
         let param = "\"\(walletName)\", true, true, \"\", true"
         Reducer.makeCommand(command: .createwallet, param: param) { [unowned vc = self] (response, errorMessage) in
             if let dict = response as? NSDictionary {
@@ -602,23 +610,27 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
     }
     
     private func saveLocally() {
-        DispatchQueue.main.async { [unowned vc = self] in
-            Crypto.encryptData(dataToEncrypt: (vc.justWords.joined(separator: " ")).dataUsingUTF8StringEncoding) { [unowned vc = self] encryptedWords in
-                if encryptedWords != nil {
-                    DispatchQueue.main.async { [unowned vc = self] in
-                        if vc.passphraseField.text != "" {
-                            Crypto.encryptData(dataToEncrypt: (vc.passphraseField.text!).dataUsingUTF8StringEncoding) { encryptedPassphrase in
-                                if encryptedPassphrase != nil {
-                                    vc.saveSignerAndPassphrase(encryptedSigner: encryptedWords!, encryptedPassphrase: encryptedPassphrase!)
-                                }
-                            }
-                        } else {
-                            vc.saveSigner(encryptedSigner: encryptedWords!)
-                        }
-                    }
-                } else {
-                    vc.showError(error: "error encrypting your seed")
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let data = self.justWords.joined(separator: " ").dataUsingUTF8StringEncoding
+            let passphrase = self.passphraseField.text ?? ""
+            
+            guard let encryptedWords = Crypto.encrypt(data) else {
+                self.showError(error: "error encrypting your seed")
+                return
+            }
+            
+            if passphrase != "" {
+                guard let encryptedPassphrase = Crypto.encrypt(passphrase.dataUsingUTF8StringEncoding) else {
+                    self.showError(error: "error encrypting your seed")
+                    return
                 }
+                
+                self.saveSignerAndPassphrase(encryptedSigner: encryptedWords, encryptedPassphrase: encryptedPassphrase)
+            } else {
+                
+                self.saveSigner(encryptedSigner: encryptedWords)
             }
         }
     }
@@ -663,7 +675,7 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
         CoreDataService.saveEntity(dict: dict, entityName: .wallets) { [unowned vc = self] success in
             if success {
                 NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-                vc.label.text = ""
+                vc.wordView.text = ""
                 vc.spinner.removeConnectingView()
                 DispatchQueue.main.async {
                     vc.navigationController?.popToRootViewController(animated: true)
@@ -678,8 +690,7 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
             
             DispatchQueue.main.async { [unowned vc = self] in
                 
-                vc.label.removeFromSuperview()
-                vc.label.text = ""
+                vc.wordView.text = ""
                 vc.addedWords.removeAll()
                 vc.justWords.remove(at: vc.justWords.count - 1)
                 
@@ -693,12 +704,7 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
                     }
                 }
                 
-                vc.label.textColor = .systemGreen
-                vc.label.text = vc.addedWords.joined(separator: "")
-                vc.label.frame = CGRect(x: 16, y: 0, width: vc.wordView.frame.width - 32, height: vc.wordView.frame.height - 10)
-                vc.label.numberOfLines = 0
-                vc.label.sizeToFit()
-                vc.wordView.addSubview(vc.label)
+                vc.wordView.text = vc.addedWords.joined(separator: "")
                 
                 if let _ = BIP39Mnemonic(vc.justWords.joined(separator: " ")) {
                     
@@ -716,8 +722,6 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
     }
     
     private func processTextfieldInput() {
-        print("processTextfieldInput")
-        
         if textField.text != "" {
             
             //check if user pasted more then one word
@@ -937,8 +941,7 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
         
         DispatchQueue.main.async { [unowned vc = self] in
             
-            vc.label.removeFromSuperview()
-            vc.label.text = ""
+            vc.wordView.text = ""
             vc.addedWords.removeAll()
             vc.justWords = words
             
@@ -947,16 +950,11 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
                 vc.updatePlaceHolder(wordNumber: i + 2)
             }
             
-            vc.label.textColor = .systemGreen
-            vc.label.text = vc.addedWords.joined(separator: "")
-            vc.label.frame = CGRect(x: 16, y: 0, width: vc.wordView.frame.width - 32, height: vc.wordView.frame.height - 10)
-            vc.label.numberOfLines = 0
-            vc.label.sizeToFit()
-            vc.wordView.addSubview(vc.label)
+            vc.wordView.text = vc.addedWords.joined(separator: "")
             
             if let _ = BIP39Mnemonic(vc.justWords.joined(separator: " ")) {
                 
-                vc.validWordsAdded()
+                //vc.validWordsAdded()
                 
             } else {
                                     
@@ -972,8 +970,7 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
         
         DispatchQueue.main.async { [unowned vc = self] in
             
-            vc.label.removeFromSuperview()
-            vc.label.text = ""
+            vc.wordView.text = ""
             vc.addedWords.removeAll()
             vc.justWords.append(word)
             
@@ -984,16 +981,13 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
                 
             }
             
-            vc.label.textColor = .systemGreen
-            vc.label.text = vc.addedWords.joined(separator: "")
-            vc.label.frame = CGRect(x: 16, y: 0, width: vc.wordView.frame.width - 32, height: vc.wordView.frame.height - 10)
-            vc.label.numberOfLines = 0
-            vc.label.sizeToFit()
-            vc.wordView.addSubview(vc.label)
+            vc.wordView.text = vc.addedWords.joined(separator: "")
             
             if let _ = BIP39Mnemonic(vc.justWords.joined(separator: " ")) {
                 vc.validWordsAdded()
             }
+            
+            vc.textField.becomeFirstResponder()
             
         }
         
@@ -1041,11 +1035,4 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
     }
     
 
-}
-
-extension String {
-    func condenseWhitespace() -> String {
-        let components = self.components(separatedBy: .whitespacesAndNewlines)
-        return components.filter { !$0.isEmpty }.joined(separator: " ")
-    }
 }
