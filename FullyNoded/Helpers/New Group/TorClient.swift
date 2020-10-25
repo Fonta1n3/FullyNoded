@@ -26,7 +26,7 @@ class TorClient {
         case refreshing
     }
     
-    public var state = TorState.none
+    public var state: TorState = .none
     static let sharedInstance = TorClient()
     private var config: TorConfiguration = TorConfiguration()
     private var thread: TorThread?
@@ -43,8 +43,6 @@ class TorClient {
     
     // Start the tor client.
     func start(delegate: OnionManagerDelegate?) {
-        print("start tor")
-        
         weak var weakDelegate = delegate
         state = .started
         
@@ -125,7 +123,7 @@ class TorClient {
                                 return
                             }
                             
-                            var progressObs: Any?
+                            var progressObs: Any? = nil
                             progressObs = self.controller?.addObserver(forStatusEvents: {
                                 (type: String, severity: String, action: String, arguments: [String : String]?) -> Bool in
                                 if arguments != nil {
@@ -133,7 +131,7 @@ class TorClient {
                                         let progress = Int(arguments!["PROGRESS"]!)!
                                         weakDelegate?.torConnProgress(progress)
                                         if progress >= 100 {
-                                            self.controller?.removeObserver(progressObs)
+                                            //self.controller?.removeObserver(progressObs)
                                         }
                                         return true
                                     }
@@ -144,7 +142,6 @@ class TorClient {
                             var observer: Any? = nil
                             observer = self.controller?.addObserver(forCircuitEstablished: { established in
                                 if established {
-                                    print("established")
                                     self.state = .connected
                                     weakDelegate?.torConnFinished()
                                     self.controller?.removeObserver(observer)

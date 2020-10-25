@@ -833,6 +833,12 @@
                                     <action selector="goToTools:" destination="XmP-lK-cua" id="3N5-gw-GHF"/>
                                 </connections>
                             </barButtonItem>
+                            <barButtonItem image="lock" catalog="system" id="I6c-Ix-RNr">
+                                <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <connections>
+                                    <action selector="lockAction:" destination="XmP-lK-cua" id="ohQ-ey-Hbd"/>
+                                </connections>
+                            </barButtonItem>
                         </leftBarButtonItems>
                     </navigationItem>
                     <connections>
@@ -847,6 +853,7 @@
                         <segue destination="GlR-4A-eAx" kind="show" identifier="segueToRemoteControl" id="aV5-mq-s3Q"/>
                         <segue destination="B99-yZ-naR" kind="show" identifier="segueToAddANode" id="dhu-ZV-762"/>
                         <segue destination="fTf-eh-9Tk" kind="show" identifier="segueToTools" id="La3-qR-4jz"/>
+                        <segue destination="bWB-tp-pgw" kind="show" identifier="segueToCreateUnlockPassword" id="4g3-DC-Q5z"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dhK-90-srt" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -7298,9 +7305,9 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="ckQ-WD-ole"/>
+        <segue reference="UBf-qr-XYG"/>
         <segue reference="dhu-ZV-762"/>
-        <segue reference="DLx-HT-rGm"/>
+        <segue reference="4g3-DC-Q5z"/>
         <segue reference="w2g-bl-j8v"/>
         <segue reference="RbT-dI-IvI"/>
         <segue reference="IVc-aG-8QZ"/>

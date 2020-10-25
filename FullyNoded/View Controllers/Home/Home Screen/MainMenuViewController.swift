@@ -28,10 +28,12 @@ class MainMenuViewController: UIViewController {
     var nodeLabel = ""
     var detailImage = UIImage()
     var detailImageTint = UIColor()
+    
     var detailHeaderText = ""
     var detailSubheaderText = ""
     var detailTextDescription = ""
     var host = ""
+    
     var blockchainInfo:BlockchainInfo!
     var peerInfo:PeerInfo!
     var networkInfo:NetworkInfo!
@@ -39,6 +41,7 @@ class MainMenuViewController: UIViewController {
     var mempoolInfo:MempoolInfo!
     var uptimeInfo:Uptime!
     var feeInfo:FeeInfo!
+    
     @IBOutlet weak var headerLabel: UILabel!
     @IBOutlet weak var torProgressLabel: UILabel!
     @IBOutlet weak var progressView: UIProgressView!
@@ -100,6 +103,19 @@ class MainMenuViewController: UIViewController {
         }
     }
     
+    @IBAction func lockAction(_ sender: Any) {
+        if KeyChain.getData("UnlockPassword") != nil {
+            showUnlockScreen()
+        } else {
+            DispatchQueue.main.async {[weak self] in
+                guard let self = self else { return }
+                
+                self.performSegue(withIdentifier: "segueToCreateUnlockPassword", sender: self)
+            }
+        }
+    }
+    
+    
     @IBAction func goToTools(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -107,7 +123,6 @@ class MainMenuViewController: UIViewController {
             self.performSegue(withIdentifier: "segueToTools", sender: self)
         }
     }
-    
     
     @IBAction func showRemoteControl(_ sender: Any) {
         #if targetEnvironment(macCatalyst)
@@ -787,6 +802,7 @@ extension MainMenuViewController: OnionManagerDelegate {
     
     func torConnProgress(_ progress: Int) {
         DispatchQueue.main.async { [weak self] in
+            print("progress: \(progress)")
             self?.torProgressLabel.text = "Tor bootstrapping \(progress)% complete"
             self?.progressView.setProgress(Float(Double(progress) / 100.0), animated: true)
             self?.blurView.alpha = 1
