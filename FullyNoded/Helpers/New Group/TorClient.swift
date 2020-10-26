@@ -131,7 +131,7 @@ class TorClient {
                                         let progress = Int(arguments!["PROGRESS"]!)!
                                         weakDelegate?.torConnProgress(progress)
                                         if progress >= 100 {
-                                            //self.controller?.removeObserver(progressObs)
+                                            self.controller?.removeObserver(progressObs)
                                         }
                                         return true
                                     }

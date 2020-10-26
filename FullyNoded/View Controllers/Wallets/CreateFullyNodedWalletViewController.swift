@@ -107,25 +107,140 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         if controller.documentPickerMode == .import {
-            do {
-                let data = try Data(contentsOf: urls[0].absoluteURL)
-                let dict = try JSONSerialization.jsonObject(with: data, options: []) as! [String:Any]
-                if let _ = dict["chain"] as? String {
-                    /// We know its a coldcard skeleton import
-                    promptToImportColdcardSingleSig(dict)
-                } else if let _ = dict["p2wsh_deriv"] as? String, let xfp = dict["xfp"] as? String, let p2wsh = dict["p2wsh"] as? String {
-                    /// It is most likely a multi-sig wallet export
-                    promptToImportColdcardMsig(xfp, p2wsh)
-                } else if let _ = dict["descriptor"] as? String {
-                    promptToImportAccountMap(dict: dict)
-                } else {
-                    
-                }
-            } catch {
+            
+            guard let data = try? Data(contentsOf: urls[0].absoluteURL), let dict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] else {
                 spinner.removeConnectingView()
-                showAlert(vc: self, title: "Ooops", message: "That is not a recognized format, generally it will be a .json file.")
+                showAlert(vc: self, title: "Ooops", message: "That does not appear to be a recognized wallet backup/export/import file")
+                return
+            }
+            
+            if let _ = dict["chain"] as? String {
+                /// We think its a coldcard skeleton import
+                promptToImportColdcardSingleSig(dict)
+                
+            } else if let _ = dict["p2wsh_deriv"] as? String, let xfp = dict["xfp"] as? String, let p2wsh = dict["p2wsh"] as? String {
+                /// It is most likely a multi-sig wallet export
+                promptToImportColdcardMsig(xfp, p2wsh)
+                
+            } else if let _ = dict["wallet_type"] as? String {
+                /// We think its an Electrum wallet
+                promptToImportElectrumMsig(dict)
+                
+            } else if let _ = dict["descriptor"] as? String {
+                promptToImportAccountMap(dict: dict)
+                
+            } else {
+                
             }
         }
+    }
+    
+    private func promptToImportElectrumMsig(_ dict: [String:Any]) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let alert = UIAlertController(title: "Import your Electrum multisig wallet?", message: "Looks like you selected an Electrum wallet backup file. You can easily recreate the wallet as watchonly with Fully Noded, just tap \"import\".", preferredStyle: self.alertStyle)
+            
+            alert.addAction(UIAlertAction(title: "import", style: .default, handler: { action in
+                guard let accountMap = self.convertElectrumToAccountMap(dict) else {
+                    showAlert(vc: self, title: "Uh oh", message: "We had an issue converting that backup file to a wallet... Please reach out on Telegram, Github or Twitter so we can fix it.")
+                    return
+                }
+                
+                self.importAccountMap(accountMap)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func convertElectrumToAccountMap(_ dict: [String:Any]) -> [String:Any]? {
+        guard let descriptor = getDescriptorFromElectrumBackUp(dict) else { return nil }
+        
+        return ["descriptor": descriptor, "blockheight": 0, "watching": [], "label": "Electrum wallet"]
+    }
+    
+    private func getDescriptorFromElectrumBackUp(_ dict: [String:Any]) -> String? {
+        guard let walletType = dict["wallet_type"] as? String else { return nil }
+        
+        let processed = walletType.replacingOccurrences(of: "of", with: " ")
+        let arr = processed.split(separator: " ")
+        
+        guard arr.count > 0 else { return nil }
+        
+        let m = "\(arr[0])"
+        var keys = [[String:String]]()
+        var derivationPathToUse = ""
+        
+        for (key, value) in dict {
+            
+            if key.hasPrefix("x") && key.hasSuffix("/") {
+                
+                guard let dict = value as? NSDictionary else { return nil }
+                
+                var keyToUse = [String:String]()
+                
+                if let derivation = dict["derivation"] as? String {
+                    if derivation != "null" {
+                        if derivation == "m/48'/0'/0'/2'" || derivation == "m/48'/1'/0'/2'" {
+                            keyToUse["derivation"] = derivation
+                            derivationPathToUse = derivation
+                        }
+                    }
+                }
+                
+                if let root_fingerprint = dict["root_fingerprint"] as? String {
+                    if root_fingerprint != "null" {
+                        keyToUse["fingerprint"] = root_fingerprint
+                    } else {
+                        keyToUse["fingerprint"] = "00000000"
+                    }
+                } else {
+                    keyToUse["fingerprint"] = "00000000"
+                }
+                
+                guard let xpub = dict["xpub"] as? String, xpub.hasPrefix("Zpub") || xpub.hasPrefix("Vpub"), let convertedXpub = XpubConverter.convert(extendedKey: xpub) else {
+                    showAlert(vc: self, title: "Unsupported script type", message: "Sorry but for now as this is a new feature we are only supporting the default script type p2wsh, if you would like the app to support other script types please make a request on Twitter, GitHub or Telegram.")
+                    return nil
+                }
+                
+                keyToUse["xpub"] = convertedXpub
+                
+                keys.append(keyToUse)
+            }
+        }
+        
+        guard derivationPathToUse == "m/48'/0'/0'/2'" || derivationPathToUse == "m/48'/1'/0'/2'" else {
+            showAlert(vc: self, title: "Unsupported derivation", message: "Sorry, for now we only support m/48'/0'/0'/2' or m/48'/1'/0'/2'")
+            return nil
+        }
+        
+        for (i, key) in keys.enumerated() {
+            if key["derivation"] == nil {
+                keys[i]["derivation"] = derivationPathToUse
+            }
+        }
+        
+        var keysArray = [String]()
+        
+        for key in keys {
+            guard let xpub = key["xpub"], var deriv = key["derivation"] else { return nil }
+                        
+            let xfp = key["fingerprint"] ?? "00000000"
+            deriv = deriv.replacingOccurrences(of: "m/", with: "\(xfp)/")
+            let str = "[\(deriv)]\(xpub)/0/*"
+            keysArray.append(str)
+        }
+        
+        var keysString = keysArray.description.replacingOccurrences(of: "[\"[", with: "[")
+        keysString = keysString.replacingOccurrences(of: "*\"]", with: "*")
+        keysString = keysString.replacingOccurrences(of: "\\", with: "")
+        keysString = keysString.replacingOccurrences(of: "\"", with: "")
+        keysString = keysString.replacingOccurrences(of: " ", with: "")
+        
+        return "wsh(sortedmulti(\(m),\(keysString)))"
     }
     
     private func promptToImportColdcardMsig(_ xfp: String, _ xpub: String) {

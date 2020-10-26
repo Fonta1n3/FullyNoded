@@ -78,12 +78,8 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        imageView.removeFromSuperview()
         lockView.addSubview(imageView)
-        
-        passwordInput.removeFromSuperview()
         lockView.addSubview(passwordInput)
-        
         addNextButton(inputView: self.passwordInput)
         
         let ud = UserDefaults.standard
@@ -104,6 +100,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         }
         
         configureTimeoutLabel()
+        
         if timeToDisable > 2.0 {
             disable()
         }
@@ -188,6 +185,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         let retrievedPassword = passwordData.utf8
         
         let hashedPassword = Crypto.sha256hash(password)
+        
         guard let hexData = Data(hashedPassword) else { return }
         
         /// Overwrite users password with the hash of the password, sorry I did not do this before...
@@ -198,13 +196,17 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         } else {
             if hexData.hexString == passwordData.hexString {
                 unlock()
+                
             } else {
                 timeToDisable = timeToDisable * 2.0
+                
                 guard KeyChain.set("\(timeToDisable)".dataUsingUTF8StringEncoding, forKey: "TimeToDisable") else {
                     showAlert(vc: self, title: "Unable to set timeout", message: "This means something is very wrong, the device has probably been jailbroken or is corrupted")
                     return
                 }
+                
                 secondsRemaining = Int(timeToDisable)
+                
                 disable()
             }
         }
@@ -278,17 +280,10 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             if self.evaluateAuthenticationPolicyMessageForLA(errorCode: error._code) != "Too many failed attempts." {
                 
             }
-            
-            print(self.evaluateAuthenticationPolicyMessageForLA(errorCode: error.code))
-            
         }
-        
     }
     
-    
-    
     func evaluatePolicyFailErrorMessageForLA(errorCode: Int) -> String {
-        
         var message = ""
         
         if #available(iOS 11.0, macOS 10.13, *) {

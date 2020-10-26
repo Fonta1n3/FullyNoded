@@ -247,6 +247,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                                     }
                                     vc.nodeTable.reloadData()
                                     NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
+                                    NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                                 }
                             }
                         }

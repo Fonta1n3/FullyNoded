@@ -634,7 +634,7 @@ class ActiveWalletViewController: UIViewController {
                 guard let self = self else { return }
                 
                 if success {
-                    showAlert(vc: self, title: "Success ✅", message: "Wallet imported successfully, it is now rescanning the blockchain you can monitor rescan status from \"tools\" > \"get wallet info\", historic transactions will not display until the rescan completes.")
+                    showAlert(vc: self, title: "Success ✅", message: "Wallet imported successfully, it is now rescanning the blockchain you can monitor rescan status by refreshing this page, balances and historic transactions will not display until the rescan completes.")
                     
                     self.loadTable()
                 }
