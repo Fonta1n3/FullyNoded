@@ -407,14 +407,6 @@ For starters ensure you are connected to your node, can you confirm it successfu
 
 Airdrop is not a must. You can save the files in `iphone` using the native file application.
 
-#### Question : I experience crashes, and I want it fixed. How?
-
-I will be be keeping the testflight up to date for you [here](https://testflight.apple.com/join/a6GWxet2), so that they can be shared and investigated.
-
-**For sure tor will crash occasionally.** If you *race around the app* and put it into foreground and background quickly, actually a guaranteed way to make the app crash is quickly backgrounding it and quickly foregrounding it as `Tor` needs about 10 seconds to bootstrap and if it is does not complete that process before getting backgrounded `tor` will crash, just something to keep in mind. 
-
-Go slow, `tor` is not meant for speed. `Tor` does not stay alive in the background so every time the app does go (crash) there we have to force `tor` to quit, then when the app reappears it has to bootstrap tor again every time.
-
 #### Question : What are the assurances that the developer can't push out software that will steal my seed say in a single sig wallet?
 
 There isn’t any, that’s why you should use multisig or build the app from source.
@@ -658,7 +650,7 @@ If you airdrop FN gives a choice
 
 <img src="./Images/use-my-node.png" alt="use-my-node" border="0" width="200"><br/>
 *I think it should say third party service or use my own node. In fact this should be a setting that you opt in right?*<br/>
-Javier: I think that option is in case your node is not running Tor. If your bitcoind instance is not running over Tor each tx propagated is more likely to be desanonymized.   That’s the reason to choose propagate Esplora API.
+Javier: I think that option is in case your node is not running Tor. If your bitcoind instance is not running over Tor each tx propagated is more likely to be deanonymized.   That’s the reason to choose propagate Esplora API.
 
 #### Question : Do you have a lightning node? to send donations? The fees are currently high for a mainnet transaction.
 

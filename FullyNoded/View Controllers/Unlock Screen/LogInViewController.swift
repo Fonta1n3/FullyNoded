@@ -38,20 +38,20 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         imageView.image = UIImage(named: "logo_grey.png")
         imageView.alpha = 1
         
-        passwordInput.keyboardType = UIKeyboardType.default
+        passwordInput.keyboardType = .default
         passwordInput.autocapitalizationType = .none
         passwordInput.autocorrectionType = .no
         passwordInput.layer.cornerRadius = 10
         passwordInput.alpha = 0
         passwordInput.placeholder = "password"
         passwordInput.isSecureTextEntry = true
-        passwordInput.returnKeyType = UIReturnKeyType.go
+        passwordInput.returnKeyType = .go
         passwordInput.textAlignment = .center
-        passwordInput.keyboardAppearance = UIKeyboardAppearance.dark
+        passwordInput.keyboardAppearance = .dark
         passwordInput.layer.borderWidth = 0.5
         passwordInput.layer.borderColor = UIColor.lightGray.cgColor
         
-        #if targetEnvironment(macCatalyst)
+        #if !targetEnvironment(macCatalyst)
         
         #else
             touchIDButton.setImage(UIImage(systemName: "faceid"), for: .normal)
