@@ -28,11 +28,16 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     var descriptor = ""
     var wallet = [String:Any]()
     let ud = UserDefaults.standard
+    var isPaying = false
     
     @IBOutlet var amountField: UITextField!
     @IBOutlet var labelField: UITextField!
     @IBOutlet var qrView: UIImageView!
     @IBOutlet var addressOutlet: UILabel!
+    @IBOutlet weak var amountLabel: UILabel!
+    @IBOutlet weak var labelLabel: UILabel!
+    
+    
     var isBtc = false
     var isSats = false
     
@@ -63,6 +68,16 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             }
         } else {
             segmentedControlOutlet.selectedSegmentIndex = 0
+        }
+        
+        if isPaying {
+            spinner.label.text = "fetching donation address..."
+            amountLabel.alpha = 0
+            labelLabel.alpha = 0
+            segmentedControlOutlet.alpha = 0
+            addressOutlet.alpha = 0
+            amountField.alpha = 0
+            labelField.alpha = 0
         }
     }
     
@@ -136,20 +151,148 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
     
     func load() {
-        addressOutlet.text = ""
-        activeWallet { [weak self] (wallet) in
-            if wallet != nil {
-                let descriptorParser = DescriptorParser()
-                let descriptorStruct = descriptorParser.descriptor(wallet!.receiveDescriptor)
-                if descriptorStruct.isMulti {
-                    self?.getReceieveAddressForFullyNodedMultiSig(wallet!)
+        if isPaying {
+            guard let data = KeyChain.getData("paymentAddress") else {
+                
+                guard let paymentAddress = Keys.donationAddress() else { return }
+                
+                guard KeyChain.set(paymentAddress.dataUsingUTF8StringEncoding, forKey: "paymentAddress") else {
+                    return
+                }
+                
+                getPaid(paymentAddress)
+                
+                return
+            }
+            
+            let paymentAddress = data.utf8
+            getPaid(paymentAddress)
+            
+        } else {
+            addressOutlet.text = ""
+            activeWallet { [weak self] (wallet) in
+                if wallet != nil {
+                    let descriptorParser = DescriptorParser()
+                    let descriptorStruct = descriptorParser.descriptor(wallet!.receiveDescriptor)
+                    if descriptorStruct.isMulti {
+                        self?.getReceieveAddressForFullyNodedMultiSig(wallet!)
+                    } else {
+                        self?.showAddress()
+                    }
                 } else {
                     self?.showAddress()
                 }
-            } else {
-                self?.showAddress()
             }
         }
+    }
+    
+    private func getPaid(_ address: String) {
+        FiatConverter.sharedInstance.getFxRate { [weak self] fxRate in
+            guard let self = self, let fxRate = fxRate else { return }
+            
+            let btcAmount = 1.0 / (fxRate / 20.0)
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                                
+                let qr = self.generateQrCode(key:"bitcoin:\(address)?amount=\(btcAmount.avoidNotation)&label=FullyNoded-Payment")
+                
+                self.qrView.image = qr
+                self.addPaymentLabels()
+                
+                self.spinner.removeConnectingView()
+                
+                showAlert(vc: self, title: "Thank you for supporting Fully Noded", message: "In order to use Fully Noded via direct download a donation of $20 in btc is suggested. You can scan this QR with any wallet to automatically pay the suggested amount, this address is unique to you and will not change that way you can pay whenever you want.\n\nThe app has taken years of hard work, and your support will help make Fully Noded even better and ensure its long term survival.\n\nOnce the payment is made you will have full lifetime access to the app.")
+            }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) { [weak self] in
+                guard let self = self else { return }
+                
+                self.checkIfPaymentReceived(address)
+            }
+        }
+    }
+    
+    private func addPaymentLabels() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let topLabel = UILabel()
+            topLabel.font = .systemFont(ofSize: 28)
+            topLabel.textColor = .white
+            topLabel.frame = CGRect(x: 16, y: 100, width: self.view.frame.width - 32, height: 20)
+            topLabel.text = "Donation"
+            topLabel.textAlignment = .left
+            self.view.addSubview(topLabel)
+            
+            let bottomLabel = UILabel()
+            bottomLabel.font = .systemFont(ofSize: 14)
+            bottomLabel.textColor = .lightGray
+            bottomLabel.textAlignment = .left
+            bottomLabel.frame = CGRect(x: 16, y: self.view.frame.maxY - 110, width: self.view.frame.width - 32, height: 100)
+            bottomLabel.numberOfLines = 0
+            bottomLabel.text = "Your support is greatly appreciated! We are checking every 15 seconds in the background to see if a payment is made, as soon as we see one the app will automatically unlock and be fully functional."
+            self.view.addSubview(bottomLabel)
+        }
+    }
+    
+    private func checkIfPaymentReceived(_ address: String) {
+        let blockstreamUrl = "http://explorerzydxu5ecjrkwceayqybizmpjjznk5izmitf2modhcusuqlid.onion/api/address/" + address
+        
+        guard let url = URL(string: blockstreamUrl) else { return }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
+        
+        let task = TorClient.sharedInstance.session.dataTask(with: request as URLRequest) { (data, response, error) in
+            
+            guard let urlContent = data else {
+                showAlert(vc: self, title: "Ooops", message: "There was an issue checking on payment status")
+                return
+            }
+            
+            guard let json = try? JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as? NSDictionary else {
+                showAlert(vc: self, title: "Ooops", message: "There was an issue decoding the response when fetching payment status")
+                return
+            }
+            
+            var txCount = 0
+            
+            if let chain_stats = json["chain_stats"] as? NSDictionary {
+                guard let count = chain_stats["tx_count"] as? Int else { return }
+                
+                txCount += count
+            }
+            
+            if let mempool_stats = json["mempool_stats"] as? NSDictionary {
+                guard let count = mempool_stats["tx_count"] as? Int else { return }
+                
+                txCount += count
+            }
+            
+            if txCount == 0 {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 15.0) { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.checkIfPaymentReceived(address)
+                }
+                
+            } else {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    let _ = KeyChain.set("hasPaid".dataUsingUTF8StringEncoding, forKey: "hasPaid")
+                    
+                    self.dismiss(animated: true) {
+                        
+                        showAlert(vc: self, title: "Thank you!", message: "Your support is greatly appreciated and will directly help making Fully Noded even better 💪")
+                    }
+                }
+            }
+        }
+        
+        task.resume()
     }
     
     private func getReceieveAddressForFullyNodedMultiSig(_ wallet: Wallet) {

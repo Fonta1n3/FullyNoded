@@ -52,14 +52,12 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         passwordInput.layer.borderColor = UIColor.lightGray.cgColor
         
         #if !targetEnvironment(macCatalyst)
-        
-        #else
-            touchIDButton.setImage(UIImage(systemName: "faceid"), for: .normal)
-            touchIDButton.tintColor = .systemTeal
-            touchIDButton.backgroundColor = UIColor.clear
-            touchIDButton.alpha = 0
-            touchIDButton.addTarget(self, action: #selector(authenticationWithTouchID), for: .touchUpInside)
-            touchIDButton.showsTouchWhenHighlighted = true
+        touchIDButton.setImage(UIImage(systemName: "faceid"), for: .normal)
+        touchIDButton.tintColor = .systemTeal
+        touchIDButton.backgroundColor = UIColor.clear
+        touchIDButton.alpha = 0
+        touchIDButton.addTarget(self, action: #selector(authenticationWithTouchID), for: .touchUpInside)
+        touchIDButton.showsTouchWhenHighlighted = true
         #endif
         
         view.addSubview(lockView)
