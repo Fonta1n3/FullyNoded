@@ -6,8 +6,6 @@
 //  Copyright © 2018 Fontaine. All rights reserved.
 //
 
-//need to copy account creation to create account view controller
-
 import UIKit
 import LocalAuthentication
 

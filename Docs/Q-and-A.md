@@ -36,53 +36,53 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 
 # Table of contents
 - [Definitions](#definitions-1)
-        * [Apple id](#apple-id)
-        * [bech32  bitcoin address(p2wpkh)](#bech32--bitcoin-address-p2wpkh-)
-        * [BIP84 keys](#bip84-keys)
-        * [bitcoin.conf](#bitcoinconf)
-        * [Bitcoin-cli](#bitcoin-cli)
-        * [Bitcoin Core (Wallet) App, also known as `Bitcoin-qt`](#bitcoin-core--wallet--app--also-known-as--bitcoin-qt-)
-        * [Bitcoin-qt](#bitcoin-qt)
-        * [bitcoind](#bitcoind)
-        * [bitcoind](#bitcoind-1)
-        * [coldcard](#coldcard)
-        * [Datadir](#datadir)
-        * [Esplora](#esplora)
-        * [FN](#fn)
-        * [FN2](#fn2)
-        * [Fully Noded wallets](#fully-noded-wallets)
-        * [GW](#gw)
-        * [gap limit](#gap-limit)
-        * [Initial block download (IBD)](#initial-block-download--ibd-)
-        * [Keepkey](#keepkey)
-        * [keypool](#keypool)
-        * [legacy bitcoin address (p2pkh)](#legacy-bitcoin-address--p2pkh-)
-        * [Libwally](#libwally)
-        * [ledger Nano S/X](#ledger-nano-s-x)
-        * [Nano](#nano)
-        * [Node](#node)
-        * [Nodl](#nodl)
-        * [Output descriptors](#output-descriptors)
-        * [psbt](#psbt)
-        * [pure bitcoin core wallets](#pure-bitcoin-core-wallets)
-        * [rbf](#rbf)
-        * [RPC](#rpc)
-        * [segwit wrapped  bitcoin address (p2sh-p2wpkh)](#segwit-wrapped--bitcoin-address--p2sh-p2wpkh-)
-        * [Segwit addresses](#segwit-addresses)
-        * [SSH](#ssh)
-        * [Standup app](#standup-app)
-        * [satoshi](#satoshi)
-        * [signed raw transaction](#signed-raw-transaction)
-        * [Trezor](#trezor)
-        * [Tor](#tor)
-        * [UTXO's](#utxo-s)
+  * [Apple id](#apple-id)
+  * [bech32  bitcoin address(p2wpkh)](#bech32--bitcoin-address-p2wpkh-)
+  * [BIP84 keys](#bip84-keys)
+  * [bitcoin.conf](#bitcoinconf)
+  * [Bitcoin-cli](#bitcoin-cli)
+  * [Bitcoin Core (Wallet) App, also known as `Bitcoin-qt`](#bitcoin-core--wallet--app--also-known-as--bitcoin-qt-)
+  * [Bitcoin-qt](#bitcoin-qt)
+  * [bitcoind](#bitcoind)
+  * [bitcoind](#bitcoind-1)
+  * [coldcard](#coldcard)
+  * [Datadir](#datadir)
+  * [Esplora](#esplora)
+  * [FN](#fn)
+  * [FN2](#fn2)
+  * [Fully Noded wallets](#fully-noded-wallets)
+  * [GW](#gw)
+  * [gap limit](#gap-limit)
+  * [Initial block download (IBD)](#initial-block-download--ibd-)
+  * [Keepkey](#keepkey)
+  * [keypool](#keypool)
+  * [legacy bitcoin address (p2pkh)](#legacy-bitcoin-address--p2pkh-)
+  * [Libwally](#libwally)
+  * [ledger Nano S/X](#ledger-nano-s-x)
+  * [Nano](#nano)
+  * [Node](#node)
+  * [Nodl](#nodl)
+  * [Output descriptors](#output-descriptors)
+  * [psbt](#psbt)
+  * [pure bitcoin core wallets](#pure-bitcoin-core-wallets)
+  * [rbf](#rbf)
+  * [RPC](#rpc)
+  * [segwit wrapped  bitcoin address (p2sh-p2wpkh)](#segwit-wrapped--bitcoin-address--p2sh-p2wpkh-)
+  * [Segwit addresses](#segwit-addresses)
+  * [SSH](#ssh)
+  * [Standup app](#standup-app)
+  * [satoshi](#satoshi)
+  * [signed raw transaction](#signed-raw-transaction)
+  * [Trezor](#trezor)
+  * [Tor](#tor)
+  * [UTXO's](#utxo-s)
   * [Knowledge you should be confidently applying](#knowledge-you-should-be-confidently-applying)
   * [Actions you should be comfortable with](#actions-you-should-be-comfortable-with)
 - [Jump table to categories](#jump-table-to-categories)
 - [Q&A](#q-a)
   * [Userinterface](#userinterface)
       - [Question : This button should bring up info and allow me to make changes?](#question---this-button-should-bring-up-info-and-allow-me-to-make-changes-)
-      - [Question: why can't I see the label I gave the change address? When I have wallet loaded and go to List Labels under settings I can only see the name I have the wallet, not the label I gave the change address?](#question--why-can-t-i-see-the-label-i-gave-the-change-address--when-i-have-wallet-loaded-and-go-to-list-labels-under-settings-i-can-only-see-the-name-i-have-the-wallet--not-the-label-i-gave-the-change-address-)
+      - [Question : why can't I see the label I gave the change address? When I have wallet loaded and go to List Labels under settings I can only see the name I have the wallet, not the label I gave the change address?](#question--why-can-t-i-see-the-label-i-gave-the-change-address--when-i-have-wallet-loaded-and-go-to-list-labels-under-settings-i-can-only-see-the-name-i-have-the-wallet--not-the-label-i-gave-the-change-address-)
       - [Question : I'd like to recover a wallet using FN without revealing seed words, is that possible?](#question---i-d-like-to-recover-a-wallet-using-fn-without-revealing-seed-words--is-that-possible-)
       - [Question : how to verify all outputs of a raw transaction? I verified the Send address. I would like to verify the Change address. How?](#question---how-to-verify-all-outputs-of-a-raw-transaction--i-verified-the-send-address-i-would-like-to-verify-the-change-address-how-)
       - [Question : how do I figure out what version of fully noded I'm using on my IOS device?](#question---how-do-i-figure-out-what-version-of-fully-noded-i-m-using-on-my-ios-device-)
@@ -231,13 +231,13 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 # Definitions
 ##### Apple id
 : a login and password to keep your settings and Apple services up to date on all of your devices. Just sign in with the same Apple ID everywhere.
-##### bech32  bitcoin address(p2wpkh)
-:BIP49 refers to the accepted common standard of deriving segwit "compatibility" addresses. These addresses begin with a 3.
-##### BIP84 keys 
+##### bech32 bitcoin address(p2wpkh)
+: segwit addresses. These addresses begin with a bc1.
+##### BIP84 keys
 : BIP84 refers to the accepted common standard of deriving native segwit addresses. These addresses always begin with bc1 - and are referred to bech32 addresses.
 ##### bitcoin.conf
-: The bitcoin configuration file is a list of 'setting=value' pairs, one per line, with optional comments starting with the '#' character. 
-##### Bitcoin-cli
+: The bitcoin configuration file is a list of 'setting=value' pairs, one per line, with optional comments starting with the '#' character.
+##### bitcoin-cli
 : Bitcoin *CommandLine Interface*; just like Bitcoin Core app the CLI uses RPC calls to give your node and the bitcoin network commands and get results back.
 ##### Bitcoin Core (Wallet) App, also known as `Bitcoin-qt`
 : Software running on MacOS, Windows and Linux that offers a **Graphical User Interface** to your Bitcoin Wallet and, if you wish, to your node. Just like Bitcoin CLI the Core app uses RPC calls to give your node and the bitcoin network commands and get results back.
@@ -247,11 +247,11 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 : Bitcoin Deamon, background process running a bitcoin node. Bitcoind is a program that implements the Bitcoin protocol for remote procedure call (RPC) use. It is also the second Bitcoin client in the network's history. It is available under the MIT license in 32-bit and 64-bit versions for Windows, GNU/Linux-based OSes, and Mac OS X. [Read more](https://en.bitcoin.it/wiki/Bitcoind)
 ##### bitcoind
 : Bitcoin Deamon, background process running a bitcoin node. Bitcoind is a program that implements the Bitcoin protocol for remote procedure call (RPC) use. It is also the second Bitcoin client in the network's history. It is available under the MIT license in 32-bit and 64-bit versions for Windows, GNU/Linux-based OSes, and Mac OS X. [Read more](https://en.bitcoin.it/wiki/Bitcoind)
-##### coldcard 
+##### coldcard
 : a type of hardware wallet to store, send and receive crypto currencies
 ##### Datadir
 : The data directory is the location where Bitcoin's data files are stored, including the wallet data file.
-##### Esplora 
+##### Esplora
 : Name of Blockstream's Tor V3 api to broadcast, it falls back to the users node if the api is unavailable. More info [here](https://github.com/Blockstream/esplora)
 ##### FN
 : Fully Noded app
@@ -259,28 +259,28 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 : see GW
 ##### Fully Noded wallets
 : support BIP39 recovery words, the seed is encrypted and stored on your device **not** on the node. The node will only ever hold public keys. Your node will build psbt for us that FN will sign (not your Node). Your node verifies the UTXO's
-##### GW 
+##### GW
 : Gordian Wallet, formerly known as `Fully Noded 2` app, The original name FN2 was a misnaming because it is a different app than FN from its inception. [This comparison](http://github.com/henkvancann/FNcompGordian/FN2_Comparison.md) tries to explain the differences between Fully Noded and Gordian Wallet.
-##### gap limit 
+##### gap limit
 : This means you ended with more than 20 consecutive unused addresses in your bitcoin wallet. This could have have happened due to various reasons. [What it is and how to get over it](https://blog.blockonomics.co/bitcoin-what-is-this-gap-limit-4f098e52d7e1)
 ##### Initial block download (IBD)
 : The Bitcoin Core initial block download code makes sure that the block headers you are downloading (from a single peer) passes certain, hard-coded "checkpoints.
-##### Keepkey 
+##### Keepkey
 : a type of hardware wallet to store, send and receive crypto currencies
-##### keypool 
+##### keypool
 : The keypool is a collection of unused addresses in your wallet. The keypool parameter tells the client how many unused addresses to keep in its pool. The original purpose of the keypool is to allow you to backup your wallet file less frequently and still have access to all your funds in the event of a hard drive failure. However since the invention of Hierarchical Deterministic Wallets (HD wallets, [BIP32](https://en.bitcoin.it/wiki/Deterministic_wallet)): If you have a HD wallet (check the icon on the bottom-right corner in Bitcoin Core), it doesn't matter. If you've created your wallet in an older version of Bitcoin Core, it's not an HD wallet. If that's the case, your keypool is important for backups: your backup has the same 1000 keys, which means you only need to make a new backup after using many different new addresses. If you would limit the keypool size to 20, you'll quickly run out of addresses, and you need to make new backups very often. That's the reason the keypool was increased from 100 to 1000. An important distinction with regrads to FN and Bitcoin Core is that Bitcoin Core is not able to add multisig addresses to the keypool, therefore we rely on the `bitcoin-cli` command `deriveaddresses` to derive multisig addresses on the fly using your multisig descriptors.
 ##### legacy bitcoin address (p2pkh)
 : refers to the accepted common standard to derive non segwit addresses. These addresses always begin with a 1.
-##### Libwally 
+##### Libwally
 : an open source library (https://github.com/ElementsProject/libwally-core) used by Fully Noded, (https://github.com/blockchain/libwally-swift/blob/master/README.md) which allows us to utilize BIP39 directly in the app meaning you can easily recover your Fully Noded wallet with Electrum for example. Now when you create a wallet you will get a 12 word recovery phrase (no passphrase by default) to backup and keep safe.
 ##### ledger Nano S/X
 : types of hardware wallets to store, send and receive crypto currencies
-##### Nano 
-: famous text GUI editor to start from commandline, not to be confused with Ledger Nano S/X, which is a cold storage.
+##### Nano
+: famous text GUI editor to start from command line, not to be confused with Ledger Nano S/X, which is a cold storage.
 ##### Node
 : A bitcoin full Node is a independent entity in a peer to peer ecosystem. A Node independently checks and verifies all protocol rules for incoming broadcasted transactions. A full node does not trust, but verifies. Technically speaking a *node* is a computer connected to other computers which follows rules and shares information. A *'full node'* is a computer in Bitcoin's peer-to-peer network which hosts and synchronises a copy of the entire Bitcoin blockchain. [Here](https://medium.com/@gloriazhao/map-of-the-bitcoin-network-c6f2619a76f3) is an excellent read on nodes, what they are and the differences between types of nodes.
 ##### Nodl
-: A hardware box with to run a non-preloaded bitcoin node on it, [commercial site](https://www.nodl.it/). 
+: A hardware box with to run a non-preloaded bitcoin node on it, [commercial site](https://www.nodl.it/).
 ##### Output descriptors
 : Descriptors are a clever way of importing specific keys into your node from any derivation, for any (or all) address types, single or multi signature, along with a fingerprint so offline psbt signers like a Coldcard and Fully Noded can sign the psbt if they hold the correct seed.
 ##### psbt
@@ -291,7 +291,7 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 : Replace-By-Fee (RBF) is a node policy that allows an unconfirmed transaction in a mempool to be replaced with a different transaction that spends at least one of the same inputs and which pays a higher transaction fee. **For newbies:** a transaction that can't get through because of too low fee, can be overridden (replaced) with a higher fee to maybe succeed instead.
 ##### RPC
 : Remote Procedure Calls
-##### segwit wrapped  bitcoin address (p2sh-p2wpkh) 
+##### segwit wrapped  bitcoin address (p2sh-p2wpkh)
 : BIP49 refers to the accepted common standard of deriving segwit "compatibility" addresses. These addresses begin with a 3.
 ##### Segwit addresses
 : – Segregated Witness – or SegWit in short – reduced the transaction data’s size to allow for faster transactions, better scalability and decreased fees. Native SegWit (bech32) enhanced this even further and includes even lower fees. Not all exchanges and wallet providers support sending Bitcoin to a Native SegWit address yet, which is why you are presented both options in Ledger Live. Transactions between all 3 address types are possible
@@ -301,14 +301,14 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 : is a personal one-click Mac OS installer for Bitcoin Core and Tor that will present a QuickConnect QR code that can be used to pair mobile wallets for remote use over Tor V3. [Read more](https://github.com/BlockchainCommons/GordianSystem)
 ##### satoshi
 : 0.000000001 BTC. A satoshi is the smallest unit of a bitcoin, equivalent to 100 millionth of a bitcoin.
-##### signed raw transaction 
+##### signed raw transaction
 : [Wikipage](https://en.bitcoin.it/wiki/Raw_Transactions) explains it all
-##### Trezor 
+##### Trezor
 : a type of hardware wallet to store, send and receive crypto currencies
 ##### Tor
 :Tor is free and open-source software for enabling anonymous communication. The name derived from the acronym for the original software project name "The Onion Router". [Read more in Wikipedia](https://en.wikipedia.org/wiki/Tor_(anonymity_network))
 ##### UTXO's
-: Unspend transaction Outputs; UTXO stands for the unspent output from bitcoin transactions. Each bitcoin transaction begins with coins used to balance the ledger. UTXOs are processed continuously and are responsible for beginning and ending each transaction. Confirmation of transaction results in the removal of spent coins from the UTXO database. But a record of the spent coins still exists on the ledger. **for newbies**: UTXO is unspent bitcoin that you can "see" in your wallet and on the blockchain. It is an address and amount of sathosis. As soon as you spend the money, it won't add to your wallet balance anymore and therefore will only.
+: Unspent transaction Outputs; UTXO stands for the unspent output from bitcoin transactions. Each bitcoin transaction begins with coins used to balance the ledger. UTXOs are processed continuously and are responsible for beginning and ending each transaction. Confirmation of transaction results in the removal of spent coins from the UTXO database. But a record of the spent coins still exists on the ledger. **for newbies**: UTXO is unspent bitcoin that you can "see" in your wallet and on the blockchain. It is an address and amount of sathosis. As soon as you spend the money, it won't add to your wallet balance anymore and therefore will only.
 
 ## Knowledge you should be confidently applying
 - The definitions above
@@ -337,7 +337,7 @@ The answers are given by ***@Fonta1n3***. If not than an explicit source is refe
 
 # Q&A
 
-## Userinterface
+## User Interface
 
 #### Question : This button should bring up info and allow me to make changes?
 <img src="./Images/refresh-info.png" alt="refresh-info" border="0" width="200">
@@ -395,14 +395,14 @@ Fonta1n3: Looks like you never actually connected? If your connection is success
 Occasionally you’ll get a crash if you race around the app not allowing things to finish loading or if you put it into background before `tor` connects and back into foreground very quickly and vice versa. Important to let things load and go slow. Other then that there really should not be crashes, only way i can troubleshoot that is release on Testflight again and ask that you share the crash report.
 For starters ensure you are connected to your node, can you confirm it successfully connects? Actually connecting is only successful when the home screen has loaded.
 
-**Problemsolving**
+**Problem solving**
 1. Are you absolutely sure the rpc password and username and onion are 100% correct? rpcpassword that's in your `bitcoin.conf`.
 2. Have you tried rebooting the node?
 3. Are there any special characters in the RPC password? Only alphanumeric is allowed but the app should warn you about that. Make sure your rpc credentials do not have any special characters
 4. Generally rebooting Tor on the node would solve this issue if everything else is correct.
 5. is there any possibility your isp is blocking `tor` (On your phone)?
 
-#### Question : Is airdropping a requirement? 
+#### Question : Is airdropping a requirement?
 *I dont have a mac but i have saved the file on my iphone. is there a way to tell fully noded about that file?*
 
 Airdrop is not a must. You can save the files in `iphone` using the native file application.
@@ -411,7 +411,7 @@ Airdrop is not a must. You can save the files in `iphone` using the native file 
 
 I will be be keeping the testflight up to date for you [here](https://testflight.apple.com/join/a6GWxet2), so that they can be shared and investigated.
 
-**For sure tor will crash occasionally.** If you *race around the app* and put it into foreground and background quickly, actually a guaranteed way to make the app crash is quickly backgroundning it and quickly foregrounding it as `Tor` needs about 10 seconds to bootstrap and if it is does not complete that process before getting backgrounded `tor` will crash, just something to keep in mind. 
+**For sure tor will crash occasionally.** If you *race around the app* and put it into foreground and background quickly, actually a guaranteed way to make the app crash is quickly backgrounding it and quickly foregrounding it as `Tor` needs about 10 seconds to bootstrap and if it is does not complete that process before getting backgrounded `tor` will crash, just something to keep in mind. 
 
 Go slow, `tor` is not meant for speed. `Tor` does not stay alive in the background so every time the app does go (crash) there we have to force `tor` to quit, then when the app reappears it has to bootstrap tor again every time.
 
@@ -425,7 +425,7 @@ HvC: Only if we are able to containerize the build environment (for example with
 
 Again there isn’t any, the code is open sourced so you can build it yourself. Its actually not very difficult to do.
 
- If you'd like to build the app from source and heads-up compare the build follow the instruction:<br/> 
+ If you'd like to build the app from source and heads-up compare the build follow the instruction:<br/>
  - Download the signed and tagged tarball (in this example `fullynoded.tar.gz`), and compare versions in github, App Store and Testflight 0.1.69
   - Verify the signature with the developers public PGP key : all you have to do is
  	`gpg --verify fullynoded.tar.gz.asc` (or whatever exact signature filename you downloaded)
@@ -436,11 +436,11 @@ Again there isn’t any, the code is open sourced so you can build it yourself. 
      4. `carthage build`
  	5. open `FullyNoded.xcodeproj`
  	6. run the project in a simulator or device
-	
- If you'd like to import @Fonta1n3's [public key](https://github.com/Fonta1n3/FullyNoded#fully-noded%EF%B8%8F) to send encrypted messages follow the instruction: 
+
+ If you'd like to import @Fonta1n3's [public key](https://github.com/Fonta1n3/FullyNoded#fully-noded%EF%B8%8F) to send encrypted messages follow the instruction:
     1. import @Fonta1n3's [public key](https://github.com/Fonta1n3/FullyNoded#fully-noded%EF%B8%8F) to gpg on mac: `gpg --import key.asc` (make sure `key.asc` contains the full pub key)
 	2. If you don't have the full public key: try to use gpg --recv-keys \<fingerprint\> whether it'll be found depends on the keyserver configured on a local machine.
- 
+
 Instead of cloning the repo you can just download that tarball, I think it automatically unpacks and I will add my `pgp` key to the `readme`.
 
 ## Import
@@ -533,7 +533,7 @@ Video is obviously edited, the spinner will take longer then that, just wait a b
 
 #### Question : Is there  a way to export the multisig.txt file anytime after the initial prompt when exiting the Multisig Creator flow?
 
-Not right now... if you tap the `export` button from the `active wallet` tab you’ll get a wallet export QR, it holds all the info you need to manually create that txt. 
+Not right now... if you tap the `export` button from the `active wallet` tab you’ll get a wallet export QR, it holds all the info you need to manually create that txt.
 
 I can add a .txt button there that converts it, that would prob make the most sense. To do it manually you'll need to tap that `export` button and extract the xpubs and fingerprints and put them into this format:
 ```
@@ -565,7 +565,7 @@ Loss of privacy. Not loss of funds. It holds pubkeys only. More info [here](http
 
 No, signers are seperate, the QR is pubkey only. You have to add signer manually as words, if you'd like to spend the funds involved.
 
-#### How can I import a 12 word mnemonic from Coldcard into FN wallet? 
+#### How can I import a 12 word mnemonic from Coldcard into FN wallet?
 *FN defaults to a camera but the coldcard doesnt have QR codes on the screen (I'm using the BIP85 feature)*
 
 Create a recovery wallet instead. More info in [troubleshooting](https://github.com/Fonta1n3/FullyNoded/blob/master/Docs/Troubleshooting.md) section.
@@ -574,7 +574,7 @@ Create a recovery wallet instead. More info in [troubleshooting](https://github.
 
 #### Question : What’s the difference between Gordian Wallet (GW) and Fully Noded (FN)?
 
-1. GW is more focused on easy to use wallets, it will automatically create a 2/3 multisig wallet for you where your node is a signer as well as your device. Then you can keep one seed in offline backup to restore either your nodes signer or devices signer. So GW will give you your nodes seed words to back up and the purely offline seed words and of course you can access the devices words to back them up as well. 
+1. GW is more focused on easy to use wallets, it will automatically create a 2/3 multisig wallet for you where your node is a signer as well as your device. Then you can keep one seed in offline backup to restore either your nodes signer or devices signer. So GW will give you your nodes seed words to back up and the purely offline seed words and of course you can access the devices words to back them up as well.
 Much redundancy and flexibility
 2. FN never adds a private key to your node unless you manually import an wif or xprv
 3. GW does not give you access to every wallet on the node, FN does
@@ -596,7 +596,7 @@ So for example if your node dies or you lose your device you are well covered to
 It is a budget issue. Android has bigger security issues. Tor is easier on Android.
 
 #### Further question : Why would Apple not make Tor easier?
-I wouldn’t say its Apple intentionally making it difficult. Its just the go to tor framework for iOS is not easy to get working. 
+I wouldn’t say its Apple intentionally making it difficult. Its just the go to tor framework for iOS is not easy to get working.
 
 I have `Tor` running fine and you can make normal url requests over `Tor` in the app. But when it comes to making url requests to onion sites (eg your nodes hidden service) it only works on simulator. I know its possible but I also know i am not the only one who has had this issue, very frustrating bc using your node as a backend via a hidden service is badass.
 
@@ -644,9 +644,9 @@ It probably was not `RBF` enabled to begin with.
 
 #### Question : FN latest: “Added ability to share your node”. Please explain?
 
-Embassy allows you to add your Node credentials manually, but I had come up with a url scheme that converts your node's credentials into a "Quick Connect QR" https://github.com/Fonta1n3/FullyNoded#quickconnect-url-scheme. 
+Embassy allows you to add your Node credentials manually, but I had come up with a url scheme that converts your node's credentials into a "Quick Connect QR" https://github.com/Fonta1n3/FullyNoded#quickconnect-url-scheme.
 
-Standup, BTCPayServer, Nodl, myNode and Raspiblitz are supporting the QR. The "Share" button on your "node details" just takes your current node credentials and puts them into that QR format so anyone can scan the QR and connect to your node. 
+Standup, BTCPayServer, Nodl, myNode and Raspiblitz are supporting the QR. The "Share" button on your "node details" just takes your current node credentials and puts them into that QR format so anyone can scan the QR and connect to your node.
 
 I talk about **Tor V3 auth, this should definitely be used, if you want to share your node** as if that QR gets leaked and you do not have auth setup anyone can access your node (your trusted others may share without you knowing for example). However with auth you need to explicitly add their pubic key to your nodes tor config, for example I can give you my QR codes but they are useless to you.
 
@@ -658,7 +658,7 @@ If you airdrop FN gives a choice
 
 <img src="./Images/use-my-node.png" alt="use-my-node" border="0" width="200"><br/>
 *I think it should say third party service or use my own node. In fact this should be a setting that you opt in right?*<br/>
-Javier: I think that option is in case your node is not running Tor. If your bitcoind instance is not running over Tor each tx propagated is more likely to be desanonymized.   That’s the reason to choose propagate Esplora API. 
+Javier: I think that option is in case your node is not running Tor. If your bitcoind instance is not running over Tor each tx propagated is more likely to be desanonymized.   That’s the reason to choose propagate Esplora API.
 
 #### Question : Do you have a lightning node? to send donations? The fees are currently high for a mainnet transaction.
 
@@ -685,7 +685,7 @@ Returns a segwit multisig address to send btc to<br/>
 Does not matter where the btc comes from, as far as I can tell<br/>
 I sent from my onchain wallet in FN and it worked.
 
-#### How could I connect Casa Node and FN? 
+#### How could I connect Casa Node and FN?
 
 You have to enable ssh on the node (using keyboard and monitor), tehn ssh in, and setup a v3 hidden service.<br/>
 More info on enabling ssh on Casa Node 1 [here](https://support.keys.casa/hc/en-us/articles/360045445811-Enabling-SSH-Casa-Node-1-) and 2 [here](https://support.keys.casa/hc/en-us/articles/360045007012-Enabling-SSH-Casa-Node-2-).
@@ -712,7 +712,7 @@ If your using multisig but only use one codebase you're doing it wrong, in my op
 
 HvC: This example is of course a 1 of 3, a 2 of 3 or 3 of 3, but in general it could be anything m out of n. The idea is that the CREATE diagram leaves an "unfinished / unsafe" state, THe EDIT is the final solution and "Proper FN multisign".
 
-#### Question : Checking total supply. This is taking an inordinate amount of time for me and my screen eventually turns off. 
+#### Question : Checking total supply. This is taking an inordinate amount of time for me and my screen eventually turns off.
 <img src="./Images/Loading-data.png" alt="node-added" border="0" width="200">
 
 *Can I return to this after the data has been fetched from the node or FullyNoded must remain active during the process? Also, my node is pruned so not sure if that’s contributing to the long delay.*
@@ -725,7 +725,7 @@ Depends on the ram on your node, for me 8gb takes a minute, 2gb ram can take 7 m
 
 The whole point is it changes every ten minutes. Tor gets killed immediately when the app goes into background. However, I have seen we can keep it alive for 3 minutes in the background though, will get around to taking advantage of that, would be nice for when quickly switching between apps to get invoices and stuff.
 
-#### Question : I’m trying to connect to a ‘mynode` *community edition*. Is that still an option? 
+#### Question : I’m trying to connect to a ‘mynode` *community edition*. Is that still an option?
 
 I dont know, better to ask on `mynode` group for a definitive answer, not sure exactly how `mynode` operates.
 
@@ -756,7 +756,7 @@ FN only connects over Tor so its not possible in the app for now to connect over
 
 #### Question : how risky is to open port 22 to connect from anywhere outside my local lan?
 
-First off I am not a security expert. But from what I have read SSH is generally very secure. However there are some simple steps you can take to make it much more secure.  You can read more from the Fully Noded github [here](https://github.com/FontaineDenton/FullyNoded/blob/master/Readme.md#security) 
+First off I am not a security expert. But from what I have read SSH is generally very secure. However there are some simple steps you can take to make it much more secure.  You can read more from the Fully Noded github [here](https://github.com/FontaineDenton/FullyNoded/blob/master/Readme.md#security)
 
 The goal of this app is to avoid `SSH` altogether and use Tor so you can keep your node firewalled off completely, its working if you build the app from source, We've got mobile fixed by now.
 Its also more secure if you use an RSA public key / private key to authenticate SSH which is also possible in Fully Noded
@@ -849,11 +849,11 @@ See [this](https://github.com/Fonta1n3/FullyNoded#importing-a-wallet-from-specte
 When you make the nano command what exactly are you typing? the torrc.sample is just that a sample, it's possible when Tor has not yet been started that it does not auto generate the torrc? You can always use the torrc.sample to create a torrc, just copy and paste it and delete the .sample extension and then follow the guide to edit it.
 
 When you use nano you either need to be in the directory of the file you are trying to use nano on or include the path nano `/usr/local/etc/tor/torcc.sample` for example. If nano is not working just use whatever text editor youd like to.
-Try starting Tor, it'll generate the `torrc` then. 
+Try starting Tor, it'll generate the `torrc` then.
 
 	brew services start tor
-	
-To be honest this makes it really easy and works with your existing node: [Gordian](https://github.com/BlockchainCommons/GordianNode-macOS/blob/master/GordianNode_0.1.1.dmg) 
+
+To be honest this makes it really easy and works with your existing node: [Gordian](https://github.com/BlockchainCommons/GordianNode-macOS/blob/master/GordianNode_0.1.1.dmg)
 
 You can download the dmg right on the link, just open it and it does everything for you.
 
@@ -915,7 +915,7 @@ The auth has nothing to do with wallet creation. [Here](https://matt.traudt.xyz/
 
 If you'd like to deepdive into the subject: [here](https://github.com/torproject/torspec/blob/master/rend-spec-v3.txt) the *Tor Rendezvous Specification - Version 3*
 
-#### Question :  FN requires RPC creds inputted in order to create a hot wallet that will then provide Tor v3 auth, is that correct? 
+#### Question :  FN requires RPC creds inputted in order to create a hot wallet that will then provide Tor v3 auth, is that correct?
 
 `Rpc` has nothing to do with `tor auth`. Rpc credentials are needed to make commands to your `node`.
 
@@ -952,11 +952,11 @@ Max: each device you have has a separate key pair for authentication. So basical
  and you can generate the private keys on each client, just like tor v3 auth.<br/>
 If you added the ability to connect to your local host and someone was connected to their WireGuard, it should just work as they would be local
 
-1. If we just add abilty to use a normal IP instead of only onion, that should work. 
+1. If we just add abilty to use a normal IP instead of only onion, that should work.
 2. Also for OpenVPN users too
 3. And the traffic over VPN is always encrypted, from your client to your router
 
-Benefits: 
+Benefits:
 - Could make it a whole lot more accessible
 - And less latency
 - And dont have to rely on Tor
@@ -978,7 +978,7 @@ Max: Only `Tor`<br/>
 The Home Assistant UI where I can administer my `BItwarden`, `DuckDNS`, `VPN` and `Adblocker` I can access over a userinterface. <br/>
 So ports are forwarded and I have a `letsencrypt` certificate for that.
 About doing something really dumb:<br/>
-You wouldn't actually be doing anything there right, though? People's nodes will be accessible on their local network anyway. 
+You wouldn't actually be doing anything there right, though? People's nodes will be accessible on their local network anyway.
 For example by `SSHing` into the network (just not using `FullyNoded`).
 
 #### Question : Can I connect FN on iPhone to my own node via FN on Mac?
@@ -987,7 +987,7 @@ Yes, no need for the user to worry about `Tor` at all. just use `macOS` FN which
 
 Next macOS update (in Sept 2020) will have a new button on the node credentials view for showing a QR code for connecting your iOS device.
 
-#### Question : How to run your own node and connect to it with Fully Noded macOS? 
+#### Question : How to run your own node and connect to it with Fully Noded macOS?
 
 Just follow the easy steps in this [instruction video](https://www.youtube.com/watch?v=_7MZd0weDis) on youtube.
 
@@ -1036,12 +1036,12 @@ Then we derive the child. Private key on the fly everytime you go to send or sig
 Further elaboration on the answer :  Should be “impossible “
 The worst malware i can find are adware where an app gets you to click invisible ads.
 
-#### Question : The keychain encryption key is stored on the secure enclave? 
+#### Question : The keychain encryption key is stored on the secure enclave?
 *So its very hard to crack that open once you have the device, which bricks itself without the icloud password?*<br/>
 
 On FN its stored on the local keychain (secure enclave) only, no icloud support. Gordian Wallet (formerly known as 'FN2') account `xprv` can be synced to icloud. But again its encrypted three times by then.
 
-#### Question : What’s the diff in importing Xpub and import descriptor under wallet? 
+#### Question : What’s the diff in importing Xpub and import descriptor under wallet?
 
 `Descriptor` has the derivation, address range, path and address format in it, can also specify multisig and `bip67`
 A descriptor can hold an `xpub` and derive specific addresses
@@ -1085,7 +1085,7 @@ No. When you import a wallet it first creates a new wallet on your node with a r
 So you should tap the "squares" and only ever work with that wallet.<br/>
 If the wallet is there in the "Fully Noded Wallets" section then you know it is all good.
 
-##### Further Answer: 
+##### Further Answer:
 You should really completely ignore your "Bitcoin Core Wallets", unless you are a bitcoin-cli expert and know exactly what you are doing and why.
 
 It's really just there to help people recover wallets that exist on their node. Really need to make some tutorials and add an "advanced" button in settings that shows and hides some features, like accessing non Fully Noded Wallets.
@@ -1140,7 +1140,7 @@ Electrum is broken it seems ( [here](https://github.com/spesmilo/electrum/issues
 
 In the latest Bitcoin Core release psbt's may include both `non_witness_utxo` and `witness_utxo` to mitigate the vulnerability Trezor found recently.
 
-To fix it you can revert to bitcoin core 0.20.0. 
+To fix it you can revert to bitcoin core 0.20.0.
 
 Aug 2020 : MOST PROBABLE THIS ISSUE WILL BE SOLVED SOON AND IF YOU WON'T EXPERIENCE THE ERROR ANYMORE
 
@@ -1160,7 +1160,7 @@ Because it keeps the signer on your device, not on your node. Pls read the docs 
 
 ##### Further question: But I'm trying to encrypt the wallet on device. I just created wallet, go-to settings, security, encrypt - error...
 
-##### Further answer : 
+##### Further answer :
 Your seed is already encrypted. The command you are using is the bitcoin-cli encryption. That error you're getting is for your node.<br/>
 ```
 bitcoin-cli encryptwallet
@@ -1172,12 +1172,12 @@ If there is nothing to encrypt it won't encrypt. Your wallets private keys are b
 
 The first thing the FN app does is create a private key it uses for encryption. It gets encrypted itself and stored on your devices secure enclave.
 When you go to create a FN wallet or add a signer it *always* gets encrypted before it gets saved.<br/>
-This is obvious in the code, which is open source and signed off by me. A checksum is available. See [the asnwer to this question]() 
+This is obvious in the code, which is open source and signed off by me. A checksum is available. See [the asnwer to this question]()
 if you like to learn the nuances of these security proofs and what they are worth.
 
 ##### Further question : But it shows the seed phrase without any authentication. Regardless of the Biometrics setting. How can that be secure?
 
-##### Further answer : 
+##### Further answer :
 It's done programmatically. If you don't want someone to open the app -> add a password or biometrics. It's setup so that if a hacker got your device, they would not be able to jail break it and get your seeds. You should definitely use the password to lock the app.
 
 If you are security conscious, you can also just delete the signer for that wallet. Then when you want to spend, add it again. It's easy to do.
@@ -1191,7 +1191,7 @@ Sweep it and then spend it to your Coldcard Fully Noded Wallet (or whatever you 
 
 ## Standup
 
-#### Question : where can I download this? 
+#### Question : where can I download this?
 
 [Answer in Gordian Server Q&A](https://github.com/BlockchainCommons/Docs/q-and-a.md)
 
@@ -1212,7 +1212,7 @@ Sweep it and then spend it to your Coldcard Fully Noded Wallet (or whatever you 
 
 You can just set the min relay fee (smallest possible amount) and if the transaction doesn't get confirmed, you can "bump" it, i.e. use Replace By Fee transaction. That is a new transaction with a higher fee using the same `UTXOs` as an input.
 
-#### Question : Can I create transactions in USD? 
+#### Question : Can I create transactions in USD?
 Yes, you can create transactions which are denominated in USD, this video shows the new look for the transaction builder, how to switch to fiat denominations and then how to confirm the transaction before you broadcast it:<br/>
 <a href="../Videos/IMG_3025.MP4" target="_blank"><img src="./Images/fiat-curr-transaction.png" alt="fiat-curr-transaction" border="0" width="200"></a>
 
@@ -1234,7 +1234,7 @@ This is a good guide this is a good guide : https://github.com/Fonta1n3/FullyNod
 *especially with some slick autocomplete for commands and parameters. rpc syntax can be a pain sometimes.*
 
 No, I need to add that to FN app. It should automatically rescan from prune height though *if* your pruned.<br/>
-Anyway, doing it the way Fully Noded does it adds a layer of complexity too. Extra need for escaping characters, absolutely stuff that’s not needed, if doing it straight via terminal. 
+Anyway, doing it the way Fully Noded does it adds a layer of complexity too. Extra need for escaping characters, absolutely stuff that’s not needed, if doing it straight via terminal.
 
 Definitely something to be said about a cool UX where it autosuggests the rpc call and then shows a UI for the params with explainers.
 
