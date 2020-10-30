@@ -5492,6 +5492,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         </rightBarButtonItems>
                     </navigationItem>
                     <connections>
+                        <outlet property="addressHeaderOutlet" destination="1oS-WI-SUN" id="Oiu-pO-bzi"/>
                         <outlet property="deleteLightningOutlet" destination="eoi-B9-9wY" id="gRh-JP-IYu"/>
                         <outlet property="header" destination="DTI-AZ-owi" id="puY-tw-wga"/>
                         <outlet property="nodeLabel" destination="LM8-fJ-o94" id="kkD-Ha-NwZ"/>
@@ -7316,8 +7317,8 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="HNI-HG-9ZQ"/>
         <segue reference="IAz-j1-Gq6"/>
-        <segue reference="YAg-Jp-RYL"/>
-        <segue reference="aV5-mq-s3Q"/>
+        <segue reference="07E-4w-Zh7"/>
+        <segue reference="8MS-xS-DMP"/>
         <segue reference="8yc-oK-dlC"/>
         <segue reference="Jma-5H-zJx"/>
         <segue reference="4EJ-HI-y5g"/>
