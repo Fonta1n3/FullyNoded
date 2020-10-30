@@ -20,6 +20,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     var isHost = Bool()
     var hostname: String?
     let imagePicker = UIImagePickerController()
+    var alertStyle = UIAlertController.Style.actionSheet
     
     @IBOutlet weak var scanQROutlet: UIBarButtonItem!
     @IBOutlet weak var header: UILabel!
@@ -54,6 +55,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             addressHeaderOutlet.text = "Address: (xxx.onion:8332 or xxx.127.0.0.1:8332)"
             deleteLightningOutlet.alpha = 0
             header.text = "Bitcoin Core Node"
+        }
+        
+        if (UIDevice.current.userInterfaceIdiom == .pad) {
+          alertStyle = UIAlertController.Style.alert
         }
     }
     
@@ -256,6 +261,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             
             let decryptedAddress = (onionAddressField.text)!.dataUsingUTF8StringEncoding
             guard let encryptedOnionAddress = encryptedValue(decryptedAddress) else { return }
+            
             CoreDataService.update(id: id, keyToUpdate: "onionAddress", newValue: encryptedOnionAddress, entity: .newNodes) { [unowned vc = self] success in
                 if success {
                     vc.nodeAddedSuccess()
@@ -397,16 +403,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     if nodes!.count > 1 {
                         vc.deActivateNodes(nodes: nodes!) {
                             DispatchQueue.main.async { [unowned vc = self] in
-                                var alertStyle = UIAlertController.Style.actionSheet
-                                if (UIDevice.current.userInterfaceIdiom == .pad) {
-                                  alertStyle = UIAlertController.Style.alert
-                                }
-                                let alert = UIAlertController(title: "Node added successfully ✅", message: "Your node has been saved and activated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection to your new node.", preferredStyle: alertStyle)
+                                let alert = UIAlertController(title: "Node added successfully ✅", message: "Your node has been saved and activated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection to your new node.", preferredStyle: self.alertStyle)
                                 alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                                     DispatchQueue.main.async { [unowned vc = self] in
-                                        if !vc.isLightning {
-                                            NotificationCenter.default.post(name: .refreshNode, object: nil)
-                                        }
+                                        NotificationCenter.default.post(name: .refreshNode, object: nil)
                                         vc.navigationController?.popToRootViewController(animated: true)
                                     }
                                 }))
@@ -417,16 +417,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     } else {
                         if !vc.createNew {
                             DispatchQueue.main.async { [unowned vc = self] in
-                                var alertStyle = UIAlertController.Style.actionSheet
-                                if (UIDevice.current.userInterfaceIdiom == .pad) {
-                                  alertStyle = UIAlertController.Style.alert
-                                }
-                                let alert = UIAlertController(title: "Node updated successfully", message: "Your node has been updated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection using your updated node credentials.", preferredStyle: alertStyle)
+                                let alert = UIAlertController(title: "Node updated successfully", message: "Your node has been updated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection using your updated node credentials.", preferredStyle: self.alertStyle)
                                 alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                                     DispatchQueue.main.async { [unowned vc = self] in
-                                        if !vc.isLightning {
-                                            NotificationCenter.default.post(name: .refreshNode, object: nil)
-                                        }
+                                        NotificationCenter.default.post(name: .refreshNode, object: nil)
                                         vc.navigationController?.popToRootViewController(animated: true)
                                     }
                                 }))
@@ -435,16 +429,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                             }
                         } else {
                            DispatchQueue.main.async { [unowned vc = self] in
-                            var alertStyle = UIAlertController.Style.actionSheet
-                            if (UIDevice.current.userInterfaceIdiom == .pad) {
-                              alertStyle = UIAlertController.Style.alert
-                            }
-                                let alert = UIAlertController(title: "Node added successfully ✅", message: "Your node has been added and activated. The home screen is automatically refreshing. Tap Done to go back.", preferredStyle: alertStyle)
+                            let alert = UIAlertController(title: "Node added successfully ✅", message: "Your node has been added and activated. The home screen is automatically refreshing. Tap Done to go back.", preferredStyle: self.alertStyle)
                                 alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                                     DispatchQueue.main.async { [unowned vc = self] in
-                                        if !vc.isLightning {
-                                            NotificationCenter.default.post(name: .refreshNode, object: nil)
-                                        }
+                                        NotificationCenter.default.post(name: .refreshNode, object: nil)
                                         vc.navigationController?.popToRootViewController(animated: true)
                                     }
                                 }))
@@ -456,17 +444,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 } else {
                     if !vc.createNew {
                         DispatchQueue.main.async { [unowned vc = self] in
-                            var alertStyle = UIAlertController.Style.actionSheet
-                            if (UIDevice.current.userInterfaceIdiom == .pad) {
-                              alertStyle = UIAlertController.Style.alert
-                            }
-                            let alert = UIAlertController(title: "Node updated successfully", message: "Your node has been updated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection using your updated node credentials.", preferredStyle: alertStyle)
+                            let alert = UIAlertController(title: "Node updated successfully", message: "Your node has been updated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection using your updated node credentials.", preferredStyle: self.alertStyle)
                             alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                                 DispatchQueue.main.async { [unowned vc = self] in
-                                    if !vc.isLightning {
-                                        NotificationCenter.default.post(name: .refreshNode, object: nil)
-                                    }
-                                    vc.navigationController?.popToRootViewController(animated: true)
+                                    vc.navigationController?.popViewController(animated: true)
                                 }
                             }))
                             alert.popoverPresentationController?.sourceView = vc.view
@@ -474,17 +455,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                         }
                     } else {
                        DispatchQueue.main.async { [unowned vc = self] in
-                        var alertStyle = UIAlertController.Style.actionSheet
-                        if (UIDevice.current.userInterfaceIdiom == .pad) {
-                          alertStyle = UIAlertController.Style.alert
-                        }
-                            let alert = UIAlertController(title: "Node added successfully ✅", message: "Your node has been added and activated. The home screen is automatically refreshing. Tap Done to go back.", preferredStyle: alertStyle)
+                        let alert = UIAlertController(title: "Node added successfully ✅", message: "Your node has been added and activated. The home screen is automatically refreshing. Tap Done to go back.", preferredStyle: self.alertStyle)
                             alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                                 DispatchQueue.main.async { [unowned vc = self] in
-                                    if !vc.isLightning {
-                                        NotificationCenter.default.post(name: .refreshNode, object: nil)
-                                    }
-                                    vc.navigationController?.popToRootViewController(animated: true)
+                                    vc.navigationController?.popViewController(animated: true)
                                 }
                             }))
                             alert.popoverPresentationController?.sourceView = vc.view

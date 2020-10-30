@@ -24,11 +24,8 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        #if targetEnvironment(macCatalyst)
-            textView.isEditable = true
-        #else
-            textView.isEditable = false
-        #endif
+        textView.isEditable = false
+        textView.isSelectable = true
         
         signOutlet.clipsToBounds = true
         signOutlet.layer.cornerRadius = 8

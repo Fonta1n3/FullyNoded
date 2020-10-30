@@ -813,7 +813,6 @@ extension MainMenuViewController: OnionManagerDelegate {
     
     func torConnProgress(_ progress: Int) {
         DispatchQueue.main.async { [weak self] in
-            print("progress: \(progress)")
             self?.torProgressLabel.text = "Tor bootstrapping \(progress)% complete"
             self?.progressView.setProgress(Float(Double(progress) / 100.0), animated: true)
             self?.blurView.alpha = 1
