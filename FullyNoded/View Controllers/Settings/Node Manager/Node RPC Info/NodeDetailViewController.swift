@@ -30,6 +30,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     @IBOutlet var saveButton: UIButton!
     @IBOutlet weak var onionAddressField: UITextField!
     @IBOutlet weak var deleteLightningOutlet: UIButton!
+    @IBOutlet weak var addressHeaderOutlet: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -44,15 +45,15 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         saveButton.clipsToBounds = true
         saveButton.layer.cornerRadius = 8
         if isLightning {
+            addressHeaderOutlet.text = "Address: (xxx.onion:8080 or 127.0.0.1:8080)"
             if selectedNode != nil {
                 deleteLightningOutlet.alpha = 1
             }
             header.text = "Lightning Node"
-            //scanQROutlet.tintColor = UIColor.lightGray.withAlphaComponent(1)
         } else {
+            addressHeaderOutlet.text = "Address: (xxx.onion:8332 or xxx.127.0.0.1:8332)"
             deleteLightningOutlet.alpha = 0
             header.text = "Bitcoin Core Node"
-            //scanQROutlet.tintColor = UIColor.lightGray.withAlphaComponent(0)
         }
     }
     
@@ -320,7 +321,13 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 if let enc = node.onionAddress {
                     onionAddressField.text = decryptedValue(enc)
                 } else {
-                    onionAddressField.attributedPlaceholder = NSAttributedString(string: "127.0.0.1:8332",
+                    var placeHolder = "127.0.0.1:8332"
+                    
+                    if isLightning {
+                        placeHolder = "127.0.0.1:8080"
+                    }
+                    
+                    onionAddressField.attributedPlaceholder = NSAttributedString(string: placeHolder,
                                                                                  attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
                 }
                 
@@ -334,7 +341,13 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 nodeLabel.attributedPlaceholder = NSAttributedString(string: "Give your node a label",
                                                                      attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
                 
-                onionAddressField.attributedPlaceholder = NSAttributedString(string: "127.0.0.1:8332",
+                var placeHolder = "127.0.0.1:8332"
+                
+                if isLightning {
+                    placeHolder = "127.0.0.1:8080"
+                }
+                
+                onionAddressField.attributedPlaceholder = NSAttributedString(string: placeHolder,
                                                                              attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
             }
         } else {
@@ -347,19 +360,21 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             nodeLabel.attributedPlaceholder = NSAttributedString(string: "Give your node a label",
                                                                  attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
             
+            var placeHolder = "127.0.0.1:8332"
+            
+            if isLightning {
+                placeHolder = "127.0.0.1:8080"
+                nodeLabel.text = "Lightning Node"
+            } else {
+                nodeLabel.text = "Bitcoin Core"
+            }
+            
             onionAddressField.attributedPlaceholder = NSAttributedString(string: "127.0.0.1:8332",
                                                                          attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
-            var message = ""
+            
             #if targetEnvironment(macCatalyst)
-                onionAddressField.text = "127.0.0.1:8332"
-                message = "You can either enter your node credentials manually or tap the QR button to scan or upload a QuickConnect QR.\n\nBy default we make it as easy for you as we can by adding an address which will work for Bitcoin Core if it is running on this computer.\n\nJust add the rpcuser and rpcpassword which can be found in your bitcoin.conf file. On a mac this file can be found at /Library/Application Support/Bitcoin/bitcoin.conf\n\nIf you do not see rpcuser or rpcpassword in your bitcoin.conf just add them and save the changes, as an example:\n\nrpcuser=satoshiNakamoto\nrpcpassword=aReallyStrongPassword\n\nFor remote connections you may enter an onion address or a VPN address."
-            #else
-                message = "You can either enter your node credentials manually or tap the QR button to scan or upload a QuickConnect QR. For local nodes just add the IP of your node.\n\nFor remote connections you may enter an onion address or a VPN address.\n\nJust add the rpcuser and rpcpassword which can be found in your bitcoin.conf file. On a mac this file can be found at /Library/Application Support/Bitcoin/bitcoin.conf\n\nIf you do not see rpcuser or rpcpassword in your bitcoin.conf just add them and save the changes, as an example:\n\nrpcuser=satoshiNakamoto\nrpcpassword=aReallyStrongPassword"
+                onionAddressField.text = placeHolder
             #endif
-            
-            nodeLabel.text = "Bitcoin Core"
-            showAlert(vc: self, title: "First things first add a node ✅", message: message)
-            
         }
     }
     
@@ -515,8 +530,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 } else {
                     DispatchQueue.main.async { [weak self] in
                         guard let self = self else { return }
-                        NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
+                        
                         self.navigationController?.popViewController(animated: true)
+                        NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
                     }
                 }
             } else {

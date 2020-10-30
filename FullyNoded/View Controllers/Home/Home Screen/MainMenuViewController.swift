@@ -183,6 +183,13 @@ class MainMenuViewController: UIViewController {
     }
     
     @objc func refreshNode() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.tabBarController?.selectedIndex = 0
+            self.refreshTable()
+        }
+        
         existingNodeID = nil
         addNavBarSpinner()
         loadTable()
@@ -248,7 +255,7 @@ class MainMenuViewController: UIViewController {
         }
     }
     
-    @objc func refreshData(_ sender: Any) {
+    private func refreshTable() {
         existingNodeID = nil
         blockchainInfo = nil
         mempoolInfo = nil
@@ -259,6 +266,10 @@ class MainMenuViewController: UIViewController {
         DispatchQueue.main.async { [weak self] in
             self?.mainMenu.reloadData()
         }
+    }
+    
+    @objc func refreshData(_ sender: Any) {
+        refreshTable()
         refreshDataNow()
     }
     
