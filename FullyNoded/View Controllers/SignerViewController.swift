@@ -24,11 +24,8 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        #if targetEnvironment(macCatalyst)
-            textView.isEditable = true
-        #else
-            textView.isEditable = false
-        #endif
+        textView.isEditable = false
+        textView.isSelectable = true
         
         signOutlet.clipsToBounds = true
         signOutlet.layer.cornerRadius = 8
@@ -218,7 +215,6 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
                 let alert = UIAlertController(title: "You have a valid psbt on your clipboard", message: "Would you like to process it? This will *not* broadcast the transaction we simply check if it is completed yet and add any missing info to the psbt that may not be there.", preferredStyle: self.alertStyle)
                 
                 alert.addAction(UIAlertAction(title: "Process", style: .default, handler: { action in
-                                        
                     if psbtTocheck.complete {
                         self.finalizePsbt()
                     } else {
@@ -243,8 +239,10 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
             
             processPastedString(string)
         } else if let string = UIPasteboard.general.string {
+            
            processPastedString(string)
         } else {
+            
             showAlert(vc: self, title: "Nothing on the clipboard!", message: "Does not look like you have much on your clipboard, or if you do have something it is not text. You can copy and paste the base64 text of a psbt with this button.")
         }
     }

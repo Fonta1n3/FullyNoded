@@ -20,6 +20,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         navigationController?.delegate = self
         nodeTable.tableFooterView = UIView(frame: .zero)
         addButton = UIBarButtonItem.init(barButtonSystemItem: .add, target: self, action: #selector(addNode))

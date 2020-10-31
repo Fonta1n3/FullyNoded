@@ -12,6 +12,7 @@ import UIKit
 
 class QRScannerViewController: UIViewController {
     
+    private var hasScanned = false
     private let avCaptureSession = AVCaptureSession()
     private var stringToReturn = ""
     private let imagePicker = UIImagePickerController()
@@ -181,9 +182,8 @@ class QRScannerViewController: UIViewController {
     }
     
     private func process(text: String) {
-        //spinner.addConnectingView(vc: self, description: "processing...")
-        
         if isUrPsbt {
+            hasScanned = false
             processUrPsbt(text: text)
             
         } else if isAccountMap {
@@ -354,7 +354,6 @@ class QRScannerViewController: UIViewController {
             self.textField.removeFromSuperview()
             self.torchButton.removeFromSuperview()
             self.uploadButton.removeFromSuperview()
-            //self.scannerView.removeFromSuperview()
         }
     }
     
@@ -389,27 +388,30 @@ fileprivate func convertFromUIImagePickerControllerInfoKey(_ input: UIImagePicke
 extension QRScannerViewController: AVCaptureMetadataOutputObjectsDelegate {
     
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
-        
-        guard metadataObjects.count > 0, let machineReadableCode = metadataObjects[0] as? AVMetadataMachineReadableCodeObject, machineReadableCode.type == AVMetadataObject.ObjectType.qr, let stringURL = machineReadableCode.stringValue else {
+        if !hasScanned {
+            guard metadataObjects.count > 0, let machineReadableCode = metadataObjects[0] as? AVMetadataMachineReadableCodeObject, machineReadableCode.type == AVMetadataObject.ObjectType.qr, let stringURL = machineReadableCode.stringValue else {
+                
+                return
+            }
             
-            return
-        }
-        
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.avCaptureSession.stopRunning()
+                let impact = UIImpactFeedbackGenerator()
+                impact.impactOccurred()
+                AudioServicesPlaySystemSound(1103)
+            }
             
-            self.avCaptureSession.stopRunning()
-            let impact = UIImpactFeedbackGenerator()
-            impact.impactOccurred()
-            AudioServicesPlaySystemSound(1103)
-        }
-        
-        process(text: stringURL)
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-            guard let self = self else { return }
+            hasScanned = true
             
-            self.avCaptureSession.startRunning()
+            process(text: stringURL)
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                guard let self = self else { return }
+                
+                self.avCaptureSession.startRunning()
+            }
         }
     }
     
