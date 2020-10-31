@@ -32,7 +32,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         
         passwordInput.delegate = self
         
-        lockView.backgroundColor = UIColor.black
+        lockView.backgroundColor = .black
         lockView.alpha = 1
         
         imageView.image = UIImage(named: "logo_grey.png")
@@ -51,15 +51,16 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         passwordInput.layer.borderWidth = 0.5
         passwordInput.layer.borderColor = UIColor.lightGray.cgColor
         
-        #if !targetEnvironment(macCatalyst)
+        touchIDButton.setImage(UIImage(systemName: "faceid"), for: .normal)
+        touchIDButton.tintColor = .systemTeal
+        touchIDButton.backgroundColor = UIColor.clear
+        touchIDButton.addTarget(self, action: #selector(authenticationWithTouchID), for: .touchUpInside)
+        touchIDButton.showsTouchWhenHighlighted = true
         
+        #if !targetEnvironment(macCatalyst)
+            touchIDButton.alpha = 1
         #else
-            touchIDButton.setImage(UIImage(systemName: "faceid"), for: .normal)
-            touchIDButton.tintColor = .systemTeal
-            touchIDButton.backgroundColor = UIColor.clear
             touchIDButton.alpha = 0
-            touchIDButton.addTarget(self, action: #selector(authenticationWithTouchID), for: .touchUpInside)
-            touchIDButton.showsTouchWhenHighlighted = true
         #endif
         
         view.addSubview(lockView)
@@ -138,7 +139,9 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     func showUnlockScreen() {
         UIView.animate(withDuration: 0.2, animations: {
             self.passwordInput.alpha = 1
-            self.touchIDButton.alpha = 1
+            #if !targetEnvironment(macCatalyst)
+                self.touchIDButton.alpha = 1
+            #endif
         })
     }
     

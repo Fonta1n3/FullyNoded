@@ -7,15 +7,15 @@
 //
 
 import Foundation
-import UIKit
+//import UIKit
 
 class QuickConnect {
     
-    // MARK: QuickConnect url examples
-    // btcrpc://rpcuser:rpcpassword@uhqefiu873h827h3ufnjecnkajbciw7bui3hbuf233b.onion:8332/?label=Node%20Name
-    // btcrpc://rpcuser:rpcpassword@uhqefiu873h827h3ufnjecnkajbciw7bui3hbuf233b.onion:18332/?
-    // btcrpc://rpcuser:rpcpassword@uhqefiu873h827h3ufnjecnkajbciw7bui3hbuf233b.onion:18443
-    // clightning-rpc://rpcuser:rpcpassword@kjhfefe.onion:1312?label=BTCPay%20C-Lightning
+    // MARK: QuickConnect uri examples
+    /// btcrpc://rpcuser:rpcpassword@uhqefiu873h827h3ufnjecnkajbciw7bui3hbuf233b.onion:8332/?label=Node%20Name
+    /// btcrpc://rpcuser:rpcpassword@uhqefiu873h827h3ufnjecnkajbciw7bui3hbuf233b.onion:18332/?
+    /// btcrpc://rpcuser:rpcpassword@uhqefiu873h827h3ufnjecnkajbciw7bui3hbuf233b.onion:18443
+    /// clightning-rpc://rpcuser:rpcpassword@kjhfefe.onion:1312?label=BTCPay%20C-Lightning
     
     class func addNode(url: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
         var label = "Node"
@@ -38,44 +38,7 @@ class QuickConnect {
             completion((false, "either the hostname, rpcuser or rpcpassword is empty"))
             return
         }
-        
-        func saveNode(_ node: [String:Any]) {
-            CoreDataService.saveEntity(dict: node, entityName: .newNodes) { success in
-                if success {
-                    if !url.hasPrefix("clightning-rpc") {
-                        let ud = UserDefaults.standard
-                        ud.removeObject(forKey: "walletName")
-                    }
-                    completion((true, nil))
-                } else {
-                    completion((false, "error saving your node to core data"))
-                }
-            }
-        }
-        
-        func processNode(_ newNode: [String:Any]) {
-            if url.hasPrefix("clightning-rpc") {
-                saveNode(newNode)
                 
-            } else {
-                // Deactivate existing nodes
-                CoreDataService.retrieveEntity(entityName: .newNodes) { (nodes) in
-                    guard nodes != nil, nodes!.count > 0 else { saveNode(newNode); return }
-                    
-                    for (i, node) in nodes!.enumerated() {
-                        let nodeStruct = NodeStruct(dictionary: node)
-                        guard let id = nodeStruct.id else { return }
-                        
-                        CoreDataService.update(id: id, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
-                        
-                        if i + 1 == nodes!.count {
-                            saveNode(newNode)
-                        }
-                    }
-                }
-            }
-        }
-        
         // Encrypt credentials
         guard let torNodeHost = Crypto.encrypt(host.dataUsingUTF8StringEncoding),
             let torNodeRPCPass = Crypto.encrypt(rpcPassword.dataUsingUTF8StringEncoding),
@@ -100,8 +63,46 @@ class QuickConnect {
             newNode["isActive"] = false
         }
         
-        processNode(newNode)
+        processNode(newNode, url, completion: completion)
     }
+    
+    private class func processNode(_ newNode: [String:Any], _ url: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
+        if url.hasPrefix("clightning-rpc") {
+            saveNode(newNode, url, completion: completion)
+            
+        } else {
+            // Deactivate existing nodes
+            CoreDataService.retrieveEntity(entityName: .newNodes) { (nodes) in
+                guard let nodes = nodes, nodes.count > 0 else { saveNode(newNode, url, completion: completion); return }
+                
+                for (i, node) in nodes.enumerated() {
+                    let nodeStruct = NodeStruct(dictionary: node)
+                    guard let id = nodeStruct.id else { return }
+                    
+                    CoreDataService.update(id: id, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                    
+                    if i + 1 == nodes.count {
+                        saveNode(newNode, url, completion: completion)
+                    }
+                }
+            }
+        }
+    }
+    
+    private class func saveNode(_ node: [String:Any], _ url: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
+        CoreDataService.saveEntity(dict: node, entityName: .newNodes) { success in
+            if success {
+                if !url.hasPrefix("clightning-rpc") {
+                    UserDefaults.standard.removeObject(forKey: "walletName")
+                }
+                
+                completion((true, nil))
+            } else {
+                completion((false, "error saving your node to core data"))
+            }
+        }
+    }
+    
 }
 
 extension URL {
