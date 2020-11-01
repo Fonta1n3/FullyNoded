@@ -24,6 +24,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     var alertStyle = UIAlertController.Style.actionSheet
     var ccXfp = ""
     var xpub = ""
+    var deriv = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -118,9 +119,9 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 /// We think its a coldcard skeleton import
                 promptToImportColdcardSingleSig(dict)
                 
-            } else if let _ = dict["p2wsh_deriv"] as? String, let xfp = dict["xfp"] as? String, let p2wsh = dict["p2wsh"] as? String {
+            } else if let deriv = dict["p2wsh_deriv"] as? String, let xfp = dict["xfp"] as? String, let p2wsh = dict["p2wsh"] as? String {
                 /// It is most likely a multi-sig wallet export
-                promptToImportColdcardMsig(xfp, p2wsh)
+                promptToImportColdcardMsig(xfp, p2wsh, deriv)
                 
             } else if let _ = dict["wallet_type"] as? String {
                 /// We think its an Electrum wallet
@@ -243,7 +244,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         return "wsh(sortedmulti(\(m),\(keysString)))"
     }
     
-    private func promptToImportColdcardMsig(_ xfp: String, _ xpub: String) {
+    private func promptToImportColdcardMsig(_ xfp: String, _ xpub: String, _ deriv: String) {
         DispatchQueue.main.async { [unowned vc = self] in
             let alert = UIAlertController(title: "Create a multisig with your Coldcard?", message: "You have uploaded a Coldcard multisig file, this action allows you to easily create a wallet with your Coldcard and Fully Noded.", preferredStyle: vc.alertStyle)
             
@@ -251,6 +252,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.ccXfp = xfp
                     vc.xpub = xpub
+                    vc.deriv = deriv
                     vc.performSegue(withIdentifier: "segueToCreateMultiSig", sender: vc)
                 }
             }))
@@ -373,6 +375,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             if let vc = segue.destination as? CreateMultisigViewController {
                 vc.ccXfp = ccXfp
                 vc.ccXpub = xpub
+                vc.ccDeriv = deriv
             }
         }
     }
