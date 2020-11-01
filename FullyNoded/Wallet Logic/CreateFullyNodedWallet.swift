@@ -18,7 +18,7 @@ enum Keys {
     }
     
     static func donationAddress() -> String? {
-        let randomInt = Int.random(in: 0..<10000)
+        let randomInt = Int.random(in: 0..<99999)
         
         guard let hdKey = HDKey("xpub6C1DcRZo4RfYHE5F4yiA2m26wMBLr33qP4xpVdzY1EkHyUdaxwHhAvAUpohwT4ajjd1N9nt7npHrjd3CLqzgfbEYPknaRW8crT2C9xmAy3G"),
               let path = BIP32Path("0/\(randomInt)"),

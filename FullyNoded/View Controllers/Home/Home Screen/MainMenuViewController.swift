@@ -66,6 +66,7 @@ class MainMenuViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         mainMenu.delegate = self
         mainMenu.alpha = 0
         mainMenu.tableFooterView = UIView(frame: .zero)
@@ -636,23 +637,16 @@ class MainMenuViewController: UIViewController {
     //MARK: User Interface
     
     func addlaunchScreen() {
-        if let _ = self.tabBarController {
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                //self.backView.alpha = 0
-                self.backView.frame = self.tabBarController!.view.frame
-                self.backView.backgroundColor = .black
-                let imageView = UIImageView()
-                imageView.frame = CGRect(x: self.view.center.x - 75, y: self.view.center.y - 75, width: 150, height: 150)
-                imageView.image = UIImage(named: "logo_grey.png")
-                self.backView.addSubview(imageView)
-                self.view.addSubview(self.backView)
-                
-//                UIView.animate(withDuration: 0.8, animations: {
-//                    self.backView.alpha = 1
-//                })
-            }
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.backView.frame = self.view.frame
+            self.backView.backgroundColor = .black
+            let imageView = UIImageView()
+            imageView.frame = CGRect(x: self.view.center.x - 75, y: self.view.center.y - 75, width: 150, height: 150)
+            imageView.image = UIImage(named: "logo_grey.png")
+            self.backView.addSubview(imageView)
+            self.view.addSubview(self.backView)
         }
     }
     
@@ -756,6 +750,11 @@ class MainMenuViewController: UIViewController {
                 vc.descriptionText = "Fully Noded macOS hosts a secure hidden service for your node which can be used to remotely connect to it.\n\nSimply scan this QR with your iPhone or iPad using the Fully Noded iOS app and connect to your node remotely from anywhere in the world!"
             }
             
+        case "segueToPaywall":
+            guard let vc = segue.destination as? InvoiceViewController else { fallthrough }
+            
+            vc.isPaying = true
+            
         default:
             break
         }
@@ -768,6 +767,58 @@ class MainMenuViewController: UIViewController {
         return FirstTime.firstTimeHere()
     }
     
+    private func checkIfPaymentReceived(_ address: String) {
+        let blockstreamUrl = "http://explorerzydxu5ecjrkwceayqybizmpjjznk5izmitf2modhcusuqlid.onion/api/address/" + address
+
+        guard let url = URL(string: blockstreamUrl) else { return }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
+
+        let task = TorClient.sharedInstance.session.dataTask(with: request as URLRequest) { (data, response, error) in
+            guard let urlContent = data else {
+                showAlert(vc: self, title: "Ooops", message: "There was an issue checking on payment status")
+                return
+            }
+
+            guard let json = try? JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as? NSDictionary else {
+                showAlert(vc: self, title: "Ooops", message: "There was an issue decoding the response when fetching payment status")
+                return
+            }
+
+            var txCount = 0
+
+            if let chain_stats = json["chain_stats"] as? NSDictionary {
+                guard let count = chain_stats["tx_count"] as? Int else { return }
+
+                txCount += count
+            }
+
+            if let mempool_stats = json["mempool_stats"] as? NSDictionary {
+                guard let count = mempool_stats["tx_count"] as? Int else { return }
+
+                txCount += count
+            }
+
+            if txCount == 0 {
+                self.goToPaywall()
+
+            } else {
+                let _ = KeyChain.set("hasPaid".dataUsingUTF8StringEncoding, forKey: "hasPaid")
+            }
+        }
+
+        task.resume()
+    }
+    
+    private func goToPaywall() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.performSegue(withIdentifier: "segueToPaywall", sender: self)
+        }
+    }
 }
 
 // MARK: Helpers
@@ -824,10 +875,21 @@ extension MainMenuViewController: OnionManagerDelegate {
         removeBackView()
         loadTable()
         displayAlert(viewController: self, isError: false, message: "Tor finished bootstrapping")
+        
         DispatchQueue.main.async { [weak self] in
             self?.torProgressLabel.isHidden = true
             self?.progressView.isHidden = true
             self?.blurView.isHidden = true
+        }
+        
+        if KeyChain.getData("hasPaid") == nil {
+            guard let data = KeyChain.getData("paymentAddress") else {
+                goToPaywall()
+                return
+            }
+            print("paymentAddress: \(data.utf8)")
+            
+            checkIfPaymentReceived(data.utf8)
         }
     }
     

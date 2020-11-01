@@ -10,7 +10,7 @@ import UIKit
 import LocalAuthentication
 
 class LogInViewController: UIViewController, UITextFieldDelegate {
-    
+
     var onDoneBlock: (() -> Void)?
     let passwordInput = UITextField()
     let lockView = UIView()
@@ -22,22 +22,22 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     var timeToDisable = 2.0
     var timer: Timer?
     var secondsRemaining = 2
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-                
+
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
-        
+
         passwordInput.delegate = self
-        
+
         lockView.backgroundColor = .black
         lockView.alpha = 1
-        
+
         imageView.image = UIImage(named: "logo_grey.png")
         imageView.alpha = 1
-        
+
         passwordInput.keyboardType = .default
         passwordInput.autocapitalizationType = .none
         passwordInput.autocorrectionType = .no
@@ -50,61 +50,61 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         passwordInput.keyboardAppearance = .dark
         passwordInput.layer.borderWidth = 0.5
         passwordInput.layer.borderColor = UIColor.lightGray.cgColor
-        
+
         touchIDButton.setImage(UIImage(systemName: "faceid"), for: .normal)
         touchIDButton.tintColor = .systemTeal
         touchIDButton.backgroundColor = UIColor.clear
         touchIDButton.addTarget(self, action: #selector(authenticationWithTouchID), for: .touchUpInside)
         touchIDButton.showsTouchWhenHighlighted = true
-        
+
         #if !targetEnvironment(macCatalyst)
             touchIDButton.alpha = 1
         #else
             touchIDButton.alpha = 0
         #endif
-        
+
         view.addSubview(lockView)
-        
+
         guard let timeToDisableOnKeychain = KeyChain.getData("TimeToDisable") else {
             let _ = KeyChain.set("2.0".dataUsingUTF8StringEncoding, forKey: "TimeToDisable")
             return
         }
-        
+
         guard let time = Double(timeToDisableOnKeychain.utf8) else { return }
-        
+
         timeToDisable = time
         secondsRemaining = Int(timeToDisable)
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         lockView.addSubview(imageView)
         lockView.addSubview(passwordInput)
         addNextButton(inputView: self.passwordInput)
-        
+
         let ud = UserDefaults.standard
-        
+
         if ud.object(forKey: "bioMetricsDisabled") == nil {
             touchIDButton.removeFromSuperview()
             lockView.addSubview(touchIDButton)
         }
-        
+
         showUnlockScreen()
-        
+
         DispatchQueue.main.async {
             UIImpactFeedbackGenerator().impactOccurred()
         }
-        
+
         if ud.object(forKey: "bioMetricsDisabled") == nil {
             authenticationWithTouchID()
         }
-        
+
         configureTimeoutLabel()
-        
+
         if timeToDisable > 2.0 {
             disable()
         }
     }
-    
+
     override func viewDidLayoutSubviews() {
         lockView.frame = self.view.frame
         imageView.frame = CGRect(x: self.view.center.x - 40, y: 40, width: 80, height: 80)
@@ -112,17 +112,17 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         nextButton.frame = CGRect(x: self.view.center.x - 40, y: passwordInput.frame.maxY + 15, width: 80, height: 35)
         touchIDButton.frame = CGRect(x: self.view.center.x - 30, y: self.nextButton.frame.maxY + 20, width: 60, height: 60)
     }
-    
+
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
         DispatchQueue.main.async {
             self.passwordInput.resignFirstResponder()
         }
     }
-    
+
     func addNextButton(inputView: UITextField) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            
+
             self.nextButton.removeFromSuperview()
             self.nextButton.showsTouchWhenHighlighted = true
             self.nextButton.setTitle("next", for: .normal)
@@ -135,7 +135,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             self.view.addSubview(self.nextButton)
         }
     }
-    
+
     func showUnlockScreen() {
         UIView.animate(withDuration: 0.2, animations: {
             self.passwordInput.alpha = 1
@@ -144,33 +144,33 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             #endif
         })
     }
-    
+
     @objc func nextButtonAction() {
         guard passwordInput.text != "" else {
             shakeAlert(viewToShake: passwordInput)
             return
         }
-        
+
         passwordInput.resignFirstResponder()
         checkPassword(password: passwordInput.text!)
     }
-    
+
     private func unlock() {
         let _ = KeyChain.set("2.0".dataUsingUTF8StringEncoding, forKey: "TimeToDisable")
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            
+
             self.touchIDButton.removeFromSuperview()
             self.nextButton.removeFromSuperview()
-            
+
             UIView.animate(withDuration: 0.2, animations: {
                 self.passwordInput.alpha = 0
-                
+
             }, completion: { _ in
                 self.passwordInput.text = ""
                 self.imageView.removeFromSuperview()
                 self.passwordInput.removeFromSuperview()
-                
+
                 DispatchQueue.main.async {
                     self.dismiss(animated: true) {
                         self.onDoneBlock!()
@@ -182,37 +182,37 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
 
     func checkPassword(password: String) {
         guard let passwordData = KeyChain.getData("UnlockPassword") else { return }
-        
+
         let retrievedPassword = passwordData.utf8
-        
+
         let hashedPassword = Crypto.sha256hash(password)
-        
+
         guard let hexData = Data(hashedPassword) else { return }
-        
+
         /// Overwrite users password with the hash of the password, sorry I did not do this before...
         if password == retrievedPassword {
             let _ = KeyChain.set(hexData, forKey: "UnlockPassword")
             unlock()
-            
+
         } else {
             if hexData.hexString == passwordData.hexString {
                 unlock()
-                
+
             } else {
                 timeToDisable = timeToDisable * 2.0
-                
+
                 guard KeyChain.set("\(timeToDisable)".dataUsingUTF8StringEncoding, forKey: "TimeToDisable") else {
                     showAlert(vc: self, title: "Unable to set timeout", message: "This means something is very wrong, the device has probably been jailbroken or is corrupted")
                     return
                 }
-                
+
                 secondsRemaining = Int(timeToDisable)
-                
+
                 disable()
             }
         }
     }
-    
+
     private func configureTimeoutLabel() {
         nextAttemptLabel.textColor = .lightGray
         nextAttemptLabel.frame = CGRect(x: 0, y: view.frame.maxY - 50, width: view.frame.width, height: 50)
@@ -220,23 +220,23 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         nextAttemptLabel.text = ""
         view.addSubview(nextAttemptLabel)
     }
-    
+
     private func disable() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            
+
             self.passwordInput.alpha = 0
             self.passwordInput.isUserInteractionEnabled = false
             self.nextButton.removeTarget(self, action: #selector(self.nextButtonAction), for: .touchUpInside)
             self.nextButton.alpha = 0
         }
-        
+
         timer?.invalidate()
-        
+
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
-                
+
                 if self.secondsRemaining == 0 {
                     self.timer?.invalidate()
                     self.nextAttemptLabel.text = ""
@@ -250,16 +250,16 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
                 }
             }
         }
-        
+
         showAlert(vc: self, title: "Wrong password", message: "")
     }
-    
+
     @objc func authenticationWithTouchID() {
         let localAuthenticationContext = LAContext()
         localAuthenticationContext.localizedFallbackTitle = "Use Password"
         var authError: NSError?
         let reasonString = "To Unlock"
-        
+
         if localAuthenticationContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &authError) {
             localAuthenticationContext.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reasonString) { success, evaluateError in
                 if success {
@@ -268,134 +268,132 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
                     }
                 } else {
                     guard let error = evaluateError else { return }
-                    
+
                     print(self.evaluateAuthenticationPolicyMessageForLA(errorCode: error._code))
                 }
             }
-            
+
         } else {
-            
+
             guard let error = authError else { return }
-            
+
             //TODO: Show appropriate alert if biometry/TouchID/FaceID is lockout or not enrolled
             if self.evaluateAuthenticationPolicyMessageForLA(errorCode: error._code) != "Too many failed attempts." {
-                
+
             }
         }
     }
-    
+
     func evaluatePolicyFailErrorMessageForLA(errorCode: Int) -> String {
         var message = ""
-        
+
         if #available(iOS 11.0, macOS 10.13, *) {
-            
+
             switch errorCode {
-                
+
             case LAError.biometryNotAvailable.rawValue:
                 message = "Authentication could not start because the device does not support biometric authentication."
-                
+
             case LAError.biometryLockout.rawValue:
                 message = "Authentication could not continue because the user has been locked out of biometric authentication, due to failing authentication too many times."
-                
+
             case LAError.biometryNotEnrolled.rawValue:
                 message = "Authentication could not start because the user has not enrolled in biometric authentication."
-                
+
             default:
                 message = "Did not find error code on LAError object"
             }
-            
+
         } else {
-            
+
             switch errorCode {
-                
+
             case LAError.touchIDLockout.rawValue:
                 message = "Too many failed attempts."
-                
+
             case LAError.touchIDNotAvailable.rawValue:
                 message = "TouchID is not available on the device"
-                
+
             case LAError.touchIDNotEnrolled.rawValue:
                 message = "TouchID is not enrolled on the device"
-                
+
             default:
                 message = "Did not find error code on LAError object"
             }
-            
+
         }
-        
+
         return message
-        
+
     }
-    
+
     func evaluateAuthenticationPolicyMessageForLA(errorCode: Int) -> String {
-        
+
         var message = ""
-        
+
         switch errorCode {
-            
+
         case LAError.authenticationFailed.rawValue:
             message = "The user failed to provide valid credentials"
-            
+
         case LAError.appCancel.rawValue:
             message = "Authentication was cancelled by application"
-            
+
         case LAError.invalidContext.rawValue:
             message = "The context is invalid"
-            
+
         case LAError.notInteractive.rawValue:
             message = "Not interactive"
-            
+
         case LAError.passcodeNotSet.rawValue:
             message = "Passcode is not set on the device"
-            
+
         case LAError.systemCancel.rawValue:
             message = "Authentication was cancelled by the system"
-            
+
         case LAError.userCancel.rawValue:
             message = "The user did cancel"
-            
+
         case LAError.userFallback.rawValue:
             message = "The user chose to use the fallback"
-            
+
         default:
             message = evaluatePolicyFailErrorMessageForLA(errorCode: errorCode)
         }
-        
+
         return message
     }
-    
+
 }
 
 extension UIViewController {
-    
+
     func topViewController() -> UIViewController! {
-        
+
         if self.isKind(of: UITabBarController.self) {
-            
+
             let tabbarController =  self as! UITabBarController
-            
+
             return tabbarController.selectedViewController!.topViewController()
-            
+
         } else if (self.isKind(of: UINavigationController.self)) {
-            
+
             let navigationController = self as! UINavigationController
-            
+
             return navigationController.visibleViewController!.topViewController()
-            
+
         } else if ((self.presentedViewController) != nil) {
-            
+
             let controller = self.presentedViewController
-            
+
             return controller!.topViewController()
-            
+
         } else {
-            
+
             return self
-            
+
         }
-        
+
     }
 
 }
-
-
