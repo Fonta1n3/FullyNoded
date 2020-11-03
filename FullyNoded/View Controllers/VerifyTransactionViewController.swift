@@ -574,6 +574,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             self?.verifyTable.reloadData()
         }
         spinner.removeConnectingView()
+        
+        guard let _ = KeyChain.getData("UnlockPassword") else {
+            showAlert(vc: self, title: "You are not using the app securely...", message: "Anyone who gets access to this device will be able to spend your Bitcoin, we urge you to add a lock password via the lock button on the home screen.")
+            
+            return
+        }
     }
     
     func parsePrevTx(method: BTC_CLI_COMMAND, param: String, vout: Int, txid: String) {

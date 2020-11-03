@@ -248,18 +248,6 @@ class IdentityViewController: UIViewController, UITextViewDelegate {
         
     }
     
-//    func getQRCode() {
-//
-//        addText(text: qrScanner.stringToReturn)
-//
-//    }
-//
-//    func didPickImage() {
-//
-//        addText(text: qrScanner.qrString)
-//
-//    }
-    
     func textViewShouldBeginEditing(_ textView: UITextView) -> Bool {
         
         if textView == sigOutlet {

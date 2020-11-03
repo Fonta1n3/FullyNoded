@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import LibWally
 
 class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
 
@@ -44,6 +43,18 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
     
+    @IBAction func generateSignerAction(_ sender: Any) {
+        guard let words = Keys.seed() else { return }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.textView.text = words
+            self.processTextfieldInput()
+            self.validWordsAdded()
+        }
+    }
+    
     @IBAction func addSignerAction(_ sender: Any) {
         saveLocally()
     }
@@ -53,17 +64,15 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
     }
     
     @IBAction func removeWordAction(_ sender: Any) {
-        if self.justWords.count > 0 {
-            
+        if justWords.count > 0 {
             DispatchQueue.main.async { [unowned vc = self] in
-                
                 vc.wordView.text = ""
                 vc.addedWords.removeAll()
                 vc.justWords.remove(at: vc.justWords.count - 1)
                 
                 for (i, word) in vc.justWords.enumerated() {
-                    
                     vc.addedWords.append("\(i + 1). \(word)\n")
+                    
                     if i == 0 {
                         vc.updatePlaceHolder(wordNumber: i + 1)
                     } else {
@@ -73,90 +82,60 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
                 
                 vc.wordView.text = vc.addedWords.joined(separator: "")
                 
-                if let _ = BIP39Mnemonic(vc.justWords.joined(separator: " ")) {
-                    
+                if Keys.validMnemonic(vc.justWords.joined(separator: " ")) {
                     vc.validWordsAdded()
-                    
                 }
-                
             }
-            
         }
     }
     
     private func processTextfieldInput() {
-        print("processTextfieldInput")
-        
-        if textView.text != "" {
-            
-            //check if user pasted more then one word
-            let processed = processedCharacters(textView.text!)
-            let userAddedWords = processed.split(separator: " ")
-            var multipleWords = [String]()
-            
-            if userAddedWords.count > 1 {
-                
-                //user add multiple words
-                for (i, word) in userAddedWords.enumerated() {
-                    
-                    var isValid = false
-                    
-                    for bip39Word in bip39Words {
-                        
-                        if word == bip39Word {
-                            isValid = true
-                            multipleWords.append("\(word)")
-                        }
-                        
-                    }
-                    
-                    if i + 1 == userAddedWords.count {
-                        
-                        // we finished our checks
-                        if isValid {
-                            
-                            // they are valid bip39 words
-                            addMultipleWords(words: multipleWords)
-                            
-                            textView.text = ""
-                            
-                        } else {
-                            
-                            //they are not all valid bip39 words
-                            textView.text = ""
-                            
-                            showAlert(vc: self, title: "Error", message: "At least one of those words is not a valid BIP39 word. We suggest inputting them one at a time so you can utilize our autosuggest feature which will prevent typos.")
-                            
-                        }
-                        
-                    }
-                    
-                }
-                
-            } else {
-                
-                //its one word
-                let processedWord = textView.text!.replacingOccurrences(of: " ", with: "")
-                
-                for word in bip39Words {
-                    
-                    if processedWord == word {
-                        
-                        addWord(word: processedWord)
-                        textView.text = ""
-                        
-                    }
-                    
-                }
-                
-            }
-            
-        } else {
-            
+        guard textView.text != "" else {
             shakeAlert(viewToShake: textView)
-            
+            return
         }
         
+        //check if user pasted more then one word
+        let processed = processedCharacters(textView.text!)
+        let userAddedWords = processed.split(separator: " ")
+        var multipleWords = [String]()
+        
+        if userAddedWords.count > 1 {
+            //user add multiple words
+            for (i, word) in userAddedWords.enumerated() {
+                var isValid = false
+                
+                for bip39Word in bip39Words {
+                    if word == bip39Word {
+                        isValid = true
+                        multipleWords.append("\(word)")
+                    }
+                }
+                
+                if i + 1 == userAddedWords.count {
+                    // we finished our checks
+                    if isValid {
+                        // they are valid bip39 words
+                        addMultipleWords(words: multipleWords)
+                        textView.text = ""
+                    } else {
+                        //they are not all valid bip39 words
+                        textView.text = ""
+                        showAlert(vc: self, title: "Error", message: "At least one of those words is not a valid BIP39 word. We suggest inputting them one at a time so you can utilize our autosuggest feature which will prevent typos.")
+                    }
+                }
+            }
+        } else {
+            //its one word
+            let processedWord = textView.text!.replacingOccurrences(of: " ", with: "")
+            
+            for word in bip39Words {
+                if processedWord == word {
+                    addWord(word: processedWord)
+                    textView.text = ""
+                }
+            }
+        }
     }
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
@@ -198,8 +177,12 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let mnemonicData = self.justWords.joined(separator: " ").dataUsingUTF8StringEncoding
+            let words = self.justWords.joined(separator: " ")
+            let mnemonicData = words.dataUsingUTF8StringEncoding
             let passphrase = self.passphraseField.text ?? ""
+            
+            guard let mk = Keys.masterKey(words: words, coinType: "0", passphrase: passphrase) else { return }
+            guard let fingeprint = Keys.fingerprint(masterKey: mk) else { return }
             
             guard let encryptedWords = Crypto.encrypt(mnemonicData) else {
                 self.showError(error: "error encrypting your seed")
@@ -214,16 +197,16 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
                     return
                 }
                 
-                self.saveSignerAndPassphrase(encryptedSigner: encryptedWords, encryptedPassphrase: encryptedPassphrase)
+                self.saveSignerAndPassphrase(encryptedWords, encryptedPassphrase, fingeprint)
             } else {
                 
-                self.saveSigner(encryptedSigner: encryptedWords)
+                self.saveSigner(encryptedWords, fingeprint)
             }
         }
     }
     
-    private func saveSignerAndPassphrase(encryptedSigner: Data, encryptedPassphrase: Data) {
-        let dict = ["id":UUID(), "words":encryptedSigner, "passphrase":encryptedPassphrase, "added":Date(), "label":"Signer"] as [String:Any]
+    private func saveSignerAndPassphrase(_ encryptedSigner: Data, _ encryptedPassphrase: Data, _ fingerprint: String) {
+        let dict = ["id":UUID(), "words":encryptedSigner, "passphrase":encryptedPassphrase, "added":Date(), "label":fingerprint] as [String:Any]
         CoreDataService.saveEntity(dict: dict, entityName: .signers) { [unowned vc = self] success in
             if success {
                 vc.signerAdded()
@@ -233,8 +216,8 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
         }
     }
     
-    private func saveSigner(encryptedSigner: Data) {
-        let dict = ["id":UUID(), "words":encryptedSigner, "added":Date(), "label":"Signer"] as [String:Any]
+    private func saveSigner(_ encryptedSigner: Data, _ fingerprint: String) {
+        let dict = ["id":UUID(), "words":encryptedSigner, "added":Date(), "label":fingerprint] as [String:Any]
         CoreDataService.saveEntity(dict: dict, entityName: .signers) { [unowned vc = self] success in
             if success {
                 vc.signerAdded()
@@ -251,18 +234,14 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
     }
 
     private func formatSubstring(subString: String) -> String {
-        
         let formatted = String(subString.dropLast(autoCompleteCharacterCount)).lowercased()
         return formatted
-        
     }
     
     private func resetValues() {
-        
         textView.textColor = .white
         autoCompleteCharacterCount = 0
         textView.text = ""
-        
     }
     
     func searchAutocompleteEntriesWIthSubstring(substring: String) {
@@ -272,40 +251,26 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
         self.textView.textColor = .white
         
         if suggestions.count > 0 {
-            
             timer = .scheduledTimer(withTimeInterval: 0.01, repeats: false, block: { (timer) in
-                
                 let autocompleteResult = self.formatAutocompleteResult(substring: substring, possibleMatches: suggestions)
                 self.putColorFormattedTextInTextField(autocompleteResult: autocompleteResult, userQuery : userQuery)
                 self.moveCaretToEndOfUserQueryPosition(userQuery: userQuery)
-                
             })
             
         } else {
-            
             timer = .scheduledTimer(withTimeInterval: 0.01, repeats: false, block: { [unowned vc = self] (timer) in //7
-                
                 vc.textView.text = substring
                 
-                if let _ = BIP39Mnemonic(vc.processedCharacters(vc.textView.text!)) {
-                    
+                if Keys.validMnemonic(vc.processedCharacters(vc.textView.text!)) {
                     vc.processTextfieldInput()
                     vc.textView.textColor = .systemGreen
                     vc.validWordsAdded()
-                    
                 } else {
-                    
                     vc.textView.textColor = .systemRed
-                    
                 }
-                
-                
             })
-            
             autoCompleteCharacterCount = 0
-            
         }
-        
     }
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
@@ -364,9 +329,7 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
     }
     
     private func addMultipleWords(words: [String]) {
-        
         DispatchQueue.main.async { [unowned vc = self] in
-            
             vc.wordView.text = ""
             vc.addedWords.removeAll()
             vc.justWords = words
@@ -377,31 +340,16 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
             }
             
             vc.wordView.text = vc.addedWords.joined(separator: "")
-            
-            if let _ = BIP39Mnemonic(vc.justWords.joined(separator: " ")) {
-                
-                //vc.validWordsAdded()
-                
-            } else {
-                                    
-                showAlert(vc: vc, title: "Invalid", message: "Just so you know that is not a valid recovery phrase, if you are inputting a 24 word phrase ignore this message and keep adding your words.")
-                
-            }
-            
         }
-        
     }
     
     private func addWord(word: String) {
-        
         DispatchQueue.main.async { [unowned vc = self] in
-            
             vc.wordView.text = ""
             vc.addedWords.removeAll()
             vc.justWords.append(word)
             
             for (i, word) in vc.justWords.enumerated() {
-                
                 vc.addedWords.append("\(i + 1). \(word)\n")
                 vc.updatePlaceHolder(wordNumber: i + 2)
                 
@@ -409,13 +357,12 @@ class AddSignerViewController: UIViewController, UITextFieldDelegate, UINavigati
             
             vc.wordView.text = vc.addedWords.joined(separator: "")
             
-            if let _ = BIP39Mnemonic(vc.justWords.joined(separator: " ")) {
+            if Keys.validMnemonic(vc.justWords.joined(separator: " ")) {
                 vc.validWordsAdded()
             }
-            vc.textView.becomeFirstResponder()
             
+            vc.textView.becomeFirstResponder()
         }
-        
     }
     
     private func processedCharacters(_ string: String) -> String {

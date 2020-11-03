@@ -65,18 +65,25 @@ class ActiveWalletViewController: UIViewController {
                     }
                 }))
                 
-                alert.addAction(UIAlertAction(title: "nah", style: .destructive, handler: { action in }))
+                alert.addAction(UIAlertAction(title: "no thanks", style: .destructive, handler: { action in }))
                 alert.popoverPresentationController?.sourceView = self.view
                 self.present(alert, animated: true, completion: nil)
             }
         }
     }
     
+    private func configureButton(_ button: UIView) {
+        button.layer.borderColor = UIColor.darkGray.cgColor
+        button.layer.borderWidth = 0.5
+        button.layer.cornerRadius = 5
+    }
+    
     private func configureUi() {
-        sendView.layer.cornerRadius = 5
-        invoiceView.layer.cornerRadius = 5
-        utxosView.layer.cornerRadius = 5
-        advancedView.layer.cornerRadius = 5
+        configureButton(sendView)
+        configureButton(invoiceView)
+        configureButton(utxosView)
+        configureButton(advancedView)
+
         fxRateLabel.text = ""
         
         if (UIDevice.current.userInterfaceIdiom == .pad) {

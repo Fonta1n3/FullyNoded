@@ -13,6 +13,8 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
     @IBOutlet weak var signerTable: UITableView!
     var signers = [[String:Any]]()
     var id:UUID!
+    var isCreatingMsig = false
+    var signerSelected: ((SignerStruct) -> Void)?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,6 +28,12 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     @IBAction func addSignerAction(_ sender: Any) {
+        guard let _ = KeyChain.getData("UnlockPassword") else {
+            showAlert(vc: self, title: "You are not using the app securely...", message: "You can only add signers if the app has a lock/unlock password. Tap the lock button on the home screen to add a password.")
+            
+            return
+        }
+        
         DispatchQueue.main.async { [unowned vc = self] in
             vc.performSegue(withIdentifier: "addSignerSegue", sender: vc)
         }
@@ -94,7 +102,47 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        seeDetails(indexPath.section)
+        if !isCreatingMsig {
+            seeDetails(indexPath.section)
+            
+        } else {
+            promptToDeriveFromSigner(SignerStruct(dictionary: signers[indexPath.section]))
+            
+        }
+    }
+    
+    private func promptToDeriveFromSigner(_ signer: SignerStruct) {
+        DispatchQueue.main.async { [unowned vc = self] in
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            
+            guard let words = Crypto.decrypt(signer.words) else { return }
+            
+            var arr = words.utf8.split(separator: " ")
+            
+            for (i, _) in arr.enumerated() {
+                if i > 0 && i < arr.count - 1 {
+                    arr[i] = "******"
+                }
+            }
+            
+            let alert = UIAlertController(title: "Derive xpub from this signer?", message: arr.joined(separator: " "), preferredStyle: alertStyle)
+            
+            alert.addAction(UIAlertAction(title: "Derive xpub", style: .default, handler: { action in
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.signerSelected!(signer)
+                    self.navigationController?.popViewController(animated: true)
+                }
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = vc.view
+            vc.present(alert, animated: true, completion: nil)
+        }
     }
     
     private func segueToDetail() {

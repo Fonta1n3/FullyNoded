@@ -12,6 +12,8 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
     
     var isEditingNow = false
     var id:UUID!
+    private var signer: SignerStruct!
+    
     @IBOutlet weak var labelField: UITextField!
     @IBOutlet weak var wordsField: UITextView!
     @IBOutlet weak var passphraseLabel: UILabel!
@@ -19,6 +21,7 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
     @IBOutlet weak var passphraseHeader: UILabel!
     @IBOutlet weak var wordsHeader: UILabel!
     @IBOutlet weak var fingerprintField: UILabel!
+    @IBOutlet weak var signableWalletsLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,30 +29,35 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
         // Do any additional setup after loading the view.
         addTapGesture()
         navigationController?.delegate = self
-        labelField.clipsToBounds = true
-        labelField.layer.cornerRadius = 8
-        labelField.layer.borderWidth = 0.5
-        labelField.layer.borderColor = UIColor.lightGray.cgColor
-        labelField.returnKeyType = .done
-        wordsField.clipsToBounds = true
-        wordsField.layer.cornerRadius = 8
-        wordsField.layer.borderWidth = 0.5
-        wordsField.layer.borderColor = UIColor.lightGray.cgColor
-        passphraseLabel.clipsToBounds = true
-        passphraseLabel.layer.cornerRadius = 8
-        passphraseLabel.layer.borderWidth = 0.5
-        passphraseLabel.layer.borderColor = UIColor.lightGray.cgColor
-        dateLabel.clipsToBounds = true
-        dateLabel.layer.cornerRadius = 8
-        dateLabel.layer.borderWidth = 0.5
-        dateLabel.layer.borderColor = UIColor.lightGray.cgColor
-        fingerprintField.clipsToBounds = true
-        fingerprintField.layer.cornerRadius = 8
-        fingerprintField.layer.borderWidth = 0.5
-        fingerprintField.layer.borderColor = UIColor.lightGray.cgColor
         labelField.delegate = self
+        configureField(labelField)
+        configureField(wordsField)
+        configureField(passphraseLabel)
+        configureField(dateLabel)
+        configureField(fingerprintField)
+        configureField(signableWalletsLabel)
         getData()
     }
+    
+    private func configureField(_ field: UIView) {
+        field.clipsToBounds = true
+        field.layer.cornerRadius = 8
+        field.layer.borderWidth = 0.5
+        field.layer.borderColor = UIColor.lightGray.cgColor
+    }
+    
+    @IBAction func showSignerAction(_ sender: Any) {
+        guard let _ = KeyChain.getData("UnlockPassword") else {
+            showAlert(vc: self, title: "You are not using the app securely...", message: "You can only show signers if the app has a lock/unlock password. Tap the lock button on the home screen to add a password.")
+            
+            return
+        }
+        
+        guard let words = Crypto.decrypt(signer.words) else { return }
+        
+        self.wordsField.text = words.utf8
+    }
+    
     
     @IBAction func deleteAction(_ sender: Any) {
         promptToDeleteSigner()
@@ -61,10 +69,13 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
             if (UIDevice.current.userInterfaceIdiom == .pad) {
               alertStyle = UIAlertController.Style.alert
             }
+            
             let alert = UIAlertController(title: "Remove this signer?", message: "YOU WILL NOT BE ABLE TO SPEND BITCOIN ASSOCIATED WITH THIS SIGNER IF YOU DELETE THIS SIGNER", preferredStyle: alertStyle)
+            
             alert.addAction(UIAlertAction(title: "Delete", style: .destructive, handler: { [unowned vc = self] action in
                 vc.deleteNow()
             }))
+            
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
             alert.popoverPresentationController?.sourceView = vc.view
             vc.present(alert, animated: true, completion: nil)
@@ -97,17 +108,16 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
     }
     
     private func getData() {
-        CoreDataService.retrieveEntity(entityName: .signers) { [unowned vc = self] (signers) in
-            if signers != nil {
-                if signers!.count > 0 {
-                    if vc.id != nil {
-                        for signer in signers! {
-                            let signerStruct = SignerStruct(dictionary: signer)
-                            if signerStruct.id == vc.id {
-                                vc.setFields(signerStruct)
-                            }
-                        }
-                    }
+        CoreDataService.retrieveEntity(entityName: .signers) { [weak self] signers in
+            guard let self = self else { return }
+            
+            guard let signers = signers, signers.count > 0, self.id != nil else { return }
+            
+            for signer in signers {
+                let signerStruct = SignerStruct(dictionary: signer)
+                if signerStruct.id == self.id {
+                    self.signer = signerStruct
+                    self.setFields(signerStruct)
                 }
             }
         }
@@ -120,10 +130,9 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
             self.labelField.text = signer.label
             self.dateLabel.text = "  " +  self.formattedDate(signer.added)
             
-            guard var decrypted = Crypto.decrypt(signer.words),
-                var words = String(bytes: decrypted, encoding: .utf8) else {
-                    return
-            }
+            guard var decrypted = Crypto.decrypt(signer.words) else { return }
+            
+            var words = decrypted.utf8
             
             var arr = words.split(separator: " ")
             
@@ -135,35 +144,76 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
             
             self.wordsField.text = arr.joined(separator: " ")
             
-            decrypted = Data()
-            words = ""
+            var passphrase = ""
             
             if signer.passphrase != nil {
-                guard let decrypted = Crypto.decrypt(signer.passphrase!),
-                    let passphrase = String(bytes: decrypted, encoding: .utf8) else {
-                        return
-                }
+                guard let decryptedPassphrase = Crypto.decrypt(signer.passphrase!) else { return }
                 
+                passphrase = decryptedPassphrase.utf8
                 self.passphraseLabel.text = "  " + passphrase
             } else {
                 self.passphraseLabel.text = "  ** no passphrase **"
             }
             
-            self.setFingerprint(signer.words)
+            guard var mkMain = Keys.masterKey(words: words, coinType: "0", passphrase: passphrase),
+                var mkTest = Keys.masterKey(words: words, coinType: "1", passphrase: passphrase) else {
+                    return
+            }
+            
+            self.setWallets([mkMain, mkTest])
+            self.setFingerprint(mkMain)
+            decrypted = Data()
+            passphrase = ""
+            mkMain = ""
+            mkTest = ""
+            words = ""
         }
     }
     
-    private func setFingerprint(_ encryptedWords: Data) {
-        guard var decryptedWords = Crypto.decrypt(encryptedWords),
-            var words = String(bytes: decryptedWords, encoding: .utf8),
-            var mk = Keys.masterKey(words: words, coinType: "0", passphrase: ""),
-            let fingerprint = Keys.fingerprint(masterKey: mk) else {
+    private func setWallets(_ masterKeys: [String]) {
+        CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
+            guard let wallets = wallets, wallets.count > 0 else { return }
+            
+            var signableWallets = ""
+            
+            for (m, masterKey) in masterKeys.enumerated() {
+                for (w, wallet) in wallets.enumerated() {
+                    let walletStruct = Wallet(dictionary: wallet)
+                    let p = DescriptorParser()
+                    let descriptor = p.descriptor(walletStruct.receiveDescriptor)
+                    
+                    if descriptor.isMulti {
+                        for (x, xpub) in descriptor.multiSigKeys.enumerated() {
+                            if let derivedXpub = Keys.xpub(path: descriptor.derivationArray[x], masterKey: masterKey) {
+                                if xpub == derivedXpub {
+                                    signableWallets += walletStruct.label + "  "
+                                }
+                            }
+                        }
+                    } else {
+                        if let derivedXpub = Keys.xpub(path: descriptor.derivation, masterKey: masterKey) {
+                            if descriptor.accountXpub == derivedXpub {
+                                signableWallets += walletStruct.label + "  "
+                            }
+                        }
+                    }
+                    
+                    if m + 1 == masterKeys.count && w + 1 == wallets.count {
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+                            
+                            self.signableWalletsLabel.text = "  " + signableWallets
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private func setFingerprint(_ mk: String) {
+        guard let fingerprint = Keys.fingerprint(masterKey: mk) else {
                 return
         }
-        
-        decryptedWords = Data()
-        words = ""
-        mk = ""
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }

@@ -73,6 +73,12 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     
     
     @IBAction func automaticAction(_ sender: Any) {
+        guard let _ = KeyChain.getData("UnlockPassword") else {
+            showAlert(vc: self, title: "Whoa, you are not using the app securely", message: "Single signature wallets store seed words on the app, you need to go to the home screen and tap the lock button to create a locking password before the app can hold seed words.")
+            
+            return
+        }
+        
         DispatchQueue.main.async { [unowned vc = self] in
             vc.performSegue(withIdentifier: "segueToSeedWords", sender: vc)
         }

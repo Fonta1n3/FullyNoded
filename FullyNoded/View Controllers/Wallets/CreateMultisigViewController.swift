@@ -25,13 +25,16 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     
     @IBOutlet weak var derivationField: UITextField!
     @IBOutlet weak var fingerprintField: UITextField!
-    @IBOutlet weak var wordsTextView: UITextView!
     @IBOutlet weak var xpubField: UITextField!
     @IBOutlet weak var textView: UITextView!
     @IBOutlet weak var createOutlet: UIButton!
+    @IBOutlet weak var addOutlet: UIButton!
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        addOutlet.alpha = 0
         
         createOutlet.clipsToBounds = true
         createOutlet.layer.cornerRadius = 8
@@ -41,12 +44,6 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         textView.layer.borderColor = UIColor.lightGray.cgColor
         textView.layer.borderWidth = 0.5
         
-        wordsTextView.clipsToBounds = true
-        wordsTextView.layer.cornerRadius = 8
-        wordsTextView.layer.borderColor = UIColor.lightGray.cgColor
-        wordsTextView.layer.borderWidth = 0.5
-        
-        wordsTextView.delegate = self
         xpubField.delegate = self
         
         spinner.addConnectingView(vc: self, description: "fetching chain type...")
@@ -54,7 +51,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         if ccXpub != "" && ccXfp != "" {
             derivationField.text = ccDeriv
             addKeyStore(ccXfp, ccXpub)
-            showAlert(vc: self, title: "Coldcard xpub added ✅", message: "You can add more xpubs or tap the refresh button to get Fully Noded to create them for you. The seed words are *never* saved, make sure you write them down, they will be gone forever!")
+            showAlert(vc: self, title: "Coldcard keystore added ✅", message: "")
         }
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
@@ -73,17 +70,28 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
         fingerprintField.resignFirstResponder()
         textView.resignFirstResponder()
-        wordsTextView.resignFirstResponder()
         xpubField.resignFirstResponder()
         derivationField.resignFirstResponder()
     }
     
+    @IBAction func scanAction(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.performSegue(withIdentifier: "segueToScanXpubMsigCreator", sender: self)
+        }
+    }
+    
+    
     @IBAction func refreshAction(_ sender: Any) {
-        addSigner()
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.performSegue(withIdentifier: "segueToChooseSignerToDeriveXpub", sender: self)
+        }
     }
     
     @IBAction func resetAction(_ sender: Any) {
-        wordsTextView.text = ""
         fingerprintField.text = ""
         xpubField.text = ""
         textView.text = ""
@@ -103,7 +111,6 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             guard let self = self else { return }
             
             self.textView.text += "#\(self.keys.count):\n\n" + "Origin: [\(prefix)]\n\n" + "Key: " + xpub + "\n\n"
-            self.wordsTextView.text = ""
             self.fingerprintField.text = ""
             self.xpubField.text = ""
             self.derivationField.isUserInteractionEnabled = false
@@ -112,7 +119,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     
     @IBAction func addAction(_ sender: Any) {
         guard let xpub = xpubField.text, xpub != "" else {
-            showAlert(vc: self, title: "First you need to add an xpub", message: "Either paste an existing xpub or derive one by adding/creating bip39 seed words (signer) below 🔄.\n\nIf pasting your own xpub it is extremely important that is was derived from the specified derivation or you will not be able to spend from the wallet.")
+            showAlert(vc: self, title: "First you need to add an xpub", message: "")
             
             return
         }
@@ -318,16 +325,6 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         }
     }
     
-    private func addSigner() {
-        guard let words = Keys.seed() else {
-            showAlert(vc: self, title: "Error", message: "We had a problem creating seed words...")
-            
-            return
-        }
-        
-        convertWords(words: words)
-    }
-    
     private func derivationProcessed() -> String? {
         guard let text = derivationField.text?.replacingOccurrences(of: "’", with: "'"),
             Keys.vaildPath(text.replacingOccurrences(of: "’", with: "'")) else {
@@ -341,14 +338,13 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.wordsTextView.text = ""
             self.fingerprintField.text = ""
             self.xpubField.text = ""
         }
     }
     
-    private func convertWords(words: String) {
-        guard let mk = Keys.masterKey(words: words, coinType: cointType, passphrase: ""),
+    private func convertWords(_ words: String, _ passphrase: String) {
+        guard let mk = Keys.masterKey(words: words, coinType: cointType, passphrase: passphrase),
             let fingerprint = Keys.fingerprint(masterKey: mk) else {
                 clear()
                 showAlert(vc: self, title: "Invalid words", message: "The words need to conform with BIP39")
@@ -368,15 +364,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                 return
         }
         
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.xpubField.text = xpub
-            self.fingerprintField.text = fingerprint
-            self.wordsTextView.text = words
-            let newPosition = self.xpubField.beginningOfDocument
-            self.xpubField.selectedTextRange = self.xpubField.textRange(from: newPosition, to: newPosition)
-        }
+        self.addKeyStore(fingerprint, xpub)
     }
     
     private func export(text: String) {
@@ -396,47 +384,52 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         }
     }
     
+    private func showAddButton() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.addOutlet.alpha = 1
+            self.xpubField.resignFirstResponder()
+        }
+    }
+    
+    private func parseExtendedKey(_ extendedKey: String) {
+        if extendedKey.hasPrefix("xpub") || extendedKey.hasPrefix("tpub") {
+            if let _ = XpubConverter.zpub(xpub: extendedKey) {
+                showAddButton()
+            } else {
+                updateXpubField("")
+                showAlert(vc: self, title: "Error", message: "Invalid xpub")
+            }
+        } else if extendedKey.hasPrefix("Zpub") || extendedKey.hasPrefix("Vpub") {
+            if let xpub = XpubConverter.convert(extendedKey: extendedKey) {
+                updateXpubField(xpub)
+                showAddButton()
+            } else {
+                updateXpubField("")
+                showAlert(vc: self, title: "Error", message: "Invalid extended key. It must be either an xpub, tpub, Zpub or Vpub")
+            }
+        }
+    }
+    
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.endEditing(true)
         return true
-    }
-    
-    func textViewDidEndEditing(_ textView: UITextView) {
-        if textView == wordsTextView && wordsTextView.text != "" {
-            convertWords(words: textView.text)
-        }
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
         if textField == xpubField {
             let extendedKey = xpubField.text ?? ""
             if extendedKey != "" {
-                if extendedKey.hasPrefix("xpub") || extendedKey.hasPrefix("tpub") {
-                    if let _ = XpubConverter.zpub(xpub: extendedKey) {
-                        
-                    } else {
-                        updateXpubField("")
-                        showAlert(vc: self, title: "Error", message: "Invalid xpub")
-                    }
-                } else if extendedKey.hasPrefix("Zpub") || extendedKey.hasPrefix("Vpub") {
-                    if let xpub = XpubConverter.convert(extendedKey: extendedKey) {
-                        updateXpubField(xpub)
-                        showAlert(vc: self, title: "Valid xpub ✅", message: "You added a Zpub or Vpub, which is fine but your node only understands xpubs, so we did you a favor and converted it for you.")
-                    } else {
-                        updateXpubField("")
-                        showAlert(vc: self, title: "Error", message: "Invalid extended key. It must be either an xpub, tpub, Zpub or Vpub")
-                    }
-                }
+                parseExtendedKey(extendedKey)
             }
         }
     }
     
-    func textViewDidChange(_ textView: UITextView) {
-        if textView == wordsTextView {
-            if let _ = Keys.masterKey(words: textView.text, coinType: cointType, passphrase: "") {
-                convertWords(words: wordsTextView.text ?? "")
-            }
-        }
+    func textFieldDidChangeSelection(_ textField: UITextField) {
+        guard textField == xpubField, let xpub = textField.text else { return }
+        
+        parseExtendedKey(xpub)
     }
     
     private func updateXpubField(_ xpub: String) {
@@ -445,14 +438,43 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         }
     }
     
-    /*
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destination.
         // Pass the selected object to the new view controller.
+        switch segue.identifier {
+        case "segueToScanXpubMsigCreator":
+            guard let vc = segue.destination as? QRScannerViewController else { fallthrough }
+            
+            vc.isScanningAddress = true
+            vc.onAddressDoneBlock = { [weak self] xpub in
+                guard let self = self, let xpub = xpub else { return }
+                
+                self.updateXpubField(xpub)
+            }
+            
+        case "segueToChooseSignerToDeriveXpub":
+            guard let vc = segue.destination as? SignersViewController else { fallthrough }
+            
+            vc.isCreatingMsig = true
+            
+            vc.signerSelected = { [weak self] signer in
+                guard let self = self, let words = Crypto.decrypt(signer.words) else { return }
+                            
+                guard let encryptedPassphrase = signer.passphrase else {
+                    self.convertWords(words.utf8, "")
+                    return
+                }
+                
+                guard let passphrase = Crypto.decrypt(encryptedPassphrase) else { return }
+                
+                self.convertWords(words.utf8, passphrase.utf8)
+            }
+        default:
+            break
+        }
     }
-    */
 
 }

@@ -887,7 +887,6 @@ extension MainMenuViewController: OnionManagerDelegate {
                 goToPaywall()
                 return
             }
-            print("paymentAddress: \(data.utf8)")
             
             checkIfPaymentReceived(data.utf8)
         }

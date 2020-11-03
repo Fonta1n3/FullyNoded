@@ -11,6 +11,12 @@ import LibWally
 
 enum Keys {
     
+    static func validMnemonic(_ words: String) -> Bool {
+        guard let _ = BIP39Mnemonic(words) else { return false }
+        
+        return true
+    }
+    
     static func vaildPath(_ path: String) -> Bool {
         guard BIP32Path(path) != nil else { return false }
         
