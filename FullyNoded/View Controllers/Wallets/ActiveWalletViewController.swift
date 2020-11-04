@@ -33,6 +33,7 @@ class ActiveWalletViewController: UIViewController {
     private let ud = UserDefaults.standard
     private let spinner = ConnectingView()
     
+    @IBOutlet weak private var backgroundView: UIVisualEffectView!
     @IBOutlet weak private var walletTable: UITableView!
     @IBOutlet weak private var sendView: UIView!
     @IBOutlet weak private var invoiceView: UIView!
@@ -42,6 +43,7 @@ class ActiveWalletViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         walletTable.delegate = self
         walletTable.dataSource = self
         configureUi()
@@ -85,6 +87,9 @@ class ActiveWalletViewController: UIViewController {
         configureButton(advancedView)
 
         fxRateLabel.text = ""
+        
+        backgroundView.clipsToBounds = true
+        backgroundView.layer.cornerRadius = 8
         
         if (UIDevice.current.userInterfaceIdiom == .pad) {
           alertStyle = UIAlertController.Style.alert

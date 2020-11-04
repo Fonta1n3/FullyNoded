@@ -256,9 +256,9 @@ class DescriptorParser {
                 let arr4 = extendedKeyWithPath.split(separator: "/")
                 let extendedKey = arr4[0]
                 if extendedKey.contains("tpub") || extendedKey.contains("xpub") {
-                    dict["accountXpub"] = "\(extendedKey)"
+                    dict["accountXpub"] = "\(extendedKey.replacingOccurrences(of: ")", with: ""))"
                 } else if extendedKey.contains("tprv") || extendedKey.contains("xprv") {
-                    dict["accountXprv"] = "\(extendedKey)"
+                    dict["accountXprv"] = "\(extendedKey.replacingOccurrences(of: ")", with: ""))"
                 }
                 
                 let arr3 = derivation.split(separator: "/")

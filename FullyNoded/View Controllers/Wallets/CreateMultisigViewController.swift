@@ -409,6 +409,25 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                 updateXpubField("")
                 showAlert(vc: self, title: "Error", message: "Invalid extended key. It must be either an xpub, tpub, Zpub or Vpub")
             }
+        } else if extendedKey.hasPrefix("[") {
+            let p = DescriptorParser()
+            let hack = "wpkh(\(extendedKey))"
+            let descriptor = p.descriptor(hack)
+            let key = descriptor.accountXpub
+            let fingerprint = descriptor.fingerprint
+            
+            guard key != "", fingerprint != "" else {
+                showAlert(vc: self, title: "Invalid format", message: "Sorry we do not recognize that format yet, please reach out on Twitter, Telegram or GitHub and let us know.")
+                return
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.addKeyStore(fingerprint, key)
+            }
+        } else {
+            showAlert(vc: self, title: "Invalid format", message: "Sorry we do not recognize that format yet, please reach out on Twitter, Telegram or GitHub and let us know.")
         }
     }
     
@@ -449,10 +468,11 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             guard let vc = segue.destination as? QRScannerViewController else { fallthrough }
             
             vc.isScanningAddress = true
+            
             vc.onAddressDoneBlock = { [weak self] xpub in
                 guard let self = self, let xpub = xpub else { return }
                 
-                self.updateXpubField(xpub)
+                self.parseExtendedKey(xpub)
             }
             
         case "segueToChooseSignerToDeriveXpub":
