@@ -21,6 +21,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         navigationController?.delegate = self
         addTapGesture()
         setCoinType()

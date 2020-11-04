@@ -13,37 +13,47 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
     var isEditingNow = false
     var id:UUID!
     private var signer: SignerStruct!
+    private var tableDict = [String:String]()
+    private var multisigKeystore = ""
+    private var network = 0
     
+    @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var labelField: UITextField!
-    @IBOutlet weak var wordsField: UITextView!
-    @IBOutlet weak var passphraseLabel: UILabel!
-    @IBOutlet weak var dateLabel: UILabel!
-    @IBOutlet weak var passphraseHeader: UILabel!
-    @IBOutlet weak var wordsHeader: UILabel!
-    @IBOutlet weak var fingerprintField: UILabel!
-    @IBOutlet weak var signableWalletsLabel: UILabel!
+    @IBOutlet weak var segmentedControl: UISegmentedControl!
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
-        addTapGesture()
+        tableView.delegate = self
+        tableView.dataSource = self
         navigationController?.delegate = self
         labelField.delegate = self
+        addTapGesture()
         configureField(labelField)
-        configureField(wordsField)
-        configureField(passphraseLabel)
-        configureField(dateLabel)
-        configureField(fingerprintField)
-        configureField(signableWalletsLabel)
+        segmentedControl.setEnabled(true, forSegmentAt: network)
         getData()
     }
+    
+    @IBAction func switchNetwork(_ sender: Any) {
+        network = segmentedControl.selectedSegmentIndex
+        getData()
+    }
+    
     
     private func configureField(_ field: UIView) {
         field.clipsToBounds = true
         field.layer.cornerRadius = 8
         field.layer.borderWidth = 0.5
         field.layer.borderColor = UIColor.lightGray.cgColor
+    }
+    
+    private func reloadTable() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.tableView.reloadData()
+        }
     }
     
     @IBAction func showSignerAction(_ sender: Any) {
@@ -55,7 +65,8 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
         
         guard let words = Crypto.decrypt(signer.words) else { return }
         
-        self.wordsField.text = words.utf8
+        tableDict["words"] = words.utf8
+        reloadTable()
     }
     
     
@@ -128,7 +139,7 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
             guard let self = self else { return }
             
             self.labelField.text = signer.label
-            self.dateLabel.text = "  " +  self.formattedDate(signer.added)
+            self.tableDict["date"] = "  " +  self.formattedDate(signer.added)
             
             guard var decrypted = Crypto.decrypt(signer.words) else { return }
             
@@ -142,7 +153,7 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
                 }
             }
             
-            self.wordsField.text = arr.joined(separator: " ")
+            self.tableDict["words"] = arr.joined(separator: " ")
             
             var passphrase = ""
             
@@ -150,75 +161,69 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
                 guard let decryptedPassphrase = Crypto.decrypt(signer.passphrase!) else { return }
                 
                 passphrase = decryptedPassphrase.utf8
-                self.passphraseLabel.text = "  " + passphrase
+                self.tableDict["passphrase"] = "  " + passphrase
             } else {
-                self.passphraseLabel.text = "  ** no passphrase **"
+                self.tableDict["passphrase"] = "  ** no passphrase **"
             }
             
-            guard var mkMain = Keys.masterKey(words: words, coinType: "0", passphrase: passphrase),
-                var mkTest = Keys.masterKey(words: words, coinType: "1", passphrase: passphrase) else {
-                    return
-            }
+            guard var mk = Keys.masterKey(words: words, coinType: "\(self.network)", passphrase: passphrase) else { return }
             
-            self.setWallets([mkMain, mkTest])
-            self.setFingerprint(mkMain)
+            self.setWallets(mk)
             decrypted = Data()
             passphrase = ""
-            mkMain = ""
-            mkTest = ""
+            mk = ""
             words = ""
         }
     }
     
-    private func setWallets(_ masterKeys: [String]) {
+    private func setWallets(_ masterKey: String) {
+        guard let fingerprint = Keys.fingerprint(masterKey: masterKey) else { return }
+        
+        self.tableDict["fingerprint"] = "  " + fingerprint
+        
+        guard let msigKey = Keys.xpub(path: "m/48'/\(self.network)'/0'/2'", masterKey: masterKey) else { return }
+        
+        self.multisigKeystore = "[\(fingerprint)/48h/\(self.network)h/0h/2h]\(msigKey)"
+        
         CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
-            guard let wallets = wallets, wallets.count > 0 else { return }
+            guard let wallets = wallets, wallets.count > 0 else {
+                self.tableDict["wallets"] = ""
+                self.reloadTable()
+                return
+            }
             
             var signableWallets = ""
             
-            for (m, masterKey) in masterKeys.enumerated() {
-                for (w, wallet) in wallets.enumerated() {
-                    let walletStruct = Wallet(dictionary: wallet)
-                    let p = DescriptorParser()
-                    let descriptor = p.descriptor(walletStruct.receiveDescriptor)
-                    
-                    if descriptor.isMulti {
-                        for (x, xpub) in descriptor.multiSigKeys.enumerated() {
-                            if let derivedXpub = Keys.xpub(path: descriptor.derivationArray[x], masterKey: masterKey) {
-                                if xpub == derivedXpub {
-                                    signableWallets += walletStruct.label + "  "
-                                }
-                            }
-                        }
-                    } else {
-                        if let derivedXpub = Keys.xpub(path: descriptor.derivation, masterKey: masterKey) {
-                            if descriptor.accountXpub == derivedXpub {
+            for (w, wallet) in wallets.enumerated() {
+                let walletStruct = Wallet(dictionary: wallet)
+                let p = DescriptorParser()
+                let descriptor = p.descriptor(walletStruct.receiveDescriptor)
+                
+                if descriptor.isMulti {
+                    for (x, xpub) in descriptor.multiSigKeys.enumerated() {
+                        if let derivedXpub = Keys.xpub(path: descriptor.derivationArray[x], masterKey: masterKey) {
+                            if xpub == derivedXpub {
                                 signableWallets += walletStruct.label + "  "
                             }
                         }
                     }
-                    
-                    if m + 1 == masterKeys.count && w + 1 == wallets.count {
-                        DispatchQueue.main.async { [weak self] in
-                            guard let self = self else { return }
-                            
-                            self.signableWalletsLabel.text = "  " + signableWallets
+                } else {
+                    if let derivedXpub = Keys.xpub(path: descriptor.derivation, masterKey: masterKey) {
+                        if descriptor.accountXpub == derivedXpub {
+                            signableWallets += walletStruct.label + "  "
                         }
                     }
                 }
+                
+                if w + 1 == wallets.count {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        
+                        self.tableDict["wallets"] = "  " + signableWallets
+                        self.reloadTable()
+                    }
+                }
             }
-        }
-    }
-    
-    private func setFingerprint(_ mk: String) {
-        guard let fingerprint = Keys.fingerprint(masterKey: mk) else {
-                return
-        }
-        
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.fingerprintField.text = "  " + fingerprint
         }
     }
     
@@ -257,15 +262,74 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
         return true
     }
     
+    @objc func export(_ sender: UIButton) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.performSegue(withIdentifier: "segueToExportKeystore", sender: self)
+        }
+    }
 
-    /*
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destination.
         // Pass the selected object to the new view controller.
+        guard let vc = segue.destination as? QRDisplayerViewController else { return }
+        
+        vc.descriptionText = multisigKeystore
+        vc.headerIcon = UIImage(systemName: "person.3")
+        vc.headerText = "Multisig Keystore"
+        vc.text = multisigKeystore
     }
-    */
+    
 
+}
+
+extension SignerDetailViewController: UITableViewDelegate { }
+
+extension SignerDetailViewController: UITableViewDataSource {
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 1
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return 1
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "signerDetailCell", for: indexPath)
+        
+        let wordsView = cell.viewWithTag(1) as! UITextView
+        let fingerprintLabel = cell.viewWithTag(2) as! UILabel
+        let passphraseLabel = cell.viewWithTag(3) as! UILabel
+        let dateAddedLabel = cell.viewWithTag(4) as! UILabel
+        let signableWalletsLabel = cell.viewWithTag(5) as! UILabel
+        let exportButton = cell.viewWithTag(6) as! UIButton
+        
+        configureField(wordsView)
+        configureField(passphraseLabel)
+        configureField(dateAddedLabel)
+        configureField(fingerprintLabel)
+        configureField(signableWalletsLabel)
+        configureField(exportButton)
+        
+        wordsView.text = self.tableDict["words"]
+        fingerprintLabel.text = self.tableDict["fingerprint"]
+        passphraseLabel.text = self.tableDict["passphrase"]
+        dateAddedLabel.text = self.tableDict["date"]
+        signableWalletsLabel.text = self.tableDict["wallets"]
+        
+        exportButton.showsTouchWhenHighlighted = true
+        exportButton.addTarget(self, action: #selector(export), for: .touchUpInside)
+        
+        cell.sizeToFit()
+        cell.selectionStyle = .none
+        
+        return cell
+    }
+    
+    
 }
