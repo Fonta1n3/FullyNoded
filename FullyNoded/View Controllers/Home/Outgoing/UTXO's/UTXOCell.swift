@@ -144,7 +144,7 @@ class UTXOCell: UITableViewCell {
             self.roundeBackgroundView.backgroundColor = .darkGray
         } else {
             checkMarkImageView.alpha = 0
-            self.roundeBackgroundView.backgroundColor = #colorLiteral(red: 0.07831101865, green: 0.08237650245, blue: 0.08238270134, alpha: 1)
+            self.roundeBackgroundView.backgroundColor = .black
         }
         
         if utxo.solvable != nil {

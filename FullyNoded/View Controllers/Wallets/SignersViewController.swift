@@ -80,8 +80,8 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
         let image = cell.viewWithTag(3) as! UIImageView
         let background = cell.viewWithTag(4)!
         background.clipsToBounds = true
-        let icon = UIImage(systemName: "square.and.pencil")
-        background.backgroundColor = .darkGray
+        let icon = UIImage(systemName: "pencil.and.ellipsis.rectangle")
+        background.backgroundColor = .black
         background.layer.cornerRadius = 5
         image.tintColor = .white
         image.image = icon

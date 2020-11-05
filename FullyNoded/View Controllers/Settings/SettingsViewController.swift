@@ -26,6 +26,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     private func settingsCell(_ indexPath: IndexPath) -> UITableViewCell {
         let settingsCell = settingsTable.dequeueReusableCell(withIdentifier: "settingsCell", for: indexPath)
+        
         let label = settingsCell.viewWithTag(1) as! UILabel
         label.textColor = .lightGray
         settingsCell.selectionStyle = .none
@@ -35,6 +36,10 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         icon.tintColor = .white
         background.clipsToBounds = true
         background.layer.cornerRadius = 8
+        
+        settingsCell.layer.borderColor = UIColor.lightGray.cgColor
+        settingsCell.layer.borderWidth = 0.5
+        
         switch indexPath.section {
         case 0:
             label.text = "Node Manager"
@@ -51,6 +56,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         default:
             break
         }
+        
         return settingsCell
     }
     
