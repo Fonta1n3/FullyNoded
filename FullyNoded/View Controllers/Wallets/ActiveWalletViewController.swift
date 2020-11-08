@@ -100,6 +100,19 @@ class ActiveWalletViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(refreshWallet), name: .refreshWallet, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(addColdcard(_:)), name: .addColdCard, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(importWallet(_:)), name: .importWallet, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(updateLabel), name: .updateWalletLabel, object: nil)
+    }
+    
+    @objc func updateLabel() {
+        activeWallet { [weak self] wallet in
+            guard let self = self, let wallet = wallet else { return }
+                        
+            self.walletLabel = wallet.label
+            
+            DispatchQueue.main.async {
+                self.walletTable.reloadData()
+            }
+        }
     }
     
     @IBAction func getDetails(_ sender: Any) {

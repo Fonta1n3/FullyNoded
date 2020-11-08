@@ -50,6 +50,7 @@ class LightningRPC {
             }
             
             let lightningUrl = "http://\(rpcusername):\(rpcpassword)@\(onionAddress)"
+            
             guard let url = URL(string: lightningUrl) else {
                 completion((id, nil, "url error"))
                 return

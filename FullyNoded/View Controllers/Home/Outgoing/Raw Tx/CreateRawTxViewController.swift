@@ -384,9 +384,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             var amount = amountInput.text!
             if let dblAmount = Double(amountInput.text!) {
                 if isFiat {
-                    amount = "\(rounded(number: dblAmount / fxRate))"
+                    amount = "\(rounded(number: dblAmount / fxRate).avoidNotation)"
                 } else if isSats {
-                    amount = "\(rounded(number: dblAmount / 100000000.0))"
+                    amount = "\(rounded(number: dblAmount / 100000000.0).avoidNotation)"
                 }
             }
             let dict = ["address":addressInput.text!, "amount":amount] as [String : String]
@@ -420,18 +420,18 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 if seconds < 3600 {
                     DispatchQueue.main.async {
                         //less then an hour
-                        label.text = "Confirmation target \(numberOfBlocks) blocks (\(seconds / 60) minutes)"
+                        label.text = "Fee target: \(numberOfBlocks) blocks ~\(seconds / 60) minutes"
                     }
                 } else {
                     DispatchQueue.main.async {
                         //more then an hour
-                        label.text = "Confirmation target \(numberOfBlocks) blocks (\(seconds / 3600) hours)"
+                        label.text = "Fee target: \(numberOfBlocks) blocks ~\(seconds / 3600) hours"
                     }
                 }
             } else {
                 DispatchQueue.main.async {
                     //more then a day
-                    label.text = "Confirmation target \(numberOfBlocks) blocks (\(seconds / 86400) days)"
+                    label.text = "Fee target: \(numberOfBlocks) blocks ~\(seconds / 86400) days"
                 }
             }
             updateFeeSetting()
@@ -476,7 +476,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let alert = UIAlertController(title: "Sweep total balance?", message: "This action will send ALL the bitcoin this wallet holds to the provided address!", preferredStyle: self.alertStyle)
+            let alert = UIAlertController(title: "Sweep total balance?\n\n⚠️ You will not be able to use RBF when sweeping! Make sure your fee is set to the max!", message: "This action will send ALL the bitcoin this wallet holds to the provided address. If your fee is too low this transaction could get stuck for a long time.", preferredStyle: self.alertStyle)
             alert.addAction(UIAlertAction(title: "sweep now", style: .default, handler: { action in
                 self.sweep()
             }))
@@ -660,9 +660,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 var amount = amountInput.text!
                 if let dblAmount = Double(amountInput.text!) {
                     if isFiat {
-                        amount = "\(rounded(number: dblAmount / fxRate))"
+                        amount = "\(rounded(number: dblAmount / fxRate).avoidNotation)"
                     } else if isSats {
-                        amount = "\(rounded(number: dblAmount / 100000000))"
+                        amount = "\(rounded(number: dblAmount / 100000000).avoidNotation)"
                     }
                 }
                 let dict = ["address":addressInput.text!, "amount":amount] as [String : String]

@@ -155,6 +155,7 @@ extension Notification.Name {
     public static let importWallet = Notification.Name(rawValue: "importWallet")
     public static let broadcastTxn = Notification.Name(rawValue: "broadcastTxn")
     public static let signPsbt = Notification.Name(rawValue: "signPsbt")
+    public static let updateWalletLabel = Notification.Name(rawValue: "updateWalletLabel")
 }
 
 public extension Data {
