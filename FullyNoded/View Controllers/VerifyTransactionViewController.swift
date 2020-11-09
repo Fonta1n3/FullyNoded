@@ -1122,21 +1122,16 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     private func convertPSBTtoData(string: String) {
-        guard let data = Data(base64Encoded: string), let url = exportPsbtToURL(data: data) else {
-            return
-        }
-        
         DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
+            guard let self = self, let data = Data(base64Encoded: string) else { return }
+                        
+            let fileManager = FileManager.default
+            let fileURL = fileManager.temporaryDirectory.appendingPathComponent("FullyNoded.psbt")
             
-            let activityViewController = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+            try? data.write(to: fileURL)
             
-            if UIDevice.current.userInterfaceIdiom == .pad {
-                activityViewController.popoverPresentationController?.sourceView = self.view
-                activityViewController.popoverPresentationController?.sourceRect = CGRect(x: 0, y: 0, width: 100, height: 100)
-            }
-            
-            self.present(activityViewController, animated: true) {}
+            let controller = UIDocumentPickerViewController(url: fileURL, in: .exportToService)
+            self.present(controller, animated: true)
         }
     }
     

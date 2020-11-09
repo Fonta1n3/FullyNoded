@@ -71,7 +71,7 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
             self.textView.text = ""
             self.psbt = ""
             self.txn = ""
-            self.signOutlet.setTitle("sign", for: .normal)
+            self.signOutlet.setTitle("process", for: .normal)
             self.broadcast = false
         }
     }

@@ -144,7 +144,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 
                 CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(index), entity: .wallets) { success in
                     if success {
-                        Reducer.makeCommand(command: .deriveaddresses, param: "\"\(wallet.changeDescriptor)\", [\(index),\(index)]") { (response, errorMessage) in
+                        Reducer.makeCommand(command: .deriveaddresses, param: "\"\(wallet.receiveDescriptor)\", [\(index),\(index)]") { (response, errorMessage) in
                             guard let result = response as? NSArray, let changeAddress = result[0] as? String else {
                                 showAlert(vc: self, title: "Uhoh", message: "There was an issue getting an address to consolidate your multisig wallet to: \(errorMessage ?? "unknown")")
                                 return

@@ -368,17 +368,18 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     }
     
     private func export(text: String) {
-        if let url = exportMultisigWalletToURL(data: text.dataUsingUTF8StringEncoding) {
-            DispatchQueue.main.async { [unowned vc = self] in
-                let activityViewController = UIActivityViewController(activityItems: [url], applicationActivities: nil)
-                if UIDevice.current.userInterfaceIdiom == .pad {
-                    activityViewController.popoverPresentationController?.sourceView = self.view
-                    activityViewController.popoverPresentationController?.sourceRect = CGRect(x: 0, y: 0, width: 100, height: 100)
-                }
-                vc.present(activityViewController, animated: true) {
-                    DispatchQueue.main.async {
-                        NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-                    }
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let fileManager = FileManager.default
+            let fileURL = fileManager.temporaryDirectory.appendingPathComponent("Coldcard-Import.txt")
+            
+            try? text.dataUsingUTF8StringEncoding.write(to: fileURL)
+            
+            let controller = UIDocumentPickerViewController(url: fileURL, in: .exportToService)
+            self.present(controller, animated: true) {
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                 }
             }
         }

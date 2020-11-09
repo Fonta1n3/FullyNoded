@@ -78,7 +78,7 @@
 		D06FD7CD2506156A00481185 /* LibWally.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D06FD7CA2506155B00481185 /* LibWally.xcframework */; };
 		D06FD7CE2506156A00481185 /* LibWally.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D06FD7CA2506155B00481185 /* LibWally.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D06FD7D025062F7A00481185 /* GetTx.swift in Sources */ = {isa = PBXBuildFile; fileRef = D06FD7CF25062F7A00481185 /* GetTx.swift */; };
-		D06FD7D2250640F800481185 /* logo_grey.png in Resources */ = {isa = PBXBuildFile; fileRef = D06FD7D1250640F800481185 /* logo_grey.png */; };
+		D06FD7D2250640F800481185 /* logo_grey_.png in Resources */ = {isa = PBXBuildFile; fileRef = D06FD7D1250640F800481185 /* logo_grey_.png */; };
 		D071A2A0214880F700C4BCB3 /* Search - tripkey.png in Resources */ = {isa = PBXBuildFile; fileRef = D071A29F214880F700C4BCB3 /* Search - tripkey.png */; };
 		D07399D9245EEA5F00860B7E /* Broadcaster.swift in Sources */ = {isa = PBXBuildFile; fileRef = D07399D8245EEA5F00860B7E /* Broadcaster.swift */; };
 		D073E16E22558CDE0012A28C /* CoreDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D073E16D22558CDE0012A28C /* CoreDataService.swift */; };
@@ -153,6 +153,7 @@
 		D0E51E5B226592C9005D1909 /* NodeDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E51E5A226592C9005D1909 /* NodeDetailViewController.swift */; };
 		D0E54DD525207A1C00BD859E /* UTXOs.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E54DD425207A1C00BD859E /* UTXOs.swift */; };
 		D0E9B63C211A94C600B416E7 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E9B63B211A94C600B416E7 /* Utilities.swift */; };
+		D0EA04EF25592B910032C63F /* logo_grey.png in Resources */ = {isa = PBXBuildFile; fileRef = D0EA04EE25592B910032C63F /* logo_grey.png */; };
 		D0EC748A227DF06E001489B9 /* CreateUnsigned.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EC7489227DF06E001489B9 /* CreateUnsigned.swift */; };
 		D0EC7490227F6977001489B9 /* SignRawViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EC748F227F6977001489B9 /* SignRawViewController.swift */; };
 		D0EDDF1124972CEF00657931 /* InvoiceSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EDDF1024972CEF00657931 /* InvoiceSettingsViewController.swift */; };
@@ -269,7 +270,7 @@
 		D06FD7C92506155B00481185 /* CLibWally.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = CLibWally.xcframework; sourceTree = "<group>"; };
 		D06FD7CA2506155B00481185 /* LibWally.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = LibWally.xcframework; sourceTree = "<group>"; };
 		D06FD7CF25062F7A00481185 /* GetTx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetTx.swift; sourceTree = "<group>"; };
-		D06FD7D1250640F800481185 /* logo_grey.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo_grey.png; sourceTree = "<group>"; };
+		D06FD7D1250640F800481185 /* logo_grey_.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo_grey_.png; sourceTree = "<group>"; };
 		D071A29F214880F700C4BCB3 /* Search - tripkey.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Search - tripkey.png"; sourceTree = "<group>"; };
 		D07399D8245EEA5F00860B7E /* Broadcaster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Broadcaster.swift; sourceTree = "<group>"; };
 		D073E16D22558CDE0012A28C /* CoreDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataService.swift; sourceTree = "<group>"; };
@@ -344,6 +345,7 @@
 		D0E51E5A226592C9005D1909 /* NodeDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeDetailViewController.swift; sourceTree = "<group>"; };
 		D0E54DD425207A1C00BD859E /* UTXOs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOs.swift; sourceTree = "<group>"; };
 		D0E9B63B211A94C600B416E7 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
+		D0EA04EE25592B910032C63F /* logo_grey.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo_grey.png; sourceTree = "<group>"; };
 		D0EC7489227DF06E001489B9 /* CreateUnsigned.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateUnsigned.swift; sourceTree = "<group>"; };
 		D0EC748F227F6977001489B9 /* SignRawViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignRawViewController.swift; sourceTree = "<group>"; };
 		D0EDDF1024972CEF00657931 /* InvoiceSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceSettingsViewController.swift; sourceTree = "<group>"; };
@@ -913,7 +915,8 @@
 		D0FA417A213C7CB70028E4F8 /* Images */ = {
 			isa = PBXGroup;
 			children = (
-				D06FD7D1250640F800481185 /* logo_grey.png */,
+				D0EA04EE25592B910032C63F /* logo_grey.png */,
+				D06FD7D1250640F800481185 /* logo_grey_.png */,
 				D05D9731226433B60035F1DE /* strobe.png */,
 				D049CB3824C7EFDF0039711B /* iTunesArtwork@2x.png */,
 				D05D972F226425730035F1DE /* images.png */,
@@ -1057,8 +1060,9 @@
 				D0452AD42246C7830013E225 /* clear.png in Resources */,
 				D0126FF82244842000412629 /* bWhite.png in Resources */,
 				D05D9732226433B60035F1DE /* strobe.png in Resources */,
-				D06FD7D2250640F800481185 /* logo_grey.png in Resources */,
+				D06FD7D2250640F800481185 /* logo_grey_.png in Resources */,
 				844D2A4C2512D4F60046372E /* UTXOCell.xib in Resources */,
+				D0EA04EF25592B910032C63F /* logo_grey.png in Resources */,
 				D0FA417E213C7CED0028E4F8 /* whiteFingerPrint.png in Resources */,
 				D00B9A2D2111427200E8B95A /* Main.storyboard in Resources */,
 			);
@@ -1107,7 +1111,8 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "/usr/local/bin/carthage copy-frameworks\n";
+			shellScript = "
+";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1402,20 +1407,17 @@
 		D00B9A3A2111427200E8B95A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-5";
+				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-4";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = FullyNoded/FullyNoded.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 271;
+				CURRENT_PROJECT_VERSION = 272;
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Carthage/Build/iOS",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = FullyNoded/Info.plist;
 				INFOPLIST_PREPROCESS = NO;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
@@ -1423,7 +1425,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.351;
+				MARKETING_VERSION = 1.352;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1442,21 +1444,18 @@
 		D00B9A3B2111427200E8B95A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-5";
+				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-4";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = FullyNoded/FullyNoded.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 271;
+				CURRENT_PROJECT_VERSION = 272;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				ENABLE_TESTABILITY = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Carthage/Build/iOS",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = FullyNoded/Info.plist;
 				INFOPLIST_PREPROCESS = NO;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
@@ -1464,7 +1463,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.351;
+				MARKETING_VERSION = 1.352;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
