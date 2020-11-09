@@ -88,6 +88,7 @@ However, developing and supporting this project is hard work and costs real mone
 * [Coin Control](https://www.youtube.com/watch?v=F7Uw6C1XWf0)
 * [Batching](https://www.youtube.com/watch?v=pDWTsYzG4uc)
 * [DIY Coinjoins](https://www.youtube.com/watch?v=O_MS9LD9otI)
+* [Wallet Details](https://www.youtube.com/watch?v=PawTXdmYNVc)
 
 ## PGP
 
