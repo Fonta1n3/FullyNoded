@@ -26,6 +26,7 @@
         <attribute name="onionAddress" optional="YES" attributeType="Binary"/>
         <attribute name="rpcpassword" optional="YES" attributeType="Binary"/>
         <attribute name="rpcuser" optional="YES" attributeType="Binary"/>
+        <attribute name="uncleJim" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
     </entity>
     <entity name="Peers" representedClassName="Peers" syncable="YES" codeGenerationType="class">
         <attribute name="alias" optional="YES" attributeType="String"/>
@@ -74,7 +75,7 @@
         <element name="AuthKeys" positionX="-36" positionY="126" width="128" height="88"/>
         <element name="NewDescriptors" positionX="-18" positionY="153" width="128" height="103"/>
         <element name="NewHDWallets" positionX="-36" positionY="144" width="128" height="118"/>
-        <element name="NewNodes" positionX="-54" positionY="135" width="128" height="148"/>
+        <element name="NewNodes" positionX="-54" positionY="135" width="128" height="163"/>
         <element name="Peers" positionX="-36" positionY="234" width="128" height="133"/>
         <element name="Signers" positionX="-27" positionY="189" width="128" height="118"/>
         <element name="Utxos" positionX="-36" positionY="234" width="128" height="238"/>

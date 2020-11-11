@@ -55,7 +55,7 @@ class ActiveWalletViewController: UIViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        if KeyChain.getData("UnlockPassword") == nil {
+        if KeyChain.getData("UnlockPassword") == nil && UserDefaults.standard.object(forKey: "doNotShowWarning") == nil {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
@@ -67,7 +67,10 @@ class ActiveWalletViewController: UIViewController {
                     }
                 }))
                 
-                alert.addAction(UIAlertAction(title: "no thanks", style: .destructive, handler: { action in }))
+                alert.addAction(UIAlertAction(title: "do not show this warning again", style: .destructive, handler: { action in
+                    UserDefaults.standard.set(true, forKey: "doNotShowWarning")
+                }))
+                
                 alert.popoverPresentationController?.sourceView = self.view
                 self.present(alert, animated: true, completion: nil)
             }
@@ -152,9 +155,28 @@ class ActiveWalletViewController: UIViewController {
     }
     
     @IBAction func invoiceSettings(_ sender: Any) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "goToInvoiceSetting", sender: vc)
+        CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
+            guard let nodes = nodes, nodes.count > 0 else { return }
+            
+            var uncleJim = false
+            for node in nodes {
+                let nodeStruct = NodeStruct(dictionary: node)
+                if nodeStruct.isActive {
+                    if let uj = node["uncleJim"] as? Bool {
+                        uncleJim = uj
+                    }
+                }
+            }
+            
+            if !uncleJim {
+                DispatchQueue.main.async { [unowned vc = self] in
+                    vc.performSegue(withIdentifier: "goToInvoiceSetting", sender: vc)
+                }
+            } else {
+                showAlert(vc: self, title: "Restricted access!", message: "That area is for the node owner only.")
+            }
         }
+        
     }
     
     @IBAction func goToUtxos(_ sender: Any) {
@@ -659,9 +681,15 @@ class ActiveWalletViewController: UIViewController {
                 guard let self = self else { return }
                 
                 if success {
-                    showAlert(vc: self, title: "Success ✅", message: "Wallet imported successfully, it is now rescanning the blockchain you can monitor rescan status by refreshing this page, balances and historic transactions will not display until the rescan completes.")
+                    self.refreshWallet()
                     
-                    self.loadTable()
+                    guard let uncleJim = UserDefaults.standard.object(forKey: "UncleJim") as? Bool, uncleJim else {
+                        showAlert(vc: self, title: "Wallet imported ✅", message: "Wallet imported successfully, it is now rescanning the blockchain you can monitor rescan status by refreshing this page, balances and historic transactions will not display until the rescan completes.")
+                        
+                        return
+                    }
+                    
+                    showAlert(vc: self, title: "Wallet imported ✅", message: "")
                 }
             }
                     

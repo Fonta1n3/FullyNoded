@@ -3314,7 +3314,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="y6X-dL-UYm" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-8114.3999999999996" y="2700.8995502248877"/>
+            <point key="canvasLocation" x="-8106" y="2552"/>
         </scene>
         <!--Create Fully Noded Wallet View Controller-->
         <scene sceneID="92q-bk-EIf">
@@ -7649,7 +7649,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="GTM-mT-JB4"/>
         <segue reference="YAg-Jp-RYL"/>
-        <segue reference="NFj-Y4-lQE"/>
+        <segue reference="zi9-mK-A5a"/>
         <segue reference="8yc-oK-dlC"/>
         <segue reference="Jma-5H-zJx"/>
         <segue reference="4EJ-HI-y5g"/>

@@ -497,7 +497,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     func addBtcRpcQr(url: String) {
-        QuickConnect.addNode(url: url) { [weak self] (success, errorMessage) in
+        QuickConnect.addNode(uncleJim: false, url: url) { [weak self] (success, errorMessage) in
             if success {
                 if url.hasPrefix("clightning-rpc") {
                     self?.navigationController?.popViewController(animated: true)

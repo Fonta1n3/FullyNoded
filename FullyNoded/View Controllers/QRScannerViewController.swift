@@ -195,7 +195,7 @@ class QRScannerViewController: UIViewController {
                     spinner.removeConnectingView()
                     DispatchQueue.main.async { [weak self] in
                         guard let self = self else { return }
-                        
+
                         self.dismiss(animated: true) {
                             self.stopScanner()
                             self.avCaptureSession.stopRunning()
@@ -204,7 +204,7 @@ class QRScannerViewController: UIViewController {
                     }
                 } catch {
                     spinner.removeConnectingView()
-                    showAlert(vc: self, title: "Errore", message: "That is not a valid account map")
+                    showAlert(vc: self, title: "Error", message: "That does not seem to be an accepted wallet format.")
                 }
             }
         } else if isQuickConnect {

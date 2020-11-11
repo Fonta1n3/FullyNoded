@@ -7,7 +7,6 @@
 //
 
 import Foundation
-//import UIKit
 
 class QuickConnect {
     
@@ -17,7 +16,9 @@ class QuickConnect {
     /// btcrpc://rpcuser:rpcpassword@uhqefiu873h827h3ufnjecnkajbciw7bui3hbuf233b.onion:18443
     /// clightning-rpc://rpcuser:rpcpassword@kjhfefe.onion:1312?label=BTCPay%20C-Lightning
     
-    class func addNode(url: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
+    static var uncleJim = false
+    
+    class func addNode(uncleJim: Bool, url: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
         var label = "Node"
         
         guard var host = URLComponents(string: url)?.host,
@@ -54,6 +55,7 @@ class QuickConnect {
         newNode["label"] = label
         newNode["rpcuser"] = torNodeRPCUser
         newNode["rpcpassword"] = torNodeRPCPass
+        newNode["uncleJim"] = uncleJim
         
         if !url.hasPrefix("clightning-rpc") {
             newNode["isActive"] = true
@@ -92,7 +94,7 @@ class QuickConnect {
     private class func saveNode(_ node: [String:Any], _ url: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
         CoreDataService.saveEntity(dict: node, entityName: .newNodes) { success in
             if success {
-                if !url.hasPrefix("clightning-rpc") {
+                if !url.hasPrefix("clightning-rpc") && !uncleJim {
                     UserDefaults.standard.removeObject(forKey: "walletName")
                 }
                 

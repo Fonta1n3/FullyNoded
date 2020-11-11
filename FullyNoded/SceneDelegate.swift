@@ -158,7 +158,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
     
     private func addNode(url: String) {
-        QuickConnect.addNode(url: url) { (success, _) in
+        QuickConnect.addNode(uncleJim: false, url: url) { (success, _) in
             guard success, !url.hasPrefix("clightning-rpc") else { return }
             
             DispatchQueue.main.async {

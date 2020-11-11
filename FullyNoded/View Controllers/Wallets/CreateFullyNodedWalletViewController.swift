@@ -302,22 +302,39 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     
     private func importAccountMap(_ accountMap: [String:Any]) {
         spinner.addConnectingView(vc: self, description: "importing...")
-        if let _ = accountMap["descriptor"] as? String {
-            if let _ = accountMap["blockheight"] as? Int {
-                /// It is an Account Map.
-                ImportWallet.accountMap(accountMap) { (success, errorDescription) in
-                    if success {
-                        DispatchQueue.main.async {
+        
+        func importAccount() {
+            if let _ = accountMap["descriptor"] as? String {
+                if let _ = accountMap["blockheight"] as? Int {
+                    /// It is an Account Map.
+                    ImportWallet.accountMap(accountMap) { (success, errorDescription) in
+                        if success {
+                            DispatchQueue.main.async {
+                                self.spinner.removeConnectingView()
+                                self.onDoneBlock!(true)
+                                self.navigationController?.popViewController(animated: true)
+                            }
+                        } else {
                             self.spinner.removeConnectingView()
-                            self.onDoneBlock!(true)
-                            self.navigationController?.popViewController(animated: true)
+                            showAlert(vc: self, title: "Error", message: "There was an error importing your wallet: \(errorDescription ?? "unknown")")
                         }
-                    } else {
-                        self.spinner.removeConnectingView()
-                        showAlert(vc: self, title: "Error", message: "There was an error importing your wallet: \(errorDescription ?? "unknown")")
                     }
                 }
             }
+        }
+        
+        if let url = accountMap["quickConnect"] as? String {
+            QuickConnect.addNode(uncleJim: true, url: url) { (success, errorMessage) in
+                guard success else {
+                    self.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "Node connection issue:", message: errorMessage ?? "unknown error")
+                    return
+                }
+                
+                importAccount()
+            }
+        } else {
+            importAccount()
         }
     }
     
@@ -370,9 +387,29 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         if segue.identifier == "segueToScanner" {
             if let vc = segue.destination as? QRScannerViewController {
                 vc.isAccountMap = true
+                
                 vc.onImportDoneBlock = { [unowned thisVc = self] accountMap in
                     if accountMap != nil {
                         thisVc.importAccountMap(accountMap!)
+                    }
+                }
+                
+                vc.onQuickConnectDoneBlock = { [weak self] url in
+                    guard let url = url else { return }
+                    
+                    QuickConnect.addNode(uncleJim: false, url: url) { (success, errorMessage) in
+                        guard success else {
+                            showAlert(vc: self, title: "There was an issue", message: errorMessage ?? "error adding that wallet")
+                            return
+                        }
+                        
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+                            
+                            self.spinner.removeConnectingView()
+                            self.onDoneBlock!(true)
+                            self.navigationController?.popViewController(animated: true)
+                        }
                     }
                 }
             }

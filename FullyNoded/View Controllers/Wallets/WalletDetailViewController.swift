@@ -18,7 +18,11 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     var coinType = "0"
     var addresses = ""
     var originalLabel = ""
-    var exportQrImage:UIImage!
+    var exportQrImage: UIImage!
+    var uncleJimQr: UIImage!
+    var uncleJimText = ""
+    var backupText = ""
+    var textToShow = ""
     var json = ""
     var alertStyle = UIAlertController.Style.actionSheet
     private var labelField: UITextField!
@@ -37,6 +41,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         case signer
         case watching
         case addressExplorer
+        case uncleJim
     }
     
     override func viewDidLoad() {
@@ -140,7 +145,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                     self.addresses += "#\(i): \(address)\n\n"
                     if i + 1 == addr.count {
                         DispatchQueue.main.async { [weak self] in
-                            self?.detailTable.reloadSections(IndexSet(arrayLiteral: 8), with: .none)
+                            self?.detailTable.reloadSections(IndexSet(arrayLiteral: Section.addressExplorer.rawValue), with: .none)
                         }
                     }
                 }
@@ -201,9 +206,20 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                 if walletStruct.id == self.walletId {
                     self.wallet = walletStruct
                     self.json = AccountMap.create(wallet: self.wallet) ?? ""
+                    
                     let generator = QRGenerator()
                     generator.textInput = self.json
+                    self.backupText = self.json
                     self.exportQrImage = generator.getQRCode()
+                    
+                    WalletURL.url(wallet: self.wallet) { url in
+                        guard let url = url else { self.uncleJimQr = UIImage(systemName: "person.crop.circle.badge.exclam"); return }
+                                                
+                        generator.textInput = url
+                        self.uncleJimText = url
+                        self.uncleJimQr = generator.getQRCode()
+                    }
+                    
                     self.findSigner()
                     self.getAddresses()
                 }
@@ -473,6 +489,9 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         case .addressExplorer:
             exportItem(addresses)
             
+        case .uncleJim:
+            exportItem(uncleJimQr as Any)
+            
         default:
             break
         }
@@ -492,6 +511,27 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         }
         
         return true
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        switch Section(rawValue: indexPath.section) {
+        case .exportQr:
+            textToShow = backupText
+            showQr()
+        case .uncleJim:
+            textToShow = uncleJimText
+            showQr()
+        default:
+            break
+        }
+    }
+    
+    private func showQr() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.performSegue(withIdentifier: "segueToAccountMap", sender: self)
+        }
     }
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
@@ -663,8 +703,22 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         return cell
     }
     
+    private func uncleJimCell(_ indexPath: IndexPath) -> UITableViewCell {
+        let cell = detailTable.dequeueReusableCell(withIdentifier: "walletExportQrCell", for: indexPath)
+        configureCell(cell)
+        
+        let imageView = cell.viewWithTag(1) as! UIImageView
+        
+        imageView.image = uncleJimQr
+        
+        let exportButton = cell.viewWithTag(2) as! UIButton
+        configureExportButton(exportButton, indexPath: indexPath)
+        
+        return cell
+    }
+    
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 11
+        return 12
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -714,6 +768,8 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             return watchingCell(indexPath)
         case .addressExplorer:
             return addressesCell(indexPath)
+        case .uncleJim:
+            return uncleJimCell(indexPath)
         default:
             return UITableViewCell()
         }
@@ -743,6 +799,8 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             return 120
         case .addressExplorer:
             return 180
+        case .uncleJim:
+            return 192
         default:
             return 0
         }
@@ -940,11 +998,16 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         switch segue.identifier {
         case "segueToAccountMap":
         if let vc = segue.destination as? QRDisplayerViewController {
-            if let json = AccountMap.create(wallet: wallet!) {
-                vc.text = json
-                vc.headerText = "Wallet Export QR"
-                vc.descriptionText = "Save this QR in lots of places so you can always easily recreate this wallet as watch-only."
+            vc.text = textToShow
+            
+            if textToShow == backupText {
+                vc.headerText = "Wallet Backup QR"
                 vc.headerIcon = UIImage(systemName: "rectangle.and.paperclip")
+                vc.descriptionText = "Save this QR in lots of places so you can always easily recreate this wallet as watch-only."
+            } else {
+                vc.headerText = "Uncle Jim QR"
+                vc.headerIcon = UIImage(systemName: "person.badge.plus")
+                vc.descriptionText = "Share this with Uncle Jim to get him set up properly on his Bitcoin journey, or use it to create joint accounts (multisig) wallets with people who do not have their own node and want to share yours. Uncle Jim QR codes share your node and this wallet so use with caution!"
             }
         }
         default:
@@ -980,6 +1043,8 @@ extension WalletDetailViewController {
             return ("Watching descriptors", UIImage(systemName: "eye")!, .systemOrange)
         case .addressExplorer:
             return ("Address explorer", UIImage(systemName: "list.number")!, .systemBlue)
+        case .uncleJim:
+            return ("Uncle Jim", UIImage(systemName: "person.badge.plus")!, .systemGreen)
         }
     }
     
