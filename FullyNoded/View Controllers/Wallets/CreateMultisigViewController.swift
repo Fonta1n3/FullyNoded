@@ -399,16 +399,16 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             if let _ = XpubConverter.zpub(xpub: extendedKey) {
                 showAddButton()
             } else {
-                updateXpubField("")
-                showAlert(vc: self, title: "Error", message: "Invalid xpub")
+                //updateXpubField("")
+                //showAlert(vc: self, title: "Error", message: "Invalid xpub")
             }
         } else if extendedKey.hasPrefix("Zpub") || extendedKey.hasPrefix("Vpub") {
             if let xpub = XpubConverter.convert(extendedKey: extendedKey) {
                 updateXpubField(xpub)
                 showAddButton()
             } else {
-                updateXpubField("")
-                showAlert(vc: self, title: "Error", message: "Invalid extended key. It must be either an xpub, tpub, Zpub or Vpub")
+                //updateXpubField("")
+                //showAlert(vc: self, title: "Error", message: "Invalid extended key. It must be either an xpub, tpub, Zpub or Vpub")
             }
         } else if extendedKey.hasPrefix("[") {
             let p = DescriptorParser()
@@ -418,7 +418,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             let fingerprint = descriptor.fingerprint
             
             guard key != "", fingerprint != "" else {
-                showAlert(vc: self, title: "Invalid format", message: "Sorry we do not recognize that format yet, please reach out on Twitter, Telegram or GitHub and let us know.")
+                //showAlert(vc: self, title: "Invalid format", message: "Sorry we do not recognize that format yet, please reach out on Twitter, Telegram or GitHub and let us know.")
                 return
             }
             
@@ -432,7 +432,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                 let xfp = json["xfp"] as? String,
                 let xpub = json["xpub"] as? String,
                 let path = json["path"] as? String else {
-                    showAlert(vc: self, title: "Not a recognized keystore...", message: "Please reach out so we can fix this.")
+                    //showAlert(vc: self, title: "Not a recognized keystore...", message: "Please reach out so we can fix this.")
                     return
             }
             
@@ -443,8 +443,6 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                 self.addKeyStore(xfp, xpub)
             }
             
-        } else {
-            showAlert(vc: self, title: "Invalid format", message: "Sorry we do not recognize that format yet, please reach out on Twitter, Telegram or GitHub and let us know.")
         }
     }
     
@@ -456,14 +454,14 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     func textFieldDidEndEditing(_ textField: UITextField) {
         if textField == xpubField {
             let extendedKey = xpubField.text ?? ""
-            if extendedKey != "" {
+            if extendedKey != "" && extendedKey.count > 20 {
                 parseExtendedKey(extendedKey)
             }
         }
     }
     
     func textFieldDidChangeSelection(_ textField: UITextField) {
-        guard textField == xpubField, let xpub = textField.text else { return }
+        guard textField == xpubField, let xpub = textField.text, xpub.count > 20 else { return }
         
         parseExtendedKey(xpub)
     }
