@@ -154,21 +154,15 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     @objc func editNodes() {
-        
         nodeTable.setEditing(!nodeTable.isEditing, animated: true)
-        
         if nodeTable.isEditing {
-            
             editButton = UIBarButtonItem(title: "Done", style: .plain, target: self, action: #selector(editNodes))
             
         } else {
-            
             editButton = UIBarButtonItem(title: "Edit", style: .plain, target: self, action: #selector(editNodes))
             
         }
-        
         self.navigationItem.setRightBarButtonItems([addButton, editButton], animated: true)
-        
     }
     
     private func deleteNode(nodeId: UUID, indexPath: IndexPath) {

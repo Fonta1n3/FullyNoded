@@ -504,7 +504,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         
         switch Section(rawValue: section) {
         case .label:
-            disableLabelField()
+            updateLabelAction()
             
         default:
             break

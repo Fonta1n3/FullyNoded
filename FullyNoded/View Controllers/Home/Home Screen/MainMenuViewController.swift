@@ -965,6 +965,7 @@ extension MainMenuViewController: UITableViewDelegate {
         let header = UIView()
         header.backgroundColor = UIColor.clear
         header.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 50)
+        
         let textLabel = UILabel()
         textLabel.textAlignment = .left
         textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
