@@ -115,9 +115,81 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         if controller.documentPickerMode == .import {
             
-            guard let data = try? Data(contentsOf: urls[0].absoluteURL), let dict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] else {
+            guard let data = try? Data(contentsOf: urls[0].absoluteURL) else {
                 spinner.removeConnectingView()
                 showAlert(vc: self, title: "Ooops", message: "That does not appear to be a recognized wallet backup/export/import file")
+                return
+            }
+            
+            guard let dict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] else {
+                
+                guard let txt = String(bytes: data, encoding: .utf8) else {
+                    spinner.removeConnectingView()
+                    showAlert(vc: self, title: "Ooops", message: "That does not appear to be a recognized wallet backup/export/import file")
+                    return
+                }
+                
+                let myStrings = txt.components(separatedBy: .newlines)
+                var name = ""
+                var sigsRequired = ""
+                var deriv = ""
+                var keys = [String]()
+                var descriptor = ""
+                
+                for item in myStrings {
+                    if item.contains("Name: ") {
+                        name = item.replacingOccurrences(of: "Name: ", with: "")
+                    } else if item.contains("Policy: ") {
+                        let policy = item.replacingOccurrences(of: "Policy: ", with: "")
+                        let arr = policy.split(separator: " ")
+                        sigsRequired = "\(arr[0])"
+                    } else if item.contains("Format: ") {
+                        guard item.contains("P2WSH") else {
+                            showAlert(vc: self, title: "Unsupported policy", message: "Currently we only support p2wsh multisig imports.")
+                            return
+                        }
+                    } else if item.contains("Derivation: ") {
+                        deriv = item.replacingOccurrences(of: "Derivation: ", with: "")
+                    } else {
+                        var processed = item.condenseWhitespace()
+                        processed = processed.replacingOccurrences(of: "\n", with: "")
+                        if processed != "" {
+                            keys.append(processed.replacingOccurrences(of: " ", with: ""))
+                        }
+                    }
+                }
+                
+                descriptor = "wsh(sortedmulti(\(sigsRequired),"
+                
+                for (i, key) in keys.enumerated() {
+                    let arr = key.split(separator: ":")
+                    let xfp = "\(arr[0])"
+                    let xpub = "\(arr[1])"
+                    guard let extKey = XpubConverter.convert(extendedKey: xpub) else {
+                        return
+                    }
+                    
+                    descriptor += "[\(xfp)/\(deriv.replacingOccurrences(of: "m/", with: ""))]\(extKey)/0/*"
+                    
+                    if i < keys.count {
+                        descriptor += ","
+                    } else {
+                        descriptor += "))"
+                    }
+                }
+                
+                let accountMap = ["descriptor": descriptor, "blockheight": 0, "watching": [], "label": name] as [String : Any]
+                promptToImportCoboMultiSig(accountMap)
+                /*
+                 Name: CV_85C39000_2-3
+                 Policy: 2 of 3
+                 Derivation: m/48'/1'/0'/2'
+                 Format: P2WSH
+
+                 C2202A77: Vpub5nbpJQxCxQu9Nv5Effa1F8gdQsijrgk7KrMkioLs5DoRwb7MCjC3t1P2y9mXbnBgu29yL8EYexZqzniFdX7Xo3q8TuwkVAqbQpgxfAfrRiW
+                 5271C071: Vpub5mpRVCzdkDTtCwH9LrfiiPonePjP4CZSakA4wynC4zVBVAooaykiCzjUniYbLpWxoRotGiXwoKGcHC5kSxiJGX1Ybjf2ioNommVmCJg7AV2
+                 748CC6AA: Vpub5mcrJpVp9X8ZKsjyxwNu36SLRAWTMbqUtbmtcapahAtqVa66JtXhT4Uc9SVLN1nF782sPRRT2jbUbe7XzT8eue6vXsyDJKBvexGJHewyPxQ
+                 */
                 return
             }
             
@@ -136,9 +208,65 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             } else if let _ = dict["descriptor"] as? String {
                 promptToImportAccountMap(dict: dict)
                 
-            } else {
-                
+            } else if let _ = dict["ExtPubKey"] as? String {
+                promptToImportCoboSingleSig(dict)
             }
+        }
+    }
+    
+    private func promptToImportCoboMultiSig(_ dict: [String:Any]) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let alert = UIAlertController(title: "Import your multi sig wallet?", message: "Looks like you selected a multi sig wallet. You can easily recreate the wallet as watchonly with Fully Noded, just tap \"import\".", preferredStyle: self.alertStyle)
+            
+            alert.addAction(UIAlertAction(title: "import", style: .default, handler: { action in
+                self.importAccountMap(dict)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func promptToImportCoboSingleSig(_ dict: [String:Any]) {
+        guard let extPubKey = dict["ExtPubKey"] as? String,
+            let xfp = dict["MasterFingerprint"] as? String,
+            let deriv = dict["AccountKeyPath"] as? String,
+            let xpub = XpubConverter.convert(extendedKey: extPubKey) else {
+            showAlert(vc: self, title: "Error converting that wallet import", message: "Please let us know about this issue so we can fix it.")
+                
+            return
+        }
+        
+        var desc = ""
+        
+        if extPubKey.hasPrefix("xpub") || extPubKey.hasPrefix("tpub") {
+            desc = "pkh([\(xfp)/\(deriv)]\(xpub)/0/*)"
+            
+        } else if extPubKey.hasPrefix("vpub") || extPubKey.hasPrefix("zpub") {
+            desc = "wpkh([\(xfp)/\(deriv)]\(xpub)/0/*)"
+            
+        } else if extPubKey.hasPrefix("ypub") || extPubKey.hasPrefix("upub") {
+            desc = "sh(wpkh([\(xfp)/\(deriv)]\(xpub)/0/*))"
+            
+        }
+        
+        let accountMap = ["descriptor": desc, "blockheight": 0, "watching": [], "label": "Cobo Vault"] as [String : Any]
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let alert = UIAlertController(title: "Import your CoboVault single sig?", message: "Looks like you selected a CoboVault single sig wallet. You can easily recreate the wallet as watchonly with Fully Noded, just tap \"import\".", preferredStyle: self.alertStyle)
+            
+            alert.addAction(UIAlertAction(title: "import", style: .default, handler: { action in
+                self.importAccountMap(accountMap)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
         }
     }
     
@@ -320,6 +448,9 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                         }
                     }
                 }
+            } else if let _ = accountMap["ExtPubKey"] as? String {
+                spinner.removeConnectingView()
+                promptToImportCoboSingleSig(accountMap)
             }
         }
         

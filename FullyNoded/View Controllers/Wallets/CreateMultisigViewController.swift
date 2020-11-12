@@ -427,6 +427,22 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                 
                 self.addKeyStore(fingerprint, key)
             }
+        } else if let data = extendedKey.data(using: .utf8) {
+            guard let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any],
+                let xfp = json["xfp"] as? String,
+                let xpub = json["xpub"] as? String,
+                let path = json["path"] as? String else {
+                    showAlert(vc: self, title: "Not a recognized keystore...", message: "Please reach out so we can fix this.")
+                    return
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.derivationField.text = path
+                self.addKeyStore(xfp, xpub)
+            }
+            
         } else {
             showAlert(vc: self, title: "Invalid format", message: "Sorry we do not recognize that format yet, please reach out on Twitter, Telegram or GitHub and let us know.")
         }
