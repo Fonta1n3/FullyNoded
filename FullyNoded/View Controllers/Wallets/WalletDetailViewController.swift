@@ -24,6 +24,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     var backupText = ""
     var textToShow = ""
     var json = ""
+    var showReceive = 0
     var alertStyle = UIAlertController.Style.actionSheet
     private var labelField: UITextField!
     private var labelButton: UIButton!
@@ -145,10 +146,14 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                     self.addresses += "#\(i): \(address)\n\n"
                     if i + 1 == addr.count {
                         DispatchQueue.main.async { [weak self] in
+                            self?.spinner.removeConnectingView()
                             self?.detailTable.reloadSections(IndexSet(arrayLiteral: Section.addressExplorer.rawValue), with: .none)
                         }
                     }
                 }
+            } else {
+                self?.spinner.removeConnectingView()
+                showAlert(vc: self, title: "We were unable to derive your addresses", message: "")
             }
         }
     }
@@ -673,6 +678,10 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         let exportButton = cell.viewWithTag(2) as! UIButton
         configureExportButton(exportButton, indexPath: indexPath)
         
+        let segmentedControl = cell.viewWithTag(3) as! UISegmentedControl
+        segmentedControl.selectedSegmentIndex = showReceive
+        segmentedControl.addTarget(self, action: #selector(updateAddressExplorer(_:)), for: .valueChanged)
+        
         return cell
     }
     
@@ -846,6 +855,19 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 60
+    }
+    
+    @objc func updateAddressExplorer(_ sender: UISegmentedControl) {
+        showReceive = sender.selectedSegmentIndex
+        addresses = ""
+        
+        if showReceive == 0 {
+            spinner.addConnectingView(vc: self, description: "deriving receive addresses...")
+            deriveAddresses(wallet.receiveDescriptor)
+        } else {
+            spinner.addConnectingView(vc: self, description: "deriving change addresses...")
+            deriveAddresses(wallet.changeDescriptor)
+        }
     }
     
     @objc func increaseGapLimit() {

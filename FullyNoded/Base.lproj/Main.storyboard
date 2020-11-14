@@ -3206,11 +3206,8 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="scaleToFill" editable="NO" text="addresses list" translatesAutoresizingMaskIntoConstraints="NO" id="f5e-Sk-Vgh">
-                                                    <rect key="frame" x="8" y="18" width="287" height="156"/>
+                                                    <rect key="frame" x="8" y="47" width="287" height="137"/>
                                                     <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                    <constraints>
-                                                        <constraint firstAttribute="height" constant="156" id="RMS-dK-GRm"/>
-                                                    </constraints>
                                                     <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
@@ -3223,13 +3220,23 @@
                                                     <color key="tintColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <state key="normal" image="square.and.arrow.up" catalog="system"/>
                                                 </button>
+                                                <segmentedControl opaque="NO" tag="3" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="hhK-2T-DGa">
+                                                    <rect key="frame" x="16" y="8" width="129" height="32"/>
+                                                    <segments>
+                                                        <segment title="receive"/>
+                                                        <segment title="change"/>
+                                                    </segments>
+                                                </segmentedControl>
                                             </subviews>
                                             <constraints>
                                                 <constraint firstItem="rVY-pv-74N" firstAttribute="leading" secondItem="f5e-Sk-Vgh" secondAttribute="trailing" constant="8" id="3fu-uc-2Ze"/>
                                                 <constraint firstItem="f5e-Sk-Vgh" firstAttribute="leading" secondItem="gjG-jc-dnU" secondAttribute="leading" constant="8" id="7pN-kF-S5T"/>
-                                                <constraint firstItem="f5e-Sk-Vgh" firstAttribute="centerY" secondItem="gjG-jc-dnU" secondAttribute="centerY" id="OA2-5h-xuk"/>
+                                                <constraint firstItem="hhK-2T-DGa" firstAttribute="top" secondItem="gjG-jc-dnU" secondAttribute="top" constant="8" id="EBt-tC-T3v"/>
                                                 <constraint firstItem="rVY-pv-74N" firstAttribute="top" secondItem="gjG-jc-dnU" secondAttribute="topMargin" id="cYi-5E-TLq"/>
                                                 <constraint firstItem="rVY-pv-74N" firstAttribute="trailing" secondItem="gjG-jc-dnU" secondAttribute="trailingMargin" id="gfX-19-KZY"/>
+                                                <constraint firstAttribute="bottom" secondItem="f5e-Sk-Vgh" secondAttribute="bottom" constant="8" id="pRE-oo-LPn"/>
+                                                <constraint firstItem="hhK-2T-DGa" firstAttribute="leading" secondItem="gjG-jc-dnU" secondAttribute="leading" constant="16" id="vA1-L5-cSb"/>
+                                                <constraint firstItem="f5e-Sk-Vgh" firstAttribute="top" secondItem="hhK-2T-DGa" secondAttribute="bottom" constant="8" id="zzw-0E-F24"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -3314,7 +3321,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="y6X-dL-UYm" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-8106" y="2552"/>
+            <point key="canvasLocation" x="-8106.3999999999996" y="2551.5742128935535"/>
         </scene>
         <!--Create Fully Noded Wallet View Controller-->
         <scene sceneID="92q-bk-EIf">
@@ -4924,7 +4931,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
             </objects>
             <point key="canvasLocation" x="-2791.1999999999998" y="375.56221889055473"/>
         </scene>
-        <!--v0.2.1-->
+        <!--v0.2.2-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -5024,7 +5031,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                         <viewLayoutGuide key="safeArea" id="Cze-jj-bFe"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="v0.2.1" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="v0.2.2" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>

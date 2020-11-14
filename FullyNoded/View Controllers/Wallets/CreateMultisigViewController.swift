@@ -30,7 +30,6 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     @IBOutlet weak var createOutlet: UIButton!
     @IBOutlet weak var addOutlet: UIButton!
     
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -398,17 +397,11 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         if extendedKey.hasPrefix("xpub") || extendedKey.hasPrefix("tpub") {
             if let _ = XpubConverter.zpub(xpub: extendedKey) {
                 showAddButton()
-            } else {
-                //updateXpubField("")
-                //showAlert(vc: self, title: "Error", message: "Invalid xpub")
             }
         } else if extendedKey.hasPrefix("Zpub") || extendedKey.hasPrefix("Vpub") {
             if let xpub = XpubConverter.convert(extendedKey: extendedKey) {
                 updateXpubField(xpub)
                 showAddButton()
-            } else {
-                //updateXpubField("")
-                //showAlert(vc: self, title: "Error", message: "Invalid extended key. It must be either an xpub, tpub, Zpub or Vpub")
             }
         } else if extendedKey.hasPrefix("[") {
             let p = DescriptorParser()
@@ -417,10 +410,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             let key = descriptor.accountXpub
             let fingerprint = descriptor.fingerprint
             
-            guard key != "", fingerprint != "" else {
-                //showAlert(vc: self, title: "Invalid format", message: "Sorry we do not recognize that format yet, please reach out on Twitter, Telegram or GitHub and let us know.")
-                return
-            }
+            guard key != "", fingerprint != "" else { return }
             
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
@@ -432,7 +422,6 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                 let xfp = json["xfp"] as? String,
                 let xpub = json["xpub"] as? String,
                 let path = json["path"] as? String else {
-                    //showAlert(vc: self, title: "Not a recognized keystore...", message: "Please reach out so we can fix this.")
                     return
             }
             
