@@ -51,7 +51,6 @@ class ImportWallet {
         // Sparrow wallet exports do not include range
         if !primDescriptor.contains("/0/*") {
             for key in descStruct.multiSigKeys {
-                print("key: \(key)")
                 if !key.contains("/0/*") {
                     primDescriptor = primDescriptor.replacingOccurrences(of: key, with: key + "/0/*")
                 }

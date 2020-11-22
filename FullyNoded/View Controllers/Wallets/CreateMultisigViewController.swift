@@ -375,10 +375,19 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             
             try? text.dataUsingUTF8StringEncoding.write(to: fileURL)
             
-            let controller = UIDocumentPickerViewController(url: fileURL, in: .exportToService)
-            self.present(controller, animated: true) {
-                DispatchQueue.main.async {
-                    NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+            if #available(iOS 14, *) {
+//                let controller = UIDocumentPickerViewController(forExporting: [fileURL]) // 5
+//                self.present(controller, animated: true) {
+//                    DispatchQueue.main.async {
+//                        NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+//                    }
+//                }
+            } else {
+                let controller = UIDocumentPickerViewController(url: fileURL, in: .exportToService)
+                self.present(controller, animated: true) {
+                    DispatchQueue.main.async {
+                        NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+                    }
                 }
             }
         }

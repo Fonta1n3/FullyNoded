@@ -178,7 +178,6 @@ class ActiveWalletViewController: UIViewController {
                 showAlert(vc: self, title: "Restricted access!", message: "That area is for the node owner only.")
             }
         }
-        
     }
     
     @IBAction func goToUtxos(_ sender: Any) {
@@ -474,15 +473,13 @@ class ActiveWalletViewController: UIViewController {
                 vc.fxRateLabel.text = "$\(rate.withCommas()) / btc"
             }
             
-            if let onchainBalance = Double(self.onchainBalance) {
-                let onchainBalanceFiat = onchainBalance * rate
-                self.onchainFiat = "$\(round(onchainBalanceFiat).withCommas())"
-            }
+            let onchainBalance = self.onchainBalance.doubleValue
+            let onchainBalanceFiat = onchainBalance * rate
+            self.onchainFiat = "$\(round(onchainBalanceFiat).withCommas())"
             
-            if let offchainBalance = Double(self.offchainBalance) {
-                let offchainBalanceFiat = offchainBalance * rate
-                self.offchainFiat = "$\(round(offchainBalanceFiat).withCommas())"
-            }
+            let offchainBalance = self.offchainBalance.doubleValue
+            let offchainBalanceFiat = offchainBalance * rate
+            self.offchainFiat = "$\(round(offchainBalanceFiat).withCommas())"
             
             DispatchQueue.main.async {
                 self.walletTable.reloadSections(IndexSet(arrayLiteral: 0), with: .none)

@@ -84,7 +84,6 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
         textField.resignFirstResponder()
     }
     
-    
     // MARK: - Navigation
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

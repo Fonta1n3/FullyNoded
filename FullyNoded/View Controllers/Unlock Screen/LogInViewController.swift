@@ -29,6 +29,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
+        //self.passwordInput.removeGestureRecognizer(tapGesture)
 
         passwordInput.delegate = self
 
