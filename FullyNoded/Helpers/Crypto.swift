@@ -11,7 +11,7 @@ import CryptoKit
 enum Crypto {
     
     static func sha256hash(_ text: String) -> String {
-        let digest = SHA256.hash(data: text.dataUsingUTF8StringEncoding)
+        let digest = SHA256.hash(data: text.utf8)
         
         return digest.map { String(format: "%02hhx", $0) }.joined()
     }

@@ -25,6 +25,7 @@ class AppPasswordViewController: UIViewController, UITextFieldDelegate, UINaviga
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         view.addGestureRecognizer(tapGesture)
+        textField.removeGestureRecognizer(tapGesture)
         
         buttonOutlet.clipsToBounds = true
         buttonOutlet.layer.cornerRadius = 8
@@ -109,7 +110,10 @@ class AppPasswordViewController: UIViewController, UITextFieldDelegate, UINaviga
     }
     
     private func setPassword(_ text: String) {
-        guard let data = Data(text) else { return }
+        guard let data = Data(text) else {
+            showAlert(vc: self, title: "Invalid text", message: "")
+            return
+        }
         
         if KeyChain.set(data, forKey: "UnlockPassword") {
             DispatchQueue.main.async { [weak self] in

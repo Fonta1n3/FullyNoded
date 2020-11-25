@@ -117,9 +117,7 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
               alertStyle = UIAlertController.Style.alert
             }
             
-            guard let words = Crypto.decrypt(signer.words) else { return }
-            
-            var arr = words.utf8.split(separator: " ")
+            guard let words = Crypto.decrypt(signer.words), var arr = words.utf8?.split(separator: " ") else { return }            
             
             for (i, _) in arr.enumerated() {
                 if i > 0 && i < arr.count - 1 {

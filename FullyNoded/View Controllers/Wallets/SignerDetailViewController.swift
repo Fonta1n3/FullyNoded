@@ -142,10 +142,8 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
             self.labelField.text = signer.label
             self.tableDict["date"] = "  " +  self.formattedDate(signer.added)
             
-            guard var decrypted = Crypto.decrypt(signer.words) else { return }
-            
-            var words = decrypted.utf8
-            
+            guard var decrypted = Crypto.decrypt(signer.words), var words = decrypted.utf8 else { return }
+                        
             var arr = words.split(separator: " ")
             
             for (i, _) in arr.enumerated() {
@@ -159,9 +157,9 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
             var passphrase = ""
             
             if signer.passphrase != nil {
-                guard let decryptedPassphrase = Crypto.decrypt(signer.passphrase!) else { return }
+                guard let decryptedPassphrase = Crypto.decrypt(signer.passphrase!), let string = decryptedPassphrase.utf8 else { return }
                 
-                passphrase = decryptedPassphrase.utf8
+                passphrase = string
                 self.tableDict["passphrase"] = "  " + passphrase
             } else {
                 self.tableDict["passphrase"] = "  ** no passphrase **"

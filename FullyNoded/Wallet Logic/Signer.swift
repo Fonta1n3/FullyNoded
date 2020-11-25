@@ -112,7 +112,7 @@ class Signer {
                                         if var childKey = try? key.derive(path) {
                                             if var privKey = childKey.privKey {
                                                 signableKeys.append(privKey.wif)
-                                                // Overwite vars with dummies for security
+                                                // Overwrite vars with dummies for security
                                                 privKey = Key("KwfUAErbeHJCafVr37aRnYcobent1tVV1iADD2k3T8VV1pD2qpWs", .mainnet)!
                                                 childKey = HDKey("xpub6FETvV487Sr4VSV9Ya5em5ZAug4dtnFwgnMG7TFAfkJDHoQ1uohXft49cFenfpJHbPueMnfyxtBoAuvSu7XNL9bbLzcM1QJCPwtofqv3dqC")!
                                             }
@@ -151,6 +151,8 @@ class Signer {
                         }
                     }
                 }
+            } else {
+                finalizeWithBitcoind()
             }
         }
         
@@ -214,6 +216,8 @@ class Signer {
                     } else {
                         processWithActiveWallet()
                     }
+                } else {
+                    processWithActiveWallet()
                 }
             }
         }

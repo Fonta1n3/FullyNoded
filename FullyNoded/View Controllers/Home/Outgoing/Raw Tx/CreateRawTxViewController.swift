@@ -683,6 +683,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         } else if outputArray.count > 0 {
             convertOutputs()
             
+        } else {
+            spinner.removeConnectingView()
+            showAlert(vc: self, title: "This is not right...", message: "Please reach out and let us know about this so we can fix it.")
         }
     }
     
@@ -867,7 +870,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 self.rawTxSigned = rawTx!
                 self.showRaw(raw: rawTx!)
                 
-            } else if errorMessage != nil {
+            } else {
                 self.outputs.removeAll()
                 self.outputsString = ""
                 self.outputArray.removeAll()
@@ -876,7 +879,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                     self.outputsTable.reloadData()
                 }
                 
-                showAlert(vc: self, title: "Error", message: errorMessage!)
+                showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown error creating transaction")
             }
         }
     }

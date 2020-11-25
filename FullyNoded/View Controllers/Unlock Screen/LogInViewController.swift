@@ -22,14 +22,14 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     var timeToDisable = 2.0
     var timer: Timer?
     var secondsRemaining = 2
+    var tapGesture:UITapGestureRecognizer!
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
+        tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
-        //self.passwordInput.removeGestureRecognizer(tapGesture)
 
         passwordInput.delegate = self
 
@@ -71,7 +71,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             return
         }
 
-        guard let time = Double(timeToDisableOnKeychain.utf8) else { return }
+        guard let seconds = timeToDisableOnKeychain.utf8, let time = Double(seconds) else { return }
 
         timeToDisable = time
         secondsRemaining = Int(timeToDisable)
@@ -80,7 +80,8 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     override func viewDidAppear(_ animated: Bool) {
         lockView.addSubview(imageView)
         lockView.addSubview(passwordInput)
-        addNextButton(inputView: self.passwordInput)
+        passwordInput.removeGestureRecognizer(tapGesture)
+        addNextButton(inputView: passwordInput)
 
         let ud = UserDefaults.standard
 

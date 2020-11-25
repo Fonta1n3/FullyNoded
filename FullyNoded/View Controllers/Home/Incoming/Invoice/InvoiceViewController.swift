@@ -165,7 +165,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 return
             }
             
-            let paymentAddress = data.utf8
+            let paymentAddress = data.utf8 ?? ""
             getPaid(paymentAddress)
             
         } else {
