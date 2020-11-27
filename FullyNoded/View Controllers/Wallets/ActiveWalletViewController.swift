@@ -22,13 +22,11 @@ class ActiveWalletViewController: UIViewController {
     private var tx = String()
     private var refreshButton = UIBarButtonItem()
     private var dataRefresher = UIBarButtonItem()
-    //private var id:UUID!
     private var walletLabel:String!
     private var wallet:Wallet?
     private var isBolt11 = false
     private var fxRate:Double?
     private var alertStyle = UIAlertController.Style.actionSheet
-    
     private let barSpinner = UIActivityIndicatorView(style: .medium)
     private let ud = UserDefaults.standard
     private let spinner = ConnectingView()
@@ -59,7 +57,7 @@ class ActiveWalletViewController: UIViewController {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
-                let alert = UIAlertController(title: "You are not using Fully Noded securely!", message: "You really ought to add a password that is used to lock the app if you are doing wallet related stuff!", preferredStyle: UIAlertController.Style.alert)
+                let alert = UIAlertController(title: "", message: "You really ought to add a password that is used to lock the app if you are doing wallet related stuff!", preferredStyle: UIAlertController.Style.alert)
                 
                 alert.addAction(UIAlertAction(title: "set password", style: .default, handler: { action in
                     DispatchQueue.main.async {
@@ -122,7 +120,7 @@ class ActiveWalletViewController: UIViewController {
     
     @IBAction func getDetails(_ sender: Any) {
         guard let wallet = wallet else {
-            showAlert(vc: self, title: "Ooops", message: "That button only works for \"Fully Noded Wallets\" which can be created by tapping the plus button, you can see your Fully Noded Wallets by tapping the squares button. Fully Noded allows you to access, use and create wallets with ultimate flexibility using your node but it comes with some limitations. In order to get a better user experience we recommend creating a Fully Noded Wallet.")
+            showAlert(vc: self, title: "", message: "That button only works for \"Fully Noded Wallets\" which can be created by tapping the plus button, you can see your Fully Noded Wallets by tapping the squares button. Fully Noded allows you to access, use and create wallets with ultimate flexibility using your node but it comes with some limitations. In order to get a better user experience we recommend creating a Fully Noded Wallet.")
             
             return
         }

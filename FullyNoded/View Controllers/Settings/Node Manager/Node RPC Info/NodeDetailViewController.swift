@@ -403,7 +403,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     if nodes!.count > 1 {
                         vc.deActivateNodes(nodes: nodes!) {
                             DispatchQueue.main.async { [unowned vc = self] in
-                                let alert = UIAlertController(title: "Node added successfully ✅", message: "Your node has been saved and activated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection to your new node.", preferredStyle: self.alertStyle)
+                                let alert = UIAlertController(title: "Node added successfully ✓", message: "Your node has been saved and activated, tap Done to go back. Sometimes its necessary to force quit and reopen FullyNoded to refresh the Tor connection to your new node.", preferredStyle: self.alertStyle)
                                 alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                                     DispatchQueue.main.async { [unowned vc = self] in
                                         NotificationCenter.default.post(name: .refreshNode, object: nil)
@@ -429,7 +429,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                             }
                         } else {
                            DispatchQueue.main.async { [unowned vc = self] in
-                            let alert = UIAlertController(title: "Node added successfully ✅", message: "Your node has been added and activated. The home screen is automatically refreshing. Tap Done to go back.", preferredStyle: self.alertStyle)
+                            let alert = UIAlertController(title: "Node added successfully ✓", message: "Your node has been added and activated. The home screen is automatically refreshing. Tap Done to go back.", preferredStyle: self.alertStyle)
                                 alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                                     DispatchQueue.main.async { [unowned vc = self] in
                                         NotificationCenter.default.post(name: .refreshNode, object: nil)
@@ -455,7 +455,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                         }
                     } else {
                        DispatchQueue.main.async { [unowned vc = self] in
-                        let alert = UIAlertController(title: "Node added successfully ✅", message: "Your node has been added and activated. The home screen is automatically refreshing. Tap Done to go back.", preferredStyle: self.alertStyle)
+                        let alert = UIAlertController(title: "Node added successfully ✓", message: "Your node has been added and activated. The home screen is automatically refreshing. Tap Done to go back.", preferredStyle: self.alertStyle)
                             alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
                                 DispatchQueue.main.async { [unowned vc = self] in
                                     vc.navigationController?.popViewController(animated: true)
