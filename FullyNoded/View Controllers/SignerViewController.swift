@@ -183,9 +183,9 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
                 chain = .testnet
             }
             
-            guard let psbtTocheck = try? PSBT(string, chain) else {
+            guard let psbtTocheck = try? PSBT(psbt: string, network: chain) else {
                 
-                guard let _ = Transaction(string) else {
+                guard let _ = try? Transaction(hex: string) else {
                     self.spinner.removeConnectingView()
                     self.showError(error: "This button is for pasting the contents of your clipboard, make sure you copied a valid psbt or raw transaction.")
                     return
@@ -215,7 +215,7 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
                 let alert = UIAlertController(title: "You have a valid psbt on your clipboard", message: "Would you like to process it? This will *not* broadcast the transaction we simply check if it is completed yet and add any missing info to the psbt that may not be there.", preferredStyle: self.alertStyle)
                 
                 alert.addAction(UIAlertAction(title: "Process", style: .default, handler: { action in
-                    if psbtTocheck.complete {
+                    if psbtTocheck.isComplete {
                         self.finalizePsbt()
                     } else {
                         self.process()
@@ -278,7 +278,7 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard controller.documentPickerMode == .import else { return }
         
-        guard let text = try? String(contentsOf: urls[0].absoluteURL), let _ = Transaction(text) else {
+        guard let text = try? String(contentsOf: urls[0].absoluteURL), let _ = try? Transaction(hex: text) else {
             
             guard let data = try? Data(contentsOf: urls[0].absoluteURL) else {
                 spinner.removeConnectingView()
@@ -338,12 +338,12 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
     }
     
     private func getPsbt(chain: Network) {
-        guard psbt != "", let psbtTocheck = try? PSBT(psbt, chain) else {
+        guard psbt != "", let psbtTocheck = try? PSBT(psbt: psbt, network: chain) else {
             showError(error: "error processing psbt")
             return
         }
         
-        if psbtTocheck.complete {
+        if psbtTocheck.isComplete {
             finalizePsbt()
         } else {
             process()

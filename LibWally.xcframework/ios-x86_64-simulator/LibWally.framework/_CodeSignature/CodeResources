@@ -6,75 +6,47 @@
 	<dict>
 		<key>Headers/LibWally-Swift.h</key>
 		<data>
-		tqBbXj/09/bXJLZ4X/4t4M2SMa0=
+		t/EwwvnFc9jtpzRci3JmQmNSlpg=
 		</data>
 		<key>Headers/LibWally.h</key>
 		<data>
-		DX3nOBJuBoQDqO7t808raIBU/JQ=
-		</data>
-		<key>Headers/wally_address.h</key>
-		<data>
-		XNwnycU9kTKSu/u1TeNbF5uKcAI=
-		</data>
-		<key>Headers/wally_bip32.h</key>
-		<data>
-		lVvtsxxSuuPuJJ+wp29iY6Ybss0=
-		</data>
-		<key>Headers/wally_bip38.h</key>
-		<data>
-		2bFDxF3Trb0TF6HY9sjLtkJz5Y8=
-		</data>
-		<key>Headers/wally_bip39.h</key>
-		<data>
-		pY0ZRF0At1Vu7fGHodB6mGhVD7I=
-		</data>
-		<key>Headers/wally_core.h</key>
-		<data>
-		I60cGn3yZGJgltHcLcfLiKPlUaw=
-		</data>
-		<key>Headers/wally_crypto.h</key>
-		<data>
-		OX83J9uH/dd8Ul0zipn73i8I0fI=
-		</data>
-		<key>Headers/wally_psbt.h</key>
-		<data>
-		LoH37TCl7KwhZ8gGhxGVUSyGUuQ=
-		</data>
-		<key>Headers/wally_script.h</key>
-		<data>
-		c3SAsZtEpN+Fm41tABeDixm9rTU=
-		</data>
-		<key>Headers/wally_transaction.h</key>
-		<data>
-		FbAMfQwQzAb2RVOkS7p4A6QcaGk=
+		c24FryZPBij5kiCsYwKSvuX4uYI=
 		</data>
 		<key>Info.plist</key>
 		<data>
-		P6FY2iFseg5R1YmaXMNjjoVoXZw=
+		ntDxYCxPoY8O1EPcO0h1lBF8Isw=
+		</data>
+		<key>Modules/LibWally.swiftmodule/Project/x86_64-apple-ios-simulator.swiftsourceinfo</key>
+		<data>
+		Jx8AjzSrJkUKXfCg4M0oEQPPZ6A=
+		</data>
+		<key>Modules/LibWally.swiftmodule/Project/x86_64.swiftsourceinfo</key>
+		<data>
+		Jx8AjzSrJkUKXfCg4M0oEQPPZ6A=
 		</data>
 		<key>Modules/LibWally.swiftmodule/x86_64-apple-ios-simulator.swiftdoc</key>
 		<data>
-		vlX9fzlxz2fYM1YqpPhzhiBhMEE=
+		R7N41MhUPUTYW7y5fBFJiPXxc50=
 		</data>
 		<key>Modules/LibWally.swiftmodule/x86_64-apple-ios-simulator.swiftinterface</key>
 		<data>
-		E4Vo76JPDxLv845TxbwWMdWlFUM=
+		S0rv//BCwfho1csYfsY8CsK7gJM=
 		</data>
 		<key>Modules/LibWally.swiftmodule/x86_64-apple-ios-simulator.swiftmodule</key>
 		<data>
-		IX0vi1zo4QY5FHCMYmirnMgPxEs=
+		XpIJMGI++UlqNfUVKsG29g6aZNU=
 		</data>
 		<key>Modules/LibWally.swiftmodule/x86_64.swiftdoc</key>
 		<data>
-		vlX9fzlxz2fYM1YqpPhzhiBhMEE=
+		R7N41MhUPUTYW7y5fBFJiPXxc50=
 		</data>
 		<key>Modules/LibWally.swiftmodule/x86_64.swiftinterface</key>
 		<data>
-		E4Vo76JPDxLv845TxbwWMdWlFUM=
+		S0rv//BCwfho1csYfsY8CsK7gJM=
 		</data>
 		<key>Modules/LibWally.swiftmodule/x86_64.swiftmodule</key>
 		<data>
-		IX0vi1zo4QY5FHCMYmirnMgPxEs=
+		XpIJMGI++UlqNfUVKsG29g6aZNU=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -87,119 +59,70 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			BkGKI0LjjfgoX7059LNkfbcSUVve2rDlj3mmiFNynOQ=
+			ZMjcLfytAcvJn5Lx6cBXxW/+s/dwD79Gsd0QXE3Utp8=
 			</data>
 		</dict>
 		<key>Headers/LibWally.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			7fNpm/U69oHonUNN7IRocOgCWyhTjwbLmDU0SnwTUa4=
+			RgATdNJyK5chmSnuGkvj0YduYA/setzK4HBontpS58U=
 			</data>
 		</dict>
-		<key>Headers/wally_address.h</key>
+		<key>Modules/LibWally.swiftmodule/Project/x86_64-apple-ios-simulator.swiftsourceinfo</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			T6dpept/Y4Hv8oPLWtMTuFMmYepTm5fmBSAtIkNH52Q=
+			DF0D32gUQwTU3E1/QLMeqtqxgiHAiegqRgjffLhcI0A=
 			</data>
 		</dict>
-		<key>Headers/wally_bip32.h</key>
+		<key>Modules/LibWally.swiftmodule/Project/x86_64.swiftsourceinfo</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			w/Di5ylLsihNfwPeOh06ZlHkf2W1XtXz05nJvvd7hrs=
-			</data>
-		</dict>
-		<key>Headers/wally_bip38.h</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			7p84KEhmKDQyjdDW934AT5EDL1OG9+K7P06lltYcaQ8=
-			</data>
-		</dict>
-		<key>Headers/wally_bip39.h</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			6SqKIylQuRCno1PLqkAdJxn/gvZ9C68FjEB1M+1P1zE=
-			</data>
-		</dict>
-		<key>Headers/wally_core.h</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			v44fxeu9/20BRcHuYw+4YlPuc0ku/rfdA5c7wCADb50=
-			</data>
-		</dict>
-		<key>Headers/wally_crypto.h</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			q8oYqOkYaMMinj5EaUU0d5fSJvbmAk2yvPTsRQrL36I=
-			</data>
-		</dict>
-		<key>Headers/wally_psbt.h</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			Q7SQE/UIWjipSc6eWvgJWIg1Da2t4+NsIbfBj3R9pIA=
-			</data>
-		</dict>
-		<key>Headers/wally_script.h</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			3CPNxvN+JLTuEG1ixcH0GEs5/3fZlNx221avwkUu1m0=
-			</data>
-		</dict>
-		<key>Headers/wally_transaction.h</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			u8mbAb169/0Uty0h833o5XSIEkhQI20ViVFwSsTHNu4=
+			DF0D32gUQwTU3E1/QLMeqtqxgiHAiegqRgjffLhcI0A=
 			</data>
 		</dict>
 		<key>Modules/LibWally.swiftmodule/x86_64-apple-ios-simulator.swiftdoc</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			oh45+CDlGMu6zV4g5nfIuK2VSNS8SGe8PipPEXyhkYw=
+			MoqPDsXJ8crH+5XXnlB5PT3pMgU+bYWD/EtZZuFIls0=
 			</data>
 		</dict>
 		<key>Modules/LibWally.swiftmodule/x86_64-apple-ios-simulator.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			plQFOrCrpm5vj2Jac73+RwQpCBr1PpC+kkvDr9LdnFE=
+			6DmYaf+HPVIk6ct3n94EYKwoCCvVZkgqSOH2QNYAYDU=
 			</data>
 		</dict>
 		<key>Modules/LibWally.swiftmodule/x86_64-apple-ios-simulator.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			bMoY+Mihii2Ayo5XOJEc1a20SZT5mYgpt6/MaVX6t2Y=
+			v6NX8zOGv6oL2J20I03rWuMWGCE7AxeZzckNhTtm2H8=
 			</data>
 		</dict>
 		<key>Modules/LibWally.swiftmodule/x86_64.swiftdoc</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			oh45+CDlGMu6zV4g5nfIuK2VSNS8SGe8PipPEXyhkYw=
+			MoqPDsXJ8crH+5XXnlB5PT3pMgU+bYWD/EtZZuFIls0=
 			</data>
 		</dict>
 		<key>Modules/LibWally.swiftmodule/x86_64.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			plQFOrCrpm5vj2Jac73+RwQpCBr1PpC+kkvDr9LdnFE=
+			6DmYaf+HPVIk6ct3n94EYKwoCCvVZkgqSOH2QNYAYDU=
 			</data>
 		</dict>
 		<key>Modules/LibWally.swiftmodule/x86_64.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			bMoY+Mihii2Ayo5XOJEc1a20SZT5mYgpt6/MaVX6t2Y=
+			v6NX8zOGv6oL2J20I03rWuMWGCE7AxeZzckNhTtm2H8=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>

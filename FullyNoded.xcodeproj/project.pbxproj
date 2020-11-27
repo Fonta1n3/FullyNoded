@@ -58,6 +58,9 @@
 		D03FC07C2508850600450B45 /* Tor-3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D03FC07A250883D900450B45 /* Tor-3.xcframework */; };
 		D03FC07D2508850600450B45 /* Tor-3.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D03FC07A250883D900450B45 /* Tor-3.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D0410617224ED189004AC0D0 /* ObjectiveCHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = D0410616224ED189004AC0D0 /* ObjectiveCHeader.m */; };
+		D042B9372570DAA600E6DDE3 /* CLibWally.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D042B9352570DAA500E6DDE3 /* CLibWally.xcframework */; };
+		D042B9382570DAA900E6DDE3 /* LibWally.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D042B9342570DAA500E6DDE3 /* LibWally.xcframework */; };
+		D042B9392570DAA900E6DDE3 /* LibWally.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D042B9342570DAA500E6DDE3 /* LibWally.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D042FABC250C9F0600E99D9B /* Torrc.swift in Sources */ = {isa = PBXBuildFile; fileRef = D042FABB250C9F0600E99D9B /* Torrc.swift */; };
 		D044ED78235AF42D00300D62 /* ImportStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D044ED77235AF42D00300D62 /* ImportStruct.swift */; };
 		D0452AD42246C7830013E225 /* clear.png in Resources */ = {isa = PBXBuildFile; fileRef = D0452AD32246C7820013E225 /* clear.png */; };
@@ -75,9 +78,6 @@
 		D05D973422647CE60035F1DE /* QRGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05D973322647CE60035F1DE /* QRGenerator.swift */; };
 		D069051F24EA6C1F007F939D /* LightningPeersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D069051E24EA6C1F007F939D /* LightningPeersViewController.swift */; };
 		D069052124EA8E95007F939D /* LightningChannelsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D069052024EA8E95007F939D /* LightningChannelsViewController.swift */; };
-		D06FD7CB2506155C00481185 /* CLibWally.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D06FD7C92506155B00481185 /* CLibWally.xcframework */; };
-		D06FD7CD2506156A00481185 /* LibWally.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D06FD7CA2506155B00481185 /* LibWally.xcframework */; };
-		D06FD7CE2506156A00481185 /* LibWally.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D06FD7CA2506155B00481185 /* LibWally.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D06FD7D025062F7A00481185 /* GetTx.swift in Sources */ = {isa = PBXBuildFile; fileRef = D06FD7CF25062F7A00481185 /* GetTx.swift */; };
 		D06FD7D2250640F800481185 /* logo_grey_.png in Resources */ = {isa = PBXBuildFile; fileRef = D06FD7D1250640F800481185 /* logo_grey_.png */; };
 		D071A2A0214880F700C4BCB3 /* Search - tripkey.png in Resources */ = {isa = PBXBuildFile; fileRef = D071A29F214880F700C4BCB3 /* Search - tripkey.png */; };
@@ -184,8 +184,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				D06FD7CE2506156A00481185 /* LibWally.xcframework in Embed Frameworks */,
 				D03FC07D2508850600450B45 /* Tor-3.xcframework in Embed Frameworks */,
+				D042B9392570DAA900E6DDE3 /* LibWally.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -251,6 +251,8 @@
 		D03FC07A250883D900450B45 /* Tor-3.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = "Tor-3.xcframework"; sourceTree = "<group>"; };
 		D0410615224ED188004AC0D0 /* FullyNoded-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FullyNoded-Bridging-Header.h"; sourceTree = "<group>"; };
 		D0410616224ED189004AC0D0 /* ObjectiveCHeader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ObjectiveCHeader.m; sourceTree = "<group>"; };
+		D042B9342570DAA500E6DDE3 /* LibWally.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = LibWally.xcframework; sourceTree = "<group>"; };
+		D042B9352570DAA500E6DDE3 /* CLibWally.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = CLibWally.xcframework; sourceTree = "<group>"; };
 		D042FABB250C9F0600E99D9B /* Torrc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Torrc.swift; sourceTree = "<group>"; };
 		D042FAC1250DA86D00E99D9B /* .torrc */ = {isa = PBXFileReference; lastKnownFileType = text; path = .torrc; sourceTree = "<group>"; };
 		D044ED77235AF42D00300D62 /* ImportStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportStruct.swift; sourceTree = "<group>"; };
@@ -269,8 +271,6 @@
 		D05D973322647CE60035F1DE /* QRGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRGenerator.swift; sourceTree = "<group>"; };
 		D069051E24EA6C1F007F939D /* LightningPeersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LightningPeersViewController.swift; sourceTree = "<group>"; };
 		D069052024EA8E95007F939D /* LightningChannelsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LightningChannelsViewController.swift; sourceTree = "<group>"; };
-		D06FD7C92506155B00481185 /* CLibWally.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = CLibWally.xcframework; sourceTree = "<group>"; };
-		D06FD7CA2506155B00481185 /* LibWally.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = LibWally.xcframework; sourceTree = "<group>"; };
 		D06FD7CF25062F7A00481185 /* GetTx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetTx.swift; sourceTree = "<group>"; };
 		D06FD7D1250640F800481185 /* logo_grey_.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo_grey_.png; sourceTree = "<group>"; };
 		D071A29F214880F700C4BCB3 /* Search - tripkey.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Search - tripkey.png"; sourceTree = "<group>"; };
@@ -367,9 +367,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				D0C1F9132531E5970079C2B8 /* URKit in Frameworks */,
-				D06FD7CB2506155C00481185 /* CLibWally.xcframework in Frameworks */,
-				D06FD7CD2506156A00481185 /* LibWally.xcframework in Frameworks */,
 				D03FC07C2508850600450B45 /* Tor-3.xcframework in Frameworks */,
+				D042B9372570DAA600E6DDE3 /* CLibWally.xcframework in Frameworks */,
+				D042B9382570DAA900E6DDE3 /* LibWally.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -848,11 +848,11 @@
 		D08C1FBB211147F600B7CA79 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D042B9352570DAA500E6DDE3 /* CLibWally.xcframework */,
+				D042B9342570DAA500E6DDE3 /* LibWally.xcframework */,
 				D026E5C7253A79DB001F1054 /* AuthenticationServices.framework */,
 				D042FAC1250DA86D00E99D9B /* .torrc */,
 				D03FC07A250883D900450B45 /* Tor-3.xcframework */,
-				D06FD7C92506155B00481185 /* CLibWally.xcframework */,
-				D06FD7CA2506155B00481185 /* LibWally.xcframework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";

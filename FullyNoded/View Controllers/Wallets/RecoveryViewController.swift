@@ -707,14 +707,10 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
                 
                 vc.wordView.text = vc.addedWords.joined(separator: "")
                 
-                if let _ = BIP39Mnemonic(vc.justWords.joined(separator: " ")) {
-                    
+                if let _ = try? BIP39Mnemonic(words: vc.justWords.joined(separator: " ")) {
                     vc.validWordsAdded()
-                    
                 }
-                
             }
-            
         }
     }
     
@@ -832,7 +828,7 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
                 
                 vc.textField.text = substring
                 
-                if let _ = BIP39Mnemonic(vc.processedCharacters(vc.textField.text!)) {
+                if let _ = try? BIP39Mnemonic(words: vc.processedCharacters(vc.textField.text!)) {
                     
                     vc.processTextfieldInput()
                     vc.textField.textColor = .systemGreen
@@ -953,7 +949,7 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
             
             vc.wordView.text = vc.addedWords.joined(separator: "")
             
-            if let _ = BIP39Mnemonic(vc.justWords.joined(separator: " ")) {
+            if let _ = try? BIP39Mnemonic(words: vc.justWords.joined(separator: " ")) {
                 
                 //vc.validWordsAdded()
                 
@@ -984,7 +980,7 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
             
             vc.wordView.text = vc.addedWords.joined(separator: "")
             
-            if let _ = BIP39Mnemonic(vc.justWords.joined(separator: " ")) {
+            if let _ = try? BIP39Mnemonic(words: vc.justWords.joined(separator: " ")) {
                 vc.validWordsAdded()
             }
             

@@ -54,7 +54,7 @@ class Signer {
                 if let dict = object as? NSDictionary {
                     if let processedPsbt = dict["psbt"] as? String {
                         do {
-                            psbtToSign = try PSBT(processedPsbt, chain)
+                            psbtToSign = try PSBT(psbt: processedPsbt, network: chain)
                             if xprvsToSignWith.count > 0 {
                                 attemptToSignLocally()
                             } else {
@@ -78,26 +78,30 @@ class Signer {
         func attemptToSignLocally() {
             /// Need to ensure similiar seeds do not sign mutliple times. This can happen if a user adds the same seed multiple times.
             var xprvStrings = [String]()
+            
             for xprv in xprvsToSignWith {
                 xprvStrings.append(xprv.description)
-                
             }
+            
             xprvsToSignWith.removeAll()
             var uniqueXprvs = Array(Set(xprvStrings))
+            
             for uniqueXprv in uniqueXprvs {
-                if let xprv = HDKey(uniqueXprv) {
+                if let xprv = try? HDKey(base58: uniqueXprv) {
                     xprvsToSignWith.append(xprv)
                 }
             }
+            
             if xprvsToSignWith.count > 0 {
                 var signableKeys = [String]()
+                
                 for (i, key) in xprvsToSignWith.enumerated() {
                     let inputs = psbtToSign.inputs
                     for (x, input) in inputs.enumerated() {
                         /// Create an array of child keys that we know can sign our inputs.
-                        if let origins: [PubKey : KeyOrigin] = input.canSign(key) {
+                        if let origins: [PubKey : KeyOrigin] = input.canSignOrigins(with: key) {
                             for origin in origins {
-                                if let childKey = try? key.derive(origin.value.path) {
+                                if let childKey = try? key.derive(using: origin.value.path) {
                                     if let privKey = childKey.privKey {
                                         precondition(privKey.pubKey == origin.key)
                                         signableKeys.append(privKey.wif)
@@ -108,27 +112,28 @@ class Signer {
                             // Libwally does not like signing with direct decendants of m (e.g. m/0/0), so if above fails we can try and fall back on this, deriving child keys directly from root xprv.
                             if let origins = input.origins {
                                 for origin in origins {
-                                    if let path = BIP32Path(origin.value.path.description.replacingOccurrences(of: "m/", with: "")) {
-                                        if var childKey = try? key.derive(path) {
+                                    if let path = try? BIP32Path(string: origin.value.path.description.replacingOccurrences(of: "m/", with: "")) {
+                                        if var childKey = try? key.derive(using: path) {
                                             if var privKey = childKey.privKey {
                                                 signableKeys.append(privKey.wif)
                                                 // Overwrite vars with dummies for security
-                                                privKey = Key("KwfUAErbeHJCafVr37aRnYcobent1tVV1iADD2k3T8VV1pD2qpWs", .mainnet)!
-                                                childKey = HDKey("xpub6FETvV487Sr4VSV9Ya5em5ZAug4dtnFwgnMG7TFAfkJDHoQ1uohXft49cFenfpJHbPueMnfyxtBoAuvSu7XNL9bbLzcM1QJCPwtofqv3dqC")!
+                                                privKey = try! Key(wif: "KwfUAErbeHJCafVr37aRnYcobent1tVV1iADD2k3T8VV1pD2qpWs", network: .mainnet)
+                                                childKey = try! HDKey(base58: "xpub6FETvV487Sr4VSV9Ya5em5ZAug4dtnFwgnMG7TFAfkJDHoQ1uohXft49cFenfpJHbPueMnfyxtBoAuvSu7XNL9bbLzcM1QJCPwtofqv3dqC")
                                             }
                                         }
                                     }
                                 }
                             }
                         }
+                        
                         /// Once the above loops complete we remove an duplicate signing keys from the array then sign the psbt with each unique key.
                         if i + 1 == xprvsToSignWith.count && x + 1 == inputs.count {
                             var uniqueSigners = Array(Set(signableKeys))
                             if uniqueSigners.count > 0 {
                                 for (s, signer) in uniqueSigners.enumerated() {
-                                    if var signingKey = Key(signer, chain) {
-                                        psbtToSign.sign(signingKey)
-                                        signingKey = Key("KwfUAErbeHJCafVr37aRnYcobent1tVV1iADD2k3T8VV1pD2qpWs", .mainnet)!
+                                    if var signingKey = try? Key(wif: signer, network: chain) {
+                                        psbtToSign = try? psbtToSign.signed(with: signingKey)//psbtToSign.sign(signingKey)
+                                        signingKey = try! Key(wif: "KwfUAErbeHJCafVr37aRnYcobent1tVV1iADD2k3T8VV1pD2qpWs", network: .mainnet)
                                         /// Once we completed the signing loop we finalize with our node.
                                         if s + 1 == uniqueSigners.count {
                                             xprvsToSignWith.removeAll()
@@ -161,6 +166,7 @@ class Signer {
             xprvsToSignWith.removeAll()
             for (i, s) in seedsToSignWith.enumerated() {
                 let encryptedSeed = s["words"] as! Data
+                
                 guard var seed = Crypto.decrypt(encryptedSeed) else { return }
                 
                 if var words = String(data: seed, encoding: .utf8) {
@@ -172,10 +178,10 @@ class Signer {
                         if let passphrase = String(data: decryptedPassphrase, encoding: .utf8) {
                             if var masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: passphrase) {
                                 words = ""
-                                if var hdkey = HDKey(masterKey) {
+                                if var hdkey = try? HDKey(base58: masterKey) {
                                     masterKey = ""
                                     xprvsToSignWith.append(hdkey)
-                                    hdkey = HDKey("xpub6FETvV487Sr4VSV9Ya5em5ZAug4dtnFwgnMG7TFAfkJDHoQ1uohXft49cFenfpJHbPueMnfyxtBoAuvSu7XNL9bbLzcM1QJCPwtofqv3dqC")!
+                                    hdkey = try! HDKey(base58: "xpub6FETvV487Sr4VSV9Ya5em5ZAug4dtnFwgnMG7TFAfkJDHoQ1uohXft49cFenfpJHbPueMnfyxtBoAuvSu7XNL9bbLzcM1QJCPwtofqv3dqC")
                                     if i + 1 == seedsToSignWith.count {
                                         seedsToSignWith.removeAll()
                                         processWithActiveWallet()
@@ -186,10 +192,10 @@ class Signer {
                     } else {
                         if var masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: "") {
                             words = ""
-                            if var hdkey = HDKey(masterKey) {
+                            if var hdkey = try? HDKey(base58: masterKey) {
                                 masterKey = ""
                                 xprvsToSignWith.append(hdkey)
-                                hdkey = HDKey("xpub6FETvV487Sr4VSV9Ya5em5ZAug4dtnFwgnMG7TFAfkJDHoQ1uohXft49cFenfpJHbPueMnfyxtBoAuvSu7XNL9bbLzcM1QJCPwtofqv3dqC")!
+                                hdkey = try! HDKey(base58: "xpub6FETvV487Sr4VSV9Ya5em5ZAug4dtnFwgnMG7TFAfkJDHoQ1uohXft49cFenfpJHbPueMnfyxtBoAuvSu7XNL9bbLzcM1QJCPwtofqv3dqC")
                                 if i + 1 == seedsToSignWith.count {
                                     seedsToSignWith.removeAll()
                                     processWithActiveWallet()
@@ -233,8 +239,8 @@ class Signer {
                         coinType = "1"
                     }
                     do {
-                        psbtToSign = try PSBT(psbt, chain)
-                        if psbtToSign.complete {
+                        psbtToSign = try PSBT(psbt: psbt, network: chain)
+                        if psbtToSign.isComplete {
                             finalizeWithBitcoind()
                         } else {
                             getSeeds()

@@ -189,7 +189,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
 
         let hashedPassword = Crypto.sha256hash(password)
 
-        guard let hexData = Data(hashedPassword) else { return }
+        guard let hexData = Data(hexString: hashedPassword) else { return }
 
         /// Overwrite users password with the hash of the password, sorry I did not do this before...
         if password == retrievedPassword {

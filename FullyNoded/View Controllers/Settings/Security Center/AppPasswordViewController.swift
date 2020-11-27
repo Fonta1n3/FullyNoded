@@ -92,7 +92,7 @@ class AppPasswordViewController: UIViewController, UITextFieldDelegate, UINaviga
     }
     
     private func hash(_ text: String) -> Data? {
-        return Data(Crypto.sha256hash(text))
+        return Data(hexString: Crypto.sha256hash(text))
     }
     
     private func setNewPassword() {
@@ -110,7 +110,7 @@ class AppPasswordViewController: UIViewController, UITextFieldDelegate, UINaviga
     }
     
     private func setPassword(_ text: String) {
-        guard let data = Data(text) else {
+        guard let data = Data(hexString: text) else {
             showAlert(vc: self, title: "Invalid text", message: "")
             return
         }
