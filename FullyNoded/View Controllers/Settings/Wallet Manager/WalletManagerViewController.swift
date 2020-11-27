@@ -137,10 +137,14 @@ class WalletManagerViewController: UIViewController, UITableViewDelegate, UITabl
                 let wallet = (wallets[index]["name"] as! String)
                 if sender.isOn {
                     if wallet != "Default Wallet" {
-                        UserDefaults.standard.set(wallet, forKey: "walletName")
-                        wallets.removeAll()
-                        didChange = true
-                        refresh()
+                        DispatchQueue.main.async {
+                            UserDefaults.standard.set(wallet, forKey: "walletName")
+                            NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+                            self.navigationController?.popToRootViewController(animated: true)
+                        }
+                        //wallets.removeAll()
+                        //didChange = true
+                        //refresh()
                     } else {
                         UserDefaults.standard.removeObject(forKey: "walletName")
                         getAllActiveWallets()
