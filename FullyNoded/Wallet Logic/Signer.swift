@@ -25,26 +25,44 @@ class Signer {
             chain = nil
         }
         
-        func finalizeWithBitcoind() {
-            Reducer.makeCommand(command: .finalizepsbt, param: "\"\(psbtToSign.description)\"") { (object, errorDescription) in
-                if let result = object as? NSDictionary {
-                    if let complete = result["complete"] as? Bool {
-                        if complete {
-                            let hex = result["hex"] as! String
-                            reset()
-                            completion((nil, hex, nil))
+        func finalize() {
+            if psbtToSign.inputs.count < 4 {
+                guard let finalizedPsbt = try? psbtToSign.finalized() else {
+                    reset()
+                    completion((psbtToSign.description, nil, nil))
+                    return
+                }
+                
+                guard let hex = finalizedPsbt.transactionFinal else {
+                    reset()
+                    completion((finalizedPsbt.description, nil, nil))
+                    return
+                }
+                
+                reset()
+                completion((nil, hex.description, nil))
+                
+            } else {
+                Reducer.makeCommand(command: .finalizepsbt, param: "\"\(psbtToSign.description)\"") { (object, errorDescription) in
+                    if let result = object as? NSDictionary {
+                        if let complete = result["complete"] as? Bool {
+                            if complete {
+                                let hex = result["hex"] as! String
+                                reset()
+                                completion((nil, hex, nil))
+                            } else {
+                                let psbt = result["psbt"] as! String
+                                reset()
+                                completion((psbt, nil, nil))
+                            }
                         } else {
-                            let psbt = result["psbt"] as! String
                             reset()
-                            completion((psbt, nil, nil))
+                            completion((nil, nil, errorDescription))
                         }
                     } else {
                         reset()
                         completion((nil, nil, errorDescription))
                     }
-                } else {
-                    reset()
-                    completion((nil, nil, errorDescription))
                 }
             }
         }
@@ -58,13 +76,13 @@ class Signer {
                             if xprvsToSignWith.count > 0 {
                                 attemptToSignLocally()
                             } else {
-                                finalizeWithBitcoind()
+                                finalize()
                             }
                         } catch {
                             if xprvsToSignWith.count > 0 {
                                 attemptToSignLocally()
                             } else {
-                                finalizeWithBitcoind()
+                                finalize()
                             }
                         }
                     }
@@ -141,7 +159,7 @@ class Signer {
                                             uniqueXprvs.removeAll()
                                             uniqueSigners.removeAll()
                                             signableKeys.removeAll()
-                                            finalizeWithBitcoind()
+                                            finalize()
                                         }
                                     }
                                 }
@@ -151,13 +169,13 @@ class Signer {
                                 uniqueXprvs.removeAll()
                                 uniqueSigners.removeAll()
                                 signableKeys.removeAll()
-                                finalizeWithBitcoind()
+                                finalize()
                             }
                         }
                     }
                 }
             } else {
-                finalizeWithBitcoind()
+                finalize()
             }
         }
         
@@ -241,7 +259,7 @@ class Signer {
                     do {
                         psbtToSign = try PSBT(psbt: psbt, network: chain)
                         if psbtToSign.isComplete {
-                            finalizeWithBitcoind()
+                            finalize()
                         } else {
                             getSeeds()
                         }

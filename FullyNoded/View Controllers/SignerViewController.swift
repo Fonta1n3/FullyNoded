@@ -393,6 +393,7 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
                 self.psbt = processedPsbt
                 self.textView.text = "\(processedPsbt)"
                 self.spinner.removeConnectingView()
+                self.signOutlet.setTitle("sign", for: .normal)
                 showAlert(vc: self, title: "PSBT processed ✅", message: "You can tap \"sign psbt\" to proceed")
             }
         }

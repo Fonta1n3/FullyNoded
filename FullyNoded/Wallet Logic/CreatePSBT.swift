@@ -12,56 +12,57 @@ class CreatePSBT {
     
     class func create(inputs: String, outputs: String, completion: @escaping ((psbt: String?, rawTx: String?, errorMessage: String?)) -> Void) {
         let feeTarget = UserDefaults.standard.object(forKey: "feeTarget") as? Int ?? 432
-        var param = "[], ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget)}, true"//add_inputs
-//        if inputs != "" {
-//            param = "\(inputs), ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget)}, true"
-//        }
+        
+        var param = "[], ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget)}, true"
+        
+        if inputs != "" {
+            param = "\(inputs), ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget)}, true"
+        }
         
         func create(params: String) {
             Reducer.makeCommand(command: .walletcreatefundedpsbt, param: params) { (response, errorMessage) in
-                if let result = response as? NSDictionary {
-                    let psbt = result["psbt"] as! String
-                    Signer.sign(psbt: psbt) { (psbt, rawTx, errorMessage) in
-                        completion((psbt, rawTx, errorMessage))
-                    }
-                } else {
+                guard let result = response as? NSDictionary, let psbt = result["psbt"] as? String else {
                     completion((nil, nil, errorMessage ?? "unknown error"))
+                    return
+                }
+                
+                Signer.sign(psbt: psbt) { (psbt, rawTx, errorMessage) in
+                    completion((psbt, rawTx, errorMessage))
                 }
             }
         }
         
         activeWallet { (wallet) in
-            if wallet != nil {
-                let descriptorParser = DescriptorParser()
-                let descriptorStruct = descriptorParser.descriptor(wallet!.receiveDescriptor)
-                if descriptorStruct.isMulti {
-                    let index = Int(wallet!.index) + 1
-                    CoreDataService.update(id: wallet!.id, keyToUpdate: "index", newValue: Int64(index), entity: .wallets) { (success) in
-                        if success {
-                            Reducer.makeCommand(command: .deriveaddresses, param: "\"\(wallet!.changeDescriptor)\", [\(index),\(index)]") { (response, errorMessage) in
-                                if let result = response as? NSArray {
-                                    if let changeAddress = result[0] as? String {
-                                        param = "''[]'', ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"changeAddress\": \"\(changeAddress)\"}'', true"
-                                        create(params: param)
-                                    } else {
-                                        completion((nil, nil, errorMessage ?? "error deriving multisig change address"))
-                                    }
-                                } else {
-                                    completion((nil, nil, errorMessage ?? "error deriving multisig change address"))
-                                }
-                            }
-                        } else {
-                            completion((nil, nil, "error updating wallets index"))
-                        }
+            let descriptorParser = DescriptorParser()
+            let descriptorStruct = descriptorParser.descriptor(wallet!.receiveDescriptor)
+            
+            guard let wallet = wallet, descriptorStruct.isMulti else {
+                create(params: param)
+                return
+            }
+            
+            let index = Int(wallet.index) + 1
+            CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(index), entity: .wallets) { success in
+                guard success else {
+                    completion((nil, nil, "error updating wallets index"))
+                    return
+                }
+                
+                Reducer.makeCommand(command: .deriveaddresses, param: "\"\(wallet.changeDescriptor)\", [\(index),\(index)]") { (response, errorMessage) in
+                    guard let result = response as? NSArray, let changeAddress = result[0] as? String else {
+                        completion((nil, nil, errorMessage ?? "error deriving multisig change address"))
+                        return
                     }
-                } else {
+                    
+                    param = "''[]'', ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"changeAddress\": \"\(changeAddress)\"}'', true"
+                    
+                    if inputs != "" {
+                        param = "\(inputs), ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"changeAddress\": \"\(changeAddress)\"}'', true"
+                    }
+                    
                     create(params: param)
                 }
-            } else {
-                create(params: param)
             }
         }
-        
     }
-    
 }

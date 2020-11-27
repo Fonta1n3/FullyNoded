@@ -23,6 +23,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     var inputArray = [Any]()
     var inputsString = ""
     var outputsString = ""
+    var utxoTotal = 0.0
     let ud = UserDefaults.standard
     var alertStyle = UIAlertController.Style.actionSheet
     
@@ -136,6 +137,10 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     override func viewDidAppear(_ animated: Bool) {
+        if inputArray.count > 0 {
+            showAlert(vc: self, title: "Coin control ✓", message: "Only the utxo's you have just selected will be used in this transaction. You may sweep the total balance of the selected utxo's by tapping the sweep button or enter a custom amount as normal.")
+        }
+        
         guard let item = UIPasteboard.general.string else { return }
         
         if item.hasPrefix("lntb") || item.hasPrefix("lightning:") || item.hasPrefix("lnbc") || item.hasPrefix("lnbcrt") {
@@ -149,6 +154,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         outputs.removeAll()
         outputsString = ""
         outputArray.removeAll()
+        inputArray.removeAll()
+        inputsString = ""
     }
     
     @IBAction func withdrawalFromLightningAction(_ sender: Any) {
@@ -460,60 +467,74 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let alert = UIAlertController(title: "Sweep total balance?\n\n⚠️ You will not be able to use RBF when sweeping! Make sure your fee is set to the max!", message: "This action will send ALL the bitcoin this wallet holds to the provided address. If your fee is too low this transaction could get stuck for a long time.", preferredStyle: self.alertStyle)
+            var title = "Sweep total balance?\n\n⚠️ You will not be able to use RBF when sweeping!"
+            var message = "This action will send ALL the bitcoin this wallet holds to the provided address. If your fee is too low this transaction could get stuck for a long time."
+            
+            if self.inputArray.count > 0 {
+                title = "Sweep total balance from the selected utxo's?"
+                message = "You selected specific utxo's to sweep, this action will sweep \(self.utxoTotal) btc to the address you provide.\n\nIt is important to set a high fee as you may not use RBF if you sweep all your utxo's!"
+            }
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: self.alertStyle)
+            
             alert.addAction(UIAlertAction(title: "sweep now", style: .default, handler: { action in
                 self.sweep()
             }))
+            
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
             alert.popoverPresentationController?.sourceView = self.view
             self.present(alert, animated: true, completion: nil)
         }
     }
     
-    private func sweep() {
-        guard let receivingAddress = addressInput.text, receivingAddress != "" else {
-            showAlert(vc: self, title: "Add an address first", message: "")
-            return
+    private func sweepSelectedUtxos(_ receivingAddress: String) {
+        
+        let param = "''\(processInputs())'', ''{\"\(receivingAddress)\":\(rounded(number: utxoTotal))}'', 0, ''{\"includeWatching\": \(true), \"replaceable\": true, \"conf_target\": \(ud.object(forKey: "feeTarget") as! Int), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
+                
+        Reducer.makeCommand(command: .walletcreatefundedpsbt, param: param) { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            guard let result = response as? NSDictionary, let psbt1 = result["psbt"] as? String else {
+                self.spinner.removeConnectingView()
+                displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
+                return
+            }
+            
+            Reducer.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt1)\"") { [weak self] (response, errorMessage) in
+                guard let self = self else { return }
+                
+                guard let dict = response as? NSDictionary, let processedPSBT = dict["psbt"] as? String else {
+                    self.spinner.removeConnectingView()
+                    displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
+                    return
+                }
+                
+                Signer.sign(psbt: processedPSBT) { [weak self] (psbt, rawTx, errorMessage) in
+                    guard let self = self else { return }
+                    
+                    self.spinner.removeConnectingView()
+                    
+                    guard let rawTx = rawTx else {
+                        
+                        guard let psbt = psbt else {
+                            showAlert(vc: self, title: "Error creating transaction", message: errorMessage ?? "unknown")
+                            return
+                        }
+                        
+                        self.rawTxUnsigned = psbt
+                        self.showRaw(raw: psbt)
+                        
+                        return
+                    }
+                    
+                    self.rawTxSigned = rawTx
+                    self.showRaw(raw: rawTx)
+                }
+            }
         }
-        
-        spinner.addConnectingView(vc: self, description: "sweeping...")
-        
-        //            if inputArray.count > 0 {
-        //                processInputs()
-        //                let ud = UserDefaults.standard
-        //                let param = "''\(inputsString)'', ''{\"\(receivingAddress)\":\(rounded(number: amount))}'', 0, ''{\"includeWatching\": \(true), \"replaceable\": true, \"conf_target\": \(ud.object(forKey: "feeTarget") as! Int), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
-        //                Reducer.makeCommand(command: .walletcreatefundedpsbt, param: param) { (response, errorMessage) in
-        //                    if let result = response as? NSDictionary {
-        //                        let psbt1 = result["psbt"] as! String
-        //                        Reducer.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt1)\"") { [weak self] (response, errorMessage) in
-        //                            if let dict = response as? NSDictionary {
-        //                                if let processedPSBT = dict["psbt"] as? String {
-        //                                    Signer.sign(psbt: processedPSBT) { [weak self] (psbt, rawTx, errorMessage) in
-        //                                        if self != nil {
-        //                                            self?.spinner.removeConnectingView()
-        //                                            if psbt != nil {
-        //                                                self!.rawTxUnsigned = psbt!
-        //                                                self!.showRaw(raw: psbt!)
-        //                                            } else if rawTx != nil {
-        //                                                self!.rawTxSigned = rawTx!
-        //                                                self!.showRaw(raw: rawTx!)
-        //                                            } else if errorMessage != nil {
-        //                                                showAlert(vc: self, title: "Error", message: errorMessage!)
-        //                                            }
-        //                                        }
-        //                                    }
-        //                                }
-        //                            } else {
-        //                                self?.spinner.removeConnectingView()
-        //                                displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
-        //                            }
-        //                        }
-        //                    } else {
-        //                        self?.spinner.removeConnectingView()
-        //                        displayAlert(viewController: self, isError: true, message: errorMessage ?? "")
-        //                    }
-        //                }
-        //            } else {
+    }
+    
+    private func sweepWallet(_ receivingAddress: String) {
         Reducer.makeCommand(command: .listunspent, param: "0") { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
@@ -558,8 +579,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             inputs = inputs.replacingOccurrences(of: "}\"", with: "}")
             inputs = inputs.replacingOccurrences(of: "\\", with: "")
             
-            let ud = UserDefaults.standard
-            let param = "''\(inputs)'', ''{\"\(receivingAddress)\":\(rounded(number: amount))}'', 0, ''{\"includeWatching\": \(spendFromCold), \"replaceable\": true, \"conf_target\": \(ud.object(forKey: "feeTarget") as! Int), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
+            let param = "''\(inputs)'', ''{\"\(receivingAddress)\":\(rounded(number: amount))}'', 0, ''{\"includeWatching\": \(spendFromCold), \"replaceable\": true, \"conf_target\": \(self.ud.object(forKey: "feeTarget") as! Int), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
             
             Reducer.makeCommand(command: .walletcreatefundedpsbt, param: param) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
@@ -599,6 +619,21 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
+    private func sweep() {
+        guard let receivingAddress = addressInput.text, receivingAddress != "" else {
+            showAlert(vc: self, title: "Add an address first", message: "")
+            return
+        }
+        
+        if inputArray.count > 0 {
+            spinner.addConnectingView(vc: self, description: "sweeping selected utxo's...")
+            sweepSelectedUtxos(receivingAddress)
+        } else {
+            spinner.addConnectingView(vc: self, description: "sweeping wallet...")
+            sweepWallet(receivingAddress)
+        }
+    }
+    
     @IBAction func sweep(_ sender: Any) {
         promptToSweep()
     }
@@ -623,13 +658,17 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
-    private func processInputs() {
-        inputsString = inputArray.description
-        inputsString = inputsString.replacingOccurrences(of: "[\"", with: "[")
-        inputsString = inputsString.replacingOccurrences(of: "\"]", with: "]")
-        inputsString = inputsString.replacingOccurrences(of: "\"{", with: "{")
-        inputsString = inputsString.replacingOccurrences(of: "}\"", with: "}")
-        inputsString = inputsString.replacingOccurrences(of: "\\", with: "")
+    private func processInputs() -> String {
+        if inputArray.count > 0 {
+            var processed = inputArray.description
+            processed = processed.replacingOccurrences(of: "[\"", with: "[")
+            processed = processed.replacingOccurrences(of: "\"]", with: "]")
+            processed = processed.replacingOccurrences(of: "\"{", with: "{")
+            processed = processed.replacingOccurrences(of: "}\"", with: "}")
+            return processed.replacingOccurrences(of: "\\", with: "")
+        } else {
+            return ""
+        }
     }
     
     @objc func tryRaw() {
@@ -647,7 +686,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             }
             
             if inputArray.count > 0 {
-                processInputs()
+                self.inputsString = processInputs()
             }
             
             outputsString = outputs.description
@@ -857,7 +896,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     func getRawTx() {
-        CreatePSBT.create(inputs: inputsString, outputs: outputsString) { [weak self] (psbt, rawTx, errorMessage) in
+        CreatePSBT.create(inputs: processInputs(), outputs: outputsString) { [weak self] (psbt, rawTx, errorMessage) in
             guard let self = self else { return }
             
             self.spinner.removeConnectingView()

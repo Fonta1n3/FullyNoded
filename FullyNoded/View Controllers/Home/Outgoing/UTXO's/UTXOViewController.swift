@@ -12,8 +12,8 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     
     private var isSweeping = false
     private var amountToSend = String()
-    private let amountInput = UITextField()
-    private let amountView = UIView()
+    //private let amountInput = UITextField()
+    //private let amountView = UIView()
     private var rawSigned = ""
     private var psbt = ""
     private var amountTotal = 0.0
@@ -28,7 +28,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     private var legacy = Bool()
     private var isUnsigned = false
     private let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
-    private let blurView2 = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
+    //private let blurView2 = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     private let sweepButtonView = Bundle.main.loadNibNamed("KeyPadButtonView", owner: self, options: nil)?.first as! UIView?
     private var alertStyle = UIAlertController.Style.actionSheet
     var fxRate:Double?
@@ -42,13 +42,14 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(UINib(nibName: UTXOCell.identifier, bundle: nil), forCellReuseIdentifier: UTXOCell.identifier)
-        configureAmountView()
+        //configureAmountView()
         refresher.tintColor = UIColor.white
         refresher.addTarget(self, action: #selector(loadUnlockedUtxos), for: UIControl.Event.valueChanged)
         tableView.addSubview(refresher)
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
-        tapGesture.numberOfTapsRequired = 1
-        blurView2.addGestureRecognizer(tapGesture)
+//        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard (_:)))
+//        tapGesture.numberOfTapsRequired = 1
+//        blurView2.addGestureRecognizer(tapGesture)
+        
         if (UIDevice.current.userInterfaceIdiom == .pad) {
           alertStyle = UIAlertController.Style.alert
         }
@@ -68,41 +69,26 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    // TODO: Go over this with Fontaine
     private func getAddressSettings() {
-        
         let userDefaults = UserDefaults.standard
         
         if userDefaults.object(forKey: "nativeSegwit") != nil {
-            
             nativeSegwit = userDefaults.bool(forKey: "nativeSegwit")
-            
         } else {
-            
             nativeSegwit = true
-            
         }
         
         if userDefaults.object(forKey: "p2shSegwit") != nil {
-            
             p2shSegwit = userDefaults.bool(forKey: "p2shSegwit")
-            
         } else {
-            
             p2shSegwit = false
-            
         }
         
         if userDefaults.object(forKey: "legacy") != nil {
-            
             legacy = userDefaults.bool(forKey: "legacy")
-            
         } else {
-            
             legacy = false
-            
         }
-        
     }
     
     @IBAction private func consolidate(_ sender: Any) {
@@ -160,177 +146,152 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    private func configureAmountView() {
-        
-        amountView.backgroundColor = view.backgroundColor
-        
-        amountView.frame = CGRect(x: 0,
-                                  y: -200,
-                                  width: view.frame.width,
-                                  height: -200)
-        
-        amountInput.backgroundColor = view.backgroundColor
-        amountInput.textColor = UIColor.white
-        amountInput.keyboardAppearance = .dark
-        amountInput.textAlignment = .center
-        
-        amountInput.frame = CGRect(x: 0,
-                                   y: amountView.frame.midY,
-                                   width: amountView.frame.width,
-                                   height: 90)
-        
-        amountInput.keyboardType = UIKeyboardType.decimalPad
-        amountInput.font = UIFont(name: "HiraginoSans-W3", size: 40)
-        amountInput.tintColor = UIColor.white
-        amountInput.inputAccessoryView = sweepButtonView
-        
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(sweepButtonClicked),
-                                               name: NSNotification.Name(rawValue: "buttonClickedNotification"),
-                                               object: nil)
-        
-        
-    }
-    // TODO: Talk to Fontaine
-    private func amountAvailable(amount: Double) -> (Bool, String) {
-        
-        let amountAvailable = selectedUTXOs.map { $0.amount ?? 0.0 }.reduce(0, +)
-        let string = amountAvailable.avoidNotation
-        
-        if amountAvailable >= amount {
-            
-            return (true, string)
-            
-        } else {
-            
-            return (false, string)
-            
-        }
-        
-    }
+//    private func configureAmountView() {
+//
+//        amountView.backgroundColor = view.backgroundColor
+//
+//        amountView.frame = CGRect(x: 0,
+//                                  y: -200,
+//                                  width: view.frame.width,
+//                                  height: -200)
+//
+//        amountInput.backgroundColor = view.backgroundColor
+//        amountInput.textColor = UIColor.white
+//        amountInput.keyboardAppearance = .dark
+//        amountInput.textAlignment = .center
+//
+//        amountInput.frame = CGRect(x: 0,
+//                                   y: amountView.frame.midY,
+//                                   width: amountView.frame.width,
+//                                   height: 90)
+//
+//        amountInput.keyboardType = UIKeyboardType.decimalPad
+//        amountInput.font = UIFont(name: "HiraginoSans-W3", size: 40)
+//        amountInput.tintColor = UIColor.white
+//        amountInput.inputAccessoryView = sweepButtonView
+//
+////        NotificationCenter.default.addObserver(self,
+////                                               selector: #selector(sweepButtonClicked),
+////                                               name: NSNotification.Name(rawValue: "buttonClickedNotification"),
+////                                               object: nil)
+//
+//
+//    }
     
-    @objc private func sweepButtonClicked() {
-        
-        isSweeping = true
-        let amountToSweep = selectedUTXOs.map { $0.amount ?? 0.0 }.reduce(0, +)
-        
-        DispatchQueue.main.async {
-            self.amountInput.text = amountToSweep.avoidNotation
-        }
-        
-    }
+//    private func amountAvailable(amount: Double) -> (Bool, String) {
+//        let amountAvailable = selectedUTXOs.map { $0.amount ?? 0.0 }.reduce(0, +)
+//        let string = amountAvailable.avoidNotation
+//
+//        if amountAvailable >= amount {
+//            return (true, string)
+//        } else {
+//            return (false, string)
+//        }
+//    }
     
-    @objc private func closeAmount() {
-        
-        if self.amountInput.text != "" {
-                        
-            self.amountToSend = self.amountInput.text!
-            
-            let amount = Double(self.amountToSend)!
-            
-            if amountAvailable(amount: amount).0 {
-                
-                self.amountInput.resignFirstResponder()
-                
-                UIView.animate(withDuration: 0.2, animations: {
-                    self.amountView.frame = CGRect(x: 0, y: -200, width: self.view.frame.width, height: -200)
-                }) { _ in
-                    self.amountView.removeFromSuperview()
-                    self.amountInput.removeFromSuperview()
-                    self.getAddress()
-                }
-                
-            } else {
-                                
-                let available = amountAvailable(amount: amount).1
-                displayAlert(viewController: self, isError: true, message: "That UTXO only has \(available) BTC")
-                
-            }
-            
-        } else {
-            
-            self.amountInput.resignFirstResponder()
-            
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                self.amountView.frame = CGRect(x: 0,
-                                               y: -200,
-                                               width: self.view.frame.width,
-                                               height: -200)
-                self.blurView2.alpha = 0
-                
-            }) { _ in
-                
-                self.blurView2.removeFromSuperview()
-                self.amountView.removeFromSuperview()
-                self.amountInput.removeFromSuperview()
-                
-            }
-            
-        }
-        
-    }
+//    @objc private func sweepButtonClicked() {
+//        isSweeping = true
+//        let amountToSweep = selectedUTXOs.map { $0.amount ?? 0.0 }.reduce(0, +)
+//
+//        DispatchQueue.main.async {
+//            self.amountInput.text = amountToSweep.avoidNotation
+//        }
+//    }
     
-    private func getAmount() {
-        
-        blurView2.removeFromSuperview()
-        
-        let label = UILabel()
-        
-        label.frame = CGRect(x: 0, y: 15, width: amountView.frame.width, height: 20)
-        
-        label.font = UIFont(name: "HiraginoSans-W3", size: 20)
-        label.textColor = UIColor.darkGray
-        label.textAlignment = .center
-        label.text = "Amount to send"
-        
-        
-        
-        blurView2.alpha = 0
-        
-        blurView2.frame = CGRect(x: 0,
-                                 y: -20,
-                                 width: self.view.frame.width,
-                                 height: self.view.frame.height + 20)
-        
-        self.view.addSubview(self.blurView2)
-        self.view.addSubview(self.amountView)
-        self.amountView.addSubview(self.amountInput)
-        self.amountInput.text = "0.0"
-        
-        let button = UIButton()
-        button.setImage(UIImage(systemName: "link"), for: .normal)
-        button.frame = CGRect(x: 0, y: 140, width: self.amountView.frame.width, height: 60)
-        button.addTarget(self, action: #selector(closeAmount), for: .touchUpInside)
-        button.tintColor = .systemTeal
-        
-        UIView.animate(withDuration: 0.2, animations: {
-            
-            self.amountView.frame = CGRect(x: 0,
-                                           y: 85,
-                                           width: self.view.frame.width,
-                                           height: 200)
-            
-            self.amountInput.frame = CGRect(x: 0,
-                                            y: 40,
-                                            width: self.amountView.frame.width,
-                                            height: 90)
-            
-        }) { _ in
-            
-            self.amountView.addSubview(label)
-            self.amountView.addSubview(button)
-            self.amountInput.becomeFirstResponder()
-            
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                self.blurView2.alpha = 1
-                
-            })
-            
-        }
-        
-    }
+//    @objc private func closeAmount() {
+//        if self.amountInput.text != "" {
+//            self.amountToSend = self.amountInput.text!
+//
+//            let amount = Double(self.amountToSend)!
+//
+//            if amountAvailable(amount: amount).0 {
+//                self.amountInput.resignFirstResponder()
+//
+//                UIView.animate(withDuration: 0.2, animations: {
+//                    self.amountView.frame = CGRect(x: 0, y: -200, width: self.view.frame.width, height: -200)
+//                }) { _ in
+//                    self.amountView.removeFromSuperview()
+//                    self.amountInput.removeFromSuperview()
+//                    self.getAddress()
+//                }
+//
+//            } else {
+//                let available = amountAvailable(amount: amount).1
+//                displayAlert(viewController: self, isError: true, message: "That UTXO only has \(available) BTC")
+//            }
+//
+//        } else {
+//
+//            self.amountInput.resignFirstResponder()
+//
+//            UIView.animate(withDuration: 0.2, animations: {
+//                self.amountView.frame = CGRect(x: 0,
+//                                               y: -200,
+//                                               width: self.view.frame.width,
+//                                               height: -200)
+//                self.blurView2.alpha = 0
+//            }) { _ in
+//                self.blurView2.removeFromSuperview()
+//                self.amountView.removeFromSuperview()
+//                self.amountInput.removeFromSuperview()
+//            }
+//        }
+//    }
+    
+//    private func getAmount() {
+//        blurView2.removeFromSuperview()
+//
+//        let label = UILabel()
+//        label.frame = CGRect(x: 0, y: 15, width: amountView.frame.width, height: 20)
+//        label.font = UIFont(name: "HiraginoSans-W3", size: 20)
+//        label.textColor = UIColor.darkGray
+//        label.textAlignment = .center
+//        label.text = "Amount to send"
+//
+//        blurView2.alpha = 0
+//        blurView2.frame = CGRect(x: 0,
+//                                 y: -20,
+//                                 width: self.view.frame.width,
+//                                 height: self.view.frame.height + 20)
+//
+//        self.view.addSubview(self.blurView2)
+//        self.view.addSubview(self.amountView)
+//        self.amountView.addSubview(self.amountInput)
+//        self.amountInput.text = "0.0"
+//
+//        let button = UIButton()
+//        button.setImage(UIImage(systemName: "link"), for: .normal)
+//        button.frame = CGRect(x: 0, y: 140, width: self.amountView.frame.width, height: 60)
+//        button.addTarget(self, action: #selector(closeAmount), for: .touchUpInside)
+//        button.tintColor = .systemTeal
+//
+//        UIView.animate(withDuration: 0.2, animations: {
+//
+//            self.amountView.frame = CGRect(x: 0,
+//                                           y: 85,
+//                                           width: self.view.frame.width,
+//                                           height: 200)
+//
+//            self.amountInput.frame = CGRect(x: 0,
+//                                            y: 40,
+//                                            width: self.amountView.frame.width,
+//                                            height: 90)
+//
+//        }) { _ in
+//
+//            self.amountView.addSubview(label)
+//            self.amountView.addSubview(button)
+//            self.amountInput.becomeFirstResponder()
+//
+//            UIView.animate(withDuration: 0.2, animations: {
+//
+//                self.blurView2.alpha = 1
+//
+//            })
+//
+//        }
+//
+//    }
     
     private func updateSelectedUtxos() {
         selectedUTXOs.removeAll()
@@ -345,44 +306,43 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     @IBAction private func createRaw(_ sender: Any) {
         
         if selectedUTXOs.count > 0 {
-            
-            updateInputs()
-//            DispatchQueue.main.async { [weak self] in
-//                self?.performSegue(withIdentifier: "segueToSendFromUtxos", sender: self)
-//            }
-//
-            if inputArray.count > 0 {
-
-                DispatchQueue.main.async {
-
-                    self.getAmount()
-
-                }
-
-            } else {
-
-                showAlert(vc: self, title: "Select a UTXO first", message: "The 🔗 button allows you to create a transaction using only the utxo's you select here, to select a utxo just tap it.")
-
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.updateInputs()
+                self.performSegue(withIdentifier: "segueToSendFromUtxos", sender: self)
             }
+//
+//            if inputArray.count > 0 {
+//
+//                DispatchQueue.main.async {
+//
+//                    self.getAmount()
+//
+//                }
+//
+//            } else {
+//
+//                showAlert(vc: self, title: "Select a UTXO first", message: "The 🔗 button allows you to create a transaction using only the utxo's you select here, to select a utxo just tap it.")
+//
+//            }
             
         } else {
-            
-            showAlert(vc: self, title: "Select a UTXO first", message: "")
-            
+            showAlert(vc: self, title: "Select a UTXO first", message: "Just tap a utxo(s) to select it. Then tap the 🔗 to create a transaction with those utxos.")
         }
     }
     
-    @objc private func dismissKeyboard(_ sender: UITapGestureRecognizer) {
-        self.amountInput.resignFirstResponder()
-        UIView.animate(withDuration: 0.2, animations: {
-            self.amountView.frame = CGRect(x: 0, y: -200, width: self.view.frame.width, height: -200)
-            self.blurView2.alpha = 0
-        }) { _ in
-            self.blurView2.removeFromSuperview()
-            self.amountView.removeFromSuperview()
-            self.amountInput.removeFromSuperview()
-        }
-    }
+//    @objc private func dismissKeyboard(_ sender: UITapGestureRecognizer) {
+//        self.amountInput.resignFirstResponder()
+//        UIView.animate(withDuration: 0.2, animations: {
+//            self.amountView.frame = CGRect(x: 0, y: -200, width: self.view.frame.width, height: -200)
+//            self.blurView2.alpha = 0
+//        }) { _ in
+//            self.blurView2.removeFromSuperview()
+//            self.amountView.removeFromSuperview()
+//            self.amountInput.removeFromSuperview()
+//        }
+//    }
     
     private func editLabel(_ utxo: UtxosStruct) {
         guard let address = utxo.address, let isHot = utxo.spendable else {
@@ -484,24 +444,18 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     }
     
     private func updateInputs() {
-        
         inputArray.removeAll()
         
         for utxo in selectedUTXOs {
-            
             amountTotal += utxo.amount ?? 0.0
             let input = "{\"txid\":\"\(utxo.txid)\",\"vout\": \(utxo.vout),\"sequence\": 1}"
             
             if !(utxo.spendable ?? false) {
-                
                 isUnsigned = true
-                
             }
             
             inputArray.append(input)
-            
         }
-        
     }
     
     private func finishedLoading() {
@@ -579,7 +533,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     }
     
     private func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
-        
         Reducer.makeCommand(command: method, param: param) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
@@ -637,14 +590,10 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     }
     
     private func removeSpinner() {
-        
         DispatchQueue.main.async {
-            
             self.refresher.endRefreshing()
             self.spinner.removeConnectingView()
-            
         }
-        
     }
     
     private func addSpinner() {
@@ -678,51 +627,51 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    private func getAddress() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.blurView2.removeFromSuperview()
-            self.amountView.removeFromSuperview()
-            self.amountInput.removeFromSuperview()
-            
-            guard let address = UIPasteboard.general.string, self.validAddress(address) else {
-                self.noAddressOnClipboard()
-                return
-            }
-            
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                let title = "You have a valid address on your clipboard"
-                let message = "Would you like to create a transaction that spends the selected utxo's to \(address)"
-                
-                let alert = UIAlertController(title: title, message: message, preferredStyle: self.alertStyle)
-                
-                alert.addAction(UIAlertAction(title: "create transaction", style: .default, handler: { action in
-                    self.spinner.addConnectingView(vc: self, description: "creating transaction...")
-                    self.address = address
-                    self.createRawNow()
-                }))
-                
-                alert.addAction(UIAlertAction(title: "scan a different address", style: .default, handler: { action in
-                    self.performSegue(withIdentifier: "segueToGetAddressFromUtxos", sender: self)
-                }))
-                
-                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-                alert.popoverPresentationController?.sourceView = self.view
-                
-                self.present(alert, animated: true, completion: nil)
-            }
-        }
-    }
+//    private func getAddress() {
+//        DispatchQueue.main.async { [weak self] in
+//            guard let self = self else { return }
+//
+//            self.blurView2.removeFromSuperview()
+//            self.amountView.removeFromSuperview()
+//            self.amountInput.removeFromSuperview()
+//
+//            guard let address = UIPasteboard.general.string, self.validAddress(address) else {
+//                self.noAddressOnClipboard()
+//                return
+//            }
+//
+//            DispatchQueue.main.async { [weak self] in
+//                guard let self = self else { return }
+//
+//                let title = "You have a valid address on your clipboard"
+//                let message = "Would you like to create a transaction that spends the selected utxo's to \(address)"
+//
+//                let alert = UIAlertController(title: title, message: message, preferredStyle: self.alertStyle)
+//
+//                alert.addAction(UIAlertAction(title: "create transaction", style: .default, handler: { action in
+//                    self.spinner.addConnectingView(vc: self, description: "creating transaction...")
+//                    self.address = address
+//                    self.createRawNow()
+//                }))
+//
+//                alert.addAction(UIAlertAction(title: "scan a different address", style: .default, handler: { action in
+//                    self.performSegue(withIdentifier: "segueToGetAddressFromUtxos", sender: self)
+//                }))
+//
+//                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+//                alert.popoverPresentationController?.sourceView = self.view
+//
+//                self.present(alert, animated: true, completion: nil)
+//            }
+//        }
+//    }
     
     private func getRawTx(changeAddress: String) {
-        let dbl = Double(amountToSend)! // TODO: Talk to Fontaine
+        let dbl = amountToSend.doubleValue
         let roundedAmount = rounded(number: dbl)
         var total = Double()
         var miningFee = 0.00000100//No good way to do fee estimation when manually selecting utxos (for now), if the wallet knows about the utxo's we can set a low ball fee and always use rbf. For now we hardcode 100 sats per input as the fee.
-        for utxo in selectedUTXOs { // TODO: Make method to adhere to DRY
+        for utxo in selectedUTXOs {
             miningFee += 0.00000100
             total += utxo.amount ?? 0.0
         }
@@ -786,7 +735,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         } else {
             var total = 0.0
             var miningFee = 0.00000100//No good way to do fee estimation when manually selecting utxos (for now), if the wallet knows about the utxo's we can set a low ball fee and always use rbf. For now we hardcode 100 sats per input as the fee.
-            for utxo in selectedUTXOs { // TODO: Make method to adhere to DRY
+            for utxo in selectedUTXOs {
                 miningFee += 0.00000100
                 total += utxo.amount ?? 0.0
             }
@@ -844,29 +793,29 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-    func textFieldDidBeginEditing(_ textField: UITextField) {
-        if textField != amountInput {
-            if textField.text != "" {
-                textField.becomeFirstResponder()
-            } else {
-                if let string = UIPasteboard.general.string {
-                    textField.resignFirstResponder()
-                    textField.text = string
-                    self.processBIP21(url: string)
-                } else {
-                    textField.becomeFirstResponder()
-                }
-            }
-        }
-    }
-    
-    func textFieldDidEndEditing(_ textField: UITextField) {
-        if textField != amountInput {
-            if textField.text != "" {
-                self.processBIP21(url: textField.text!)
-            }
-        }
-    }
+//    func textFieldDidBeginEditing(_ textField: UITextField) {
+//        if textField != amountInput {
+//            if textField.text != "" {
+//                textField.becomeFirstResponder()
+//            } else {
+//                if let string = UIPasteboard.general.string {
+//                    textField.resignFirstResponder()
+//                    textField.text = string
+//                    self.processBIP21(url: string)
+//                } else {
+//                    textField.becomeFirstResponder()
+//                }
+//            }
+//        }
+//    }
+//
+//    func textFieldDidEndEditing(_ textField: UITextField) {
+//        if textField != amountInput {
+//            if textField.text != "" {
+//                self.processBIP21(url: textField.text!)
+//            }
+//        }
+//    }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         switch segue.identifier {
@@ -880,6 +829,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             guard let vc = segue.destination as? CreateRawTxViewController else { fallthrough }
             
             vc.inputArray = inputArray
+            vc.utxoTotal = amountTotal
             
         case "segueToGetAddressFromUtxos":
             guard let vc = segue.destination as? QRScannerViewController else { fallthrough }
