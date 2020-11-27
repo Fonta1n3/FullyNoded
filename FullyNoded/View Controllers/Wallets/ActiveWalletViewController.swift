@@ -618,7 +618,21 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func refreshAll() {
+        wallet = nil
+        walletLabel = nil
         existingWallet = ""
+        onchainBalance = ""
+        offchainBalance = ""
+        onchainFiat = ""
+        offchainFiat = ""
+        
+        DispatchQueue.main.async { [ weak self] in
+            guard let self = self else { return }
+            
+            self.transactionArray.removeAll()
+            self.walletTable.reloadData()
+        }
+        
         addNavBarSpinner()
         loadTable()
     }
