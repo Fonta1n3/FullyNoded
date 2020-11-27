@@ -248,12 +248,11 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
                         self.existingActiveWalletName = name
                         UserDefaults.standard.set(name, forKey: "walletName")
                         NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+                        self.navigationController?.popViewController(animated: true)
                     }
                 } else {
                     UserDefaults.standard.removeObject(forKey: "walletName")
                 }
-                //getActiveNode()
-                getFullyNodedWallets()
             }
         }
     }
