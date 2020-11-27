@@ -339,6 +339,7 @@
 		D0CC0E2124F0FA98001BF905 /* PeerDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerDetailsViewController.swift; sourceTree = "<group>"; };
 		D0CC0E2324F2069D001BF905 /* NoiseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoiseViewController.swift; sourceTree = "<group>"; };
 		D0D4B9A524DA616300572811 /* Lightning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lightning.swift; sourceTree = "<group>"; };
+		D0D507E6256FA0E30048AB2F /* FullyNodedRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FullyNodedRelease.entitlements; sourceTree = "<group>"; };
 		D0D71DA22351F835005CCDB9 /* UtilitieMenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilitieMenuViewController.swift; sourceTree = "<group>"; };
 		D0DBC7052501CEFE00F6787C /* VerifyTransactionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyTransactionViewController.swift; sourceTree = "<group>"; };
 		D0DE292A22BCFE9900D9EBCF /* Readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Readme.md; sourceTree = "<group>"; };
@@ -484,6 +485,7 @@
 		D00B9A262111427200E8B95A /* FullyNoded */ = {
 			isa = PBXGroup;
 			children = (
+				D0D507E6256FA0E30048AB2F /* FullyNodedRelease.entitlements */,
 				D0AC9D31234D079000290550 /* FullyNoded.entitlements */,
 				D0286D6221E2678D00954991 /* View Controllers */,
 				D0286D6121E2675D00954991 /* Helpers */,
@@ -1418,7 +1420,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 275;
+				CURRENT_PROJECT_VERSION = 276;
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
@@ -1429,7 +1431,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.355;
+				MARKETING_VERSION = 1.356;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1450,11 +1452,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-4";
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = FullyNoded/FullyNoded.entitlements;
+				CODE_SIGN_ENTITLEMENTS = FullyNoded/FullyNodedRelease.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 275;
+				CURRENT_PROJECT_VERSION = 276;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
@@ -1467,7 +1469,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.355;
+				MARKETING_VERSION = 1.356;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";

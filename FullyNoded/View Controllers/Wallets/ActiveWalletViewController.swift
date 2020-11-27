@@ -22,7 +22,7 @@ class ActiveWalletViewController: UIViewController {
     private var tx = String()
     private var refreshButton = UIBarButtonItem()
     private var dataRefresher = UIBarButtonItem()
-    private var id:UUID!
+    //private var id:UUID!
     private var walletLabel:String!
     private var wallet:Wallet?
     private var isBolt11 = false
@@ -127,7 +127,6 @@ class ActiveWalletViewController: UIViewController {
             return
         }
         
-        id = wallet.id
         walletLabel = wallet.label
         goToDetail()
     }
@@ -240,12 +239,11 @@ class ActiveWalletViewController: UIViewController {
         activeWallet { [weak self] wallet in
             guard let self = self else { return }
             
-            guard let wallet = wallet else { self.walletLabel = nil; self.loadBalances(); return }
+            guard let wallet = wallet else { self.wallet = nil; self.walletLabel = nil; self.loadBalances(); return }
             
             self.wallet = wallet
             self.existingWallet = wallet.name
             self.walletLabel = wallet.label
-            self.id = wallet.id
             
             DispatchQueue.main.async {
                 self.transactionArray.removeAll()
@@ -649,7 +647,12 @@ class ActiveWalletViewController: UIViewController {
         case "segueToActiveWalletDetail":
             guard let vc = segue.destination as? WalletDetailViewController else { fallthrough }
             
-            vc.walletId = id
+            guard let idDetail = self.wallet?.id else {
+                showAlert(vc: self, title: "", message: "Fully Noded can only show wallet details for wallets created with Fully Noded.")
+                return
+            }
+            
+            vc.walletId = idDetail
             
         case "getTransaction":
             guard let vc = segue.destination as? TransactionViewController else { fallthrough }
