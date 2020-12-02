@@ -1062,7 +1062,7 @@
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="WKP-8y-kGS">
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="WKP-8y-kGS">
                                 <rect key="frame" x="16" y="102" width="290" height="34"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits"/>
@@ -3627,7 +3627,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="pTq-E9-giu">
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="pTq-E9-giu">
                                 <rect key="frame" x="16" y="122.5" width="343" height="34"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits"/>
@@ -3828,7 +3828,7 @@
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Top-LU-ubL">
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Top-LU-ubL">
                                 <rect key="frame" x="16" y="145" width="343" height="34"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="19"/>
@@ -4538,7 +4538,7 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Qla-Q9-vok">
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Qla-Q9-vok">
                                 <rect key="frame" x="16" y="121.5" width="343" height="34"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits"/>
@@ -7648,19 +7648,19 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="DLx-HT-rGm"/>
         <segue reference="w2g-bl-j8v"/>
         <segue reference="RbT-dI-IvI"/>
-        <segue reference="Ear-8U-mw8"/>
-        <segue reference="upA-ZA-3fA"/>
-        <segue reference="XqS-DL-3qc"/>
+        <segue reference="IVc-aG-8QZ"/>
+        <segue reference="cvp-U1-bU5"/>
+        <segue reference="AYh-di-V7O"/>
         <segue reference="kq8-dj-bJ2"/>
-        <segue reference="ywj-ud-JRK"/>
+        <segue reference="HNI-HG-9ZQ"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="GTM-mT-JB4"/>
-        <segue reference="YAg-Jp-RYL"/>
+        <segue reference="zsc-Qp-vnq"/>
         <segue reference="zi9-mK-A5a"/>
-        <segue reference="8yc-oK-dlC"/>
-        <segue reference="Jma-5H-zJx"/>
-        <segue reference="4EJ-HI-y5g"/>
-        <segue reference="q4a-aR-3wO"/>
+        <segue reference="vxK-yE-HH1"/>
+        <segue reference="Zpw-ei-e3S"/>
+        <segue reference="XYa-A2-HkD"/>
+        <segue reference="G1i-Bv-OSl"/>
         <segue reference="U54-oe-CeC"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

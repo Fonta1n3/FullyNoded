@@ -148,8 +148,7 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                     
                     let param = "\"\(key)\", \"\(label)\", false"
                     
-                    self.executeNodeCommand(method: .importprivkey,
-                                            param: param)
+                    self.executeNodeCommand(method: .importprivkey, param: param)
                     
                 case _ where prefix.hasPrefix("1"),
                      _ where prefix.hasPrefix("3"),
@@ -334,14 +333,11 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                 switch method {
                 case .importprivkey:
                     vc.connectingView.removeConnectingView()
-                    if let result = response as? String {
-                        if result == "Imported key success" {
-                            vc.alertMessage = "Successfully imported private key"
-                        }
-                        DispatchQueue.main.async {
-                            vc.performSegue(withIdentifier: "showKeyDetails", sender: vc)
-                        }
+                    Reducer.makeCommand(command: .rescanblockchain, param: "") { (_, _) in }
+                    DispatchQueue.main.async {
+                        self.navigationController?.popToRootViewController(animated: true)
                     }
+                    showAlert(vc: self, title: "Private key swept!", message: "Your node is rescanning the blockchain to detect historic transactions, your balance will not show until this process completes. It can take up to an hour for a non pruned node.")
                 case .importmulti:
                     if let result = response as? NSArray {
                         let success = (result[0] as! NSDictionary)["success"] as! Bool
@@ -380,7 +376,15 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
             } else {
                 DispatchQueue.main.async {
                     vc.connectingView.removeConnectingView()
-                    displayAlert(viewController: vc, isError: true, message: errorMessage!)
+                    
+                    guard var errorMess = errorMessage else { return }
+                    
+                    if errorMess.contains("private keys disabled") {
+                        errorMess = "You are better of using your nodes default wallet for sweeping private keys:\n\nadvanced > bitcoin core wallets > toggle on the default wallet and try again\n\nIt is recommended to send all funds from swept private keys to a FN wallet"
+                        self.navigationController?.popToRootViewController(animated: true)
+                    }
+                    
+                    showAlert(vc: self, title: "", message: errorMess)
                 }
             }
         }

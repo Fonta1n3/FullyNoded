@@ -20,6 +20,7 @@ class AddLabelViewController: UIViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         textField.delegate = self
         addLabelOutlet.clipsToBounds = true
         addLabelOutlet.layer.cornerRadius = 8
