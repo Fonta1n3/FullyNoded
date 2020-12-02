@@ -8,129 +8,91 @@
 
 import Foundation
 
+// bitcoin:175tWpb8K1S7NmH4Zx6rewF9WQrcZv245W?amount=50&label=Luke-Jr&message=Donation%20for%20project%20xyz
+// bitcoin:175tWpb8K1S7NmH4Zx6rewF9WQrcZv245W?amount=20.3&label=Luke-Jr
+
 class AddressParser {
-    
-    var url = ""
-    
-    func parseAddress(url: String) -> (address: String, amount: Double, errorBool: Bool, errorDescription: String) {
         
-        var addressToReturn = ""
-        var amountToReturn = Double()
-        var errorBool = Bool()
-        var errorDescription = ""
+    class func parse(url: String) -> (address: String?, amount: Double?, label: String?, message: String?) {
+        var addressToReturn:String?
+        var amountToReturn:Double?
+        var labelToReturn:String?
+        var message:String?
+        var processedUrl = url
         
-        func getaddress(processedKey: String) {
-            
-            func verifyAddress(key: String) -> Bool {
+        processedUrl = processedUrl.replacingOccurrences(of: "bitcoin:", with: "")
+        
+        guard processedUrl.contains("?") || processedUrl.contains("=") else {
+            return (address: processedAddress(processedUrl), amount: amountToReturn, label: labelToReturn, message: message)
+        }
+        
+        if processedUrl.hasPrefix(" ") {
+            processedUrl = processedUrl.replacingOccurrences(of: " ", with: "")
+        }
                 
-                var boolToReturn = Bool()
+        guard processedUrl.contains("?") else {
+            return (address: processedAddress(processedUrl), amount: amountToReturn, label: labelToReturn, message: message)
+        }
+        
+        let split = processedUrl.split(separator: "?")
+        
+        guard split.count > 0 else {
+             return (address: processedAddress(processedUrl), amount: amountToReturn, label: labelToReturn, message: message)
+        }
+        
+        let urlParts = split[1].split(separator: "&")
+        
+        addressToReturn = processedAddress("\(split[0])".replacingOccurrences(of: "bitcoin:", with: ""))
+        
+        guard urlParts.count > 0 else {
+            return (address: addressToReturn, amount: amountToReturn, label: labelToReturn, message: message)
+        }
                 
-                var prefix = key.lowercased()
-                
-                prefix = prefix.replacingOccurrences(of: "bitcoin:",
-                                                     with: "")
-                
-                switch prefix {
+        for item in urlParts {
+            let string = "\(item)"
+            switch string {
+            case _ where string.contains("amount"):
+                if string.contains("&") {
+                    let array = string.split(separator: "&")
+                    let amount = array[0].replacingOccurrences(of: "amount=", with: "")
+                    amountToReturn = amount.doubleValue
                     
-                case _ where prefix.hasPrefix("1"),
-                     _ where prefix.hasPrefix("3"),
-                     _ where prefix.hasPrefix("tb1"),
-                     _ where prefix.hasPrefix("bc1"),
-                     _ where prefix.hasPrefix("2"),
-                     _ where prefix.hasPrefix("bcrt"),
-                     _ where prefix.hasPrefix("m"),
-                     _ where prefix.hasPrefix("n"),
-                     _ where prefix.hasPrefix("lntb"):
-                    
-                    boolToReturn = true
-                    
-                default:
-                    
-                    boolToReturn = false
+                } else {
+                    let amount = string.replacingOccurrences(of: "amount=", with: "")
+                    amountToReturn = amount.doubleValue
                     
                 }
                 
-                return boolToReturn
+            case _ where string.contains("label="):
+                labelToReturn = (string.replacingOccurrences(of: "label=", with: "")).replacingOccurrences(of: "%20", with: " ")
                 
+            case _ where string.contains("message="):
+                message = (string.replacingOccurrences(of: "message=", with: "")).replacingOccurrences(of: "%20", with: " ")
+                
+            default:
+                break
             }
-            
-            if verifyAddress(key: processedKey) {
-                
-                errorBool = false
-                addressToReturn = processedKey
-                
-            } else {
-                
-                errorBool = true
-                errorDescription = "Thats not a valid Bitcoin address"
-                
-            }
-            
         }
-        
-        var address = url
-        
-        //bitcoin:175tWpb8K1S7NmH4Zx6rewF9WQrcZv245W?amount=20.3&label=Luke-Jr
-        
-        if address.contains("bitcoin:") || address.contains("?") || address.contains("=") {
-            
-            if address.hasPrefix(" ") {
                 
-                address = address.replacingOccurrences(of: " ",
-                                                       with: "")
-                
-            }
-            
-            if address.hasPrefix("bitcoin:") {
-                
-                address = address.replacingOccurrences(of: "bitcoin:", with: "")
-                
-            }
-            
-            if address.contains("?") {
-                
-                let formatArray = address.split(separator: "?")
-                
-                let address = formatArray[0].replacingOccurrences(of: "bitcoin:",
-                                                                  with: "")
-                
-                getaddress(processedKey: address)
-                
-                if formatArray[1].contains("amount=") && formatArray[1].contains("&") {
-                    
-                    let array = formatArray[1].split(separator: "&")
-                    
-                    let amount = array[0].replacingOccurrences(of: "amount=",
-                                                               with: "")
-                    
-                    amountToReturn = Double(amount)!
-                    
-                } else if formatArray[1].contains("amount=") {
-                    
-                    let amount = formatArray[1].replacingOccurrences(of: "amount=",
-                                                                     with: "")
-                    
-                    amountToReturn = Double(amount)!
-                    
-                }
-                
-            } else {
-                
-                getaddress(processedKey: address)
-                
-            }
-            
-        } else {
-            
-            getaddress(processedKey: address)
-            
+        return (address: addressToReturn, amount: amountToReturn, label: labelToReturn, message: message)
+    }
+    
+    private class func processedAddress(_ processed: String) -> String? {
+        let address = processed.lowercased().replacingOccurrences(of: "bitcoin:", with: "")
+        switch address {
+        case _ where address.hasPrefix("1"),
+             _ where address.hasPrefix("3"),
+             _ where address.hasPrefix("tb1"),
+             _ where address.hasPrefix("bc1"),
+             _ where address.hasPrefix("2"),
+             _ where address.hasPrefix("bcrt"),
+             _ where address.hasPrefix("m"),
+             _ where address.hasPrefix("n"),
+             _ where address.hasPrefix("lntb"):
+            return address
+        default:
+            return nil
         }
-        
-        return (address: addressToReturn,
-                amount: amountToReturn,
-                errorBool: errorBool,
-                errorDescription: errorDescription)
-        
     }
     
 }

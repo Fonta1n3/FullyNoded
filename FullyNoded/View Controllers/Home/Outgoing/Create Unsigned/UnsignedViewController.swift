@@ -10,7 +10,6 @@ import UIKit
 
 class UnsignedViewController: UIViewController, UITextFieldDelegate {
     
-    let addressParser = AddressParser()
     let creatingView = ConnectingView()
     let createUnsigned = CreateUnsigned()
     var unsignedTx = ""
@@ -170,55 +169,28 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
-    func parseAddress(address: String) {
+    func parseAddress(text: String) {
+        let (address, _, _, _) = AddressParser.parse(url: text)
         
-        addressParser.url = address
-        let address = addressParser.parseAddress(url: address).address
-        let errorBool = addressParser.parseAddress(url: address).errorBool
-        let errorDescription = addressParser.parseAddress(url: address).errorDescription
+        guard let add = address else { return }
         
-        if !errorBool {
-            
-            if isSpendingFrom {
-                
-                DispatchQueue.main.async {
-                    
-                    //self.back()
-                    self.spendingField.text = address
-                    print("update spending")
-                    
-                }
-                
+        if isSpendingFrom {
+            DispatchQueue.main.async {
+                self.spendingField.text = add
             }
-            
-            if isReceiving {
-                
-                DispatchQueue.main.async {
-                    
-                    self.receivingField.text = address
-                    
-                }
-                
-            }
-            
-            if isChange {
-                
-                DispatchQueue.main.async {
-                    
-                    self.changeField.text = address
-                    
-                }
-                
-            }
-            
-        } else {
-            
-            displayAlert(viewController: self,
-                         isError: true,
-                         message: errorDescription)
-            
         }
         
+        if isReceiving {
+            DispatchQueue.main.async {
+                self.receivingField.text = add
+            }
+        }
+        
+        if isChange {
+            DispatchQueue.main.async {
+                self.changeField.text = add
+            }
+        }
     }
     
     func displayRaw(raw: String) {
@@ -286,52 +258,30 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        print("textFieldShouldReturn")
-        
         textField.endEditing(true)
         return true
-        
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
-        print("textFieldDidEndEditing")
-        
+        guard let text =  textField.text else { return }
+                
         if textField == receivingField && receivingField.text != "" && isReceiving {
-            
-            let address = receivingField.text!
-            addressParser.url = address
-            parseAddress(address: address)
+            parseAddress(text: text)
             
         } else if textField == spendingField && spendingField.text != "" && isSpendingFrom {
-            
-            let address = spendingField.text!
-            addressParser.url = address
-            parseAddress(address: address)
+            parseAddress(text: text)
             
         } else if textField == changeField && changeField.text != "" && isChange {
-            
-            let address = changeField.text!
-            addressParser.url = address
-            parseAddress(address: address)
+            parseAddress(text: text)
             
         } else if textField == amountField && amountField.text != "" {
-            
-            if let amountCheck = Double(amountField.text!) {
-                
-                self.amount = amountCheck
-                
+            if let _ = Double(text) {
+                self.amount = text.doubleValue
             } else {
-                
                 amountField.text = ""
-                
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "Only valid numbers allowed")
-                
+                displayAlert(viewController: self, isError: true, message: "Only valid numbers allowed")
             }
-            
         }
-        
     }
     
     func textViewDidBeginEditing(_ textView: UITextView) {
@@ -368,7 +318,7 @@ class UnsignedViewController: UIViewController, UITextFieldDelegate {
                 vc.isScanningAddress = true
                 vc.onAddressDoneBlock = { text in
                     if text != nil {
-                        self.parseAddress(address: text!)
+                        self.parseAddress(text: text!)
                     }
                 }
             }

@@ -67,7 +67,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         view.addSubview(lockView)
 
         guard let timeToDisableOnKeychain = KeyChain.getData("TimeToDisable") else {
-            let _ = KeyChain.set("2.0".dataUsingUTF8StringEncoding, forKey: "TimeToDisable")
+            let _ = KeyChain.set("2.0".utf8, forKey: "TimeToDisable")
             return
         }
 
@@ -255,7 +255,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
 
         showAlert(vc: self, title: "Wrong password", message: "")
     }
-
+    
     @objc func authenticationWithTouchID() {
         let localAuthenticationContext = LAContext()
         localAuthenticationContext.localizedFallbackTitle = "Use Password"

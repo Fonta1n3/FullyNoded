@@ -23,6 +23,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     var inputArray = [Any]()
     var inputsString = ""
     var outputsString = ""
+    var txt = ""
     var utxoTotal = 0.0
     let ud = UserDefaults.standard
     var alertStyle = UIAlertController.Style.actionSheet
@@ -145,6 +146,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         
         if item.hasPrefix("lntb") || item.hasPrefix("lightning:") || item.hasPrefix("lnbc") || item.hasPrefix("lnbcrt") {
             decodeLighnting(invoice: item.replacingOccurrences(of: "lightning:", with: ""))
+        } else if item.hasPrefix("bitcoin:") {
+            processBIP21(url: item)
         }
     }
     
@@ -736,17 +739,13 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     //MARK: Textfield methods
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        if (textField.text?.contains("."))! {
-           let decimalCount = (textField.text?.components(separatedBy: ".")[1])?.count
-            if decimalCount! <= 7 {
-            } else {
-                DispatchQueue.main.async {
-                    displayAlert(viewController: self, isError: true, message: "Only 8 decimal places allowed")
-                    self.amountInput.text = ""
-                }
-            }
-        }
-        return true
+        guard textField == amountInput, let text = textField.text, text.contains("."), string != "" else { return true }
+        
+        let arr = text.components(separatedBy: ".")
+        
+        guard arr.count > 0 else { return true }
+        
+        return arr[1].count < 8
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
@@ -874,24 +873,30 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     func processBIP21(url: String) {
-        let addressParser = AddressParser()
-        let errorBool = addressParser.parseAddress(url: url).errorBool
-        let errorDescription = addressParser.parseAddress(url: url).errorDescription
-        if !errorBool {
-            address = addressParser.parseAddress(url: url).address
-            amount = "\(addressParser.parseAddress(url: url).amount)"
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.addressInput.resignFirstResponder()
-                vc.amountInput.resignFirstResponder()
-                DispatchQueue.main.async { [unowned vc = self] in
-                    if vc.amount != "" && vc.amount != "0.0" {
-                        vc.amountInput.text = vc.amount
-                    }
-                    vc.addressInput.text = vc.address
-                }
+        let (address, amount, label, message) = AddressParser.parse(url: url)
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.addressInput.resignFirstResponder()
+            self.amountInput.resignFirstResponder()
+            
+            guard let address = address else { return }
+            
+            self.addressInput.text = address
+            
+            guard let amount = amount else { return }
+            
+            self.amountInput.text = "\(amount)"
+            
+            guard let label = label else { return }
+            
+            guard let message = message else {
+                showAlert(vc: self, title: "BIP21 invoice: " + label, message: "")
+                return
             }
-        } else {
-            displayAlert(viewController: self, isError: true, message: errorDescription)
+            
+            showAlert(vc: self, title: "BIP21 invoice: " + label, message: message)
         }
     }
     
