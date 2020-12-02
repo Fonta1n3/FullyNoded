@@ -470,7 +470,9 @@ class NodeLogic {
         
         var networkInfoToReturn = [String:Any]()
         let subversion = (networkInfo["subversion"] as! String).replacingOccurrences(of: "/", with: "")
-        networkInfoToReturn["subversion"] = subversion.replacingOccurrences(of: "Satoshi:", with: "")
+        let version = subversion.replacingOccurrences(of: "Satoshi:", with: "")
+        networkInfoToReturn["subversion"] = version
+        UserDefaults.standard.set(version, forKey: "version")
         
         let networks = networkInfo["networks"] as! NSArray
         

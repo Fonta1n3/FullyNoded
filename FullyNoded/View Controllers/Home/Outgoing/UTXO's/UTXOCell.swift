@@ -228,7 +228,7 @@ class UTXOCell: UITableViewCell {
                 
                 UIView.animate(withDuration: 0.2, animations: {
                     self.alpha = 1
-                    self.roundeBackgroundView.backgroundColor = #colorLiteral(red: 0.07831101865, green: 0.08237650245, blue: 0.08238270134, alpha: 1)
+                    self.roundeBackgroundView.backgroundColor = .black
                     
                 })
                 

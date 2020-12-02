@@ -28,6 +28,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     let ud = UserDefaults.standard
     var alertStyle = UIAlertController.Style.actionSheet
     
+    @IBOutlet weak private var miningTargetLabel: UILabel!
+    @IBOutlet weak private var satPerByteLabel: UILabel!
+    @IBOutlet weak private var sweepButton: UIStackView!
     @IBOutlet weak private var segmentedControlOutlet: UISegmentedControl!
     @IBOutlet weak private var fiatButtonOutlet: UIButton!
     @IBOutlet weak private var fxRateLabel: UILabel!
@@ -38,7 +41,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     @IBOutlet weak private var amountBackground: UIView!
     @IBOutlet weak private var sliderViewBackground: UIView!
     @IBOutlet weak private var feeIconBackground: UIView!
-    @IBOutlet weak private var miningTargetLabel: UILabel!
     @IBOutlet weak private var slider: UISlider!
     @IBOutlet weak private var addOutputOutlet: UIBarButtonItem!
     @IBOutlet weak private var playButtonOutlet: UIBarButtonItem!
@@ -62,6 +64,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         outputsTable.dataSource = self
         outputsTable.tableFooterView = UIView(frame: .zero)
         outputsTable.alpha = 0
+        slider.isContinuous = false
         addTapGesture()
         
         sliderViewBackground.layer.cornerRadius = 8
@@ -135,19 +138,82 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         if (UIDevice.current.userInterfaceIdiom == .pad) {
           alertStyle = UIAlertController.Style.alert
         }
+        
+        estimateSmartFee()
+        slider.addTarget(self, action: #selector(didFinishSliding(_:)), for: .valueChanged)
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        if inputArray.count > 0 {
-            showAlert(vc: self, title: "Coin control ✓", message: "Only the utxo's you have just selected will be used in this transaction. You may sweep the total balance of the selected utxo's by tapping the sweep button or enter a custom amount as normal.")
-        }
-        
+    @IBAction func pasteAction(_ sender: Any) {
         guard let item = UIPasteboard.general.string else { return }
         
         if item.hasPrefix("lntb") || item.hasPrefix("lightning:") || item.hasPrefix("lnbc") || item.hasPrefix("lnbcrt") {
             decodeLighnting(invoice: item.replacingOccurrences(of: "lightning:", with: ""))
         } else if item.hasPrefix("bitcoin:") {
             processBIP21(url: item)
+        }
+    }
+    
+    @IBAction func createOnchainAction(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.rawTxSigned = ""
+            self.rawTxUnsigned = ""
+            self.amountInput.resignFirstResponder()
+            self.addressInput.resignFirstResponder()
+            self.tryRaw()
+        }
+    }
+    
+    @IBAction func lightningWithdrawAction(_ sender: Any) {
+        guard let item = addressInput.text, item != "" else {
+            promptToWithdrawalFromLightning()
+            return
+        }
+        
+        if item.hasPrefix("lntb") || item.hasPrefix("lightning:") || item.hasPrefix("lnbc") || item.hasPrefix("lnbcrt") {
+            decodeLighnting(invoice: item.replacingOccurrences(of: "lightning:", with: ""))
+        } else {
+            promptToWithdrawalFromLightning()
+        }
+    }
+    
+    @IBAction func addToBatchAction(_ sender: Any) {
+        guard var amount = amountInput.text, amount != "", let address = addressInput.text, address != "" else {
+            
+            showAlert(vc: self, title: "", message: "You need to fill out a recipient and amount first then tap this button, this button is used for adding multiple recipients aka \"batching\".")
+            return
+        }
+        
+        let dblAmount = amount.doubleValue
+        
+        guard dblAmount > 0.0 else {
+            showAlert(vc: self, title: "Amount needs to be greater the 0", message: "")
+            return
+        }
+        
+        if isFiat {
+            amount = "\(rounded(number: dblAmount / fxRate).avoidNotation)"
+        } else if isSats {
+            amount = "\(rounded(number: dblAmount / 100000000.0).avoidNotation)"
+        }
+        
+        outputArray.append(["address":addressInput.text!, "amount":amount] as [String : String])
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.outputsTable.alpha = 1
+            self.amountInput.text = ""
+            self.addressInput.text = ""
+            self.outputsTable.reloadData()
+        }
+    }
+    
+    
+    override func viewDidAppear(_ animated: Bool) {
+        if inputArray.count > 0 {
+            showAlert(vc: self, title: "Coin control ✓", message: "Only the utxo's you have just selected will be used in this transaction. You may sweep the total balance of the selected utxo's by tapping the sweep button or enter a custom amount as normal.")
         }
     }
     
@@ -159,19 +225,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         outputArray.removeAll()
         inputArray.removeAll()
         inputsString = ""
-    }
-    
-    @IBAction func withdrawalFromLightningAction(_ sender: Any) {
-        guard let item = addressInput.text, item != "" else {
-            promptToWithdrawalFromLightning()
-            return
-        }
-        
-        if item.hasPrefix("lntb") || item.hasPrefix("lightning:") || item.hasPrefix("lnbc") || item.hasPrefix("lnbcrt") {
-            decodeLighnting(invoice: item.replacingOccurrences(of: "lightning:", with: ""))
-        } else {
-            promptToWithdrawalFromLightning()
-        }
     }
     
     private func promptToWithdrawalFromLightning() {
@@ -339,7 +392,10 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 self.denominationImage.image = UIImage(systemName: "dollarsign.circle")
                 self.amountIcon.backgroundColor = .systemBlue
                 
-                showAlert(vc: self, title: "Fiat denomination", message: "You may enter an amount denominated in USD, we will calculate the equivalent amount in btc based on the current exchange rate of $\(fxrate.withCommas()) / btc, always confirm the amounts before broadcasting by tapping the \"verify\" button.\n\nBitcoin's exchange rate can be volatile so always double check the amounts using the \"verify\" tool when the broadcaster presents itself.")
+                if UserDefaults.standard.object(forKey: "fiatAlert") == nil {
+                    showAlert(vc: self, title: "$USD denomination", message: "You may enter an amount denominated in USD, we will calculate the equivalent amount in BTC based on the current exchange rate of $\(fxrate.withCommas())")
+                    UserDefaults.standard.set(true, forKey: "fiatAlert")
+                }
             }
         }
     }
@@ -365,40 +421,13 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
-    @IBAction func addOutput(_ sender: Any) {
-        guard var amount = amountInput.text, amount != "", let address = addressInput.text, address != "" else {
-            displayAlert(viewController: self, isError: true, message: "You need to fill out a recipient and amount first then tap this button, this button is used for adding multiple recipients aka \"batching\".")
-            return
-        }
-        
-        let dblAmount = amount.doubleValue
-        
-        guard dblAmount > 0.0 else {
-            showAlert(vc: self, title: "Amount needs to be greater the 0", message: "")
-            return
-        }
-        
-        if isFiat {
-            amount = "\(rounded(number: dblAmount / fxRate).avoidNotation)"
-        } else if isSats {
-            amount = "\(rounded(number: dblAmount / 100000000.0).avoidNotation)"
-        }
-        
-        outputArray.append(["address":addressInput.text!, "amount":amount] as [String : String])
-        
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.outputsTable.alpha = 1
-            self.amountInput.text = ""
-            self.addressInput.text = ""
-            self.outputsTable.reloadData()
-        }
-    }
-    
     @objc func setFee(_ sender: UISlider) {
         let numberOfBlocks = Int(sender.value) * -1
         updateFeeLabel(label: miningTargetLabel, numberOfBlocks: numberOfBlocks)
+    }
+    
+    @objc func didFinishSliding(_ sender: UISlider) {
+        estimateSmartFee()
     }
     
     func updateFeeLabel(label: UILabel, numberOfBlocks: Int) {
@@ -414,18 +443,18 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 if seconds < 3600 {
                     DispatchQueue.main.async {
                         //less then an hour
-                        label.text = "Fee target: \(numberOfBlocks) blocks ~\(seconds / 60) minutes"
+                        label.text = "Target: \(numberOfBlocks) blocks ~\(seconds / 60) minutes"
                     }
                 } else {
                     DispatchQueue.main.async {
                         //more then an hour
-                        label.text = "Fee target: \(numberOfBlocks) blocks ~\(seconds / 3600) hours"
+                        label.text = "Target: \(numberOfBlocks) blocks ~\(seconds / 3600) hours"
                     }
                 }
             } else {
                 DispatchQueue.main.async {
                     //more then a day
-                    label.text = "Fee target: \(numberOfBlocks) blocks ~\(seconds / 86400) days"
+                    label.text = "Target: \(numberOfBlocks) blocks ~\(seconds / 86400) days"
                 }
             }
             updateFeeSetting()
@@ -470,17 +499,17 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            var title = "Sweep total balance?\n\n⚠️ You will not be able to use RBF when sweeping!"
+            var title = "⚠️ Send total balance?\n\nYou will not be able to use RBF when sweeping!"
             var message = "This action will send ALL the bitcoin this wallet holds to the provided address. If your fee is too low this transaction could get stuck for a long time."
             
             if self.inputArray.count > 0 {
-                title = "Sweep total balance from the selected utxo's?"
+                title = "⚠️ Send total balance from the selected utxo's?"
                 message = "You selected specific utxo's to sweep, this action will sweep \(self.utxoTotal) btc to the address you provide.\n\nIt is important to set a high fee as you may not use RBF if you sweep all your utxo's!"
             }
             
-            let alert = UIAlertController(title: title, message: message, preferredStyle: self.alertStyle)
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
             
-            alert.addAction(UIAlertAction(title: "sweep now", style: .default, handler: { action in
+            alert.addAction(UIAlertAction(title: "Send all", style: .default, handler: { action in
                 self.sweep()
             }))
             
@@ -649,18 +678,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
-    @IBAction func tryRawNow(_ sender: Any) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.rawTxSigned = ""
-            self.rawTxUnsigned = ""
-            self.amountInput.resignFirstResponder()
-            self.addressInput.resignFirstResponder()
-            self.tryRaw()
-        }
-    }
-    
     private func processInputs() -> String {
         if inputArray.count > 0 {
             var processed = inputArray.description
@@ -715,7 +732,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 
             } else {
                 spinner.removeConnectingView()
-                displayAlert(viewController: self, isError: true, message: "You need to fill out an amount and a recipient")
+                showAlert(vc: self, title: "", message: "You need to fill out an amount and a recipient")
             }
             
         } else if outputArray.count > 0 && self.amountInput.text != "" || self.amountInput.text != "0.0" && self.addressInput.text != "" {
@@ -738,8 +755,30 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         
     //MARK: Textfield methods
     
+    func textFieldDidChangeSelection(_ textField: UITextField) {
+        guard textField == amountInput, let text = textField.text else { return }
+        
+        if text.doubleValue > 0.0 {
+            DispatchQueue.main.async {
+                self.sweepButton.alpha = 0
+            }
+        } else {
+            DispatchQueue.main.async {
+                self.sweepButton.alpha = 1
+            }
+        }
+        
+        if text == "" {
+            DispatchQueue.main.async {
+                self.sweepButton.alpha = 1
+            }
+        }
+    }
+    
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        guard textField == amountInput, let text = textField.text, text.contains("."), string != "" else { return true }
+        guard textField == amountInput, let text = textField.text, string != "" else { return true }
+        
+        guard text.contains(".") else { return true }
         
         let arr = text.components(separatedBy: ".")
         
@@ -872,6 +911,16 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
+    private func estimateSmartFee() {
+        NodeLogic.estimateSmartFee { (response, errorMessage) in
+            guard let response = response, let feeRate = response["feeRate"] as? String else { return }
+            
+            DispatchQueue.main.async {
+                self.satPerByteLabel.text = "\(feeRate)"
+            }
+        }
+    }
+    
     func processBIP21(url: String) {
         let (address, amount, label, message) = AddressParser.parse(url: url)
         
@@ -892,11 +941,11 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             guard let label = label else { return }
             
             guard let message = message else {
-                showAlert(vc: self, title: "BIP21 invoice: " + label, message: "")
+                showAlert(vc: self, title: "You pasted a BIP21 invoice:\n\n" + label, message: "")
                 return
             }
             
-            showAlert(vc: self, title: "BIP21 invoice: " + label, message: message)
+            showAlert(vc: self, title: "You pasted a BIP21 invoice:\n\n" + label, message: message)
         }
     }
     
@@ -981,12 +1030,12 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
 }
 
-fileprivate func convertFromUIImagePickerControllerInfoKeyDictionary(_ input: [UIImagePickerController.InfoKey: Any]) -> [String: Any] {
-    return Dictionary(uniqueKeysWithValues: input.map {key, value in (key.rawValue, value)})
-}
-
-// Helper function inserted by Swift 4.2 migrator.
-fileprivate func convertFromUIImagePickerControllerInfoKey(_ input: UIImagePickerController.InfoKey) -> String {
-    return input.rawValue
-}
+//fileprivate func convertFromUIImagePickerControllerInfoKeyDictionary(_ input: [UIImagePickerController.InfoKey: Any]) -> [String: Any] {
+//    return Dictionary(uniqueKeysWithValues: input.map {key, value in (key.rawValue, value)})
+//}
+//
+//// Helper function inserted by Swift 4.2 migrator.
+//fileprivate func convertFromUIImagePickerControllerInfoKey(_ input: UIImagePickerController.InfoKey) -> String {
+//    return input.rawValue
+//}
 
