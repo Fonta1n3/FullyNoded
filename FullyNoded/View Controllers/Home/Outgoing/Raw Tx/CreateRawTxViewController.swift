@@ -150,6 +150,21 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             decodeLighnting(invoice: item.replacingOccurrences(of: "lightning:", with: ""))
         } else if item.hasPrefix("bitcoin:") {
             processBIP21(url: item)
+        } else {
+            switch item {
+            case _ where item.hasPrefix("1"),
+                 _ where item.hasPrefix("3"),
+                 _ where item.hasPrefix("tb1"),
+                 _ where item.hasPrefix("bc1"),
+                 _ where item.hasPrefix("2"),
+                 _ where item.hasPrefix("bcrt"),
+                 _ where item.hasPrefix("m"),
+                 _ where item.hasPrefix("n"),
+                 _ where item.hasPrefix("lntb"):
+                processBIP21(url: item)
+            default:
+                showAlert(vc: self, title: "", message: "This button is for pasting lightning invoices, bitcoin addresses and bip21 invoices")
+            }
         }
     }
     
