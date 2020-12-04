@@ -951,7 +951,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             
             guard let amount = amount else { return }
             
-            self.amountInput.text = "\(amount)"
+            self.amountInput.text = amount.avoidNotation
             
             guard let label = label else { return }
             
