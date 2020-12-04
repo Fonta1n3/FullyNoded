@@ -12,6 +12,7 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
     
     @IBOutlet weak var importOutlet: UIButton!
     @IBOutlet weak var textField: UITextField!
+    @IBOutlet weak var labelField: UITextField!
     
     var xpub = ""
     var fingerprint = ""
@@ -81,10 +82,12 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
         importOutlet.clipsToBounds = true
         importOutlet.layer.cornerRadius = 8
         textField.delegate = self
+        labelField.delegate = self
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
         tapGesture.numberOfTapsRequired = 1
         self.view.addGestureRecognizer(tapGesture)
         textField.removeGestureRecognizer(tapGesture)
+        labelField.removeGestureRecognizer(tapGesture)
         setCoinType()
     }
     
@@ -148,7 +151,14 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
     }
     
     private func importXpub() {
-        let accountMap = ["descriptor": bip84primAccount, "blockheight": 0, "watching": watchingArray, "label": "xpub import"] as [String : Any]
+        var label = labelField.text ?? "xpub import"
+        
+        if label == "" {
+            label = "xpub import"
+        }
+        
+        let accountMap = ["descriptor": bip84primAccount, "blockheight": 0, "watching": watchingArray, "label": label] as [String : Any]
+        
         ImportWallet.accountMap(accountMap) { [weak self] (success, errorDescription) in
             if success {
                 self?.spinner.removeConnectingView()
