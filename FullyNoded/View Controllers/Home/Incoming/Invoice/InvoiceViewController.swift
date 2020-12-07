@@ -10,13 +10,9 @@ import UIKit
 
 class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
-    @IBOutlet weak var segmentedControlOutlet: UISegmentedControl!
     var textToShareViaQRCode = String()
     var addressString = String()
     var qrCode = UIImage()
-    let descriptionLabel = UILabel()
-    var tapQRGesture = UITapGestureRecognizer()
-    var tapAddressGesture = UITapGestureRecognizer()
     var nativeSegwit = Bool()
     var p2shSegwit = Bool()
     var legacy = Bool()
@@ -24,37 +20,51 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     let qrGenerator = QRGenerator()
     var isHDMusig = Bool()
     var isHDInvoice = Bool()
-    let cd = CoreDataService()
     var descriptor = ""
     var wallet = [String:Any]()
     let ud = UserDefaults.standard
     var isPaying = false
+    var isBtc = false
+    var isSats = false
     
+    @IBOutlet weak var segmentedControlOutlet: UISegmentedControl!
     @IBOutlet var amountField: UITextField!
     @IBOutlet var labelField: UITextField!
     @IBOutlet var qrView: UIImageView!
     @IBOutlet var addressOutlet: UILabel!
-    @IBOutlet weak var amountLabel: UILabel!
-    @IBOutlet weak var labelLabel: UILabel!
-    
-    
-    var isBtc = false
-    var isSats = false
+    @IBOutlet private weak var invoiceText: UITextView!
+    @IBOutlet private weak var messageField: UITextField!
+    @IBOutlet weak var fieldsBackground: UIView!
+    @IBOutlet weak var addressBackground: UIView!
+    @IBOutlet weak var invoiceBackground: UIView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        spinner.addConnectingView(vc: self, description: "fetching address...")
-        addressOutlet.isUserInteractionEnabled = true
-        addressOutlet.text = ""
-        amountField.delegate = self
-        labelField.delegate = self
-        amountField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
-        labelField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
-        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
-        view.addGestureRecognizer(tap)
+        
+        setDelegates()
+        configureView(fieldsBackground)
+        configureView(addressBackground)
+        configureView(invoiceBackground)
+        confirgureFields()
+        configureTap()
         getAddressSettings()
         addDoneButtonOnKeyboard()
-        load()
+        setUnits()
+        addressOutlet.text = "tap \"🔗 onchain invoice\" to get an address"
+        
+        if isPaying {
+            spinner.label.text = "fetching donation address..."
+            segmentedControlOutlet.alpha = 0
+            addressOutlet.alpha = 0
+            amountField.alpha = 0
+            labelField.alpha = 0
+        }
+        
+        invoiceText.text = "invoice text will show here"
+        qrView.image = generateQrCode(key: "bitcoin:")
+    }
+    
+    private func setUnits() {
         if ud.object(forKey: "invoiceUnit") != nil {
             let unit = ud.object(forKey: "invoiceUnit") as! String
             if unit == "btc" {
@@ -69,24 +79,126 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         } else {
             segmentedControlOutlet.selectedSegmentIndex = 0
         }
-        
-        if isPaying {
-            spinner.label.text = "fetching donation address..."
-            amountLabel.alpha = 0
-            labelLabel.alpha = 0
-            segmentedControlOutlet.alpha = 0
-            addressOutlet.alpha = 0
-            amountField.alpha = 0
-            labelField.alpha = 0
+    }
+    
+    private func setDelegates() {
+        messageField.delegate = self
+        amountField.delegate = self
+        labelField.delegate = self
+    }
+    
+    private func confirgureFields() {
+        amountField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        labelField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        messageField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+    }
+    
+    private func configureTap() {
+        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        view.addGestureRecognizer(tap)
+        amountField.removeGestureRecognizer(tap)
+        labelField.removeGestureRecognizer(tap)
+        messageField.removeGestureRecognizer(tap)
+    }
+    
+    private func configureView(_ view: UIView) {
+        view.clipsToBounds = true
+        view.layer.cornerRadius = 8
+        view.layer.borderColor = UIColor.darkGray.cgColor
+        view.layer.borderWidth = 0.5
+    }
+    
+    @IBAction func getAddressInfoAction(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            self?.performSegue(withIdentifier: "getAddressInfo", sender: self)
         }
     }
     
-    @IBAction func copyInvoiceAction(_ sender: Any) {
-        UIPasteboard.general.string = addressString
-        displayAlert(viewController: self, isError: false, message: "invoice copied ✓")
+    @IBAction func shareAddressAction(_ sender: Any) {
+        shareText(addressString)
     }
     
+    @IBAction func copyAddressAction(_ sender: Any) {
+        UIPasteboard.general.string = addressString
+        displayAlert(viewController: self, isError: false, message: "address copied ✓")
+    }
     
+    @IBAction func shareQrAction(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let activityController = UIActivityViewController(activityItems: [self.qrView.image as Any], applicationActivities: nil)
+            activityController.popoverPresentationController?.sourceView = self.view
+            activityController.popoverPresentationController?.sourceRect = self.view.bounds
+            self.present(activityController, animated: true) {}
+        }
+    }
+    
+    @IBAction func copyQrAction(_ sender: Any) {
+        UIPasteboard.general.image = self.qrView.image
+        displayAlert(viewController: self, isError: false, message: "qr copied ✓")
+    }
+    
+    @IBAction func shareInvoiceTextAction(_ sender: Any) {
+        shareText(invoiceText.text)
+    }
+    
+    @IBAction func copyInvoiceTextAction(_ sender: Any) {
+        UIPasteboard.general.string = invoiceText.text
+        displayAlert(viewController: self, isError: false, message: "invoice text copied ✓")
+    }
+    
+    @IBAction func generateLightningAction(_ sender: Any) {
+        spinner.addConnectingView(vc: self, description: "creating lightning invoice...")
+        
+        var millisats = "\"any\""
+        var label = "Fully-Noded-\(randomString(length: 5))"
+        
+        if amountField.text != "" {
+            if isBtc {
+                if let dbl = Double(amountField.text!) {
+                    let int = Int(dbl * 100000000000.0)
+                    millisats = "\(int)"
+                }
+            } else if isSats {
+                if let int = Double(amountField.text!) {
+                    millisats = "\(Int(int * 1000))"
+                }
+            }
+        }
+        
+        if labelField.text != "" {
+            label = labelField.text!
+        }
+        
+        let param = "\(millisats), \"\(label)\", \"\(Date())\", \(86400)"
+        let commandId = UUID()
+        
+        LightningRPC.command(id: commandId, method: .invoice, param: param) { [weak self] (uuid, response, errorDesc) in
+            guard commandId == uuid, let self = self else { return }
+            
+            guard let dict = response as? NSDictionary, let bolt11 = dict["bolt11"] as? String else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Error", message: errorDesc ?? "we had an issue getting your lightning invoice")
+                return
+            }
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.showLightningInvoice(bolt11)
+            }
+            
+            if let warning = dict["warning_capacity"] as? String {
+                if warning != "" {
+                    showAlert(vc: self, title: "Warning", message: warning)
+                }
+            }
+        }
+    }
+    
+    @IBAction func generateOnchainAction(_ sender: Any) {
+        generateOnchainInvoice()
+    }
     
     @IBAction func denominationChanged(_ sender: UISegmentedControl) {
         switch sender.selectedSegmentIndex {
@@ -103,54 +215,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
-    
-    @IBAction func lightningInvoice(_ sender: Any) {
-        spinner.addConnectingView(vc: self, description: "creating lightning invoice...")
-        var millisats = "\"any\""
-        var label = "Fully-Noded-\(randomString(length: 5))"
-        if amountField.text != "" {
-            if isBtc {
-                if let dbl = Double(amountField.text!) {
-                    let int = Int(dbl * 100000000000.0)
-                    millisats = "\(int)"
-                }
-            } else if isSats {
-                if let int = Double(amountField.text!) {
-                    millisats = "\(Int(int * 1000))"
-                }
-            }
-        }
-        if labelField.text != "" {
-            label = labelField.text!
-        }
-        let param = "\(millisats), \"\(label)\", \"\(Date())\", \(86400)"
-        let commandId = UUID()
-        LightningRPC.command(id: commandId, method: .invoice, param: param) { [weak self] (uuid, response, errorDesc) in
-            if commandId == uuid {
-                if let dict = response as? NSDictionary {
-                    if let bolt11 = dict["bolt11"] as? String {
-                        DispatchQueue.main.async { [weak self] in
-                            self?.addressOutlet.alpha = 1
-                            self?.addressString = bolt11
-                            self?.addressOutlet.text = bolt11
-                            self?.showAddress(address: bolt11)
-                            self?.spinner.removeConnectingView()
-                        }
-                    }
-                    if let warning = dict["warning_capacity"] as? String {
-                        if warning != "" {
-                            showAlert(vc: self, title: "Warning", message: warning)
-                        }
-                    }
-                } else {
-                    self?.spinner.removeConnectingView()
-                    showAlert(vc: self, title: "Error", message: errorDesc ?? "we had an issue getting your lightning invoice")
-                }
-            }
-        }
-    }
-    
-    func load() {
+    func generateOnchainInvoice() {
         if isPaying {
             guard let data = KeyChain.getData("paymentAddress") else {
                 
@@ -169,18 +234,25 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             getPaid(paymentAddress)
             
         } else {
+            spinner.addConnectingView(vc: self, description: "fetching address...")
+            
             addressOutlet.text = ""
-            activeWallet { [weak self] (wallet) in
-                if wallet != nil {
-                    let descriptorParser = DescriptorParser()
-                    let descriptorStruct = descriptorParser.descriptor(wallet!.receiveDescriptor)
-                    if descriptorStruct.isMulti {
-                        self?.getReceieveAddressForFullyNodedMultiSig(wallet!)
-                    } else {
-                        self?.showAddress()
-                    }
+            
+            activeWallet { [weak self] wallet in
+                guard let self = self else { return }
+                
+                guard let wallet = wallet else {
+                    self.fetchAddress()
+                    return
+                }
+                
+                let descriptorParser = DescriptorParser()
+                let descriptorStruct = descriptorParser.descriptor(wallet.receiveDescriptor)
+                
+                if descriptorStruct.isMulti {
+                    self.getReceieveAddressForFullyNodedMultiSig(wallet)
                 } else {
-                    self?.showAddress()
+                    self.fetchAddress()
                 }
             }
         }
@@ -297,28 +369,27 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     private func getReceieveAddressForFullyNodedMultiSig(_ wallet: Wallet) {
         let index = Int(wallet.index) + 1
-        CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(index), entity: .wallets) { (success) in
-            if success {
-                let param = "\"\(wallet.receiveDescriptor)\", [\(index),\(index)]"
-                Reducer.makeCommand(command: .deriveaddresses, param: param) { (response, errorMessage) in
-                    if let addresses = response as? NSArray {
-                        if let address = addresses[0] as? String {
-                            DispatchQueue.main.async { [weak self] in
-                                self?.addressOutlet.alpha = 1
-                                self?.addressString = address
-                                self?.addressOutlet.text = address
-                                self?.showAddress(address: address)
-                            }
-                        }
-                    }
+        
+        CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(index), entity: .wallets) { success in
+            guard success else { return }
+            
+            let param = "\"\(wallet.receiveDescriptor)\", [\(index),\(index)]"
+            
+            Reducer.makeCommand(command: .deriveaddresses, param: param) { (response, errorMessage) in
+                guard let addresses = response as? NSArray, let address = addresses[0] as? String else {
+                    showAlert(vc: self, title: "", message: errorMessage ?? "error getting multisig address")
+                    return
+                }
+                
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.addressOutlet.alpha = 1
+                    self.addressString = address
+                    self.addressOutlet.text = address
+                    self.showAddress(address: address)
                 }
             }
-        }
-    }
-    
-    @IBAction func getAddressInfo(_ sender: Any) {
-        DispatchQueue.main.async { [weak self] in
-            self?.performSegue(withIdentifier: "getAddressInfo", sender: self)
         }
     }
     
@@ -329,15 +400,12 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         legacy = ud.object(forKey: "legacy") as? Bool ?? false
     }
     
-    func showAddress() {
+    func fetchAddress() {
         if isHDMusig {
             showAddress(address: addressString)
-            spinner.removeConnectingView()
-            DispatchQueue.main.async { [weak self] in
-                self?.addressOutlet.text = self?.addressString
-            }
         } else {
             var params = ""
+            
             if self.nativeSegwit {
                 params = "\"\", \"bech32\""
             } else if self.legacy {
@@ -345,144 +413,81 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             } else if self.p2shSegwit {
                 params = "\"\", \"p2sh-segwit\""
             }
-            self.executeNodeCommand(method: .getnewaddress, param: params)
+            
+            self.getAddress(params)
         }
     }
     
     func showAddress(address: String) {
         DispatchQueue.main.async { [weak self] in
-            if self != nil {
-                self!.qrCode = self!.generateQrCode(key: address)
-                self!.qrView.image = self?.qrCode
-                self!.qrView.isUserInteractionEnabled = true
-                self!.qrView.alpha = 0
-                self!.view.addSubview(self!.qrView)
-                self!.descriptionLabel.frame = CGRect(x: 10, y: self!.view.frame.maxY - 30, width: self!.view.frame.width - 20, height: 20)
-                self!.descriptionLabel.textAlignment = .center
-                self!.descriptionLabel.font = UIFont.init(name: "HelveticaNeue-Light", size: 12)
-                self!.descriptionLabel.textColor = UIColor.white
-                self!.descriptionLabel.text = "Tap the QR Code or text to copy/save/share"
-                self!.descriptionLabel.adjustsFontSizeToFitWidth = true
-                self!.descriptionLabel.alpha = 0
-                self!.view.addSubview(self!.descriptionLabel)
-                self!.tapAddressGesture = UITapGestureRecognizer(target: self!, action: #selector(self!.shareAddressText(_:)))
-                self!.addressOutlet.addGestureRecognizer(self!.tapAddressGesture)
-                self!.addressOutlet.text = address
-                self!.addressString = address
-                self!.tapQRGesture = UITapGestureRecognizer(target: self!, action: #selector(self?.shareQRCode(_:)))
-                self!.qrView.addGestureRecognizer(self!.tapQRGesture)
-                self!.spinner.removeConnectingView()
-                UIView.animate(withDuration: 0.3, animations: { [weak self] in
-                    self?.descriptionLabel.alpha = 1
-                    self?.qrView.alpha = 1
-                    self?.addressOutlet.alpha = 1
-                })
-            }
+            guard let self = self else { return }
+            
+            self.addressOutlet.text = address
+            self.addressString = address
+            self.updateQRImage()
+            self.spinner.removeConnectingView()
         }
     }
     
-    
-    @objc func shareAddressText(_ sender: UITapGestureRecognizer) {
-        
-        UIView.animate(withDuration: 0.2, animations: {
+    private func showLightningInvoice(_ invoice: String) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
             
-            self.addressOutlet.alpha = 0
-            
-        }) { _ in
-            
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                self.addressOutlet.alpha = 1
-                
-            })
-            
+            self.addressOutlet.text = "see lightning invoice below"
+            self.addressString = invoice
+            self.updateQRImage()
+            self.invoiceText.text = invoice
+            self.spinner.removeConnectingView()
         }
-        
-        DispatchQueue.main.async {
-            let textToShare = [self.addressString]
+    }
+    
+    private func shareText(_ text: String) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let textToShare = [text]
             let activityViewController = UIActivityViewController(activityItems: textToShare, applicationActivities: nil)
             activityViewController.popoverPresentationController?.sourceView = self.view
             activityViewController.popoverPresentationController?.sourceRect = self.view.bounds
             self.present(activityViewController, animated: true) {}
         }
-        
     }
     
-    @objc func shareQRCode(_ sender: UITapGestureRecognizer) {
-        
-        UIView.animate(withDuration: 0.2, animations: {
+    func getAddress(_ params: String) {
+        Reducer.makeCommand(command: .getnewaddress, param: params) { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
             
-            self.qrView.alpha = 0
-            
-        }) { _ in
-            
-            UIView.animate(withDuration: 0.2, animations: {
-                
-                self.qrView.alpha = 1
-                
-            }) { _ in
-                DispatchQueue.main.async {
-                    let activityController = UIActivityViewController(activityItems: [self.qrView.image!], applicationActivities: nil)
-                    activityController.popoverPresentationController?.sourceView = self.view
-                    activityController.popoverPresentationController?.sourceRect = self.view.bounds
-                    self.present(activityController, animated: true) {}
-                }
-                
+            guard let address = response as? String else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Error", message: errorMessage ?? "error fecthing address")
+                return
             }
             
-        }
-        
-    }
-    
-    func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
-        print("executeNodeCommand")
-        
-        func getAddress() {
-            Reducer.makeCommand(command: .getnewaddress, param: param) { [weak self] (response, errorMessage) in
-                if let address = response as? String {
-                    DispatchQueue.main.async { [weak self] in
-                        self?.spinner.removeConnectingView()
-                        self?.addressString = address
-                        self?.addressOutlet.text = address
-                        self?.showAddress(address: address)
-                    }
-                } else {
-                    if self != nil {
-                        self!.spinner.removeConnectingView()
-                        showAlert(vc: self!, title: "Error", message: errorMessage ?? "error fecthing address")
-                    }
-                }
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.spinner.removeConnectingView()
+                self.addressString = address
+                self.addressOutlet.text = address
+                self.showAddress(address: address)
             }
-        }
-        
-        switch method {
-        case .getnewaddress:
-            getAddress()
-            
-        default:
-            break
         }
     }
     
     @objc func textFieldDidChange(_ textField: UITextField) {
-        print("textFieldDidChange")
-        
         updateQRImage()
-        
     }
     
     func generateQrCode(key: String) -> UIImage {
-        
         qrGenerator.textInput = key
         let qr = qrGenerator.getQRCode()
-        
         return qr
-        
     }
     
     func updateQRImage() {
         var newImage = UIImage()
         var amount = self.amountField.text ?? ""
+        
         if isSats {
             if amount != "" {
                 if let int = Int(amount) {
@@ -490,67 +495,47 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 }
             }
         }
+        
         if !addressString.hasPrefix("lntb") && !addressString.hasPrefix("lightning:") && !addressString.hasPrefix("lnbc") && !addressString.hasPrefix("lnbcrt") {
-            if self.amountField.text == "" && self.labelField.text == "" {
-                newImage = self.generateQrCode(key:"bitcoin:\(self.addressString)")
-                textToShareViaQRCode = "bitcoin:\(self.addressString)"
-                
-            } else if self.amountField.text != "" && self.labelField.text != "" {
-                newImage = self.generateQrCode(key:"bitcoin:\(self.addressString)?amount=\(amount)&label=\(self.labelField.text!)")
-                textToShareViaQRCode = "bitcoin:\(self.addressString)?amount=\(self.amountField.text!)&label=\(self.labelField.text!)"
-                
-            } else if self.amountField.text != "" && self.labelField.text == "" {
-                newImage = self.generateQrCode(key:"bitcoin:\(self.addressString)?amount=\(amount)")
-                textToShareViaQRCode = "bitcoin:\(self.addressString)?amount=\(self.amountField.text!)"
-                
-            } else if self.amountField.text == "" && self.labelField.text != "" {
-                newImage = self.generateQrCode(key:"bitcoin:\(self.addressString)?label=\(self.labelField.text!)")
-                textToShareViaQRCode = "bitcoin:\(self.addressString)?label=\(self.labelField.text!)"
-                
-            }
+            let amount = self.amountField.text ?? ""
+            let label = self.labelField.text?.replacingOccurrences(of: " ", with: "%20") ?? ""
+            let message = self.messageField.text?.replacingOccurrences(of: " ", with: "%20") ?? ""
+            textToShareViaQRCode = "bitcoin:\(self.addressString)?amount=\(amount)&label=\(label)&message=\(message)"
             
-            DispatchQueue.main.async {
+            newImage = self.generateQrCode(key:textToShareViaQRCode)
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
                 UIView.transition(with: self.qrView,
                                   duration: 0.75,
                                   options: .transitionCrossDissolve,
                                   animations: { self.qrView.image = newImage },
                                   completion: nil)
+                
+                self.invoiceText.text = self.textToShareViaQRCode
             }
         }
     }
     
     @objc func doneButtonAction() {
-        
         self.amountField.resignFirstResponder()
-        
+        self.labelField.resignFirstResponder()
+        self.messageField.resignFirstResponder()
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        
         view.endEditing(true)
         return false
-        
     }
     
     func addDoneButtonOnKeyboard() {
-        
         let doneToolbar = UIToolbar()
+        doneToolbar.frame = CGRect(x: 0, y: 0, width: 320, height: 50)
+        doneToolbar.barStyle = .default
         
-        doneToolbar.frame = CGRect(x: 0,
-                                   y: 0,
-                                   width: 320,
-                                   height: 50)
-        
-        doneToolbar.barStyle = UIBarStyle.default
-        
-        let flexSpace = UIBarButtonItem(barButtonSystemItem: UIBarButtonItem.SystemItem.flexibleSpace,
-                                        target: nil,
-                                        action: nil)
-        
-        let done: UIBarButtonItem = UIBarButtonItem(title: "Done",
-                                                    style: UIBarButtonItem.Style.done,
-                                                    target: self,
-                                                    action: #selector(doneButtonAction))
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let done: UIBarButtonItem = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(doneButtonAction))
         
         let items = NSMutableArray()
         items.add(flexSpace)
@@ -560,28 +545,19 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         doneToolbar.sizeToFit()
         
         self.amountField.inputAccessoryView = doneToolbar
-        
+        self.labelField.inputAccessoryView = doneToolbar
+        self.messageField.inputAccessoryView = doneToolbar
     }
     
     @objc func dismissKeyboard() {
-        
         view.endEditing(true)
-        
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        
         if segue.identifier == "getAddressInfo" {
-            
-            if let vc = segue.destination as? GetInfoViewController {
-                
-                vc.address = addressString
-                vc.getAddressInfo = true
-                
-            }
-            
+            guard let vc = segue.destination as? GetInfoViewController else { return }
+            vc.address = addressString
+            vc.getAddressInfo = true
         }
-        
     }
-
 }

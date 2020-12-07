@@ -955,6 +955,13 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             
             guard let label = label else { return }
             
+            self.segmentedControlOutlet.selectedSegmentIndex = 0
+            self.isFiat = false
+            self.isBtc = true
+            self.isSats = false
+            self.ud.set("btc", forKey: "unit")
+            self.btcEnabled()
+            
             guard let message = message else {
                 showAlert(vc: self, title: "You pasted a BIP21 invoice:\n\n" + label, message: "")
                 return
