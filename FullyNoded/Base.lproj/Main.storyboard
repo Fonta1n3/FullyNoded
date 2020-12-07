@@ -879,7 +879,7 @@
                         <segue destination="B99-yZ-naR" kind="show" identifier="segueToAddANode" id="dhu-ZV-762"/>
                         <segue destination="fTf-eh-9Tk" kind="show" identifier="segueToTools" id="La3-qR-4jz"/>
                         <segue destination="bWB-tp-pgw" kind="show" identifier="segueToCreateUnlockPassword" id="4g3-DC-Q5z"/>
-                        <segue destination="Xxg-Pp-vvN" kind="presentation" identifier="segueToPaywall" modalPresentationStyle="fullScreen" id="G4V-U1-MpW"/>
+                        <segue destination="GlR-4A-eAx" kind="presentation" identifier="segueToPaywall" modalPresentationStyle="fullScreen" id="if0-NE-c9T"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dhK-90-srt" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -1974,11 +1974,11 @@
             <objects>
                 <viewController storyboardIdentifier="QRDisplayer" useStoryboardIdentifierAsRestorationIdentifier="YES" id="GlR-4A-eAx" customClass="QRDisplayerViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="1Ax-bN-O8E">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="574"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Kj5-uB-hmc">
-                                <rect key="frame" x="16" y="422" width="343" height="132"/>
+                                <rect key="frame" x="16" y="422" width="343" height="225"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
@@ -7891,9 +7891,9 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="qed-hl-jG5"/>
+        <segue reference="UBf-qr-XYG"/>
         <segue reference="dhu-ZV-762"/>
-        <segue reference="DLx-HT-rGm"/>
+        <segue reference="4g3-DC-Q5z"/>
         <segue reference="w2g-bl-j8v"/>
         <segue reference="RbT-dI-IvI"/>
         <segue reference="IVc-aG-8QZ"/>
@@ -7904,7 +7904,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="GTM-mT-JB4"/>
         <segue reference="9TT-9o-7xG"/>
-        <segue reference="zi9-mK-A5a"/>
+        <segue reference="if0-NE-c9T"/>
         <segue reference="8yc-oK-dlC"/>
         <segue reference="7PS-EL-3d2"/>
         <segue reference="j10-wi-hpr"/>

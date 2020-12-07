@@ -751,9 +751,12 @@ class MainMenuViewController: UIViewController {
             }
             
         case "segueToPaywall":
-            guard let vc = segue.destination as? InvoiceViewController else { fallthrough }
+            guard let vc = segue.destination as? QRDisplayerViewController else { fallthrough }
             
             vc.isPaying = true
+            vc.headerIcon = UIImage(systemName: "bitcoinsign.circle")
+            vc.headerText = "Donation"
+            vc.descriptionText = "Your support is greatly appreciated! We are checking every 15 seconds in the background to see if a payment is made, as soon as we see one the app will automatically unlock and be fully functional."
             
         default:
             break
@@ -881,15 +884,15 @@ extension MainMenuViewController: OnionManagerDelegate {
             self?.progressView.isHidden = true
             self?.blurView.isHidden = true
         }
-        
-//        if KeyChain.getData("hasPaid") == nil {
-//            guard let data = KeyChain.getData("paymentAddress"), let paid = data.utf8 else {
-//                goToPaywall()
-//                return
-//            }
-//
-//            checkIfPaymentReceived(paid)
-//        }
+                
+        if KeyChain.getData("hasPaid") == nil {
+            guard let data = KeyChain.getData("paymentAddress"), let paid = data.utf8 else {
+                goToPaywall()
+                return
+            }
+
+            checkIfPaymentReceived(paid)
+        }
     }
     
     func torConnDifficulties() {
