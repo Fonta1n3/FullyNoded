@@ -74,7 +74,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     
     @IBAction func automaticAction(_ sender: Any) {
         guard let _ = KeyChain.getData("UnlockPassword") else {
-            showAlert(vc: self, title: "Whoa, you are not using the app securely", message: "Single signature wallets store seed words on the app, you need to go to the home screen and tap the lock button to create a locking password before the app can hold seed words.")
+            showAlert(vc: self, title: "Security alert", message: "Single signature wallets store seed words on the app, you need to go to the home screen and tap the lock button to create a locking password before the app can hold seed words.")
             
             return
         }
@@ -160,25 +160,35 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 }
                 
                 descriptor = "wsh(sortedmulti(\(sigsRequired),"
+                print("desc: \(descriptor)")
+                print("keys: \(keys)")
                 
                 for (i, key) in keys.enumerated() {
-                    let arr = key.split(separator: ":")
-                    let xfp = "\(arr[0])"
-                    let xpub = "\(arr[1])"
-                    guard let extKey = XpubConverter.convert(extendedKey: xpub) else {
-                        return
-                    }
-                    
-                    descriptor += "[\(xfp)/\(deriv.replacingOccurrences(of: "m/", with: ""))]\(extKey)/0/*"
-                    
-                    if i < keys.count {
-                        descriptor += ","
-                    } else {
-                        descriptor += "))"
+                    if !key.hasPrefix("#") {
+                        let arr = key.split(separator: ":")
+                        let xfp = "\(arr[0])"
+                        let xpub = "\(arr[1])"
+                        if !xpub.hasPrefix("xpub") && !xpub.hasPrefix("tpub") {
+                            guard let extKey = XpubConverter.convert(extendedKey: xpub) else {
+                                showAlert(vc: self, title: "Error", message: "There was a problem converting your extended key to an xpub.")
+                                return
+                            }
+                            
+                            descriptor += "[\(xfp)/\(deriv.replacingOccurrences(of: "m/", with: ""))]\(extKey)/0/*"
+                        } else {
+                            descriptor += "[\(xfp)/\(deriv.replacingOccurrences(of: "m/", with: ""))]\(xpub)/0/*"
+                        }
+                        
+                        if i < keys.count {
+                            descriptor += ","
+                        } else {
+                            descriptor += "))"
+                        }
                     }
                 }
                 
                 let accountMap = ["descriptor": descriptor, "blockheight": 0, "watching": [], "label": name] as [String : Any]
+                print("accountMap: \(accountMap)")
                 promptToImportCoboMultiSig(accountMap)
                 /*
                  Name: CV_85C39000_2-3
@@ -215,6 +225,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     }
     
     private func promptToImportCoboMultiSig(_ dict: [String:Any]) {
+        print("prompttoimportcobo: \(dict)")
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -471,7 +482,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     
     private func promptToImportAccountMap(dict: [String:Any]) {
         DispatchQueue.main.async { [unowned vc = self] in
-            let alert = UIAlertController(title: "Import wallet?", message: "Looks like you have selected a valid wallet format ✅", preferredStyle: vc.alertStyle)
+            let alert = UIAlertController(title: "Import wallet?", message: "Looks like you have selected a valid wallet format ✓", preferredStyle: vc.alertStyle)
             alert.addAction(UIAlertAction(title: "Import", style: .default, handler: { [unowned vc = self] action in
                 vc.importAccountMap(dict)
             }))

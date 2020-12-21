@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import UIKit
 
 class Reducer {
     
@@ -43,6 +44,9 @@ class Reducer {
         
         func loadWallet(walletName: String) {
             torRPC.executeRPCCommand(method: .loadwallet, param: "\"\(walletName)\"") { (response, errorDesc) in
+                let alertWindow = UIWindow(frame: UIScreen.main.bounds)
+                alertWindow.rootViewController = UIViewController()
+                showAlert(vc: alertWindow.rootViewController, title: "Wallet loading..", message: "Just letting you know a loadwallet command was just issued. In certain circumstances this can take awhile, generally it should be less then 5 seconds.")
                 if errorDesc == nil {
                     makeTorCommand()
                 } else if errorDesc!.contains("Duplicate -wallet filename specified") {

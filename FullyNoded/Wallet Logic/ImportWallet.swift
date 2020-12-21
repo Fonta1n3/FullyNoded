@@ -157,7 +157,7 @@ class ImportWallet {
                 wallet["changeDescriptor"] = changeDesc
                 let hash = Crypto.sha256hash(primDescriptor)
                 
-                walletExistsOnNode(hash) { (existingWallet) in
+                walletExistsOnNode(hash) { existingWallet in
                     guard let existingWallet = existingWallet else {
                         createWalletNow(recDesc, changeDesc)
                         return

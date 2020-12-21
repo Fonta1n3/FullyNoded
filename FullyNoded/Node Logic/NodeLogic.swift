@@ -60,7 +60,7 @@ class NodeLogic {
                     if let sats = outputDict["value"] as? Int {
                         let btc = Double(sats) / 100000000.0
                         offchainBalance += btc
-                        dictToReturn["offchainBalance"] = "\(rounded(number: offchainBalance))"
+                        dictToReturn["offchainBalance"] = "\(rounded(number: offchainBalance).avoidNotation)"
                     }
                     
                     if let txid = outputDict["txid"] as? String {
@@ -92,7 +92,7 @@ class NodeLogic {
                         }
                         
                         if c + 1 == channels.count {
-                            dictToReturn["offchainBalance"] = "\(rounded(number: offchainBalance))"
+                            dictToReturn["offchainBalance"] = "\(rounded(number: offchainBalance).avoidNotation)"
                             completion((dictToReturn, nil))
                         }
                     }

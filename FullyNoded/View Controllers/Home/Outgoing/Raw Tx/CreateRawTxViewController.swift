@@ -733,6 +733,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         if outputArray.count == 0 {
             if self.amountInput.text != "" && self.amountInput.text != "0.0" && self.addressInput.text != "" {
                 var amount = amountInput.text ?? ""
+                amount = amount.replacingOccurrences(of: ",", with: "")
                 let dblAmount = amount.doubleValue
                 
                 if isFiat {
