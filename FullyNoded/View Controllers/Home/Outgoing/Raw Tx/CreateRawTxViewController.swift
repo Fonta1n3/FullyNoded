@@ -950,9 +950,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             
             self.addressInput.text = address
             
-            if amount == nil && label == nil && message == nil {
-                
-            } else {
+            if amount != nil || label != nil || message != nil {
                 var amountText = "not specified"
                 
                 if amount != nil {
