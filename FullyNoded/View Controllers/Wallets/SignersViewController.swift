@@ -40,15 +40,16 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     private func loadData() {
         signers.removeAll()
-        CoreDataService.retrieveEntity(entityName: .signers) { [unowned vc = self] encryptedSigners in
-            if encryptedSigners != nil {
-                if encryptedSigners!.count > 0 {
-                    vc.signers = encryptedSigners!
-                    vc.reload()
-                }
-            } else {
-                vc.reload()
+        CoreDataService.retrieveEntity(entityName: .signers) { [weak self] encryptedSigners in
+            guard let self = self else { return }
+            
+            guard let encryptedSigners = encryptedSigners else {
+                self.reload()
+                return
             }
+            
+            self.signers = encryptedSigners
+            self.reload()
         }
     }
     

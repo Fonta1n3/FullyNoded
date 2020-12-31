@@ -21,6 +21,7 @@ class AddressParser {
         var processedUrl = url
         
         processedUrl = processedUrl.replacingOccurrences(of: "bitcoin:", with: "")
+        processedUrl = processedUrl.replacingOccurrences(of: "BITCOIN:", with: "")
         
         guard processedUrl.contains("?") || processedUrl.contains("=") else {
             return (address: processedAddress(processedUrl), amount: amountToReturn, label: labelToReturn, message: message)
@@ -43,6 +44,7 @@ class AddressParser {
         let urlParts = split[1].split(separator: "&")
         
         addressToReturn = processedAddress("\(split[0])".replacingOccurrences(of: "bitcoin:", with: ""))
+        addressToReturn = processedAddress("\(split[0])".replacingOccurrences(of: "BITCOIN:", with: ""))
         
         guard urlParts.count > 0 else {
             return (address: addressToReturn, amount: amountToReturn, label: labelToReturn, message: message)
@@ -84,13 +86,20 @@ class AddressParser {
         case _ where address.hasPrefix("1"),
              _ where address.hasPrefix("3"),
              _ where address.hasPrefix("tb1"),
+             _ where address.hasPrefix("TB1"),
              _ where address.hasPrefix("bc1"),
+             _ where address.hasPrefix("BC1"),
              _ where address.hasPrefix("2"),
              _ where address.hasPrefix("bcrt"),
+             _ where address.hasPrefix("BCRT"),
              _ where address.hasPrefix("m"),
              _ where address.hasPrefix("n"),
              _ where address.hasPrefix("lntb"):
-            return address
+            if address.hasPrefix("BC1") || address.hasPrefix("TB1") {
+                return address.lowercased()
+            } else {
+                return address
+            }
         default:
             return nil
         }
