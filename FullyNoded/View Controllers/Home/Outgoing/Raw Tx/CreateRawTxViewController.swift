@@ -148,7 +148,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         
         if item.hasPrefix("lntb") || item.hasPrefix("lightning:") || item.hasPrefix("lnbc") || item.hasPrefix("lnbcrt") {
             decodeLighnting(invoice: item.replacingOccurrences(of: "lightning:", with: ""))
-        } else if item.hasPrefix("bitcoin:") {
+        } else if item.hasPrefix("bitcoin:") || item.hasPrefix("BITCOIN:") {
             processBIP21(url: item)
         } else {
             switch item {
@@ -950,25 +950,20 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             
             self.addressInput.text = address
             
-            guard let amount = amount else { return }
+            var amountText = "not specified"
             
-            self.amountInput.text = amount.avoidNotation
-            
-            guard let label = label else { return }
-            
-            self.segmentedControlOutlet.selectedSegmentIndex = 0
-            self.isFiat = false
-            self.isBtc = true
-            self.isSats = false
-            self.ud.set("btc", forKey: "unit")
-            self.btcEnabled()
-            
-            guard let message = message else {
-                showAlert(vc: self, title: "You pasted a BIP21 invoice:\n\n" + label, message: "")
-                return
+            if amount != nil {
+                self.amountInput.text = amount!.avoidNotation
+                amountText = amount!.avoidNotation
+                self.segmentedControlOutlet.selectedSegmentIndex = 0
+                self.isFiat = false
+                self.isBtc = true
+                self.isSats = false
+                self.ud.set("btc", forKey: "unit")
+                self.btcEnabled()
             }
             
-            showAlert(vc: self, title: "You pasted a BIP21 invoice:\n\n" + label, message: message)
+            showAlert(vc: self, title: "BIP21 Invoice\n", message: "Address: \(address)\n\nAmount: \(amountText) btc\n\nLabel: " + (label ?? "no label") + "\n\nMessage: \((message ?? "no message"))")
         }
     }
     
