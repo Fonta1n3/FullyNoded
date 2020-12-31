@@ -950,20 +950,24 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             
             self.addressInput.text = address
             
-            var amountText = "not specified"
-            
-            if amount != nil {
-                self.amountInput.text = amount!.avoidNotation
-                amountText = amount!.avoidNotation
-                self.segmentedControlOutlet.selectedSegmentIndex = 0
-                self.isFiat = false
-                self.isBtc = true
-                self.isSats = false
-                self.ud.set("btc", forKey: "unit")
-                self.btcEnabled()
+            if amount == nil && label == nil && message == nil {
+                
+            } else {
+                var amountText = "not specified"
+                
+                if amount != nil {
+                    amountText = amount!.avoidNotation
+                    self.amountInput.text = amountText
+                    self.segmentedControlOutlet.selectedSegmentIndex = 0
+                    self.isFiat = false
+                    self.isBtc = true
+                    self.isSats = false
+                    self.ud.set("btc", forKey: "unit")
+                    self.btcEnabled()
+                }
+                
+                showAlert(vc: self, title: "BIP21 Invoice\n", message: "Address: \(address)\n\nAmount: \(amountText) btc\n\nLabel: " + (label ?? "no label") + "\n\nMessage: \((message ?? "no message"))")
             }
-            
-            showAlert(vc: self, title: "BIP21 Invoice\n", message: "Address: \(address)\n\nAmount: \(amountText) btc\n\nLabel: " + (label ?? "no label") + "\n\nMessage: \((message ?? "no message"))")
         }
     }
     
