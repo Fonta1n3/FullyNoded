@@ -17,6 +17,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     @IBOutlet weak var recoveryOutlet: UIButton!
     @IBOutlet weak var importOutlet: UIButton!
     @IBOutlet weak var importXpubOutlet: UIButton!
+    @IBOutlet weak var importDescOutlet: UIButton!
     
     let imagePicker = UIImagePickerController()
     var onDoneBlock:(((Bool)) -> Void)?
@@ -30,6 +31,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         super.viewDidLoad()
         navigationController?.delegate = self
         singleSigOutlet.layer.cornerRadius = 8
+        importDescOutlet.layer.cornerRadius = 8
         recoveryOutlet.layer.cornerRadius = 8
         importOutlet.layer.cornerRadius = 8
         multiSigOutlet.layer.cornerRadius = 8
@@ -52,6 +54,15 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             self?.performSegue(withIdentifier: "segueToImportXpub", sender: self)
         }
     }
+    
+    @IBAction func importDescriptorAction(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.performSegue(withIdentifier: "segueToImportDescriptor", sender: self)
+        }
+    }
+    
     
     
     @IBAction func uploadFileAction(_ sender: Any) {
@@ -558,6 +569,12 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 vc.ccXfp = ccXfp
                 vc.ccXpub = xpub
                 vc.ccDeriv = deriv
+            }
+        }
+        
+        if segue.identifier == "segueToImportDescriptor" {
+            if let vc = segue.destination as? ImportXpubViewController {
+                vc.isDescriptor = true
             }
         }
     }

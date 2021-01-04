@@ -3348,7 +3348,7 @@
                                 </constraints>
                             </imageView>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="11" translatesAutoresizingMaskIntoConstraints="NO" id="6zG-h6-wiF">
-                                <rect key="frame" x="16" y="122" width="343" height="319"/>
+                                <rect key="frame" x="16" y="122" width="343" height="374"/>
                                 <subviews>
                                     <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GO8-o8-fXl">
                                         <rect key="frame" x="0.0" y="0.0" width="343" height="44"/>
@@ -3428,6 +3428,19 @@
                                             <action selector="importXpubAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="Mwc-2J-ang"/>
                                         </connections>
                                     </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qes-ql-qAL">
+                                        <rect key="frame" x="0.0" y="330" width="343" height="44"/>
+                                        <color key="backgroundColor" red="0.12129447610000001" green="0.12922456860000001" blue="0.14169979099999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="44" id="5ag-s6-ZtN"/>
+                                        </constraints>
+                                        <state key="normal" title="import via descriptor">
+                                            <color key="titleColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="importDescriptorAction:" destination="0gR-Gj-FSR" eventType="touchUpInside" id="8LU-cb-HSk"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                             </stackView>
                         </subviews>
@@ -3453,6 +3466,7 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
+                        <outlet property="importDescOutlet" destination="qes-ql-qAL" id="ods-77-nvd"/>
                         <outlet property="importOutlet" destination="5fe-JI-HkZ" id="UlE-sQ-oBY"/>
                         <outlet property="importXpubOutlet" destination="r0W-2T-fur" id="HDH-av-qeo"/>
                         <outlet property="multiSigOutlet" destination="ewF-ze-dkg" id="EXb-It-bRN"/>
@@ -3464,6 +3478,7 @@
                         <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScanner" id="1fQ-PG-chF"/>
                         <segue destination="00Y-n8-WfC" kind="show" identifier="segueToCreateMultiSig" id="ejH-sy-hlm"/>
                         <segue destination="fG5-85-vAV" kind="show" identifier="segueToImportXpub" id="Cd3-qW-ujG"/>
+                        <segue destination="fG5-85-vAV" kind="show" identifier="segueToImportDescriptor" id="LMu-1F-VvA"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="aBB-kS-R85" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -3542,6 +3557,7 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
+                        <outlet property="headerLabel" destination="WjC-KR-sms" id="grK-Np-XMS"/>
                         <outlet property="importOutlet" destination="sLK-5X-3x7" id="gab-wr-6bb"/>
                         <outlet property="labelField" destination="0B2-xL-1ut" id="wTB-Kn-Z4g"/>
                         <outlet property="textField" destination="fbb-jX-krx" id="znG-r9-xgg"/>
@@ -7901,9 +7917,10 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="AYh-di-V7O"/>
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="HNI-HG-9ZQ"/>
+        <segue reference="LMu-1F-VvA"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="GTM-mT-JB4"/>
-        <segue reference="YAg-Jp-RYL"/>
+        <segue reference="1fQ-PG-chF"/>
         <segue reference="8MS-xS-DMP"/>
         <segue reference="8yc-oK-dlC"/>
         <segue reference="Jma-5H-zJx"/>

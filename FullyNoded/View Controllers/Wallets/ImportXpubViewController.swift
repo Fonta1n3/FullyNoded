@@ -13,12 +13,14 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var importOutlet: UIButton!
     @IBOutlet weak var textField: UITextField!
     @IBOutlet weak var labelField: UITextField!
+    @IBOutlet weak var headerLabel: UILabel!
     
     var xpub = ""
     var fingerprint = ""
     var coinType = "0"
     var spinner = ConnectingView()
     var onDoneBlock:(((Bool)) -> Void)?
+    var isDescriptor = false
     
     var bip44primAccount: String {
         return "pkh([\(fingerprint)/44h/\(coinType)h/0h]\(xpub)/0/*)"
@@ -88,15 +90,22 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
         self.view.addGestureRecognizer(tapGesture)
         textField.removeGestureRecognizer(tapGesture)
         labelField.removeGestureRecognizer(tapGesture)
-        setCoinType()
+        
+        if isDescriptor {
+            textField.placeholder = "descriptor"
+            headerLabel.text = "Descriptor import"
+        } else {
+            setCoinType()
+        }        
     }
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
         textField.resignFirstResponder()
+        labelField.resignFirstResponder()
     }
     
     private func showError(_ error: String) {
-        showAlert(vc: self, title: "Error", message: error)
+        showAlert(vc: self, title: "Something went wrong", message: error)
     }
     
     private func setCoinType() {
@@ -119,20 +128,34 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
     }
     
     @IBAction func importAction(_ sender: Any) {
-        xpub = textField.text ?? ""
-        if !xpub.hasPrefix("xpub") && !xpub.hasPrefix("tpub") {
-            xpub = XpubConverter.convert(extendedKey: xpub) ?? ""
+        if !isDescriptor {
+            importXpubNow()
+        } else {
+            importDescriptor()
         }
-        guard xpub != "" else { showError("Paste in an extended public key"); return }
-        fingerprint = Keys.fingerprint(masterKey: xpub) ?? "00000000"
-        spinner.addConnectingView(vc: self, description: "importing xpub, this can take a minute...")
-        importXpub()
     }
     
     @IBAction func scanQrAction(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             self?.performSegue(withIdentifier: "segueToScanXpub", sender: self)
         }
+    }
+    
+    private func importXpubNow() {
+        xpub = textField.text ?? ""
+        
+        if !xpub.hasPrefix("xpub") && !xpub.hasPrefix("tpub") {
+            xpub = XpubConverter.convert(extendedKey: xpub) ?? ""
+        }
+        
+        guard xpub != "" else {
+            showError("Paste in an extended public key")
+            return
+        }
+        
+        fingerprint = Keys.fingerprint(masterKey: xpub) ?? "00000000"
+        spinner.addConnectingView(vc: self, description: "importing xpub, this can take a minute...")
+        importXpub()
     }
     
     var watchingArray: [String] {
@@ -151,29 +174,89 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
     }
     
     private func importXpub() {
-        var label = labelField.text ?? "xpub import"
+        let defaultLabel = "xpub import"
+        
+        var label = labelField.text ?? defaultLabel
         
         if label == "" {
-            label = "xpub import"
+            label = defaultLabel
         }
         
         let accountMap = ["descriptor": bip84primAccount, "blockheight": 0, "watching": watchingArray, "label": label] as [String : Any]
         
         ImportWallet.accountMap(accountMap) { [weak self] (success, errorDescription) in
+            guard let self = self else { return }
+            
             if success {
-                self?.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Xpub Wallet Created! ✅", message: "You can now go back and the home screen will refresh, your wallet is currently rescanning the blockchain, this can take awhile, to monitor rescan progress tap the info button on the \"Active Wallet\" tab. You will not see your balances or transaction history until the rescan completes.")
+                self.doneAlert("xpub wallet created ✓", "Tap done to go back and the home screen will refresh, your wallet is rescanning the blockchain, this can take awhile, to monitor rescan progress tap the refresh button on the \"Active Wallet\" tab. You will not see your balances or transaction history until the rescan completes.")
             } else {
-                self?.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Ooops, something went wrong", message: errorDescription ?? "unknown error")
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "", message: errorDescription ?? "unknown error")
+            }
+        }
+    }
+    
+    private func importDescriptor() {
+        guard let descriptor = textField.text else {
+            showAlert(vc: self, title: "", message: "Paste or scan a descriptor first.")
+            return
+        }
+        
+        guard !descriptor.contains("xprv"), !descriptor.contains("tprv") else {
+            showAlert(vc: self, title: "", message: "Fully Noded wallets do not allow you to import private keys onto your node. To do that you can create a Bitcoin Core Hot wallet and then import the xprv descriptor via the advanced button on the active wallet tab.")
+            return
+        }
+        
+        spinner.addConnectingView(vc: self, description: "importing descriptor wallet, this can take a minute...")
+        
+        let defaultLabel = "Descriptor import"
+        
+        var label = labelField.text ?? defaultLabel
+        
+        if label == "" {
+            label = defaultLabel
+        }
+        
+        let accountMap = ["descriptor": descriptor, "blockheight": 0, "watching": [], "label": label] as [String : Any]
+        
+        ImportWallet.accountMap(accountMap) { [weak self] (success, errorDescription) in
+            guard let self = self else { return }
+            
+            if success {
+                self.doneAlert("Descriptor wallet created ✓", "Tap done to go back and the home screen will refresh, your wallet is rescanning the blockchain, this can take awhile, to monitor rescan progress tap the refresh button on the \"Active Wallet\" tab. You will not see your balances or transaction history until the rescan completes.")
+            } else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "", message: errorDescription ?? "unknown error")
             }
         }
     }
     
     private func addXpubToTextField(_ xpub: String) {
         DispatchQueue.main.async { [weak self] in
-            guard self != nil else { return }
-            self!.textField.text = xpub
+            guard let self = self else { return }
+            
+            self.textField.text = xpub
+        }
+    }
+    
+    private func doneAlert(_ title: String, _ message: String) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+            
+            self.spinner.removeConnectingView()
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
+                DispatchQueue.main.async {
+                    self.navigationController?.popToRootViewController(animated: true)
+                }
+            }))
+            
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true) {}
         }
     }
     
@@ -192,6 +275,4 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
             }
         }
     }
-    
-
 }
