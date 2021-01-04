@@ -96,12 +96,17 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
             return
         }
         
+        addValidTxn(txn)
+    }
+    
+    private func addValidTxn(_ txn: String) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
             self.txn = self.processedText(txn)
             self.textView.text = self.txn
             self.updateLabelsForTxn()
+            showAlert(vc: self, title: "Valid transaction", message: "Tap the \"verify\" button to inspect and verify the transaction in detail before sending it.")
         }
     }
     
@@ -132,7 +137,7 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.performSegue(withIdentifier: "segueToScanPsbtUr", sender: self)
+            self.performSegue(withIdentifier: "segueToScanPsbt", sender: self)
         }
     }
     
@@ -191,14 +196,7 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
                     return
                 }
                 
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.spinner.removeConnectingView()
-                    self.txn = string
-                    self.textView.text = string
-                    self.updateLabelsForTxn()
-                }
+                self.addValidTxn(string)
                 
                 return
             }
@@ -299,14 +297,7 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
             return
         }
                     
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.spinner.removeConnectingView()
-            self.txn = text
-            self.textView.text = text
-            self.updateLabelsForTxn()
-        }
+        addValidTxn(text)
     }
     
     private func updateLabelsForTxn() {
@@ -394,7 +385,7 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
                 self.textView.text = "\(processedPsbt)"
                 self.spinner.removeConnectingView()
                 self.signOutlet.setTitle("sign", for: .normal)
-                showAlert(vc: self, title: "PSBT processed ✅", message: "You can tap \"sign psbt\" to proceed")
+                showAlert(vc: self, title: "PSBT processed ✓", message: "Tap \"sign psbt\" to proceed. This will allow you to inspect and verify the transaction in detail before sending it.")
             }
         }
     }
@@ -458,15 +449,19 @@ class SignerViewController: UIViewController, UIDocumentPickerDelegate {
             }
         }
         
-        if segue.identifier == "segueToScanPsbtUr" {
+        if segue.identifier == "segueToScanPsbt" {
             guard let vc = segue.destination as? QRScannerViewController else { return }
             
-            vc.isUrPsbt = true
-            vc.onAddressDoneBlock = { [weak self] psbt in
-                guard let self = self, let psbt = psbt else { return }
+            vc.fromSignAndVerify = true
+            vc.onAddressDoneBlock = { [weak self] tx in
+                guard let self = self, let tx = tx else { return }
                 
-                self.psbt = psbt
-                self.getChain()
+                if Keys.validPsbt(tx) {
+                    self.psbt = tx
+                    self.getChain()
+                } else if Keys.validTx(tx) {
+                    self.addValidTxn(tx)
+                }
             }
         }
     }

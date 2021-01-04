@@ -1962,7 +1962,7 @@
                         <outlet property="titleLabel" destination="cgu-5V-2yM" id="2aa-V4-Bvd"/>
                         <segue destination="XA2-Lt-01p" kind="show" identifier="segueToBroadcaster" id="Jma-5H-zJx"/>
                         <segue destination="9kf-Xt-vj8" kind="show" identifier="showSignersSegue" id="GTM-mT-JB4"/>
-                        <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScanPsbtUr" id="YAg-Jp-RYL"/>
+                        <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScanPsbt" id="YAg-Jp-RYL"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="s3R-V1-NDB" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -1974,11 +1974,11 @@
             <objects>
                 <viewController storyboardIdentifier="QRDisplayer" useStoryboardIdentifierAsRestorationIdentifier="YES" id="GlR-4A-eAx" customClass="QRDisplayerViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="1Ax-bN-O8E">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="574"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Kj5-uB-hmc">
-                                <rect key="frame" x="16" y="422" width="343" height="225"/>
+                                <rect key="frame" x="16" y="422" width="343" height="132"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
@@ -7903,10 +7903,10 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="HNI-HG-9ZQ"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="GTM-mT-JB4"/>
-        <segue reference="9TT-9o-7xG"/>
-        <segue reference="if0-NE-c9T"/>
+        <segue reference="YAg-Jp-RYL"/>
+        <segue reference="8MS-xS-DMP"/>
         <segue reference="8yc-oK-dlC"/>
-        <segue reference="7PS-EL-3d2"/>
+        <segue reference="Jma-5H-zJx"/>
         <segue reference="j10-wi-hpr"/>
         <segue reference="G1i-Bv-OSl"/>
         <segue reference="U54-oe-CeC"/>

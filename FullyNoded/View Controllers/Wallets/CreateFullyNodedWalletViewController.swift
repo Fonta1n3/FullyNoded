@@ -117,7 +117,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             
             guard let data = try? Data(contentsOf: urls[0].absoluteURL) else {
                 spinner.removeConnectingView()
-                showAlert(vc: self, title: "Ooops", message: "That does not appear to be a recognized wallet backup/export/import file")
+                showAlert(vc: self, title: "", message: "That does not appear to be a recognized wallet backup/export/import file")
                 return
             }
             
@@ -125,7 +125,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 
                 guard let txt = String(bytes: data, encoding: .utf8) else {
                     spinner.removeConnectingView()
-                    showAlert(vc: self, title: "Ooops", message: "That does not appear to be a recognized wallet backup/export/import file")
+                    showAlert(vc: self, title: "", message: "That does not appear to be a recognized wallet backup/export/import file")
                     return
                 }
                 
@@ -160,8 +160,6 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 }
                 
                 descriptor = "wsh(sortedmulti(\(sigsRequired),"
-                print("desc: \(descriptor)")
-                print("keys: \(keys)")
                 
                 for (i, key) in keys.enumerated() {
                     if !key.hasPrefix("#") {
@@ -225,7 +223,6 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     }
     
     private func promptToImportCoboMultiSig(_ dict: [String:Any]) {
-        print("prompttoimportcobo: \(dict)")
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             

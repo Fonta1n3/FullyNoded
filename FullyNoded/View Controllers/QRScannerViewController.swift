@@ -29,12 +29,13 @@ class QRScannerViewController: UIViewController {
     var isScanningAddress = Bool()
     var onQuickConnectDoneBlock : ((String?) -> Void)?
     var onAddressDoneBlock : ((String?) -> Void)?
-    var isUrPsbt = Bool()
+    var fromSignAndVerify = Bool()
     var decoder:URDecoder!
     private let spinner = ConnectingView()
     private let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     private var blurArray = [UIVisualEffectView]()
     private var isTorchOn = Bool()
+    private var psbtParts = [[String:String]]()
     
     @IBOutlet weak private var scannerView: UIImageView!
     @IBOutlet weak private var progressDescriptionLabel: UILabel!
@@ -164,7 +165,10 @@ class QRScannerViewController: UIViewController {
         }
         
         let percentageCompletion = "\(Int(decoder.estimatedPercentComplete * 100))% complete"
-        
+        updateProgress(percentageCompletion, self.decoder.estimatedPercentComplete)
+    }
+    
+    private func updateProgress(_ progressText: String, _ progressDoub: Double) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -175,18 +179,110 @@ class QRScannerViewController: UIViewController {
                 self.blurArray.removeAll()
             }
             
-            self.progressView.setProgress(Float(self.decoder.estimatedPercentComplete), animated: false)
-            self.progressDescriptionLabel.text = percentageCompletion
+            self.progressView.setProgress(Float(progressDoub), animated: false)
+            self.progressDescriptionLabel.text = progressText
             self.backgroundView.alpha = 1
             self.progressView.alpha = 1
             self.progressDescriptionLabel.alpha = 1
         }
     }
     
+    private func uniq<S : Sequence, T : Hashable>(source: S) -> [T] where S.Iterator.Element == T {
+        var buffer = [T]()
+        var added = Set<T>()
+        for elem in source {
+            if !added.contains(elem) {
+                buffer.append(elem)
+                added.insert(elem)
+            }
+        }
+        return buffer
+    }
+    
+    private func parseSpecterAnimatedQr(_ part: String) {
+        var partArray = [String]()
+        let arr = part.split(separator: " ")
+        
+        if arr.count > 0 {
+            var prefix =  "\(arr[0])"
+            let part = "\(arr[1])"
+            
+            prefix = prefix.replacingOccurrences(of: "p", with: "")
+            prefix = prefix.replacingOccurrences(of: "of", with: "*")
+            
+            let arr1 = prefix.split(separator: "*")
+            
+            if arr1.count > 0 {
+                if let index = Int(arr1[0]), let count = Int(arr1[1]) {
+                    
+                    var alreadyAdded = false
+                    for (i, item) in psbtParts.enumerated() {
+                        if let existingIndex = item["index"] {
+                            if existingIndex == "\(index)" {
+                                alreadyAdded = true
+                            }
+                        }
+                        
+                        if i + 1 == psbtParts.count {
+                            if !alreadyAdded {
+                                let number = Double(psbtParts.count) / Double(count)
+                                let percentageComplete = "\(Int(number * 100))% complete"
+                                if number < 1.1 {
+                                    self.updateProgress(percentageComplete, number)
+                                }
+                            }
+                        }
+                    }
+                    
+                    if !alreadyAdded {
+                        psbtParts.append(["part":part, "index":"\(index)"])
+                        
+                        if psbtParts.count >= count {
+                            psbtParts.sort(by: {($0["index"]!) < $1["index"]!})
+                            
+                            for (i, item) in psbtParts.enumerated() {
+                                guard let part = item["part"] else { return }
+                                
+                                partArray.append(part)
+                                
+                                if i + 1 == psbtParts.count {
+                                    let unique = uniq(source: partArray)
+                                    let psbtString = unique.joined()
+                                                                    
+                                    if Keys.validPsbt(psbtString) {
+                                        hasScanned = true
+                                        stopScanning(psbtString)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     private func process(text: String) {
-        if isUrPsbt {
+        if fromSignAndVerify {
             hasScanned = false
-            processUrPsbt(text: text)
+            
+            if Keys.validTx(text) {
+                // its a raw transaction
+                hasScanned = true
+                stopScanning(text)
+            } else if Keys.validPsbt(text) {
+                // its a plain text base64 psbt
+                hasScanned = true
+                stopScanning(text)
+            } else if text.hasPrefix("p") {
+                // could be a specter animated psbt
+                parseSpecterAnimatedQr(text)
+            } else if text.hasPrefix("ur:crypto-psbt") || text.hasPrefix("UR:CRYPTO-PSBT") {
+                processUrPsbt(text: text)
+            } else {
+                spinner.removeConnectingView()
+                showAlert(vc: self, title: "Unrecognized format", message: "That is an unrecognized transaction format, please reach out to us so we can add compatibility.")
+            }
             
         } else if isAccountMap {
             if let data = text.data(using: .utf8) {
@@ -409,7 +505,7 @@ extension QRScannerViewController: AVCaptureMetadataOutputObjectsDelegate {
             
             process(text: stringURL)
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
                 guard let self = self else { return }
                 
                 self.avCaptureSession.startRunning()

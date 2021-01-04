@@ -94,4 +94,25 @@ enum Keys {
             return accountKey.xpub
         }
     }
+    
+    static func validPsbt(_ psbt: String) -> Bool {
+        guard let _ = try? PSBT(psbt: psbt, network: .mainnet) else {
+            
+            guard let _ = try? PSBT(psbt: psbt, network: .testnet) else {
+                return false
+            }
+            
+            return true
+        }
+        
+        return true
+    }
+    
+    static func validTx(_ tx: String) -> Bool {
+        guard let _ = try? Transaction(hex: tx) else {
+            return false
+        }
+        
+        return true
+    }
 }
