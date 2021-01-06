@@ -106,6 +106,7 @@
 		D08A92B923403DB200409D6E /* NodesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08A92B823403DB200409D6E /* NodesViewController.swift */; };
 		D08CED0F22E5089D007E2A8E /* ImportExtendedKeysViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08CED0E22E5089D007E2A8E /* ImportExtendedKeysViewController.swift */; };
 		D08CED1122E54B11007E2A8E /* TransactionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08CED1022E54B11007E2A8E /* TransactionViewController.swift */; };
+		D093E2A725A59B9C0038B59A /* TransactionStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D093E2A625A59B9C0038B59A /* TransactionStruct.swift */; };
 		D096EDFE249DCF970084A065 /* ShowDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D096EDFD249DCF970084A065 /* ShowDetailViewController.swift */; };
 		D096EE00249DFADD0084A065 /* HelpViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D096EDFF249DFADD0084A065 /* HelpViewController.swift */; };
 		D09A32FF24A8419D009FA0B2 /* CreateFullyNodedWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09A32FE24A8419C009FA0B2 /* CreateFullyNodedWallet.swift */; };
@@ -297,6 +298,7 @@
 		D08A92B823403DB200409D6E /* NodesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodesViewController.swift; sourceTree = "<group>"; };
 		D08CED0E22E5089D007E2A8E /* ImportExtendedKeysViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportExtendedKeysViewController.swift; sourceTree = "<group>"; };
 		D08CED1022E54B11007E2A8E /* TransactionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionViewController.swift; sourceTree = "<group>"; };
+		D093E2A625A59B9C0038B59A /* TransactionStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionStruct.swift; sourceTree = "<group>"; };
 		D096EDFD249DCF970084A065 /* ShowDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowDetailViewController.swift; sourceTree = "<group>"; };
 		D096EDFF249DFADD0084A065 /* HelpViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpViewController.swift; sourceTree = "<group>"; };
 		D09A32FE24A8419C009FA0B2 /* CreateFullyNodedWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateFullyNodedWallet.swift; sourceTree = "<group>"; };
@@ -644,6 +646,7 @@
 				D09F9E4D24B06A63006B588C /* SignerStruct.swift */,
 				D0CC0E1F24F0F35A001BF905 /* Peers.swift */,
 				D0E54DD425207A1C00BD859E /* UTXOs.swift */,
+				D093E2A625A59B9C0038B59A /* TransactionStruct.swift */,
 			);
 			path = Structs;
 			sourceTree = "<group>";
@@ -1145,6 +1148,7 @@
 				D08A92AD2337A63000409D6E /* DescriptorStruct.swift in Sources */,
 				D037C876231CAFD9006C357D /* AddLabelViewController.swift in Sources */,
 				D09A330D24A9B10E009FA0B2 /* BIP39WordList.swift in Sources */,
+				D093E2A725A59B9C0038B59A /* TransactionStruct.swift in Sources */,
 				D0CC0E2424F2069D001BF905 /* NoiseViewController.swift in Sources */,
 				D0233F282361EA5F0041FFBA /* shim.swift in Sources */,
 				D0F3919424C0147400EA8A2A /* QRScannerViewController.swift in Sources */,
@@ -1420,7 +1424,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 282;
+				CURRENT_PROJECT_VERSION = 284;
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
@@ -1431,7 +1435,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.362;
+				MARKETING_VERSION = 1.364;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1456,7 +1460,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 282;
+				CURRENT_PROJECT_VERSION = 284;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
@@ -1469,7 +1473,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.362;
+				MARKETING_VERSION = 1.364;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";

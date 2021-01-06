@@ -19,4 +19,5 @@ public enum ENTITY: String {
     case wallets = "Wallets"
     case peers = "Peers"
     case utxos = "Utxos"
+    case transactions = "Transactions"
 }
