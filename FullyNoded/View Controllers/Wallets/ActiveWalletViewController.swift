@@ -30,6 +30,11 @@ class ActiveWalletViewController: UIViewController {
     private let barSpinner = UIActivityIndicatorView(style: .medium)
     private let ud = UserDefaults.standard
     private let spinner = ConnectingView()
+    private var hex = ""
+    private var confs = 0
+    private var txToEdit = ""
+    private var memoToEdit = ""
+    private var labelToEdit = ""
     
     @IBOutlet weak private var backgroundView: UIVisualEffectView!
     @IBOutlet weak private var walletTable: UITableView!
@@ -49,7 +54,7 @@ class ActiveWalletViewController: UIViewController {
         sectionZeroLoaded = false
         setNotifications()
         addNavBarSpinner()
-        loadTable()
+        getFxRate()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -233,11 +238,17 @@ class ActiveWalletViewController: UIViewController {
     
     private func loadTable() {
         existingWallet = ""
+        walletLabel = ""
         
         activeWallet { [weak self] wallet in
             guard let self = self else { return }
             
-            guard let wallet = wallet else { self.wallet = nil; self.walletLabel = nil; self.loadBalances(); return }
+            guard let wallet = wallet else {
+                self.wallet = nil
+                self.walletLabel = UserDefaults.standard.object(forKey: "walletName") as? String ?? "Default Wallet"
+                self.loadBalances()
+                return
+            }
             
             self.wallet = wallet
             self.existingWallet = wallet.name
@@ -249,6 +260,77 @@ class ActiveWalletViewController: UIViewController {
             }
             
             self.loadBalances()
+        }
+    }
+    
+    private func finishedLoading() {
+        print("finishedLoading")
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.walletTable.reloadData()
+            self.removeSpinner()
+            self.getWalletInfo()
+        }
+    }
+    
+    private func updateTransactionArray() {
+        print("updateTransactionArray")
+        CoreDataService.retrieveEntity(entityName: .transactions) { [weak self] transactions in
+            guard let self = self else { return }
+            
+            guard let transactions = transactions, transactions.count > 0, self.transactionArray.count > 0 else {
+                self.finishedLoading()
+                return
+            }
+            
+            for (i, transaction) in transactions.enumerated() {
+                let localTransactionStruct = TransactionStruct(dictionary: transaction)
+                
+                for (t, tx) in self.transactionArray.enumerated() {
+                    if !(tx["isLightning"] as! Bool) && (tx["txID"] as! String) == localTransactionStruct.txid {
+                        print("txid: \(localTransactionStruct.txid)")
+                        self.transactionArray[t]["memo"] = localTransactionStruct.memo
+                        self.transactionArray[t]["transactionLabel"] = localTransactionStruct.label
+                        
+                        if let originRate = localTransactionStruct.fxRate, originRate > 0 {
+                            self.transactionArray[t]["originRate"] = originRate
+                        }
+                        
+                        print("localTransactionStruct.label: \(localTransactionStruct.label)")
+                    }
+                    
+                    if i + 1 == transactions.count && t + 1 == self.transactionArray.count {
+                        self.finishedLoading()
+                    }
+                }
+            }
+        }
+    }
+    
+    @objc func goToDetail(_ sender: UIButton) {
+        spinner.addConnectingView(vc: self, description: "getting raw transaction...")
+        
+        guard let intString = sender.restorationIdentifier, let int = Int(intString) else { return }
+        
+        let tx = transactionArray[int]
+        let id = tx["txID"] as! String
+        
+        Reducer.makeCommand(command: .gettransaction, param: "\"\(id)\", true") { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            self.spinner.removeConnectingView()
+            
+            guard let dict = response as? NSDictionary, let hex = dict["hex"] as? String else {
+                showAlert(vc: self, title: "There was an issue getting the transaction.", message: errorMessage ?? "unknown error")
+                return
+            }
+            
+            DispatchQueue.main.async {
+                self.confs = Int(tx["confirmations"] as! String)!
+                self.hex = hex
+                self.performSegue(withIdentifier: "segueToTxDetail", sender: self)
+            }
         }
     }
     
@@ -293,20 +375,39 @@ class ActiveWalletViewController: UIViewController {
         let categoryImage = cell.viewWithTag(1) as! UIImageView
         let amountLabel = cell.viewWithTag(2) as! UILabel
         let confirmationsLabel = cell.viewWithTag(3) as! UILabel
-        let labelLabel = cell.viewWithTag(4) as! UILabel
+        let utxoLabel = cell.viewWithTag(4) as! UILabel
         let dateLabel = cell.viewWithTag(5) as! UILabel
-        let watchOnlyLabel = cell.viewWithTag(6) as! UILabel
         let lightningImage = cell.viewWithTag(7) as! UIImageView
         let onchainImage = cell.viewWithTag(8) as! UIImageView
+        let currentFiatValueLabel = cell.viewWithTag(9) as! UILabel
+        let memoLabel = cell.viewWithTag(10) as! UILabel
+        let transactionLabel = cell.viewWithTag(11) as! UILabel
+        let originFiatValueLabel = cell.viewWithTag(12) as! UILabel
+        let fetchOriginRateButton = cell.viewWithTag(13) as! UIButton
+        let seeDetailButton = cell.viewWithTag(14) as! UIButton
+        let editLabelButton = cell.viewWithTag(15) as! UIButton
         
         amountLabel.alpha = 1
         confirmationsLabel.alpha = 1
-        labelLabel.alpha = 1
+        utxoLabel.alpha = 1
         dateLabel.alpha = 1
-        watchOnlyLabel.alpha = 1
+        fetchOriginRateButton.alpha = 0
         
-        let dict = self.transactionArray[indexPath.section - 1]
+        let index = indexPath.section - 1
+        
+        fetchOriginRateButton.addTarget(self, action: #selector(getHistoricRate(_:)), for: .touchUpInside)
+        fetchOriginRateButton.restorationIdentifier = "\(index)"
+        
+        seeDetailButton.addTarget(self, action: #selector(goToDetail(_:)), for: .touchUpInside)
+        seeDetailButton.restorationIdentifier = "\(index)"
+        
+        editLabelButton.addTarget(self, action: #selector(editTx(_:)), for: .touchUpInside)
+        editLabelButton.restorationIdentifier = "\(index)"
+        
+        let dict = self.transactionArray[index]
+        
         let selfTransfer = dict["selfTransfer"] as! Bool
+        
         let confs = dict["confirmations"] as! String
         if confs.contains("complete") {
             confirmationsLabel.text = confs
@@ -316,34 +417,24 @@ class ActiveWalletViewController: UIViewController {
             confirmationsLabel.text = confs + " " + "confs"
         }
         
-        let trimToCharacter = 20
-        let labelLong = dict["label"] as? String ?? ""
-        let label = String(labelLong.prefix(trimToCharacter))
+        var utxoLabelText = dict["label"] as? String ?? "no utxo label"
         
-        if label != "," {
-            
-            labelLabel.text = label
-            
-        } else if label == "," {
-            
-            labelLabel.text = ""
-            
-        }
-        
-        let isLightning = dict["isLightning"] as? Bool ?? false
-        
-        if isLightning {
-            lightningImage.alpha = 1
-        } else {
-            lightningImage.alpha = 0
+        if utxoLabelText == "" || utxoLabelText == "," {
+            utxoLabelText = "no utxo label"
         }
         
         let isOnchain = dict["onchain"] as? Bool ?? false
-        
         if isOnchain {
             onchainImage.alpha = 1
         } else {
             onchainImage.alpha = 0
+        }
+        
+        let isLightning = dict["isLightning"] as? Bool ?? false
+        if isLightning {
+            lightningImage.alpha = 1
+        } else {
+            lightningImage.alpha = 0
         }
         
         dateLabel.text = dict["date"] as? String
@@ -352,30 +443,76 @@ class ActiveWalletViewController: UIViewController {
             cell.backgroundColor = .red
         }
         
-        if dict["involvesWatchonly"] as? Bool == true {
-            watchOnlyLabel.text = "COLD"
-        } else {
-            watchOnlyLabel.text = ""
-        }
-        
         let amount = dict["amount"] as! String
         
+        if isOnchain {
+            utxoLabel.text = utxoLabelText
+            editLabelButton.alpha = 1
+            seeDetailButton.alpha = 1
+            fetchOriginRateButton.alpha = 1
+            
+            if let exchangeRate = fxRate {
+                var dbl = round((amount.doubleValue * exchangeRate))
+                if dbl < 0 {
+                    dbl = dbl * -1.0
+                }
+                currentFiatValueLabel.text = "$\(dbl.withCommas()) USD"
+            } else {
+                currentFiatValueLabel.text = "current exchange rate missing"
+            }
+            
+            if let originRate = dict["originRate"] as? Double {
+                var amountProcessed = amount.doubleValue
+                if amountProcessed < 0.0 {
+                    amountProcessed = amountProcessed * -1.0
+                }
+                var dbl = round((amountProcessed * originRate))
+                if dbl < 0.0 {
+                    dbl = dbl * -1.0
+                }
+                originFiatValueLabel.text = "$\(round((dbl)).withCommas()) USD"
+                
+                if let exchangeRate = fxRate {
+                    var gain = round((amountProcessed * exchangeRate) - (dbl))
+                    if Int(gain) > 0 {
+                        originFiatValueLabel.text! += " / gain of $\(gain.withCommas()) USD / \(Int((gain / dbl) * 100.0))%"
+                    } else if Int(gain) < 0 {
+                        gain = gain * -1.0
+                        originFiatValueLabel.text! += " / loss of $\(gain.withCommas()) USD / \(Int((gain / dbl) * 100.0))%"
+                    } else {
+                        originFiatValueLabel.text! += " (no change)"
+                    }
+                }
+                fetchOriginRateButton.alpha = 0
+                
+            } else {
+                originFiatValueLabel.text = "origin exchange rate missing"
+                fetchOriginRateButton.alpha = 1
+            }
+            
+            memoLabel.text = dict["memo"] as? String ?? "no transaction memo"
+            transactionLabel.text = dict["transactionLabel"] as? String ?? "no transaction label"
+        } else {
+            memoLabel.text = "N/A"
+            transactionLabel.text = "N/A"
+            currentFiatValueLabel.text = "N/A"
+            originFiatValueLabel.text = "N/A"
+            utxoLabel.text = "N/A"
+            editLabelButton.alpha = 0
+            seeDetailButton.alpha = 0
+            fetchOriginRateButton.alpha = 0
+        }
+                
         if amount.hasPrefix("-") {
             categoryImage.image = UIImage(systemName: "arrow.up.right")
             categoryImage.tintColor = .systemRed
             amountLabel.text = amount
             amountLabel.textColor = UIColor.darkGray
-            labelLabel.textColor = UIColor.darkGray
-            confirmationsLabel.textColor = UIColor.darkGray
-            dateLabel.textColor = UIColor.darkGray
         } else {
             categoryImage.image = UIImage(systemName: "arrow.down.left")
             categoryImage.tintColor = .systemGreen
             amountLabel.text = "+" + amount
-            amountLabel.textColor = .lightGray
-            labelLabel.textColor = .lightGray
-            confirmationsLabel.textColor = .lightGray
-            dateLabel.textColor = .lightGray
+            amountLabel.textColor = .white
         }
         
         if selfTransfer {
@@ -394,6 +531,35 @@ class ActiveWalletViewController: UIViewController {
         cell.selectionStyle = .none
         cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         return cell
+    }
+    
+    @objc func editTx(_ sender: UIButton) {
+        guard let intString = sender.restorationIdentifier, let int = Int(intString) else { return }
+        
+        let tx = transactionArray[int]
+        let id = tx["txID"] as! String
+        
+        CoreDataService.retrieveEntity(entityName: .transactions) { [weak self] transactions in
+            guard let self = self else { return }
+            
+            guard let transactions = transactions, transactions.count > 0 else {
+                return
+            }
+            
+            for transaction in transactions {
+                let txStruct = TransactionStruct(dictionary: transaction)
+                if txStruct.txid == id {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        
+                        self.txToEdit = id
+                        self.memoToEdit = txStruct.memo
+                        self.labelToEdit = txStruct.label
+                        self.performSegue(withIdentifier: "segueToEditTx", sender: self)
+                    }
+                }
+            }
+        }
     }
     
     @objc func refreshWallet() {
@@ -438,6 +604,16 @@ class ActiveWalletViewController: UIViewController {
             self.offchainBalance = balances.offchainBalance
             
             DispatchQueue.main.async {
+                if let exchangeRate = self.fxRate {
+                    let onchainBalance = balances.onchainBalance.doubleValue
+                    let onchainBalanceFiat = onchainBalance * exchangeRate
+                    self.onchainFiat = "$\(round(onchainBalanceFiat).withCommas())"
+                    
+                    let offchainBalance = balances.offchainBalance.doubleValue
+                    let offchainBalanceFiat = offchainBalance * exchangeRate
+                    self.offchainFiat = "$\(round(offchainBalanceFiat).withCommas())"
+                }
+                
                 self.sectionZeroLoaded = true
                 self.walletTable.reloadSections(IndexSet.init(arrayLiteral: 0), with: .fade)
                 self.loadTransactions()
@@ -453,13 +629,17 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
-    private func getFiatBalances() {
+    private func getFxRate() {
         FiatConverter.sharedInstance.getFxRate { [weak self] rate in
             guard let self = self else { return }
             
             guard let rate = rate else {
                 self.onchainFiat = ""
                 self.offchainFiat = ""
+                DispatchQueue.main.async {
+                    self.fxRateLabel.text = "no fx rate data"
+                }
+                self.loadTable()
                 return
             }
             
@@ -469,18 +649,67 @@ class ActiveWalletViewController: UIViewController {
                 vc.fxRateLabel.text = "$\(rate.withCommas()) / btc"
             }
             
-            let onchainBalance = self.onchainBalance.doubleValue
-            let onchainBalanceFiat = onchainBalance * rate
-            self.onchainFiat = "$\(round(onchainBalanceFiat).withCommas())"
-            
-            let offchainBalance = self.offchainBalance.doubleValue
-            let offchainBalanceFiat = offchainBalance * rate
-            self.offchainFiat = "$\(round(offchainBalanceFiat).withCommas())"
-            
             DispatchQueue.main.async {
-                self.walletTable.reloadSections(IndexSet(arrayLiteral: 0), with: .none)
-                self.removeSpinner()
-                self.getWalletInfo()
+                self.loadTable()
+            }
+        }
+    }
+    
+    @objc func getHistoricRate(_ sender: UIButton) {
+        spinner.addConnectingView(vc: self, description: "fetching historic rate...")
+        guard let intString = sender.restorationIdentifier, let int = Int(intString) else { return }
+        
+        let tx = transactionArray[int]
+        let id = tx["txID"] as! String
+        
+        CoreDataService.retrieveEntity(entityName: .transactions) { [weak self] transactions in
+            guard let self = self else { return }
+            
+            guard let transactions = transactions, transactions.count > 0 else {
+                return
+            }
+            
+            for transaction in transactions {
+                let txStruct = TransactionStruct(dictionary: transaction)
+                if txStruct.txid == id {
+                    guard let date = txStruct.date, let uuid = txStruct.id else { return }
+                    
+                    self.addOriginRate(date, uuid)
+                }
+            }
+        }
+    }
+    
+    private func addOriginRate(_ date: Date, _ id: UUID) {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let dateString = dateFormatter.string(from: date)
+        
+        let today = dateFormatter.string(from: Date())
+        
+        if dateString == today {
+            self.spinner.removeConnectingView()
+            showAlert(vc: self, title: "", message: "You need to wait for the transaction to be at least one day old before fetching the historic rate.")
+        } else {
+            FiatConverter.sharedInstance.getOriginRate(date: dateString) { [weak self] originRate in
+                guard let self = self else { return }
+                
+                guard let originRate = originRate else {
+                    self.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "", message: "There was an issue fetching the historic exchange rate, please let us know about it.")
+                    return
+                }
+                
+                CoreDataService.update(id: id, keyToUpdate: "originFxRate", newValue: originRate, entity: .transactions) { success in
+                    guard success else {
+                        self.spinner.removeConnectingView()
+                        showAlert(vc: self, title: "", message: "There was an issue saving the historic exchange rate, please let us know about it.")
+                        return
+                    }
+                    
+                    self.transactionArray.removeAll()
+                    self.loadTransactions()
+                }
             }
         }
     }
@@ -587,8 +816,7 @@ class ActiveWalletViewController: UIViewController {
             
             DispatchQueue.main.async {
                 self.transactionArray = response
-                self.walletTable.reloadData()
-                self.getFiatBalances()
+                self.updateTransactionArray()
             }
         }
     }
@@ -609,6 +837,7 @@ class ActiveWalletViewController: UIViewController {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
+            self.spinner.removeConnectingView()
             self.barSpinner.stopAnimating()
             self.barSpinner.alpha = 0
             self.refreshButton = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(self.refreshData(_:)))
@@ -634,7 +863,7 @@ class ActiveWalletViewController: UIViewController {
         }
         
         addNavBarSpinner()
-        loadTable()
+        getFxRate()
     }
     
     @objc func refreshData(_ sender: Any) {
@@ -650,6 +879,27 @@ class ActiveWalletViewController: UIViewController {
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         switch segue.identifier {
+            
+        case "segueToEditTx":
+            guard let vc = segue.destination as? TransactionLabelMemoViewController else { fallthrough }
+            
+            vc.memoText = memoToEdit
+            vc.labelText = labelToEdit
+            vc.txid = txToEdit
+            vc.doneBlock = { [weak self] _ in
+                guard let self = self else { return }
+                
+                showAlert(vc: self, title: "", message: "Transaction updated ✓")
+                self.spinner.addConnectingView(vc: self, description: "refreshing transactions...")
+                self.loadTransactions()
+            }
+            
+        case "segueToTxDetail":
+            guard let vc = segue.destination as? VerifyTransactionViewController else { fallthrough }
+            
+            vc.alreadyBroadcast = true
+            vc.signedRawTx = hex
+            vc.confs = confs
             
         case "segueToUtxos":
             guard let vc = segue.destination as? UTXOViewController else { fallthrough }
@@ -745,14 +995,14 @@ extension ActiveWalletViewController: UITableViewDelegate {
         
         switch section {
         case 0:
-            if walletLabel != nil {
-                textLabel.text = walletLabel
-            } else {
-                textLabel.text = UserDefaults.standard.object(forKey: "walletName") as? String ?? "Default Wallet"
-            }
+            textLabel.text = walletLabel
             
         case 1:
-            textLabel.text = "Transactions"
+            if self.transactionArray.count > 0 {
+                textLabel.text = "Transactions"
+            } else {
+                textLabel.text = ""
+            }
             
         default:
             break
@@ -780,29 +1030,9 @@ extension ActiveWalletViewController: UITableViewDelegate {
             }
         default:
             if sectionZeroLoaded {
-                return 62
+                return 303
             } else {
                 return 47
-            }
-        }
-    }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if transactionArray.count > 0 {
-            if indexPath.section > 0 {
-                let selectedTx = self.transactionArray[indexPath.section - 1]
-                let isOnchain = selectedTx["onchain"] as? Bool ?? true
-                let isLightning = selectedTx["isLightning"] as? Bool ?? false
-                if !isOnchain && isLightning {
-                    isBolt11 = true
-                    tx = selectedTx["address"] as! String
-                } else {
-                    tx = selectedTx["txID"] as! String
-                }
-                
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.performSegue(withIdentifier: "getTransaction", sender: vc)
-                }
             }
         }
     }

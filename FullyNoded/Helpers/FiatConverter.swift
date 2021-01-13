@@ -41,4 +41,24 @@ class FiatConverter {
         }
         task.resume()
     }
+    
+    func getOriginRate(date: String, completion: @escaping ((Double?)) -> Void) {
+        let torClient = TorClient.sharedInstance
+        let url = NSURL(string: "https://api.coindesk.com/v1/bpi/historical/close.json?start=\(date)&end=\(date)")
+        let task = torClient.session.dataTask(with: url! as URL) { (data, response, error) -> Void in
+            if error != nil {
+                completion(nil)
+            } else {
+                guard let urlContent = data,
+                    let json = try? JSONSerialization.jsonObject(with: urlContent, options: [.mutableContainers]) as? [String : Any],
+                    let dict = json["bpi"] as? NSDictionary,
+                    let price = dict["\(date)"] as? Double else {
+                        completion(nil)
+                        return
+                }
+                completion(price)
+            }
+        }
+        task.resume()
+    }
 }

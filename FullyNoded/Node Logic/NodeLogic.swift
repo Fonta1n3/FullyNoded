@@ -503,7 +503,7 @@ class NodeLogic {
         for (t, item) in transactions.enumerated() {
             
             if let transaction = item as? NSDictionary {
-                
+                var toRemove = false
                 var label = String()
                 var replaced_by_txid = String()
                 
@@ -511,12 +511,19 @@ class NodeLogic {
                 let amount = transaction["amount"] as? Double ?? 0.0
                 let amountString = amount.avoidNotation
                 let confsCheck = transaction["confirmations"] as? Int ?? 0
+                
+                if confsCheck < 0 {
+                    toRemove = true
+                }
+                
                 let confirmations = String(confsCheck)
                 
                 if let replaced_by_txid_check = transaction["replaced_by_txid"] as? String {
-                    
                     replaced_by_txid = replaced_by_txid_check
                     
+                    if replaced_by_txid != "" {
+                        toRemove = true
+                    }
                 }
                 
                 if let labelCheck = transaction["label"] as? String {
@@ -583,7 +590,7 @@ class NodeLogic {
                         }
                     }
                 }
-                
+                                
                 transactionArray.append([
                     "address": address,
                     "amount": amountString,
@@ -594,7 +601,7 @@ class NodeLogic {
                     "txID": txID,
                     "replacedBy": replaced_by_txid,
                     "selfTransfer":false,
-                    "remove":false,
+                    "remove":toRemove,
                     "onchain":true,
                     "isLightning":false,
                     "sortDate":date
@@ -605,9 +612,9 @@ class NodeLogic {
                         "txid":txID,
                         "id":UUID(),
                         "walletId":activeWalletId!,
-                        "memo":"",
+                        "memo":"no transaction memo",
                         "date":date,
-                        "label":""
+                        "label":"no transaction label"
                     ] as [String:Any]
                     
                     CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in }

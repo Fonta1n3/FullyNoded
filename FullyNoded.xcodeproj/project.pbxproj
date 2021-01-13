@@ -24,6 +24,7 @@
 		D0126FF82244842000412629 /* bWhite.png in Resources */ = {isa = PBXBuildFile; fileRef = D0126FF72244842000412629 /* bWhite.png */; };
 		D0196DD721B5AB300081E0AB /* KeyPadButtonView.xib in Resources */ = {isa = PBXBuildFile; fileRef = D0196DD621B5AB300081E0AB /* KeyPadButtonView.xib */; };
 		D0196DDB21B5AC5F0081E0AB /* KeyPad.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0196DDA21B5AC5F0081E0AB /* KeyPad.swift */; };
+		D01EB4F325AD685700ADF6E4 /* TransactionLabelMemoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01EB4F225AD685700ADF6E4 /* TransactionLabelMemoViewController.swift */; };
 		D020480F249605AB00EF52DB /* ActiveWalletsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D020480E249605AB00EF52DB /* ActiveWalletsViewController.swift */; };
 		D02094F02257FB78002E8E7A /* FirstTime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02094EF2257FB78002E8E7A /* FirstTime.swift */; };
 		D02094F3225936D2002E8E7A /* ConnectingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02094F2225936D2002E8E7A /* ConnectingView.swift */; };
@@ -216,6 +217,7 @@
 		D0126FF72244842000412629 /* bWhite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = bWhite.png; sourceTree = "<group>"; };
 		D0196DD621B5AB300081E0AB /* KeyPadButtonView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = KeyPadButtonView.xib; sourceTree = "<group>"; };
 		D0196DDA21B5AC5F0081E0AB /* KeyPad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyPad.swift; sourceTree = "<group>"; };
+		D01EB4F225AD685700ADF6E4 /* TransactionLabelMemoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionLabelMemoViewController.swift; sourceTree = "<group>"; };
 		D020480E249605AB00EF52DB /* ActiveWalletsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWalletsViewController.swift; sourceTree = "<group>"; };
 		D02094EF2257FB78002E8E7A /* FirstTime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstTime.swift; sourceTree = "<group>"; };
 		D02094F2225936D2002E8E7A /* ConnectingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectingView.swift; sourceTree = "<group>"; };
@@ -593,6 +595,7 @@
 				D0F3919124BFEBBB00EA8A2A /* QRDisplayerViewController.swift */,
 				D0F3919324C0147400EA8A2A /* QRScannerViewController.swift */,
 				D0DBC7052501CEFE00F6787C /* VerifyTransactionViewController.swift */,
+				D01EB4F225AD685700ADF6E4 /* TransactionLabelMemoViewController.swift */,
 			);
 			path = "View Controllers";
 			sourceTree = "<group>";
@@ -1258,6 +1261,7 @@
 				D073E16E22558CDE0012A28C /* CoreDataService.swift in Sources */,
 				D0E54DD525207A1C00BD859E /* UTXOs.swift in Sources */,
 				D037C86E231BAFD2006C357D /* AddAsChangeViewController.swift in Sources */,
+				D01EB4F325AD685700ADF6E4 /* TransactionLabelMemoViewController.swift in Sources */,
 				D0F3919224BFEBBB00EA8A2A /* QRDisplayerViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

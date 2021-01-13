@@ -15,9 +15,11 @@ class GetTx {
     
     func fetch(txid: String, completion: @escaping ((String?)) -> Void) {
         let chain = UserDefaults.standard.object(forKey: "chain") as? String ?? ""
-        var blockstreamUrl = "http://explorerzydxu5ecjrkwceayqybizmpjjznk5izmitf2modhcusuqlid.onion/api/tx/\(txid)/hex"
+        //http://explorernuoc63nb.onion
+        //var blockstreamUrl = "http://explorerzydxu5ecjrkwceayqybizmpjjznk5izmitf2modhcusuqlid.onion/api/tx/\(txid)/hex"
+        var blockstreamUrl = "http://explorernuoc63nb.onion/api/tx/\(txid)/hex"
         if chain == "test" {
-            blockstreamUrl = "http://explorerzydxu5ecjrkwceayqybizmpjjznk5izmitf2modhcusuqlid.onion/testnet/api/tx/\(txid)/hex"
+            blockstreamUrl = "http://explorernuoc63nb.onion/testnet/api/tx/\(txid)/hex"
         }
         guard let url = URL(string: blockstreamUrl) else {
             completion((nil))

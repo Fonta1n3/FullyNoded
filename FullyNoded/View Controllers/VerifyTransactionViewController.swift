@@ -37,17 +37,36 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var alertStyle = UIAlertController.Style.actionSheet
     var signatures = [[String:String]]()
     var signedTxInputs = NSArray()
+    var alreadyBroadcast = false
+    var confs = 0
+    var labelText = "no label added"
+    var memoText = "no memo added"
+    var id:UUID!
+    var feeBumped = false
+    
     @IBOutlet weak var verifyTable: UITableView!
     @IBOutlet weak var sendButtonOutlet: UIButton!
+    @IBOutlet weak var headerLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         navigationController?.delegate = self
         verifyTable.delegate = self
         verifyTable.dataSource = self
         
         sendButtonOutlet.clipsToBounds = true
         sendButtonOutlet.layer.cornerRadius = 8
+        
+        if alreadyBroadcast {
+            if confs == 0 {
+                sendButtonOutlet.setTitle("Increase fee", for: .normal)
+                sendButtonOutlet.alpha = 1
+            } else {
+                sendButtonOutlet.alpha = 0
+            }
+            headerLabel.text = "Transaction detail"
+        }
         
         let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         view.addGestureRecognizer(tap)
@@ -83,10 +102,84 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     @IBAction func sendOrExportAction(_ sender: Any) {
-        if signedRawTx != "" {
-            broadcast()
+        if confs == 0 && alreadyBroadcast && !feeBumped {
+            bumpFee()
         } else {
-            exportPsbt(psbt: unsignedPsbt)
+            if signedRawTx != "" {
+                broadcast()
+            } else {
+                exportPsbt(psbt: unsignedPsbt)
+            }
+        }
+    }
+    
+    private func saveNewTx(_ txid: String) {
+        var transaction = [String:Any]()
+        
+        self.id = UUID()
+        transaction["id"] = self.id
+        transaction["label"] = labelText
+        transaction["memo"] = memoText
+        transaction["date"] = Date()
+        transaction["txid"] = txid
+        
+        if let fx = fxRate {
+            transaction["originFxRate"] = fx
+        }
+        
+        activeWallet { wallet in
+            if let w = wallet {
+                transaction["walletId"] = w.id
+            }
+            
+            CoreDataService.saveEntity(dict: transaction, entityName: .transactions) { _ in }
+        }
+    }
+    
+    private func bumpFee() {
+        spinner.addConnectingView(vc: self, description: "increasing fee...")
+        
+        Reducer.makeCommand(command: .bumpfee, param: "\"\(txid)\"") { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            guard let result = response as? NSDictionary, let originalFee = result["origfee"] as? Double, let newFee = result["fee"] as? Double else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "There was an issue increasing the fee.", message: errorMessage ?? "unknown")
+                return
+            }
+            
+            guard let psbt = result["psbt"] as? String else {
+                self.spinner.removeConnectingView()
+                if let txid = result["txid"] as? String {
+                    self.saveNewTx(txid)
+                    displayAlert(viewController: self, isError: false, message: "fee bumped from \(originalFee.avoidNotation) to \(newFee.avoidNotation)")
+                } else if let errors = result["errors"] as? NSArray {
+                    showAlert(vc: self, title: "There was an error increasing the fee.", message: "\(errors)")
+                }
+                return
+            }
+            
+            self.signedRawTx = ""
+            
+            Signer.sign(psbt: psbt) { (signedPsbt, rawTx, errorMessage) in
+                self.spinner.removeConnectingView()
+                
+                if signedPsbt != nil {
+                    self.feeBumped = true
+                    self.unsignedPsbt = signedPsbt!
+                    self.load()
+                    showAlert(vc: self, title: "Fee increased to \(newFee.avoidNotation)", message: "The transaction still needs more signatures before it can be broadcast.")
+                    
+                } else if rawTx != nil {
+                    self.feeBumped = true
+                    self.signedRawTx = rawTx!
+                    self.broadcast()
+                    self.load()
+                    
+                } else {
+                    showAlert(vc: self, title: "Error signing.", message: errorMessage ?? "unknown")
+                }
+            }
         }
     }
     
@@ -100,6 +193,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     private func load() {
         spinner.addConnectingView(vc: self, description: "getting exchange rate....")
+        
+        inputArray.removeAll()
+        inputTableArray.removeAll()
+        outputArray.removeAll()
+        recipients.removeAll()
+        signatures.removeAll()
         
         FiatConverter.sharedInstance.getFxRate { [weak self] exchangeRate in
             guard let self = self else { return }
@@ -180,6 +279,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     
                     if let id = txDict["txid"] as? String {
                         self.txid = id
+                        self.loadLabelAndMemo()
                     }
                     
                     self.parseTransaction(tx: txDict)
@@ -203,6 +303,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 
                 if let id = dict["txid"] as? String {
                     self.txid = id
+                    self.loadLabelAndMemo()
                 }
                 
                 if let inputs = dict["vin"] as? NSArray {
@@ -387,7 +488,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     private func verifyInputs() {
         if index < inputTableArray.count {
-            self.updateLabel("verifiying input #\(self.index + 1) out of \(self.inputTableArray.count)")
+            self.updateLabel("verifying input #\(self.index + 1) out of \(self.inputTableArray.count)")
             
             if let address = inputTableArray[index]["address"] as? String {
                 Reducer.makeCommand(command: .getaddressinfo, param: "\"\(address)\"") { [weak self] (response, errorMessage) in
@@ -479,7 +580,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     private func verifyOutputs() {
         if index < outputArray.count {
-            self.updateLabel("verifiying output #\(self.index + 1) out of \(self.outputArray.count)")
+            self.updateLabel("verifying output #\(self.index + 1) out of \(self.outputArray.count)")
             
             if let address = outputArray[index]["address"] as? String {
                 Reducer.makeCommand(command: .getaddressinfo, param: "\"\(address)\"") { [weak self] (response, errorMessage) in
@@ -524,20 +625,24 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 return
             }
             
-            updateLabel("verifying mempool accept...")
-            
-            Reducer.makeCommand(command: .testmempoolaccept, param: "[\"\(signedRawTx)\"]") { [weak self] (response, errorMessage) in
-                guard let self = self else { return }
+            if !alreadyBroadcast {
+                updateLabel("verifying mempool accept...")
                 
-                guard let arr = response as? NSArray, arr.count > 0,
-                    let dict = arr[0] as? NSDictionary,
-                    let allowed = dict["allowed"] as? Bool else {
+                Reducer.makeCommand(command: .testmempoolaccept, param: "[\"\(signedRawTx)\"]") { [weak self] (response, errorMessage) in
+                    guard let self = self else { return }
+                    
+                    guard let arr = response as? NSArray, arr.count > 0,
+                        let dict = arr[0] as? NSDictionary,
+                        let allowed = dict["allowed"] as? Bool else {
+                        self.getFeeRate()
+                        return
+                    }
+                    
+                    self.txValid = allowed
+                    self.rejectionMessage = dict["reject-reason"] as? String ?? ""
                     self.getFeeRate()
-                    return
                 }
-                
-                self.txValid = allowed
-                self.rejectionMessage = dict["reject-reason"] as? String ?? ""
+            } else {
                 self.getFeeRate()
             }
         }
@@ -651,8 +756,31 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
     }
     
+    private func confsCell(_ indexPath: IndexPath) -> UITableViewCell {
+        let confsCell = verifyTable.dequeueReusableCell(withIdentifier: "miningFeeCell", for: indexPath)
+        configureCell(confsCell)
+        
+        let label = confsCell.viewWithTag(1) as! UILabel
+        let imageView = confsCell.viewWithTag(2) as! UIImageView
+        let background = confsCell.viewWithTag(3)!
+        background.layer.cornerRadius = 5
+        imageView.tintColor = .white
+        label.text = "\(confs) confirmations"
+        
+        if confs > 0 {
+            background.backgroundColor = .systemGreen
+            imageView.image = UIImage(systemName: "checkmark.seal")
+        } else {
+            background.backgroundColor = .systemRed
+            imageView.image = UIImage(systemName: "exclamationmark.triangle")
+        }
+        return confsCell
+    }
+    
     private func mempoolAcceptCell(_ indexPath: IndexPath) -> UITableViewCell {
         let mempoolAcceptCell = verifyTable.dequeueReusableCell(withIdentifier: "miningFeeCell", for: indexPath)
+        configureCell(mempoolAcceptCell)
+        
         let label = mempoolAcceptCell.viewWithTag(1) as! UILabel
         let imageView = mempoolAcceptCell.viewWithTag(2) as! UIImageView
         let background = mempoolAcceptCell.viewWithTag(3)!
@@ -688,6 +816,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     private func txidCell(_ indexPath: IndexPath) -> UITableViewCell {
         let txidCell = verifyTable.dequeueReusableCell(withIdentifier: "miningFeeCell", for: indexPath)
+        configureCell(txidCell)
         
         let txidLabel = txidCell.viewWithTag(1) as! UILabel
         let imageView = txidCell.viewWithTag(2) as! UIImageView
@@ -705,6 +834,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     private func inputCell(_ indexPath: IndexPath) -> UITableViewCell {
         let inputCell = verifyTable.dequeueReusableCell(withIdentifier: "inputOutputCell", for: indexPath)
+        configureCell(inputCell)
         
         let inputIndexLabel = inputCell.viewWithTag(1) as! UILabel
         let inputAmountLabel = inputCell.viewWithTag(2) as! UILabel
@@ -785,6 +915,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     private func outputCell(_ indexPath: IndexPath) -> UITableViewCell {
         let outputCell = verifyTable.dequeueReusableCell(withIdentifier: "outputCell", for: indexPath)
+        configureCell(outputCell)
         
         let inputIndexLabel = outputCell.viewWithTag(1) as! UILabel
         let inputAmountLabel = outputCell.viewWithTag(2) as! UILabel
@@ -862,6 +993,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     private func miningFeeCell(_ indexPath: IndexPath) -> UITableViewCell {
         let miningFeeCell = verifyTable.dequeueReusableCell(withIdentifier: "miningFeeCell", for: indexPath)
+        configureCell(miningFeeCell)
         
         let miningLabel = miningFeeCell.viewWithTag(1) as! UILabel
         let imageView = miningFeeCell.viewWithTag(2) as! UIImageView
@@ -886,6 +1018,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     private func etaCell(_ indexPath: IndexPath) -> UITableViewCell {
         let etaCell = verifyTable.dequeueReusableCell(withIdentifier: "miningFeeCell", for: indexPath)
+        configureCell(etaCell)
         
         let etaLabel = etaCell.viewWithTag(1) as! UILabel
         let imageView = etaCell.viewWithTag(2) as! UIImageView
@@ -897,9 +1030,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let percentage = (satsPerByte() / smartFee) * 100
         let rounded = Double(round(10*percentage)/10)
         if satsPerByte() > smartFee {
-            feeWarning = "The fee paid for this transaction is \(rounded - 100)% greater then your target in terms of sats per byte"
+            feeWarning = "The fee paid for this transaction is \(Int(rounded - 100))% greater then your target."
         } else {
-            feeWarning = "The fee paid for this transaction is \(100 - rounded)% less then your target fee in terms of sats per byte"
+            feeWarning = "The fee paid for this transaction is \(Int(100 - rounded))% less then your target."
         }
         
         if percentage >= 90 && percentage <= 110 {
@@ -921,6 +1054,70 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         etaLabel.textColor = .lightGray
         etaCell.selectionStyle = .none
         return etaCell
+    }
+    
+    private func transactionLabelCell(_ indexPath: IndexPath) -> UITableViewCell {
+        let labelCell = verifyTable.dequeueReusableCell(withIdentifier: "memoLabelCell", for: indexPath)
+        configureCell(labelCell)
+        let label = labelCell.viewWithTag(1) as! UILabel
+        let button = labelCell.viewWithTag(2) as! UIButton
+        button.addTarget(self, action: #selector(updateLabelMemoAction), for: .touchUpInside)
+        button.showsTouchWhenHighlighted = true
+        label.text = labelText
+        return labelCell
+    }
+    
+    private func transactionMemoCell(_ indexPath: IndexPath) -> UITableViewCell {
+        let labelCell = verifyTable.dequeueReusableCell(withIdentifier: "memoLabelCell", for: indexPath)
+        configureCell(labelCell)
+        let label = labelCell.viewWithTag(1) as! UILabel
+        let button = labelCell.viewWithTag(2) as! UIButton
+        button.addTarget(self, action: #selector(updateLabelMemoAction), for: .touchUpInside)
+        button.showsTouchWhenHighlighted = true
+        label.text = memoText
+        return labelCell
+    }
+    
+    private func loadLabelAndMemo() {
+        CoreDataService.retrieveEntity(entityName: .transactions) { [weak self] transactions in
+            guard let self = self else { return }
+            
+            guard let transactions = transactions, transactions.count > 0 else {
+                self.saveNewTx(self.txid)
+                return
+            }
+            
+            var alreadySaved = false
+            
+            for (i, transaction) in transactions.enumerated() {
+                let txStruct = TransactionStruct(dictionary: transaction)
+                if txStruct.txid == self.txid {
+                    alreadySaved = true
+                    self.id = txStruct.id!
+                    self.labelText = txStruct.label
+                    self.memoText = txStruct.memo
+                }
+                
+                if i + 1 == transactions.count && !alreadySaved {
+                    self.saveNewTx(self.txid)
+                }
+            }
+        }
+    }
+    
+    @objc func updateLabelMemoAction() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.performSegue(withIdentifier: "segueToTxLabelMemo", sender: self)
+        }
+    }
+    
+    private func configureCell(_ cell: UITableViewCell) {
+        cell.clipsToBounds = true
+        cell.layer.cornerRadius = 8
+        cell.layer.borderColor = UIColor.lightGray.cgColor
+        cell.layer.borderWidth = 0.5
     }
     
     private func satsPerByte() -> Double {
@@ -1160,24 +1357,40 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 }
             }
         }
+        
+        if segue.identifier == "segueToTxLabelMemo" {
+            if let vc = segue.destination as? TransactionLabelMemoViewController {
+                vc.txid = self.txid
+                vc.labelText = labelText
+                vc.memoText = memoText
+                vc.doneBlock = { result in
+                    self.labelText = result[0]
+                    self.memoText = result[1]
+                    
+                    DispatchQueue.main.async {
+                        self.verifyTable.reloadSections(IndexSet(arrayLiteral: 0, 1), with: .none)
+                        showAlert(vc: self, title: "", message: "Transaction updated ✓")
+                    }
+                }
+            }
+        }
     }
-
 }
 
 extension VerifyTransactionViewController: UITableViewDelegate {
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 6
+        return 8
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
-        case 2:
+        case 4:
             return inputArray.count
             
-        case 3:
+        case 5:
             return outputArray.count
             
-        case 4, 0, 5, 1:
+        case 0, 3, 1, 6, 2, 7:
             return 1
             
         default:
@@ -1187,11 +1400,17 @@ extension VerifyTransactionViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         switch indexPath.section {
-        case 2, 3:
+        case 4, 5:
             return 172
+        
+        case 1:
+            return 150
             
-        case 0, 1, 4, 5:
+        case 0, 2:
             return 50
+            
+        case 3, 6, 7:
+            return 80
             
         default:
             return 0
@@ -1209,21 +1428,31 @@ extension VerifyTransactionViewController: UITableViewDelegate {
         switch indexPath.section {
             
         case 0:
-            return mempoolAcceptCell(indexPath)
+            return transactionLabelCell(indexPath)
             
         case 1:
-            return txidCell(indexPath)
+            return transactionMemoCell(indexPath)
             
         case 2:
-            return inputCell(indexPath)
+            if !alreadyBroadcast {
+                return mempoolAcceptCell(indexPath)
+            } else {
+                return confsCell(indexPath)
+            }
             
         case 3:
-            return outputCell(indexPath)
+            return txidCell(indexPath)
             
         case 4:
-            return miningFeeCell(indexPath)
+            return inputCell(indexPath)
             
         case 5:
+            return outputCell(indexPath)
+            
+        case 6:
+            return miningFeeCell(indexPath)
+            
+        case 7:
             return etaCell(indexPath)
             
         default:
@@ -1245,10 +1474,22 @@ extension VerifyTransactionViewController: UITableViewDelegate {
         
         switch section {
         case 0:
-            textLabel.text = "Mempool accept"
+            textLabel.text = "Label"
+            textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
+        
+        case 1:
+            textLabel.text = "Memo"
             textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
             
-        case 1:
+        case 2:
+            if !alreadyBroadcast {
+                textLabel.text = "Mempool accept"
+            } else {
+                textLabel.text = "Confirmations"
+            }
+            textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
+            
+        case 3:
             textLabel.text = "Transaction ID"
             let copyButton = UIButton()
             let copyImage = UIImage(systemName: "doc.on.doc")!
@@ -1259,19 +1500,19 @@ extension VerifyTransactionViewController: UITableViewDelegate {
             copyButton.center.y = textLabel.center.y
             header.addSubview(copyButton)
                             
-        case 2:
+        case 4:
             textLabel.text = "Inputs"
             textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
                             
-        case 3:
+        case 5:
             textLabel.text = "Outputs"
             textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
             
-        case 4:
+        case 6:
             textLabel.text = "Mining fee"
             textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
         
-        case 5:
+        case 7:
             textLabel.text = "Estimated time to confirm"
             textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
                             
