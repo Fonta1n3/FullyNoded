@@ -22,6 +22,10 @@
 		D0126FF022443D1100412629 /* whitePlus.png in Resources */ = {isa = PBXBuildFile; fileRef = D0126FEF22443D1100412629 /* whitePlus.png */; };
 		D0126FF622446E3800412629 /* InvoiceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0126FF522446E3800412629 /* InvoiceViewController.swift */; };
 		D0126FF82244842000412629 /* bWhite.png in Resources */ = {isa = PBXBuildFile; fileRef = D0126FF72244842000412629 /* bWhite.png */; };
+		D016AE4825AFFCA400A59E93 /* LibWally.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D016AE4425AFFCA000A59E93 /* LibWally.xcframework */; };
+		D016AE4925AFFCA400A59E93 /* LibWally.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D016AE4425AFFCA000A59E93 /* LibWally.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D016AE7525B0284300A59E93 /* Tor.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D016AE7225B0284000A59E93 /* Tor.xcframework */; };
+		D016AE7625B0284300A59E93 /* Tor.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D016AE7225B0284000A59E93 /* Tor.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D0196DD721B5AB300081E0AB /* KeyPadButtonView.xib in Resources */ = {isa = PBXBuildFile; fileRef = D0196DD621B5AB300081E0AB /* KeyPadButtonView.xib */; };
 		D0196DDB21B5AC5F0081E0AB /* KeyPad.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0196DDA21B5AC5F0081E0AB /* KeyPad.swift */; };
 		D01EB4F325AD685700ADF6E4 /* TransactionLabelMemoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01EB4F225AD685700ADF6E4 /* TransactionLabelMemoViewController.swift */; };
@@ -56,12 +60,7 @@
 		D039D3C823322F1300D1ED18 /* NodeStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D039D3C723322F1300D1ED18 /* NodeStruct.swift */; };
 		D039D3CA2332440D00D1ED18 /* HDMusigStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D039D3C92332440D00D1ED18 /* HDMusigStruct.swift */; };
 		D03F65F124EFB25100901D06 /* KeySendViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D03F65F024EFB25100901D06 /* KeySendViewController.swift */; };
-		D03FC07C2508850600450B45 /* Tor-3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D03FC07A250883D900450B45 /* Tor-3.xcframework */; };
-		D03FC07D2508850600450B45 /* Tor-3.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D03FC07A250883D900450B45 /* Tor-3.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D0410617224ED189004AC0D0 /* ObjectiveCHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = D0410616224ED189004AC0D0 /* ObjectiveCHeader.m */; };
-		D042B9372570DAA600E6DDE3 /* CLibWally.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D042B9352570DAA500E6DDE3 /* CLibWally.xcframework */; };
-		D042B9382570DAA900E6DDE3 /* LibWally.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D042B9342570DAA500E6DDE3 /* LibWally.xcframework */; };
-		D042B9392570DAA900E6DDE3 /* LibWally.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D042B9342570DAA500E6DDE3 /* LibWally.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D042FABC250C9F0600E99D9B /* Torrc.swift in Sources */ = {isa = PBXBuildFile; fileRef = D042FABB250C9F0600E99D9B /* Torrc.swift */; };
 		D044ED78235AF42D00300D62 /* ImportStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D044ED77235AF42D00300D62 /* ImportStruct.swift */; };
 		D0452AD42246C7830013E225 /* clear.png in Resources */ = {isa = PBXBuildFile; fileRef = D0452AD32246C7820013E225 /* clear.png */; };
@@ -180,14 +179,14 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		D01A861624FE86F0009D2510 /* Embed Frameworks */ = {
+		D016AE4A25AFFCA400A59E93 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				D03FC07D2508850600450B45 /* Tor-3.xcframework in Embed Frameworks */,
-				D042B9392570DAA900E6DDE3 /* LibWally.xcframework in Embed Frameworks */,
+				D016AE4925AFFCA400A59E93 /* LibWally.xcframework in Embed Frameworks */,
+				D016AE7625B0284300A59E93 /* Tor.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -215,6 +214,8 @@
 		D0126FEF22443D1100412629 /* whitePlus.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whitePlus.png; sourceTree = "<group>"; };
 		D0126FF522446E3800412629 /* InvoiceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceViewController.swift; sourceTree = "<group>"; };
 		D0126FF72244842000412629 /* bWhite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = bWhite.png; sourceTree = "<group>"; };
+		D016AE4425AFFCA000A59E93 /* LibWally.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = LibWally.xcframework; sourceTree = "<group>"; };
+		D016AE7225B0284000A59E93 /* Tor.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Tor.xcframework; sourceTree = "<group>"; };
 		D0196DD621B5AB300081E0AB /* KeyPadButtonView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = KeyPadButtonView.xib; sourceTree = "<group>"; };
 		D0196DDA21B5AC5F0081E0AB /* KeyPad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyPad.swift; sourceTree = "<group>"; };
 		D01EB4F225AD685700ADF6E4 /* TransactionLabelMemoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionLabelMemoViewController.swift; sourceTree = "<group>"; };
@@ -251,13 +252,9 @@
 		D039D3C723322F1300D1ED18 /* NodeStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeStruct.swift; sourceTree = "<group>"; };
 		D039D3C92332440D00D1ED18 /* HDMusigStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HDMusigStruct.swift; sourceTree = "<group>"; };
 		D03F65F024EFB25100901D06 /* KeySendViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeySendViewController.swift; sourceTree = "<group>"; };
-		D03FC07A250883D900450B45 /* Tor-3.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = "Tor-3.xcframework"; sourceTree = "<group>"; };
 		D0410615224ED188004AC0D0 /* FullyNoded-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FullyNoded-Bridging-Header.h"; sourceTree = "<group>"; };
 		D0410616224ED189004AC0D0 /* ObjectiveCHeader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ObjectiveCHeader.m; sourceTree = "<group>"; };
-		D042B9342570DAA500E6DDE3 /* LibWally.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = LibWally.xcframework; sourceTree = "<group>"; };
-		D042B9352570DAA500E6DDE3 /* CLibWally.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = CLibWally.xcframework; sourceTree = "<group>"; };
 		D042FABB250C9F0600E99D9B /* Torrc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Torrc.swift; sourceTree = "<group>"; };
-		D042FAC1250DA86D00E99D9B /* .torrc */ = {isa = PBXFileReference; lastKnownFileType = text; path = .torrc; sourceTree = "<group>"; };
 		D044ED77235AF42D00300D62 /* ImportStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportStruct.swift; sourceTree = "<group>"; };
 		D0452AD32246C7820013E225 /* clear.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = clear.png; sourceTree = "<group>"; };
 		D0452AD52246E0370013E225 /* whiteBroom.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteBroom.png; sourceTree = "<group>"; };
@@ -371,9 +368,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				D0C1F9132531E5970079C2B8 /* URKit in Frameworks */,
-				D03FC07C2508850600450B45 /* Tor-3.xcframework in Frameworks */,
-				D042B9372570DAA600E6DDE3 /* CLibWally.xcframework in Frameworks */,
-				D042B9382570DAA900E6DDE3 /* LibWally.xcframework in Frameworks */,
+				D016AE7525B0284300A59E93 /* Tor.xcframework in Frameworks */,
+				D016AE4825AFFCA400A59E93 /* LibWally.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -854,11 +850,9 @@
 		D08C1FBB211147F600B7CA79 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				D042B9352570DAA500E6DDE3 /* CLibWally.xcframework */,
-				D042B9342570DAA500E6DDE3 /* LibWally.xcframework */,
+				D016AE7225B0284000A59E93 /* Tor.xcframework */,
+				D016AE4425AFFCA000A59E93 /* LibWally.xcframework */,
 				D026E5C7253A79DB001F1054 /* AuthenticationServices.framework */,
-				D042FAC1250DA86D00E99D9B /* .torrc */,
-				D03FC07A250883D900450B45 /* Tor-3.xcframework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -956,7 +950,7 @@
 				D00B9A212111427200E8B95A /* Frameworks */,
 				D00B9A222111427200E8B95A /* Resources */,
 				D08C1FBE2111480100B7CA79 /* ShellScript */,
-				D01A861624FE86F0009D2510 /* Embed Frameworks */,
+				D016AE4A25AFFCA400A59E93 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1428,7 +1422,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 284;
+				CURRENT_PROJECT_VERSION = 286;
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
@@ -1439,7 +1433,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.364;
+				MARKETING_VERSION = 1.366;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1464,7 +1458,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 284;
+				CURRENT_PROJECT_VERSION = 286;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
@@ -1477,7 +1471,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.364;
+				MARKETING_VERSION = 1.366;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";

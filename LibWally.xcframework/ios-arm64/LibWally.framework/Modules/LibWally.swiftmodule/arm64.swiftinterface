@@ -1,7 +1,6 @@
 // swift-interface-format-version: 1.0
-// swift-compiler-version: Apple Swift version 5.2.2 (swiftlang-1103.0.32.6 clang-1103.0.32.51)
-// swift-module-flags: -target arm64-apple-ios13.6 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -Onone -module-name LibWally
-import CLibWally
+// swift-compiler-version: Apple Swift version 5.3.2 (swiftlang-1200.0.45 clang-1200.0.32.28)
+// swift-module-flags: -target arm64-apple-ios14.2 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -Onone -module-name LibWally
 import Foundation
 @_exported import LibWally
 import Swift
@@ -204,7 +203,7 @@ public struct TxOutput {
     get
   }
   public init(scriptPubKey: LibWally.ScriptPubKey, amount: LibWally.Satoshi, network: LibWally.Network)
-  public func createWallyOutput() -> Swift.UnsafeMutablePointer<CLibWally.wally_tx_output>
+  public func createWallyOutput() -> Swift.UnsafeMutablePointer<LibWally.wally_tx_output>
 }
 public struct Witness {
   public let type: LibWally.Witness.WitnessType
@@ -215,7 +214,7 @@ public struct Witness {
     case payToScriptHashPayToWitnessPubKeyHash(LibWally.PubKey)
   }
   public init(type: LibWally.Witness.WitnessType, signature: Foundation.Data, isDummy: Swift.Bool = false)
-  public func createWallyStack() -> Swift.UnsafeMutablePointer<CLibWally.wally_tx_witness_stack>
+  public func createWallyStack() -> Swift.UnsafeMutablePointer<LibWally.wally_tx_witness_stack>
   public init(type: LibWally.Witness.WitnessType)
   public func signed(signature: Foundation.Data) -> LibWally.Witness
   public var scriptCode: Foundation.Data {
@@ -277,7 +276,7 @@ public struct TxInput {
   public var witness: LibWally.Witness?
   public let scriptPubKey: LibWally.ScriptPubKey
   public init(txHash: Foundation.Data, vout: Swift.UInt32, sequence: Swift.UInt32 = 0xffffffff, amount: LibWally.Satoshi, scriptSig: LibWally.ScriptSig?, witness: LibWally.Witness?, scriptPubKey: LibWally.ScriptPubKey) throws
-  public func createWallyInput() -> Swift.UnsafeMutablePointer<CLibWally.wally_tx_input>
+  public func createWallyInput() -> Swift.UnsafeMutablePointer<LibWally.wally_tx_input>
   public var isSigned: Swift.Bool {
     get
   }
