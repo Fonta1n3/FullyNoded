@@ -13,6 +13,19 @@ import CoreData
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
+    
+    override func buildMenu(with builder: UIMenuBuilder) {
+        super.buildMenu(with: builder)
+        builder.remove(menu: .help)
+        let helpCommand = UIKeyCommand(input: "H", modifierFlags: [.command], action: #selector(openHelp))
+        helpCommand.title = "Fully Noded FAQ"
+        let helpMenu = UIMenu(title: "Fully Noded FAQ", image: nil, identifier: UIMenu.Identifier("guide"), options: .displayInline, children: [helpCommand])
+        builder.insertChild(helpMenu, atStartOfMenu: .application)
+    }
+    
+    @IBAction func openHelp() {
+        UIApplication.shared.open(URL(string: "https://www.fullynoded.app/faq")!)
+    }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         return true

@@ -98,10 +98,14 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         background.clipsToBounds = true
         background.layer.cornerRadius = 8
         
-        let nodeStruct = NodeStruct.init(dictionary: nodeArray[indexPath.section])
+        let nodeStruct = NodeStruct(dictionary: nodeArray[indexPath.section])
         let dec = decryptedValue(nodeStruct.onionAddress!)
         let abbreviated = reduced(label: dec)
-        label.text = abbreviated//nodeArray[indexPath.row]["label"] as? String ?? ""
+        if !nodeStruct.uncleJim {
+            label.text = abbreviated
+        } else {
+            label.text = "***shared node***"
+        }
         isActive.isOn = nodeArray[indexPath.section]["isActive"] as? Bool ?? false
         isActive.restorationIdentifier = "\(indexPath.section)"
         isActive.addTarget(self, action: #selector(setActiveNow(_:)), for: .touchUpInside)
@@ -143,13 +147,17 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     @objc func editNode(_ sender: UIButton) {
-        if sender.restorationIdentifier != nil {
-            if let section = Int(sender.restorationIdentifier!) {
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.selectedIndex = section
-                    vc.performSegue(withIdentifier: "updateNode", sender: vc)
-                }
+        guard let id = sender.restorationIdentifier, let section = Int(id) else { return }
+        
+        let nodeStruct = NodeStruct(dictionary: nodeArray[section])
+        
+        if !nodeStruct.uncleJim {
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.selectedIndex = section
+                vc.performSegue(withIdentifier: "updateNode", sender: vc)
             }
+        } else {
+            showAlert(vc: self, title: "Restricted", message: "You can not view node credentials for nodes shared to you.")
         }
     }
     

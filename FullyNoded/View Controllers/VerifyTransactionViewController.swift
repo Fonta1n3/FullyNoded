@@ -476,12 +476,18 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         } else if index + 1 == inputArray.count {
             index = 0
             txFee = inputTotal - outputTotal
-            let txfeeString = txFee.avoidNotation
-            if fxRate != nil {
-                self.miningFee = "\(txfeeString) btc / \(fiatAmount(btc: self.txFee))"
+            
+            if inputTotal > 0.0 {
+                let txfeeString = txFee.avoidNotation
+                if fxRate != nil {
+                    self.miningFee = "\(txfeeString) btc / \(fiatAmount(btc: self.txFee))"
+                } else {
+                    self.miningFee = "\(txfeeString) btc / error fetching fx rate"
+                }
             } else {
-                self.miningFee = "\(txfeeString) btc / error fetching fx rate"
+                self.miningFee = "No fee data. Go to settings to opt in to Esplora use."
             }
+            
             verifyInputs()
         }
     }
@@ -490,7 +496,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         if index < inputTableArray.count {
             self.updateLabel("verifying input #\(self.index + 1) out of \(self.inputTableArray.count)")
             
-            if let address = inputTableArray[index]["address"] as? String {
+            if let address = inputTableArray[index]["address"] as? String, address != "unknown" {
                 Reducer.makeCommand(command: .getaddressinfo, param: "\"\(address)\"") { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
                     
@@ -571,6 +577,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         self.verifyInputs()
                     }
                 }
+            } else {
+                self.index += 1
+                self.verifyInputs()
             }
         } else {
             self.index = 0
@@ -720,6 +729,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     guard errorMessage.contains("Invalid or non-wallet transaction id") else {
                         self.spinner.removeConnectingView()
                         displayAlert(viewController: self, isError: true, message: "Error parsing inputs: \(errorMessage)")
+                        return
+                    }
+                    
+                    guard let useEsplora = UserDefaults.standard.object(forKey: "useEsplora") as? Bool, useEsplora else {
+                        // User opted out of using Esplora
+                        self.parsePrevTxOutput(outputs: [], vout: 0)
                         return
                     }
                     
@@ -993,66 +1008,83 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     private func miningFeeCell(_ indexPath: IndexPath) -> UITableViewCell {
         let miningFeeCell = verifyTable.dequeueReusableCell(withIdentifier: "miningFeeCell", for: indexPath)
+        miningFeeCell.selectionStyle = .none
         configureCell(miningFeeCell)
         
         let miningLabel = miningFeeCell.viewWithTag(1) as! UILabel
+        miningLabel.textColor = .lightGray
+        
         let imageView = miningFeeCell.viewWithTag(2) as! UIImageView
+        imageView.tintColor = .white
         
         let background = miningFeeCell.viewWithTag(3)!
         background.layer.cornerRadius = 5
-        imageView.tintColor = .white
         
-        if txFee < 0.00050000 {
-            background.backgroundColor = .systemGreen
-            imageView.image = UIImage(systemName: "checkmark.circle")
+        if inputTotal > 0.0 {
+            if txFee < 0.00050000 {
+                background.backgroundColor = .systemGreen
+                imageView.image = UIImage(systemName: "checkmark.circle")
+            } else {
+                background.backgroundColor = .systemRed
+                imageView.image = UIImage(systemName: "exclamationmark.triangle")
+            }
+            
+            miningLabel.text = miningFee + " / \(satsPerByte()) sats per byte"
+            
         } else {
-            background.backgroundColor = .systemRed
-            imageView.image = UIImage(systemName: "exclamationmark.triangle")
+            background.backgroundColor = .systemOrange
+            imageView.image = UIImage(systemName: "questionmark.circle")
+            miningLabel.text = miningFee
         }
         
-        miningLabel.text = miningFee + " / \(satsPerByte()) sats per byte"
-        miningFeeCell.selectionStyle = .none
-        miningLabel.textColor = .lightGray
         return miningFeeCell
     }
     
     private func etaCell(_ indexPath: IndexPath) -> UITableViewCell {
         let etaCell = verifyTable.dequeueReusableCell(withIdentifier: "miningFeeCell", for: indexPath)
+        etaCell.selectionStyle = .none
         configureCell(etaCell)
         
         let etaLabel = etaCell.viewWithTag(1) as! UILabel
+        etaLabel.textColor = .lightGray
+        
         let imageView = etaCell.viewWithTag(2) as! UIImageView
-        let background = etaCell.viewWithTag(3)!
-        background.layer.cornerRadius = 5
         imageView.tintColor = .white
         
-        var feeWarning = ""
-        let percentage = (satsPerByte() / smartFee) * 100
-        let rounded = Double(round(10*percentage)/10)
-        if satsPerByte() > smartFee {
-            feeWarning = "The fee paid for this transaction is \(Int(rounded - 100))% greater then your target."
-        } else {
-            feeWarning = "The fee paid for this transaction is \(Int(100 - rounded))% less then your target."
-        }
+        let background = etaCell.viewWithTag(3)!
+        background.layer.cornerRadius = 5
         
-        if percentage >= 90 && percentage <= 110 {
-            background.backgroundColor = .systemGreen
-            imageView.image = UIImage(systemName: "checkmark.circle")
-            etaLabel.text = "Fee is on target for a confirmation in approximately \(eta()) or \(feeTarget()) blocks"
-        } else {
-            if percentage <= 90 {
-                background.backgroundColor = .systemRed
-                imageView.image = UIImage(systemName: "tortoise")
-                etaLabel.text = feeWarning
+        if inputTotal > 0.0 {
+            var feeWarning = ""
+            let percentage = (satsPerByte() / smartFee) * 100
+            let rounded = Double(round(10*percentage)/10)
+            if satsPerByte() > smartFee {
+                feeWarning = "The fee paid for this transaction is \(Int(rounded - 100))% greater then your target."
             } else {
-                background.backgroundColor = .systemRed
-                imageView.image = UIImage(systemName: "hare")
-                etaLabel.text = feeWarning
+                feeWarning = "The fee paid for this transaction is \(Int(100 - rounded))% less then your target."
             }
+            
+            if percentage >= 90 && percentage <= 110 {
+                background.backgroundColor = .systemGreen
+                imageView.image = UIImage(systemName: "checkmark.circle")
+                etaLabel.text = "Fee is on target for a confirmation in approximately \(eta()) or \(feeTarget()) blocks"
+            } else {
+                if percentage <= 90 {
+                    background.backgroundColor = .systemRed
+                    imageView.image = UIImage(systemName: "tortoise")
+                    etaLabel.text = feeWarning
+                } else {
+                    background.backgroundColor = .systemRed
+                    imageView.image = UIImage(systemName: "hare")
+                    etaLabel.text = feeWarning
+                }
+            }
+        } else {
+            imageView.image = UIImage(systemName: "questionmark.circle")
+            background.backgroundColor = .systemOrange
+            etaLabel.text = "No fee data. Go to settings to opt in to Esplora use."
         }
         
-        etaLabel.textColor = .lightGray
-        etaCell.selectionStyle = .none
         return etaCell
     }
     

@@ -17,6 +17,7 @@ public struct NodeStruct: CustomStringConvertible {
     let rpcpassword:Data?
     let rpcuser:Data?
     let isLightning:Bool
+    let uncleJim:Bool
     
     init(dictionary: [String: Any]) {
         
@@ -27,7 +28,7 @@ public struct NodeStruct: CustomStringConvertible {
         rpcpassword = dictionary["rpcpassword"] as? Data
         rpcuser = dictionary["rpcuser"] as? Data
         isLightning = dictionary["isLightning"] as? Bool ?? false
-        
+        uncleJim = dictionary["uncleJim"] as? Bool ?? false
     }
     
     public var description: String {
