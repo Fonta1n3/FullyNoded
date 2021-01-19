@@ -715,10 +715,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
         func getRawTx() {
             updateLabel("fetching inputs previous output...")
-            Reducer.makeCommand(command: .gettransaction, param: param) { [weak self] (response, errorMessage) in
+            Reducer.makeCommand(command: .getrawtransaction, param: "\"\(txid)\"") { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
-                guard let dict = response as? NSDictionary, let hex = dict["hex"] as? String else {
+                guard let hex = response as? String else {
                     
                     guard let errorMessage = errorMessage else {
                         self.spinner.removeConnectingView()
@@ -726,7 +726,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         return
                     }
                     
-                    guard errorMessage.contains("Invalid or non-wallet transaction id") else {
+                    guard errorMessage.contains("No such mempool transaction") else {
                         self.spinner.removeConnectingView()
                         displayAlert(viewController: self, isError: true, message: "Error parsing inputs: \(errorMessage)")
                         return
@@ -734,6 +734,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     
                     guard let useEsplora = UserDefaults.standard.object(forKey: "useEsplora") as? Bool, useEsplora else {
                         // User opted out of using Esplora
+                        if UserDefaults.standard.object(forKey: "useEsplora") == nil && UserDefaults.standard.object(forKey: "useEsploraAlert") == nil {
+                            showAlert(vc: self, title: "Unable to fetch input.", message: "Pruned nodes can not lookup input details for inputs that are associated with transactions which are not owned by the active wallet. In order to see inputs in detail you can enable Esplora (Blockstream's block explorer) over Tor in \"Settings\".")
+                            
+                            UserDefaults.standard.setValue(true, forKey: "useEsploraAlert")
+                        }
+                        
                         self.parsePrevTxOutput(outputs: [], vout: 0)
                         return
                     }

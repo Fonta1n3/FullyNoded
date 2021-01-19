@@ -5515,6 +5515,53 @@ If you add a fingerprint your extended key will derive addresses as if it is an 
                                         </tableViewCellContentView>
                                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="esploraCell" rowHeight="54" id="EMG-Xr-7Ch">
+                                        <rect key="frame" x="16" y="109.5" width="343" height="54"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="EMG-Xr-7Ch" id="6yr-Fa-gT8">
+                                            <rect key="frame" x="0.0" y="0.0" width="343" height="54"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="K6y-fw-6MU">
+                                                    <rect key="frame" x="58" y="16.5" width="41.5" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <view tag="2" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fZ5-BJ-iUD">
+                                                    <rect key="frame" x="15" y="9.5" width="35" height="35"/>
+                                                    <subviews>
+                                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" tag="3" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="AUC-uf-zRn">
+                                                            <rect key="frame" x="5" y="5" width="25" height="25"/>
+                                                            <constraints>
+                                                                <constraint firstAttribute="width" constant="25" id="B7F-ce-jxB"/>
+                                                                <constraint firstAttribute="height" constant="25" id="g61-Wl-ZCX"/>
+                                                            </constraints>
+                                                        </imageView>
+                                                    </subviews>
+                                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="height" constant="35" id="DRy-lI-yav"/>
+                                                        <constraint firstItem="AUC-uf-zRn" firstAttribute="centerX" secondItem="fZ5-BJ-iUD" secondAttribute="centerX" id="FOJ-eJ-UzE"/>
+                                                        <constraint firstAttribute="width" constant="35" id="Vmc-W3-gCt"/>
+                                                        <constraint firstItem="AUC-uf-zRn" firstAttribute="centerY" secondItem="fZ5-BJ-iUD" secondAttribute="centerY" id="zSm-0v-HZ3"/>
+                                                    </constraints>
+                                                </view>
+                                                <switch opaque="NO" tag="4" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cN1-ua-rdn">
+                                                    <rect key="frame" x="278" y="11.5" width="51" height="31"/>
+                                                </switch>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="cN1-ua-rdn" firstAttribute="trailing" secondItem="6yr-Fa-gT8" secondAttribute="trailingMargin" id="Drd-hr-Hrh"/>
+                                                <constraint firstItem="cN1-ua-rdn" firstAttribute="centerY" secondItem="6yr-Fa-gT8" secondAttribute="centerY" id="eIJ-0T-q2r"/>
+                                                <constraint firstItem="fZ5-BJ-iUD" firstAttribute="centerY" secondItem="6yr-Fa-gT8" secondAttribute="centerY" id="lzM-mt-jkx"/>
+                                                <constraint firstItem="K6y-fw-6MU" firstAttribute="centerY" secondItem="6yr-Fa-gT8" secondAttribute="centerY" id="mz2-E7-ycK"/>
+                                                <constraint firstItem="fZ5-BJ-iUD" firstAttribute="leading" secondItem="6yr-Fa-gT8" secondAttribute="leading" constant="15" id="vPA-kS-JIp"/>
+                                                <constraint firstItem="K6y-fw-6MU" firstAttribute="leading" secondItem="fZ5-BJ-iUD" secondAttribute="trailing" constant="8" id="zsb-B1-qf8"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    </tableViewCell>
                                 </prototypes>
                                 <connections>
                                     <outlet property="dataSource" destination="AS8-ke-Yxh" id="ZT2-Ov-ulq"/>
