@@ -115,4 +115,75 @@ enum Keys {
         
         return true
     }
+    
+    static func verifyAddress(_ address: String, _ path: String, _ descriptor: String, completion: @escaping ((isOurs: Bool, wallet: String?)) -> Void) {
+        CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
+            guard let wallets = wallets, wallets.count > 0 else { completion((false, nil)); return }
+            
+            var isOurs = false
+            var walletLabel:String?
+            
+            for (i, wallet) in wallets.enumerated() {
+                let walletStruct = Wallet(dictionary: wallet)
+                let desc = walletStruct.receiveDescriptor
+                let descParser = DescriptorParser()
+                let descStr = descParser.descriptor(desc)
+                let providedDescStr = descParser.descriptor(descriptor)
+                if !providedDescStr.isMulti {
+                    if let fullPath = try? BIP32Path(string: path) {
+                        if let accountPath = try? fullPath.chop(depth: 3) {
+                            if let key = try? HDKey(base58: descStr.accountXpub) {
+                                if let childKey = try? key.derive(using: accountPath) {
+                                    var type:AddressType!
+                                    if descStr.isP2PKH {
+                                        type = .payToPubKeyHash
+                                    } else if descStr.isP2WPKH {
+                                        type = .payToWitnessPubKeyHash
+                                    } else if descStr.isP2SHP2WPKH {
+                                        type = .payToScriptHashPayToWitnessPubKeyHash
+                                    }
+                                    let derivedAddress = childKey.address(type: type).description
+                                    if derivedAddress == address {
+                                        isOurs = true
+                                        walletLabel = walletStruct.label
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    var keys = [PubKey]()
+                    var network:Network!
+                    
+                    if providedDescStr.derivationArray.count == descStr.multiSigKeys.count {
+                        for (x, xpub) in descStr.multiSigKeys.enumerated() {
+                            guard let fullPath = try? BIP32Path(string: providedDescStr.derivationArray[x]),
+                                  let accountPath = try? fullPath.chop(depth: 4),
+                                  let key = try? HDKey(base58: xpub) else { return }
+                            
+                            network = key.network
+                            
+                            guard let childKey = try? key.derive(using: accountPath) else { return }
+                            
+                            keys.append(childKey.pubKey)
+                            
+                            if x + 1 == descStr.multiSigKeys.count {
+                                let scriptPubKey = ScriptPubKey(multisig: keys, threshold: UInt(descStr.sigsRequired), isBIP67: descStr.isBIP67)
+                                
+                                guard let derivedAddress = try? Address(scriptPubKey: scriptPubKey, network: network) else { return }
+                                
+                                if derivedAddress.description == address {
+                                    isOurs = true
+                                    walletLabel = walletStruct.label
+                                }
+                            }
+                        }
+                    }
+                }
+                if i + 1 == wallets.count {
+                    completion((isOurs, walletLabel))
+                }
+            }
+        }
+    }
 }

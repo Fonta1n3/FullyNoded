@@ -43,6 +43,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var memoText = "no memo added"
     var id:UUID!
     var feeBumped = false
+    var wallet:Wallet?
     
     @IBOutlet weak var verifyTable: UITableView!
     @IBOutlet weak var sendButtonOutlet: UIButton!
@@ -73,6 +74,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
         if (UIDevice.current.userInterfaceIdiom == .pad) {
           alertStyle = UIAlertController.Style.alert
+        }
+        
+        activeWallet { [weak self] w in
+            guard let self = self else { return }
+            
+            self.wallet = w
         }
         
         load()
@@ -127,13 +134,11 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             transaction["originFxRate"] = fx
         }
         
-        activeWallet { wallet in
-            if let w = wallet {
-                transaction["walletId"] = w.id
-            }
-            
-            CoreDataService.saveEntity(dict: transaction, entityName: .transactions) { _ in }
+        if let w = self.wallet {
+            transaction["walletId"] = w.id
         }
+        
+        CoreDataService.saveEntity(dict: transaction, entityName: .transactions) { _ in }
     }
     
     private func bumpFee() {
@@ -603,6 +608,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         var isChange = dict["ischange"] as? Bool ?? false
                         let fingerprint = dict["hdmasterfingerprint"] as? String ?? "no fingerprint"
                         var labelsText = ""
+                        
                         if labels.count > 0 {
                             for label in labels {
                                 if label as? String == "" {
@@ -614,15 +620,32 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         } else {
                             labelsText += "no label "
                         }
+                        
                         if desc.contains("/1/") {
                             isChange = true
                         }
+                                                
+                        if solvable {
+                            if keypath != "no key path" {
+                                Keys.verifyAddress(address, keypath, "") { (isOurs, walletLabel) in
+                                    print("isOurs: \(isOurs)")
+                                    print("walletLabel: \(walletLabel)")
+                                }
+                            } else if desc != "no descriptor" {
+                                Keys.verifyAddress(address, "", desc) { (isOurs, walletLabel) in
+                                    print("isOurs: \(isOurs)")
+                                    print("walletLabel: \(walletLabel)")
+                                }
+                            }
+                        }
+                        
                         self.outputArray[self.index]["isOurs"] = solvable
                         self.outputArray[self.index]["hdKeyPath"] = keypath
                         self.outputArray[self.index]["isChange"] = isChange
                         self.outputArray[self.index]["label"] = labelsText
                         self.outputArray[self.index]["fingerprint"] = fingerprint
                         self.outputArray[self.index]["desc"] = desc
+                        
                         self.index += 1
                         self.verifyOutputs()
                     }
@@ -733,10 +756,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     }
                     
                     Reducer.makeCommand(command: .gettransaction, param: "\"\(txid)\", true") { (response, errorMessage) in
-                        //print("response: \(response)")
                         guard let dict = response as? NSDictionary, let hex = dict["hex"] as? String else {
+                            
                             guard let useEsplora = UserDefaults.standard.object(forKey: "useEsplora") as? Bool, useEsplora else {
-                                // User opted out of using Esplora
+                                
                                 if UserDefaults.standard.object(forKey: "useEsplora") == nil && UserDefaults.standard.object(forKey: "useEsploraAlert") == nil {
                                     showAlert(vc: self, title: "Unable to fetch input.", message: "Pruned nodes can not lookup input details for inputs that are associated with transactions which are not owned by the active wallet. In order to see inputs in detail you can enable Esplora (Blockstream's block explorer) over Tor in \"Settings\".")
                                     
@@ -746,6 +769,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                                 self.parsePrevTxOutput(outputs: [], vout: 0)
                                 return
                             }
+                            
+                            self.updateLabel("fetching inputs previous output with Esplora...")
                             
                             let fetcher = GetTx.sharedInstance
                             fetcher.fetch(txid: txid) { [weak self] rawHex in
@@ -761,13 +786,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                             }
                             return
                         }
-                        
                         self.parsePrevTx(method: .decoderawtransaction, param: "\"\(hex)\"", vout: vout, txid: txid)
                     }
-                    
                     return
                 }
-                
                 self.parsePrevTx(method: .decoderawtransaction, param: "\"\(hex)\"", vout: vout, txid: txid)
             }
         }
