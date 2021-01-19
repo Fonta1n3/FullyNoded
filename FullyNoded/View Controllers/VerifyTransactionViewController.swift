@@ -732,29 +732,37 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         return
                     }
                     
-                    guard let useEsplora = UserDefaults.standard.object(forKey: "useEsplora") as? Bool, useEsplora else {
-                        // User opted out of using Esplora
-                        if UserDefaults.standard.object(forKey: "useEsplora") == nil && UserDefaults.standard.object(forKey: "useEsploraAlert") == nil {
-                            showAlert(vc: self, title: "Unable to fetch input.", message: "Pruned nodes can not lookup input details for inputs that are associated with transactions which are not owned by the active wallet. In order to see inputs in detail you can enable Esplora (Blockstream's block explorer) over Tor in \"Settings\".")
+                    Reducer.makeCommand(command: .gettransaction, param: "\"\(txid)\", true") { (response, errorMessage) in
+                        //print("response: \(response)")
+                        guard let dict = response as? NSDictionary, let hex = dict["hex"] as? String else {
+                            guard let useEsplora = UserDefaults.standard.object(forKey: "useEsplora") as? Bool, useEsplora else {
+                                // User opted out of using Esplora
+                                if UserDefaults.standard.object(forKey: "useEsplora") == nil && UserDefaults.standard.object(forKey: "useEsploraAlert") == nil {
+                                    showAlert(vc: self, title: "Unable to fetch input.", message: "Pruned nodes can not lookup input details for inputs that are associated with transactions which are not owned by the active wallet. In order to see inputs in detail you can enable Esplora (Blockstream's block explorer) over Tor in \"Settings\".")
+                                    
+                                    UserDefaults.standard.setValue(true, forKey: "useEsploraAlert")
+                                }
+                                
+                                self.parsePrevTxOutput(outputs: [], vout: 0)
+                                return
+                            }
                             
-                            UserDefaults.standard.setValue(true, forKey: "useEsploraAlert")
-                        }
-                        
-                        self.parsePrevTxOutput(outputs: [], vout: 0)
-                        return
-                    }
-                    
-                    let fetcher = GetTx.sharedInstance
-                    fetcher.fetch(txid: txid) { [weak self] rawHex in
-                        guard let self = self else { return }
-                        
-                        guard let rawHex = rawHex else {
-                            // Esplora must be down, pass an empty array instead
-                            self.parsePrevTxOutput(outputs: [], vout: 0)
+                            let fetcher = GetTx.sharedInstance
+                            fetcher.fetch(txid: txid) { [weak self] rawHex in
+                                guard let self = self else { return }
+                                
+                                guard let rawHex = rawHex else {
+                                    // Esplora must be down, pass an empty array instead
+                                    self.parsePrevTxOutput(outputs: [], vout: 0)
+                                    return
+                                }
+                                
+                                self.parsePrevTx(method: .decoderawtransaction, param: "\"\(rawHex)\"", vout: vout, txid: txid)
+                            }
                             return
                         }
                         
-                        self.parsePrevTx(method: .decoderawtransaction, param: "\"\(rawHex)\"", vout: vout, txid: txid)
+                        self.parsePrevTx(method: .decoderawtransaction, param: "\"\(hex)\"", vout: vout, txid: txid)
                     }
                     
                     return
