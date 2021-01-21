@@ -78,6 +78,8 @@
 		D05D973422647CE60035F1DE /* QRGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05D973322647CE60035F1DE /* QRGenerator.swift */; };
 		D069051F24EA6C1F007F939D /* LightningPeersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D069051E24EA6C1F007F939D /* LightningPeersViewController.swift */; };
 		D069052124EA8E95007F939D /* LightningChannelsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D069052024EA8E95007F939D /* LightningChannelsViewController.swift */; };
+		D06D788C25B817B500769157 /* LifeHash in Frameworks */ = {isa = PBXBuildFile; productRef = D06D788B25B817B500769157 /* LifeHash */; };
+		D06D788F25B817E100769157 /* Lifehash.swift in Sources */ = {isa = PBXBuildFile; fileRef = D06D788E25B817E100769157 /* Lifehash.swift */; };
 		D06FD7D025062F7A00481185 /* GetTx.swift in Sources */ = {isa = PBXBuildFile; fileRef = D06FD7CF25062F7A00481185 /* GetTx.swift */; };
 		D06FD7D2250640F800481185 /* logo_grey_.png in Resources */ = {isa = PBXBuildFile; fileRef = D06FD7D1250640F800481185 /* logo_grey_.png */; };
 		D071A2A0214880F700C4BCB3 /* Search - tripkey.png in Resources */ = {isa = PBXBuildFile; fileRef = D071A29F214880F700C4BCB3 /* Search - tripkey.png */; };
@@ -271,6 +273,7 @@
 		D05D973322647CE60035F1DE /* QRGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRGenerator.swift; sourceTree = "<group>"; };
 		D069051E24EA6C1F007F939D /* LightningPeersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LightningPeersViewController.swift; sourceTree = "<group>"; };
 		D069052024EA8E95007F939D /* LightningChannelsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LightningChannelsViewController.swift; sourceTree = "<group>"; };
+		D06D788E25B817E100769157 /* Lifehash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lifehash.swift; sourceTree = "<group>"; };
 		D06FD7CF25062F7A00481185 /* GetTx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetTx.swift; sourceTree = "<group>"; };
 		D06FD7D1250640F800481185 /* logo_grey_.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo_grey_.png; sourceTree = "<group>"; };
 		D071A29F214880F700C4BCB3 /* Search - tripkey.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Search - tripkey.png"; sourceTree = "<group>"; };
@@ -367,6 +370,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D06D788C25B817B500769157 /* LifeHash in Frameworks */,
 				D0C1F9132531E5970079C2B8 /* URKit in Frameworks */,
 				D016AE7525B0284300A59E93 /* Tor.xcframework in Frameworks */,
 				D016AE4825AFFCA400A59E93 /* LibWally.xcframework in Frameworks */,
@@ -575,6 +579,7 @@
 				D06FD7CF25062F7A00481185 /* GetTx.swift */,
 				D0C1F9142531E71F0079C2B8 /* UR.swift */,
 				D00B27BB255A27F300269B51 /* WalletURL.swift */,
+				D06D788E25B817E100769157 /* Lifehash.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -959,6 +964,7 @@
 			name = FullyNoded;
 			packageProductDependencies = (
 				D0C1F9122531E5970079C2B8 /* URKit */,
+				D06D788B25B817B500769157 /* LifeHash */,
 			);
 			productName = BitSense;
 			productReference = D00B9A242111427200E8B95A /* FullyNoded.app */;
@@ -1032,6 +1038,7 @@
 			mainGroup = D00B9A1B2111427200E8B95A;
 			packageReferences = (
 				D0C1F9112531E5960079C2B8 /* XCRemoteSwiftPackageReference "URKit" */,
+				D06D788A25B817B500769157 /* XCRemoteSwiftPackageReference "LifeHash" */,
 			);
 			productRefGroup = D00B9A252111427200E8B95A /* Products */;
 			projectDirPath = "";
@@ -1239,6 +1246,7 @@
 				D09A330F24A9B853009FA0B2 /* RecoveryViewController.swift in Sources */,
 				D0C20EDA24A6E46E00C62AA4 /* Uptime.swift in Sources */,
 				D09A330124A848DA009FA0B2 /* SeedDisplayerViewController.swift in Sources */,
+				D06D788F25B817E100769157 /* Lifehash.swift in Sources */,
 				D0C4EE6F24F0EC9B003C929A /* BitSense.xcdatamodeld in Sources */,
 				D0390326246B960B00D32C43 /* KeyChain.swift in Sources */,
 				D037C868231B85A0006C357D /* ExtendedKeysParentViewController.swift in Sources */,
@@ -1566,6 +1574,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		D06D788A25B817B500769157 /* XCRemoteSwiftPackageReference "LifeHash" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/BlockchainCommons/LifeHash";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.0.2;
+			};
+		};
 		D0C1F9112531E5960079C2B8 /* XCRemoteSwiftPackageReference "URKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/BlockchainCommons/URKit";
@@ -1577,6 +1593,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		D06D788B25B817B500769157 /* LifeHash */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D06D788A25B817B500769157 /* XCRemoteSwiftPackageReference "LifeHash" */;
+			productName = LifeHash;
+		};
 		D0C1F9122531E5970079C2B8 /* URKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = D0C1F9112531E5960079C2B8 /* XCRemoteSwiftPackageReference "URKit" */;

@@ -264,7 +264,6 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func finishedLoading() {
-        print("finishedLoading")
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -275,7 +274,6 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func updateTransactionArray() {
-        print("updateTransactionArray")
         CoreDataService.retrieveEntity(entityName: .transactions) { [weak self] transactions in
             guard let self = self else { return }
             
@@ -289,15 +287,12 @@ class ActiveWalletViewController: UIViewController {
                 
                 for (t, tx) in self.transactionArray.enumerated() {
                     if !(tx["isLightning"] as! Bool) && (tx["txID"] as! String) == localTransactionStruct.txid {
-                        print("txid: \(localTransactionStruct.txid)")
                         self.transactionArray[t]["memo"] = localTransactionStruct.memo
                         self.transactionArray[t]["transactionLabel"] = localTransactionStruct.label
                         
                         if let originRate = localTransactionStruct.fxRate, originRate > 0 {
                             self.transactionArray[t]["originRate"] = originRate
                         }
-                        
-                        print("localTransactionStruct.label: \(localTransactionStruct.label)")
                     }
                     
                     if i + 1 == transactions.count && t + 1 == self.transactionArray.count {

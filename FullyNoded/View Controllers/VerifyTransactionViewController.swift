@@ -402,13 +402,18 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     if fxRate != nil {
                         amountString += " btc / \(fiatAmount(btc: amount))"
                     }
-                    
+                                        
                     let outputDict:[String:Any] = [
                         "index": number,
                         "amount": amountString,
                         "address": addressString,
                         "isChange": isChange,
-                        "isOurs": false,// Hardcode at this stage and update before displaying
+                        "isOursBitcoind": false,// Hardcode at this stage and update before displaying
+                        "isOursFullyNoded": false,
+                        "walletLabel": "",
+                        "lifehash": LifeHash.image(addressString) ?? UIImage(),
+                        "signable": false,
+                        "signerLabel": "",
                         "isDust": amount < 0.00020000
                     ]
                     
@@ -624,30 +629,32 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         if desc.contains("/1/") {
                             isChange = true
                         }
-                                                
-                        if solvable {
-                            if keypath != "no key path" {
-                                Keys.verifyAddress(address, keypath, "") { (isOurs, walletLabel) in
-                                    print("isOurs: \(isOurs)")
-                                    print("walletLabel: \(walletLabel)")
-                                }
-                            } else if desc != "no descriptor" {
-                                Keys.verifyAddress(address, "", desc) { (isOurs, walletLabel) in
-                                    print("isOurs: \(isOurs)")
-                                    print("walletLabel: \(walletLabel)")
-                                }
-                            }
-                        }
                         
-                        self.outputArray[self.index]["isOurs"] = solvable
+                        self.outputArray[self.index]["isOursBitcoind"] = solvable
                         self.outputArray[self.index]["hdKeyPath"] = keypath
                         self.outputArray[self.index]["isChange"] = isChange
                         self.outputArray[self.index]["label"] = labelsText
                         self.outputArray[self.index]["fingerprint"] = fingerprint
                         self.outputArray[self.index]["desc"] = desc
                         
-                        self.index += 1
-                        self.verifyOutputs()
+                        // Currently only verify address if the node knows about it.. otherwise we have to brute force 200k addresses...
+                        // will add a dedicated verify button for unsolvable to cross check against all wallets
+                        // also adding a signer verify button to show whether FN is able to sign for the output or not
+                        if solvable {
+                            Keys.verifyAddress(address, keypath, desc) { (isOursFullyNoded, walletLabel, signable, signer) in
+                                self.outputArray[self.index]["isOursFullyNoded"] = isOursFullyNoded
+                                self.outputArray[self.index]["walletLabel"] = walletLabel
+                                self.outputArray[self.index]["signable"] = signable
+                                self.outputArray[self.index]["signerLabel"] = signer
+                                self.index += 1
+                                self.verifyOutputs()
+                            }
+                        } else {
+                            self.outputArray[self.index]["isOursFullyNoded"] = false
+                            self.outputArray[self.index]["walletLabel"] = ""
+                            self.index += 1
+                            self.verifyOutputs()
+                        }
                     }
                 }
             }
@@ -972,74 +979,114 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let inputAmountLabel = outputCell.viewWithTag(2) as! UILabel
         let inputAddressLabel = outputCell.viewWithTag(3) as! UILabel
         let inputIsOursImage = outputCell.viewWithTag(4) as! UIImageView
-        let isChangeImageView = outputCell.viewWithTag(8) as! UIImageView
+        let lifehashImageView = outputCell.viewWithTag(5) as! UIImageView
+        let verifiedByFnImageView = outputCell.viewWithTag(6) as! UIImageView
         let labelLabel = outputCell.viewWithTag(7) as! UILabel
-        let pathLabel = outputCell.viewWithTag(5) as! UILabel
-        let fingerprintLabel = outputCell.viewWithTag(6) as! UILabel
+        let isChangeImageView = outputCell.viewWithTag(8) as! UIImageView
+        let verifiedByFnLabel = outputCell.viewWithTag(9) as! UILabel
         let isDustImageView = outputCell.viewWithTag(10) as! UIImageView
         let backgroundView1 = outputCell.viewWithTag(11)!
         let backgroundView2 = outputCell.viewWithTag(12)!
         let backgroundView3 = outputCell.viewWithTag(13)!
+        let verifiedByFnBackgroundView = outputCell.viewWithTag(14)!
         let descLabel = outputCell.viewWithTag(15) as! UILabel
+        let signableBackgroundView = outputCell.viewWithTag(16)!
+        let signableImageView = outputCell.viewWithTag(17) as! UIImageView
+        let signerLabel = outputCell.viewWithTag(18) as! UILabel
+        let verifiedByNodeLabel = outputCell.viewWithTag(19) as! UILabel
+        let addressTypeLabel = outputCell.viewWithTag(20) as! UILabel
+        
+        signableBackgroundView.layer.cornerRadius = 5
+        verifiedByFnBackgroundView.layer.cornerRadius = 5
         backgroundView1.layer.cornerRadius = 5
         backgroundView2.layer.cornerRadius = 5
         backgroundView3.layer.cornerRadius = 5
+        
+        signableImageView.tintColor = .white
         isDustImageView.tintColor = .white
         isChangeImageView.tintColor = .white
         inputIsOursImage.tintColor = .white
-        
+        verifiedByFnImageView.tintColor = .white
+                
         if indexPath.row < outputArray.count {
             let output = outputArray[indexPath.row]
             
-            let isOurs = output["isOurs"] as? Bool ?? false
+            let signable = output["signable"] as? Bool ?? false
+            let signer =  output["signerLabel"] as? String ?? ""
+            let walletLabel = output["walletLabel"] as? String ?? ""
+            let isOursFullyNoded = output["isOursFullyNoded"] as? Bool ?? false
+            let isOursBitcoind = output["isOursBitcoind"] as? Bool ?? false
             let isChange = output["isChange"] as? Bool ?? false
             let label = output["label"] as? String ?? "no label"
-            let fingerprint = output["fingerprint"] as? String ?? "no fingerprint"
-            let path = output["hdKeyPath"] as? String ?? "no keypath"
             let isDust = output["isDust"] as? Bool ?? false
             let desc = output["desc"] as? String ?? "no descriptor"
+            let lifehash = output["lifehash"] as? UIImage ?? UIImage()
             
             labelLabel.text = label
-            fingerprintLabel.text = fingerprint
-            pathLabel.text = path
             descLabel.text = desc
+            lifehashImageView.layer.magnificationFilter = .nearest
+            lifehashImageView.image = lifehash
+            
+            if isOursFullyNoded {
+                verifiedByFnLabel.text = "Owned by \(walletLabel)"
+                verifiedByFnImageView.image = UIImage(systemName: "checkmark.seal.fill")
+                verifiedByFnBackgroundView.backgroundColor = .systemGreen
+            } else {
+                if isOursBitcoind {
+                    verifiedByFnLabel.text = "WARNING ADDRESS INVALID!!!"
+                    verifiedByFnImageView.image = UIImage(systemName: "exclamationmark.triangle.fill")
+                    verifiedByFnBackgroundView.backgroundColor = .systemRed
+                } else {
+                    verifiedByFnLabel.text = "Not verified by Fully Noded"
+                    verifiedByFnImageView.image = UIImage(systemName: "questionmark.diamond.fill")
+                    verifiedByFnBackgroundView.backgroundColor = .systemGray
+                }
+            }
+            
+            if signable {
+                signableImageView.image = UIImage(systemName: "checkmark.square.fill")
+                signableBackgroundView.backgroundColor = .systemGreen
+                signerLabel.text = "Signable by \(signer)"
+            } else {
+                signableImageView.image = UIImage(systemName: "xmark.square.fill")
+                signableBackgroundView.backgroundColor = .systemRed
+                signerLabel.text = "Can not sign!"
+            }
             
             if isDust {
                 isDustImageView.image = UIImage(systemName: "exclamationmark.triangle")
                 backgroundView3.backgroundColor = .systemRed
             } else {
-                isDustImageView.image = UIImage(systemName: "checkmark")
-                backgroundView3.backgroundColor = .darkGray
+                isDustImageView.image = UIImage(systemName: "checkmark.circle.fill")
+                backgroundView3.backgroundColor = .systemGreen
             }
             
             if isChange {
                 isChangeImageView.image = UIImage(systemName: "arrow.2.circlepath")
                 backgroundView2.backgroundColor = .systemPurple
+                addressTypeLabel.text = "Change address"
             } else {
                 isChangeImageView.image = UIImage(systemName: "arrow.up.right")
                 backgroundView2.backgroundColor = .systemBlue
+                addressTypeLabel.text = "Receive address"
             }
             
-            if isOurs {
+            if isOursBitcoind {
+                verifiedByNodeLabel.text = "Owned by Bitcoin Core"
                 backgroundView1.backgroundColor = .systemGreen
-                inputIsOursImage.image = UIImage(systemName: "person.crop.circle.fill.badge.checkmark")
+                inputIsOursImage.image = UIImage(systemName: "checkmark.circle.fill")
             } else {
+                verifiedByNodeLabel.text = "Unknown by Bitcoin Core!"
                 backgroundView1.backgroundColor = .systemRed
-                inputIsOursImage.image = UIImage(systemName: "person.crop.circle.badge.xmark")
+                inputIsOursImage.image = UIImage(systemName: "xmark.circle.fill")
             }
             
             inputIndexLabel.text = "Output #\(output["index"] as! Int)"
             inputAmountLabel.text = "\((output["amount"] as! String))"
             inputAddressLabel.text = (output["address"] as! String)
-            inputAddressLabel.adjustsFontSizeToFitWidth = true
-            outputCell.selectionStyle = .none
-            inputIndexLabel.textColor = .lightGray
-            inputAmountLabel.textColor = .lightGray
-            inputAddressLabel.textColor = .lightGray
-            return outputCell
-        } else {
-            return outputCell
         }
+        
+        return outputCell
     }
     
     private func miningFeeCell(_ indexPath: IndexPath) -> UITableViewCell {
@@ -1182,6 +1229,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     private func configureCell(_ cell: UITableViewCell) {
+        cell.selectionStyle = .none
         cell.clipsToBounds = true
         cell.layer.cornerRadius = 8
         cell.layer.borderColor = UIColor.lightGray.cgColor
@@ -1468,8 +1516,11 @@ extension VerifyTransactionViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         switch indexPath.section {
-        case 4, 5:
+        case 4:
             return 172
+            
+        case 5:
+            return 522
         
         case 1:
             return 150
