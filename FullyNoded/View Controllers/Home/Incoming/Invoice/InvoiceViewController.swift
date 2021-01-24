@@ -18,7 +18,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     var legacy = Bool()
     let spinner = ConnectingView()
     let qrGenerator = QRGenerator()
-    var isHDMusig = Bool()
     var isHDInvoice = Bool()
     var descriptor = ""
     var wallet = [String:Any]()
@@ -26,6 +25,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     var isBtc = false
     var isSats = false
     
+    @IBOutlet weak var addressImageView: UIImageView!
     @IBOutlet weak var segmentedControlOutlet: UISegmentedControl!
     @IBOutlet var amountField: UITextField!
     @IBOutlet var labelField: UITextField!
@@ -243,20 +243,15 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             
             let param = "\"\(wallet.receiveDescriptor)\", [\(index),\(index)]"
             
-            Reducer.makeCommand(command: .deriveaddresses, param: param) { (response, errorMessage) in
+            Reducer.makeCommand(command: .deriveaddresses, param: param) { [weak self] (response, errorMessage) in
+                guard let self = self else { return }
+                
                 guard let addresses = response as? NSArray, let address = addresses[0] as? String else {
                     showAlert(vc: self, title: "", message: errorMessage ?? "error getting multisig address")
                     return
                 }
                 
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.addressOutlet.alpha = 1
-                    self.addressString = address
-                    self.addressOutlet.text = address
-                    self.showAddress(address: address)
-                }
+                self.showAddress(address: address)
             }
         }
     }
@@ -269,30 +264,28 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     }
     
     func fetchAddress() {
-        if isHDMusig {
-            showAddress(address: addressString)
-        } else {
-            var params = ""
-            
-            if self.nativeSegwit {
-                params = "\"\", \"bech32\""
-            } else if self.legacy {
-                params = "\"\", \"legacy\""
-            } else if self.p2shSegwit {
-                params = "\"\", \"p2sh-segwit\""
-            }
-            
-            self.getAddress(params)
+        var params = ""
+        
+        if self.nativeSegwit {
+            params = "\"\", \"bech32\""
+        } else if self.legacy {
+            params = "\"\", \"legacy\""
+        } else if self.p2shSegwit {
+            params = "\"\", \"p2sh-segwit\""
         }
+        
+        self.getAddress(params)
     }
     
     func showAddress(address: String) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
+            self.addressOutlet.alpha = 1
             self.addressOutlet.text = address
             self.addressString = address
             self.updateQRImage()
+            self.addressImageView.image = LifeHash.image(address)
             self.spinner.removeConnectingView()
         }
     }
@@ -331,14 +324,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                 return
             }
             
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                self.spinner.removeConnectingView()
-                self.addressString = address
-                self.addressOutlet.text = address
-                self.showAddress(address: address)
-            }
+            self.showAddress(address: address)
         }
     }
     

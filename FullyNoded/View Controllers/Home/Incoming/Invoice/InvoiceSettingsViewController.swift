@@ -17,10 +17,10 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
     let ud = UserDefaults.standard
     var isSingleKey = Bool()
     var isPrivKey = Bool()
-    var isPruned = Bool()
-    var isTestnet = Bool()
-    var isExtendedKey = Bool()
-    var isDescriptor = Bool()
+//    var isPruned = Bool()
+//    var isTestnet = Bool()
+//    var isExtendedKey = Bool()
+//    var isDescriptor = Bool()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -34,10 +34,10 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
     override func viewDidAppear(_ animated: Bool) {
         isSingleKey = false
         isPrivKey = false
-        isPruned = false
-        isTestnet = false
-        isExtendedKey = false
-        isDescriptor = false
+//        isPruned = false
+//        isTestnet = false
+//        isExtendedKey = false
+//        isDescriptor = false
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -45,7 +45,7 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
         case 0:
             return 1
         case 1:
-            return 6
+            return 2
         case 2:
             return 3
         default:
@@ -54,7 +54,7 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 3
+        return 2
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -76,11 +76,7 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
         case 1:
             switch indexPath.row {
             case 0:label.text = "Address"
-            case 1:label.text = "Public key"
             case 2:label.text = "Private key"
-            case 3:label.text = "XPUB"
-            case 4:label.text = "XPRV"
-            case 5:label.text = "Descriptor"
             default:
                 break
             }
@@ -145,17 +141,11 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
             print("segue to import things")
             switch indexPath.row {
                 
-            case 0, 1:
+            case 0:
                 isSingleKey = true
                 
-            case 2:
+            case 1:
                 isPrivKey = true
-                
-            case 3, 4:
-                isExtendedKey = true
-                
-            case 5:
-                isDescriptor = true
                 
             default:
                 break
@@ -263,7 +253,7 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
             case "segueToImportFromAdvanced":
                 
                 if let vc = segue.destination as? AddLabelViewController {
-                    vc.isDescriptor = isDescriptor
+                    //vc.isDescriptor = isDescriptor
                     vc.isSingleKey = isSingleKey
                     vc.isPrivKey = isPrivKey
                 }

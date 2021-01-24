@@ -51,6 +51,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     @IBOutlet weak private var scanOutlet: UIButton!
     @IBOutlet weak private var receivingLabel: UILabel!
     @IBOutlet weak private var outputsTable: UITableView!
+    @IBOutlet weak private var addressImageView: UIImageView!
+    
     
     var spinner = ConnectingView()
     var spendableBalance = Double()
@@ -64,6 +66,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         outputsTable.dataSource = self
         outputsTable.tableFooterView = UIView(frame: .zero)
         outputsTable.alpha = 0
+        addressImageView.alpha = 0
         slider.isContinuous = false
         addTapGesture()
         
@@ -949,6 +952,10 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             guard let address = address else { return }
             
             self.addressInput.text = address
+            
+            let lifehash = LifeHash.image(address)
+            self.addressImageView.image = lifehash
+            self.addressImageView.alpha = 1
             
             if amount != nil || label != nil || message != nil {
                 var amountText = "not specified"

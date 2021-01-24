@@ -911,12 +911,6 @@ class ActiveWalletViewController: UIViewController {
             
             vc.walletId = idDetail
             
-        case "getTransaction":
-            guard let vc = segue.destination as? TransactionViewController else { fallthrough }
-            
-            vc.isBolt11 = isBolt11
-            vc.txid = tx
-            
         case "chooseAWallet":
             guard let vc = segue.destination as? ChooseWalletViewController else { fallthrough }
             

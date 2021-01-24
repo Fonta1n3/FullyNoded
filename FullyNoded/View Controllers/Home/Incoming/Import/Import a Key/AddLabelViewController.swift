@@ -14,7 +14,6 @@ class AddLabelViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet var textField: UITextField!
     var isSingleKey = Bool()
     var isPrivKey = Bool()
-    var isDescriptor = Bool()
     @IBOutlet var labelOutlet: UILabel!
     @IBOutlet weak var addLabelOutlet: UIButton!
     
@@ -31,54 +30,29 @@ class AddLabelViewController: UIViewController, UITextFieldDelegate {
     }
     
     @objc func dismissKeyboard (_ sender: UITapGestureRecognizer) {
-        
         textField.resignFirstResponder()
-        
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        
         textField.resignFirstResponder()
         return true
-        
     }
     
     @IBAction func nextAction(_ sender: Any) {
-        
         if textField.text != "" {
-            
             var segueString = "goToParent"
             
-            if isSingleKey {
-                
-                segueString = "jumpToKeypool"
-                
-            }
-            
             if isPrivKey {
-                
                 segueString = "importPrivKey"
-                
-            }
-            
-            if isDescriptor {
-                
-                segueString = "skipDerivation"
-                
             }
             
             DispatchQueue.main.async {
-                
                 self.performSegue(withIdentifier: segueString, sender: self)
-                
             }
             
         } else {
-            
             shakeAlert(viewToShake: textField)
-            
         }
-        
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -87,39 +61,9 @@ class AddLabelViewController: UIViewController, UITextFieldDelegate {
         
         switch segue.identifier {
             
-        case "goToParent":
-            
-            if let vc = segue.destination as? ExtendedKeysParentViewController  {
-                
-                vc.dict = dict
-                
-            }
-            
-        case "jumpToKeypool":
-            
-            if let vc = segue.destination as? AddToKeypoolViewController {
-                
-                vc.dict = dict
-                vc.isSingleKey = isSingleKey
-                vc.isMultiSig = false
-                
-            }
-            
         case "importPrivKey":
-            
             if let vc = segue.destination as? ImportPrivKeyViewController {
-                
                 vc.dict = dict
-                
-            }
-            
-        case "skipDerivation":
-            
-            if let vc = segue.destination as? ChooseRangeViewController {
-                
-                vc.isDescriptor = true
-                vc.dict = dict
-                
             }
             
         default:

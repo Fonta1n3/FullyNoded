@@ -61,7 +61,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
         if alreadyBroadcast {
             if confs == 0 {
-                sendButtonOutlet.setTitle("Increase fee", for: .normal)
+                sendButtonOutlet.setTitle("Bump fee", for: .normal)
                 sendButtonOutlet.alpha = 1
             } else {
                 sendButtonOutlet.alpha = 0
@@ -74,6 +74,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
         if (UIDevice.current.userInterfaceIdiom == .pad) {
           alertStyle = UIAlertController.Style.alert
+        }
+        
+        if signedRawTx == "" {
+            sendButtonOutlet.alpha = 0
         }
         
         activeWallet { [weak self] w in
@@ -114,8 +118,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         } else {
             if signedRawTx != "" {
                 broadcast()
-            } else {
-                exportPsbt(psbt: unsignedPsbt)
             }
         }
     }
@@ -572,10 +574,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                                 let input = self.signedTxInputs[self.index] as? NSDictionary ?? [:]
                                 let scriptsig = input["scriptSig"] as? NSDictionary ?? [:]
                                 let hex = scriptsig["hex"] as? String ?? ""
+                                
                                 if hex != "" {
                                     self.inputTableArray[self.index]["signatures"] = "Signed"
                                 } else {
                                     if let txwitness = input["txinwitness"] as? NSArray {
+                                        
                                         if txwitness.count > 1 {
                                             self.inputTableArray[self.index]["signatures"] = "Signed"
                                         }
@@ -975,10 +979,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let outputCell = verifyTable.dequeueReusableCell(withIdentifier: "outputCell", for: indexPath)
         configureCell(outputCell)
         
-        let inputIndexLabel = outputCell.viewWithTag(1) as! UILabel
-        let inputAmountLabel = outputCell.viewWithTag(2) as! UILabel
-        let inputAddressLabel = outputCell.viewWithTag(3) as! UILabel
-        let inputIsOursImage = outputCell.viewWithTag(4) as! UIImageView
+        let outputIndexLabel = outputCell.viewWithTag(1) as! UILabel
+        let outputAmountLabel = outputCell.viewWithTag(2) as! UILabel
+        let outputAddressLabel = outputCell.viewWithTag(3) as! UILabel
+        let outputIsOursImage = outputCell.viewWithTag(4) as! UIImageView
         let lifehashImageView = outputCell.viewWithTag(5) as! UIImageView
         let verifiedByFnImageView = outputCell.viewWithTag(6) as! UIImageView
         let labelLabel = outputCell.viewWithTag(7) as! UILabel
@@ -989,28 +993,35 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let backgroundView2 = outputCell.viewWithTag(12)!
         let backgroundView3 = outputCell.viewWithTag(13)!
         let verifiedByFnBackgroundView = outputCell.viewWithTag(14)!
-        let descLabel = outputCell.viewWithTag(15) as! UILabel
+        let descTextView = outputCell.viewWithTag(15) as! UITextView
         let signableBackgroundView = outputCell.viewWithTag(16)!
         let signableImageView = outputCell.viewWithTag(17) as! UIImageView
         let signerLabel = outputCell.viewWithTag(18) as! UILabel
         let verifiedByNodeLabel = outputCell.viewWithTag(19) as! UILabel
         let addressTypeLabel = outputCell.viewWithTag(20) as! UILabel
-        
+        let copyAddressButton = outputCell.viewWithTag(21) as! UIButton
+        let copyDescriptorButton = outputCell.viewWithTag(22) as! UIButton
+                
         signableBackgroundView.layer.cornerRadius = 5
         verifiedByFnBackgroundView.layer.cornerRadius = 5
         backgroundView1.layer.cornerRadius = 5
         backgroundView2.layer.cornerRadius = 5
         backgroundView3.layer.cornerRadius = 5
+        descTextView.layer.cornerRadius = 8
+        
+        descTextView.layer.borderWidth = 0.5
+        descTextView.layer.borderColor = UIColor.darkGray.cgColor
         
         signableImageView.tintColor = .white
         isDustImageView.tintColor = .white
         isChangeImageView.tintColor = .white
-        inputIsOursImage.tintColor = .white
+        outputIsOursImage.tintColor = .white
         verifiedByFnImageView.tintColor = .white
-                
+                        
         if indexPath.row < outputArray.count {
             let output = outputArray[indexPath.row]
             
+            let outputAddress = (output["address"] as! String)
             let signable = output["signable"] as? Bool ?? false
             let signer =  output["signerLabel"] as? String ?? ""
             let walletLabel = output["walletLabel"] as? String ?? ""
@@ -1023,9 +1034,18 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             let lifehash = output["lifehash"] as? UIImage ?? UIImage()
             
             labelLabel.text = label
-            descLabel.text = desc
+            descTextView.text = desc
             lifehashImageView.layer.magnificationFilter = .nearest
             lifehashImageView.image = lifehash
+            
+            outputIndexLabel.text = "Output #\(output["index"] as! Int)"
+            outputAmountLabel.text = "\((output["amount"] as! String))"
+            outputAddressLabel.text = outputAddress
+            copyAddressButton.restorationIdentifier = outputAddress
+            copyDescriptorButton.restorationIdentifier = desc
+            
+            copyAddressButton.addTarget(self, action: #selector(copyAddress(_:)), for: .touchUpInside)
+            copyDescriptorButton.addTarget(self, action: #selector(copyDesc(_:)), for: .touchUpInside)
             
             if isOursFullyNoded {
                 verifiedByFnLabel.text = "Owned by \(walletLabel)"
@@ -1074,16 +1094,16 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             if isOursBitcoind {
                 verifiedByNodeLabel.text = "Owned by Bitcoin Core"
                 backgroundView1.backgroundColor = .systemGreen
-                inputIsOursImage.image = UIImage(systemName: "checkmark.circle.fill")
+                outputIsOursImage.image = UIImage(systemName: "checkmark.circle.fill")
             } else {
                 verifiedByNodeLabel.text = "Unknown by Bitcoin Core!"
                 backgroundView1.backgroundColor = .systemRed
-                inputIsOursImage.image = UIImage(systemName: "xmark.circle.fill")
+                outputIsOursImage.image = UIImage(systemName: "xmark.circle.fill")
+                
+                isChangeImageView.image = UIImage(systemName: "questionmark.diamond.fill")
+                backgroundView2.backgroundColor = .systemGray
+                addressTypeLabel.text = "Address type unknown"
             }
-            
-            inputIndexLabel.text = "Output #\(output["index"] as! Int)"
-            inputAmountLabel.text = "\((output["amount"] as! String))"
-            inputAddressLabel.text = (output["address"] as! String)
         }
         
         return outputCell
@@ -1193,6 +1213,18 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         return labelCell
     }
     
+    @objc func copyAddress(_ sender: UIButton) {
+        UIPasteboard.general.string = sender.restorationIdentifier
+        
+        showAlert(vc: self, title: "", message: "Address copied ✓")
+    }
+    
+    @objc func copyDesc(_ sender: UIButton) {
+        UIPasteboard.general.string = sender.restorationIdentifier
+        
+        showAlert(vc: self, title: "", message: "Descriptor copied ✓")
+    }
+    
     private func loadLabelAndMemo() {
         CoreDataService.retrieveEntity(entityName: .transactions) { [weak self] transactions in
             guard let self = self else { return }
@@ -1290,7 +1322,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                     self.sendButtonOutlet.alpha = 0
                     self.spinner.removeConnectingView()
-                    showAlert(vc: self, title: "Success! ✅", message: "Transaction sent.")
+                    showAlert(vc: self, title: "", message: "Transaction sent ✓")
                 }
             } else {
                 self.showError(error: "Error broadcasting privately, try again and use your node instead. Error: \(id ?? "unknown")")
@@ -1617,6 +1649,7 @@ extension VerifyTransactionViewController: UITableViewDelegate {
             copyButton.addTarget(self, action: #selector(copyTxid), for: .touchUpInside)
             copyButton.frame = CGRect(x: header.frame.maxX - 60, y: 0, width: 50, height: 50)
             copyButton.center.y = textLabel.center.y
+            copyButton.showsTouchWhenHighlighted = true
             header.addSubview(copyButton)
                             
         case 4:

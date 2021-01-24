@@ -43,13 +43,6 @@
 		D02FE43323136A600048F8C4 /* NodeLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02FE43223136A600048F8C4 /* NodeLogic.swift */; };
 		D033D1CF22B5D1FA00523BEE /* ProcessPSBTViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D033D1CE22B5D1FA00523BEE /* ProcessPSBTViewController.swift */; };
 		D0358D9521B1B44B007D56ED /* whiteCheck.png in Resources */ = {isa = PBXBuildFile; fileRef = D0358D9421B1B44A007D56ED /* whiteCheck.png */; };
-		D037C868231B85A0006C357D /* ExtendedKeysParentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D037C867231B85A0006C357D /* ExtendedKeysParentViewController.swift */; };
-		D037C86A231BAF8B006C357D /* ChooseRangeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D037C869231BAF8B006C357D /* ChooseRangeViewController.swift */; };
-		D037C86C231BAFB4006C357D /* AddToKeypoolViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D037C86B231BAFB4006C357D /* AddToKeypoolViewController.swift */; };
-		D037C86E231BAFD2006C357D /* AddAsChangeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D037C86D231BAFD2006C357D /* AddAsChangeViewController.swift */; };
-		D037C870231BAFF1006C357D /* RescanViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D037C86F231BAFF1006C357D /* RescanViewController.swift */; };
-		D037C872231BB020006C357D /* AddFingerprintViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D037C871231BB020006C357D /* AddFingerprintViewController.swift */; };
-		D037C874231BB04B006C357D /* ScanExtendedKeyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D037C873231BB04B006C357D /* ScanExtendedKeyViewController.swift */; };
 		D037C876231CAFD9006C357D /* AddLabelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D037C875231CAFD9006C357D /* AddLabelViewController.swift */; };
 		D0384E2F246AC4B1002FEE94 /* XpubConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0384E2E246AC4B1002FEE94 /* XpubConverter.swift */; };
 		D0384E31246AC4D8002FEE94 /* Base58.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0384E30246AC4D8002FEE94 /* Base58.swift */; };
@@ -69,7 +62,6 @@
 		D0452ADD224743C50013E225 /* LogInViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0452ADC224743C50013E225 /* LogInViewController.swift */; };
 		D049CB3924C7EFDF0039711B /* iTunesArtwork@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D049CB3824C7EFDF0039711B /* iTunesArtwork@2x.png */; };
 		D0560EE92277F75900C3E909 /* UTXOViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0560EE82277F75900C3E909 /* UTXOViewController.swift */; };
-		D0560EEF22784E9D00C3E909 /* UnsignedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0560EEE22784E9D00C3E909 /* UnsignedViewController.swift */; };
 		D05692E321434452006DF0F4 /* MainMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05692E221434452006DF0F4 /* MainMenuViewController.swift */; };
 		D05692E92144AC13006DF0F4 /* back.png in Resources */ = {isa = PBXBuildFile; fileRef = D05692E82144AC13006DF0F4 /* back.png */; };
 		D058F3C2226D9DED00CF4BE9 /* OutgoingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D058F3C1226D9DED00CF4BE9 /* OutgoingsTableViewController.swift */; };
@@ -106,8 +98,6 @@
 		D08A92B5233C979600409D6E /* FiatConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08A92B4233C979600409D6E /* FiatConverter.swift */; };
 		D08A92B7233E113B00409D6E /* LockedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08A92B6233E113B00409D6E /* LockedViewController.swift */; };
 		D08A92B923403DB200409D6E /* NodesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08A92B823403DB200409D6E /* NodesViewController.swift */; };
-		D08CED0F22E5089D007E2A8E /* ImportExtendedKeysViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08CED0E22E5089D007E2A8E /* ImportExtendedKeysViewController.swift */; };
-		D08CED1122E54B11007E2A8E /* TransactionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08CED1022E54B11007E2A8E /* TransactionViewController.swift */; };
 		D093E2A725A59B9C0038B59A /* TransactionStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D093E2A625A59B9C0038B59A /* TransactionStruct.swift */; };
 		D096EDFE249DCF970084A065 /* ShowDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D096EDFD249DCF970084A065 /* ShowDetailViewController.swift */; };
 		D096EE00249DFADD0084A065 /* HelpViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D096EDFF249DFADD0084A065 /* HelpViewController.swift */; };
@@ -159,7 +149,6 @@
 		D0E9B63C211A94C600B416E7 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E9B63B211A94C600B416E7 /* Utilities.swift */; };
 		D0EA04EF25592B910032C63F /* logo_grey.png in Resources */ = {isa = PBXBuildFile; fileRef = D0EA04EE25592B910032C63F /* logo_grey.png */; };
 		D0EC748A227DF06E001489B9 /* CreateUnsigned.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EC7489227DF06E001489B9 /* CreateUnsigned.swift */; };
-		D0EC7490227F6977001489B9 /* SignRawViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EC748F227F6977001489B9 /* SignRawViewController.swift */; };
 		D0EDDF1124972CEF00657931 /* InvoiceSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EDDF1024972CEF00657931 /* InvoiceSettingsViewController.swift */; };
 		D0EF29C1216B82B400EB776A /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EF29C0216B82B400EB776A /* SettingsViewController.swift */; };
 		D0F3919024BFE48600EA8A2A /* AccountMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F3918F24BFE48600EA8A2A /* AccountMap.swift */; };
@@ -236,13 +225,6 @@
 		D02FE43223136A600048F8C4 /* NodeLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeLogic.swift; sourceTree = "<group>"; };
 		D033D1CE22B5D1FA00523BEE /* ProcessPSBTViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessPSBTViewController.swift; sourceTree = "<group>"; };
 		D0358D9421B1B44A007D56ED /* whiteCheck.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteCheck.png; sourceTree = "<group>"; };
-		D037C867231B85A0006C357D /* ExtendedKeysParentViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedKeysParentViewController.swift; sourceTree = "<group>"; };
-		D037C869231BAF8B006C357D /* ChooseRangeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChooseRangeViewController.swift; sourceTree = "<group>"; };
-		D037C86B231BAFB4006C357D /* AddToKeypoolViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddToKeypoolViewController.swift; sourceTree = "<group>"; };
-		D037C86D231BAFD2006C357D /* AddAsChangeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddAsChangeViewController.swift; sourceTree = "<group>"; };
-		D037C86F231BAFF1006C357D /* RescanViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RescanViewController.swift; sourceTree = "<group>"; };
-		D037C871231BB020006C357D /* AddFingerprintViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFingerprintViewController.swift; sourceTree = "<group>"; };
-		D037C873231BB04B006C357D /* ScanExtendedKeyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanExtendedKeyViewController.swift; sourceTree = "<group>"; };
 		D037C875231CAFD9006C357D /* AddLabelViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddLabelViewController.swift; sourceTree = "<group>"; };
 		D0384E2E246AC4B1002FEE94 /* XpubConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XpubConverter.swift; sourceTree = "<group>"; };
 		D0384E30246AC4D8002FEE94 /* Base58.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Base58.swift; sourceTree = "<group>"; };
@@ -264,7 +246,6 @@
 		D0452ADC224743C50013E225 /* LogInViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogInViewController.swift; sourceTree = "<group>"; };
 		D049CB3824C7EFDF0039711B /* iTunesArtwork@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "iTunesArtwork@2x.png"; sourceTree = "<group>"; };
 		D0560EE82277F75900C3E909 /* UTXOViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOViewController.swift; sourceTree = "<group>"; };
-		D0560EEE22784E9D00C3E909 /* UnsignedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnsignedViewController.swift; sourceTree = "<group>"; };
 		D05692E221434452006DF0F4 /* MainMenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuViewController.swift; sourceTree = "<group>"; };
 		D05692E82144AC13006DF0F4 /* back.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = back.png; sourceTree = "<group>"; };
 		D058F3C1226D9DED00CF4BE9 /* OutgoingsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutgoingsTableViewController.swift; sourceTree = "<group>"; };
@@ -298,8 +279,6 @@
 		D08A92B4233C979600409D6E /* FiatConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FiatConverter.swift; sourceTree = "<group>"; };
 		D08A92B6233E113B00409D6E /* LockedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockedViewController.swift; sourceTree = "<group>"; };
 		D08A92B823403DB200409D6E /* NodesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodesViewController.swift; sourceTree = "<group>"; };
-		D08CED0E22E5089D007E2A8E /* ImportExtendedKeysViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportExtendedKeysViewController.swift; sourceTree = "<group>"; };
-		D08CED1022E54B11007E2A8E /* TransactionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionViewController.swift; sourceTree = "<group>"; };
 		D093E2A625A59B9C0038B59A /* TransactionStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionStruct.swift; sourceTree = "<group>"; };
 		D096EDFD249DCF970084A065 /* ShowDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowDetailViewController.swift; sourceTree = "<group>"; };
 		D096EDFF249DFADD0084A065 /* HelpViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpViewController.swift; sourceTree = "<group>"; };
@@ -354,7 +333,6 @@
 		D0E9B63B211A94C600B416E7 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		D0EA04EE25592B910032C63F /* logo_grey.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo_grey.png; sourceTree = "<group>"; };
 		D0EC7489227DF06E001489B9 /* CreateUnsigned.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateUnsigned.swift; sourceTree = "<group>"; };
-		D0EC748F227F6977001489B9 /* SignRawViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignRawViewController.swift; sourceTree = "<group>"; };
 		D0EDDF1024972CEF00657931 /* InvoiceSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceSettingsViewController.swift; sourceTree = "<group>"; };
 		D0EF29C0216B82B400EB776A /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		D0F3918F24BFE48600EA8A2A /* AccountMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountMap.swift; sourceTree = "<group>"; };
@@ -441,8 +419,6 @@
 				D0EC748C227F5F7B001489B9 /* Outgoings Menu */,
 				D0560EEA227830F100C3E909 /* Raw Tx */,
 				D06B3A522272D1C4001921EE /* UTXO's */,
-				D0EC748B227F5F64001489B9 /* Create Unsigned */,
-				D0855FBE22AE8D6D00DBBFC2 /* Sign Raw */,
 			);
 			path = Outgoing;
 			sourceTree = "<group>";
@@ -686,17 +662,8 @@
 			isa = PBXGroup;
 			children = (
 				D08495EC22EBC952003FE8EB /* Import a Key */,
-				D08495ED22EBC96E003FE8EB /* Import Extended Key */,
 			);
 			path = Import;
-			sourceTree = "<group>";
-		};
-		D068481922ECE5C700A825E1 /* Transaction Viewer */ = {
-			isa = PBXGroup;
-			children = (
-				D08CED1022E54B11007E2A8E /* TransactionViewController.swift */,
-			);
-			path = "Transaction Viewer";
 			sourceTree = "<group>";
 		};
 		D06B3A522272D1C4001921EE /* UTXO's */ = {
@@ -750,24 +717,9 @@
 			isa = PBXGroup;
 			children = (
 				D0452ADA2247417F0013E225 /* ImportPrivKeyViewController.swift */,
-			);
-			path = "Import a Key";
-			sourceTree = "<group>";
-		};
-		D08495ED22EBC96E003FE8EB /* Import Extended Key */ = {
-			isa = PBXGroup;
-			children = (
-				D08CED0E22E5089D007E2A8E /* ImportExtendedKeysViewController.swift */,
-				D037C867231B85A0006C357D /* ExtendedKeysParentViewController.swift */,
-				D037C869231BAF8B006C357D /* ChooseRangeViewController.swift */,
-				D037C86B231BAFB4006C357D /* AddToKeypoolViewController.swift */,
-				D037C86D231BAFD2006C357D /* AddAsChangeViewController.swift */,
-				D037C86F231BAFF1006C357D /* RescanViewController.swift */,
-				D037C871231BB020006C357D /* AddFingerprintViewController.swift */,
-				D037C873231BB04B006C357D /* ScanExtendedKeyViewController.swift */,
 				D037C875231CAFD9006C357D /* AddLabelViewController.swift */,
 			);
-			path = "Import Extended Key";
+			path = "Import a Key";
 			sourceTree = "<group>";
 		};
 		D08495F322EBC9DF003FE8EB /* Process Analyze Finalize Convert Decode PSBT */ = {
@@ -835,14 +787,6 @@
 			path = "Alert View";
 			sourceTree = "<group>";
 		};
-		D0855FBE22AE8D6D00DBBFC2 /* Sign Raw */ = {
-			isa = PBXGroup;
-			children = (
-				D0EC748F227F6977001489B9 /* SignRawViewController.swift */,
-			);
-			path = "Sign Raw";
-			sourceTree = "<group>";
-		};
 		D0855FBF22AE8D8100DBBFC2 /* PSBT's */ = {
 			isa = PBXGroup;
 			children = (
@@ -895,14 +839,6 @@
 			path = Wallets;
 			sourceTree = "<group>";
 		};
-		D0EC748B227F5F64001489B9 /* Create Unsigned */ = {
-			isa = PBXGroup;
-			children = (
-				D0560EEE22784E9D00C3E909 /* UnsignedViewController.swift */,
-			);
-			path = "Create Unsigned";
-			sourceTree = "<group>";
-		};
 		D0EC748C227F5F7B001489B9 /* Outgoings Menu */ = {
 			isa = PBXGroup;
 			children = (
@@ -915,7 +851,6 @@
 			isa = PBXGroup;
 			children = (
 				D05692E221434452006DF0F4 /* MainMenuViewController.swift */,
-				D068481922ECE5C700A825E1 /* Transaction Viewer */,
 				D08A92B0233B213300409D6E /* ChooseWalletViewController.swift */,
 				D096EDFD249DCF970084A065 /* ShowDetailViewController.swift */,
 			);
@@ -1141,7 +1076,6 @@
 				D09A330924A98EE1009FA0B2 /* WalletDetailViewController.swift in Sources */,
 				D096EDFE249DCF970084A065 /* ShowDetailViewController.swift in Sources */,
 				D02094F02257FB78002E8E7A /* FirstTime.swift in Sources */,
-				D0560EEF22784E9D00C3E909 /* UnsignedViewController.swift in Sources */,
 				D069052124EA8E95007F939D /* LightningChannelsViewController.swift in Sources */,
 				D0C1F9152531E71F0079C2B8 /* UR.swift in Sources */,
 				D0B80A892516020A006B88F0 /* ImportXpubViewController.swift in Sources */,
@@ -1164,7 +1098,6 @@
 				D09A330724A982F3009FA0B2 /* FullyNodedWalletsViewController.swift in Sources */,
 				D07AED042435B62B00C2FADB /* Entities.swift in Sources */,
 				D0DBC7062501CEFE00F6787C /* VerifyTransactionViewController.swift in Sources */,
-				D037C872231BB020006C357D /* AddFingerprintViewController.swift in Sources */,
 				D0855FCA22B0CEA800DBBFC2 /* CreatePSBT.swift in Sources */,
 				D02094F3225936D2002E8E7A /* ConnectingView.swift in Sources */,
 				D09F9E5224B1F8DE006B588C /* AddSignerViewController.swift in Sources */,
@@ -1172,7 +1105,6 @@
 				D09F9E4C24B0673C006B588C /* SignersViewController.swift in Sources */,
 				D0E2A1052496EE9400AE0C04 /* ActiveWalletViewController.swift in Sources */,
 				D088E9D824FBA4E00097D755 /* CreateMultisigViewController.swift in Sources */,
-				D037C870231BAFF1006C357D /* RescanViewController.swift in Sources */,
 				D0C20EE724A78A9700C62AA4 /* CreateFullyNodedWalletViewController.swift in Sources */,
 				D00F851F2494A7CA008D7CD3 /* AuthKeysStruct.swift in Sources */,
 				D02958D5235053B300ED8F72 /* SecurityCenterViewController.swift in Sources */,
@@ -1189,7 +1121,6 @@
 				D02958D3234F82E000ED8F72 /* IdentityViewController.swift in Sources */,
 				D09A330324A86C7C009FA0B2 /* Signer.swift in Sources */,
 				D0EC748A227DF06E001489B9 /* CreateUnsigned.swift in Sources */,
-				D08CED1122E54B11007E2A8E /* TransactionViewController.swift in Sources */,
 				D08A92B1233B213300409D6E /* ChooseWalletViewController.swift in Sources */,
 				D0A2918F225114670099A2F3 /* MakeRPCCall.swift in Sources */,
 				D082397B24DBDB330098D4F4 /* AddPeerViewController.swift in Sources */,
@@ -1201,10 +1132,8 @@
 				D0233F242361EA090041FFBA /* Base32.swift in Sources */,
 				D020480F249605AB00EF52DB /* ActiveWalletsViewController.swift in Sources */,
 				D0CC0E2224F0FA98001BF905 /* PeerDetailsViewController.swift in Sources */,
-				D037C86C231BAFB4006C357D /* AddToKeypoolViewController.swift in Sources */,
 				D0452ADB2247417F0013E225 /* ImportPrivKeyViewController.swift in Sources */,
 				D0384E2F246AC4B1002FEE94 /* XpubConverter.swift in Sources */,
-				D08CED0F22E5089D007E2A8E /* ImportExtendedKeysViewController.swift in Sources */,
 				D08A92B5233C979600409D6E /* FiatConverter.swift in Sources */,
 				D08A92A92337755600409D6E /* AddDescriptors.swift in Sources */,
 				D0F3919624C0379200EA8A2A /* ImportWallet.swift in Sources */,
@@ -1221,7 +1150,6 @@
 				D0384E34246AC53B002FEE94 /* base58.c in Sources */,
 				D011702824EBA3CE00ACC44B /* ChannelDetailViewController.swift in Sources */,
 				D0CC0E2024F0F35A001BF905 /* Peers.swift in Sources */,
-				D037C874231BB04B006C357D /* ScanExtendedKeyViewController.swift in Sources */,
 				D044ED78235AF42D00300D62 /* ImportStruct.swift in Sources */,
 				D0C20ED624A6E19600C62AA4 /* NetworkInfo.swift in Sources */,
 				D06FD7D025062F7A00481185 /* GetTx.swift in Sources */,
@@ -1249,12 +1177,9 @@
 				D06D788F25B817E100769157 /* Lifehash.swift in Sources */,
 				D0C4EE6F24F0EC9B003C929A /* BitSense.xcdatamodeld in Sources */,
 				D0390326246B960B00D32C43 /* KeyChain.swift in Sources */,
-				D037C868231B85A0006C357D /* ExtendedKeysParentViewController.swift in Sources */,
 				D0EF29C1216B82B400EB776A /* SettingsViewController.swift in Sources */,
-				D037C86A231BAF8B006C357D /* ChooseRangeViewController.swift in Sources */,
 				D0A7CF73227967F900B683A0 /* AddressParser.swift in Sources */,
 				D00B9A282111427200E8B95A /* AppDelegate.swift in Sources */,
-				D0EC7490227F6977001489B9 /* SignRawViewController.swift in Sources */,
 				D09A331324AC4C93009FA0B2 /* Descriptor.swift in Sources */,
 				D07AED032435B62800C2FADB /* Commands.swift in Sources */,
 				D0EDDF1124972CEF00657931 /* InvoiceSettingsViewController.swift in Sources */,
@@ -1262,7 +1187,6 @@
 				D084960422EBCD3B003FE8EB /* GetInfoViewController.swift in Sources */,
 				D073E16E22558CDE0012A28C /* CoreDataService.swift in Sources */,
 				D0E54DD525207A1C00BD859E /* UTXOs.swift in Sources */,
-				D037C86E231BAFD2006C357D /* AddAsChangeViewController.swift in Sources */,
 				D01EB4F325AD685700ADF6E4 /* TransactionLabelMemoViewController.swift in Sources */,
 				D0F3919224BFEBBB00EA8A2A /* QRDisplayerViewController.swift in Sources */,
 			);
