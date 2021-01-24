@@ -1,11 +1,5 @@
 # Setting up Tor
 
-This is the guide *Connecting to your node over tor **the "manual expert" way**!*
-
-The default way however is **"tap a button on FN macOS, scan QR with FN iOS"**. Check this out first [here](https://www.youtube.com/watch?v=_7MZd0weDis), because it'll host a hidden service itself.
-
-## So only if you haven't been able to use the default way or you intentionally want to set up `Tor` the manual expert way, please continue reading.
-
 **The below guides walk you through how to install Tor and setup your own hidden service which is what Fully Noded needs to connect to**
 
  - [macOS](#macOS)
@@ -14,15 +8,14 @@ The default way however is **"tap a button on FN macOS, scan QR with FN iOS"**. 
 
 ## macOS
 
-- 1. Install `brew`
+- 1. Install `brew` **for M1 macs you may need to prefix all brew related commands with arch -x86_64 so that they look like `arch -x86_64 brew <command>`**
     - `brew` is a really common program on macOS so its a good idea to first check if you already have it:
         - Open a terminal and run the command: `brew --version`
         - If you got a valid response you can skip to the next step, if not then install brew with:
-            - `cd /usr/local` (its very important that you do **not** install brew using the `sudo` command, that will mess things up later)
-            - `mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew`
+            - `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)”`
             - Let `brew` finish installing, once it has move to the next step.
 - 2. Install `tor`
-    - In a terminal run `brew install tor` (so easy)
+    - In a terminal run `brew install tor` 
         - Once tor finishes installing we need to configure it to run a hidden service for us. The hidden service is what we use to connect to our node remotely. A hidden service simply exposes a specific port on your computer to the Tor network via a super secret URL which is called a `hostname`, the `hostname` is nothing more then a web address for the Tor network. Its important to remember these are secret, only you will know about it unless you intentionally give it to others.
         - Start `tor` by opening a terminal and running `brew services start tor`, ensure it starts
         - Stop `tor` by running `brew services stop tor`, ensure it stops
