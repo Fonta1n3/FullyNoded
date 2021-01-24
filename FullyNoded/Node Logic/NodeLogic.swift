@@ -492,6 +492,8 @@ class NodeLogic {
     class func parseTransactions(transactions: NSArray) {
         var activeWalletId:UUID?
         
+        arrayToReturn.removeAll()
+        
         activeWallet { activeWallet in
             if activeWallet != nil {
                 activeWalletId = activeWallet!.id
@@ -578,9 +580,7 @@ class NodeLogic {
                                 }
                             }
                         }
-                        
-                        arrayToReturn.removeAll()
-                        
+                                                
                         for tx in transactionArray {
                             if let remove = tx["remove"] as? Bool {
                                 if !remove {
