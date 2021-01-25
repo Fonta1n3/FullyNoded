@@ -428,6 +428,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         if let address = Keys.donationAddress() {
             DispatchQueue.main.async { [unowned vc = self] in
                 vc.addressInput.text = address
+                vc.addressImageView.image = LifeHash.image(address)
+                vc.addressImageView.alpha = 1
                 showAlert(vc: vc, title: "Thank you!", message: "A donation address has automatically been added so you may build a transaction which will fund further development of Fully Noded.")
             }
         }
@@ -1044,6 +1046,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             
         case "segueToBroadcaster":
             guard let vc = segue.destination as? VerifyTransactionViewController else { fallthrough }
+            
+            vc.hasSigned = true
             
             if rawTxSigned != "" {
                 vc.signedRawTx = rawTxSigned

@@ -279,8 +279,8 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
                 }
             }
         } else if segue.identifier == "segueToSignerFromCombiner" {
-            if let vc = segue.destination as? SignerViewController {
-                vc.psbt = self.psbt
+            if let vc = segue.destination as? VerifyTransactionViewController {
+                vc.unsignedPsbt = self.psbt
             }
         }
     }

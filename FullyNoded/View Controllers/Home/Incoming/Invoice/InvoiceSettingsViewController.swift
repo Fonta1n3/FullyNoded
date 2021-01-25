@@ -17,10 +17,6 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
     let ud = UserDefaults.standard
     var isSingleKey = Bool()
     var isPrivKey = Bool()
-//    var isPruned = Bool()
-//    var isTestnet = Bool()
-//    var isExtendedKey = Bool()
-//    var isDescriptor = Bool()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -34,10 +30,6 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
     override func viewDidAppear(_ animated: Bool) {
         isSingleKey = false
         isPrivKey = false
-//        isPruned = false
-//        isTestnet = false
-//        isExtendedKey = false
-//        isDescriptor = false
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -54,7 +46,7 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 2
+        return 3
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -76,7 +68,7 @@ class InvoiceSettingsViewController: UIViewController, UITableViewDelegate, UITa
         case 1:
             switch indexPath.row {
             case 0:label.text = "Address"
-            case 2:label.text = "Private key"
+            case 1:label.text = "Private key"
             default:
                 break
             }

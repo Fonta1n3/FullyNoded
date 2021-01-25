@@ -37,7 +37,6 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
     var finalize = Bool()
     var analyze = Bool()
     var convert = Bool()
-    var txChain = Bool()
     var broadcast = Bool()
     var verify = Bool()
     var combinePSBT = Bool()
@@ -77,7 +76,6 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
         finalize = false
         analyze = false
         convert = false
-        txChain = false
         combinePSBT = false
         deriveAddresses = false
         firstLink = ""
@@ -92,7 +90,7 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
         switch section {
         case 0: return 2
         case 1: return 8
-        case 2: return 12
+        case 2: return 10
         case 3: return 8
         case 4: return 2
         case 5: return 1
@@ -134,18 +132,16 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
         case 2:
             //Transactions
             switch indexPath.row {
-            case 0: label.text = "Create Raw"
-            case 1: label.text = "Sign Raw"
-            case 2: label.text = "Decode Raw"
-            case 3: label.text = "Verify Raw"
-            case 4: label.text = "Broadcast Raw"
-            case 5: label.text = "Process PSBT"
-            case 6: label.text = "Finalize PSBT"
-            case 7: label.text = "Join PSBT"
-            case 8: label.text = "Analyze PSBT"
-            case 9: label.text = "Convert Raw to PSBT"
-            case 10: label.text = "Decode PSBT"
-            case 11: label.text = "Combine PSBT"
+            case 0: label.text = "Decode Raw"
+            case 1: label.text = "Verify Raw"
+            case 2: label.text = "Broadcast Raw"
+            case 3: label.text = "Process PSBT"
+            case 4: label.text = "Finalize PSBT"
+            case 5: label.text = "Join PSBT"
+            case 6: label.text = "Analyze PSBT"
+            case 7: label.text = "Convert Raw to PSBT"
+            case 8: label.text = "Decode PSBT"
+            case 9: label.text = "Combine PSBT"
             default:break}
             
         case 3:
@@ -239,18 +235,17 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
         case 2:
             //Transactions
             switch indexPath.row {
-            case 0: segue(to: "createUnsigned")//"Create Raw"
-            case 1: segue(to: "signRaw")//"Sign Raw"
-            case 2: decodeRaw = true; segue(to: "goDecode")//"Decode Raw"
-            case 3: verify = true; segue(to: "goDecode")//"Verify Raw"
-            case 4: broadcast = true; segue(to: "goDecode")//"Broadcast Raw"
-            case 5: process = true; segue(to: "goDecode")//"Process PSBT"
-            case 6: finalize = true; segue(to: "goDecode")//"Finalize PSBT"
-            case 7: combinePSBT = false; segue(to: "joinPSBT")//"Join PSBT"
-            case 8: analyze = true; segue(to: "goDecode")//"Analyze PSBT"
-            case 9: convert = true; segue(to: "goDecode")//"Convert Raw to PSBT"
-            case 10: decodePSBT = true; segue(to: "goDecode")//"Decode PSBT"
-            case 11: combinePSBT = true; segue(to: "joinPSBT")//"Combine PSBT"
+            //case 1: segue(to: "signRaw")//"Sign Raw"
+            case 0: decodeRaw = true; segue(to: "goDecode")//"Decode Raw"
+            case 1: verify = true; segue(to: "signRaw")//"Verify Raw"
+            case 2: broadcast = true; segue(to: "signRaw")//"Broadcast Raw"
+            case 3: process = true; segue(to: "signRaw")//"Process PSBT"
+            case 4: finalize = true; segue(to: "signRaw")//"Finalize PSBT"
+            case 5: combinePSBT = false; segue(to: "joinPSBT")//"Join PSBT"
+            case 6: analyze = true; segue(to: "goDecode")//"Analyze PSBT"
+            case 7: convert = true; segue(to: "goDecode")//"Convert Raw to PSBT"
+            case 8: decodePSBT = true; segue(to: "goDecode")//"Decode PSBT"
+            case 9: combinePSBT = true; segue(to: "joinPSBT")//"Combine PSBT"
             default:break}
             
             
@@ -434,7 +429,6 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
                 vc.analyze = analyze
                 vc.convert = convert
                 vc.finalize = finalize
-                vc.txChain = txChain
                 vc.firstLink = firstLink
                 vc.broadcast = broadcast
                 vc.verify = verify

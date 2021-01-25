@@ -180,6 +180,9 @@ enum Keys {
         CoreDataService.retrieveEntity(entityName: .signers) { signers in
             guard let signers = signers, signers.count > 0 else { completion((false, nil)); return }
             
+            var canSign = false
+            var signerLabel:String?
+            
             for (i, signer) in signers.enumerated() {
                 let signerStruct = SignerStruct(dictionary: signer)
                 
@@ -200,23 +203,15 @@ enum Keys {
                       let hdKeyT = try? HDKey(base58: mkT),
                       let childKeyT = try? hdKeyT.derive(using: path) else { completion((false, nil)); return }
                 
-                var canSign = false
-                var signerLabel:String?
-                
-                for pk in pubkeys {
+                for (p, pk) in pubkeys.enumerated() {
                     if childKeyM.pubKey == pk || childKeyT.pubKey == pk {
-                        //completion((true, signerStruct.label))
                         canSign = true
                         signerLabel = signerStruct.label
-                        print("cansign: \(canSign)")
-                        print("label: \(signerLabel)")
-                        completion((canSign, signerLabel))
-                        break
                     }
-                }
-                
-                if i + 1 == signers.count {
-                    completion((canSign, signerLabel))
+                    
+                    if i + 1 == signers.count && p + 1 == pubkeys.count {
+                        completion((canSign, signerLabel))
+                    }
                 }
             }
         }
@@ -267,7 +262,6 @@ enum Keys {
                         }
                         
                         if i + 1 == wallets.count {
-                            print("completing here!??????")
                             completion((isOurs, walletLabel, signable, signer))
                         }
                     }
@@ -291,46 +285,39 @@ enum Keys {
                                 let scriptPubKey = ScriptPubKey(multisig: keys, threshold: UInt(descStr.sigsRequired), isBIP67: descStr.isBIP67)
                                 
                                 if let derivedAddress = try? Address(scriptPubKey: scriptPubKey, network: network) {
-                                    pubkeySignable(keys, fullPath) { (isSignable, signerLabel) in
-                                        if isSignable {
-                                            signable = true
-                                            signer = signerLabel
-                                        }
-                                        
-                                        if derivedAddress.description == address {
-                                            isOurs = true
-                                            walletLabel = walletStruct.label
-                                        }
-                                        
-                                        if i + 1 == wallets.count {
-                                            completion((isOurs, walletLabel, signable, signer))
-                                        }
+                                    if derivedAddress.description == address {
+                                        isOurs = true
+                                        walletLabel = walletStruct.label
                                     }
                                 }
                             }
                         }
-                    } else {
-                        // we know the wallet in the loop wont derive the same address so we can jusst check against signers
+                    }
+                    
+                    if i + 1 == wallets.count {
                         for (d, derivation) in providedDescStr.derivationArray.enumerated() {
                             guard let fullPath = try? BIP32Path(string: derivation) else { return }
                             
                             var pubkeys = [PubKey]()
-                            for key in providedDescStr.multiSigKeys {
+                            for (k, key) in providedDescStr.multiSigKeys.enumerated() {
                                 guard let hex = Data(hexString: key),
                                       let pubkey1 = try? PubKey(hex, network: .mainnet),
                                       let pubkey2 = try? PubKey(hex, network: .testnet) else { return }
                                 pubkeys.append(pubkey1)
                                 pubkeys.append(pubkey2)
-                            }
-                                                        
-                            pubkeySignable(pubkeys, fullPath) { (isSignable, signerLabel) in
-                                if isSignable {
-                                    signable = true
-                                    signer = signerLabel
-                                }
                                 
-                                if d + 1 == providedDescStr.derivationArray.count && i + 1 == wallets.count {
-                                    completion((isOurs, walletLabel, signable, signer))
+                                if k + 1 == providedDescStr.multiSigKeys.count {
+                                                                
+                                    pubkeySignable(pubkeys, fullPath) { (isSignable, signerLabel) in
+                                        if isSignable {
+                                            signable = true
+                                            signer = signerLabel
+                                        }
+                                        
+                                        if d + 1 == providedDescStr.derivationArray.count {
+                                            completion((isOurs, walletLabel, signable, signer))
+                                        }
+                                    }
                                 }
                             }
                         }

@@ -81,8 +81,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         (UIApplication.shared.delegate as? AppDelegate)?.saveContext()
         
         if mgr?.state != .stopped && mgr?.state != TorClient.TorState.none  {
+            #if !targetEnvironment(macCatalyst)
             mgr?.state = .refreshing
             mgr?.resign()
+            #endif
         }
     }
         

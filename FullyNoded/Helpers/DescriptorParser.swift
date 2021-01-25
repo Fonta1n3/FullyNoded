@@ -139,6 +139,19 @@ class DescriptorParser {
                                 for pathItem in pathArray {
                                     if pathItem.contains("xpub") || pathItem.contains("tpub") || pathItem.contains("xprv") || pathItem.contains("tprv") {
                                         keyArray.append("\(pathItem.replacingOccurrences(of: "))", with: ""))")
+                                    } else if pathItem.hasPrefix("0") {
+                                        var pubkey = ""
+                                        if pathItem.contains(")") {
+                                            let arr = pathItem.split(separator: ")")
+                                            pubkey = "\(arr[0])"
+                                        } else {
+                                            pubkey = "\(pathItem)"
+                                        }
+                                        if let pubkeyData = Data(hexString: pubkey) {
+                                            if pubkeyData.count == 33 || pubkeyData.count == 65 {
+                                                keyArray.append(pubkey)
+                                            }
+                                        }
                                     } else {
                                         if !pathItem.contains("*") {
                                             if path == "" {

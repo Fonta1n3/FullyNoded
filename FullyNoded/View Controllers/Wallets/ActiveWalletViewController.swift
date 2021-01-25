@@ -82,6 +82,15 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
+    @IBAction func signPsbtAction(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.performSegue(withIdentifier: "segueToSignPsbt", sender: self)
+        }
+    }
+    
+    
     private func configureButton(_ button: UIView) {
         button.layer.borderColor = UIColor.darkGray.cgColor
         button.layer.borderWidth = 0.5
