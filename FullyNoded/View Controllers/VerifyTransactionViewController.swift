@@ -294,6 +294,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         promptToAddTx()
     }
     
+    @objc func tapToAdd(_ sender: UIButton) {
+        promptToAddTx()
+    }
+    
     @IBAction func exportAction(_ sender: Any) {
         if signedRawTx != "" {
             exportTxn(txn: signedRawTx)
@@ -676,6 +680,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                                     "index": index + 1,
                                     "amount": amountString,
                                     "address": addressString,
+                                    "lifehash": LifeHash.image(addressString) ?? UIImage(),
                                     "isOurs": false,// Hardcode at this stage and update before displaying
                                     "isDust": amount < 0.00020000
                                 ]
@@ -691,6 +696,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 "index": index + 1,
                 "amount": "unknown",
                 "address": "unknown",
+                "lifehash": UIImage(),
                 "isOurs": false,// Hardcode at this stage and update before displaying
                 "isDust": true
             ]
@@ -793,12 +799,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                                 let hex = scriptsig["hex"] as? String ?? ""
                                 
                                 if hex != "" {
-                                    self.inputTableArray[self.index]["signatures"] = "Signed"
+                                    self.inputTableArray[self.index]["signatures"] = "Signatures complete"
                                 } else {
                                     if let txwitness = input["txinwitness"] as? NSArray {
                                         
                                         if txwitness.count > 1 {
-                                            self.inputTableArray[self.index]["signatures"] = "Signed"
+                                            self.inputTableArray[self.index]["signatures"] = "Signatures complete"
                                         }
                                     }
                                 }
@@ -1036,6 +1042,16 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
     }
     
+    private func defaultCell(_ indexPath: IndexPath) -> UITableViewCell {
+        let cell = verifyTable.dequeueReusableCell(withIdentifier: "defaultCell", for: indexPath)
+        configureCell(cell)
+        
+        let addButton = cell.viewWithTag(2) as! UIButton
+        addButton.addTarget(self, action: #selector(tapToAdd(_:)), for: .touchUpInside)
+        
+        return cell
+    }
+    
     private func confsCell(_ indexPath: IndexPath) -> UITableViewCell {
         let confsCell = verifyTable.dequeueReusableCell(withIdentifier: "miningFeeCell", for: indexPath)
         configureCell(confsCell)
@@ -1120,22 +1136,34 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let inputAmountLabel = inputCell.viewWithTag(2) as! UILabel
         let inputAddressLabel = inputCell.viewWithTag(3) as! UILabel
         let inputIsOursImage = inputCell.viewWithTag(4) as! UIImageView
+        let inputIsOursLabel = inputCell.viewWithTag(5) as! UILabel
+        let inputTypeLabel = inputCell.viewWithTag(6) as! UILabel
+        let utxoLabel = inputCell.viewWithTag(7) as! UILabel
         let isChangeImageView = inputCell.viewWithTag(8) as! UIImageView
-        let labelLabel = inputCell.viewWithTag(7) as! UILabel
-        let pathLabel = inputCell.viewWithTag(5) as! UILabel
-        let fingerprintLabel = inputCell.viewWithTag(6) as! UILabel
+        let lifehashImageView = inputCell.viewWithTag(9) as! UIImageView
         let isDustImageView = inputCell.viewWithTag(10) as! UIImageView
         let backgroundView1 = inputCell.viewWithTag(11)!
         let backgroundView2 = inputCell.viewWithTag(12)!
         let backgroundView3 = inputCell.viewWithTag(13)!
         let signaturesLabel = inputCell.viewWithTag(14) as! UILabel
-        let descLabel = inputCell.viewWithTag(15) as! UILabel
+        let descTextView = inputCell.viewWithTag(15) as! UITextView
+        let sigsBackgroundView = inputCell.viewWithTag(16)!
+        let sigsImageView = inputCell.viewWithTag(17) as! UIImageView
+        let copyAddressButton = inputCell.viewWithTag(18) as! UIButton
+        let copyDescButton = inputCell.viewWithTag(19) as! UIButton
+                
         backgroundView1.layer.cornerRadius = 5
         backgroundView2.layer.cornerRadius = 5
         backgroundView3.layer.cornerRadius = 5
+        sigsBackgroundView.layer.cornerRadius = 5
         isDustImageView.tintColor = .white
         isChangeImageView.tintColor = .white
         inputIsOursImage.tintColor = .white
+        sigsImageView.tintColor = .white
+        descTextView.clipsToBounds = true
+        descTextView.layer.cornerRadius = 8
+        descTextView.layer.borderWidth = 0.5
+        descTextView.layer.borderColor = UIColor.darkGray.cgColor
         
         if indexPath.row < inputTableArray.count {
             let input = inputTableArray[indexPath.row]
@@ -1143,50 +1171,77 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             let isOurs = input["isOurs"] as? Bool ?? false
             let isChange = input["isChange"] as? Bool ?? false
             let label = input["label"] as? String ?? "no label"
-            let fingerprint = input["fingerprint"] as? String ?? "no fingerprint"
-            let path = input["hdKeyPath"] as? String ?? "no keypath"
             let isDust = input["isDust"] as? Bool ?? false
             let signatureStatus = input["signatures"] as? String ?? "no signature data"
             let desc = input["desc"] as? String ?? "no descriptor"
+            let lifehash = input["lifehash"] as? UIImage ?? UIImage()
+            let inputAddress = input["address"] as! String
             
-            labelLabel.text = label
-            fingerprintLabel.text = fingerprint
-            pathLabel.text = path
+            utxoLabel.text = label
             signaturesLabel.text = signatureStatus
-            descLabel.text = desc
+            descTextView.text = desc
+            lifehashImageView.image = lifehash
+            sigsImageView.image = UIImage(systemName: "signature")
+            
+            inputIndexLabel.text = "Input #\(input["index"] as! Int)"
+            inputAmountLabel.text = "\((input["amount"] as! String))"
+            inputAddressLabel.text = inputAddress
+            
+            copyAddressButton.restorationIdentifier = inputAddress
+            copyDescButton.restorationIdentifier = desc
+            
+            copyAddressButton.addTarget(self, action: #selector(copyAddress(_:)), for: .touchUpInside)
+            copyDescButton.addTarget(self, action: #selector(copyDesc(_:)), for: .touchUpInside)
+            
+            if signatureStatus == "Signatures complete" {
+                sigsBackgroundView.backgroundColor = .systemGreen
+            } else if self.signatures.count > 0 {
+                sigsBackgroundView.backgroundColor = .systemOrange
+            } else {
+                sigsBackgroundView.backgroundColor = .systemRed
+            }
             
             if isDust {
                 isDustImageView.image = UIImage(systemName: "exclamationmark.triangle")
                 backgroundView3.backgroundColor = .systemRed
             } else {
-                isDustImageView.image = UIImage(systemName: "checkmark")
-                backgroundView3.backgroundColor = .darkGray
+                isDustImageView.image = UIImage(systemName: "checkmark.circle.fill")
+                backgroundView3.backgroundColor = .systemGreen
             }
             
             if isChange {
                 isChangeImageView.image = UIImage(systemName: "arrow.2.circlepath")
                 backgroundView2.backgroundColor = .systemPurple
+                inputTypeLabel.text = "Change input"
             } else {
                 isChangeImageView.image = UIImage(systemName: "arrow.down.left")
                 backgroundView2.backgroundColor = .systemBlue
+                inputTypeLabel.text = "Receive input"
             }
             
             if isOurs {
                 backgroundView1.backgroundColor = .systemGreen
-                inputIsOursImage.image = UIImage(systemName: "person.crop.circle.fill.badge.checkmark")
+                inputIsOursImage.image = UIImage(systemName: "checkmark.circle.fill")
+                
+                if let walletLabel = wallet?.label {
+                    inputIsOursLabel.text = "Owned by \(walletLabel)"
+                } else {
+                    inputIsOursLabel.text = "Owned by the Active Wallet"
+                }
+                
             } else {
-                backgroundView1.backgroundColor = .systemRed
-                inputIsOursImage.image = UIImage(systemName: "person.crop.circle.badge.xmark")
+                inputTypeLabel.text = "Unknown type"
+                backgroundView1.backgroundColor = .systemGray
+                isChangeImageView.backgroundColor = .systemGray
+                inputIsOursImage.image = UIImage(systemName: "questionmark.diamond.fill")
+                isChangeImageView.image = UIImage(systemName: "questionmark.diamond.fill")
+                
+                if let walletLabel = wallet?.label {
+                    inputIsOursLabel.text = "Not owned by \(walletLabel)"
+                } else {
+                    inputIsOursLabel.text = "Not owned by the Active Wallet"
+                }
             }
-            
-            inputIndexLabel.text = "Input #\(input["index"] as! Int)"
-            inputAmountLabel.text = "\((input["amount"] as! String))"
-            inputAddressLabel.text = (input["address"] as! String)
-            inputAddressLabel.adjustsFontSizeToFitWidth = true
-            inputCell.selectionStyle = .none
-            inputIndexLabel.textColor = .lightGray
-            inputAmountLabel.textColor = .lightGray
-            inputAddressLabel.textColor = .lightGray
         }
         
         return inputCell
@@ -1225,7 +1280,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         backgroundView2.layer.cornerRadius = 5
         backgroundView3.layer.cornerRadius = 5
         descTextView.layer.cornerRadius = 8
-        
         descTextView.layer.borderWidth = 0.5
         descTextView.layer.borderColor = UIColor.darkGray.cgColor
         
@@ -1787,30 +1841,39 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
 }
 
 extension VerifyTransactionViewController: UITableViewDelegate {
+    
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 8
+        if unsignedPsbt == "" && signedRawTx == "" {
+            return 1
+        } else {
+            return 8
+        }
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        switch section {
-        case 4:
-            return inputArray.count
-            
-        case 5:
-            return outputArray.count
-            
-        case 0, 3, 1, 6, 2, 7:
+        if unsignedPsbt == "" && signedRawTx == "" {
             return 1
-            
-        default:
-            return 0
+        } else {
+            switch section {
+            case 4:
+                return inputArray.count
+                
+            case 5:
+                return outputArray.count
+                
+            case 0, 3, 1, 6, 2, 7:
+                return 1
+                
+            default:
+                return 0
+            }
         }
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         switch indexPath.section {
         case 4:
-            return 172
+            return 441
             
         case 5:
             return 522
@@ -1832,7 +1895,7 @@ extension VerifyTransactionViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard inputTableArray.count > 0 && outputArray.count > 0 else {
-            return UITableViewCell()
+            return defaultCell(indexPath)
         }
         
         tableView.separatorColor = .lightGray
@@ -1884,53 +1947,57 @@ extension VerifyTransactionViewController: UITableViewDelegate {
         textLabel.textColor = .white
         textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
         
-        switch section {
-        case 0:
-            textLabel.text = "Label"
-            textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
-        
-        case 1:
-            textLabel.text = "Memo"
-            textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
+        if unsignedPsbt == "" || signedRawTx == "" {
+            textLabel.text = ""
+        } else {
+            switch section {
+            case 0:
+                textLabel.text = "Label"
+                textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
             
-        case 2:
-            if !alreadyBroadcast {
-                textLabel.text = "Mempool accept"
-            } else {
-                textLabel.text = "Confirmations"
+            case 1:
+                textLabel.text = "Memo"
+                textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
+                
+            case 2:
+                if !alreadyBroadcast {
+                    textLabel.text = "Mempool accept"
+                } else {
+                    textLabel.text = "Confirmations"
+                }
+                textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
+                
+            case 3:
+                textLabel.text = "Transaction ID"
+                let copyButton = UIButton()
+                let copyImage = UIImage(systemName: "doc.on.doc")!
+                copyButton.tintColor = .systemTeal
+                copyButton.setImage(copyImage, for: .normal)
+                copyButton.addTarget(self, action: #selector(copyTxid), for: .touchUpInside)
+                copyButton.frame = CGRect(x: header.frame.maxX - 70, y: 0, width: 50, height: 50)
+                copyButton.center.y = textLabel.center.y
+                copyButton.showsTouchWhenHighlighted = true
+                header.addSubview(copyButton)
+                                
+            case 4:
+                textLabel.text = "Inputs"
+                textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
+                                
+            case 5:
+                textLabel.text = "Outputs"
+                textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
+                
+            case 6:
+                textLabel.text = "Mining fee"
+                textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
+            
+            case 7:
+                textLabel.text = "Estimated time to confirm"
+                textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
+                                
+            default:
+                break
             }
-            textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
-            
-        case 3:
-            textLabel.text = "Transaction ID"
-            let copyButton = UIButton()
-            let copyImage = UIImage(systemName: "doc.on.doc")!
-            copyButton.tintColor = .systemTeal
-            copyButton.setImage(copyImage, for: .normal)
-            copyButton.addTarget(self, action: #selector(copyTxid), for: .touchUpInside)
-            copyButton.frame = CGRect(x: header.frame.maxX - 70, y: 0, width: 50, height: 50)
-            copyButton.center.y = textLabel.center.y
-            copyButton.showsTouchWhenHighlighted = true
-            header.addSubview(copyButton)
-                            
-        case 4:
-            textLabel.text = "Inputs"
-            textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
-                            
-        case 5:
-            textLabel.text = "Outputs"
-            textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
-            
-        case 6:
-            textLabel.text = "Mining fee"
-            textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
-        
-        case 7:
-            textLabel.text = "Estimated time to confirm"
-            textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
-                            
-        default:
-            break
         }
         
         header.addSubview(textLabel)
