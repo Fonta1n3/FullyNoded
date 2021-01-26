@@ -584,7 +584,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     func parseInputs(inputs: NSArray, completion: @escaping () -> Void) {
-        print("parseInputs: \(inputs)")
         for (index, i) in inputs.enumerated() {
             if let input = i as? NSDictionary {
                 if let txid = input["txid"] as? String, let vout = input["vout"] as? Int {
@@ -607,12 +606,14 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     let number = i + 1
                     var addressString = ""
                     
-                    if addresses.count > 1 {
-                        for a in addresses {
-                            addressString += a as! String + " "
+                    if addresses.count > 0 {
+                        if addresses.count > 1 {
+                            for a in addresses {
+                                addressString += a as! String + " "
+                            }
+                        } else {
+                            addressString = addresses[0] as? String ?? ""
                         }
-                    } else {
-                        addressString = addresses[0] as! String
                     }
                     
                     outputTotal += amount
@@ -739,7 +740,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         if index < inputTableArray.count {
             self.updateLabel("verifying input #\(self.index + 1) out of \(self.inputTableArray.count)")
             
-            if let address = inputTableArray[index]["address"] as? String, address != "unknown" {
+            if let address = inputTableArray[index]["address"] as? String, address != "unknown", address != "" {
                 Reducer.makeCommand(command: .getaddressinfo, param: "\"\(address)\"") { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
                     
@@ -847,7 +848,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         if index < outputArray.count {
             self.updateLabel("verifying output #\(self.index + 1) out of \(self.outputArray.count)")
             
-            if let address = outputArray[index]["address"] as? String {
+            if let address = outputArray[index]["address"] as? String, address != "" {
                 Reducer.makeCommand(command: .getaddressinfo, param: "\"\(address)\"") { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
                     
@@ -888,7 +889,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         // also adding a signer verify button to show whether FN is able to sign for the output or not
                         if solvable {
                             Keys.verifyAddress(address, keypath, desc) { (isOursFullyNoded, walletLabel, signable, signer) in
-                                print("verifyAddress")
                                 self.outputArray[self.index]["isOursFullyNoded"] = isOursFullyNoded
                                 self.outputArray[self.index]["walletLabel"] = walletLabel
                                 self.outputArray[self.index]["signable"] = signable
@@ -904,6 +904,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         }
                     }
                 }
+            } else {
+                self.index += 1
+                self.verifyOutputs()
             }
         } else {
             guard signedRawTx != "" else {
