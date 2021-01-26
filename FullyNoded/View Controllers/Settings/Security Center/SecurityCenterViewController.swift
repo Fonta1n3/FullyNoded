@@ -57,6 +57,11 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
         background.clipsToBounds = true
         background.layer.cornerRadius = 8
         
+        cell.clipsToBounds = true
+        cell.layer.cornerRadius = 8
+        cell.layer.borderWidth = 0.5
+        cell.layer.borderColor = UIColor.lightGray.cgColor
+        
         switch indexPath.section {
         case 0:
             icon.image = UIImage(systemName: "lock.shield")

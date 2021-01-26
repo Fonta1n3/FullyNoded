@@ -5499,6 +5499,14 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 <color key="textColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="U3Q-gy-IV8">
+                                <rect key="frame" x="306" y="223" width="21" height="23"/>
+                                <color key="tintColor" systemColor="systemTealColor"/>
+                                <state key="normal" image="doc.on.doc" catalog="system"/>
+                                <connections>
+                                    <action selector="copyAction:" destination="KZO-Gi-4AH" eventType="touchUpInside" id="ljf-Hv-DTO"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="JVg-t3-erP"/>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -5506,6 +5514,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                             <constraint firstItem="KvQ-lH-ysz" firstAttribute="leading" secondItem="JVg-t3-erP" secondAttribute="leading" constant="16" id="4Jc-YH-ZKM"/>
                             <constraint firstItem="rpP-21-3Z5" firstAttribute="top" secondItem="JVg-t3-erP" secondAttribute="top" constant="20" id="9rn-Mz-pAk"/>
                             <constraint firstItem="JVg-t3-erP" firstAttribute="trailing" secondItem="yal-Te-OvI" secondAttribute="trailing" constant="16" id="B2d-mX-922"/>
+                            <constraint firstItem="8gH-bm-rKb" firstAttribute="centerY" secondItem="U3Q-gy-IV8" secondAttribute="centerY" id="B6p-FR-6Wo"/>
                             <constraint firstItem="9uA-U1-aYX" firstAttribute="top" secondItem="nEN-fJ-IQg" secondAttribute="bottom" constant="8" id="Dnq-NP-dDC"/>
                             <constraint firstItem="yal-Te-OvI" firstAttribute="top" secondItem="1i0-rS-dgs" secondAttribute="bottom" constant="8" id="FmK-pX-ZSo"/>
                             <constraint firstItem="8gH-bm-rKb" firstAttribute="centerY" secondItem="nEN-fJ-IQg" secondAttribute="centerY" id="MLe-e2-Vwg"/>
@@ -5518,6 +5527,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                             <constraint firstItem="yal-Te-OvI" firstAttribute="leading" secondItem="JVg-t3-erP" secondAttribute="leading" constant="16" id="cVY-qk-TIQ"/>
                             <constraint firstItem="nEN-fJ-IQg" firstAttribute="top" secondItem="yal-Te-OvI" secondAttribute="bottom" constant="30" id="ddc-3v-HhR"/>
                             <constraint firstItem="JVg-t3-erP" firstAttribute="trailing" secondItem="8gH-bm-rKb" secondAttribute="trailing" constant="16" id="gvY-sU-OtT"/>
+                            <constraint firstItem="8gH-bm-rKb" firstAttribute="leading" secondItem="U3Q-gy-IV8" secondAttribute="trailing" constant="13" id="hgN-NG-E5I"/>
                             <constraint firstItem="JVg-t3-erP" firstAttribute="trailing" secondItem="9uA-U1-aYX" secondAttribute="trailing" constant="16" id="mqT-O1-Gkb"/>
                             <constraint firstItem="1i0-rS-dgs" firstAttribute="top" secondItem="rpP-21-3Z5" secondAttribute="bottom" constant="34" id="q78-zM-cVg"/>
                             <constraint firstItem="4Dm-7E-1gc" firstAttribute="centerY" secondItem="1i0-rS-dgs" secondAttribute="centerY" id="snv-1b-lGE"/>

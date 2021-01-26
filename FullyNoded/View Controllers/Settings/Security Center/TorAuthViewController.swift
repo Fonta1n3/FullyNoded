@@ -35,6 +35,14 @@ class TorAuthViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
+    @IBAction func copyAction(_ sender: Any) {
+        guard let pubkey = publickKeyLabel.text else { return }
+        
+        UIPasteboard.general.string = pubkey
+        showAlert(vc: self, title: "", message: "Pubkey copied ✓")
+    }
+    
+    
     @objc func dismissKeyboard (_ sender: UITapGestureRecognizer) {
         textField.resignFirstResponder()
     }
