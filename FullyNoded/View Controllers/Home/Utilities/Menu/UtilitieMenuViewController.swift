@@ -105,6 +105,10 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
         cell.selectionStyle = .none
         let label = cell.viewWithTag(1) as! UILabel
         label.adjustsFontSizeToFitWidth = true
+        cell.clipsToBounds = true
+        cell.layer.cornerRadius = 8
+        cell.layer.borderColor = UIColor.lightGray.cgColor
+        cell.layer.borderWidth = 0.5
         
         switch indexPath.section {
             

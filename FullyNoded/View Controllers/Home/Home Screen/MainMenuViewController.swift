@@ -145,7 +145,7 @@ class MainMenuViewController: UIViewController {
         if address.contains("127.0.0.1") || address.contains("localhost") || address.contains(macName) {
             
             guard var hostname = mgr?.hostname() else {
-                showAlert(vc: self, title: "Ooops", message: "There was an error getting your hostname for remote connection... Please make sure you are connected to the internet and that Tor successfully bootstrapped.")
+                showAlert(vc: self, title: "", message: "There was an error getting your hostname for remote connection... Please make sure you are connected to the internet and that Tor successfully bootstrapped.")
                 return
             }
             
@@ -158,12 +158,12 @@ class MainMenuViewController: UIViewController {
             }
             
         } else {
-            showAlert(vc: self, title: "Ooops", message: "This feature can only be used with nodes which are running on the same computer as Fully Noded - Desktop.\n\nTo take advantage of this feature just download Bitcoin Core and run it.\n\nThen add your local node to Fully Noded - Desktop using 127.0.0.1:8332 as the address.\n\nYou can then tap this button to get a QR code which will allow you to connect your node via your iPhone or iPad on the mobile app.")
+            showAlert(vc: self, title: "", message: "This feature can only be used with nodes which are running on the same computer as Fully Noded - Desktop.\n\nTo take advantage of this feature just download Bitcoin Core and run it.\n\nThen add your local node to Fully Noded - Desktop using 127.0.0.1:8332 as the address.\n\nYou can then tap this button to get a QR code which will allow you to connect your node via your iPhone or iPad on the mobile app.")
         }
         
         #else
         // Code to exclude from Mac.
-        showAlert(vc: self, title: "Ooops", message: "This is a macOS feature only, when you use Fully Noded - Desktop, it has the ability to display a QR code you can scan with your iPhone or iPad to connect to your node remotely.")
+        showAlert(vc: self, title: "", message: "This is a macOS feature only, when you use Fully Noded - Desktop, it has the ability to display a QR code you can scan with your iPhone or iPad to connect to your node remotely.")
         #endif
         
     }
@@ -781,12 +781,12 @@ class MainMenuViewController: UIViewController {
 
         let task = TorClient.sharedInstance.session.dataTask(with: request as URLRequest) { (data, response, error) in
             guard let urlContent = data else {
-                showAlert(vc: self, title: "Ooops", message: "There was an issue checking on payment status")
+                showAlert(vc: self, title: "", message: "There was an issue checking on payment status")
                 return
             }
 
             guard let json = try? JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as? NSDictionary else {
-                showAlert(vc: self, title: "Ooops", message: "There was an issue decoding the response when fetching payment status")
+                showAlert(vc: self, title: "", message: "There was an issue decoding the response when fetching payment status")
                 return
             }
 

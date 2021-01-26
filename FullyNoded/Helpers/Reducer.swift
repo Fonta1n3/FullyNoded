@@ -29,6 +29,12 @@ class Reducer {
                 handleWalletNotLoaded()
             } else if errorDesc.contains("Duplicate -wallet filename specified") {
                 makeTorCommand()
+//            } else if errorDesc.contains("Wallet file not specified (must request wallet RPC through") {
+//                DispatchQueue.main.async {
+//                    let alertWindow = UIWindow(frame: UIScreen.main.bounds)
+//                    alertWindow.rootViewController = UIViewController()
+//                    showAlert(vc: alertWindow.rootViewController, title: "No wallet specified!", message: "Please go to your Active Wallet tab and toggle on a wallet then try this operation again, for certain commands Bitcoin Core needs to know which wallet to talk to.")
+//                }
             } else {
                 completion((nil, errorDesc))
             }

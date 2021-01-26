@@ -44,6 +44,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var id:UUID!
     var feeBumped = false
     var hasSigned = false
+    var isSigning = false
     var wallet:Wallet?
     
     @IBOutlet weak private var verifyTable: UITableView!
@@ -323,12 +324,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     @IBAction func signAction(_ sender: Any) {
+        isSigning = true
         spinner.addConnectingView(vc: self, description: "signing...")
         Signer.sign(psbt: self.unsignedPsbt) { [weak self] (signedPsbt, rawTx, errorMessage) in
             guard let self = self else { return }
                         
             self.disableSignButton()
-            self.spinner.removeConnectingView()
             
             if signedPsbt != nil {
                 self.unsignedPsbt = signedPsbt!
@@ -341,6 +342,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 self.load()
                 
             } else {
+                self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "Error Signing", message: errorMessage ?? "unknown")
             }
         }
@@ -424,13 +426,18 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     private func load() {
-        spinner.addConnectingView(vc: self, description: "getting exchange rate....")
+        if !isSigning {
+            spinner.addConnectingView(vc: self, description: "getting exchange rate....")
+        } else {
+            updateLabel("reloading signed transaction...")
+        }
         
         inputArray.removeAll()
         inputTableArray.removeAll()
         outputArray.removeAll()
         recipients.removeAll()
         signatures.removeAll()
+        outputsString = ""
         
         FiatConverter.sharedInstance.getFxRate { [weak self] exchangeRate in
             guard let self = self else { return }
@@ -577,6 +584,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     func parseInputs(inputs: NSArray, completion: @escaping () -> Void) {
+        print("parseInputs: \(inputs)")
         for (index, i) in inputs.enumerated() {
             if let input = i as? NSDictionary {
                 if let txid = input["txid"] as? String, let vout = input["vout"] as? Int {
@@ -734,6 +742,17 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             if let address = inputTableArray[index]["address"] as? String, address != "unknown" {
                 Reducer.makeCommand(command: .getaddressinfo, param: "\"\(address)\"") { [weak self] (response, errorMessage) in
                     guard let self = self else { return }
+                    
+                    guard errorMessage == nil else {
+                        self.spinner.removeConnectingView()
+                        if errorMessage!.contains("Wallet file not specified (must request wallet RPC through") {
+                            showAlert(vc: self, title: "No wallet specified!", message: "Please go to your Active Wallet tab and toggle on a wallet then try this operation again, for certain commands Bitcoin Core needs to know which wallet to talk to.")
+                        } else {
+                            showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown")
+                        }
+                        
+                        return
+                    }
                     
                     if let dict = response as? NSDictionary {
                         let solvable = dict["solvable"] as? Bool ?? false
@@ -1095,7 +1114,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             }
         } else {
             if unsignedPsbt != "" {
-                label.text = "Transaction not yet complete! Export the psbt to another signer"
+                label.text = "Transaction incomplete."
             } else {
                 label.text = "This feature requires at least Bitcoin Core 0.20.0"
             }
@@ -1231,8 +1250,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 
             } else {
                 inputTypeLabel.text = "Unknown type"
+                backgroundView2.backgroundColor = .systemGray
                 backgroundView1.backgroundColor = .systemGray
-                isChangeImageView.backgroundColor = .systemGray
                 inputIsOursImage.image = UIImage(systemName: "questionmark.diamond.fill")
                 isChangeImageView.image = UIImage(systemName: "questionmark.diamond.fill")
                 
@@ -1947,7 +1966,7 @@ extension VerifyTransactionViewController: UITableViewDelegate {
         textLabel.textColor = .white
         textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
         
-        if unsignedPsbt == "" || signedRawTx == "" {
+        if unsignedPsbt == "" && signedRawTx == "" {
             textLabel.text = ""
         } else {
             switch section {
