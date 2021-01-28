@@ -529,25 +529,12 @@ class NodeLogic {
                 }
                 
                 if let labelCheck = transaction["label"] as? String {
-                    
                     label = labelCheck
-                    
-                    if labelCheck == "" {
-                        
+                    if labelCheck == "" || labelCheck == "," {
                         label = ""
-                        
                     }
-                    
-                    if labelCheck == "," {
-                        
-                        label = ""
-                        
-                    }
-                    
                 } else {
-                    
                     label = ""
-                    
                 }
                 
                 let secondsSince = transaction["time"] as? Double ?? 0.0

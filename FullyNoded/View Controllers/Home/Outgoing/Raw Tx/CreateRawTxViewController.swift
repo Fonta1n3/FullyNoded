@@ -951,7 +951,10 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             self.addressInput.resignFirstResponder()
             self.amountInput.resignFirstResponder()
             
-            guard let address = address else { return }
+            guard let address = address else {
+                showAlert(vc: self, title: "Not compatible.", message: "FN does not support Bitpay.")
+                return
+            }
             
             self.addressInput.text = address
             

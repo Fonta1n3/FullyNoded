@@ -20,6 +20,10 @@ class AddressParser {
         var message:String?
         var processedUrl = url
         
+        guard !processedUrl.contains("bitpay") else {
+            return (address: nil, amount: nil, label: nil, message: nil)
+        }
+        
         processedUrl = processedUrl.replacingOccurrences(of: "bitcoin:", with: "")
         processedUrl = processedUrl.replacingOccurrences(of: "BITCOIN:", with: "")
         
@@ -34,12 +38,14 @@ class AddressParser {
         guard processedUrl.contains("?") else {
             return (address: processedAddress(processedUrl), amount: amountToReturn, label: labelToReturn, message: message)
         }
-        
+                
         let split = processedUrl.split(separator: "?")
         
-        guard split.count > 0 else {
+        guard split.count >= 1 else {
              return (address: processedAddress(processedUrl), amount: amountToReturn, label: labelToReturn, message: message)
         }
+        
+        print("split: \(split)")
         
         let urlParts = split[1].split(separator: "&")
         

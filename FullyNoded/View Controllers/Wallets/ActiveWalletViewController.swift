@@ -690,7 +690,7 @@ class ActiveWalletViewController: UIViewController {
                 } else {
                     if t + 1 == transactions.count {
                         self.spinner.removeConnectingView()
-                        showAlert(vc: self, title: "", message: "No matching locally saved transactions.")
+                        showAlert(vc: self, title: "", message: "No matching locally saved transactions. This usually means you are using the nodes default wallet, this feature only works with Fully Noded wallets.")
                     }
                 }
             }
