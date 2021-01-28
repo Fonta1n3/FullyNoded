@@ -492,7 +492,7 @@ class MainMenuViewController: UIViewController {
                     showAlert(vc: self, title: "", message: "Hmmm we are not getting a response from your node, you can try rebooting Tor on your node and force quitting Fully Noded and reopening it, that generally fixes the issue.")
                     
                 } else if errorMessage.contains("Unable to decode the response") {
-                    showAlert(vc: self, title: "", message: "There was an issue... This can mean your rpc credentials are incorrect, double check them. This can also mean your node is busy doing an intense task like rescanning or syncing, if that is the case then just wait a few minutes and try again. As a last resort try rebooting your node and Fully Noded.")
+                    showAlert(vc: self, title: "", message: "There was an issue... This can mean your node is busy doing an intense task like rescanning or syncing whoich may be preventing it from responding to commands. If that is the case then just wait a few minutes and try again. As a last resort try rebooting your node and Fully Noded.")
                     
                 } else {
                     displayAlert(viewController: self, isError: true, message: errorMessage)

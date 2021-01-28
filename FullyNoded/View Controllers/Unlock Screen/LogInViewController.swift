@@ -32,6 +32,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         self.view.addGestureRecognizer(tapGesture)
 
         passwordInput.delegate = self
+        passwordInput.returnKeyType = .done
 
         lockView.backgroundColor = .black
         lockView.alpha = 1
@@ -155,6 +156,17 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
 
         passwordInput.resignFirstResponder()
         checkPassword(password: passwordInput.text!)
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        guard passwordInput.text != "" else {
+            shakeAlert(viewToShake: passwordInput)
+            return true
+        }
+        
+        checkPassword(password: passwordInput.text!)
+        
+        return true
     }
 
     private func unlock() {
