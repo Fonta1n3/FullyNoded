@@ -143,7 +143,16 @@ class MakeRPCCall {
                 vc.attempts = 0
                 
                 guard let json = try? JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as? NSDictionary else {
-                    completion((nil, "Unable to decode the response from your node..."))
+                    if let httpResponse = response as? HTTPURLResponse {
+                        switch httpResponse.statusCode {
+                        case 401:
+                            completion((nil, "Looks like your rpc credentials are incorrect, please double check them. If you changed your rpc creds in your bitcoin.conf you need to restart your node for the changes to take effect."))
+                        default:
+                            completion((nil, "Unable to decode the response from your node, http status code: \(httpResponse.statusCode)"))
+                        }
+                    } else {
+                        completion((nil, "Unable to decode the response from your node..."))
+                    }
                     return
                 }
                 
