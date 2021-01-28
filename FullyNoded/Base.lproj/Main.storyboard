@@ -1806,6 +1806,12 @@ xxxxx</string>
                                                     <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                 </textView>
+                                                <button opaque="NO" tag="23" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vlH-TB-cgV">
+                                                    <rect key="frame" x="210" y="11" width="85" height="30"/>
+                                                    <state key="normal" title="verify owner">
+                                                        <color key="titleColor" systemColor="systemTealColor"/>
+                                                    </state>
+                                                </button>
                                             </subviews>
                                             <constraints>
                                                 <constraint firstItem="AfH-I7-2Ph" firstAttribute="leading" secondItem="ucK-wc-vtS" secondAttribute="leadingMargin" id="080-ue-dVF"/>
@@ -1844,8 +1850,10 @@ xxxxx</string>
                                                 <constraint firstItem="ulR-0o-DRX" firstAttribute="centerY" secondItem="esP-q3-FF5" secondAttribute="centerY" id="f8u-kY-JYs"/>
                                                 <constraint firstItem="SxA-ie-vvC" firstAttribute="leading" secondItem="vLy-qr-VzP" secondAttribute="leading" id="gPr-jK-HUv"/>
                                                 <constraint firstItem="SxA-ie-vvC" firstAttribute="top" secondItem="esP-q3-FF5" secondAttribute="bottom" constant="8" symbolic="YES" id="hCB-Te-3da"/>
+                                                <constraint firstItem="vlH-TB-cgV" firstAttribute="trailing" secondItem="ucK-wc-vtS" secondAttribute="trailingMargin" id="hlY-93-8Vf"/>
                                                 <constraint firstItem="Dfq-Vo-DmZ" firstAttribute="leading" secondItem="vLy-qr-VzP" secondAttribute="leading" id="lfZ-tB-zdJ"/>
                                                 <constraint firstItem="u0V-oA-dw9" firstAttribute="top" secondItem="kFy-En-HdL" secondAttribute="top" id="nRJ-fW-S05"/>
+                                                <constraint firstItem="vlH-TB-cgV" firstAttribute="top" secondItem="ucK-wc-vtS" secondAttribute="topMargin" id="nia-EN-qwx"/>
                                                 <constraint firstItem="ulR-0o-DRX" firstAttribute="leading" secondItem="esP-q3-FF5" secondAttribute="trailing" constant="8" id="nm7-9P-VYo"/>
                                                 <constraint firstItem="WU9-rX-4mY" firstAttribute="trailing" secondItem="ucK-wc-vtS" secondAttribute="trailingMargin" id="oYf-zE-yvc"/>
                                                 <constraint firstItem="vLy-qr-VzP" firstAttribute="top" secondItem="ucK-wc-vtS" secondAttribute="topMargin" id="q2R-wp-WK3"/>

@@ -46,6 +46,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var hasSigned = false
     var isSigning = false
     var wallet:Wallet?
+    var bitcoinCoreWallets = [String()]
+    var walletIndex = 0
     
     @IBOutlet weak private var verifyTable: UITableView!
     @IBOutlet weak private var exportButtonOutlet: UIButton!
@@ -1295,6 +1297,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let addressTypeLabel = outputCell.viewWithTag(20) as! UILabel
         let copyAddressButton = outputCell.viewWithTag(21) as! UIButton
         let copyDescriptorButton = outputCell.viewWithTag(22) as! UIButton
+        let verifyOwnerButton = outputCell.viewWithTag(23) as! UIButton
                 
         signableBackgroundView.layer.cornerRadius = 5
         verifiedByFnBackgroundView.layer.cornerRadius = 5
@@ -1314,7 +1317,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         if indexPath.row < outputArray.count {
             let output = outputArray[indexPath.row]
             
-            let outputAddress = (output["address"] as! String)
+            let outputAddress = output["address"] as? String ?? ""
             let signable = output["signable"] as? Bool ?? false
             let signer =  output["signerLabel"] as? String ?? ""
             let walletLabel = output["walletLabel"] as? String ?? ""
@@ -1325,6 +1328,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             let isDust = output["isDust"] as? Bool ?? false
             let desc = output["desc"] as? String ?? "no descriptor"
             let lifehash = output["lifehash"] as? UIImage ?? UIImage()
+            print("isOursBitcoind: \(isOursBitcoind)")
             
             labelLabel.text = label
             descTextView.text = desc
@@ -1334,17 +1338,21 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             outputIndexLabel.text = "Output #\(output["index"] as! Int)"
             outputAmountLabel.text = "\((output["amount"] as! String))"
             outputAddressLabel.text = outputAddress
+            
             copyAddressButton.restorationIdentifier = outputAddress
+            verifyOwnerButton.restorationIdentifier = outputAddress + " " + "\(indexPath.row)"
             copyDescriptorButton.restorationIdentifier = desc
             
             copyAddressButton.addTarget(self, action: #selector(copyAddress(_:)), for: .touchUpInside)
             copyDescriptorButton.addTarget(self, action: #selector(copyDesc(_:)), for: .touchUpInside)
+            verifyOwnerButton.addTarget(self, action: #selector(verifyOwner(_:)), for: .touchUpInside)
             
             if isOursFullyNoded {
                 verifiedByFnLabel.text = "Owned by \(walletLabel)"
                 verifiedByFnImageView.image = UIImage(systemName: "checkmark.seal.fill")
                 verifiedByFnBackgroundView.backgroundColor = .systemGreen
             } else {
+                verifyOwnerButton.alpha = 1
                 if isOursBitcoind {
                     verifiedByFnLabel.text = "WARNING ADDRESS INVALID!!!"
                     verifiedByFnImageView.image = UIImage(systemName: "exclamationmark.triangle.fill")
@@ -1384,14 +1392,22 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 addressTypeLabel.text = "Receive address"
             }
             
+            var activeWalletLabel = "Bitcoin Core"
+            
+            if self.wallet != nil {
+                activeWalletLabel = self.wallet!.label
+            }
+            
             if isOursBitcoind {
+                verifyOwnerButton.alpha = 0
                 verifiedByNodeLabel.text = "Owned by Bitcoin Core"
                 backgroundView1.backgroundColor = .systemGreen
                 outputIsOursImage.image = UIImage(systemName: "checkmark.circle.fill")
             } else {
-                verifiedByNodeLabel.text = "Unknown by Bitcoin Core!"
-                backgroundView1.backgroundColor = .systemRed
-                outputIsOursImage.image = UIImage(systemName: "xmark.circle.fill")
+                verifyOwnerButton.alpha = 1
+                verifiedByNodeLabel.text = "Not owned by \(activeWalletLabel)"
+                backgroundView1.backgroundColor = .systemGray
+                outputIsOursImage.image = UIImage(systemName: "questionmark.diamond.fill")
                 
                 isChangeImageView.image = UIImage(systemName: "questionmark.diamond.fill")
                 backgroundView2.backgroundColor = .systemGray
@@ -1504,6 +1520,171 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         button.showsTouchWhenHighlighted = true
         label.text = memoText
         return labelCell
+    }
+    
+    @objc func verifyOwner(_ sender: UIButton) {
+        guard let id = sender.restorationIdentifier else { return }
+        let arr = id.split(separator: " ")
+        let address = "\(arr[0])"
+        guard let index = Int(arr[1]) else { return }
+                
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let alert = UIAlertController(title: "Verify Owner", message: "This address does not belong to the current Active Wallet, you can run this check to see if any of your other wallets are the owner.", preferredStyle: self.alertStyle)
+            
+            alert.addAction(UIAlertAction(title: "Verify Owner", style: .default, handler: { action in
+                self.spinner.addConnectingView(vc: self, description: "checking other FN wallets...")
+                self.getBitcoinCoreWallets(address, index)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true) {}
+        }
+    }
+    
+    private func checkEachWallet(_ address: String, _ walletsToCheck: [String], _ int: Int) {
+        var updatedOutput = outputArray[int]
+        
+        func resetActiveWallet() {
+            UserDefaults.standard.set(self.wallet!.name, forKey: "walletName")
+        }
+        
+        if walletIndex < walletsToCheck.count {
+            let wallet = walletsToCheck[walletIndex]
+            UserDefaults.standard.set(wallet, forKey: "walletName")
+            
+            Reducer.makeCommand(command: .getaddressinfo, param: "\"\(address)\"") { [weak self] (response, errorMessage) in
+                guard let self = self else { resetActiveWallet(); return }
+                
+                if let dict = response as? NSDictionary, let solvable = dict["solvable"] as? Bool, solvable {
+                    let keypath = dict["hdkeypath"] as? String ?? "no key path"
+                    let labels = dict["labels"] as? NSArray ?? ["no label"]
+                    let desc = dict["desc"] as? String ?? "no descriptor"
+                    var isChange = dict["ischange"] as? Bool ?? false
+                    let fingerprint = dict["hdmasterfingerprint"] as? String ?? "no fingerprint"
+                    var labelsText = ""
+                    
+                    if labels.count > 0 {
+                        for label in labels {
+                            if label as? String == "" {
+                                labelsText += "no label "
+                            } else {
+                                labelsText += "\(label as? String ?? "") "
+                            }
+                        }
+                    } else {
+                        labelsText += "no label "
+                    }
+                    
+                    if desc.contains("/1/") {
+                        isChange = true
+                    }
+                    updatedOutput["isOursBitcoind"] = solvable
+                    updatedOutput["hdKeyPath"] = keypath
+                    updatedOutput["isChange"] = isChange
+                    updatedOutput["label"] = labelsText
+                    updatedOutput["fingerprint"] = fingerprint
+                    updatedOutput["desc"] = desc
+                    
+                    // Currently only verify address if the node knows about it.. otherwise we have to brute force 200k addresses...
+                    // will add a dedicated verify button for unsolvable to cross check against all wallets
+                    // also adding a signer verify button to show whether FN is able to sign for the output or not
+                    Keys.verifyAddress(address, keypath, desc) {(isOursFullyNoded, walletLabel, signable, signer) in
+                        updatedOutput["isOursFullyNoded"] = isOursFullyNoded
+                        updatedOutput["walletLabel"] = walletLabel
+                        updatedOutput["signable"] = signable
+                        updatedOutput["signerLabel"] = signer
+                        
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+                            
+                            resetActiveWallet()
+                            self.outputArray[int] = updatedOutput
+                            self.verifyTable.reloadData()
+                            self.spinner.removeConnectingView()
+                            showAlert(vc: self, title: "", message: "Owned by \(walletLabel ?? "Bitcoin Core") ✓")
+                        }
+                        
+                        return
+                    }
+                } else {
+                    self.walletIndex += 1
+                    self.checkEachWallet(address, walletsToCheck, int)
+                }
+            }
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                resetActiveWallet()
+                self.verifyTable.reloadData()
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "", message: "Address not owned by any of the FN Wallets associated with this node.")
+            }
+        }
+    }
+    
+    private func getFullyNodedWallets(_ address: String,_ int: Int) {
+        var walletsToCheck = [String]()
+        CoreDataService.retrieveEntity(entityName: .wallets) { [weak self] wallets in
+            guard let self = self else { return }
+            
+            guard let wallets = wallets, wallets.count > 0, let activeWallet = self.wallet else { return }
+            
+            for (i, wallet) in wallets.enumerated() {
+                let walletStruct = Wallet(dictionary: wallet)
+                
+            if activeWallet.id != walletStruct.id {
+                    for (b, bitcoinCoreWallet) in self.bitcoinCoreWallets.enumerated() {
+                        if bitcoinCoreWallet == walletStruct.name {
+                            walletsToCheck.append(walletStruct.name)
+                        }
+                        if b + 1 == self.bitcoinCoreWallets.count {
+                            if i + 1 == wallets.count {
+                                self.checkEachWallet(address, walletsToCheck, int)
+                            }
+                        }
+                    }
+                } else if i + 1 == wallets.count {
+                    self.checkEachWallet(address, walletsToCheck, int)
+                }
+            }
+        }
+    }
+    
+    func getBitcoinCoreWallets(_ address: String, _ int: Int) {
+        bitcoinCoreWallets.removeAll()
+        Reducer.makeCommand(command: .listwalletdir, param: "") { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            guard let dict = response as? NSDictionary else {
+                DispatchQueue.main.async {
+                    self.spinner.removeConnectingView()
+                    displayAlert(viewController: self, isError: true, message: "error getting wallets: \(errorMessage ?? "")")
+                }
+                return
+            }
+            
+            self.parseWallets(dict, address, int)
+        }
+    }
+    
+    private func parseWallets(_ walletDict: NSDictionary, _ address: String, _ int: Int) {
+        guard let walletArr = walletDict["wallets"] as? NSArray else { return }
+        
+        for (i, wallet) in walletArr.enumerated() {
+            guard let walletDict = wallet as? NSDictionary, let walletName = walletDict["name"] as? String else {
+                    return
+            }
+            
+            bitcoinCoreWallets.append(walletName)
+            
+            if i + 1 == walletArr.count {
+                getFullyNodedWallets(address, int)
+            }
+        }
     }
     
     @objc func copyAddress(_ sender: UIButton) {
