@@ -250,7 +250,7 @@ enum Keys {
                             signer = signerLabel
                         }
                         
-                        if let accountPath = try? fullPath.chop(depth: 3) {
+                        if let accountPath = try? fullPath.chop(depth: 3), accountPath.components.count > 0 {
                             if let key = try? HDKey(base58: descStr.accountXpub) {
                                 if let childKey = try? key.derive(using: accountPath) {
                                     if addressString(childKey, type) == address {

@@ -367,12 +367,12 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
             
             if errorMessage != nil {
                 if errorMessage!.contains("Wallet is currently rescanning. Abort existing rescan or wait.") {
-                    displayAlert(viewController: self, isError: false, message: "Rescan started")
+                    showAlert(vc: self, title: "", message: "Rescan started ✓")
                 } else {
                     displayAlert(viewController: self, isError: true, message: "Error rescanning: \(errorMessage!)")
                 }
             } else if response != nil {
-                displayAlert(viewController: self, isError: false, message: "Rescan started")
+                showAlert(vc: self, title: "", message: "Rescan started ✓")
             }
         }
     }

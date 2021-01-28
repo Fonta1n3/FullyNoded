@@ -660,8 +660,14 @@ class ActiveWalletViewController: UIViewController {
     }
     
     @objc func getHistoricRate(_ sender: UIButton) {
+        print("getHistoricRate")
         spinner.addConnectingView(vc: self, description: "fetching historic rate...")
-        guard let intString = sender.restorationIdentifier, let int = Int(intString) else { return }
+        
+        guard let intString = sender.restorationIdentifier, let int = Int(intString) else {
+            self.spinner.removeConnectingView()
+            showAlert(vc: self, title: "", message: "Unable to determine historic rate.")
+            return
+        }
         
         let tx = transactionArray[int]
         let id = tx["txID"] as! String
@@ -670,21 +676,29 @@ class ActiveWalletViewController: UIViewController {
             guard let self = self else { return }
             
             guard let transactions = transactions, transactions.count > 0 else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "", message: "Unable to determine historic rate.")
                 return
             }
             
-            for transaction in transactions {
+            for (t, transaction) in transactions.enumerated() {
                 let txStruct = TransactionStruct(dictionary: transaction)
                 if txStruct.txid == id {
                     guard let date = txStruct.date, let uuid = txStruct.id else { return }
                     
                     self.addOriginRate(date, uuid)
+                } else {
+                    if t + 1 == transactions.count {
+                        self.spinner.removeConnectingView()
+                        showAlert(vc: self, title: "", message: "No matching locally saved transactions.")
+                    }
                 }
             }
         }
     }
     
     private func addOriginRate(_ date: Date, _ id: UUID) {
+        print("addOriginRate")
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let dateString = dateFormatter.string(from: date)

@@ -40,14 +40,8 @@ class AddLabelViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func nextAction(_ sender: Any) {
         if textField.text != "" {
-            var segueString = "goToParent"
-            
-            if isPrivKey {
-                segueString = "importPrivKey"
-            }
-            
             DispatchQueue.main.async {
-                self.performSegue(withIdentifier: segueString, sender: self)
+                self.performSegue(withIdentifier: "importPrivKey", sender: self)
             }
             
         } else {

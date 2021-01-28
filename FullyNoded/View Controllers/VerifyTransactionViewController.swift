@@ -74,6 +74,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             guard let self = self else { return }
             
             self.wallet = w
+            
+            if w == nil {
+                showAlert(vc: self, title: "", message: "You are not working with a FN Wallet, this means functionality will be limited, toggle on a FN wallet to get full functionality.")
+            }
         }
         
         if unsignedPsbt != "" || signedRawTx != "" {
@@ -889,7 +893,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         // Currently only verify address if the node knows about it.. otherwise we have to brute force 200k addresses...
                         // will add a dedicated verify button for unsolvable to cross check against all wallets
                         // also adding a signer verify button to show whether FN is able to sign for the output or not
-                        if solvable {
+                        if solvable && self.wallet != nil {
+                            // Only do this if we are not using the default wallet.
                             Keys.verifyAddress(address, keypath, desc) { (isOursFullyNoded, walletLabel, signable, signer) in
                                 self.outputArray[self.index]["isOursFullyNoded"] = isOursFullyNoded
                                 self.outputArray[self.index]["walletLabel"] = walletLabel
@@ -1354,9 +1359,16 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             } else {
                 verifyOwnerButton.alpha = 1
                 if isOursBitcoind {
-                    verifiedByFnLabel.text = "WARNING ADDRESS INVALID!!!"
-                    verifiedByFnImageView.image = UIImage(systemName: "exclamationmark.triangle.fill")
-                    verifiedByFnBackgroundView.backgroundColor = .systemRed
+                    if self.wallet != nil {
+                        verifiedByFnLabel.text = "WARNING ADDRESS INVALID!!!"
+                        verifiedByFnImageView.image = UIImage(systemName: "exclamationmark.triangle.fill")
+                        verifiedByFnBackgroundView.backgroundColor = .systemRed
+                    } else {
+                        verifiedByFnLabel.text = "Unable to determine"
+                        verifiedByFnImageView.image = UIImage(systemName: "questionmark.diamond.fill")
+                        verifiedByFnBackgroundView.backgroundColor = .systemGray
+                    }
+                    
                 } else {
                     verifiedByFnLabel.text = "Not verified by Fully Noded"
                     verifiedByFnImageView.image = UIImage(systemName: "questionmark.diamond.fill")
@@ -1369,9 +1381,15 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 signableBackgroundView.backgroundColor = .systemGreen
                 signerLabel.text = "Signable by \(signer)"
             } else {
-                signableImageView.image = UIImage(systemName: "xmark.square.fill")
-                signableBackgroundView.backgroundColor = .systemRed
-                signerLabel.text = "Can not sign!"
+                if self.wallet != nil {
+                    signableImageView.image = UIImage(systemName: "xmark.square.fill")
+                    signableBackgroundView.backgroundColor = .systemRed
+                    signerLabel.text = "Can not sign!"
+                } else {
+                    signableImageView.image = UIImage(systemName: "questionmark.diamond.fill")
+                    signableBackgroundView.backgroundColor = .systemRed
+                    signerLabel.text = "Unable to determine"
+                }
             }
             
             if isDust {
@@ -1470,10 +1488,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             var feeWarning = ""
             let percentage = (satsPerByte() / smartFee) * 100
             let rounded = Double(round(10*percentage)/10)
-            if satsPerByte() > smartFee {
+            if satsPerByte() > smartFee, rounded.isFinite {
                 feeWarning = "The fee paid for this transaction is \(Int(rounded - 100))% greater then your target."
-            } else {
+            } else if rounded.isFinite {
                 feeWarning = "The fee paid for this transaction is \(Int(100 - rounded))% less then your target."
+            } else {
+                feeWarning = "Unable to determine fee difference."
             }
             
             if percentage >= 90 && percentage <= 110 {
@@ -1591,6 +1611,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     // Currently only verify address if the node knows about it.. otherwise we have to brute force 200k addresses...
                     // will add a dedicated verify button for unsolvable to cross check against all wallets
                     // also adding a signer verify button to show whether FN is able to sign for the output or not
+                    
                     Keys.verifyAddress(address, keypath, desc) {(isOursFullyNoded, walletLabel, signable, signer) in
                         updatedOutput["isOursFullyNoded"] = isOursFullyNoded
                         updatedOutput["walletLabel"] = walletLabel

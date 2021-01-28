@@ -116,7 +116,7 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                     self.connectingView.addConnectingView(vc: self, description: "Importing Address")
                 }
                 
-                let param = "[{ \"scriptPubKey\": { \"address\": \"\(key)\" }, \"label\": \"\(label)\", \"timestamp\": \"\now\", \"watchonly\": true, \"keypool\": false, \"internal\": false }], ''{\"rescan\": false}''"
+                let param = "[{ \"scriptPubKey\": { \"address\": \"\(key)\" }, \"label\": \"\(label)\", \"timestamp\": \"now\", \"watchonly\": true, \"keypool\": false, \"internal\": false }], ''{\"rescan\": false}''"
                 
                 isAddress = true
                 
@@ -131,38 +131,60 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
+    private func triggerRescan() {
+        connectingView.addConnectingView(vc: self, description: "starting rescan...")
+        
+        Reducer.makeCommand(command: .getblockchaininfo, param: "") { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            guard let dict = response as? NSDictionary, let pruned = dict["pruned"] as? Bool else {
+                self.connectingView.removeConnectingView()
+                displayAlert(viewController: self, isError: true, message: "Error checking pruned status: \(errorMessage ?? "unknown")")
+                return
+            }
+            
+            guard pruned else {
+                self.rescanFrom(0)
+                return
+            }
+            
+            guard let pruneheight = dict["pruneheight"] as? Int else {
+                self.connectingView.removeConnectingView()
+                displayAlert(viewController: self, isError: true, message: "Error checking prune height: \(errorMessage ?? "unknown")")
+                return
+            }
+            
+            self.rescanFrom(pruneheight)
+        }
+    }
     
+    private func rescanFrom(_ height: Int) {
+        Reducer.makeCommand(command: .rescanblockchain, param: "\(height)") { (_, _) in }
+        
+        DispatchQueue.main.async {
+            self.navigationController?.popToRootViewController(animated: true)
+        }
+        
+        showAlert(vc: self, title: "Key swept!", message: "Your node is rescanning the blockchain to detect historic transactions, your balance will not show until this process completes. It can take up to an hour for a non pruned node.")
+    }
     
     func executeNodeCommand(method: BTC_CLI_COMMAND, param: String) {
         Reducer.makeCommand(command: method, param: param) { [unowned vc = self] (response, errorMessage) in
+            vc.connectingView.removeConnectingView()
             if errorMessage == nil {
                 switch method {
                 case .importprivkey:
-                    vc.connectingView.removeConnectingView()
-                    Reducer.makeCommand(command: .rescanblockchain, param: "") { (_, _) in }
-                    DispatchQueue.main.async {
-                        self.navigationController?.popToRootViewController(animated: true)
-                    }
-                    showAlert(vc: self, title: "Private key swept!", message: "Your node is rescanning the blockchain to detect historic transactions, your balance will not show until this process completes. It can take up to an hour for a non pruned node.")
+                    self.triggerRescan()
+                    
                 case .importmulti:
                     if let result = response as? NSArray {
                         let success = (result[0] as! NSDictionary)["success"] as! Bool
                         if success {
-                            vc.connectingView.removeConnectingView()
-                            var messageString = "Sucessfully imported the address"
-                            if !vc.isAddress {
-                                messageString = "Sucessfully imported the public key and its three address types"
-                            }
-                            vc.alertMessage = messageString
-                            DispatchQueue.main.async { [unowned vc = self] in
-                                vc.performSegue(withIdentifier: "showKeyDetails", sender: vc)
-                            }
+                            self.triggerRescan()
                         } else {
                             let error = ((result[0] as! NSDictionary)["error"] as! NSDictionary)["message"] as! String
-                            vc.connectingView.removeConnectingView()
                             displayAlert(viewController: self, isError: true, message: error)
                         }
-                        
                         if let warnings = (result[0] as! NSDictionary)["warnings"] as? NSArray {
                             if warnings.count > 0 {
                                 for warning in warnings {
@@ -181,8 +203,6 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
                 }
             } else {
                 DispatchQueue.main.async {
-                    vc.connectingView.removeConnectingView()
-                    
                     guard var errorMess = errorMessage else { return }
                     
                     if errorMess.contains("private keys disabled") {

@@ -31,6 +31,7 @@ class FiatConverter {
     func getOriginRate(date: String, completion: @escaping ((Double?)) -> Void) {
         let torClient = TorClient.sharedInstance
         let url = NSURL(string: "https://api.coindesk.com/v1/bpi/historical/close.json?start=\(date)&end=\(date)")
+        print("url: \(url)")
         let task = torClient.session.dataTask(with: url! as URL) { (data, response, error) -> Void in
             guard let urlContent = data,
                 let json = try? JSONSerialization.jsonObject(with: urlContent, options: [.mutableContainers]) as? [String : Any],
