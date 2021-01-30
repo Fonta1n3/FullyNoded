@@ -260,7 +260,11 @@ class ImportWallet {
     }
     
     class func parseWallets(_ wallets: NSDictionary, _ hash: String, completion: @escaping ((String?)) -> Void) {
-        let walletArr = wallets["wallets"] as! NSArray
+        guard let walletArr = wallets["wallets"] as? NSArray, walletArr.count > 0 else {
+            completion(nil)
+            return
+        }
+        
         var existingWallet: String?
         
         for (i, wallet) in walletArr.enumerated() {

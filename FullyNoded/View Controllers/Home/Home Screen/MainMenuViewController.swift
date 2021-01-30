@@ -888,14 +888,14 @@ extension MainMenuViewController: OnionManagerDelegate {
             self?.blurView.isHidden = true
         }
                 
-        if KeyChain.getData("hasPaid") == nil {
-            guard let data = KeyChain.getData("paymentAddress"), let paid = data.utf8 else {
-                goToPaywall()
-                return
-            }
-
-            checkIfPaymentReceived(paid)
-        }
+//        if KeyChain.getData("hasPaid") == nil {
+//            guard let data = KeyChain.getData("paymentAddress"), let paid = data.utf8 else {
+//                goToPaywall()
+//                return
+//            }
+//
+//            checkIfPaymentReceived(paid)
+//        }
     }
     
     func torConnDifficulties() {
