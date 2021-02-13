@@ -681,17 +681,20 @@ class ActiveWalletViewController: UIViewController {
                 return
             }
             
+            var foundMatch = false
+            
             for (t, transaction) in transactions.enumerated() {
                 let txStruct = TransactionStruct(dictionary: transaction)
                 if txStruct.txid == id {
                     guard let date = txStruct.date, let uuid = txStruct.id else { return }
                     
+                    foundMatch = true
                     self.addOriginRate(date, uuid)
-                } else {
-                    if t + 1 == transactions.count {
-                        self.spinner.removeConnectingView()
-                        showAlert(vc: self, title: "", message: "No matching locally saved transactions. This usually means you are using the nodes default wallet, this feature only works with Fully Noded wallets.")
-                    }
+                }
+                
+                if t + 1 == transactions.count && !foundMatch {
+                    self.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "", message: "No matching locally saved transactions. This usually means you are using the nodes default wallet, this feature only works with Fully Noded wallets.")
                 }
             }
         }

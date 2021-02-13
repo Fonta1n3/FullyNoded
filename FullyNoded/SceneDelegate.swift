@@ -52,6 +52,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             return
         }
         
+        #if !targetEnvironment(macCatalyst)
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         
         guard let loginVC = storyboard.instantiateViewController(identifier: "LogIn") as? LogInViewController,
@@ -74,6 +75,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 self.isBooting = false
             }
         }
+        #endif
     }
 
     func sceneDidEnterBackground(_ scene: UIScene) {
