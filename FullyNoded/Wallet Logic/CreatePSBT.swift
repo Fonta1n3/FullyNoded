@@ -32,7 +32,7 @@ class CreatePSBT {
             }
         }
         
-        activeWallet { (wallet) in
+        activeWallet { wallet in
             let descriptorParser = DescriptorParser()
             let descriptorStruct = descriptorParser.descriptor(wallet!.receiveDescriptor)
             

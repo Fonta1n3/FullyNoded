@@ -229,19 +229,12 @@ class Signer {
         func getSeeds() {
             seedsToSignWith.removeAll()
             CoreDataService.retrieveEntity(entityName: .signers) { seeds in
-                if seeds != nil {
-                    if seeds!.count > 0 {
-                        for (i, seed) in seeds!.enumerated() {
-                            seedsToSignWith.append(seed)
-                            if i + 1 == seeds!.count {
-                                getKeysToSignWith()
-                            }
-                        }
-                    } else {
-                        processWithActiveWallet()
+                guard let seeds = seeds, seeds.count > 0 else { processWithActiveWallet(); return }
+                for (i, seed) in seeds.enumerated() {
+                    seedsToSignWith.append(seed)
+                    if i + 1 == seeds.count {
+                        getKeysToSignWith()
                     }
-                } else {
-                    processWithActiveWallet()
                 }
             }
         }

@@ -60,10 +60,10 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             icon.image = UIImage(systemName: "lock.shield")
             background.backgroundColor = .systemOrange
             
-        case 3:
-            label.text = "Kill Switch ☠️"
-            icon.image = UIImage(systemName: "exclamationmark.triangle")
-            background.backgroundColor = .systemRed
+//        case 3:
+//            label.text = "Kill Switch ☠️"
+//            icon.image = UIImage(systemName: "exclamationmark.triangle")
+//            background.backgroundColor = .systemRed
             
         default:
             break
@@ -108,7 +108,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch indexPath.section {
-        case 0, 1, 3:
+        case 0, 1:
             return settingsCell(indexPath)
             
         case 2:
@@ -138,8 +138,8 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         case 2:
             textLabel.text = "Privacy"
             
-        case 3:
-            textLabel.text = "Reset"
+//        case 3:
+//            textLabel.text = "Reset"
             
         default:
             break
@@ -149,7 +149,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 4
+        return 3
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -186,8 +186,8 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         case 2:
             print("enable Esplora")
             
-        case 3:
-            kill()
+//        case 3:
+//            kill()
             
         default:
             break
@@ -195,32 +195,32 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         }
     }
     
-    func kill() {
-        let tit = "Danger!"
-        let mess = "This will DELETE all the apps data, are you sure you want to proceed?"
-        let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
-        
-        alert.addAction(UIAlertAction(title: "Reset", style: .destructive, handler: { action in
-            let killswitch = KillSwitch()
-            let killed = killswitch.resetApp(vc: self.navigationController!)
-            
-            if killed {
-                displayAlert(viewController: self,
-                             isError: false,
-                             message: "app has been reset")
-                
-            } else {
-                displayAlert(viewController: self,
-                             isError: true,
-                             message: "error reseting app")
-                
-            }
-            
-        }))
-        
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-        self.present(alert, animated: true, completion: nil)
-    }
+//    func kill() {
+//        let tit = "Danger!"
+//        let mess = "This will DELETE all the apps data, are you sure you want to proceed?"
+//        let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+//        
+//        alert.addAction(UIAlertAction(title: "Reset", style: .destructive, handler: { action in
+//            let killswitch = KillSwitch()
+//            let killed = killswitch.resetApp(vc: self.navigationController!)
+//            
+//            if killed {
+//                displayAlert(viewController: self,
+//                             isError: false,
+//                             message: "app has been reset")
+//                
+//            } else {
+//                displayAlert(viewController: self,
+//                             isError: true,
+//                             message: "error reseting app")
+//                
+//            }
+//            
+//        }))
+//        
+//        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+//        self.present(alert, animated: true, completion: nil)
+//    }
     
     @objc func toggleEsplora(_ sender: UISwitch) {
         UserDefaults.standard.setValue(sender.isOn, forKey: "useEsplora")
