@@ -185,13 +185,21 @@ class Signer {
             for (i, s) in seedsToSignWith.enumerated() {
                 let encryptedSeed = s["words"] as! Data
                 
-                guard var seed = Crypto.decrypt(encryptedSeed) else { return }
+                guard var seed = Crypto.decrypt(encryptedSeed) else {
+                    reset()
+                    completion((nil, nil, "Unable to decrypt your seed!"))
+                    return
+                }
                 
                 if var words = String(data: seed, encoding: .utf8) {
                     seed = Data()
                     
                     if let encryptedPassphrase = s["passphrase"] as? Data {
-                        guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase) else { return }
+                        guard let decryptedPassphrase = Crypto.decrypt(encryptedPassphrase) else {
+                            reset()
+                            completion((nil, nil, "Unable to decrypt your seed!"))
+                            return
+                        }
                         
                         if let passphrase = String(data: decryptedPassphrase, encoding: .utf8) {
                             if var masterKey = Keys.masterKey(words: words, coinType: coinType, passphrase: passphrase) {
