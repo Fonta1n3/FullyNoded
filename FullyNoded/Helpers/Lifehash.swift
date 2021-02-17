@@ -13,7 +13,7 @@ import UIKit
 enum LifeHash {
     
     static func image(_ input: String) -> UIImage? {
-        return LifeHashGenerator.generateSync(input)
+        return LifeHashGenerator.generateSync(input, version: .version2)
     }
 }
 

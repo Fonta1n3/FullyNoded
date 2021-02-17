@@ -935,9 +935,11 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     }
                     
                     self.txValid = allowed
+                    
                     if allowed {
                         self.enableSendButton()
                     }
+                    
                     self.rejectionMessage = dict["reject-reason"] as? String ?? ""
                     self.getFeeRate()
                 }
