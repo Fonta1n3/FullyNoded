@@ -22,6 +22,10 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
             UserDefaults.standard.setValue(true, forKey: "useEsploraWarning")
         }
+        
+        if UserDefaults.standard.object(forKey: "useBlockchainInfo") == nil {
+            UserDefaults.standard.set(true, forKey: "useBlockchainInfo")
+        }
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -106,6 +110,72 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         return esploraCell
     }
     
+    func blockchainInfoCell(_ indexPath: IndexPath) -> UITableViewCell {
+        let blockchainInfoCell = settingsTable.dequeueReusableCell(withIdentifier: "esploraCell", for: indexPath)
+        configureCell(blockchainInfoCell)
+        
+        let label = blockchainInfoCell.viewWithTag(1) as! UILabel
+        label.textColor = .lightGray
+        label.adjustsFontSizeToFitWidth = true
+        
+        let background = blockchainInfoCell.viewWithTag(2)!
+        background.clipsToBounds = true
+        background.layer.cornerRadius = 8
+        
+        let icon = blockchainInfoCell.viewWithTag(3) as! UIImageView
+        icon.tintColor = .white
+        
+        let toggle = blockchainInfoCell.viewWithTag(4) as! UISwitch
+        toggle.addTarget(self, action: #selector(toggleBlockchainInfo(_:)), for: .valueChanged)
+        
+        let useBlockchainInfo = UserDefaults.standard.object(forKey: "useBlockchainInfo") as? Bool ?? true
+        
+        toggle.setOn(useBlockchainInfo, animated: true)
+        label.text = "Blockchain.info"
+        icon.image = UIImage(systemName: "dollarsign.circle")
+        
+        if useBlockchainInfo {
+            background.backgroundColor = .systemBlue
+        } else {
+            background.backgroundColor = .systemGray
+        }
+        
+        return blockchainInfoCell
+    }
+    
+    func coinDeskCell(_ indexPath: IndexPath) -> UITableViewCell {
+        let coinDeskCell = settingsTable.dequeueReusableCell(withIdentifier: "esploraCell", for: indexPath)
+        configureCell(coinDeskCell)
+        
+        let label = coinDeskCell.viewWithTag(1) as! UILabel
+        label.textColor = .lightGray
+        label.adjustsFontSizeToFitWidth = true
+        
+        let background = coinDeskCell.viewWithTag(2)!
+        background.clipsToBounds = true
+        background.layer.cornerRadius = 8
+        
+        let icon = coinDeskCell.viewWithTag(3) as! UIImageView
+        icon.tintColor = .white
+        
+        let toggle = coinDeskCell.viewWithTag(4) as! UISwitch
+        toggle.addTarget(self, action: #selector(toggleCoindesk(_:)), for: .valueChanged)
+        
+        let useBlockchainInfo = UserDefaults.standard.object(forKey: "useBlockchainInfo") as? Bool ?? true
+        
+        toggle.setOn(!useBlockchainInfo, animated: true)
+        label.text = "Coindesk"
+        icon.image = UIImage(systemName: "dollarsign.circle")
+        
+        if useBlockchainInfo {
+            background.backgroundColor = .systemGray
+        } else {
+            background.backgroundColor = .systemBlue
+        }
+        
+        return coinDeskCell
+    }
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch indexPath.section {
         case 0, 1:
@@ -113,6 +183,13 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
         case 2:
             return esploraCell(indexPath)
+            
+        case 3:
+            if indexPath.row == 0 {
+                return blockchainInfoCell(indexPath)
+            } else {
+                return coinDeskCell(indexPath)
+            }
             
         default:
             return UITableViewCell()
@@ -138,8 +215,8 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         case 2:
             textLabel.text = "Privacy"
             
-//        case 3:
-//            textLabel.text = "Reset"
+        case 3:
+            textLabel.text = "Exchange Rate API"
             
         default:
             break
@@ -149,11 +226,15 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 3
+        return 4
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1
+        if section == 3 {
+            return 2
+        } else {
+            return 1
+        }
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -230,6 +311,26 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         } else {
             showAlert(vc: self, title: "", message: "Esplora disabled ✓")
         }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.settingsTable.reloadData()
+        }
+    }
+    
+    @objc func toggleBlockchainInfo(_ sender: UISwitch) {
+        UserDefaults.standard.setValue(sender.isOn, forKey: "useBlockchainInfo")
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.settingsTable.reloadData()
+        }
+    }
+    
+    @objc func toggleCoindesk(_ sender: UISwitch) {
+        UserDefaults.standard.setValue(!sender.isOn, forKey: "useBlockchainInfo")
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }

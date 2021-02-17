@@ -273,32 +273,10 @@ public func hexStringToUIColor(hex:String) -> UIColor {
     )
 }
 
-public func isAnyNodeActive(nodes: [[String:Any]]) -> Bool {
-    
-    var boolToReturn = false
-    
-    for node in nodes {
-        
-        let isActive = node["isActive"] as! Bool
-        
-        if isActive {
-            
-            boolToReturn = true
-            
-        }
-        
-    }
-    
-    return boolToReturn
-    
-}
-
 public func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
-    
     var boolToReturn = Bool()
     
     switch command {
-        
     case .listtransactions,
          .getbalance,
          .getunconfirmedbalance,
@@ -325,18 +303,15 @@ public func isWalletRPC(command: BTC_CLI_COMMAND) -> Bool {
          .encryptwallet,
          .walletpassphrase,
          .walletpassphrasechange,
-         .walletlock:
-        
+         .walletlock,
+         .psbtbumpfee:
         boolToReturn = true
         
     default:
-        
         boolToReturn = false
-        
     }
     
     return boolToReturn
-    
 }
 
 public extension Int {

@@ -14,18 +14,35 @@ class FiatConverter {
     
     func getFxRate(completion: @escaping ((Double?)) -> Void) {
         let torClient = TorClient.sharedInstance
-        let url = NSURL(string: "https://blockchain.info/ticker")
-        let task = torClient.session.dataTask(with: url! as URL) { (data, response, error) -> Void in
-            guard let urlContent = data,
-                  let json = try? JSONSerialization.jsonObject(with: urlContent, options: [.mutableContainers]) as? [String : Any],
-                  let data = json["USD"] as? NSDictionary,
-                  let rateCheck = data["15m"] as? Double else {
-                completion(nil)
-                return
+        let useBlockchainInfo = UserDefaults.standard.object(forKey: "useBlockchainInfo") as? Bool ?? true
+        if useBlockchainInfo {
+            let url = NSURL(string: "https://blockchain.info/ticker")
+            let task = torClient.session.dataTask(with: url! as URL) { (data, response, error) -> Void in
+                guard let urlContent = data,
+                      let json = try? JSONSerialization.jsonObject(with: urlContent, options: [.mutableContainers]) as? [String : Any],
+                      let data = json["USD"] as? NSDictionary,
+                      let rateCheck = data["15m"] as? Double else {
+                    completion(nil)
+                    return
+                }
+                completion(rateCheck)
             }
-            completion(rateCheck)
+            task.resume()
+        } else {
+            let url = NSURL(string: "https://api.coindesk.com/v1/bpi/currentprice.json")
+            let task = torClient.session.dataTask(with: url! as URL) { (data, response, error) -> Void in
+                guard let urlContent = data,
+                    let json = try? JSONSerialization.jsonObject(with: urlContent, options: [.mutableContainers]) as? [String : Any],
+                    let dict = json["bpi"] as? NSDictionary,
+                    let usd = dict["USD"] as? NSDictionary,
+                    let price = usd["rate_float"] as? Double else {
+                        completion(nil)
+                        return
+                }
+                completion(price)
+            }
+            task.resume()
         }
-        task.resume()
     }
     
     func getOriginRate(date: String, completion: @escaping ((Double?)) -> Void) {

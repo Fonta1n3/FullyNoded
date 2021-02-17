@@ -42,7 +42,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var labelText = "no label added"
     var memoText = "no memo added"
     var id:UUID!
-    var feeBumped = false
     var hasSigned = false
     var isSigning = false
     var wallet:Wallet?
@@ -322,7 +321,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     @IBAction func bumpFeeAction(_ sender: Any) {
-        if confs == 0 && alreadyBroadcast && !feeBumped {
+        if confs == 0 && alreadyBroadcast {
             bumpFee()
         } else {
             showAlert(vc: self, title: "", message: "You can only bump the fee for transactions that have zero confirmations.")
@@ -378,7 +377,15 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     private func bumpFee() {
         spinner.addConnectingView(vc: self, description: "increasing fee...")
         
-        Reducer.makeCommand(command: .bumpfee, param: "\"\(txid)\"") { [weak self] (response, errorMessage) in
+        var bumpfee:BTC_CLI_COMMAND = .bumpfee
+        
+        let version = UserDefaults.standard.object(forKey: "version") as? String ?? "0.20"
+        
+        if version.contains("0.21.") {
+            bumpfee = .psbtbumpfee
+        }
+        
+        Reducer.makeCommand(command: bumpfee, param: "\"\(txid)\"") { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
             guard let result = response as? NSDictionary, let originalFee = result["origfee"] as? Double, let newFee = result["fee"] as? Double else {
@@ -403,18 +410,19 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             Signer.sign(psbt: psbt) { (signedPsbt, rawTx, errorMessage) in
                 self.spinner.removeConnectingView()
                 
+                self.disableBumpButton()
+                
                 if signedPsbt != nil {
-                    self.feeBumped = true
                     self.unsignedPsbt = signedPsbt!
                     self.load()
                     showAlert(vc: self, title: "Fee increased to \(newFee.avoidNotation)", message: "The transaction still needs more signatures before it can be broadcast.")
                     
                 } else if rawTx != nil {
-                    self.feeBumped = true
                     self.signedRawTx = rawTx!
                     self.enableSendButton()
                     self.disableSignButton()
                     self.load()
+                    showAlert(vc: self, title: "Fee increased to \(newFee.avoidNotation)", message: "Tap the send button to broadcast the new transaction.")
                     
                 } else {
                     showAlert(vc: self, title: "Error Signing", message: errorMessage ?? "unknown")

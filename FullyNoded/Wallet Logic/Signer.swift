@@ -26,23 +26,23 @@ class Signer {
         }
         
         func finalize() {
-            if psbtToSign.inputs.count < 4 {
-                guard let finalizedPsbt = try? psbtToSign.finalized() else {
-                    reset()
-                    completion((psbtToSign.description, nil, nil))
-                    return
-                }
-                
-                guard let hex = finalizedPsbt.transactionFinal else {
-                    reset()
-                    completion((finalizedPsbt.description, nil, nil))
-                    return
-                }
-                
-                reset()
-                completion((nil, hex.description, nil))
-                
-            } else {
+//            if psbtToSign.inputs.count < 4 {
+//                guard let finalizedPsbt = try? psbtToSign.finalized() else {
+//                    reset()
+//                    completion((psbtToSign.description, nil, nil))
+//                    return
+//                }
+//                
+//                guard let hex = finalizedPsbt.transactionFinal else {
+//                    reset()
+//                    completion((finalizedPsbt.description, nil, nil))
+//                    return
+//                }
+//                
+//                reset()
+//                completion((nil, hex.description, nil))
+//                
+//            } else {
                 Reducer.makeCommand(command: .finalizepsbt, param: "\"\(psbtToSign.description)\"") { (object, errorDescription) in
                     if let result = object as? NSDictionary {
                         if let complete = result["complete"] as? Bool {
@@ -64,7 +64,7 @@ class Signer {
                         completion((nil, nil, errorDescription))
                     }
                 }
-            }
+            //}
         }
         
         func processWithActiveWallet() {
