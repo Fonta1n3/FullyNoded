@@ -134,7 +134,8 @@ enum Keys {
     
     static func addressSignable(_ address: String, _ path: BIP32Path, completion: @escaping ((signable: Bool, signer: String?)) -> Void) {
         CoreDataService.retrieveEntity(entityName: .signers) { signers in
-            guard let signers = signers, signers.count > 0 else { return }
+            guard let signers = signers, signers.count > 0 else { completion((false, nil)); return }
+            
             for (i, signer) in signers.enumerated() {
                 let signerStruct = SignerStruct(dictionary: signer)
                 
