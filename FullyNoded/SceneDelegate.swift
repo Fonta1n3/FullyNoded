@@ -174,7 +174,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     private func presentSigner(psbt: String) {
         guard let tabBarController = self.window!.rootViewController as? UITabBarController else { return }
         
-        tabBarController.selectedIndex = 2
+        tabBarController.selectedIndex = 1
         
         DispatchQueue.main.async {
             NotificationCenter.default.post(name: .signPsbt, object: nil, userInfo: ["psbt":psbt])
@@ -184,7 +184,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     private func presentBroadcaster(txn: String) {
        guard let tabBarController = self.window!.rootViewController as? UITabBarController else { return }
         
-        tabBarController.selectedIndex = 2
+        tabBarController.selectedIndex = 1
         
         DispatchQueue.main.async {
             NotificationCenter.default.post(name: .broadcastTxn, object: nil, userInfo: ["txn":txn])

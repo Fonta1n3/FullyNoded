@@ -35,6 +35,8 @@ class ActiveWalletViewController: UIViewController {
     private var txToEdit = ""
     private var memoToEdit = ""
     private var labelToEdit = ""
+    private var psbt = ""
+    private var rawTx = ""
     
     @IBOutlet weak private var backgroundView: UIVisualEffectView!
     @IBOutlet weak private var walletTable: UITableView!
@@ -50,6 +52,8 @@ class ActiveWalletViewController: UIViewController {
         walletTable.delegate = self
         walletTable.dataSource = self
         configureUi()
+        NotificationCenter.default.addObserver(self, selector: #selector(broadcast(_:)), name: .broadcastTxn, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(signPsbt(_:)), name: .signPsbt, object: nil)
         existingWallet = ud.object(forKey: "walletName") as? String ?? ""
         sectionZeroLoaded = false
         setNotifications()
@@ -79,6 +83,34 @@ class ActiveWalletViewController: UIViewController {
                 alert.popoverPresentationController?.sourceView = self.view
                 self.present(alert, animated: true, completion: nil)
             }
+        }
+    }
+    
+    @objc func signPsbt(_ notification: NSNotification) {
+        guard let psbtDict = notification.userInfo as? [String:Any], let psbtCheck = psbtDict["psbt"] as? String else {
+            showAlert(vc: self, title: "Uh oh", message: "That does not appear to be a psbt...")
+            return
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.psbt = psbtCheck
+            self.performSegue(withIdentifier: "segueToSignPsbt", sender: self)
+        }
+    }
+    
+    @objc func broadcast(_ notification: NSNotification) {
+        guard let txnDict = notification.userInfo as? [String:Any], let txn = txnDict["txn"] as? String else {
+            showAlert(vc: self, title: "Uh oh", message: "That does not appear to be a signed raw transaction...")
+            return
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.rawTx = txn
+            self.performSegue(withIdentifier: "segueToSignPsbt", sender: self)
         }
     }
     
@@ -900,6 +932,12 @@ class ActiveWalletViewController: UIViewController {
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         switch segue.identifier {
+        
+        case "segueToSignPsbt":
+            guard let vc = segue.destination as? VerifyTransactionViewController else { fallthrough }
+            
+            vc.unsignedPsbt = self.psbt.condenseWhitespace()
+            vc.signedRawTx = self.rawTx.condenseWhitespace()
             
         case "segueToEditTx":
             guard let vc = segue.destination as? TransactionLabelMemoViewController else { fallthrough }
