@@ -27,21 +27,22 @@ class Signer {
         
         func finalize() {
 //            if psbtToSign.inputs.count < 4 {
+            /// reproducable bug when finalizing segwit msig psbts with more then 3 inputs.
 //                guard let finalizedPsbt = try? psbtToSign.finalized() else {
 //                    reset()
 //                    completion((psbtToSign.description, nil, nil))
 //                    return
 //                }
-//                
+//
 //                guard let hex = finalizedPsbt.transactionFinal else {
 //                    reset()
 //                    completion((finalizedPsbt.description, nil, nil))
 //                    return
 //                }
-//                
+//
 //                reset()
 //                completion((nil, hex.description, nil))
-//                
+//
 //            } else {
                 Reducer.makeCommand(command: .finalizepsbt, param: "\"\(psbtToSign.description)\"") { (object, errorDescription) in
                     if let result = object as? NSDictionary {
