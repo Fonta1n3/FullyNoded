@@ -2556,24 +2556,24 @@ xxxxx</string>
                                 <color key="separatorColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="sectionIndexBackgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="signerDetailCell" rowHeight="610" id="RIY-F9-KBo">
-                                        <rect key="frame" x="0.0" y="28" width="375" height="610"/>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="signerDetailCell" rowHeight="611" id="RIY-F9-KBo">
+                                        <rect key="frame" x="0.0" y="28" width="375" height="611"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="RIY-F9-KBo" id="uD3-6W-lWz">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="610"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="611"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="1at-r6-O0i">
-                                                    <rect key="frame" x="16" y="22" width="343" height="561"/>
+                                                    <rect key="frame" x="16" y="22" width="343" height="562"/>
                                                     <subviews>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Words:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yHF-Cg-d5U">
-                                                            <rect key="frame" x="0.0" y="0.0" width="343" height="103.5"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="343" height="104.5"/>
                                                             <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="17"/>
                                                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <textView clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="scaleToFill" ambiguous="YES" editable="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="MIc-8e-6OG">
-                                                            <rect key="frame" x="0.0" y="108.5" width="343" height="80"/>
+                                                            <rect key="frame" x="0.0" y="109.5" width="343" height="80"/>
                                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <constraints>
                                                                 <constraint firstAttribute="height" constant="80" id="WFf-Xc-KfA"/>
@@ -2583,13 +2583,13 @@ xxxxx</string>
                                                             <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                         </textView>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Master Key Fingerprint:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PdY-9l-Zl5">
-                                                            <rect key="frame" x="0.0" y="193.5" width="343" height="20.5"/>
+                                                            <rect key="frame" x="0.0" y="194.5" width="343" height="20.5"/>
                                                             <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="17"/>
                                                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" tag="2" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Mdo-0l-wtR">
-                                                            <rect key="frame" x="0.0" y="219" width="343" height="44"/>
+                                                            <rect key="frame" x="0.0" y="220" width="343" height="44"/>
                                                             <constraints>
                                                                 <constraint firstAttribute="height" constant="44" id="bre-49-IaE"/>
                                                             </constraints>
@@ -2598,13 +2598,13 @@ xxxxx</string>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Passphrase:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NuH-kW-2Oj">
-                                                            <rect key="frame" x="0.0" y="268" width="343" height="20.5"/>
+                                                            <rect key="frame" x="0.0" y="269" width="343" height="20.5"/>
                                                             <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="17"/>
                                                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" tag="3" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wvz-go-inw">
-                                                            <rect key="frame" x="0.0" y="293.5" width="343" height="44"/>
+                                                            <rect key="frame" x="0.0" y="294.5" width="343" height="44"/>
                                                             <constraints>
                                                                 <constraint firstAttribute="height" constant="44" id="FdB-rz-dfc"/>
                                                             </constraints>
@@ -2613,13 +2613,13 @@ xxxxx</string>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Date Added:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PsB-6N-nuw">
-                                                            <rect key="frame" x="0.0" y="342.5" width="343" height="20.5"/>
+                                                            <rect key="frame" x="0.0" y="343.5" width="343" height="20.5"/>
                                                             <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="17"/>
                                                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" tag="4" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="2020-Jun-16" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5LC-PW-UwJ">
-                                                            <rect key="frame" x="0.0" y="368" width="343" height="44"/>
+                                                            <rect key="frame" x="0.0" y="369" width="343" height="44"/>
                                                             <constraints>
                                                                 <constraint firstAttribute="height" constant="44" id="EIn-zM-Geg"/>
                                                             </constraints>
@@ -2628,13 +2628,13 @@ xxxxx</string>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Signable Wallets:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fDM-tR-fqd">
-                                                            <rect key="frame" x="0.0" y="417" width="343" height="20.5"/>
+                                                            <rect key="frame" x="0.0" y="418" width="343" height="20.5"/>
                                                             <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="17"/>
                                                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" tag="5" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="2020-Jun-16" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5et-VJ-d1d">
-                                                            <rect key="frame" x="0.0" y="442.5" width="343" height="44"/>
+                                                            <rect key="frame" x="0.0" y="443.5" width="343" height="44"/>
                                                             <constraints>
                                                                 <constraint firstAttribute="height" constant="44" id="oZv-b4-0yo"/>
                                                             </constraints>
@@ -2643,22 +2643,25 @@ xxxxx</string>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Multisig keystore:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xiu-ql-g7K">
-                                                            <rect key="frame" x="0.0" y="491.5" width="343" height="20.5"/>
+                                                            <rect key="frame" x="0.0" y="492.5" width="343" height="20.5"/>
                                                             <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="17"/>
                                                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <button opaque="NO" tag="6" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="urW-E5-1aB">
-                                                            <rect key="frame" x="0.0" y="517" width="343" height="44"/>
+                                                            <rect key="frame" x="0.0" y="518" width="343" height="44"/>
                                                             <constraints>
                                                                 <constraint firstAttribute="height" constant="44" id="OO7-Kw-ugf"/>
                                                             </constraints>
-                                                            <state key="normal" title="export multisig public keystore">
+                                                            <state key="normal" title="export multisig public cosigner">
                                                                 <color key="titleColor" systemColor="systemTealColor"/>
                                                             </state>
                                                         </button>
                                                     </subviews>
                                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <constraints>
+                                                        <constraint firstItem="urW-E5-1aB" firstAttribute="top" secondItem="xiu-ql-g7K" secondAttribute="bottom" constant="5" id="iiA-i6-TvL"/>
+                                                    </constraints>
                                                 </stackView>
                                             </subviews>
                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -7017,7 +7020,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="13"/>
                                 <color key="tintColor" systemColor="systemTealColor"/>
-                                <state key="normal" title="derive keystore from existing signer ">
+                                <state key="normal" title="derive cosigner from existing signer ">
                                     <color key="titleColor" systemColor="systemTealColor"/>
                                 </state>
                                 <connections>
@@ -7040,7 +7043,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="13"/>
                                 <color key="tintColor" systemColor="systemTealColor"/>
-                                <state key="normal" title="add keystore">
+                                <state key="normal" title="add cosigner">
                                     <color key="titleColor" systemColor="systemTealColor"/>
                                 </state>
                                 <connections>
@@ -7090,8 +7093,8 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 <fontDescription key="fontDescription" type="system" pointSize="13"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Keystores:" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dXX-uE-f2N">
-                                <rect key="frame" x="16" y="244.5" width="63.5" height="16"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Cosigners:" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dXX-uE-f2N">
+                                <rect key="frame" x="16" y="244.5" width="65" height="16"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="13"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -7170,9 +7173,9 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="LMu-1F-VvA"/>
         <segue reference="IAz-j1-Gq6"/>
-        <segue reference="A1b-Ed-DYW"/>
-        <segue reference="BTh-Z9-jlD"/>
-        <segue reference="NFj-Y4-lQE"/>
+        <segue reference="6KH-E3-p33"/>
+        <segue reference="lxJ-aO-sxw"/>
+        <segue reference="ods-Ql-GAw"/>
         <segue reference="veA-tY-zvZ"/>
         <segue reference="AK4-4u-w1q"/>
         <segue reference="j10-wi-hpr"/>

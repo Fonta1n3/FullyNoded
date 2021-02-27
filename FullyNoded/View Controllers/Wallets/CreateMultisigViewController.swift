@@ -12,6 +12,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     
     var spinner = ConnectingView()
     var cointType = "0"
+    private var isNested = false
     var blockheight = 0
     var m = Int()
     var n = Int()
@@ -44,6 +45,8 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         textView.layer.borderWidth = 0.5
         
         xpubField.delegate = self
+        
+        fingerprintField.text = ""
         
         spinner.addConnectingView(vc: self, description: "fetching chain type...")
         
@@ -179,8 +182,8 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     
     private func promptToCreate() {
         guard keys.count > 0 else {
-            let title = "You need to add keystores first"
-            let message = "You can either add an xpub, or bip39 mnemonic to get Fully Noded to derive the correct keystore for you. Alternatively you may tap the refresh button to get Fully Noded to generate the seed words and derive the correct keystore for you."
+            let title = "You need to add cosigners first"
+            let message = "Add an xpub or bip39 mnemonic from which a cosigner will be derived. Tap the refresh button to get Fully Noded to generate a new cosigner for you."
             
             showAlert(vc: self, title: title, message: message)
             
@@ -190,7 +193,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let alert = UIAlertController(title: "How many signers are required to spend funds?", message: "", preferredStyle: self.alertStyle)
+            let alert = UIAlertController(title: "How many signatures are required to spend funds?", message: "", preferredStyle: self.alertStyle)
             
             for (i, _) in self.keys.enumerated() {
                 alert.addAction(UIAlertAction(title: "\(i + 1)", style: .default, handler: { action in
@@ -246,7 +249,12 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             }
             
             if i + 1 == keys.count {
-                let rawPrimDesc = "wsh(sortedmulti(\(m),\(descriptorKeys)))"
+                var rawPrimDesc = "wsh(sortedmulti(\(m),\(descriptorKeys)))"
+                
+                if isNested {
+                    rawPrimDesc = "sh(wsh(sortedmulti(\(m),\(descriptorKeys))))"
+                }
+                
                 let accountMap = ["descriptor":rawPrimDesc,"label":"\(m) of \(keys.count)", "blockheight": blockheight] as [String:Any]
                 
                 ImportWallet.accountMap(accountMap) { [weak self] (success, errorDescription) in
@@ -376,12 +384,12 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             try? text.dataUsingUTF8StringEncoding.write(to: fileURL)
             
             if #available(iOS 14, *) {
-//                let controller = UIDocumentPickerViewController(forExporting: [fileURL]) // 5
-//                self.present(controller, animated: true) {
-//                    DispatchQueue.main.async {
-//                        NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
-//                    }
-//                }
+                let controller = UIDocumentPickerViewController(forExporting: [fileURL]) // 5
+                self.present(controller, animated: true) {
+                    DispatchQueue.main.async {
+                        NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
+                    }
+                }
             } else {
                 let controller = UIDocumentPickerViewController(url: fileURL, in: .exportToService)
                 self.present(controller, animated: true) {
@@ -402,15 +410,35 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         }
     }
     
+    private func showError() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            showAlert(vc: self, title: "", message: "Something went wrong, please let us know about it.")
+        }
+    }
+    
     private func parseExtendedKey(_ extendedKey: String) {
         if extendedKey.hasPrefix("xpub") || extendedKey.hasPrefix("tpub") {
             if let _ = XpubConverter.zpub(xpub: extendedKey) {
                 showAddButton()
+            } else {
+                showError()
             }
-        } else if extendedKey.hasPrefix("Zpub") || extendedKey.hasPrefix("Vpub") {
+        } else if extendedKey.hasPrefix("Zpub") || extendedKey.hasPrefix("Vpub") || extendedKey.hasPrefix("Ypub") || extendedKey.hasPrefix("Upub") {
             if let xpub = XpubConverter.convert(extendedKey: extendedKey) {
                 updateXpubField(xpub)
                 showAddButton()
+                if extendedKey.hasPrefix("Ypub") || extendedKey.hasPrefix("Upub") {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        
+                        self.isNested = true
+                        self.derivationField.text = self.derivationField.text!.replacingOccurrences(of: "/2'", with: "/3'")
+                    }
+                }
+            } else {
+                showError()
             }
         } else if extendedKey.hasPrefix("[") {
             let p = DescriptorParser()
@@ -419,7 +447,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
             let key = descriptor.accountXpub
             let fingerprint = descriptor.fingerprint
             
-            guard key != "", fingerprint != "" else { return }
+            guard key != "", fingerprint != "" else { showError(); return }
             
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
@@ -431,7 +459,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                 let xfp = json["xfp"] as? String,
                 let xpub = json["xpub"] as? String,
                 let path = json["path"] as? String else {
-                    return
+                showError(); return
             }
             
             DispatchQueue.main.async { [weak self] in
