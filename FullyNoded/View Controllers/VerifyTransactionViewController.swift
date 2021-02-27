@@ -1346,7 +1346,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             let isDust = output["isDust"] as? Bool ?? false
             let desc = output["desc"] as? String ?? "no descriptor"
             let lifehash = output["lifehash"] as? UIImage ?? UIImage()
-            print("isOursBitcoind: \(isOursBitcoind)")
             
             labelLabel.text = label
             descTextView.text = desc
@@ -1372,7 +1371,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             } else {
                 verifyOwnerButton.alpha = 1
                 if isOursBitcoind {
-                    if self.wallet != nil {
+                    if self.wallet != nil && !outputAddress.hasPrefix("2") && !outputAddress.hasPrefix("3") {
                         verifiedByFnLabel.text = "WARNING ADDRESS INVALID!!!"
                         verifiedByFnImageView.image = UIImage(systemName: "exclamationmark.triangle.fill")
                         verifiedByFnBackgroundView.backgroundColor = .systemRed
