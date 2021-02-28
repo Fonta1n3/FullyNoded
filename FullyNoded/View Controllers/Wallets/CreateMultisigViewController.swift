@@ -434,7 +434,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
                         guard let self = self else { return }
                         
                         self.isNested = true
-                        self.derivationField.text = self.derivationField.text!.replacingOccurrences(of: "/2'", with: "/3'")
+                        self.derivationField.text = self.derivationField.text!.replacingOccurrences(of: "/2'", with: "/1'")
                     }
                 }
             } else {
