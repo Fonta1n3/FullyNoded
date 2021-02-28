@@ -49,13 +49,13 @@ class ImportWallet {
         descStruct = descriptorParser.descriptor(primDescriptor)
         
         // Sparrow wallet exports do not include range
-        if !primDescriptor.contains("/0/*") {
-            for key in descStruct.multiSigKeys {
-                if !key.contains("/0/*") {
-                    primDescriptor = primDescriptor.replacingOccurrences(of: key, with: key + "/0/*")
-                }
-            }
-        }
+//        if !primDescriptor.contains("/0/*") {
+//            for key in descStruct.multiSigKeys {
+//                if !key.contains("/0/*") {
+//                    primDescriptor = primDescriptor.replacingOccurrences(of: key, with: key + "/0/*")
+//                }
+//            }
+//        }
         
         descStruct = descriptorParser.descriptor(primDescriptor)
         
@@ -65,7 +65,18 @@ class ImportWallet {
             
             for keyWithPath in descStruct.keysWithPath {
                 let arr = keyWithPath.split(separator: "]")
-                let dict = ["path":"\(arr[0])]", "key": "\(arr[1].replacingOccurrences(of: "))", with: ""))"]
+                var key = "\(arr[1])"
+                
+                if key.contains(")") {
+                    key = key.replacingOccurrences(of: ")", with: "")
+                }
+                
+                //add range to each key
+                if !key.contains("/0/*") {
+                    key += "/0/*"
+                }
+                
+                let dict = ["path":"\(arr[0])]", "key": key]
                 dictArray.append(dict)
             }
             
@@ -85,7 +96,13 @@ class ImportWallet {
             }
             
             let arr2 = primDescriptor.split(separator: ",")
+            
             primDescriptor = "\(arr2[0])," + sortedKeys + "))"
+            
+            if primDescriptor.hasPrefix("sh(wsh") {
+                primDescriptor += ")"
+            }
+            
         }
         
         func createWalletNow(_ recDesc: String, _ changeDesc: String) {

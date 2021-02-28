@@ -54,11 +54,7 @@ class DescriptorParser {
         
         if descriptor.contains("multi") {
             dict["isMulti"] = true
-            
-            if descriptor.contains("sortedmulti") {
-                dict["isBIP67"] = true
-                
-            }
+            dict["isBIP67"] = descriptor.contains("sortedmulti")
             
             let arr = descriptor.split(separator: "(")
             for (i, item) in arr.enumerated() {
@@ -165,8 +161,6 @@ class DescriptorParser {
                                     }
                                 }
                             }
-                        } else {
-                            /// The keys are child keys so we do not need to extract the path from them we can just use the prefix
                         }
                     }
                     
@@ -185,11 +179,11 @@ class DescriptorParser {
                             
                         case "m/48'/0'/0'/1'", "m/48'/1'/0'/1'":
                             dict["isBIP44"] = false
-                            dict["isP2PKH"] = true
+                            dict["isP2PKH"] = false
                             dict["isBIP84"] = false
                             dict["isP2WPKH"] = false
                             dict["isBIP49"] = false
-                            dict["isP2SHP2WPKH"] = false
+                            dict["isP2SHP2WPKH"] = true
                             dict["isWIP48"] = true
                             dict["isAccount"] = true
                             
@@ -203,16 +197,6 @@ class DescriptorParser {
                             dict["isWIP48"] = true
                             dict["isAccount"] = true
                             
-                        case "m/48'/0'/0'/3'", "m/48'/1'/0'/3'":
-                            dict["isBIP44"] = false
-                            dict["isP2PKH"] = false
-                            dict["isBIP84"] = false
-                            dict["isP2WPKH"] = false
-                            dict["isBIP49"] = false
-                            dict["isP2SHP2WPKH"] = true
-                            dict["isWIP48"] = true
-                            dict["isAccount"] = true
-
                         case "m/44'/0'/0'", "m/44'/1'/0'":
                             dict["isBIP44"] = true
                             dict["isP2PKH"] = true
