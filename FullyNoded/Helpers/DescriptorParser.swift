@@ -174,6 +174,7 @@ class DescriptorParser {
                     dict["fingerprint"] = processed
                     
                     for deriv in derivationArray {
+                        print("deriv: \(deriv)")
 
                         switch deriv {
                             
