@@ -81,9 +81,57 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
         if unsignedPsbt != "" || signedRawTx != "" {
             enableExportButton()
-            load()
+            
+            if unsignedPsbt != "" {
+                processPsbt(unsignedPsbt)
+            } else {
+                load()
+            }
+            
         } else {
             promptToAddTx()
+        }
+    }
+    
+    private func processPsbt(_ psbt: String) {
+        Reducer.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt)\", true, \"ALL\", true") { [weak self] (object, errorDescription) in
+            guard let self = self else { return }
+            
+            guard let dict = object as? NSDictionary, let processedPsbt = dict["psbt"] as? String else {
+                showAlert(vc: self, title: "", message: "There was an issue processing your psbt with the active wallet: \(errorDescription ?? "unknown error")")
+                return
+            }
+            
+            self.finalizePsbt(processedPsbt)
+        }
+    }
+    
+    private func finalizePsbt(_ psbt: String) {
+        Reducer.makeCommand(command: .finalizepsbt, param: "\"\(psbt)\"") { [weak self] (object, errorDescription) in
+            guard let self = self else { return }
+            
+            guard let result = object as? NSDictionary, let complete = result["complete"] as? Bool else {
+                showAlert(vc: self, title: "", message: "There was an issue finalizing your psbt: \(errorDescription ?? "unknown error")")
+                return
+            }
+            
+            self.enableExportButton()
+            
+            guard complete, let hex = result["hex"] as? String else {
+                guard let psbt = result["psbt"] as? String else {
+                    showAlert(vc: self, title: "", message: "There was an issue finalizing your psbt: \(errorDescription ?? "unknown error")")
+                    return
+                }
+                
+                self.unsignedPsbt = psbt
+                self.enableSignButton()
+                self.load()
+                
+                return
+            }
+            
+            self.signedRawTx = hex
+            self.load()
         }
     }
     
@@ -1992,26 +2040,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             
             let controller = UIDocumentPickerViewController(url: fileURL, in: .exportToService)
             self.present(controller, animated: true)
-        }
-    }
-    
-    private func processPsbt(_ psbt: String) {
-        spinner.addConnectingView(vc: self, description: "processing psbt with active wallet...")
-        
-        Reducer.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt)\", true, \"ALL\", true") { [weak self] (response, errorMessage) in
-            guard let self = self else { return }
-            
-            guard let dict = response as? NSDictionary, let processedPsbt = dict["psbt"] as? String else {
-                self.showError(error: "error processing psbt: \(errorMessage ?? "unknown")")
-                return
-            }
-            
-            DispatchQueue.main.async {
-                self.enableExportButton()
-                self.unsignedPsbt = processedPsbt
-                self.enableSignButton()
-                self.load()
-            }
         }
     }
     
