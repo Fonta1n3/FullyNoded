@@ -109,30 +109,37 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     private func finalizePsbt(_ psbt: String) {
         Reducer.makeCommand(command: .finalizepsbt, param: "\"\(psbt)\"") { [weak self] (object, errorDescription) in
             guard let self = self else { return }
-            
+
             guard let result = object as? NSDictionary, let complete = result["complete"] as? Bool else {
                 showAlert(vc: self, title: "", message: "There was an issue finalizing your psbt: \(errorDescription ?? "unknown error")")
                 return
             }
-            
+
             self.enableExportButton()
-            
+
             guard complete, let hex = result["hex"] as? String else {
                 guard let psbt = result["psbt"] as? String else {
                     showAlert(vc: self, title: "", message: "There was an issue finalizing your psbt: \(errorDescription ?? "unknown error")")
                     return
                 }
-                
+
                 self.unsignedPsbt = psbt
                 self.enableSignButton()
                 self.load()
-                
+
                 return
             }
-            
+
             self.signedRawTx = hex
             self.load()
         }
+        
+        // Finalizes locally - here for testing purposes
+//        guard let hex = Keys.finalize(psbt) else {
+//            return
+//        }
+//
+//        print("hex: \(hex)")
     }
     
     private func enableExportButton() {

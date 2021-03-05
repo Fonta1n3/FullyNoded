@@ -25,6 +25,15 @@ class HelpViewController: UIViewController {
         textView.layer.borderWidth = 0.5
     }
     
+    
+    @IBAction func closeAction(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.dismiss(animated: true, completion: nil)
+        }
+    }
+    
 
     /*
     // MARK: - Navigation

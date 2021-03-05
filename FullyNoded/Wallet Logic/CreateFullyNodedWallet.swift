@@ -327,4 +327,16 @@ enum Keys {
             }
         }
     }
+    
+    static func finalize(_ psbt: String) -> String? {
+        guard let psbt = try? PSBT(psbt: psbt, network: .testnet) else {
+            return nil
+        }
+        
+        guard let finalizedPsbt = try? psbt.finalized(), let final = finalizedPsbt.transactionFinal else {
+            return nil
+        }
+        
+        return final.description
+    }
 }

@@ -64,10 +64,10 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             icon.image = UIImage(systemName: "lock.shield")
             background.backgroundColor = .systemOrange
             
-//        case 3:
-//            label.text = "Kill Switch ☠️"
-//            icon.image = UIImage(systemName: "exclamationmark.triangle")
-//            background.backgroundColor = .systemRed
+        case 4:
+            label.text = "Wallet Backup"
+            icon.image = UIImage(systemName: "triangle.righthalf.fill")
+            background.backgroundColor = .systemGreen
             
         default:
             break
@@ -178,7 +178,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch indexPath.section {
-        case 0, 1:
+        case 0, 1, 4:
             return settingsCell(indexPath)
             
         case 2:
@@ -218,6 +218,9 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         case 3:
             textLabel.text = "Exchange Rate API"
             
+        case 4:
+            textLabel.text = "Wallet Backup"
+            
         default:
             break
         }
@@ -226,7 +229,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 4
+        return 5
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -269,10 +272,59 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
 //        case 3:
 //            kill()
+        
+        case 4:
+            alertToBackup()
             
         default:
             break
             
+        }
+    }
+    
+    private func alertToBackup() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let tit = "Master Wallet Backup"
+            let mess = "Exports all wallet backup QR codes! These QR codes can be used to recreate each wallet."
+            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Backup ", style: .default, handler: { action in
+                self.backup()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func backup() {
+        var backups:[UIImage] = []
+        
+        CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
+            guard let wallets = wallets, wallets.count > 0 else { return }
+            
+            for wallet in wallets {
+                let walletStr = Wallet(dictionary: wallet)
+                let json = AccountMap.create(wallet: walletStr) ?? ""
+                let generator = QRGenerator()
+                generator.textInput = json
+                backups.append(generator.getQRCode())
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                let activityViewController = UIActivityViewController(activityItems: backups, applicationActivities: nil)
+                
+                if UIDevice.current.userInterfaceIdiom == .pad {
+                    activityViewController.popoverPresentationController?.sourceView = self.view
+                    activityViewController.popoverPresentationController?.sourceRect = CGRect(x: 0, y: 0, width: 100, height: 100)
+                }
+                
+                self.present(activityViewController, animated: true) {}
+            }
         }
     }
     

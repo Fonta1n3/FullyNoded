@@ -69,8 +69,8 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
             try? self.json.dataUsingUTF8StringEncoding.write(to: fileURL)
             
             if #available(iOS 14, *) {
-                //let controller = UIDocumentPickerViewController(forExporting: [fileURL]) // 5
-                //present(controller, animated: true)
+                let controller = UIDocumentPickerViewController(forExporting: [fileURL]) // 5
+                self.present(controller, animated: true)
             } else {
                 let controller = UIDocumentPickerViewController(url: fileURL, in: .exportToService)
                 self.present(controller, animated: true)
