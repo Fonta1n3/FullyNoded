@@ -8,7 +8,7 @@
 
 import UIKit
 
-class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UIDocumentPickerDelegate {
     
     let ud = UserDefaults.standard
     @IBOutlet var settingsTable: UITableView!
@@ -65,9 +65,16 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             background.backgroundColor = .systemOrange
             
         case 4:
-            label.text = "Wallet Backup"
-            icon.image = UIImage(systemName: "triangle.righthalf.fill")
-            background.backgroundColor = .systemGreen
+            if indexPath.row == 0 {
+                label.text = "Wallet Backup"
+                icon.image = UIImage(systemName: "triangle")
+                background.backgroundColor = .systemGreen
+            } else {
+                label.text = "Wallet Recovery"
+                icon.image = UIImage(systemName: "triangle.fill")
+                background.backgroundColor = .systemPurple
+            }
+            
             
         default:
             break
@@ -204,7 +211,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         textLabel.textAlignment = .left
         textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
         textLabel.textColor = .white
-        textLabel.frame = CGRect(x: 0, y: 0, width: 200, height: 50)
+        textLabel.frame = CGRect(x: 0, y: 0, width: 300, height: 50)
         switch section {
         case 0:
             textLabel.text = "Nodes"
@@ -219,7 +226,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             textLabel.text = "Exchange Rate API"
             
         case 4:
-            textLabel.text = "Wallet Backup"
+            textLabel.text = "Wallet Backup/Recovery"
             
         default:
             break
@@ -234,6 +241,8 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if section == 3 {
+            return 2
+        } else if section == 4 {
             return 2
         } else {
             return 1
@@ -274,11 +283,86 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
 //            kill()
         
         case 4:
-            alertToBackup()
+            if indexPath.row == 0 {
+                alertToBackup()
+            } else {
+                alertToRecover()
+            }
+            
             
         default:
             break
             
+        }
+    }
+    
+    private func alertToRecover() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let tit = "Master Wallet Recovery"
+            let mess = "Recover wallet backup file."
+            
+            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Recover", style: .default, handler: { action in
+                self.importJson()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func importJson() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            let documentPicker = UIDocumentPickerViewController(documentTypes: ["public.item"], in: .import)//public.item in iOS and .import
+            documentPicker.delegate = self
+            documentPicker.modalPresentationStyle = .formSheet
+            self.present(documentPicker, animated: true, completion: nil)
+        }
+    }
+    
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        if controller.documentPickerMode == .import {
+            
+            guard let data = try? Data(contentsOf: urls[0].absoluteURL),
+                  let dict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] else {
+                showAlert(vc: self, title: "", message: "That does not appear to be a recognized wallet backup file. This is only compatible with Fully Noded wallet backup files.")
+                return
+            }
+            
+            if let wallets = dict["wallets"] as? [[String:Any]] {
+                var mainnetWallets = [[String:Any]]()
+                var testnetWallets = [[String:Any]]()
+                
+                for (i, wallet) in wallets.enumerated() {
+                    for (_, value) in wallet {
+                        guard let string = value as? String else { return }
+                        
+                        let data = string.dataUsingUTF8StringEncoding
+                        
+                        guard let dict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] else {
+                            showAlert(vc: self, title: "", message: "That does not appear to be a recognized wallet backup file. This is only compatible with Fully Noded wallet backup files.")
+                            return
+                        }
+                        
+                        guard let desc = dict["descriptor"] as? String else { return }
+                        let descriptorParser = DescriptorParser()
+                        let descStr = descriptorParser.descriptor(desc)
+                        if descStr.chain == "Mainnet" {
+                            mainnetWallets.append(dict)
+                        } else if descStr.chain == "Testnet" {
+                            testnetWallets.append(dict)
+                        }
+                    }
+                    
+                    if i + 1 == wallets.count {
+                        showAlert(vc: self, title: "Recover", message: "You want to recover \(mainnetWallets.count) mainnet wallets, and \(testnetWallets.count) testnet wallets.")
+                    }
+                }
+            }
         }
     }
     
@@ -287,11 +371,12 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             guard let self = self else { return }
             
             let tit = "Master Wallet Backup"
-            let mess = "Exports all wallet backup QR codes! These QR codes can be used to recreate each wallet."
+            let mess = "Backup wallet files."
+            
             let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
             
-            alert.addAction(UIAlertAction(title: "Backup ", style: .default, handler: { action in
-                self.backup()
+            alert.addAction(UIAlertAction(title: "Backup", style: .default, handler: { action in
+                self.exportJson()
             }))
             
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
@@ -299,61 +384,40 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         }
     }
     
-    private func backup() {
-        var backups:[UIImage] = []
-        
+    private func exportJson() {
         CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
             guard let wallets = wallets, wallets.count > 0 else { return }
             
-            for wallet in wallets {
-                let walletStr = Wallet(dictionary: wallet)
-                let json = AccountMap.create(wallet: walletStr) ?? ""
-                let generator = QRGenerator()
-                generator.textInput = json
-                backups.append(generator.getQRCode())
-            }
+            var jsonArray = [[String:Any]]()
             
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
+            for (i, wallet) in wallets.enumerated() {
+                let walletStruct = Wallet(dictionary: wallet)
+                let accountMapString = AccountMap.create(wallet: walletStruct) ?? ""
+                jsonArray.append(["\(walletStruct.label)":accountMapString])
                 
-                let activityViewController = UIActivityViewController(activityItems: backups, applicationActivities: nil)
-                
-                if UIDevice.current.userInterfaceIdiom == .pad {
-                    activityViewController.popoverPresentationController?.sourceView = self.view
-                    activityViewController.popoverPresentationController?.sourceRect = CGRect(x: 0, y: 0, width: 100, height: 100)
+                if i + 1 == wallets.count {
+                    let file:[String:Any] = ["wallets": jsonArray]
+                    
+                    let fileManager = FileManager.default
+                    let fileURL = fileManager.temporaryDirectory.appendingPathComponent("wallets.fullynoded")
+                    guard let json = file.json() else { return }
+                    try? json.dataUsingUTF8StringEncoding.write(to: fileURL)
+                    
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        
+                        if #available(iOS 14, *) {
+                            let controller = UIDocumentPickerViewController(forExporting: [fileURL]) // 5
+                            self.present(controller, animated: true)
+                        } else {
+                            let controller = UIDocumentPickerViewController(url: fileURL, in: .exportToService)
+                            self.present(controller, animated: true)
+                        }
+                    }
                 }
-                
-                self.present(activityViewController, animated: true) {}
-            }
+            }            
         }
     }
-    
-//    func kill() {
-//        let tit = "Danger!"
-//        let mess = "This will DELETE all the apps data, are you sure you want to proceed?"
-//        let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
-//        
-//        alert.addAction(UIAlertAction(title: "Reset", style: .destructive, handler: { action in
-//            let killswitch = KillSwitch()
-//            let killed = killswitch.resetApp(vc: self.navigationController!)
-//            
-//            if killed {
-//                displayAlert(viewController: self,
-//                             isError: false,
-//                             message: "app has been reset")
-//                
-//            } else {
-//                displayAlert(viewController: self,
-//                             isError: true,
-//                             message: "error reseting app")
-//                
-//            }
-//            
-//        }))
-//        
-//        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-//        self.present(alert, animated: true, completion: nil)
-//    }
     
     @objc func toggleEsplora(_ sender: UISwitch) {
         UserDefaults.standard.setValue(sender.isOn, forKey: "useEsplora")
