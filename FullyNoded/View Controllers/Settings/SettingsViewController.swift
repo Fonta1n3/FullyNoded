@@ -16,7 +16,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     override func viewDidLoad() {
         super.viewDidLoad()
         settingsTable.delegate = self
-        
+                
         if UserDefaults.standard.object(forKey: "useEsplora") == nil && UserDefaults.standard.object(forKey: "useEsploraWarning") == nil {
             showAlert(vc: self, title: "New Privacy Setting", message: "When using a pruned node users may look up external transaction input details with Esplora over Tor.\n\nEnabling Esplora may have negative privacy implications and is discouraged.\n\n**ONLY APPLIES TO PRUNED NODES**")
             
@@ -333,7 +333,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 return
             }
             
-            if let wallets = dict["wallets"] as? [[String:Any]] {
+            if let wallets = dict["wallets"] as? [[String:Any]], let transactions = dict["transactions"] as? [[String:Any]] {
                 var mainnetWallets = [[String:Any]]()
                 var testnetWallets = [[String:Any]]()
                 
@@ -349,6 +349,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                         }
                         
                         guard let desc = dict["descriptor"] as? String else { return }
+                        
                         let descriptorParser = DescriptorParser()
                         let descStr = descriptorParser.descriptor(desc)
                         if descStr.chain == "Mainnet" {
@@ -359,8 +360,121 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                     }
                     
                     if i + 1 == wallets.count {
-                        showAlert(vc: self, title: "Recover", message: "You want to recover \(mainnetWallets.count) mainnet wallets, and \(testnetWallets.count) testnet wallets.")
+                        alertToRecoverWalletsTransactions(mainnetWallets, testnetWallets, transactions)
                     }
+                }
+            }
+        }
+    }
+    
+    private func alertToRecoverWalletsTransactions(_ mainnetWallets: [[String:Any]], _ testnetWallets: [[String:Any]], _ transactions: [[String:Any]]) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            guard let chain = UserDefaults.standard.object(forKey: "chain") as? String else {
+                showAlert(vc: self, title: "", message: "Could not determine which chain the node is using. Please reload the home screen and try again.")
+                return
+            }
+            
+            var wallets = mainnetWallets
+            
+            if chain == "test" {
+                wallets = testnetWallets
+            }
+            
+            let mess = "This will recover \(wallets.count) wallets and transaction metadata (labels and memos) for \(transactions.count) transactions."
+            
+            let tit = "Recover Now?"
+            
+            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Recover", style: .default, handler: { action in
+                self.recover(wallets, transactions)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func recover(_ wallets: [[String:Any]], _ transactions: [[String:Any]]) {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
+        
+        CoreDataService.retrieveEntity(entityName: .transactions) { existingTxs in
+            for (i, tx) in transactions.enumerated() {
+                
+                func saveNew() {
+                    if let date = dateFormatter.date(from: tx["date"] as! String) {
+                        let dict = [
+                            "txid":tx["txid"] as! String,
+                            "id":UUID(),
+                            "memo":tx["memo"] as! String,
+                            "date":date as Date,
+                            "label":tx["label"] as! String,
+                            "originFxRate":tx["originFxRate"] as? Double ?? 0.0
+                        ] as [String:Any]
+                        
+                        CoreDataService.saveEntity(dict: dict, entityName: .transactions) { success in
+                            guard success else {
+                                showAlert(vc: self, title: "", message: "Error saving your transaction.")
+                                return
+                            }
+                            
+                            if i + 1 == transactions.count {
+                                showAlert(vc: self, title: "Transaction metadata recovered ✓", message: "When you reload your wallet you will see the recovered memos, labels and capital gains data.")
+                            }
+                        }
+                    }
+                }
+                
+                if let existingTxs = existingTxs, existingTxs.count > 0 {
+                    var alreadySaved = false
+                    var idToUpdate:UUID!
+                    
+                    for (e, existingTx) in existingTxs.enumerated() {
+                        let existingTxStruct = TransactionStruct(dictionary: existingTx)
+                        
+                        func update() {
+                            CoreDataService.update(id: idToUpdate, keyToUpdate: "memo", newValue: tx["memo"] as! String, entity: .transactions) { success in
+                                guard success else {
+                                    showAlert(vc: self, title: "", message: "Error updating existing transaction memo.")
+                                    return
+                                }
+                                CoreDataService.update(id: idToUpdate, keyToUpdate: "label", newValue: tx["label"] as! String, entity: .transactions) { success in
+                                    guard success else {
+                                        showAlert(vc: self, title: "", message: "Error updating existing transaction label.")
+                                        return
+                                    }
+                                    CoreDataService.update(id: idToUpdate, keyToUpdate: "originFxRate", newValue: tx["originFxRate"] as? Double ?? 0.0, entity: .transactions) { success in
+                                        guard success else {
+                                            showAlert(vc: self, title: "", message: "Error updating existing transaction origin rate.")
+                                            return
+                                        }
+                                        
+                                        if i + 1 == transactions.count {
+                                            showAlert(vc: self, title: "Transaction metadata recovered ✓", message: "When you reload your wallet you will see the recovered memos, labels and capital gains data.")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if existingTxStruct.txid == tx["txid"] as! String {
+                            alreadySaved = true
+                            idToUpdate = existingTxStruct.id
+                        }
+                        
+                        if e + 1 == existingTxs.count {
+                            if !alreadySaved {
+                                saveNew()
+                            } else {
+                                update()
+                            }
+                        }
+                    }
+                } else {
+                    saveNew()
                 }
             }
         }
@@ -388,34 +502,56 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
             guard let wallets = wallets, wallets.count > 0 else { return }
             
-            var jsonArray = [[String:Any]]()
-            
-            for (i, wallet) in wallets.enumerated() {
-                let walletStruct = Wallet(dictionary: wallet)
-                let accountMapString = AccountMap.create(wallet: walletStruct) ?? ""
-                jsonArray.append(["\(walletStruct.label)":accountMapString])
+            CoreDataService.retrieveEntity(entityName: .transactions) { transactions in
+                guard var transactions = transactions else { return }
                 
-                if i + 1 == wallets.count {
-                    let file:[String:Any] = ["wallets": jsonArray]
+                let dateFormatter = DateFormatter()
+                
+                for (i, tx) in transactions.enumerated() {
+                    if let id = tx["id"] as? UUID {
+                        transactions[i]["id"] = id.uuidString
+                    }
                     
-                    let fileManager = FileManager.default
-                    let fileURL = fileManager.temporaryDirectory.appendingPathComponent("wallets.fullynoded")
-                    guard let json = file.json() else { return }
-                    try? json.dataUsingUTF8StringEncoding.write(to: fileURL)
+                    if let walletId = tx["walletId"] as? UUID {
+                        transactions[i]["walletId"] = walletId.uuidString
+                    }
                     
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
+                    if let date = tx["date"] as? Date {
+                        dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
+                        let dateString = dateFormatter.string(from: date)
+                        transactions[i]["date"] = dateString
+                    }
+                }
+                
+                var jsonArray = [[String:Any]]()
+                
+                for (i, wallet) in wallets.enumerated() {
+                    let walletStruct = Wallet(dictionary: wallet)
+                    let accountMapString = AccountMap.create(wallet: walletStruct) ?? ""
+                    jsonArray.append(["\(walletStruct.label)":accountMapString])
+                    
+                    if i + 1 == wallets.count {
+                        let file:[String:Any] = ["wallets": jsonArray, "transactions": transactions]
                         
-                        if #available(iOS 14, *) {
-                            let controller = UIDocumentPickerViewController(forExporting: [fileURL]) // 5
-                            self.present(controller, animated: true)
-                        } else {
-                            let controller = UIDocumentPickerViewController(url: fileURL, in: .exportToService)
-                            self.present(controller, animated: true)
+                        let fileManager = FileManager.default
+                        let fileURL = fileManager.temporaryDirectory.appendingPathComponent("wallets.fullynoded")
+                        guard let json = file.json() else { return }
+                        try? json.dataUsingUTF8StringEncoding.write(to: fileURL)
+                        
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+                            
+                            if #available(iOS 14, *) {
+                                let controller = UIDocumentPickerViewController(forExporting: [fileURL]) // 5
+                                self.present(controller, animated: true)
+                            } else {
+                                let controller = UIDocumentPickerViewController(url: fileURL, in: .exportToService)
+                                self.present(controller, animated: true)
+                            }
                         }
                     }
                 }
-            }            
+            }
         }
     }
     

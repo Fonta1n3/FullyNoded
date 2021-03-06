@@ -692,7 +692,6 @@ class ActiveWalletViewController: UIViewController {
     }
     
     @objc func getHistoricRate(_ sender: UIButton) {
-        print("getHistoricRate")
         spinner.addConnectingView(vc: self, description: "fetching historic rate...")
         
         guard let intString = sender.restorationIdentifier, let int = Int(intString) else {
@@ -726,14 +725,38 @@ class ActiveWalletViewController: UIViewController {
                 
                 if t + 1 == transactions.count && !foundMatch {
                     self.spinner.removeConnectingView()
-                    showAlert(vc: self, title: "", message: "No matching locally saved transactions. This usually means you are using the nodes default wallet, this feature only works with Fully Noded wallets.")
+                    
+                    if self.wallet != nil {
+                        // not been saved so save it
+                        let dict = [
+                            "txid":id,
+                            "id":UUID(),
+                            "walletId":self.wallet!.id,
+                            "memo":"no transaction memo",
+                            "date":tx["date"] as! Date,
+                            "label":"no transaction label"
+                        ] as [String:Any]
+                        
+                        CoreDataService.saveEntity(dict: dict, entityName: .transactions) { success in
+                            guard success else {
+                                showAlert(vc: self, title: "", message: "Error saving your transaction.")
+                                return
+                            }
+                            
+                            let newTxStruct = TransactionStruct(dictionary: dict)
+                            guard let date = newTxStruct.date, let uuid = newTxStruct.id else { return }
+                            
+                            self.addOriginRate(date, uuid)
+                        }
+                    } else {
+                        showAlert(vc: self, title: "", message: "This usually means you are using the nodes default wallet, this feature only works with Fully Noded wallets.")
+                    }
                 }
             }
         }
     }
     
     private func addOriginRate(_ date: Date, _ id: UUID) {
-        print("addOriginRate")
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let dateString = dateFormatter.string(from: date)
