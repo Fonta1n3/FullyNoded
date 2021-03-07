@@ -45,6 +45,10 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
         getBitcoinCoreWallets()
     }
     
+    @IBAction func seeAllWalletsAction(_ sender: Any) {
+    }
+    
+    
     private func getBitcoinCoreWallets() {
         bitcoinCoreWallets.removeAll()
         Reducer.makeCommand(command: .listwalletdir, param: "") { [weak self] (response, errorMessage) in
@@ -125,7 +129,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
             guard let self = self else { return }
             
             guard let fxRate = fxRate else { return }
-            guard self.wallets.count > 0 else { return }
+            guard self.wallets.count > 0 else { self.spinner.removeConnectingView(); return }
             self.fxRate = fxRate
             self.getTotals()
         }

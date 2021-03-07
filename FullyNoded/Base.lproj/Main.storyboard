@@ -2912,7 +2912,7 @@ xxxxx</string>
                                 </constraints>
                             </imageView>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="e5J-1l-ENr">
-                                <rect key="frame" x="0.0" y="203" width="375" height="464"/>
+                                <rect key="frame" x="0.0" y="203" width="375" height="364.5"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="fnWalletCell" rowHeight="54" id="MUh-Fj-cAe">
@@ -2923,10 +2923,7 @@ xxxxx</string>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yyu-4l-B7V">
-                                                    <rect key="frame" x="16" y="17" width="225" height="20.5"/>
-                                                    <constraints>
-                                                        <constraint firstAttribute="width" constant="225" id="XgR-Kx-Aaa"/>
-                                                    </constraints>
+                                                    <rect key="frame" x="16" y="17" width="221" height="20.5"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
@@ -2941,7 +2938,7 @@ xxxxx</string>
                                                     <state key="normal" image="chevron.right" catalog="system"/>
                                                 </button>
                                                 <switch opaque="NO" tag="3" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="3NI-pQ-c1E">
-                                                    <rect key="frame" x="249" y="11.5" width="47" height="31"/>
+                                                    <rect key="frame" x="245" y="11.5" width="51" height="31"/>
                                                     <color key="onTintColor" systemColor="systemTealColor"/>
                                                     <color key="thumbTintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 </switch>
@@ -2987,30 +2984,47 @@ xxxxx</string>
                                     </label>
                                 </subviews>
                             </stackView>
+                            <button opaque="NO" alpha="0.0" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WdI-df-YV6">
+                                <rect key="frame" x="16" y="617" width="343" height="30"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="30" id="tNs-Lq-xLY"/>
+                                </constraints>
+                                <state key="normal" title="see all FN wallets for more options">
+                                    <color key="titleColor" systemColor="systemTealColor"/>
+                                </state>
+                                <connections>
+                                    <action selector="seeAllWalletsAction:" destination="TDC-7I-IgK" eventType="touchUpInside" id="dib-Lp-tE2"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="These are the Fully Noded wallets which exist on the active node." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jn1-tW-gdG">
+                                <rect key="frame" x="16" y="575.5" width="343" height="33.5"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="NZX-VQ-2AZ"/>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
+                            <constraint firstItem="WdI-df-YV6" firstAttribute="top" secondItem="jn1-tW-gdG" secondAttribute="bottom" constant="8" symbolic="YES" id="0j4-3p-1LG"/>
                             <constraint firstItem="6e5-ZU-x5X" firstAttribute="leading" secondItem="NZX-VQ-2AZ" secondAttribute="leading" constant="16" id="1fh-Uz-y10"/>
                             <constraint firstItem="e5J-1l-ENr" firstAttribute="trailing" secondItem="NZX-VQ-2AZ" secondAttribute="trailing" id="3hB-IQ-66O"/>
+                            <constraint firstItem="jn1-tW-gdG" firstAttribute="leading" secondItem="NZX-VQ-2AZ" secondAttribute="leading" constant="16" id="6Ev-oP-gDN"/>
                             <constraint firstItem="6e5-ZU-x5X" firstAttribute="top" secondItem="mZI-8L-cXq" secondAttribute="bottom" constant="14" id="7gW-zw-52G"/>
                             <constraint firstItem="mZI-8L-cXq" firstAttribute="leading" secondItem="NZX-VQ-2AZ" secondAttribute="leading" constant="16" id="BEc-tP-p6o"/>
+                            <constraint firstItem="NZX-VQ-2AZ" firstAttribute="bottom" secondItem="WdI-df-YV6" secondAttribute="bottom" constant="20" id="CQy-hn-2QQ"/>
+                            <constraint firstItem="WdI-df-YV6" firstAttribute="leading" secondItem="NZX-VQ-2AZ" secondAttribute="leading" constant="16" id="CcC-lh-n0Q"/>
                             <constraint firstItem="e5J-1l-ENr" firstAttribute="top" secondItem="6e5-ZU-x5X" secondAttribute="bottom" constant="8" id="FOU-gH-Esg"/>
                             <constraint firstItem="8nP-0s-PyI" firstAttribute="leading" secondItem="mZI-8L-cXq" secondAttribute="trailing" constant="8" id="NRV-9k-7al"/>
-                            <constraint firstItem="e5J-1l-ENr" firstAttribute="bottom" secondItem="NZX-VQ-2AZ" secondAttribute="bottom" id="aMV-U3-WzP"/>
+                            <constraint firstItem="NZX-VQ-2AZ" firstAttribute="trailing" secondItem="WdI-df-YV6" secondAttribute="trailing" constant="16" id="aGz-u8-kt0"/>
                             <constraint firstItem="mZI-8L-cXq" firstAttribute="top" secondItem="NZX-VQ-2AZ" secondAttribute="top" constant="20" id="ajQ-5s-vRy"/>
                             <constraint firstItem="e5J-1l-ENr" firstAttribute="leading" secondItem="NZX-VQ-2AZ" secondAttribute="leading" id="eUD-iV-iD3"/>
+                            <constraint firstItem="NZX-VQ-2AZ" firstAttribute="trailing" secondItem="jn1-tW-gdG" secondAttribute="trailing" constant="16" id="hyr-kE-kM2"/>
+                            <constraint firstItem="jn1-tW-gdG" firstAttribute="top" secondItem="e5J-1l-ENr" secondAttribute="bottom" constant="8" symbolic="YES" id="svK-sO-53Q"/>
                             <constraint firstItem="8nP-0s-PyI" firstAttribute="centerY" secondItem="mZI-8L-cXq" secondAttribute="centerY" id="ylD-rM-Yop"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" id="cM0-GQ-Lg4">
-                        <barButtonItem key="rightBarButtonItem" image="questionmark.circle" catalog="system" id="rTe-cw-fwB">
-                            <color key="tintColor" systemColor="systemTealColor"/>
-                            <connections>
-                                <action selector="showHelp:" destination="TDC-7I-IgK" id="gYj-Rj-paj"/>
-                            </connections>
-                        </barButtonItem>
-                    </navigationItem>
+                    <navigationItem key="navigationItem" id="cM0-GQ-Lg4"/>
                     <connections>
                         <outlet property="balanceFiatLabel" destination="Aqf-UJ-YIL" id="f4l-fV-ZxM"/>
                         <outlet property="fxRateLabel" destination="56s-IU-Kua" id="rSw-X7-5Po"/>
@@ -4738,6 +4752,72 @@ xxxxx</string>
             </objects>
             <point key="canvasLocation" x="-2791.1999999999998" y="375.56221889055473"/>
         </scene>
+        <!--Wallet Recovery View Controller-->
+        <scene sceneID="vPd-xe-lOr">
+            <objects>
+                <viewController id="wvf-1r-iOF" customClass="WalletRecoveryViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="eHN-aR-qbd">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="574"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Master Wallet Recovery " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aWq-4E-F1y">
+                                <rect key="frame" x="16" y="20" width="250" height="27.5"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="23"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gvE-By-5AK">
+                                <rect key="frame" x="16" y="55.5" width="343" height="315"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="315" id="ECg-x5-9A7"/>
+                                </constraints>
+                                <string key="text">This tool:
+
+1. Recovers any saved transaction labels, memos, and capital gains info. 
+
+2. Recovers all wallets which are on the same network (mainnet/testnet) as the active node. 
+
+Existing wallets will not be overwritten.
+
+You can upload the wallets.fullynoded file that was created when you made the backup.</string>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9bV-lR-oUH">
+                                <rect key="frame" x="16" y="398.5" width="343" height="40"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="343" id="1rR-cz-fyn"/>
+                                    <constraint firstAttribute="height" constant="40" id="gZD-hq-ijc"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="tintColor" systemColor="systemTealColor"/>
+                                <state key="normal" title="  select file to recover" image="folder" catalog="system">
+                                    <color key="titleColor" systemColor="systemTealColor"/>
+                                </state>
+                                <connections>
+                                    <action selector="uploadFileAction:" destination="wvf-1r-iOF" eventType="touchUpInside" id="TtS-tC-q8J"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="2d7-Fs-yo6"/>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="aWq-4E-F1y" firstAttribute="top" secondItem="2d7-Fs-yo6" secondAttribute="top" constant="20" id="1tR-3q-TPn"/>
+                            <constraint firstItem="9bV-lR-oUH" firstAttribute="top" secondItem="gvE-By-5AK" secondAttribute="bottom" constant="28" id="A3M-lO-NqQ"/>
+                            <constraint firstItem="gvE-By-5AK" firstAttribute="top" secondItem="aWq-4E-F1y" secondAttribute="bottom" constant="8" id="Ew4-Nm-evE"/>
+                            <constraint firstItem="9bV-lR-oUH" firstAttribute="centerX" secondItem="eHN-aR-qbd" secondAttribute="centerX" id="FPQ-lt-bdQ"/>
+                            <constraint firstItem="aWq-4E-F1y" firstAttribute="leading" secondItem="2d7-Fs-yo6" secondAttribute="leading" constant="16" id="bdv-UK-HzG"/>
+                            <constraint firstItem="2d7-Fs-yo6" firstAttribute="trailing" secondItem="gvE-By-5AK" secondAttribute="trailing" constant="16" id="bqp-Hq-j3U"/>
+                            <constraint firstItem="gvE-By-5AK" firstAttribute="leading" secondItem="2d7-Fs-yo6" secondAttribute="leading" constant="16" id="uxS-ji-snf"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="KeL-AM-af0"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Xxc-dc-KXM" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2718" y="376"/>
+        </scene>
         <!--v0.2.13-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
@@ -4892,6 +4972,7 @@ xxxxx</string>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="reenterCredentials" id="ckQ-WD-ole"/>
                         <segue destination="FrY-WR-Inf" kind="show" identifier="goToNodes" id="Wy7-ur-TeS"/>
                         <segue destination="Jmi-bN-zgj" kind="show" identifier="goToSecurity" id="Qor-Ed-tsy"/>
+                        <segue destination="wvf-1r-iOF" kind="show" identifier="segueToRecoveryDetail" id="UWO-93-FGz"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="k6b-ep-z2U" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -7180,7 +7261,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="w2g-bl-j8v"/>
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="LMu-1F-VvA"/>
-        <segue reference="IAz-j1-Gq6"/>
+        <segue reference="oY9-Pq-H5b"/>
         <segue reference="6KH-E3-p33"/>
         <segue reference="lxJ-aO-sxw"/>
         <segue reference="ods-Ql-GAw"/>

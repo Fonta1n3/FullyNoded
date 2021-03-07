@@ -1,0 +1,297 @@
+//
+//  WalletRecoveryViewController.swift
+//  FullyNoded
+//
+//  Created by Peter Denton on 3/7/21.
+//  Copyright © 2021 Fontaine. All rights reserved.
+//
+
+import UIKit
+
+class WalletRecoveryViewController: UIViewController, UIDocumentPickerDelegate {
+    
+    let spinner = ConnectingView()
+    var index = 0
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        // Do any additional setup after loading the view.
+    }
+    
+    @IBAction func uploadFileAction(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            let documentPicker = UIDocumentPickerViewController(documentTypes: ["public.item"], in: .import)
+            documentPicker.delegate = self
+            documentPicker.modalPresentationStyle = .formSheet
+            self.present(documentPicker, animated: true, completion: nil)
+        }
+    }
+    
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        if controller.documentPickerMode == .import {
+            
+            guard let data = try? Data(contentsOf: urls[0].absoluteURL),
+                  let dict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] else {
+                showAlert(vc: self, title: "", message: "That does not appear to be a recognized wallet backup file. This is only compatible with Fully Noded wallet backup files.")
+                return
+            }
+            
+            if let wallets = dict["wallets"] as? [[String:Any]], let transactions = dict["transactions"] as? [[String:Any]] {
+                var mainnetWallets = [[String:Any]]()
+                var testnetWallets = [[String:Any]]()
+                
+                for (i, wallet) in wallets.enumerated() {
+                    for (_, value) in wallet {
+                        guard let string = value as? String else { return }
+                        
+                        let data = string.dataUsingUTF8StringEncoding
+                        
+                        guard let dict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] else {
+                            showAlert(vc: self, title: "", message: "That does not appear to be a recognized wallet backup file. This is only compatible with Fully Noded wallet backup files.")
+                            return
+                        }
+                        
+                        guard let desc = dict["descriptor"] as? String else { return }
+                        
+                        let descriptorParser = DescriptorParser()
+                        let descStr = descriptorParser.descriptor(desc)
+                        if descStr.chain == "Mainnet" {
+                            mainnetWallets.append(dict)
+                        } else if descStr.chain == "Testnet" {
+                            testnetWallets.append(dict)
+                        }
+                    }
+                    
+                    if i + 1 == wallets.count {
+                        alertToRecoverWalletsTransactions(mainnetWallets, testnetWallets, transactions)
+                    }
+                }
+            }
+        }
+    }
+    
+    private func alertToRecoverWalletsTransactions(_ mainnetWallets: [[String:Any]], _ testnetWallets: [[String:Any]], _ transactions: [[String:Any]]) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            guard let chain = UserDefaults.standard.object(forKey: "chain") as? String else {
+                showAlert(vc: self, title: "", message: "Could not determine which chain the node is using. Please reload the home screen and try again.")
+                return
+            }
+            
+            var wallets = mainnetWallets
+            
+            if chain == "test" {
+                wallets = testnetWallets
+            }
+            
+            let mess = "This will recover \(wallets.count) wallets and \(transactions.count) transactions (labels, memos, and capital gains info)."
+            
+            
+            
+            let tit = "Recover Now?"
+            
+            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Recover", style: .default, handler: { action in
+                self.recover(wallets, transactions)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func recover(_ wallets: [[String:Any]], _ transactions: [[String:Any]]) {
+        spinner.addConnectingView(vc: self, description: "recovering transaction metadata...")
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
+        
+        CoreDataService.retrieveEntity(entityName: .transactions) { [weak self] existingTxs in
+            guard let self = self else { return }
+            
+            for (i, tx) in transactions.enumerated() {
+                
+                func saveNew() {
+                    if let date = dateFormatter.date(from: tx["date"] as! String) {
+                        let dict = [
+                            "txid":tx["txid"] as! String,
+                            "id":UUID(),
+                            "memo":tx["memo"] as! String,
+                            "date":date as Date,
+                            "label":tx["label"] as! String,
+                            "originFxRate":tx["originFxRate"] as? Double ?? 0.0
+                        ] as [String:Any]
+                        
+                        CoreDataService.saveEntity(dict: dict, entityName: .transactions) { [weak self] success in
+                            guard let self = self else { return }
+                            
+                            guard success else {
+                                self.spinner.removeConnectingView()
+                                showAlert(vc: self, title: "", message: "Error saving your transaction.")
+                                return
+                            }
+                            
+                            if i + 1 == transactions.count {
+                                self.recoverWalletsNow(wallets)
+                            }
+                        }
+                    }
+                }
+                
+                if let existingTxs = existingTxs, existingTxs.count > 0 {
+                    var alreadySaved = false
+                    var idToUpdate:UUID!
+                    
+                    for (e, existingTx) in existingTxs.enumerated() {
+                        let existingTxStruct = TransactionStruct(dictionary: existingTx)
+                        
+                        func update() {
+                            CoreDataService.update(id: idToUpdate, keyToUpdate: "memo", newValue: tx["memo"] as! String, entity: .transactions) { [weak self] success in
+                                guard let self = self else { return }
+                                
+                                guard success else {
+                                    self.spinner.removeConnectingView()
+                                    showAlert(vc: self, title: "", message: "Error updating existing transaction memo.")
+                                    return
+                                }
+                                CoreDataService.update(id: idToUpdate, keyToUpdate: "label", newValue: tx["label"] as! String, entity: .transactions) { [weak self] success in
+                                    guard let self = self else { return }
+                                    
+                                    guard success else {
+                                        self.spinner.removeConnectingView()
+                                        showAlert(vc: self, title: "", message: "Error updating existing transaction label.")
+                                        return
+                                    }
+                                    CoreDataService.update(id: idToUpdate, keyToUpdate: "originFxRate", newValue: tx["originFxRate"] as? Double ?? 0.0, entity: .transactions) { [weak self] success in
+                                        guard let self = self else { return }
+                                        
+                                        guard success else {
+                                            self.spinner.removeConnectingView()
+                                            showAlert(vc: self, title: "", message: "Error updating existing transaction origin rate.")
+                                            return
+                                        }
+                                        
+                                        if i + 1 == transactions.count {
+                                            self.recoverWalletsNow(wallets)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if existingTxStruct.txid == tx["txid"] as! String {
+                            alreadySaved = true
+                            idToUpdate = existingTxStruct.id
+                        }
+                        
+                        if e + 1 == existingTxs.count {
+                            if !alreadySaved {
+                                saveNew()
+                            } else {
+                                update()
+                            }
+                        }
+                    }
+                } else {
+                    saveNew()
+                }
+            }
+        }
+    }
+    
+    private func recoverWalletsNow(_ wallets: [[String:Any]]) {
+        spinner.addConnectingView(vc: self, description: "recovering wallets...")
+        
+        var newWallets = [[String:Any]]()
+        
+        // first filter out wallets which do not already exist on the device
+        CoreDataService.retrieveEntity(entityName: .wallets) { existingWallets in
+            guard let existingWallets = existingWallets, existingWallets.count > 0 else {
+                self.recoverWallet(wallets)
+                return
+            }
+            
+            for (w, walletToRecover) in wallets.enumerated() {
+                let walletToRecoverDescriptor = (walletToRecover["descriptor"] as! String).replacingOccurrences(of: "'", with: "h")
+                var alreadyExists = false
+                
+                for (i, existingWallet) in existingWallets.enumerated() {
+                    let existingWalletStr = Wallet(dictionary: existingWallet)
+                    let existingWalletDesc = existingWalletStr.receiveDescriptor.replacingOccurrences(of: "'", with: "h")
+                    if existingWalletDesc.contains(walletToRecoverDescriptor) {
+                        alreadyExists = true
+                    }
+                    
+                    if i + 1 == existingWallets.count {
+                        //print("alreadyExists: \(alreadyExists)")
+                        //if !alreadyExists {
+                            newWallets.append(walletToRecover)
+                        //}
+                        
+                        if w + 1 == wallets.count {
+                            self.recoverWallet(newWallets)
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private func recoverWallet(_ wallets: [[String:Any]]) {
+        print("recoverWallet: \(wallets.count)")
+        if index < wallets.count {
+            ImportWallet.isRecovering = true
+            
+            ImportWallet.accountMap(wallets[index]) { [weak self] (success, errorDescription) in
+                guard let self = self else { return }
+                print("ImportWallet.accountMap: \(wallets[self.index])")
+                
+                guard success else {
+                    self.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "", message: "There was an issue recovering that wallet: \(errorDescription ?? "unknown error")")
+                    return
+                }
+                
+                self.index += 1
+                self.recoverWallet(wallets)
+            }
+        } else {
+            ImportWallet.isRecovering = false
+            spinner.removeConnectingView()
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                let mess = "Your wallets were recovered. When recovering wallets this way you *may* need to manually rescan each one to see balances and historical transactions: home screen > tools > rescan blockchain."
+    
+                let tit = "Success ✓"
+    
+                let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+    
+                alert.addAction(UIAlertAction(title: "Done", style: .cancel, handler: { action in
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        
+                        self.navigationController?.popViewController(animated: true)
+                    }
+                }))
+                self.present(alert, animated: true, completion: nil)
+            }
+        }
+    }
+    
+    /*
+     // MARK: - Navigation
+     
+     // In a storyboard-based application, you will often want to do a little preparation before navigation
+     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+     // Get the new view controller using segue.destination.
+     // Pass the selected object to the new view controller.
+     }
+     */
+    
+    
+}

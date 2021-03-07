@@ -8,7 +8,7 @@
 
 import UIKit
 
-class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UIDocumentPickerDelegate {
+class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     let ud = UserDefaults.standard
     @IBOutlet var settingsTable: UITableView!
@@ -16,7 +16,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     override func viewDidLoad() {
         super.viewDidLoad()
         settingsTable.delegate = self
-                
+                        
         if UserDefaults.standard.object(forKey: "useEsplora") == nil && UserDefaults.standard.object(forKey: "useEsploraWarning") == nil {
             showAlert(vc: self, title: "New Privacy Setting", message: "When using a pruned node users may look up external transaction input details with Esplora over Tor.\n\nEnabling Esplora may have negative privacy implications and is discouraged.\n\n**ONLY APPLIES TO PRUNED NODES**")
             
@@ -74,7 +74,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 icon.image = UIImage(systemName: "triangle.fill")
                 background.backgroundColor = .systemPurple
             }
-            
             
         default:
             break
@@ -278,9 +277,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
         case 2:
             print("enable Esplora")
-            
-//        case 3:
-//            kill()
         
         case 4:
             if indexPath.row == 0 {
@@ -288,7 +284,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             } else {
                 alertToRecover()
             }
-            
             
         default:
             break
@@ -300,183 +295,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let tit = "Master Wallet Recovery"
-            let mess = "Recover wallet backup file."
-            
-            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
-            
-            alert.addAction(UIAlertAction(title: "Recover", style: .default, handler: { action in
-                self.importJson()
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            self.present(alert, animated: true, completion: nil)
-        }
-    }
-    
-    private func importJson() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            let documentPicker = UIDocumentPickerViewController(documentTypes: ["public.item"], in: .import)//public.item in iOS and .import
-            documentPicker.delegate = self
-            documentPicker.modalPresentationStyle = .formSheet
-            self.present(documentPicker, animated: true, completion: nil)
-        }
-    }
-    
-    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-        if controller.documentPickerMode == .import {
-            
-            guard let data = try? Data(contentsOf: urls[0].absoluteURL),
-                  let dict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] else {
-                showAlert(vc: self, title: "", message: "That does not appear to be a recognized wallet backup file. This is only compatible with Fully Noded wallet backup files.")
-                return
-            }
-            
-            if let wallets = dict["wallets"] as? [[String:Any]], let transactions = dict["transactions"] as? [[String:Any]] {
-                var mainnetWallets = [[String:Any]]()
-                var testnetWallets = [[String:Any]]()
-                
-                for (i, wallet) in wallets.enumerated() {
-                    for (_, value) in wallet {
-                        guard let string = value as? String else { return }
-                        
-                        let data = string.dataUsingUTF8StringEncoding
-                        
-                        guard let dict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] else {
-                            showAlert(vc: self, title: "", message: "That does not appear to be a recognized wallet backup file. This is only compatible with Fully Noded wallet backup files.")
-                            return
-                        }
-                        
-                        guard let desc = dict["descriptor"] as? String else { return }
-                        
-                        let descriptorParser = DescriptorParser()
-                        let descStr = descriptorParser.descriptor(desc)
-                        if descStr.chain == "Mainnet" {
-                            mainnetWallets.append(dict)
-                        } else if descStr.chain == "Testnet" {
-                            testnetWallets.append(dict)
-                        }
-                    }
-                    
-                    if i + 1 == wallets.count {
-                        alertToRecoverWalletsTransactions(mainnetWallets, testnetWallets, transactions)
-                    }
-                }
-            }
-        }
-    }
-    
-    private func alertToRecoverWalletsTransactions(_ mainnetWallets: [[String:Any]], _ testnetWallets: [[String:Any]], _ transactions: [[String:Any]]) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            guard let chain = UserDefaults.standard.object(forKey: "chain") as? String else {
-                showAlert(vc: self, title: "", message: "Could not determine which chain the node is using. Please reload the home screen and try again.")
-                return
-            }
-            
-            var wallets = mainnetWallets
-            
-            if chain == "test" {
-                wallets = testnetWallets
-            }
-            
-            let mess = "This will recover \(wallets.count) wallets and transaction metadata (labels and memos) for \(transactions.count) transactions."
-            
-            let tit = "Recover Now?"
-            
-            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
-            
-            alert.addAction(UIAlertAction(title: "Recover", style: .default, handler: { action in
-                self.recover(wallets, transactions)
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            self.present(alert, animated: true, completion: nil)
-        }
-    }
-    
-    private func recover(_ wallets: [[String:Any]], _ transactions: [[String:Any]]) {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
-        
-        CoreDataService.retrieveEntity(entityName: .transactions) { existingTxs in
-            for (i, tx) in transactions.enumerated() {
-                
-                func saveNew() {
-                    if let date = dateFormatter.date(from: tx["date"] as! String) {
-                        let dict = [
-                            "txid":tx["txid"] as! String,
-                            "id":UUID(),
-                            "memo":tx["memo"] as! String,
-                            "date":date as Date,
-                            "label":tx["label"] as! String,
-                            "originFxRate":tx["originFxRate"] as? Double ?? 0.0
-                        ] as [String:Any]
-                        
-                        CoreDataService.saveEntity(dict: dict, entityName: .transactions) { success in
-                            guard success else {
-                                showAlert(vc: self, title: "", message: "Error saving your transaction.")
-                                return
-                            }
-                            
-                            if i + 1 == transactions.count {
-                                showAlert(vc: self, title: "Transaction metadata recovered ✓", message: "When you reload your wallet you will see the recovered memos, labels and capital gains data.")
-                            }
-                        }
-                    }
-                }
-                
-                if let existingTxs = existingTxs, existingTxs.count > 0 {
-                    var alreadySaved = false
-                    var idToUpdate:UUID!
-                    
-                    for (e, existingTx) in existingTxs.enumerated() {
-                        let existingTxStruct = TransactionStruct(dictionary: existingTx)
-                        
-                        func update() {
-                            CoreDataService.update(id: idToUpdate, keyToUpdate: "memo", newValue: tx["memo"] as! String, entity: .transactions) { success in
-                                guard success else {
-                                    showAlert(vc: self, title: "", message: "Error updating existing transaction memo.")
-                                    return
-                                }
-                                CoreDataService.update(id: idToUpdate, keyToUpdate: "label", newValue: tx["label"] as! String, entity: .transactions) { success in
-                                    guard success else {
-                                        showAlert(vc: self, title: "", message: "Error updating existing transaction label.")
-                                        return
-                                    }
-                                    CoreDataService.update(id: idToUpdate, keyToUpdate: "originFxRate", newValue: tx["originFxRate"] as? Double ?? 0.0, entity: .transactions) { success in
-                                        guard success else {
-                                            showAlert(vc: self, title: "", message: "Error updating existing transaction origin rate.")
-                                            return
-                                        }
-                                        
-                                        if i + 1 == transactions.count {
-                                            showAlert(vc: self, title: "Transaction metadata recovered ✓", message: "When you reload your wallet you will see the recovered memos, labels and capital gains data.")
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        
-                        if existingTxStruct.txid == tx["txid"] as! String {
-                            alreadySaved = true
-                            idToUpdate = existingTxStruct.id
-                        }
-                        
-                        if e + 1 == existingTxs.count {
-                            if !alreadySaved {
-                                saveNew()
-                            } else {
-                                update()
-                            }
-                        }
-                    }
-                } else {
-                    saveNew()
-                }
-            }
+            self.performSegue(withIdentifier: "segueToRecoveryDetail", sender: self)
         }
     }
     
@@ -485,7 +304,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             guard let self = self else { return }
             
             let tit = "Master Wallet Backup"
-            let mess = "Backup wallet files."
+            let mess = "Backup your wallets so that you can easily recover them in the future."
             
             let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
             

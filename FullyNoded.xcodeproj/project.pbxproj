@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0AE19ED725F4AC0D000F0AD4 /* WalletRecoveryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AE19ED625F4AC0D000F0AD4 /* WalletRecoveryViewController.swift */; };
 		844D2A4B2512D4F60046372E /* UTXOCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844D2A492512D4F60046372E /* UTXOCell.swift */; };
 		844D2A4C2512D4F60046372E /* UTXOCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 844D2A4A2512D4F60046372E /* UTXOCell.xib */; };
 		D00B27BC255A27F300269B51 /* WalletURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00B27BB255A27F300269B51 /* WalletURL.swift */; };
@@ -183,6 +184,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0AE19ED625F4AC0D000F0AD4 /* WalletRecoveryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletRecoveryViewController.swift; sourceTree = "<group>"; };
 		844D2A492512D4F60046372E /* UTXOCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOCell.swift; sourceTree = "<group>"; };
 		844D2A4A2512D4F60046372E /* UTXOCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = UTXOCell.xib; sourceTree = "<group>"; };
 		A084FD782359F7B700DA63CF /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
@@ -829,6 +831,7 @@
 				D09F9E4F24B1BAC3006B588C /* SignerDetailViewController.swift */,
 				D09F9E5124B1F8DE006B588C /* AddSignerViewController.swift */,
 				D0B80A882516020A006B88F0 /* ImportXpubViewController.swift */,
+				0AE19ED625F4AC0D000F0AD4 /* WalletRecoveryViewController.swift */,
 			);
 			path = Wallets;
 			sourceTree = "<group>";
@@ -1099,6 +1102,7 @@
 				D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */,
 				D0E51E592265640F005D1909 /* ErrorView.swift in Sources */,
 				D02152DC23666CB400AD9007 /* QuickConnect.swift in Sources */,
+				0AE19ED725F4AC0D000F0AD4 /* WalletRecoveryViewController.swift in Sources */,
 				D00F851B24949691008D7CD3 /* AppPasswordViewController.swift in Sources */,
 				D0D71DA32351F835005CCDB9 /* UtilitieMenuViewController.swift in Sources */,
 				D03968B1246F6CBA0010D821 /* Crypto.swift in Sources */,

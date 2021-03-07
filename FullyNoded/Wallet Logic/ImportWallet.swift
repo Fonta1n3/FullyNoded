@@ -13,6 +13,7 @@ class ImportWallet {
     static var index = 0
     static var processedWatching = [String]()
     static var isColdcard = false
+    static var isRecovering = false
             
     class func accountMap(_ accountMap: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
         var wallet = [String:Any]()
@@ -46,17 +47,6 @@ class ImportWallet {
         primDescriptor = primDescriptor.replacingOccurrences(of: "'", with: "h")
         let arr = primDescriptor.split(separator: "#")
         primDescriptor = "\(arr[0])"
-        descStruct = descriptorParser.descriptor(primDescriptor)
-        
-        // Sparrow wallet exports do not include range
-//        if !primDescriptor.contains("/0/*") {
-//            for key in descStruct.multiSigKeys {
-//                if !key.contains("/0/*") {
-//                    primDescriptor = primDescriptor.replacingOccurrences(of: key, with: key + "/0/*")
-//                }
-//            }
-//        }
-        
         descStruct = descriptorParser.descriptor(primDescriptor)
         
         // If the descriptor is multisig, we sort the keys lexicographically
@@ -310,34 +300,67 @@ class ImportWallet {
     }
     
     class func saveLocally(wallet: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
-        CoreDataService.saveEntity(dict: wallet, entityName: .wallets) { (success) in
-            if success {
-                completion((true, nil))
-            } else {
-                completion((false, "error saving wallet locally"))
+        let walletToSave = Wallet(dictionary: wallet)
+        
+        func save() {
+            CoreDataService.saveEntity(dict: wallet, entityName: .wallets) { (success) in
+                if success {
+                    completion((true, nil))
+                } else {
+                    completion((false, "error saving wallet locally"))
+                }
+            }
+        }
+        
+        CoreDataService.retrieveEntity(entityName: .wallets) { wallets in
+            guard let wallets = wallets, wallets.count > 0 else {
+                save()
+                return
+            }
+            
+            var alreadySaved = false
+            
+            for (i, existingWallet) in wallets.enumerated() {
+                let existingWalletStr = Wallet(dictionary: existingWallet)
+                
+                if existingWalletStr.receiveDescriptor == walletToSave.receiveDescriptor {
+                    alreadySaved = true
+                }
+                
+                if i + 1 == wallets.count {
+                    if !alreadySaved {
+                        save()
+                    } else {
+                        completion((true, nil))
+                    }
+                }
             }
         }
     }
     
     class func rescan(wallet: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
-        Reducer.makeCommand(command: .getblockchaininfo, param: "") { (response, errorMessage) in
-            guard let dict = response as? NSDictionary, let pruned = dict["pruned"] as? Bool else {
-                completion((false, errorMessage ?? "error getting blockchain info"))
-                return
-            }
-            
-            if pruned {
-                guard let pruneHeight = dict["pruneheight"] as? Int else {
-                    completion((false, errorMessage ?? "error getting prune height"))
+        if !isRecovering {
+            Reducer.makeCommand(command: .getblockchaininfo, param: "") { (response, errorMessage) in
+                guard let dict = response as? NSDictionary, let pruned = dict["pruned"] as? Bool else {
+                    completion((false, errorMessage ?? "error getting blockchain info"))
                     return
                 }
                 
-                Reducer.makeCommand(command: .rescanblockchain, param: "\(pruneHeight)") { (_, _) in }
-                saveLocally(wallet: wallet, completion: completion)
-            } else {
-                Reducer.makeCommand(command: .rescanblockchain, param: "") { (_, _) in }
-                saveLocally(wallet: wallet, completion: completion)
+                if pruned {
+                    guard let pruneHeight = dict["pruneheight"] as? Int else {
+                        completion((false, errorMessage ?? "error getting prune height"))
+                        return
+                    }
+                    
+                    Reducer.makeCommand(command: .rescanblockchain, param: "\(pruneHeight)") { (_, _) in }
+                    saveLocally(wallet: wallet, completion: completion)
+                } else {
+                    Reducer.makeCommand(command: .rescanblockchain, param: "") { (_, _) in }
+                    saveLocally(wallet: wallet, completion: completion)
+                }
             }
+        } else {
+            saveLocally(wallet: wallet, completion: completion)
         }
     }
     
