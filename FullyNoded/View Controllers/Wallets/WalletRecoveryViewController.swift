@@ -135,7 +135,7 @@ class WalletRecoveryViewController: UIViewController, UIDocumentPickerDelegate {
                             }
                             
                             if i + 1 == transactions.count {
-                                self.recoverWalletsNow(wallets)
+                                self.recoverWallet(wallets)
                             }
                         }
                     }
@@ -175,7 +175,7 @@ class WalletRecoveryViewController: UIViewController, UIDocumentPickerDelegate {
                                         }
                                         
                                         if i + 1 == transactions.count {
-                                            self.recoverWalletsNow(wallets)
+                                            self.recoverWallet(wallets)
                                         }
                                     }
                                 }
@@ -202,46 +202,7 @@ class WalletRecoveryViewController: UIViewController, UIDocumentPickerDelegate {
         }
     }
     
-    private func recoverWalletsNow(_ wallets: [[String:Any]]) {
-        spinner.addConnectingView(vc: self, description: "recovering wallets...")
-        
-        var newWallets = [[String:Any]]()
-        
-        // first filter out wallets which do not already exist on the device
-        CoreDataService.retrieveEntity(entityName: .wallets) { existingWallets in
-            guard let existingWallets = existingWallets, existingWallets.count > 0 else {
-                self.recoverWallet(wallets)
-                return
-            }
-            
-            for (w, walletToRecover) in wallets.enumerated() {
-                let walletToRecoverDescriptor = (walletToRecover["descriptor"] as! String).replacingOccurrences(of: "'", with: "h")
-                var alreadyExists = false
-                
-                for (i, existingWallet) in existingWallets.enumerated() {
-                    let existingWalletStr = Wallet(dictionary: existingWallet)
-                    let existingWalletDesc = existingWalletStr.receiveDescriptor.replacingOccurrences(of: "'", with: "h")
-                    if existingWalletDesc.contains(walletToRecoverDescriptor) {
-                        alreadyExists = true
-                    }
-                    
-                    if i + 1 == existingWallets.count {
-                        //print("alreadyExists: \(alreadyExists)")
-                        //if !alreadyExists {
-                            newWallets.append(walletToRecover)
-                        //}
-                        
-                        if w + 1 == wallets.count {
-                            self.recoverWallet(newWallets)
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
     private func recoverWallet(_ wallets: [[String:Any]]) {
-        print("recoverWallet: \(wallets.count)")
         if index < wallets.count {
             ImportWallet.isRecovering = true
             
