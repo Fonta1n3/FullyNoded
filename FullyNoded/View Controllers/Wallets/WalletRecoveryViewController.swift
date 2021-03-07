@@ -208,7 +208,6 @@ class WalletRecoveryViewController: UIViewController, UIDocumentPickerDelegate {
             
             ImportWallet.accountMap(wallets[index]) { [weak self] (success, errorDescription) in
                 guard let self = self else { return }
-                print("ImportWallet.accountMap: \(wallets[self.index])")
                 
                 guard success else {
                     self.spinner.removeConnectingView()
