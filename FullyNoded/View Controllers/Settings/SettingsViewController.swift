@@ -17,9 +17,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         super.viewDidLoad()
         settingsTable.delegate = self
                         
-        if UserDefaults.standard.object(forKey: "useEsplora") == nil && UserDefaults.standard.object(forKey: "useEsploraWarning") == nil {
-            showAlert(vc: self, title: "New Privacy Setting", message: "When using a pruned node users may look up external transaction input details with Esplora over Tor.\n\nEnabling Esplora may have negative privacy implications and is discouraged.\n\n**ONLY APPLIES TO PRUNED NODES**")
-            
+        if UserDefaults.standard.object(forKey: "useEsplora") == nil && UserDefaults.standard.object(forKey: "useEsploraWarning") == nil {            
             UserDefaults.standard.setValue(true, forKey: "useEsploraWarning")
         }
         
@@ -308,7 +306,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             guard let self = self else { return }
             
             let tit = "Master Wallet Backup"
-            let mess = "Backup all of your wallets so that you can easily recover them in the future. This file will be saved unencrypted."
+            let mess = "Backup all of your wallets so that you can easily recover them in the future. This file will be saved unencrypted and only contains *PUBLIC* keys, you must always backup your signers seperately."
             
             let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
             
