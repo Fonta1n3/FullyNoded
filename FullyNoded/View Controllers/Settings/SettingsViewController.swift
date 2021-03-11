@@ -60,20 +60,22 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             background.backgroundColor = .systemBlue
             
         case 1:
+            if indexPath.row == 0 {
+                label.text = "Wallet Backup"
+                icon.image = UIImage(systemName: "square.grid.3x1.folder.badge.plus")
+                background.backgroundColor = .systemGreen
+            } else {
+                label.text = "Wallet Recovery"
+                icon.image = UIImage(systemName: "square.grid.3x1.folder.badge.plus")
+                background.backgroundColor = .systemPurple
+            }
+            
+        case 2:
             label.text = "Security Center"
             icon.image = UIImage(systemName: "lock.shield")
             background.backgroundColor = .systemOrange
             
-        case 4:
-            if indexPath.row == 0 {
-                label.text = "Wallet Backup"
-                icon.image = UIImage(systemName: "triangle")
-                background.backgroundColor = .systemGreen
-            } else {
-                label.text = "Wallet Recovery"
-                icon.image = UIImage(systemName: "triangle.fill")
-                background.backgroundColor = .systemPurple
-            }
+        
             
         default:
             break
@@ -184,13 +186,13 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch indexPath.section {
-        case 0, 1, 4:
+        case 0, 1, 2:
             return settingsCell(indexPath)
             
-        case 2:
+        case 3:
             return esploraCell(indexPath)
             
-        case 3:
+        case 4:
             if indexPath.row == 0 {
                 return blockchainInfoCell(indexPath)
             } else {
@@ -216,16 +218,16 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             textLabel.text = "Nodes"
             
         case 1:
-            textLabel.text = "Security"
+            textLabel.text = "Wallet Backup/Recovery"
             
         case 2:
-            textLabel.text = "Privacy"
+            textLabel.text = "Security"
             
         case 3:
-            textLabel.text = "Exchange Rate API"
+            textLabel.text = "Privacy"
             
         case 4:
-            textLabel.text = "Wallet Backup/Recovery"
+            textLabel.text = "Exchange Rate API"
             
         default:
             break
@@ -239,9 +241,9 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if section == 3 {
+        if section == 4 {
             return 2
-        } else if section == 4 {
+        } else if section == 1 {
             return 2
         } else {
             return 1
@@ -269,21 +271,23 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             }
             
         case 1:
+            if indexPath.row == 0 {
+                alertToBackup()
+            } else {
+                alertToRecover()
+            }
+            
+        case 2:
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
                 self.performSegue(withIdentifier: "goToSecurity", sender: self)
             }
             
-        case 2:
+        case 3:
             print("enable Esplora")
         
-        case 4:
-            if indexPath.row == 0 {
-                alertToBackup()
-            } else {
-                alertToRecover()
-            }
+        
             
         default:
             break
@@ -304,7 +308,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             guard let self = self else { return }
             
             let tit = "Master Wallet Backup"
-            let mess = "Backup your wallets so that you can easily recover them in the future."
+            let mess = "Backup all of your wallets so that you can easily recover them in the future. This file will be saved unencrypted."
             
             let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
             

@@ -68,13 +68,14 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
     }
     
     private func parseWallets(walletDict: NSDictionary) {
-        guard let walletArr = walletDict["wallets"] as? NSArray else { return }
+        guard let walletArr = walletDict["wallets"] as? NSArray else { self.spinner.removeConnectingView(); return }
         
         for (i, wallet) in walletArr.enumerated() {
             guard let walletDict = wallet as? NSDictionary,
-                let walletName = walletDict["name"] as? String else {
-                    self.initialLoad = false
-                    return
+                  let walletName = walletDict["name"] as? String else {
+                self.initialLoad = false
+                self.spinner.removeConnectingView()
+                return
             }
             
             bitcoinCoreWallets.append(walletName)
@@ -91,6 +92,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
             guard let self = self else { return }
             
             guard let ws = ws, ws.count > 0 else {
+                self.spinner.removeConnectingView()
                 let title = "No Fully Noded Wallets"
                 let message = "Looks like you have not yet created any Fully Noded wallets, on the active wallet tab you can tap the plus sign (top left) to create a Fully Noded wallet."
                 self.initialLoad = false
@@ -128,7 +130,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
         FiatConverter.sharedInstance.getFxRate { [weak self] fxRate in
             guard let self = self else { return }
             
-            guard let fxRate = fxRate else { return }
+            guard let fxRate = fxRate else { self.spinner.removeConnectingView(); return }
             guard self.wallets.count > 0 else { self.spinner.removeConnectingView(); return }
             self.fxRate = fxRate
             self.getTotals()
@@ -193,12 +195,6 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
                 self.initialLoad = false
                 self.spinner.removeConnectingView()
             }
-        }
-    }
-    
-    @IBAction func goToSigners(_ sender: Any) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "showSignersSegue", sender: vc)
         }
     }
     

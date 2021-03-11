@@ -9,7 +9,7 @@
 import UIKit
 import AVFoundation
 
-class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
+class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigationControllerDelegate {
     
     var selectedNode:[String:Any]?
     let cd = CoreDataService()
@@ -66,12 +66,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         loadValues()
     }
     
-    private func configureImagePicker() {
-        imagePicker.delegate = self
-        imagePicker.allowsEditing = false
-        imagePicker.sourceType = .photoLibrary
-    }
-    
     @IBAction func showHostAction(_ sender: Any) {
         #if targetEnvironment(macCatalyst)
             // Code specific to Mac.
@@ -99,14 +93,11 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     
     
     @IBAction func scanQuickConnect(_ sender: Any) {
-        #if targetEnvironment(macCatalyst)
-            configureImagePicker()
-            chooseQRCodeFromLibrary()
-        #else
-            DispatchQueue.main.async { [weak self] in
-                self?.performSegue(withIdentifier: "segueToScanNodeCreds", sender: self)
-            }
-        #endif
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.performSegue(withIdentifier: "segueToScanNodeCreds", sender: self)
+        }
     }
     
     private func deleteLightningNodeNow() {
@@ -515,32 +506,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         }
     }
     
-    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-        picker.dismiss(animated: true, completion: nil)
-    }
-    
-    func chooseQRCodeFromLibrary() {
-        present(imagePicker, animated: true, completion: nil)
-    }
-    
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        // Local variable inserted by Swift 4.2 migrator.
-        let info = convertFromUIImagePickerControllerInfoKeyDictionary(info)
-        if let pickedImage = info[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.originalImage)] as? UIImage {
-            let detector:CIDetector=CIDetector(ofType: CIDetectorTypeQRCode, context: nil, options: [CIDetectorAccuracy:CIDetectorAccuracyHigh])!
-            let ciImage:CIImage = CIImage(image:pickedImage)!
-            var qrCodeLink = ""
-            let features = detector.features(in: ciImage)
-            for feature in features as! [CIQRCodeFeature] {
-                qrCodeLink += feature.messageString!
-            }
-            AudioServicesPlaySystemSound(SystemSoundID(kSystemSoundID_Vibrate))
-            picker.dismiss(animated: true, completion: { [weak self] in
-                self?.addBtcRpcQr(url: qrCodeLink)
-            })
-        }
-    }
-    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "segueToExportNode" {
             if let vc = segue.destination as? QRDisplayerViewController {
@@ -579,11 +544,11 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     
 }
 
-fileprivate func convertFromUIImagePickerControllerInfoKeyDictionary(_ input: [UIImagePickerController.InfoKey: Any]) -> [String: Any] {
-    return Dictionary(uniqueKeysWithValues: input.map {key, value in (key.rawValue, value)})
-}
-
-// Helper function inserted by Swift 4.2 migrator.
-fileprivate func convertFromUIImagePickerControllerInfoKey(_ input: UIImagePickerController.InfoKey) -> String {
-    return input.rawValue
-}
+//fileprivate func convertFromUIImagePickerControllerInfoKeyDictionary(_ input: [UIImagePickerController.InfoKey: Any]) -> [String: Any] {
+//    return Dictionary(uniqueKeysWithValues: input.map {key, value in (key.rawValue, value)})
+//}
+//
+//// Helper function inserted by Swift 4.2 migrator.
+//fileprivate func convertFromUIImagePickerControllerInfoKey(_ input: UIImagePickerController.InfoKey) -> String {
+//    return input.rawValue
+//}

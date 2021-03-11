@@ -279,7 +279,7 @@ class SignerDetailViewController: UIViewController, UITextFieldDelegate, UINavig
         
         vc.descriptionText = multisigKeystore
         vc.headerIcon = UIImage(systemName: "person.3")
-        vc.headerText = "Multisig Keystore"
+        vc.headerText = "Multisig Cosigner"
         vc.text = multisigKeystore
     }
     

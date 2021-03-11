@@ -17,8 +17,6 @@ class QRScannerViewController: UIViewController {
     private var stringToReturn = ""
     private let imagePicker = UIImagePickerController()
     private var qrString = ""
-    private let textField = UITextField()
-    private var textFieldPlaceholder = ""
     private let uploadButton = UIButton()
     private let torchButton = UIButton()
     private let closeButton = UIButton()
@@ -59,6 +57,16 @@ class QRScannerViewController: UIViewController {
         scanNow()
     }
     
+    @IBAction func closeAction(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.removeScanner()
+            self.dismiss(animated: true, completion: nil)
+        }
+    }
+    
+    
     private func scanNow() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -73,22 +81,14 @@ class QRScannerViewController: UIViewController {
     private func configureScanner() {
         scannerView.isUserInteractionEnabled = true
         uploadButton.addTarget(self, action: #selector(chooseQRCodeFromLibrary), for: .touchUpInside)
-        textField.alpha = 0
-        uploadButton.addTarget(self, action: #selector(chooseQRCodeFromLibrary), for: .touchUpInside)
         torchButton.addTarget(self, action: #selector(toggleTorchNow), for: .touchUpInside)
         closeButton.addTarget(self, action: #selector(back), for: .touchUpInside)
         isTorchOn = false
         configureImagePicker()
-        
-        #if targetEnvironment(macCatalyst)
-            chooseQRCodeFromLibrary()
-        #else
-            configureTextField()
-            configureUploadButton()
-            configureTorchButton()
-            configureCloseButton()
-            configureDownSwipe()
-        #endif
+        configureUploadButton()
+        configureTorchButton()
+        configureCloseButton()
+        configureDownSwipe()
     }
     
     private func addScannerButtons() {
@@ -362,23 +362,6 @@ class QRScannerViewController: UIViewController {
         view.layer.shadowOpacity = 0.5
     }
     
-    private func configureTextField() {
-        let width = view.frame.width - 20
-        textField.frame = CGRect(x: 0, y: 0, width: width, height: 50)
-        textField.layer.cornerRadius = 12
-        textField.textAlignment = .center
-        textField.clipsToBounds = true
-        addShadow(view: textField)
-        textField.autocorrectionType = .no
-        textField.autocapitalizationType = .none
-        textField.textColor = UIColor.white
-        textField.keyboardAppearance = UIKeyboardAppearance.dark
-        textField.backgroundColor = UIColor.clear
-        textField.returnKeyType = UIReturnKeyType.go
-        textField.attributedPlaceholder = NSAttributedString(string: textFieldPlaceholder,
-                                                             attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
-    }
-    
     private func configureImagePicker() {
         imagePicker.delegate = self
         imagePicker.allowsEditing = false
@@ -415,12 +398,14 @@ class QRScannerViewController: UIViewController {
     }
     
     private func scanQRCode() {
+        let queue = DispatchQueue(label: "codes", qos: .userInteractive)
+        
         guard let avCaptureDevice = AVCaptureDevice.default(for: AVMediaType.video) else { return }
         
         guard let avCaptureInput = try? AVCaptureDeviceInput(device: avCaptureDevice) else { return }
         
         let avCaptureMetadataOutput = AVCaptureMetadataOutput()
-        avCaptureMetadataOutput.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
+        avCaptureMetadataOutput.setMetadataObjectsDelegate(self, queue: queue)
         
         if let inputs = self.avCaptureSession.inputs as? [AVCaptureDeviceInput] {
             for input in inputs {
@@ -449,7 +434,6 @@ class QRScannerViewController: UIViewController {
             guard let self = self else { return }
             
             self.avCaptureSession.stopRunning()
-            self.textField.removeFromSuperview()
             self.torchButton.removeFromSuperview()
             self.uploadButton.removeFromSuperview()
         }
