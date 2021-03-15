@@ -33,15 +33,36 @@ class CreatePSBT {
         }
         
         activeWallet { wallet in
-            let descriptorParser = DescriptorParser()
-            let descriptorStruct = descriptorParser.descriptor(wallet!.receiveDescriptor)
+            guard let wallet = wallet else {
+                // using a bitcoin core wallet
+                Reducer.makeCommand(command: .getrawchangeaddress, param: "") { (response, errorMessage) in
+                    guard let changeAddress = response else {
+                        completion((nil, nil, "error getting a change address: \(errorMessage ?? "unknown")"))
+                        return
+                    }
+                    
+                    param = "''[]'', ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"changeAddress\": \"\(changeAddress)\"}'', true"
+                    
+                    if inputs != "" {
+                        param = "\(inputs), ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"changeAddress\": \"\(changeAddress)\"}'', true"
+                    }
+                    
+                    create(params: param)
+                }
+                
+                return
+            }
             
-            guard let wallet = wallet, descriptorStruct.isMulti else {
+            let descriptorParser = DescriptorParser()
+            let descriptorStruct = descriptorParser.descriptor(wallet.receiveDescriptor)
+            
+            guard descriptorStruct.isMulti else {
                 create(params: param)
                 return
             }
             
             let index = Int(wallet.index) + 1
+            
             CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(index), entity: .wallets) { success in
                 guard success else {
                     completion((nil, nil, "error updating wallets index"))
