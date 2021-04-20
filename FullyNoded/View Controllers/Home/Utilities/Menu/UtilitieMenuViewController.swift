@@ -13,6 +13,7 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
     var firstLink = ""
     var activeNode = [String:Any]()
     let connectingView = ConnectingView()
+    var simpleSend = Bool()
     var getBlockchainInfo = Bool()
     var getAddressInfo = Bool()
     var listAddressGroups = Bool()
@@ -78,6 +79,7 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
         convert = false
         combinePSBT = false
         deriveAddresses = false
+        simpleSend = false
         firstLink = ""
     }
     
@@ -90,7 +92,7 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
         switch section {
         case 0: return 2
         case 1: return 8
-        case 2: return 10
+        case 2: return 11
         case 3: return 8
         case 4: return 2
         case 5: return 1
@@ -146,6 +148,7 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
             case 7: label.text = "Convert Raw to PSBT"
             case 8: label.text = "Decode PSBT"
             case 9: label.text = "Combine PSBT"
+            case 10: label.text = "Simple Send"
             default:break}
             
         case 3:
@@ -250,6 +253,7 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
             case 7: convert = true; segue(to: "goDecode")//"Convert Raw to PSBT"
             case 8: decodePSBT = true; segue(to: "goDecode")//"Decode PSBT"
             case 9: combinePSBT = true; segue(to: "joinPSBT")//"Combine PSBT"
+            case 10: simpleSend = true; simpleSendAction()
             default:break}
             
             
@@ -387,6 +391,99 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
                     displayAlert(viewController: vc, isError: true, message: "Error: \(errorMessage!)")
                 }
             }
+        }
+    }
+    
+    private func simpleSendAction() {
+        activeWallet { [weak self] wallet in
+            guard let self = self else { return }
+            
+            guard wallet == nil else {
+                showAlert(vc: self, title: "", message: "This feature only works with the default wallet.")
+                
+                return
+            }
+            
+            self.promptForSimpleSend()
+        }
+    }
+    
+    private func promptForSimpleSend() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let title = "Simple Send"
+            let message = "Enter a recipient address and an amount in btc."
+            let style = UIAlertController.Style.alert
+            let alert = UIAlertController(title: title, message: message, preferredStyle: style)
+            
+            let send = UIAlertAction(title: "Send", style: .default) { [weak self] alertAction in
+                guard let self = self else { return }
+                
+                guard let textfields = alert.textFields else { return }
+                
+                guard let address = (textfields[0] as UITextField).text else { return }
+                guard let amount = (textfields[1] as UITextField).text else { return }
+                
+                if address != "" && amount != "" {
+                    self.confirmSend(address, amount)
+                }
+            }
+            
+            alert.addTextField { textField in
+                textField.placeholder = "address"
+                textField.isSecureTextEntry = false
+                textField.keyboardAppearance = .dark
+            }
+            
+            alert.addTextField { textField in
+                textField.placeholder = "amount in btc"
+                textField.isSecureTextEntry = false
+                textField.keyboardAppearance = .dark
+            }
+            
+            alert.addAction(send)
+            
+            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
+            alert.addAction(cancel)
+            self.present(alert, animated:true, completion: nil)
+        }
+    }
+    
+    private func confirmSend(_ address: String, _ amount: String) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let title = "Confirm"
+            let message = "Send \(amount) btc to \(address)? This action is not reversible!"
+            let style = UIAlertController.Style.alert
+            let alert = UIAlertController(title: title, message: message, preferredStyle: style)
+            
+            let send = UIAlertAction(title: "Send", style: .default) { [weak self] alertAction in
+                guard let self = self else { return }
+                
+                Reducer.makeCommand(command: .sendtoaddress, param: "\"\(address)\", \(amount), \"\", \"\", false, true") { (response, errorMessage) in
+                    guard let response = response else {
+                        showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown error")
+                        
+                        return
+                    }
+                    
+                    guard let hex = response as? String else {
+                        showAlert(vc: self, title: "", message: "Unable to parse the transaction ID, please check your transaction history to enure the payment was sent.")
+                        
+                        return
+                    }
+                    
+                    showAlert(vc: self, title: "Sent ✓", message: "Transaction ID: \(hex)")
+                }
+            }
+            
+            alert.addAction(send)
+            
+            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
+            alert.addAction(cancel)
+            self.present(alert, animated:true, completion: nil)
         }
     }
     
