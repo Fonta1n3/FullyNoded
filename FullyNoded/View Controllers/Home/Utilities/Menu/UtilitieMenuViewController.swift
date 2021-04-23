@@ -399,7 +399,7 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
             guard let self = self else { return }
             
             guard wallet == nil else {
-                showAlert(vc: self, title: "", message: "This feature only works with the default wallet.")
+                showAlert(vc: self, title: "", message: "This feature does not work for Fully Noded wallets, only Bitcoin Core wallets. It is here for emergencies and should be generally avoided.")
                 
                 return
             }
@@ -408,25 +408,38 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
         }
     }
     
+    private func showError(_ desc: String) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            showAlert(vc: self, title: "", message: "Error: \(desc)")
+        }
+    }
+    
     private func promptForSimpleSend() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
             let title = "Simple Send"
-            let message = "Enter a recipient address and an amount in btc."
+            let message = "Enter a recipient address and an amount in btc. The fee will be *ADDED* to the amount automatically to ensure the recipient recieves the amount specified!"
             let style = UIAlertController.Style.alert
             let alert = UIAlertController(title: title, message: message, preferredStyle: style)
             
             let send = UIAlertAction(title: "Send", style: .default) { [weak self] alertAction in
                 guard let self = self else { return }
                 
-                guard let textfields = alert.textFields else { return }
-                
-                guard let address = (textfields[0] as UITextField).text else { return }
-                guard let amount = (textfields[1] as UITextField).text else { return }
+                    guard let textfields = alert.textFields,
+                      let address = (textfields[0] as UITextField).text,
+                      let amount = (textfields[1] as UITextField).text else {
+                        
+                        self.showError("Text input not accessible."); return
+                    }
                 
                 if address != "" && amount != "" {
                     self.confirmSend(address, amount)
+                } else {
+                    
+                    self.showError("You must input a value!")
                 }
             }
             
@@ -440,12 +453,14 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
                 textField.placeholder = "amount in btc"
                 textField.isSecureTextEntry = false
                 textField.keyboardAppearance = .dark
+                textField.keyboardType = .decimalPad
             }
             
             alert.addAction(send)
             
-            let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
+            let cancel = UIAlertAction(title: "Cancel", style: .default) { alertAction in }
             alert.addAction(cancel)
+            
             self.present(alert, animated:true, completion: nil)
         }
     }
@@ -462,7 +477,13 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
             let send = UIAlertAction(title: "Send", style: .default) { [weak self] alertAction in
                 guard let self = self else { return }
                 
-                Reducer.makeCommand(command: .sendtoaddress, param: "\"\(address)\", \(amount), \"\", \"\", false, true") { (response, errorMessage) in
+                let comment = "\"\""
+                let commentTo = "\"\""
+                let subtractFeeFromAmount = "false"
+                let rbfEnabled = "true"
+                let confTarget = UserDefaults.standard.object(forKey: "feeTarget") as? Int ?? 432
+                
+                Reducer.makeCommand(command: .sendtoaddress, param: "\"\(address)\", \(amount), \(comment), \(commentTo), \(subtractFeeFromAmount), \(rbfEnabled), \(confTarget)") { (response, errorMessage) in
                     guard let response = response else {
                         showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown error")
                         
@@ -483,6 +504,7 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
             
             let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
             alert.addAction(cancel)
+            
             self.present(alert, animated:true, completion: nil)
         }
     }

@@ -86,6 +86,11 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     
     
     @IBAction func refreshAction(_ sender: Any) {
+        guard self.derivationField.text == "m/48'/\(self.cointType)'/0'/2'" || self.derivationField.text == "m/48h/\(self.cointType)h/0h/2h" || self.derivationField.text == "m/48’/1’/0’/2’" else {
+            showAlert(vc: self, title: "", message: "You can not use custom derivations when deriving a cosigner from an existing signer. Derivation must be set to m/48'/\(self.cointType)'/0'/2'")
+            return
+        }
+        
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -101,9 +106,7 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
     }
     
     private func addKeyStore(_ xfp: String, _ xpub: String) {
-        guard let rawDerivationPath = derivationProcessed() else {
-            return
-        }
+        guard let rawDerivationPath = derivationProcessed() else { return }
         
         let prefix = rawDerivationPath.replacingOccurrences(of: "m/", with: "\(xfp)/")
         
