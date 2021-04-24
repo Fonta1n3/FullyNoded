@@ -147,7 +147,6 @@
 		D0E54DD525207A1C00BD859E /* UTXOs.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E54DD425207A1C00BD859E /* UTXOs.swift */; };
 		D0E9B63C211A94C600B416E7 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E9B63B211A94C600B416E7 /* Utilities.swift */; };
 		D0EA04EF25592B910032C63F /* logo_grey.png in Resources */ = {isa = PBXBuildFile; fileRef = D0EA04EE25592B910032C63F /* logo_grey.png */; };
-		D0EC748A227DF06E001489B9 /* CreateUnsigned.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EC7489227DF06E001489B9 /* CreateUnsigned.swift */; };
 		D0EDDF1124972CEF00657931 /* InvoiceSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EDDF1024972CEF00657931 /* InvoiceSettingsViewController.swift */; };
 		D0EF29C1216B82B400EB776A /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0EF29C0216B82B400EB776A /* SettingsViewController.swift */; };
 		D0F3919024BFE48600EA8A2A /* AccountMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F3918F24BFE48600EA8A2A /* AccountMap.swift */; };
@@ -330,7 +329,6 @@
 		D0E54DD425207A1C00BD859E /* UTXOs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOs.swift; sourceTree = "<group>"; };
 		D0E9B63B211A94C600B416E7 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		D0EA04EE25592B910032C63F /* logo_grey.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo_grey.png; sourceTree = "<group>"; };
-		D0EC7489227DF06E001489B9 /* CreateUnsigned.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateUnsigned.swift; sourceTree = "<group>"; };
 		D0EDDF1024972CEF00657931 /* InvoiceSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceSettingsViewController.swift; sourceTree = "<group>"; };
 		D0EF29C0216B82B400EB776A /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		D0F3918F24BFE48600EA8A2A /* AccountMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountMap.swift; sourceTree = "<group>"; };
@@ -806,7 +804,6 @@
 			isa = PBXGroup;
 			children = (
 				D0A519B8226C212C00860D5C /* SendUTXO.swift */,
-				D0EC7489227DF06E001489B9 /* CreateUnsigned.swift */,
 				D0855FC922B0CEA800DBBFC2 /* CreatePSBT.swift */,
 				D0806B4422EE9FBA002C20A1 /* TXChain.swift */,
 				D09A32FE24A8419C009FA0B2 /* CreateFullyNodedWallet.swift */,
@@ -1109,7 +1106,6 @@
 				D0452ADD224743C50013E225 /* LogInViewController.swift in Sources */,
 				D02958D3234F82E000ED8F72 /* IdentityViewController.swift in Sources */,
 				D09A330324A86C7C009FA0B2 /* Signer.swift in Sources */,
-				D0EC748A227DF06E001489B9 /* CreateUnsigned.swift in Sources */,
 				D08A92B1233B213300409D6E /* ChooseWalletViewController.swift in Sources */,
 				D0A2918F225114670099A2F3 /* MakeRPCCall.swift in Sources */,
 				D082397B24DBDB330098D4F4 /* AddPeerViewController.swift in Sources */,

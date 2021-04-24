@@ -11,12 +11,21 @@ import Foundation
 class CreatePSBT {
     
     class func create(inputs: String, outputs: String, completion: @escaping ((psbt: String?, rawTx: String?, errorMessage: String?)) -> Void) {
-        let feeTarget = UserDefaults.standard.object(forKey: "feeTarget") as? Int ?? 432
+        var param = ""
         
-        var param = "[], ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget)}, true"
-        
-        if inputs != "" {
-            param = "\(inputs), ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget)}, true"
+        if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
+            param = "[], ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate)}, true"
+            
+            if inputs != "" {
+                param = "\(inputs), ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate)}, true"
+            }
+            
+        } else if let feeTarget = UserDefaults.standard.object(forKey: "feeTarget") as? Int {
+            param = "[], ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget)}, true"
+            
+            if inputs != "" {
+                param = "\(inputs), ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget)}, true"
+            }
         }
         
         func create(params: String) {
@@ -40,11 +49,21 @@ class CreatePSBT {
                         completion((nil, nil, "error getting a change address: \(errorMessage ?? "unknown")"))
                         return
                     }
-                    
-                    param = "''[]'', ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"changeAddress\": \"\(changeAddress)\"}'', true"
-                    
-                    if inputs != "" {
-                        param = "\(inputs), ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"changeAddress\": \"\(changeAddress)\"}'', true"
+                        
+                    if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
+                        
+                        param = "''[]'', ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate), \"changeAddress\": \"\(changeAddress)\"}'', true"
+                        
+                        if inputs != "" {
+                            param = "\(inputs), ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate), \"changeAddress\": \"\(changeAddress)\"}'', true"
+                        }
+                    } else if let feeTarget = UserDefaults.standard.object(forKey: "feeTarget") as? Int {
+                        
+                        param = "''[]'', ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"changeAddress\": \"\(changeAddress)\"}'', true"
+                        
+                        if inputs != "" {
+                            param = "\(inputs), ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"changeAddress\": \"\(changeAddress)\"}'', true"
+                        }
                     }
                     
                     create(params: param)
@@ -74,11 +93,21 @@ class CreatePSBT {
                         completion((nil, nil, errorMessage ?? "error deriving multisig change address"))
                         return
                     }
-                    
-                    param = "''[]'', ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"changeAddress\": \"\(changeAddress)\"}'', true"
-                    
-                    if inputs != "" {
-                        param = "\(inputs), ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"changeAddress\": \"\(changeAddress)\"}'', true"
+                        
+                    if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
+                        
+                        param = "''[]'', ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate), \"changeAddress\": \"\(changeAddress)\"}'', true"
+                        
+                        if inputs != "" {
+                            param = "\(inputs), ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate), \"changeAddress\": \"\(changeAddress)\"}'', true"
+                        }
+                    } else if let feeTarget = UserDefaults.standard.object(forKey: "feeTarget") as? Int {
+                        
+                        param = "''[]'', ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"changeAddress\": \"\(changeAddress)\"}'', true"
+                        
+                        if inputs != "" {
+                            param = "\(inputs), ''{\(outputs)}'', 0, ''{\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"changeAddress\": \"\(changeAddress)\"}'', true"
+                        }
                     }
                     
                     create(params: param)

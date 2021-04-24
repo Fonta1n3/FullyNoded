@@ -52,6 +52,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     @IBOutlet weak private var receivingLabel: UILabel!
     @IBOutlet weak private var outputsTable: UITableView!
     @IBOutlet weak private var addressImageView: UIImageView!
+    @IBOutlet weak private var feeRateInputField: UITextField!
     
     
     var spinner = ConnectingView()
@@ -63,6 +64,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         amountInput.delegate = self
         addressInput.delegate = self
         outputsTable.delegate = self
+        feeRateInputField.delegate = self
         outputsTable.dataSource = self
         outputsTable.tableFooterView = UIView(frame: .zero)
         outputsTable.alpha = 0
@@ -142,7 +144,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
           alertStyle = UIAlertController.Style.alert
         }
         
-        estimateSmartFee()
+        //estimateSmartFee()
+        showFeeSetting()
         slider.addTarget(self, action: #selector(didFinishSliding(_:)), for: .valueChanged)
     }
     
@@ -541,7 +544,14 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     private func sweepSelectedUtxos(_ receivingAddress: String) {
         
-        let param = "''\(processInputs())'', ''{\"\(receivingAddress)\":\(rounded(number: utxoTotal))}'', 0, ''{\"includeWatching\": \(true), \"replaceable\": true, \"conf_target\": \(ud.object(forKey: "feeTarget") as! Int), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
+        var param = ""
+        
+        if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
+            param = "''\(processInputs())'', ''{\"\(receivingAddress)\":\(rounded(number: utxoTotal))}'', 0, ''{\"includeWatching\": \(true), \"replaceable\": true, \"fee_rate\": \(feeRate), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
+        } else {
+            param = "''\(processInputs())'', ''{\"\(receivingAddress)\":\(rounded(number: utxoTotal))}'', 0, ''{\"includeWatching\": \(true), \"replaceable\": true, \"conf_target\": \(ud.object(forKey: "feeTarget") as? Int ?? 432), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
+        }
+        
                 
         Reducer.makeCommand(command: .walletcreatefundedpsbt, param: param) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
@@ -631,8 +641,14 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             inputs = inputs.replacingOccurrences(of: "}\"", with: "}")
             inputs = inputs.replacingOccurrences(of: "\\", with: "")
             
-            let param = "''\(inputs)'', ''{\"\(receivingAddress)\":\(rounded(number: amount))}'', 0, ''{\"includeWatching\": \(spendFromCold), \"replaceable\": true, \"conf_target\": \(self.ud.object(forKey: "feeTarget") as! Int), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
+            var param = ""
             
+            if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
+                param = "''\(inputs)'', ''{\"\(receivingAddress)\":\(rounded(number: amount))}'', 0, ''{\"includeWatching\": \(spendFromCold), \"replaceable\": true, \"fee_rate\": \(feeRate), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
+            } else {
+                param = "''\(inputs)'', ''{\"\(receivingAddress)\":\(rounded(number: amount))}'', 0, ''{\"includeWatching\": \(spendFromCold), \"replaceable\": true, \"conf_target\": \(self.ud.object(forKey: "feeTarget") as? Int ?? 432), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
+            }
+                        
             Reducer.makeCommand(command: .walletcreatefundedpsbt, param: param) { [weak self] (response, errorMessage) in
                 guard let self = self else { return }
                 
@@ -772,6 +788,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
         amountInput.resignFirstResponder()
         addressInput.resignFirstResponder()
+        feeRateInputField.resignFirstResponder()
     }
         
     //MARK: Textfield methods
@@ -810,8 +827,60 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     func textFieldDidEndEditing(_ textField: UITextField) {
         textField.resignFirstResponder()
+        
         if textField == addressInput && addressInput.text != "" {
             processBIP21(url: addressInput.text!)
+        }
+        
+        if textField == feeRateInputField {
+            guard let text = textField.text else { return }
+            
+            guard text != "" else {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.slider.alpha = 1
+                    self.miningTargetLabel.alpha = 1
+                    
+                    UserDefaults.standard.removeObject(forKey: "feeRate")
+                    
+                    showAlert(vc: self, title: "", message: "Your transaction fee will be determined by the slider. To specify a manual s/b fee rate add a value greater then 0.")
+                    
+                    self.estimateSmartFee()
+                }
+                
+                return
+            }
+            
+            guard let int = Int(text) else { return }
+            
+            guard int > 0 else {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.feeRateInputField.text = ""
+                    self.slider.alpha = 1
+                    self.miningTargetLabel.alpha = 1
+                    
+                    UserDefaults.standard.removeObject(forKey: "feeRate")
+                    self.estimateSmartFee()
+                    
+                    showAlert(vc: self, title: "", message: "Fee rate must be above 0. To specify a fee rate ensure it is above 0 otherwise the fee defaults to the slider setting.")
+                }
+                
+                return
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.slider.alpha = 0
+                self.miningTargetLabel.alpha = 0
+                self.satPerByteLabel.text = "\(int) s/b"
+                UserDefaults.standard.setValue(int, forKey: "feeRate")
+                
+                showAlert(vc: self, title: "", message: "Your transaction fee rate has been set to \(int) sats per vbyte. To revert to the slider you can delete the fee rate or set it to 0.")
+            }
         }
     }
     
@@ -939,6 +1008,18 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             DispatchQueue.main.async {
                 self.satPerByteLabel.text = "\(feeRate)"
             }
+        }
+    }
+    
+    private func showFeeSetting() {
+        if UserDefaults.standard.object(forKey: "feeRate") == nil {
+            estimateSmartFee()
+        } else {
+            let feeRate = UserDefaults.standard.object(forKey: "feeRate") as! Int
+            self.slider.alpha = 0
+            self.miningTargetLabel.alpha = 0
+            self.feeRateInputField.text = "\(feeRate)"
+            self.satPerByteLabel.text = "\(feeRate) s/b"
         }
     }
     

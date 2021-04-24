@@ -4379,7 +4379,7 @@ xxxxx</string>
                                 <nil key="highlightedColor"/>
                             </label>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="jXp-xP-J4h">
-                                <rect key="frame" x="16" y="536" width="343" height="111"/>
+                                <rect key="frame" x="16" y="531" width="343" height="116"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="separatorColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
@@ -4408,8 +4408,8 @@ xxxxx</string>
                                     <outlet property="delegate" destination="pUo-bf-sNm" id="m2o-tp-c0x"/>
                                 </connections>
                             </tableView>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" spacing="22" translatesAutoresizingMaskIntoConstraints="NO" id="TQR-MC-WaO">
-                                <rect key="frame" x="16" y="87" width="343" height="395"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="TQR-MC-WaO">
+                                <rect key="frame" x="16" y="87" width="343" height="390"/>
                                 <subviews>
                                     <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6ok-Q8-SRj">
                                         <rect key="frame" x="0.0" y="0.0" width="343" height="141"/>
@@ -4496,7 +4496,7 @@ xxxxx</string>
                                         </constraints>
                                     </view>
                                     <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="yzj-3l-LdC">
-                                        <rect key="frame" x="0.0" y="163" width="343" height="110"/>
+                                        <rect key="frame" x="0.0" y="151" width="343" height="110"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Address:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PFC-7A-3Gn">
                                                 <rect key="frame" x="8" y="8" width="69.5" height="18"/>
@@ -4616,10 +4616,10 @@ xxxxx</string>
                                         </constraints>
                                     </view>
                                     <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Rmu-y9-w5v">
-                                        <rect key="frame" x="0.0" y="295" width="343" height="100"/>
+                                        <rect key="frame" x="0.0" y="271" width="343" height="119"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Fee:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ynD-gu-Xre">
-                                                <rect key="frame" x="8" y="8" width="319" height="18"/>
+                                                <rect key="frame" x="8" y="8" width="33.5" height="18"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="18" id="cR5-SM-iBa"/>
                                                 </constraints>
@@ -4628,7 +4628,7 @@ xxxxx</string>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Target: 2 blocks ~20 minutes" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mdu-uM-jaM">
-                                                <rect key="frame" x="8" y="77" width="140.5" height="22"/>
+                                                <rect key="frame" x="8" y="96" width="140.5" height="22"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="22" id="zmS-V5-o6f"/>
                                                 </constraints>
@@ -4637,7 +4637,7 @@ xxxxx</string>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="X4T-PA-gul">
-                                                <rect key="frame" x="8" y="32.5" width="35" height="35"/>
+                                                <rect key="frame" x="8" y="42" width="35" height="35"/>
                                                 <subviews>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="timer" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="Xyt-Vb-mgk">
                                                         <rect key="frame" x="4" y="5" width="27" height="26"/>
@@ -4656,12 +4656,12 @@ xxxxx</string>
                                                 </constraints>
                                             </view>
                                             <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="Nls-an-9n9">
-                                                <rect key="frame" x="49" y="35" width="280" height="31"/>
+                                                <rect key="frame" x="49" y="44.5" width="280" height="31"/>
                                                 <color key="minimumTrackTintColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <color key="thumbTintColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             </slider>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="3.1 s/b" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CwA-0R-tRF">
-                                                <rect key="frame" x="303" y="77" width="31.5" height="22"/>
+                                                <rect key="frame" x="303" y="96" width="31.5" height="22"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="22" id="vGd-AL-FZd"/>
                                                 </constraints>
@@ -4669,10 +4669,23 @@ xxxxx</string>
                                                 <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
+                                            <textField opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="sbh-pS-EJp">
+                                                <rect key="frame" x="276" y="8" width="51" height="34"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="51" id="h5d-Ow-rNC"/>
+                                                </constraints>
+                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                <textInputTraits key="textInputTraits" keyboardType="numberPad"/>
+                                            </textField>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Set a sat/vbyte fee rate:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yHc-bR-waN">
+                                                <rect key="frame" x="152.5" y="8" width="115.5" height="12"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="10"/>
+                                                <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
                                         </subviews>
                                         <color key="backgroundColor" red="0.019498584789999999" green="0.023548513649999998" blue="0.023569250480000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
-                                            <constraint firstAttribute="trailing" secondItem="ynD-gu-Xre" secondAttribute="trailing" constant="16" id="22G-Bf-vpC"/>
                                             <constraint firstAttribute="bottom" secondItem="mdu-uM-jaM" secondAttribute="bottom" constant="1" id="AaE-4P-YtT"/>
                                             <constraint firstItem="Nls-an-9n9" firstAttribute="leading" secondItem="X4T-PA-gul" secondAttribute="trailing" constant="8" id="Az7-eM-7zG"/>
                                             <constraint firstItem="mdu-uM-jaM" firstAttribute="leading" secondItem="Rmu-y9-w5v" secondAttribute="leading" constant="8" id="BAw-jU-qDC"/>
@@ -4680,17 +4693,32 @@ xxxxx</string>
                                             <constraint firstAttribute="trailing" secondItem="CwA-0R-tRF" secondAttribute="trailing" constant="8.5" id="GNM-0T-JCl"/>
                                             <constraint firstItem="Nls-an-9n9" firstAttribute="centerY" secondItem="Rmu-y9-w5v" secondAttribute="centerY" id="Rdg-FD-bke"/>
                                             <constraint firstItem="ynD-gu-Xre" firstAttribute="leading" secondItem="Rmu-y9-w5v" secondAttribute="leading" constant="8" id="YLI-tw-ir5"/>
-                                            <constraint firstAttribute="height" constant="100" id="a8p-2P-jHq"/>
+                                            <constraint firstItem="sbh-pS-EJp" firstAttribute="top" secondItem="Rmu-y9-w5v" secondAttribute="top" constant="8" id="aI8-sW-uus"/>
                                             <constraint firstAttribute="bottom" secondItem="CwA-0R-tRF" secondAttribute="bottom" constant="1" id="bYl-WP-LmC"/>
                                             <constraint firstItem="X4T-PA-gul" firstAttribute="leading" secondItem="Rmu-y9-w5v" secondAttribute="leading" constant="8" id="blk-VO-vQT"/>
                                             <constraint firstItem="X4T-PA-gul" firstAttribute="centerY" secondItem="Rmu-y9-w5v" secondAttribute="centerY" id="mTL-pi-Rhq"/>
                                             <constraint firstItem="ynD-gu-Xre" firstAttribute="top" secondItem="Rmu-y9-w5v" secondAttribute="top" constant="8" id="nRO-hj-Jf2"/>
+                                            <constraint firstItem="sbh-pS-EJp" firstAttribute="leading" secondItem="yHc-bR-waN" secondAttribute="trailing" constant="8" symbolic="YES" id="oK9-gr-xla"/>
+                                            <constraint firstItem="yHc-bR-waN" firstAttribute="top" secondItem="Rmu-y9-w5v" secondAttribute="top" constant="8" id="pdu-I7-eMM"/>
+                                            <constraint firstAttribute="trailing" secondItem="sbh-pS-EJp" secondAttribute="trailing" constant="16" id="ufg-HZ-CwG"/>
+                                            <constraint firstAttribute="height" constant="119" id="uv6-3d-Qs1"/>
                                         </constraints>
                                     </view>
                                 </subviews>
                             </stackView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HBB-RM-j15">
-                                <rect key="frame" x="105" y="490" width="165" height="38"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FTc-X9-DAY">
+                                <rect key="frame" x="271" y="55" width="88" height="23"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="10"/>
+                                <color key="tintColor" red="0.25174289789999998" green="0.82675522769999998" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <state key="normal" title=" paste invoice" image="doc.on.clipboard" catalog="system">
+                                    <color key="titleColor" red="0.25174289789999998" green="0.82675522769999998" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="pasteAction:" destination="pUo-bf-sNm" eventType="touchUpInside" id="iR7-Wj-DOO"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HBB-RM-j15">
+                                <rect key="frame" x="105" y="485" width="165" height="38"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="38" id="3Zm-UY-uaT"/>
@@ -4702,17 +4730,6 @@ xxxxx</string>
                                 </state>
                                 <connections>
                                     <action selector="createOnchainAction:" destination="pUo-bf-sNm" eventType="touchUpInside" id="Y3u-V0-JgZ"/>
-                                </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FTc-X9-DAY">
-                                <rect key="frame" x="271" y="55" width="88" height="23"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="10"/>
-                                <color key="tintColor" red="0.25174289789999998" green="0.82675522769999998" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <state key="normal" title=" paste invoice" image="doc.on.clipboard" catalog="system">
-                                    <color key="titleColor" red="0.25174289789999998" green="0.82675522769999998" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                </state>
-                                <connections>
-                                    <action selector="pasteAction:" destination="pUo-bf-sNm" eventType="touchUpInside" id="iR7-Wj-DOO"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -4729,7 +4746,7 @@ xxxxx</string>
                             <constraint firstItem="C0H-pw-RSl" firstAttribute="trailing" secondItem="TQR-MC-WaO" secondAttribute="trailing" constant="16" id="eDW-hC-Wtl"/>
                             <constraint firstItem="HBB-RM-j15" firstAttribute="top" secondItem="TQR-MC-WaO" secondAttribute="bottom" constant="8" id="muI-PR-uaj"/>
                             <constraint firstItem="TQR-MC-WaO" firstAttribute="top" secondItem="Tft-x5-9Sa" secondAttribute="bottom" constant="18.5" id="o7o-Ze-YFT"/>
-                            <constraint firstItem="jXp-xP-J4h" firstAttribute="top" secondItem="HBB-RM-j15" secondAttribute="bottom" constant="14" id="oh8-fJ-LQ8"/>
+                            <constraint firstItem="jXp-xP-J4h" firstAttribute="top" secondItem="HBB-RM-j15" secondAttribute="bottom" constant="8" id="oh8-fJ-LQ8"/>
                             <constraint firstItem="C0H-pw-RSl" firstAttribute="bottom" secondItem="jXp-xP-J4h" secondAttribute="bottom" constant="20" id="xoD-Dk-cS5"/>
                             <constraint firstItem="HBB-RM-j15" firstAttribute="centerX" secondItem="DIN-Fg-EH6" secondAttribute="centerX" id="yim-pM-p2i"/>
                         </constraints>
@@ -4751,6 +4768,7 @@ xxxxx</string>
                         <outlet property="amountInput" destination="WBT-v4-ipz" id="4zO-8O-Q8c"/>
                         <outlet property="denominationImage" destination="cDK-QG-hoD" id="gXI-bz-daC"/>
                         <outlet property="feeIconBackground" destination="X4T-PA-gul" id="Gas-HE-S15"/>
+                        <outlet property="feeRateInputField" destination="sbh-pS-EJp" id="oKd-NE-FHX"/>
                         <outlet property="fxRateLabel" destination="Tft-x5-9Sa" id="diE-in-GEv"/>
                         <outlet property="miningTargetLabel" destination="mdu-uM-jaM" id="DQW-cX-yg0"/>
                         <outlet property="outputsTable" destination="jXp-xP-J4h" id="y02-Rq-oD9"/>
@@ -7279,10 +7297,10 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="LMu-1F-VvA"/>
         <segue reference="oY9-Pq-H5b"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="lxJ-aO-sxw"/>
+        <segue reference="CQp-9r-70w"/>
         <segue reference="ods-Ql-GAw"/>
         <segue reference="veA-tY-zvZ"/>
-        <segue reference="AK4-4u-w1q"/>
+        <segue reference="7PS-EL-3d2"/>
         <segue reference="j10-wi-hpr"/>
         <segue reference="qmy-fM-U4p"/>
     </inferredMetricsTieBreakers>
