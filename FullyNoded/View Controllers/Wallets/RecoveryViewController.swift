@@ -560,8 +560,67 @@ class RecoveryViewController: UIViewController, UITextFieldDelegate, UINavigatio
         return desc
     }
     
+    private func walletExistsOnNode(_ hash: String, completion: @escaping ((String?)) -> Void) {
+        Reducer.makeCommand(command: .listwalletdir, param: "") { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            if let wallets = response as? NSDictionary {
+                self.parseWallets(wallets, hash, completion: completion)
+            } else {
+                completion(nil)
+            }
+        }
+    }
+    
+    private func parseWallets(_ wallets: NSDictionary, _ hash: String, completion: @escaping ((String?)) -> Void) {
+        guard let walletArr = wallets["wallets"] as? NSArray, walletArr.count > 0 else {
+            completion(nil)
+            return
+        }
+        
+        var existingWallet: String?
+        
+        for (i, wallet) in walletArr.enumerated() {
+            let walletDict = wallet as! NSDictionary
+            let walletName = walletDict["name"] as! String
+            
+            if walletName.contains(hash) {
+                existingWallet = walletName
+            }
+            
+            if i + 1 == walletArr.count {
+                completion(existingWallet)
+            }
+        }
+    }
+    
     private func createWallet(mk: String, completion: @escaping ((Bool)) -> Void) {
         let walletName = "Recovery-\(Crypto.sha256hash(bip84PrimDesc(mk)))"
+        
+        walletExistsOnNode(walletName) { [weak self] existingWallet in
+            guard let self = self else { return }
+            
+            guard existingWallet != nil else {
+                self.createWalletNow(walletName: walletName) { success in
+                    guard success else {
+                        self.showError(error: "Error creating your wallet.")
+                        completion(false)
+                        return
+                    }
+                    
+                    completion(true)
+                }
+                
+                return
+            }
+            
+            self.name = walletName
+            UserDefaults.standard.set(walletName, forKey: "walletName")
+            completion(true)
+        }
+    }
+    
+    private func createWalletNow(walletName: String, completion: @escaping ((Bool)) -> Void) {
         let param = "\"\(walletName)\", true, true, \"\", true"
         Reducer.makeCommand(command: .createwallet, param: param) { [unowned vc = self] (response, errorMessage) in
             if let dict = response as? NSDictionary {
