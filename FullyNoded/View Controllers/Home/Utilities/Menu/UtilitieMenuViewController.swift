@@ -246,8 +246,8 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
             case 0: decodeRaw = true; segue(to: "goDecode")//"Decode Raw"
             case 1: verify = true; segue(to: "signRaw")//"Verify Raw"
             case 2: broadcast = true; segue(to: "signRaw")//"Broadcast Raw"
-            case 3: process = true; segue(to: "signRaw")//"Process PSBT"
-            case 4: finalize = true; segue(to: "signRaw")//"Finalize PSBT"
+            case 3: process = true; segue(to: "goGetInfo")//"Process PSBT"
+            case 4: finalize = true; segue(to: "goGetInfo")//"Finalize PSBT"
             case 5: combinePSBT = false; segue(to: "joinPSBT")//"Join PSBT"
             case 6: analyze = true; segue(to: "goDecode")//"Analyze PSBT"
             case 7: convert = true; segue(to: "goDecode")//"Convert Raw to PSBT"
@@ -536,6 +536,8 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
                 vc.getUtxos = self.getUtxos
                 vc.getTxoutset = self.getTxoutset
                 vc.deriveAddresses = self.deriveAddresses
+                vc.finalize = self.finalize
+                vc.process = self.process
             }
             
         case "goSign":

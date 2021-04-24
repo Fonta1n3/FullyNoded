@@ -12,6 +12,8 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     
     var command = ""
     var helpText = ""
+    var finalize = Bool()
+    var process = Bool()
     var getBlockchainInfo = Bool()
     var getAddressInfo = Bool()
     var listAddressGroups = Bool()
@@ -97,6 +99,16 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
                 
         var titleString = ""
         //var placeholder = ""
+        
+        if process {
+            titleString = "Process PSBT"
+            command = "walletprocesspsbt"
+        }
+        
+        if finalize {
+            titleString = "Finalize PSBT"
+            command = "finalizepsbt"
+        }
         
         if deriveAddresses {
             titleString = "Derive Addresses"
@@ -332,6 +344,14 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
     }
     
     func makeCommand(param: String) {
+        
+        if process {
+            self.executeNodeCommand(method: .walletprocesspsbt, param: "\"\(param)\"")
+        }
+        
+        if finalize {
+            self.executeNodeCommand(method: .finalizepsbt, param: "\"\(param)\"")
+        }
         
         if deriveAddresses {
             let params = "\"\(param)\", [0,2500]"
