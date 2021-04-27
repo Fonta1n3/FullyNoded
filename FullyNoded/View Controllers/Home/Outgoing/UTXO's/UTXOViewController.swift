@@ -149,32 +149,22 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     }
     
     @IBAction private func createRaw(_ sender: Any) {
-        activeWallet { [weak self] wallet in
-            guard let self = self else { return }
+        guard let version = UserDefaults.standard.object(forKey: "version") as? String, version.contains("0.21.") else {
+            showAlert(vc: self, title: "Bitcoin Core needs to be updated", message: "Manual utxo selection requires Bitcoin Core 0.21, please update and try again. If you already have 0.21 go to the home screen, refresh and load it completely then try again.")
             
-            guard wallet != nil else {
-                showAlert(vc: self, title: "", message: "UTXO selection (coin control) only works with Fully Noded wallets. You can instead lock the utxos you do not want the default wallet to spend and create the transaction as normal via the send button.")
+            return
+        }
+        
+        if self.selectedUTXOs.count > 0 {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
                 
-                return
+                self.updateInputs()
+                self.performSegue(withIdentifier: "segueToSendFromUtxos", sender: self)
             }
             
-            guard let version = UserDefaults.standard.object(forKey: "version") as? String, version.contains("0.21.") else {
-                showAlert(vc: self, title: "Bitcoin Core needs to be updated", message: "Manual utxo selection requires Bitcoin Core 0.21, please update and try again. If you already have 0.21 go to the home screen, refresh and load it completely then try again.")
-                
-                return
-            }
-            
-            if self.selectedUTXOs.count > 0 {
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.updateInputs()
-                    self.performSegue(withIdentifier: "segueToSendFromUtxos", sender: self)
-                }
-                
-            } else {
-                showAlert(vc: self, title: "Select a UTXO first", message: "Just tap a utxo(s) to select it. Then tap the 🔗 to create a transaction with those utxos.")
-            }
+        } else {
+            showAlert(vc: self, title: "Select a UTXO first", message: "Just tap a utxo(s) to select it. Then tap the 🔗 to create a transaction with those utxos.")
         }
     }
     

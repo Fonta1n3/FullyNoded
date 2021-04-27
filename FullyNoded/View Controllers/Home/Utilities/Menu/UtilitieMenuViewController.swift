@@ -481,9 +481,17 @@ class UtilitieMenuViewController: UIViewController, UITableViewDelegate, UITable
                 let commentTo = "\"\""
                 let subtractFeeFromAmount = "false"
                 let rbfEnabled = "true"
-                let confTarget = UserDefaults.standard.object(forKey: "feeTarget") as? Int ?? 432
+                var confTarget = "null"
+                var feeRateString = "not set"
+                if let feeRate = UserDefaults.standard.object(forKey: "feeTarget") as? Int {
+                    feeRateString = "\(feeRate)"
+                } else {
+                    confTarget = "\(UserDefaults.standard.object(forKey: "confTarget") as? Int ?? 432)"
+                }
                 
-                Reducer.makeCommand(command: .sendtoaddress, param: "\"\(address)\", \(amount), \(comment), \(commentTo), \(subtractFeeFromAmount), \(rbfEnabled), \(confTarget)") { (response, errorMessage) in
+                let avoidReuse = "null"
+                
+                Reducer.makeCommand(command: .sendtoaddress, param: "\"\(address)\", \(amount), \(comment), \(commentTo), \(subtractFeeFromAmount), \(rbfEnabled), \(confTarget), \"unset\", \(avoidReuse), \(feeRateString)") { (response, errorMessage) in
                     guard let response = response else {
                         showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown error")
                         

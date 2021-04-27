@@ -144,10 +144,20 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
           alertStyle = UIAlertController.Style.alert
         }
         
-        //estimateSmartFee()
         showFeeSetting()
         slider.addTarget(self, action: #selector(didFinishSliding(_:)), for: .valueChanged)
     }
+    
+    @IBAction func closeFeeRate(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            UserDefaults.standard.removeObject(forKey: "feeRate")
+            self.feeRateInputField.text = ""
+            self.feeRateInputField.endEditing(true)
+        }
+    }
+    
     
     @IBAction func pasteAction(_ sender: Any) {
         guard let item = UIPasteboard.general.string else { return }
@@ -844,7 +854,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                     
                     UserDefaults.standard.removeObject(forKey: "feeRate")
                     
-                    showAlert(vc: self, title: "", message: "Your transaction fee will be determined by the slider. To specify a manual s/b fee rate add a value greater then 0.")
+                    showAlert(vc: self, title: "", message: "Your transaction fee will be determined by the slider. To specify a manual s/vB fee rate add a value greater then 0.")
                     
                     self.estimateSmartFee()
                 }
@@ -876,7 +886,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 
                 self.slider.alpha = 0
                 self.miningTargetLabel.alpha = 0
-                self.satPerByteLabel.text = "\(int) s/b"
+                self.satPerByteLabel.text = "\(int) s/vB"
                 UserDefaults.standard.setValue(int, forKey: "feeRate")
                 
                 showAlert(vc: self, title: "", message: "Your transaction fee rate has been set to \(int) sats per vbyte. To revert to the slider you can delete the fee rate or set it to 0.")
@@ -1019,7 +1029,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             self.slider.alpha = 0
             self.miningTargetLabel.alpha = 0
             self.feeRateInputField.text = "\(feeRate)"
-            self.satPerByteLabel.text = "\(feeRate) s/b"
+            self.satPerByteLabel.text = "\(feeRate) s/vB"
         }
     }
     

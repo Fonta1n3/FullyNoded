@@ -31,7 +31,11 @@ class CreatePSBT {
         func create(params: String) {
             Reducer.makeCommand(command: .walletcreatefundedpsbt, param: params) { (response, errorMessage) in
                 guard let result = response as? NSDictionary, let psbt = result["psbt"] as? String else {
-                    completion((nil, nil, errorMessage ?? "unknown error"))
+                    var desc = errorMessage ?? "unknown error"
+                    if desc.contains("Unexpected key fee_rate") {
+                        desc = "In order to set the fee rate manually you must update to Bitcoin Core 0.21."
+                    }
+                    completion((nil, nil, desc))
                     return
                 }
                 
