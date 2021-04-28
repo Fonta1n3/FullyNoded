@@ -154,7 +154,10 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             
             UserDefaults.standard.removeObject(forKey: "feeRate")
             self.feeRateInputField.text = ""
+            self.slider.alpha = 1
+            self.miningTargetLabel.alpha = 1
             self.feeRateInputField.endEditing(true)
+            self.showFeeSetting()
         }
     }
     
