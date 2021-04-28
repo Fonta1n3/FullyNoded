@@ -66,6 +66,17 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         loadValues()
     }
     
+    @IBAction func showGuideAction(_ sender: Any) {
+        guard let url = URL(string: "https://github.com/Fonta1n3/FullyNoded/blob/master/Docs/Bitcoin-Core/Connect.md") else {
+            showAlert(vc: self, title: "", message: "The web page is not reachable.")
+            
+            return
+        }
+        
+        UIApplication.shared.open(url)
+    }
+    
+    
     @IBAction func showHostAction(_ sender: Any) {
         #if targetEnvironment(macCatalyst)
             // Code specific to Mac.
@@ -80,14 +91,14 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                         vc.performSegue(withIdentifier: "segueToExportNode", sender: vc)
                     }
                 } else {
-                    showAlert(vc: self, title: "Ooops", message: "There was an error getting your hostname for remote connection... Please make sure you are connected to the internet and that Tor successfully bootstrapped.")
+                    showAlert(vc: self, title: "", message: "There was an error getting your hostname for remote connection... Please make sure you are connected to the internet and that Tor successfully bootstrapped.")
                 }
             } else {
-                showAlert(vc: self, title: "Ooops", message: "This feature can only be used with nodes which are running on the same computer as Fully Noded - Desktop.\n\nTo take advantage of this feature just download Bitcoin Core and run it.\n\nThen add your local node to Fully Noded - Desktop using 127.0.0.1:8332 as the address.\n\nYou can then tap this button to get a QR code which will allow you to connect your node via your iPhone or iPad on the mobile app.")
+                showAlert(vc: self, title: "", message: "This feature can only be used with nodes which are running on the same computer as Fully Noded - Desktop.\n\nTo take advantage of this feature just download Bitcoin Core and run it.\n\nThen add your local node to Fully Noded - Desktop using 127.0.0.1:8332 as the address.\n\nYou can then tap this button to get a QR code which will allow you to connect your node via your iPhone or iPad on the mobile app.")
             }
         #else
             // Code to exclude from Mac.
-            showAlert(vc: self, title: "Ooops", message: "This is a macOS feature only, when you use Fully Noded - Desktop, it has the ability to display a QR code you can scan with your iPhone or iPad to connect to your node remotely.")
+            showAlert(vc: self, title: "", message: "This is a macOS feature only, when you use Fully Noded - Desktop, it has the ability to display a QR code you can scan with your iPhone or iPad to connect to your node remotely.")
         #endif
     }
     

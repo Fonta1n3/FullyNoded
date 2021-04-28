@@ -1,17 +1,17 @@
-# Connect Node
+# Connect Your Node
 
 ## [Bitcoin Core](https://bitcoincore.org/en/releases/)
 
-- Create a Tor hidden service that controls your nodes `rpcport`, for details on how to do that see this [guide](../Tor/Tor.md)
-- Go to `settings` > `node manager` > `+` > `manually`
+- On your mac you can install Bitcoin Core or you can configure a Tor hidden service that controls your nodes `rpcport`, for details on how to do that see this [guide](../Tor/Tor.md)
 - Find your `bitcoin.conf` which by default can be found in these locations:
     - Linux: `~/.bitcoin/bitcoin.conf`
     - macOS: `~/Library/Application Support/Bitcoin/bitcoin.conf`
     - Windows: `%APPDATA%\Bitcoin\bitcoin.conf`
-    - Input your `rpcuser` and `rpcpassword` and a label into the app. **No special characters allowed! Only alphanumeric**. If none exists add them, you can see an example `bitcoin.conf` [here](./bitcoin-conf.md). You always need to restart your node after editing your `bitcoin.conf` for the changes to take effect.
+    - Input your `rpcuser` and `rpcpassword` and a label into the app. **Compatible with [rpcauth](https://github.com/bitcoin/bitcoin/tree/master/share/rpcauth)**. If none exists add them, you can see an example `bitcoin.conf` [here](./bitcoin-conf.md). You always need to restart your node after editing your `bitcoin.conf` for the changes to take effect.
 - Back to Fully Noded
-- Input the hidden service hostname with the port at the end `njcnewicnweiun.onion:8332`
-- Tap `save`, you will be alerted it if was saved successfully, it will automatically start connecting to it, go to the home screen and watch the magic.
+- If connecting to a node running on the same mac just input `127.0.0.1:8332` as the address and ignore the next step.
+- If connecting via Tor remotely input the hidden service hostname with the port at the end `njcnewicnweiun.onion:8332`.
+- Tap `save`, you will be alerted it if was saved successfully, FN will automatically start connecting to it, go to the home screen and watch the magic 🤩
 
 ## [BTCPayServer](https://btcpayserver.org)
 
@@ -66,4 +66,3 @@ This is for premium myNode users only.
 - In Fully Noded go to `Settings` > `Node Manager` > `+` > `Scan Quick Connect QR` and scan the QR
 
 Non premium users can simply get their Tor V3 url for the RPC port add `:8332` to the end so it looks like `ufiuh2if2ibdd.onion:8332` and get your `rpcuser` and `rpcpassword` and add them all manually in Fully Noded:  `Settings` > `Node Manager` > `+` > `manually`
-

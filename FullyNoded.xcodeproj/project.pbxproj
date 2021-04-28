@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0A011F5A263996730031C827 /* YubiKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0A011F59263996730031C827 /* YubiKit */; };
 		0AE19ED725F4AC0D000F0AD4 /* WalletRecoveryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AE19ED625F4AC0D000F0AD4 /* WalletRecoveryViewController.swift */; };
 		844D2A4B2512D4F60046372E /* UTXOCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844D2A492512D4F60046372E /* UTXOCell.swift */; };
 		844D2A4C2512D4F60046372E /* UTXOCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 844D2A4A2512D4F60046372E /* UTXOCell.xib */; };
@@ -345,6 +346,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D06D788C25B817B500769157 /* LifeHash in Frameworks */,
+				0A011F5A263996730031C827 /* YubiKit in Frameworks */,
 				D0C1F9132531E5970079C2B8 /* URKit in Frameworks */,
 				D016AE7525B0284300A59E93 /* Tor.xcframework in Frameworks */,
 				D016AE4825AFFCA400A59E93 /* LibWally.xcframework in Frameworks */,
@@ -886,6 +888,7 @@
 			packageProductDependencies = (
 				D0C1F9122531E5970079C2B8 /* URKit */,
 				D06D788B25B817B500769157 /* LifeHash */,
+				0A011F59263996730031C827 /* YubiKit */,
 			);
 			productName = BitSense;
 			productReference = D00B9A242111427200E8B95A /* FullyNoded.app */;
@@ -917,7 +920,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1110;
-				LastUpgradeCheck = 1000;
+				LastUpgradeCheck = 1230;
 				ORGANIZATIONNAME = Fontaine;
 				TargetAttributes = {
 					D00B9A232111427200E8B95A = {
@@ -960,6 +963,7 @@
 			packageReferences = (
 				D0C1F9112531E5960079C2B8 /* XCRemoteSwiftPackageReference "URKit" */,
 				D06D788A25B817B500769157 /* XCRemoteSwiftPackageReference "LifeHash" */,
+				0A011F58263996730031C827 /* XCRemoteSwiftPackageReference "yubikit-ios" */,
 			);
 			productRefGroup = D00B9A252111427200E8B95A /* Products */;
 			projectDirPath = "";
@@ -1239,6 +1243,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -1299,6 +1304,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -1338,7 +1344,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 304;
+				CURRENT_PROJECT_VERSION = 305;
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
@@ -1349,7 +1355,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.384;
+				MARKETING_VERSION = 1.385;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1374,7 +1380,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 304;
+				CURRENT_PROJECT_VERSION = 305;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
@@ -1387,7 +1393,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.384;
+				MARKETING_VERSION = 1.385;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1482,6 +1488,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		0A011F58263996730031C827 /* XCRemoteSwiftPackageReference "yubikit-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Yubico/yubikit-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.0.0;
+			};
+		};
 		D06D788A25B817B500769157 /* XCRemoteSwiftPackageReference "LifeHash" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/BlockchainCommons/LifeHash";
@@ -1501,6 +1515,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		0A011F59263996730031C827 /* YubiKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0A011F58263996730031C827 /* XCRemoteSwiftPackageReference "yubikit-ios" */;
+			productName = YubiKit;
+		};
 		D06D788B25B817B500769157 /* LifeHash */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = D06D788A25B817B500769157 /* XCRemoteSwiftPackageReference "LifeHash" */;

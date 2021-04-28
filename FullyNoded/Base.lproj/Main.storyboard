@@ -5780,13 +5780,24 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                     <action selector="deleteLightningNode:" destination="B99-yZ-naR" eventType="touchUpInside" id="VqJ-IU-TRy"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4Lc-CO-CxA">
+                                <rect key="frame" x="99" y="534" width="177" height="30"/>
+                                <state key="normal" title="how to connect my node?">
+                                    <color key="titleColor" systemColor="systemTealColor"/>
+                                </state>
+                                <connections>
+                                    <action selector="showGuideAction:" destination="B99-yZ-naR" eventType="touchUpInside" id="gLf-qJ-WNO"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="uUf-aQ-0bN"/>
                         <color key="backgroundColor" red="0.050706155598163605" green="0.058625258505344391" blue="0.071102283895015717" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
+                            <constraint firstItem="4Lc-CO-CxA" firstAttribute="centerX" secondItem="B9e-yr-KMo" secondAttribute="centerX" id="7YO-d1-B4Z"/>
                             <constraint firstItem="qBh-RP-hWz" firstAttribute="top" secondItem="DTI-AZ-owi" secondAttribute="bottom" constant="7.5" id="ACa-qM-sgb"/>
                             <constraint firstItem="uUf-aQ-0bN" firstAttribute="trailing" secondItem="qBh-RP-hWz" secondAttribute="trailing" constant="16" id="HV2-84-YUw"/>
                             <constraint firstItem="DTI-AZ-owi" firstAttribute="leading" secondItem="uUf-aQ-0bN" secondAttribute="leading" constant="16" id="RC6-xc-GeH"/>
+                            <constraint firstItem="eoi-B9-9wY" firstAttribute="top" secondItem="4Lc-CO-CxA" secondAttribute="bottom" constant="53" id="Tap-gt-aVa"/>
                             <constraint firstItem="eoi-B9-9wY" firstAttribute="centerX" secondItem="B9e-yr-KMo" secondAttribute="centerX" id="edZ-7P-yIT"/>
                             <constraint firstItem="qBh-RP-hWz" firstAttribute="leading" secondItem="uUf-aQ-0bN" secondAttribute="leading" constant="16" id="gOe-Le-cG0"/>
                             <constraint firstItem="uUf-aQ-0bN" firstAttribute="bottom" secondItem="eoi-B9-9wY" secondAttribute="bottom" constant="20" id="jc2-gh-9Hl"/>
@@ -7309,8 +7320,8 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="LMu-1F-VvA"/>
         <segue reference="oY9-Pq-H5b"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="CQp-9r-70w"/>
-        <segue reference="ods-Ql-GAw"/>
+        <segue reference="07E-4w-Zh7"/>
+        <segue reference="8MS-xS-DMP"/>
         <segue reference="veA-tY-zvZ"/>
         <segue reference="7PS-EL-3d2"/>
         <segue reference="j10-wi-hpr"/>

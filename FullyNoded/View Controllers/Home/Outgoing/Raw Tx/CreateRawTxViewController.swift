@@ -54,7 +54,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     @IBOutlet weak private var addressImageView: UIImageView!
     @IBOutlet weak private var feeRateInputField: UITextField!
     
-    
     var spinner = ConnectingView()
     var spendableBalance = Double()
     var outputArray = [[String:String]]()
@@ -127,9 +126,11 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             default:
                 break
             }
+            
             DispatchQueue.main.async { [unowned vc = self] in
                 vc.segmentedControlOutlet.selectedSegmentIndex = index
             }
+            
         } else {
             isBtc = true
             isFiat = false
@@ -340,7 +341,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     
     @IBAction func fundLightning(_ sender: Any) {
-        spinner.addConnectingView(vc: self, description: "fetching lightning funding address...")
+        spinner.addConnectingView(vc: self, description: "Fetching lightning funding address...")
         
         let commandId = UUID()
         
