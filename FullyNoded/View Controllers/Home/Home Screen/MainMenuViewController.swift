@@ -418,7 +418,7 @@ class MainMenuViewController: UIViewController {
         
         case .memPool:
             if mempoolInfo != nil {
-                label.text = "\(mempoolInfo.mempoolCount.withCommas()) mempool"
+                label.text = "\(mempoolInfo.mempoolCount.withCommas()) transactions"
                 icon.image = UIImage(systemName: "waveform.path.ecg")
                 background.backgroundColor = .systemGreen
                 chevron.alpha = 0
