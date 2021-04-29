@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import YubiKit
 
 class MainMenuViewController: UIViewController {
     
