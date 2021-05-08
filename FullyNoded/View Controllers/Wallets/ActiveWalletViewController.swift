@@ -502,7 +502,6 @@ class ActiveWalletViewController: UIViewController {
                 if amountProcessed < 0.0 {
                     amountProcessed = amountProcessed * -1.0
                 }
-                amountProcessed = round(amountProcessed)
                 var dbl = round((amountProcessed * originRate))
                 if dbl < 0.0 {
                     dbl = dbl * -1.0
