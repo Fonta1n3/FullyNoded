@@ -4864,7 +4864,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
             </objects>
             <point key="canvasLocation" x="2718" y="376"/>
         </scene>
-        <!--v0.2.17-->
+        <!--v0.2.18-->
         <scene sceneID="Ajv-p7-tUm">
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" id="AS8-ke-Yxh" customClass="SettingsViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
@@ -5011,7 +5011,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                         </constraints>
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="Settings" id="n34-O3-Fyo"/>
-                    <navigationItem key="navigationItem" title="v0.2.17" id="YNb-Gd-Hqq"/>
+                    <navigationItem key="navigationItem" title="v0.2.18" id="YNb-Gd-Hqq"/>
                     <connections>
                         <outlet property="settingsTable" destination="hcp-eG-lok" id="xPg-8r-KBs"/>
                         <segue destination="bKH-sI-MiM" kind="show" identifier="goLogIn" id="qed-hl-jG5"/>
@@ -5334,6 +5334,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                         <outlet property="securityTable" destination="gto-Hh-JcM" id="4YA-OO-T73"/>
                         <segue destination="bWB-tp-pgw" kind="show" identifier="addPasswordSegue" id="gF6-29-ZCL"/>
                         <segue destination="KZO-Gi-4AH" kind="show" identifier="segueToTorAuth" id="tXz-u5-LNx"/>
+                        <segue destination="Grb-T0-n2F" kind="show" identifier="segueToYubikey" id="wpe-Et-YAq"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="PtR-7d-dsy" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -5689,6 +5690,71 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                 <placeholder placeholderIdentifier="IBFirstResponder" id="mH1-Z0-yiM" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="6324" y="1179.7601199400301"/>
+        </scene>
+        <!--Yubi Key View Controller-->
+        <scene sceneID="gal-6E-Idc">
+            <objects>
+                <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="Grb-T0-n2F" customClass="YubiKeyViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="DpZ-r2-dCF" customClass="Yub">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Yubikey Registration" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aRU-tY-OfB">
+                                <rect key="frame" x="16" y="64" width="260.5" height="34"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="28"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ZEH-pm-w15">
+                                <rect key="frame" x="114" y="340" width="147" height="30"/>
+                                <state key="normal" title="Register new Yubikey">
+                                    <color key="titleColor" systemColor="systemTealColor"/>
+                                </state>
+                                <connections>
+                                    <action selector="registerAction:" destination="Grb-T0-n2F" eventType="touchUpInside" id="rVk-3x-KYc"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Di1-Wc-qeM">
+                                <rect key="frame" x="93" y="617" width="189" height="30"/>
+                                <state key="normal" title="Delete Yubikey registration!">
+                                    <color key="titleColor" systemColor="systemRedColor"/>
+                                </state>
+                                <connections>
+                                    <action selector="deleteAction:" destination="Grb-T0-n2F" eventType="touchUpInside" id="Awt-fS-Mvd"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gde-ad-m9Z">
+                                <rect key="frame" x="16" y="106" width="343" height="226"/>
+                                <string key="text">Fully Noded will always require you to unlock the app with the Yubikey you are registering!  If you lose the Yubikey you will NOT be able to unlock the app!  Each registration overwrites the previous!</string>
+                                <fontDescription key="fontDescription" type="system" pointSize="21"/>
+                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="77Q-Bg-q6S"/>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="Di1-Wc-qeM" firstAttribute="centerX" secondItem="DpZ-r2-dCF" secondAttribute="centerX" id="FM3-Js-FfE"/>
+                            <constraint firstItem="gde-ad-m9Z" firstAttribute="top" secondItem="aRU-tY-OfB" secondAttribute="bottom" constant="8" symbolic="YES" id="G9b-dQ-oQd"/>
+                            <constraint firstItem="77Q-Bg-q6S" firstAttribute="trailing" secondItem="gde-ad-m9Z" secondAttribute="trailing" constant="16" id="Ljo-xW-kGa"/>
+                            <constraint firstItem="aRU-tY-OfB" firstAttribute="top" secondItem="77Q-Bg-q6S" secondAttribute="top" constant="20" id="OqB-mn-imX"/>
+                            <constraint firstItem="gde-ad-m9Z" firstAttribute="leading" secondItem="77Q-Bg-q6S" secondAttribute="leading" constant="16" id="bm5-A7-GSC"/>
+                            <constraint firstItem="ZEH-pm-w15" firstAttribute="centerX" secondItem="DpZ-r2-dCF" secondAttribute="centerX" id="dzD-mA-I0i"/>
+                            <constraint firstItem="77Q-Bg-q6S" firstAttribute="bottom" secondItem="Di1-Wc-qeM" secondAttribute="bottom" constant="20" id="nXc-FD-KDc"/>
+                            <constraint firstItem="aRU-tY-OfB" firstAttribute="leading" secondItem="77Q-Bg-q6S" secondAttribute="leading" constant="16" id="oG0-Ac-JZ2"/>
+                            <constraint firstItem="ZEH-pm-w15" firstAttribute="top" secondItem="gde-ad-m9Z" secondAttribute="bottom" constant="8" id="xnl-Et-Cpj"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="PFg-Mv-XbA"/>
+                    <connections>
+                        <outlet property="deleteOutlet" destination="Di1-Wc-qeM" id="TI6-D1-2nZ"/>
+                        <outlet property="headerLabel" destination="aRU-tY-OfB" id="toS-VB-igw"/>
+                        <outlet property="registerOutlet" destination="ZEH-pm-w15" id="NOO-Hw-Kn4"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="xyT-va-0ic" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="7072.8000000000002" y="1179.7601199400301"/>
         </scene>
         <!--Node Detail View Controller-->
         <scene sceneID="79C-6o-WJP">
@@ -7314,7 +7380,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
     <inferredMetricsTieBreakers>
         <segue reference="ckQ-WD-ole"/>
         <segue reference="dhu-ZV-762"/>
-        <segue reference="DLx-HT-rGm"/>
+        <segue reference="gF6-29-ZCL"/>
         <segue reference="w2g-bl-j8v"/>
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="LMu-1F-VvA"/>

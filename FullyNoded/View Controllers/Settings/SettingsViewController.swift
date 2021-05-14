@@ -239,9 +239,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if section == 4 {
-            return 2
-        } else if section == 1 {
+        if section == 4 || section == 1 {
             return 2
         } else {
             return 1
