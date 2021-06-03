@@ -8,9 +8,8 @@
 
 import UIKit
 import LocalAuthentication
-import YubiKit
 
-class LogInViewController: UIViewController, UITextFieldDelegate, YKFManagerDelegate, YKFFIDO2SessionKeyStateDelegate {
+class LogInViewController: UIViewController, UITextFieldDelegate {
 
     var onDoneBlock: (() -> Void)?
     let passwordInput = UITextField()
@@ -79,11 +78,6 @@ class LogInViewController: UIViewController, UITextFieldDelegate, YKFManagerDele
         secondsRemaining = Int(timeToDisable)
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        statusView = view.presentStatusView()
-        statusView?.state = .hidden
-    }
-
     override func viewDidAppear(_ animated: Bool) {
         lockView.addSubview(imageView)
         lockView.addSubview(passwordInput)
@@ -112,12 +106,6 @@ class LogInViewController: UIViewController, UITextFieldDelegate, YKFManagerDele
         if timeToDisable > 2.0 {
             disable()
         }
-        
-        YubiKitManager.shared.delegate = self
-        
-        if YubiKitDeviceCapabilities.supportsMFIAccessoryKey {
-            YubiKitManager.shared.startAccessoryConnection()
-        }
     }
 
     override func viewDidLayoutSubviews() {
@@ -126,14 +114,6 @@ class LogInViewController: UIViewController, UITextFieldDelegate, YKFManagerDele
         passwordInput.frame = CGRect(x: 50, y: imageView.frame.maxY + 80, width: view.frame.width - 100, height: 50)
         nextButton.frame = CGRect(x: self.view.center.x - 40, y: passwordInput.frame.maxY + 15, width: 80, height: 35)
         touchIDButton.frame = CGRect(x: self.view.center.x - 30, y: self.nextButton.frame.maxY + 20, width: 60, height: 60)
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-
-        if YubiKitDeviceCapabilities.supportsMFIAccessoryKey {
-            YubiKitManager.shared.stopAccessoryConnection()
-        }
     }
 
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
@@ -205,15 +185,15 @@ class LogInViewController: UIViewController, UITextFieldDelegate, YKFManagerDele
                 self.imageView.removeFromSuperview()
                 self.passwordInput.removeFromSuperview()
                 
-                if KeyChain.getData("YubikeyUsername") != nil {
-                    self.authenticate()
-                } else {
+//                if KeyChain.getData("YubikeyUsername") != nil {
+//                    self.authenticate()
+//                } else {
                     DispatchQueue.main.async {
                         self.dismiss(animated: true) {
                             self.onDoneBlock!()
                         }
                     }
-                }
+                //}
             })
         }
     }
@@ -400,230 +380,6 @@ class LogInViewController: UIViewController, UITextFieldDelegate, YKFManagerDele
         }
 
         return message
-    }
-    
-    // MARK: - Authenticate User
-    
-    enum ConnectionType {
-        case nfc
-        case accessory
-    }
-    
-    var statusView: StatusView?
-    var nfcConnection: YKFNFCConnection?
-    var accessoryConnection: YKFAccessoryConnection?
-    var connectionCallback: ((_ connection: YKFConnectionProtocol) -> Void)?
-    
-    var connectionType: ConnectionType? {
-        get {
-            if nfcConnection != nil {
-                return .nfc
-            } else if accessoryConnection != nil {
-                return .accessory
-            } else {
-                return nil
-            }
-        }
-    }
-    
-    func didConnectNFC(_ connection: YKFNFCConnection) {
-        nfcConnection = connection
-        if let callback = connectionCallback {
-            callback(connection)
-        }
-    }
-    
-    func didDisconnectNFC(_ connection: YKFNFCConnection, error: Error?) {
-        nfcConnection = nil
-        session = nil
-    }
-    
-    func didConnectAccessory(_ connection: YKFAccessoryConnection) {
-        accessoryConnection = connection
-    }
-    
-    func didDisconnectAccessory(_ connection: YKFAccessoryConnection, error: Error?) {
-        accessoryConnection = nil
-        session = nil
-    }
-    
-    func keyStateChanged(_ keyState: YKFFIDO2SessionKeyState) {
-        if keyState == .touchKey {
-            self.statusView?.state = .touchKey
-        }
-    }
-    
-    func connection(completion: @escaping (_ connection: YKFConnectionProtocol) -> Void) {
-        if let connection = accessoryConnection {
-            completion(connection)
-        } else {
-            connectionCallback = completion
-            if #available(iOS 13.0, *) {
-                #if !targetEnvironment(macCatalyst)
-                YubiKitManager.shared.startNFCConnection()
-                #endif
-            } else {
-                
-                // Fallback on earlier versions
-            }
-        }
-    }
-    
-    var session: YKFFIDO2Session?
-    
-    func session(completion: @escaping (_ session: YKFFIDO2Session?, _ error: Error?) -> Void) {
-        if let session = session {
-            completion(session, nil)
-            return
-        }
-        connection { connection in
-            connection.fido2Session { session, error in
-                self.session = session
-                session?.delegate = self
-                completion(session, error)
-            }
-        }
-    }
-    func authenticate() {
-        guard let username = KeyChain.getData("YubikeyUsername")?.utf8 else { return }
-        guard let password = KeyChain.getData("UnlockPassword")?.hexString else { return }
-
-        statusView?.state = .message("Requesting authenticator challenge...")
-
-        // 1. Begin WebAuthn authentication
-        beginWebAuthnAuthentication(username: username, password: password) { result in
-            switch result {
-            case .success(let response):
-                // 2. Assert on Yubikey
-                self.assertOnKey(response: response) { result in
-                    switch result {
-                    case .success(let response):
-                        self.statusView?.state = .message("Authenticating...")
-                        // 3. Finalize WebAuthn authentication
-                        self.finalizeWebAuthnAuthentication(response: response) { result in
-                            switch result {
-                            case .success:
-                                self.statusView?.dismiss(message: "User successfully authenticated", accessory: .checkmark, delay: 7.0)
-                                
-                                DispatchQueue.main.async { [weak self] in
-                                    guard let self = self else { return }
-                                    
-                                    self.dismiss(animated: true) {
-                                        self.onDoneBlock!()
-                                    }
-                                }
-                                
-                            case .failure(let error):
-                                self.statusView?.dismiss(message: "Error: \(error.localizedDescription)", accessory: .error, delay: 7.0)
-                            }
-                        }
-                    case .failure(let error):
-                        self.statusView?.dismiss(message: "Error: \(error.localizedDescription)", accessory: .error, delay: 7.0)
-                    }
-                }
-            case .failure(let error):
-                self.statusView?.dismiss(message: "Error: \(error.localizedDescription)", accessory: .error, delay: 7.0)
-            }
-        }
-    }
-    
-    func beginWebAuthnAuthentication(username: String, password: String, completion: @escaping (Result<(BeginWebAuthnAuthenticationResponse), Error>) -> Void) {
-        let webauthnService = WebAuthnService()
-        let authenticationRequest = WebAuthnUserRequest(username: username, password: password, type: .login)
-        webauthnService.loginUserWith(request: authenticationRequest) { (authenticationUserResponse, error) in
-            guard error == nil else { completion(.failure(error!)); return }
-            guard let authenticationUserResponse = authenticationUserResponse else { fatalError() }
-            let uuid = authenticationUserResponse.uuid
-            let authenticationBeginRequest = WebAuthnAuthenticateBeginRequest(uuid: uuid)
-            webauthnService.authenticateBeginWith(request: authenticationBeginRequest) { (authenticationBeginResponse, error) in
-                guard error == nil else { completion(.failure(error!)); return }
-                guard let authenticationBeginResponse = authenticationBeginResponse else { fatalError() }
-                let result = BeginWebAuthnAuthenticationResponse(uuid: uuid,
-                                                                 requestId: authenticationBeginResponse.requestId,
-                                                                 challenge: authenticationBeginResponse.challenge,
-                                                                 rpId: authenticationBeginResponse.rpID,
-                                                                 allowCredentials: authenticationBeginResponse.allowCredentials)
-                completion(.success(result))
-            }
-        }
-    }
-    
-    struct BeginWebAuthnAuthenticationResponse {
-        let uuid: String
-        let requestId: String
-        let challenge: String
-        let rpId: String
-        let allowCredentials: [String]
-    }
-    
-    func assertOnKey(response: BeginWebAuthnAuthenticationResponse, completion: @escaping (Result<AssertOnKeyAuthenticationResponse, Error>) -> Void) {
-        session { session, error in
-            guard let session = session else { completion(.failure(error!)); return }
-            let challengeData = Data(base64Encoded: response.challenge)!
-            let clientData = YKFWebAuthnClientData(type: .get, challenge: challengeData, origin: WebAuthnService.origin)!
-
-            let clientDataHash = clientData.clientDataHash!
-
-            let rpId = response.rpId
-            let options = [YKFFIDO2OptionUP: true]
-
-            var allowList = [YKFFIDO2PublicKeyCredentialDescriptor]()
-            for credentialId in response.allowCredentials {
-                let credentialDescriptor = YKFFIDO2PublicKeyCredentialDescriptor()
-                credentialDescriptor.credentialId = Data(base64Encoded: credentialId)!
-                let credType = YKFFIDO2PublicKeyCredentialType()
-                credType.name = "public-key"
-                credentialDescriptor.credentialType = credType
-                allowList.append(credentialDescriptor)
-            }
-
-            session.getAssertionWithClientDataHash(clientDataHash,
-                                                   rpId: rpId,
-                                                   allowList: allowList,
-                                                   options: options) { assertionResponse, error in
-                if self.connectionType == .nfc, #available(iOS 13.0, *) {
-                    YubiKitManager.shared.stopNFCConnection()
-                }
-                guard error == nil else {
-                    completion(.failure(error!))
-                    return
-                }
-                guard let assertionResponse = assertionResponse else { fatalError() }
-                let result = AssertOnKeyAuthenticationResponse(uuid: response.uuid,
-                                                               requestId: response.requestId,
-                                                               credentialId: assertionResponse.credential!.credentialId,
-                                                               authenticatorData: assertionResponse.authData,
-                                                               clientDataJSON: clientData.jsonData!,
-                                                               signature: assertionResponse.signature)
-                completion(.success(result))
-            }
-        }
-    }
-    
-    struct AssertOnKeyAuthenticationResponse {
-        let uuid: String
-        let requestId: String
-        let credentialId: Data
-        let authenticatorData: Data
-        let clientDataJSON: Data
-        let signature: Data
-    }
-    
-    func finalizeWebAuthnAuthentication(response: AssertOnKeyAuthenticationResponse, completion: @escaping (Result<WebAuthnAuthenticateFinishResponse, Error>) -> Void) {
-
-        let webauthnService = WebAuthnService()
-        let authenticateFinishRequest = WebAuthnAuthenticateFinishRequest(uuid: response.uuid,
-                                                                          requestId: response.requestId,
-                                                                          credentialId: response.credentialId,
-                                                                          authenticatorData: response.authenticatorData,
-                                                                          clientDataJSON: response.clientDataJSON,
-                                                                          signature: response.signature)
-
-        webauthnService.authenticateFinishWith(request: authenticateFinishRequest) { (response, error) in
-            guard error == nil else { completion(.failure(error!)); return }
-            guard let response = response else { fatalError() }
-            completion(.success(response))
-        }
     }
 
 }

@@ -7,4 +7,3 @@
 #import <Tor/TORConfiguration.h>
 #import <Tor/TORThread.h>
 #import <Tor/TORLogging.h>
-#import <YubiKit.h>

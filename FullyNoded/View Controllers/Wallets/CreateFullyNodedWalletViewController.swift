@@ -126,8 +126,10 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 return
             }
             
+            print("data: \(data.utf8)")
+            
             guard let dict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] else {
-                
+                                
                 guard let txt = String(bytes: data, encoding: .utf8) else {
                     spinner.removeConnectingView()
                     showAlert(vc: self, title: "", message: "That does not appear to be a recognized wallet backup/export/import file")
@@ -204,6 +206,12 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                  748CC6AA: Vpub5mcrJpVp9X8ZKsjyxwNu36SLRAWTMbqUtbmtcapahAtqVa66JtXhT4Uc9SVLN1nF782sPRRT2jbUbe7XzT8eue6vXsyDJKBvexGJHewyPxQ
                  */
                 return
+            }
+            
+            print("dict: \(dict)")
+            
+            if let extendedPublicKeys = dict["extendedPublicKeys"] as? NSArray {
+                print("extendedPublicKeys: \(extendedPublicKeys)")
             }
             
             if let _ = dict["chain"] as? String {

@@ -7,20 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0A011F5A263996730031C827 /* YubiKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0A011F59263996730031C827 /* YubiKit */; };
-		0A1E4874264D196800E530E0 /* WebAuthnAuthenticateFinishRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E4871264D196800E530E0 /* WebAuthnAuthenticateFinishRequest.swift */; };
-		0A1E4875264D196800E530E0 /* WebAuthnRegisterBeginResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E486B264D196800E530E0 /* WebAuthnRegisterBeginResponse.swift */; };
-		0A1E4876264D196800E530E0 /* WebAuthnRegisterFinishResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E486E264D196800E530E0 /* WebAuthnRegisterFinishResponse.swift */; };
-		0A1E4877264D196800E530E0 /* WebAuthnAuthenticateBeginResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E486C264D196800E530E0 /* WebAuthnAuthenticateBeginResponse.swift */; };
-		0A1E4878264D196800E530E0 /* WebAuthnAuthenticateBeginRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E486A264D196800E530E0 /* WebAuthnAuthenticateBeginRequest.swift */; };
-		0A1E4879264D196800E530E0 /* WebAuthnRegisterBeginRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E4869264D196800E530E0 /* WebAuthnRegisterBeginRequest.swift */; };
-		0A1E487A264D196800E530E0 /* WebAuthnAuthenticateFinishResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E4867264D196800E530E0 /* WebAuthnAuthenticateFinishResponse.swift */; };
-		0A1E487B264D196800E530E0 /* WebAuthnResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E486F264D196800E530E0 /* WebAuthnResponse.swift */; };
-		0A1E487C264D196800E530E0 /* WebAuthnUserRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E4868264D196800E530E0 /* WebAuthnUserRequest.swift */; };
-		0A1E487D264D196800E530E0 /* WebAuthnRegisterFinishRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E4873264D196800E530E0 /* WebAuthnRegisterFinishRequest.swift */; };
-		0A1E487E264D196800E530E0 /* WebAuthnCreateUserResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E4870264D196800E530E0 /* WebAuthnCreateUserResponse.swift */; };
-		0A1E487F264D196800E530E0 /* WebAuthnRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E486D264D196800E530E0 /* WebAuthnRequest.swift */; };
-		0A1E4880264D196800E530E0 /* WebAuthnLoginUserResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E4872264D196800E530E0 /* WebAuthnLoginUserResponse.swift */; };
 		0A1E4886264D3DCC00E530E0 /* StatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E4885264D3DCC00E530E0 /* StatusView.swift */; };
 		0A1E4891264D3E9F00E530E0 /* MFIKeyActionSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E4890264D3E9F00E530E0 /* MFIKeyActionSheetView.swift */; };
 		0A1E4892264D3E9F00E530E0 /* MFIKeyInteractionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E488F264D3E9F00E530E0 /* MFIKeyInteractionViewController.swift */; };
@@ -32,9 +18,6 @@
 		0A1E48A4264D3F2300E530E0 /* UIView+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E489E264D3F2300E530E0 /* UIView+Extensions.swift */; };
 		0A1E48A5264D3F2300E530E0 /* DemoCustomTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E489F264D3F2300E530E0 /* DemoCustomTabBar.swift */; };
 		0A1E48A8264D3F6F00E530E0 /* NamedColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E48A7264D3F6F00E530E0 /* NamedColor.swift */; };
-		0A2943B5264D0C1D0030BBBD /* YubiKeyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2943B4264D0C1D0030BBBD /* YubiKeyViewController.swift */; };
-		0A2943B8264D138E0030BBBD /* WebAuthnService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2943B7264D138E0030BBBD /* WebAuthnService.swift */; };
-		0A2943BF264D14500030BBBD /* WebServiceError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2943BE264D14500030BBBD /* WebServiceError.swift */; };
 		0A52680E264E0C4F005E6459 /* ProgressHudView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0A1E4895264D3EA500E530E0 /* ProgressHudView.xib */; };
 		0A526813264E0D62005E6459 /* MFIKeyActionSheetView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0A1E488E264D3E9F00E530E0 /* MFIKeyActionSheetView.xib */; };
 		0AE19ED725F4AC0D000F0AD4 /* WalletRecoveryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AE19ED625F4AC0D000F0AD4 /* WalletRecoveryViewController.swift */; };
@@ -213,19 +196,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		0A1E4867264D196800E530E0 /* WebAuthnAuthenticateFinishResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthnAuthenticateFinishResponse.swift; sourceTree = "<group>"; };
-		0A1E4868264D196800E530E0 /* WebAuthnUserRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthnUserRequest.swift; sourceTree = "<group>"; };
-		0A1E4869264D196800E530E0 /* WebAuthnRegisterBeginRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthnRegisterBeginRequest.swift; sourceTree = "<group>"; };
-		0A1E486A264D196800E530E0 /* WebAuthnAuthenticateBeginRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthnAuthenticateBeginRequest.swift; sourceTree = "<group>"; };
-		0A1E486B264D196800E530E0 /* WebAuthnRegisterBeginResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthnRegisterBeginResponse.swift; sourceTree = "<group>"; };
-		0A1E486C264D196800E530E0 /* WebAuthnAuthenticateBeginResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthnAuthenticateBeginResponse.swift; sourceTree = "<group>"; };
-		0A1E486D264D196800E530E0 /* WebAuthnRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthnRequest.swift; sourceTree = "<group>"; };
-		0A1E486E264D196800E530E0 /* WebAuthnRegisterFinishResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthnRegisterFinishResponse.swift; sourceTree = "<group>"; };
-		0A1E486F264D196800E530E0 /* WebAuthnResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthnResponse.swift; sourceTree = "<group>"; };
-		0A1E4870264D196800E530E0 /* WebAuthnCreateUserResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthnCreateUserResponse.swift; sourceTree = "<group>"; };
-		0A1E4871264D196800E530E0 /* WebAuthnAuthenticateFinishRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthnAuthenticateFinishRequest.swift; sourceTree = "<group>"; };
-		0A1E4872264D196800E530E0 /* WebAuthnLoginUserResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthnLoginUserResponse.swift; sourceTree = "<group>"; };
-		0A1E4873264D196800E530E0 /* WebAuthnRegisterFinishRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthnRegisterFinishRequest.swift; sourceTree = "<group>"; };
 		0A1E4885264D3DCC00E530E0 /* StatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusView.swift; sourceTree = "<group>"; };
 		0A1E488E264D3E9F00E530E0 /* MFIKeyActionSheetView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = MFIKeyActionSheetView.xib; path = "FullyNoded/Sub Views/MFIKeyActionSheetView.xib"; sourceTree = SOURCE_ROOT; };
 		0A1E488F264D3E9F00E530E0 /* MFIKeyInteractionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MFIKeyInteractionViewController.swift; sourceTree = "<group>"; };
@@ -239,9 +209,6 @@
 		0A1E489E264D3F2300E530E0 /* UIView+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIView+Extensions.swift"; sourceTree = "<group>"; };
 		0A1E489F264D3F2300E530E0 /* DemoCustomTabBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DemoCustomTabBar.swift; sourceTree = "<group>"; };
 		0A1E48A7264D3F6F00E530E0 /* NamedColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NamedColor.swift; sourceTree = "<group>"; };
-		0A2943B4264D0C1D0030BBBD /* YubiKeyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YubiKeyViewController.swift; sourceTree = "<group>"; };
-		0A2943B7264D138E0030BBBD /* WebAuthnService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthnService.swift; sourceTree = "<group>"; };
-		0A2943BE264D14500030BBBD /* WebServiceError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebServiceError.swift; sourceTree = "<group>"; };
 		0AE19ED625F4AC0D000F0AD4 /* WalletRecoveryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletRecoveryViewController.swift; sourceTree = "<group>"; };
 		844D2A492512D4F60046372E /* UTXOCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOCell.swift; sourceTree = "<group>"; };
 		844D2A4A2512D4F60046372E /* UTXOCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = UTXOCell.xib; sourceTree = "<group>"; };
@@ -404,7 +371,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D06D788C25B817B500769157 /* LifeHash in Frameworks */,
-				0A011F5A263996730031C827 /* YubiKit in Frameworks */,
 				D0C1F9132531E5970079C2B8 /* URKit in Frameworks */,
 				D016AE7525B0284300A59E93 /* Tor.xcframework in Frameworks */,
 				D016AE4825AFFCA400A59E93 /* LibWally.xcframework in Frameworks */,
@@ -421,36 +387,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		0A2943BA264D13D60030BBBD /* Yubikey */ = {
-			isa = PBXGroup;
-			children = (
-				0AACC237264D155D00FF9390 /* WebAuthN */,
-			);
-			path = Yubikey;
-			sourceTree = "<group>";
-		};
-		0AACC237264D155D00FF9390 /* WebAuthN */ = {
-			isa = PBXGroup;
-			children = (
-				0A2943BE264D14500030BBBD /* WebServiceError.swift */,
-				0A1E486A264D196800E530E0 /* WebAuthnAuthenticateBeginRequest.swift */,
-				0A1E486C264D196800E530E0 /* WebAuthnAuthenticateBeginResponse.swift */,
-				0A1E4871264D196800E530E0 /* WebAuthnAuthenticateFinishRequest.swift */,
-				0A1E4867264D196800E530E0 /* WebAuthnAuthenticateFinishResponse.swift */,
-				0A1E4870264D196800E530E0 /* WebAuthnCreateUserResponse.swift */,
-				0A1E4872264D196800E530E0 /* WebAuthnLoginUserResponse.swift */,
-				0A1E4869264D196800E530E0 /* WebAuthnRegisterBeginRequest.swift */,
-				0A1E486B264D196800E530E0 /* WebAuthnRegisterBeginResponse.swift */,
-				0A1E4873264D196800E530E0 /* WebAuthnRegisterFinishRequest.swift */,
-				0A1E486E264D196800E530E0 /* WebAuthnRegisterFinishResponse.swift */,
-				0A1E486D264D196800E530E0 /* WebAuthnRequest.swift */,
-				0A1E486F264D196800E530E0 /* WebAuthnResponse.swift */,
-				0A1E4868264D196800E530E0 /* WebAuthnUserRequest.swift */,
-				0A2943B7264D138E0030BBBD /* WebAuthnService.swift */,
-			);
-			path = WebAuthN;
-			sourceTree = "<group>";
-		};
 		A084FD6F2359E9C900DA63CF /* Build */ = {
 			isa = PBXGroup;
 			children = (
@@ -588,7 +524,6 @@
 				D02958D4235053B300ED8F72 /* SecurityCenterViewController.swift */,
 				D00F851A24949691008D7CD3 /* AppPasswordViewController.swift */,
 				D00F851C2494A616008D7CD3 /* TorAuthViewController.swift */,
-				0A2943B4264D0C1D0030BBBD /* YubiKeyViewController.swift */,
 			);
 			path = "Security Center";
 			sourceTree = "<group>";
@@ -631,7 +566,6 @@
 		D0286D6121E2675D00954991 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
-				0A2943BA264D13D60030BBBD /* Yubikey */,
 				D02094EF2257FB78002E8E7A /* FirstTime.swift */,
 				D073E16D22558CDE0012A28C /* CoreDataService.swift */,
 				D073E16C225588EF0012A28C /* Tor */,
@@ -991,7 +925,6 @@
 			packageProductDependencies = (
 				D0C1F9122531E5970079C2B8 /* URKit */,
 				D06D788B25B817B500769157 /* LifeHash */,
-				0A011F59263996730031C827 /* YubiKit */,
 			);
 			productName = BitSense;
 			productReference = D00B9A242111427200E8B95A /* FullyNoded.app */;
@@ -1066,7 +999,6 @@
 			packageReferences = (
 				D0C1F9112531E5960079C2B8 /* XCRemoteSwiftPackageReference "URKit" */,
 				D06D788A25B817B500769157 /* XCRemoteSwiftPackageReference "LifeHash" */,
-				0A011F58263996730031C827 /* XCRemoteSwiftPackageReference "yubikit-ios" */,
 			);
 			productRefGroup = D00B9A252111427200E8B95A /* Products */;
 			projectDirPath = "";
@@ -1176,14 +1108,12 @@
 				D0C1F9152531E71F0079C2B8 /* UR.swift in Sources */,
 				0A1E48A0264D3F2300E530E0 /* RootViewController.swift in Sources */,
 				D0B80A892516020A006B88F0 /* ImportXpubViewController.swift in Sources */,
-				0A2943BF264D14500030BBBD /* WebServiceError.swift in Sources */,
 				D0C20EE024A6EF3800C62AA4 /* Balances.swift in Sources */,
 				D08A92B7233E113B00409D6E /* LockedViewController.swift in Sources */,
 				D039D3C823322F1300D1ED18 /* NodeStruct.swift in Sources */,
 				D08A92AD2337A63000409D6E /* DescriptorStruct.swift in Sources */,
 				D037C876231CAFD9006C357D /* AddLabelViewController.swift in Sources */,
 				D09A330D24A9B10E009FA0B2 /* BIP39WordList.swift in Sources */,
-				0A1E4876264D196800E530E0 /* WebAuthnRegisterFinishResponse.swift in Sources */,
 				D093E2A725A59B9C0038B59A /* TransactionStruct.swift in Sources */,
 				D0CC0E2424F2069D001BF905 /* NoiseViewController.swift in Sources */,
 				D0233F282361EA5F0041FFBA /* shim.swift in Sources */,
@@ -1191,7 +1121,6 @@
 				D05692E321434452006DF0F4 /* MainMenuViewController.swift in Sources */,
 				0A1E4891264D3E9F00E530E0 /* MFIKeyActionSheetView.swift in Sources */,
 				D07399D9245EEA5F00860B7E /* Broadcaster.swift in Sources */,
-				0A2943B8264D138E0030BBBD /* WebAuthnService.swift in Sources */,
 				0A1E48A1264D3F2300E530E0 /* ApplicationUIAppearance.swift in Sources */,
 				D03968B3246F769C0010D821 /* KeychainKeys.swift in Sources */,
 				D02FE43323136A600048F8C4 /* NodeLogic.swift in Sources */,
@@ -1202,7 +1131,6 @@
 				D0DBC7062501CEFE00F6787C /* VerifyTransactionViewController.swift in Sources */,
 				D0855FCA22B0CEA800DBBFC2 /* CreatePSBT.swift in Sources */,
 				D02094F3225936D2002E8E7A /* ConnectingView.swift in Sources */,
-				0A1E4875264D196800E530E0 /* WebAuthnRegisterBeginResponse.swift in Sources */,
 				D09F9E5224B1F8DE006B588C /* AddSignerViewController.swift in Sources */,
 				D0196DDB21B5AC5F0081E0AB /* KeyPad.swift in Sources */,
 				D09F9E4C24B0673C006B588C /* SignersViewController.swift in Sources */,
@@ -1212,9 +1140,7 @@
 				D00F851F2494A7CA008D7CD3 /* AuthKeysStruct.swift in Sources */,
 				0A1E48A8264D3F6F00E530E0 /* NamedColor.swift in Sources */,
 				D02958D5235053B300ED8F72 /* SecurityCenterViewController.swift in Sources */,
-				0A1E487A264D196800E530E0 /* WebAuthnAuthenticateFinishResponse.swift in Sources */,
 				D09A331124AC4BF6009FA0B2 /* DescriptorParser.swift in Sources */,
-				0A1E487F264D196800E530E0 /* WebAuthnRequest.swift in Sources */,
 				D0C20ED224A6DB9D00C62AA4 /* BlockchainInfo.swift in Sources */,
 				D08A92B3233B527F00409D6E /* KillSwitch.swift in Sources */,
 				D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */,
@@ -1224,7 +1150,6 @@
 				0AE19ED725F4AC0D000F0AD4 /* WalletRecoveryViewController.swift in Sources */,
 				D00F851B24949691008D7CD3 /* AppPasswordViewController.swift in Sources */,
 				D0D71DA32351F835005CCDB9 /* UtilitieMenuViewController.swift in Sources */,
-				0A1E4880264D196800E530E0 /* WebAuthnLoginUserResponse.swift in Sources */,
 				D03968B1246F6CBA0010D821 /* Crypto.swift in Sources */,
 				D0452ADD224743C50013E225 /* LogInViewController.swift in Sources */,
 				D02958D3234F82E000ED8F72 /* IdentityViewController.swift in Sources */,
@@ -1240,11 +1165,9 @@
 				D0233F242361EA090041FFBA /* Base32.swift in Sources */,
 				D020480F249605AB00EF52DB /* ActiveWalletsViewController.swift in Sources */,
 				D0CC0E2224F0FA98001BF905 /* PeerDetailsViewController.swift in Sources */,
-				0A1E487E264D196800E530E0 /* WebAuthnCreateUserResponse.swift in Sources */,
 				D0452ADB2247417F0013E225 /* ImportPrivKeyViewController.swift in Sources */,
 				D0384E2F246AC4B1002FEE94 /* XpubConverter.swift in Sources */,
 				D08A92B5233C979600409D6E /* FiatConverter.swift in Sources */,
-				0A1E487D264D196800E530E0 /* WebAuthnRegisterFinishRequest.swift in Sources */,
 				D08A92A92337755600409D6E /* AddDescriptors.swift in Sources */,
 				D0F3919624C0379200EA8A2A /* ImportWallet.swift in Sources */,
 				D0A519B9226C212C00860D5C /* SendUTXO.swift in Sources */,
@@ -1254,7 +1177,6 @@
 				D0E51E5B226592C9005D1909 /* NodeDetailViewController.swift in Sources */,
 				D0233F222361E68F0041FFBA /* KeyGen.swift in Sources */,
 				D042FABC250C9F0600E99D9B /* Torrc.swift in Sources */,
-				0A1E487C264D196800E530E0 /* WebAuthnUserRequest.swift in Sources */,
 				D0126FF622446E3800412629 /* InvoiceViewController.swift in Sources */,
 				D00B27BC255A27F300269B51 /* WalletURL.swift in Sources */,
 				D0410617224ED189004AC0D0 /* ObjectiveCHeader.m in Sources */,
@@ -1270,18 +1192,15 @@
 				D0F3919024BFE48600EA8A2A /* AccountMap.swift in Sources */,
 				D0C20EDC24A6E51D00C62AA4 /* MempoolInfo.swift in Sources */,
 				D08A92A62334F66900409D6E /* Reducer.swift in Sources */,
-				0A1E4878264D196800E530E0 /* WebAuthnAuthenticateBeginRequest.swift in Sources */,
 				D0806B4522EE9FBA002C20A1 /* TXChain.swift in Sources */,
 				D08A92B923403DB200409D6E /* NodesViewController.swift in Sources */,
 				D0384E31246AC4D8002FEE94 /* Base58.swift in Sources */,
 				0A1E48A4264D3F2300E530E0 /* UIView+Extensions.swift in Sources */,
-				0A1E487B264D196800E530E0 /* WebAuthnResponse.swift in Sources */,
 				D033D1CF22B5D1FA00523BEE /* ProcessPSBTViewController.swift in Sources */,
 				D09A32FF24A8419D009FA0B2 /* CreateFullyNodedWallet.swift in Sources */,
 				D0D4B9A624DA616300572811 /* Lightning.swift in Sources */,
 				D07E0DE822F9570A00A81FA8 /* WalletCreatorViewController.swift in Sources */,
 				D0AD9B6823E7ECC20032C607 /* SceneDelegate.swift in Sources */,
-				0A1E4879264D196800E530E0 /* WebAuthnRegisterBeginRequest.swift in Sources */,
 				D0C20ED824A6E2FF00C62AA4 /* MiningInfo.swift in Sources */,
 				D0560EE92277F75900C3E909 /* UTXOViewController.swift in Sources */,
 				D0257E6524D6C5F5000EB854 /* LightningRPC.swift in Sources */,
@@ -1289,7 +1208,6 @@
 				0A1E4886264D3DCC00E530E0 /* StatusView.swift in Sources */,
 				D09A330F24A9B853009FA0B2 /* RecoveryViewController.swift in Sources */,
 				D0C20EDA24A6E46E00C62AA4 /* Uptime.swift in Sources */,
-				0A1E4877264D196800E530E0 /* WebAuthnAuthenticateBeginResponse.swift in Sources */,
 				D09A330124A848DA009FA0B2 /* SeedDisplayerViewController.swift in Sources */,
 				D06D788F25B817E100769157 /* Lifehash.swift in Sources */,
 				D0C4EE6F24F0EC9B003C929A /* BitSense.xcdatamodeld in Sources */,
@@ -1299,7 +1217,6 @@
 				D00B9A282111427200E8B95A /* AppDelegate.swift in Sources */,
 				D09A331324AC4C93009FA0B2 /* Descriptor.swift in Sources */,
 				D07AED032435B62800C2FADB /* Commands.swift in Sources */,
-				0A1E4874264D196800E530E0 /* WebAuthnAuthenticateFinishRequest.swift in Sources */,
 				D0EDDF1124972CEF00657931 /* InvoiceSettingsViewController.swift in Sources */,
 				D069051F24EA6C1F007F939D /* LightningPeersViewController.swift in Sources */,
 				D084960422EBCD3B003FE8EB /* GetInfoViewController.swift in Sources */,
@@ -1308,7 +1225,6 @@
 				D01EB4F325AD685700ADF6E4 /* TransactionLabelMemoViewController.swift in Sources */,
 				0A1E48A5264D3F2300E530E0 /* DemoCustomTabBar.swift in Sources */,
 				D0F3919224BFEBBB00EA8A2A /* QRDisplayerViewController.swift in Sources */,
-				0A2943B5264D0C1D0030BBBD /* YubiKeyViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1476,7 +1392,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 307;
+				CURRENT_PROJECT_VERSION = 313;
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
@@ -1487,7 +1403,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.387;
+				MARKETING_VERSION = 1.393;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1512,7 +1428,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 307;
+				CURRENT_PROJECT_VERSION = 313;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8JHDU5M9KD;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
@@ -1525,7 +1441,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.387;
+				MARKETING_VERSION = 1.393;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fontaine.FullyNoded;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.fontaine.fullynodedmacos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1620,14 +1536,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		0A011F58263996730031C827 /* XCRemoteSwiftPackageReference "yubikit-ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Yubico/yubikit-ios";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 4.0.0;
-			};
-		};
 		D06D788A25B817B500769157 /* XCRemoteSwiftPackageReference "LifeHash" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/BlockchainCommons/LifeHash";
@@ -1647,11 +1555,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		0A011F59263996730031C827 /* YubiKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 0A011F58263996730031C827 /* XCRemoteSwiftPackageReference "yubikit-ios" */;
-			productName = YubiKit;
-		};
 		D06D788B25B817B500769157 /* LifeHash */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = D06D788A25B817B500769157 /* XCRemoteSwiftPackageReference "LifeHash" */;

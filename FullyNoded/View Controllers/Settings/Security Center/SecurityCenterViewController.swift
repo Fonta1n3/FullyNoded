@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import YubiKit
 
 class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate {
     
@@ -30,7 +29,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 5
+        return 4
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -42,7 +41,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if section == 3 {
+        if section == 2 {
             return 4
         } else {
             return 1
@@ -65,16 +64,11 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
         
         switch indexPath.section {
         case 0:
-            icon.image = UIImage(systemName: "person.fill.checkmark")
-            label.text = "Register"
-            background.backgroundColor = .systemIndigo
-            
-        case 1:
             icon.image = UIImage(systemName: "lock.shield")
             label.text = "V3 Authentication Key"
             background.backgroundColor = .systemGreen
             
-        case 2:
+        case 1:
             if KeyChain.getData("UnlockPassword") != nil {
                 label.text = "Reset"
                 icon.image = UIImage(systemName: "arrow.clockwise")
@@ -85,7 +79,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             
             background.backgroundColor = .systemBlue
             
-        case 3:
+        case 2:
             switch indexPath.row {
             case 0: label.text = "Set Passphrase"; icon.image = UIImage(systemName: "plus"); background.backgroundColor = .systemPink
             case 1: label.text = "Change Passphrase"; icon.image = UIImage(systemName: "arrow.clockwise") ; background.backgroundColor = .systemGreen
@@ -93,7 +87,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             case 3: label.text = "Decrypt"; icon.image = UIImage(systemName: "lock.open"); background.backgroundColor = .systemIndigo
             default: break}
                         
-        case 4:
+        case 3:
             if ud.object(forKey: "bioMetricsDisabled") != nil {
                 label.text = "Disabled"
                 label.textColor = UIColor.darkGray
@@ -125,17 +119,15 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
         textLabel.frame = CGRect(x: 0, y: 0, width: 200, height: 50)
         switch section {
         case 0:
-            textLabel.text = "Yubikey"
-        case 1:
             textLabel.text = "Tor Authentication"
             
-        case 2:
+        case 1:
             textLabel.text = "App Password"
             
-        case 3:
+        case 2:
             textLabel.text = "Wallet Encryption"
             
-        case 4:
+        case 3:
             textLabel.text = "Biometrics"
             
         default:
@@ -150,29 +142,16 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
         switch indexPath.section {
         
         case 0:
-            #if !targetEnvironment(simulator)
-            #if !targetEnvironment(macCatalyst)
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.performSegue(withIdentifier: "segueToYubikey", sender: vc)
-            }
-            #else
-            showAlert(vc: self, title: "", message: "Yubikey only works on iPhone.")
-            #endif
-            #else
-            showAlert(vc: self, title: "", message: "Yubikey only works on iPhone.")
-            #endif
-            
-        case 1:
             DispatchQueue.main.async { [unowned vc = self] in
                 vc.performSegue(withIdentifier: "segueToTorAuth", sender: vc)
             }
             
-        case 2:
+        case 1:
             DispatchQueue.main.async { [unowned vc = self] in
                 vc.performSegue(withIdentifier: "addPasswordSegue", sender: vc)
             }
             
-        case 3:
+        case 2:
             switch indexPath.row {
             case 0:
                 encryptWallet()
@@ -190,14 +169,14 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
                 break
             }
             
-        case 4:
+        case 3:
             if ud.object(forKey: "bioMetricsDisabled") != nil {
                 ud.removeObject(forKey: "bioMetricsDisabled")
             } else {
                 ud.set(true, forKey: "bioMetricsDisabled")
             }
             DispatchQueue.main.async {
-                tableView.reloadSections([4], with: .fade)
+                tableView.reloadSections([3], with: .fade)
             }
             
         default:
