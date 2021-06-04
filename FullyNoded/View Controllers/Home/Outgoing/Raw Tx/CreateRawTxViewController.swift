@@ -87,6 +87,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         feeIconBackground.layer.cornerRadius = 5
         addressIcon.layer.cornerRadius = 5
         
+        addressImageView.layer.magnificationFilter = .nearest
+        
         slider.addTarget(self, action: #selector(setFee), for: .allEvents)
         slider.maximumValue = 2 * -1
         slider.minimumValue = 432 * -1

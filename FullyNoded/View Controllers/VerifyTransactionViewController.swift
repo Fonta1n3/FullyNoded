@@ -1261,6 +1261,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         descTextView.layer.cornerRadius = 8
         descTextView.layer.borderWidth = 0.5
         descTextView.layer.borderColor = UIColor.darkGray.cgColor
+        lifehashImageView.layer.magnificationFilter = .nearest
         
         if indexPath.row < inputTableArray.count {
             let input = inputTableArray[indexPath.row]
@@ -1380,6 +1381,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         descTextView.layer.cornerRadius = 8
         descTextView.layer.borderWidth = 0.5
         descTextView.layer.borderColor = UIColor.darkGray.cgColor
+        lifehashImageView.layer.magnificationFilter = .nearest
         
         signableImageView.tintColor = .white
         isDustImageView.tintColor = .white

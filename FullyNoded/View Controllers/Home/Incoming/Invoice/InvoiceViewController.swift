@@ -44,6 +44,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         configureView(fieldsBackground)
         configureView(addressBackground)
         configureView(invoiceBackground)
+        addressImageView.layer.magnificationFilter = .nearest
         confirgureFields()
         configureTap()
         getAddressSettings()
