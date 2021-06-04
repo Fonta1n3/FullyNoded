@@ -125,9 +125,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 showAlert(vc: self, title: "", message: "That does not appear to be a recognized wallet backup/export/import file")
                 return
             }
-            
-            print("data: \(data.utf8)")
-            
+                        
             guard let dict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] else {
                                 
                 guard let txt = String(bytes: data, encoding: .utf8) else {
@@ -193,7 +191,6 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 }
                 
                 let accountMap = ["descriptor": descriptor, "blockheight": 0, "watching": [], "label": name] as [String : Any]
-                print("accountMap: \(accountMap)")
                 promptToImportCoboMultiSig(accountMap)
                 /*
                  Name: CV_85C39000_2-3
@@ -207,11 +204,38 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                  */
                 return
             }
-            
-            print("dict: \(dict)")
-            
-            if let extendedPublicKeys = dict["extendedPublicKeys"] as? NSArray {
-                print("extendedPublicKeys: \(extendedPublicKeys)")
+                        
+            if let extendedPublicKeys = dict["extendedPublicKeys"] as? NSArray,
+               let quorum = dict["quorum"] as? NSDictionary,
+               let requiredSigners = quorum["requiredSigners"] as? Int {
+                let name = dict["name"] as? String ?? "Unchained"
+                var descriptor = "sh(sortedmulti(\(requiredSigners),"
+                
+                for (i, key) in extendedPublicKeys.enumerated() {
+                    if let keyDict = key as? NSDictionary {
+                        if var keyPath = keyDict["bip32Path"] as? String,
+                           let xfp = keyDict["xfp"] as? String,
+                           let xpub = keyDict["xpub"] as? String {
+                            
+                            if keyPath != "Unknown" {
+                                keyPath = "[\(keyPath.replacingOccurrences(of: "m", with: xfp))]\(xpub)/0/*"
+                            } else {
+                                keyPath = "[\(xfp)]\(xpub)/0/*"
+                            }
+                            
+                            descriptor += keyPath
+                            
+                            if i + 1 == extendedPublicKeys.count {
+                                descriptor += "))"
+                                print("descriptor: \(descriptor)")
+                                let accountMap = ["descriptor": descriptor, "blockheight": 0, "watching": [], "label": name] as [String : Any]
+                                promptToImportUnchained(accountMap)
+                            } else {
+                                descriptor += ","
+                            }
+                        }
+                    }
+                }
             }
             
             if let _ = dict["chain"] as? String {
@@ -235,13 +259,29 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         }
     }
     
+    private func promptToImportUnchained(_ dict: [String:Any]) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let alert = UIAlertController(title: "Import your Unchained Capital multi sig wallet?", message: "Looks like you selected a multi sig wallet. You can easily recreate the wallet as watchonly with Fully Noded, just tap \"import\".", preferredStyle: self.alertStyle)
+            
+            alert.addAction(UIAlertAction(title: "Import", style: .default, handler: { action in
+                self.importAccountMap(dict)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
     private func promptToImportCoboMultiSig(_ dict: [String:Any]) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
             let alert = UIAlertController(title: "Import your multi sig wallet?", message: "Looks like you selected a multi sig wallet. You can easily recreate the wallet as watchonly with Fully Noded, just tap \"import\".", preferredStyle: self.alertStyle)
             
-            alert.addAction(UIAlertAction(title: "import", style: .default, handler: { action in
+            alert.addAction(UIAlertAction(title: "Import", style: .default, handler: { action in
                 self.importAccountMap(dict)
             }))
             
@@ -281,7 +321,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             
             let alert = UIAlertController(title: "Import your CoboVault single sig?", message: "Looks like you selected a CoboVault single sig wallet. You can easily recreate the wallet as watchonly with Fully Noded, just tap \"import\".", preferredStyle: self.alertStyle)
             
-            alert.addAction(UIAlertAction(title: "import", style: .default, handler: { action in
+            alert.addAction(UIAlertAction(title: "Import", style: .default, handler: { action in
                 self.importAccountMap(accountMap)
             }))
             
@@ -297,7 +337,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             
             let alert = UIAlertController(title: "Import your Electrum multisig wallet?", message: "Looks like you selected an Electrum wallet backup file. You can easily recreate the wallet as watchonly with Fully Noded, just tap \"import\".", preferredStyle: self.alertStyle)
             
-            alert.addAction(UIAlertAction(title: "import", style: .default, handler: { action in
+            alert.addAction(UIAlertAction(title: "Import", style: .default, handler: { action in
                 guard let accountMap = self.convertElectrumToAccountMap(dict) else {
                     showAlert(vc: self, title: "Uh oh", message: "We had an issue converting that backup file to a wallet... Please reach out on Telegram, Github or Twitter so we can fix it.")
                     return

@@ -50,7 +50,7 @@ class ImportWallet {
         descStruct = descriptorParser.descriptor(primDescriptor)
         
         // If the descriptor is multisig, we sort the keys lexicographically
-        if primDescriptor.contains(",") {
+        if descStruct.isMulti {
             var dictArray = [[String:String]]()
             
             for keyWithPath in descStruct.keysWithPath {
@@ -92,7 +92,6 @@ class ImportWallet {
             if primDescriptor.hasPrefix("sh(wsh") {
                 primDescriptor += ")"
             }
-            
         }
         
         func createWalletNow(_ recDesc: String, _ changeDesc: String) {

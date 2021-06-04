@@ -273,11 +273,18 @@ enum Keys {
                             for (x, xpub) in descStr.multiSigKeys.enumerated() {
                                 guard let fullPath = try? BIP32Path(string: providedDescStr.derivationArray[x]),
                                       let accountPath = try? fullPath.chop(depth: 4),
-                                      let key = try? HDKey(base58: xpub) else { return }
-                                                            
+                                      let key = try? HDKey(base58: xpub) else {
+                                    completion((isOurs, walletLabel, signable, signer))
+                                    return
+                                    
+                                }
+                                
                                 network = key.network
                                 
-                                guard let childKey = try? key.derive(using: accountPath) else { return }
+                                guard let childKey = try? key.derive(using: accountPath) else {
+                                    completion((isOurs, walletLabel, signable, signer))
+                                    return
+                                }
                                 
                                 keys.append(childKey.pubKey)
                                 
@@ -296,13 +303,20 @@ enum Keys {
                         
                         if i + 1 == wallets.count {
                             for (d, derivation) in providedDescStr.derivationArray.enumerated() {
-                                guard let fullPath = try? BIP32Path(string: derivation) else { return }
+                                guard let fullPath = try? BIP32Path(string: derivation) else {
+                                    completion((isOurs, walletLabel, signable, signer))
+                                    return
+                                }
                                 
                                 var pubkeys = [PubKey]()
                                 for (k, key) in providedDescStr.multiSigKeys.enumerated() {
                                     guard let hex = Data(hexString: key),
                                           let pubkey1 = try? PubKey(hex, network: .mainnet),
-                                          let pubkey2 = try? PubKey(hex, network: .testnet) else { return }
+                                          let pubkey2 = try? PubKey(hex, network: .testnet) else {
+                                        completion((isOurs, walletLabel, signable, signer))
+                                        return
+                                    }
+                                    
                                     pubkeys.append(pubkey1)
                                     pubkeys.append(pubkey2)
                                     
