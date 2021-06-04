@@ -71,11 +71,11 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
     }
     
     var plainPrim: String {
-        return "pkh([\(fingerprint)/0h]\(xpub)/0/*)"
+        return "combo([\(fingerprint)/0h]\(xpub)/0/*)"
     }
     
     var plainChange: String {
-        return "pkh([\(fingerprint)/0h]\(xpub)/1/*)"
+        return "combo([\(fingerprint)/0h]\(xpub)/1/*)"
     }
 
     override func viewDidLoad() {
