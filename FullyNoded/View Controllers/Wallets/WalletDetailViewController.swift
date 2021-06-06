@@ -958,24 +958,42 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                 }
             }
         } else {
-            updateSpinnerText(text: "starting a rescan...")
-            Reducer.makeCommand(command: .getblockchaininfo, param: "") { [weak self] (response, errorMessage) in
-                if let dict = response as? NSDictionary {
-                    if let pruned = dict["pruned"] as? Bool {
-                        if pruned {
-                            if let pruneHeight = dict["pruneheight"] as? Int {
-                                Reducer.makeCommand(command: .rescanblockchain, param: "\(pruneHeight)") { (_, _) in }
-                                self?.updateMaxIndex(max: maxRange)
+            self.updateMaxIndex(max: maxRange)
+            promptToRescan()
+        }
+    }
+    
+    private func promptToRescan() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let alert = UIAlertController(title: "Rescan now?", message: "You have increased the gap limit but you will need to rescan the blockchain to see updated balances and transaction history.", preferredStyle: self.alertStyle)
+            
+            alert.addAction(UIAlertAction(title: "Rescan", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.updateSpinnerText(text: "starting a rescan...")
+                
+                Reducer.makeCommand(command: .getblockchaininfo, param: "") { [weak self] (response, errorMessage) in
+                    if let dict = response as? NSDictionary {
+                        if let pruned = dict["pruned"] as? Bool {
+                            if pruned {
+                                if let pruneHeight = dict["pruneheight"] as? Int {
+                                    Reducer.makeCommand(command: .rescanblockchain, param: "\(pruneHeight)") { (_, _) in }
+                                }
+                            } else {
+                                Reducer.makeCommand(command: .rescanblockchain, param: "") { (_, _) in }
                             }
-                        } else {
-                            Reducer.makeCommand(command: .rescanblockchain, param: "") { (_, _) in }
-                            self?.updateMaxIndex(max: maxRange)
                         }
+                    } else {
+                        self?.showError(error: "Error starting a rescan, your wallet has not been saved. Please check your connection to your node and try again.")
                     }
-                } else {
-                    self?.showError(error: "Error starting a rescan, your wallet has not been saved. Please check your connection to your node and try again.")
                 }
-            }
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
         }
     }
     
