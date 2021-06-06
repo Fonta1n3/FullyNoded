@@ -237,9 +237,10 @@ enum Keys {
                 let descParser = DescriptorParser()
                 let descStr = descParser.descriptor(desc)
                 let providedDescStr = descParser.descriptor(descriptor)
+                
                 if let type = addressType(descStr) {
                     if !providedDescStr.isMulti && path != "no key path" {
-                        guard let fullPath = try? BIP32Path(string: path) else { return }
+                        guard let fullPath = try? BIP32Path(string: path) else { completion((isOurs, walletLabel, signable, signer)); return }
                         
                         addressSignable(address, fullPath) { (isSignable, signerLabel) in
                             if isSignable {
@@ -300,38 +301,38 @@ enum Keys {
                                 }
                             }
                         }
+                    }
+                }
+                
+                if i + 1 == wallets.count {
+                    for (d, derivation) in providedDescStr.derivationArray.enumerated() {
+                        guard let fullPath = try? BIP32Path(string: derivation) else {
+                            completion((isOurs, walletLabel, signable, signer))
+                            return
+                        }
                         
-                        if i + 1 == wallets.count {
-                            for (d, derivation) in providedDescStr.derivationArray.enumerated() {
-                                guard let fullPath = try? BIP32Path(string: derivation) else {
-                                    completion((isOurs, walletLabel, signable, signer))
-                                    return
-                                }
+                        var pubkeys = [PubKey]()
+                        for (k, key) in providedDescStr.multiSigKeys.enumerated() {
+                            guard let hex = Data(hexString: key),
+                                  let pubkey1 = try? PubKey(hex, network: .mainnet),
+                                  let pubkey2 = try? PubKey(hex, network: .testnet) else {
+                                completion((isOurs, walletLabel, signable, signer))
+                                return
+                            }
+                            
+                            pubkeys.append(pubkey1)
+                            pubkeys.append(pubkey2)
+                            
+                            if k + 1 == providedDescStr.multiSigKeys.count {
                                 
-                                var pubkeys = [PubKey]()
-                                for (k, key) in providedDescStr.multiSigKeys.enumerated() {
-                                    guard let hex = Data(hexString: key),
-                                          let pubkey1 = try? PubKey(hex, network: .mainnet),
-                                          let pubkey2 = try? PubKey(hex, network: .testnet) else {
-                                        completion((isOurs, walletLabel, signable, signer))
-                                        return
+                                pubkeySignable(pubkeys, fullPath) { (isSignable, signerLabel) in
+                                    if isSignable {
+                                        signable = true
+                                        signer = signerLabel
                                     }
                                     
-                                    pubkeys.append(pubkey1)
-                                    pubkeys.append(pubkey2)
-                                    
-                                    if k + 1 == providedDescStr.multiSigKeys.count {
-                                                                    
-                                        pubkeySignable(pubkeys, fullPath) { (isSignable, signerLabel) in
-                                            if isSignable {
-                                                signable = true
-                                                signer = signerLabel
-                                            }
-                                            
-                                            if d + 1 == providedDescStr.derivationArray.count {
-                                                completion((isOurs, walletLabel, signable, signer))
-                                            }
-                                        }
+                                    if d + 1 == providedDescStr.derivationArray.count {
+                                        completion((isOurs, walletLabel, signable, signer))
                                     }
                                 }
                             }

@@ -18,6 +18,7 @@
 		0A1E48A4264D3F2300E530E0 /* UIView+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E489E264D3F2300E530E0 /* UIView+Extensions.swift */; };
 		0A1E48A5264D3F2300E530E0 /* DemoCustomTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E489F264D3F2300E530E0 /* DemoCustomTabBar.swift */; };
 		0A1E48A8264D3F6F00E530E0 /* NamedColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E48A7264D3F6F00E530E0 /* NamedColor.swift */; };
+		0A3013D8266B361E004DA35C /* LndRpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A3013D7266B361E004DA35C /* LndRpc.swift */; };
 		0A52680E264E0C4F005E6459 /* ProgressHudView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0A1E4895264D3EA500E530E0 /* ProgressHudView.xib */; };
 		0A526813264E0D62005E6459 /* MFIKeyActionSheetView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0A1E488E264D3E9F00E530E0 /* MFIKeyActionSheetView.xib */; };
 		0AE19ED725F4AC0D000F0AD4 /* WalletRecoveryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AE19ED625F4AC0D000F0AD4 /* WalletRecoveryViewController.swift */; };
@@ -209,6 +210,7 @@
 		0A1E489E264D3F2300E530E0 /* UIView+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIView+Extensions.swift"; sourceTree = "<group>"; };
 		0A1E489F264D3F2300E530E0 /* DemoCustomTabBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DemoCustomTabBar.swift; sourceTree = "<group>"; };
 		0A1E48A7264D3F6F00E530E0 /* NamedColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NamedColor.swift; sourceTree = "<group>"; };
+		0A3013D7266B361E004DA35C /* LndRpc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LndRpc.swift; sourceTree = "<group>"; };
 		0AE19ED625F4AC0D000F0AD4 /* WalletRecoveryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletRecoveryViewController.swift; sourceTree = "<group>"; };
 		844D2A492512D4F60046372E /* UTXOCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOCell.swift; sourceTree = "<group>"; };
 		844D2A4A2512D4F60046372E /* UTXOCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = UTXOCell.xib; sourceTree = "<group>"; };
@@ -590,6 +592,7 @@
 				D0C1F9142531E71F0079C2B8 /* UR.swift */,
 				D00B27BB255A27F300269B51 /* WalletURL.swift */,
 				D06D788E25B817E100769157 /* Lifehash.swift */,
+				0A3013D7266B361E004DA35C /* LndRpc.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1198,6 +1201,7 @@
 				0A1E48A4264D3F2300E530E0 /* UIView+Extensions.swift in Sources */,
 				D033D1CF22B5D1FA00523BEE /* ProcessPSBTViewController.swift in Sources */,
 				D09A32FF24A8419D009FA0B2 /* CreateFullyNodedWallet.swift in Sources */,
+				0A3013D8266B361E004DA35C /* LndRpc.swift in Sources */,
 				D0D4B9A624DA616300572811 /* Lightning.swift in Sources */,
 				D07E0DE822F9570A00A81FA8 /* WalletCreatorViewController.swift in Sources */,
 				D0AD9B6823E7ECC20032C607 /* SceneDelegate.swift in Sources */,

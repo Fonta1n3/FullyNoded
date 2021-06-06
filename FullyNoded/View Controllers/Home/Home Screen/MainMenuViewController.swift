@@ -886,6 +886,7 @@ extension MainMenuViewController: OnionManagerDelegate {
             self?.torProgressLabel.isHidden = true
             self?.progressView.isHidden = true
             self?.blurView.isHidden = true
+            //LndRpc.getInfo()
         }
                 
 //        if KeyChain.getData("hasPaid") == nil {
