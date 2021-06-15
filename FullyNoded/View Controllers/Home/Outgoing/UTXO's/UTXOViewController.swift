@@ -249,7 +249,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
                     // Only save UTXO's when they get locked, delete them from storage when they get unlocked.
-                    self.saveUtxoLocally(utxo)
                     self.loadUnlockedUtxos()
                 }
                 
@@ -319,39 +318,13 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             
             for (i, utxo) in utxos.enumerated() {
                 guard let utxoDict = utxo as? [String:Any] else { return }
-                self.unlockedUtxos.append(UtxosStruct(dictionary: utxoDict))
+                let utxoStr = UtxosStruct(dictionary: utxoDict)
+                self.unlockedUtxos.append(utxoStr)
                 
                 if i + 1 == utxos.count {
                     self.unlockedUtxos = self.unlockedUtxos.sorted { $0.confs ?? 0 < $1.confs ?? 0 }
                     self.finishedLoading()
                 }
-            }
-        }
-    }
-    
-    private func saveUtxoLocally(_ utxo: UtxosStruct) {
-        activeWallet { (wallet) in
-            // Only save utxos for Fully Noded wallets
-            guard let wallet = wallet else { return }
-            
-            var dict = [String:Any]()
-            dict["txid"] = utxo.txid
-            dict["vout"] = utxo.vout
-            dict["label"] = utxo.label
-            dict["id"] = UUID()
-            dict["walletId"] = wallet.id
-            dict["address"] = utxo.address
-            dict["amount"] = utxo.amount
-            dict["desc"] = utxo.desc
-            dict["solvable"] = utxo.solvable
-            dict["confirmations"] = utxo.confs
-            dict["safe"] = utxo.safe
-            dict["spendable"] = utxo.spendable
-            
-            CoreDataService.saveEntity(dict: dict, entityName: .utxos) { success in
-                #if DEBUG
-                print("saved utxo locally: \(success)")
-                #endif
             }
         }
     }

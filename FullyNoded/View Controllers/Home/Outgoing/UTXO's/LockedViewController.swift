@@ -95,29 +95,6 @@ class LockedViewController: UIViewController {
         }
     }
     
-    private func deleteLocalUtxo(_ utxo: UtxosStruct) {
-        CoreDataService.retrieveEntity(entityName: .utxos) { (utxos) in
-            guard let utxos = utxos else { return }
-            
-            let outpoint = utxo.txid + "\(utxo.vout)"
-            
-            for existingUtxo in utxos {
-                let existingUtxoStruct = UtxosStruct(dictionary: existingUtxo)
-                let existingUtxoOutpoint = existingUtxoStruct.txid + "\(existingUtxoStruct.vout)"
-                
-                if outpoint == existingUtxoOutpoint {
-                    guard let id = existingUtxoStruct.id else { return }
-                    
-                    CoreDataService.deleteEntity(id: id, entityName: .utxos) { success in
-                        #if DEBUG
-                            print("deleted utxo from local storage: \(success)")
-                        #endif
-                    }
-                }
-            }
-        }
-    }
-    
     private func unlock(_ utxo: UtxosStruct) {
         spinner.addConnectingView(vc: self, description: "unlocking...")
         let param = "true, [{\"txid\":\"\(utxo.txid)\",\"vout\":\(utxo.vout)}]"
@@ -137,8 +114,7 @@ class LockedViewController: UIViewController {
             if success {
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
-                    // Delete them from storage when they get unlocked.
-                    self.deleteLocalUtxo(utxo)
+                    
                     self.loadLockedUTxos()
                 }
                 

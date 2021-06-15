@@ -323,24 +323,90 @@ class NodeLogic {
         }
     }
     
+    private class func saveUtxoLocally(_ utxo: UtxosStruct) {
+        activeWallet { wallet in
+            // Only save utxos for Fully Noded wallets
+            guard let wallet = wallet else { return }
+            
+            CoreDataService.retrieveEntity(entityName: .utxos) { savedUtxos in
+                if let savedUtxos = savedUtxos, savedUtxos.count > 0 {
+                    var alreadySaved = false
+                    var updateLabel = false
+                    
+                    for (i, savedUtxo) in savedUtxos.enumerated() {
+                        let savedUtxoStr = UtxosStruct(dictionary: savedUtxo)
+                        
+                        if savedUtxoStr.txid == utxo.txid && savedUtxoStr.vout == utxo.vout && savedUtxoStr.walletId == wallet.id && savedUtxoStr.label == utxo.label {
+                            alreadySaved = true
+                        } else if savedUtxoStr.txid == utxo.txid && savedUtxoStr.vout == utxo.vout && savedUtxoStr.walletId == wallet.id && savedUtxoStr.label != utxo.label {
+                            alreadySaved = true
+                            updateLabel = true
+                        }
+
+                        if i + 1 == savedUtxos.count {
+                            if !alreadySaved {
+                                saveUtxo(utxo, wallet)
+                            } else if updateLabel {
+                                CoreDataService.update(id: savedUtxoStr.id!, keyToUpdate: "label", newValue: utxo.label as Any, entity: .utxos) { success in
+                                    #if DEBUG
+                                    print("updated utxo locally: \(success)\nlabel: \(utxo.label ?? "")")
+                                    #endif
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    saveUtxo(utxo, wallet)
+                }
+            }
+        }
+    }
+    
+    class private func saveUtxo(_ utxo: UtxosStruct, _ wallet: Wallet) {
+        var dict = [String:Any]()
+        dict["txid"] = utxo.txid
+        dict["vout"] = utxo.vout
+        dict["label"] = utxo.label
+        dict["id"] = UUID()
+        dict["walletId"] = wallet.id
+        dict["address"] = utxo.address
+        dict["amount"] = utxo.amount
+        dict["desc"] = utxo.desc
+        dict["solvable"] = utxo.solvable
+        dict["confirmations"] = utxo.confs
+        dict["safe"] = utxo.safe
+        dict["spendable"] = utxo.spendable
+        
+        CoreDataService.saveEntity(dict: dict, entityName: .utxos) { success in
+            #if DEBUG
+            print("saved utxo locally: \(success)\nlabel: \(utxo.label ?? "")")
+            #endif
+        }
+    }
+    
     class func parseUtxos(utxos: NSArray) {
         var amount = 0.0
         var indexArray = [Int]()
         
         for (x, utxo) in utxos.enumerated() {
-            
             let utxoDict = utxo as! NSDictionary
+            let utxoStr = UtxosStruct(dictionary: utxo as! [String:Any])
+            saveUtxoLocally(utxoStr)
+            
             let balance = utxoDict["amount"] as! Double
             amount += balance
+            
             if let desc = utxoDict["desc"] as? String {
                 let p = DescriptorParser()
                 let str = p.descriptor(desc)
                 var paths:[String]!
+                
                 if str.isMulti {
                     paths = str.derivationArray
                 } else {
                     paths = [str.derivation]
                 }
+                
                 for path in paths {
                     let arr = path.split(separator: "/")
                     for (i, comp) in arr.enumerated() {
@@ -352,6 +418,7 @@ class NodeLogic {
                     }
                 }
             }
+            
             if x + 1 == utxos.count {
                 activeWallet { wallet in
                     if wallet != nil {
