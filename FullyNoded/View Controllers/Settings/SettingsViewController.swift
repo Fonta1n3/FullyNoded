@@ -350,26 +350,50 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                     jsonArray.append(["\(walletStruct.label)":accountMapString])
                     
                     if i + 1 == wallets.count {
-                        let file:[String:Any] = ["wallets": jsonArray, "transactions": transactions]
                         
-                        let fileManager = FileManager.default
-                        let fileURL = fileManager.temporaryDirectory.appendingPathComponent("wallets.fullynoded")
-                        guard let json = file.json() else { return }
-                        try? json.dataUsingUTF8StringEncoding.write(to: fileURL)
-                        
-                        DispatchQueue.main.async { [weak self] in
+                        CoreDataService.retrieveEntity(entityName: .utxos) { [weak self] utxos in
                             guard let self = self else { return }
+                            var processedUtxoArray:[[String:Any]] = []
                             
-                            if #available(iOS 14, *) {
-                                let controller = UIDocumentPickerViewController(forExporting: [fileURL]) // 5
-                                self.present(controller, animated: true)
+                            if let utxos = utxos, utxos.count > 0 {
+                                processedUtxoArray = utxos
+                                
+                                for (u, utxo) in utxos.enumerated() {
+                                    let utxoStr = UtxosStruct(dictionary: utxo)
+                                    processedUtxoArray[u]["id"] = utxoStr.id!.uuidString
+                                    processedUtxoArray[u]["walletId"] = utxoStr.walletId!.uuidString
+                                    
+                                    if u + 1 == utxos.count {
+                                        let file:[String:Any] = ["wallets": jsonArray, "transactions": transactions, "utxos": processedUtxoArray.json() ?? []]
+                                        self.saveFile(file)
+                                    }
+                                }
                             } else {
-                                let controller = UIDocumentPickerViewController(url: fileURL, in: .exportToService)
-                                self.present(controller, animated: true)
+                                let file:[String:Any] = ["wallets": jsonArray, "transactions": transactions, "utxos": processedUtxoArray.json() ?? []]
+                                self.saveFile(file)
                             }
                         }
                     }
                 }
+            }
+        }
+    }
+    
+    private func saveFile(_ file: [String:Any]) {        
+        let fileManager = FileManager.default
+        let fileURL = fileManager.temporaryDirectory.appendingPathComponent("wallets.fullynoded")
+        guard let json = file.json() else { return }
+        try? json.dataUsingUTF8StringEncoding.write(to: fileURL)
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            if #available(iOS 14, *) {
+                let controller = UIDocumentPickerViewController(forExporting: [fileURL]) // 5
+                self.present(controller, animated: true)
+            } else {
+                let controller = UIDocumentPickerViewController(url: fileURL, in: .exportToService)
+                self.present(controller, animated: true)
             }
         }
     }

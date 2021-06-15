@@ -133,6 +133,15 @@ public extension Dictionary {
     }
 }
 
+public extension Array {
+    func json() -> String? {
+        guard let json = try? JSONSerialization.data(withJSONObject: self, options: []),
+              let jsonString = String(data: json, encoding: .utf8) else { return nil }
+        
+        return jsonString
+    }
+}
+
 public extension Int {
     func withCommas() -> String {
         let numberFormatter = NumberFormatter()
