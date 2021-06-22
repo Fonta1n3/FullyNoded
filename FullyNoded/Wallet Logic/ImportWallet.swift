@@ -53,21 +53,40 @@ class ImportWallet {
         if descStruct.isMulti {
             var dictArray = [[String:String]]()
             
-            for keyWithPath in descStruct.keysWithPath {
-                let arr = keyWithPath.split(separator: "]")
-                var key = "\(arr[1])"
-                
-                if key.contains(")") {
-                    key = key.replacingOccurrences(of: ")", with: "")
+            for keyWithPath in descStruct.keysWithPath {                
+                if keyWithPath.contains("]") {
+                    let keyPathArr = keyWithPath.split(separator: "]")
+                    
+                    if keyPathArr.count > 0 {
+                        var key = "\(keyPathArr[1])"
+                        
+                        if key.contains(")") {
+                            key = key.replacingOccurrences(of: ")", with: "")
+                        }
+                        
+                        //add range to each key
+                        if !key.contains("/0/*") {
+                            key += "/0/*"
+                        }
+                        
+                        let dict = ["path":"\(keyPathArr[0])]", "key": key]
+                        dictArray.append(dict)
+                    }
+                } else {
+                    var key = keyWithPath
+                    
+                    if key.contains(")") {
+                        key = key.replacingOccurrences(of: ")", with: "")
+                    }
+                    
+                    //add range to each key
+                    if !key.contains("/0/*") {
+                        key += "/0/*"
+                    }
+                    
+                    let dict = ["path":"", "key": key]
+                    dictArray.append(dict)
                 }
-                
-                //add range to each key
-                if !key.contains("/0/*") {
-                    key += "/0/*"
-                }
-                
-                let dict = ["path":"\(arr[0])]", "key": key]
-                dictArray.append(dict)
             }
             
             dictArray.sort(by: {($0["key"]!) < $1["key"]!})

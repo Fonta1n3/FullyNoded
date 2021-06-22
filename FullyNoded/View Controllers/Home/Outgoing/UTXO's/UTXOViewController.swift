@@ -206,13 +206,32 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                         return
                     }
                     
-                    showAlert(vc: self, title: "Label updated ✅", message: "")
-                    
-                    DispatchQueue.main.async { [weak self] in
-                        self?.loadUnlockedUtxos()
+                    func saved() {
+                        showAlert(vc: self, title: "Label updated ✅", message: "")
+                        
+                        DispatchQueue.main.async { [weak self] in
+                            self?.loadUnlockedUtxos()
+                        }
+                        
+                        self.spinner.removeConnectingView()
                     }
                     
-                    self.spinner.removeConnectingView()
+                    CoreDataService.retrieveEntity(entityName: .utxos) { savedUtxos in
+                        guard let savedUtxos = savedUtxos, savedUtxos.count > 0 else {
+                            saved()
+                            return
+                        }
+                        
+                        for savedUtxo in savedUtxos {
+                            let savedUtxoStr = UtxosStruct(dictionary: savedUtxo)
+                            
+                            if savedUtxoStr.txid == utxo.txid && savedUtxoStr.vout == utxo.vout {
+                                CoreDataService.update(id: savedUtxoStr.id!, keyToUpdate: "label", newValue: label as Any, entity: .utxos) { _ in }
+                            }
+                        }
+                        
+                        saved()
+                    }
                 }
             }
             
@@ -332,25 +351,43 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                             
                             return
                         }
-                        
+                                                
                         for (u, unlockedUtxo) in self.unlockedUtxos.enumerated() {
-                            if unlockedUtxo.label == "" {
-                                for (s, savedUtxo) in savedUtxos.enumerated() {
-                                    let savedUtxoStr = UtxosStruct(dictionary: savedUtxo)
+                                                        
+                            activeWallet { wallet in
+                                                                
+                                guard let wallet = wallet else {
+                                    self.finishedLoading()
                                     
-                                    /// We always use the Bitcoin Core address label as the utxo label, when recovering with a new node the user will see the
-                                    /// label the user added via Fully Noded. Fully Noded automatically saves the utxo labels.
-                                    
-                                    if savedUtxoStr.txid == unlockedUtxo.txid && savedUtxoStr.vout == unlockedUtxo.vout {
-                                        self.unlockedUtxos[i].label = savedUtxoStr.label
-                                    }
-                                    
-                                    if s + 1 == savedUtxos.count && u + 1 == self.unlockedUtxos.count {
-                                        self.finishedLoading()
+                                    return
+                                }
+                                
+                                func loopSavedUtxos() {
+                                    for (s, savedUtxo) in savedUtxos.enumerated() {
+                                        let savedUtxoStr = UtxosStruct(dictionary: savedUtxo)
+                                        
+                                        /// We always use the Bitcoin Core address label as the utxo label, when recovering with a new node the user will see the
+                                        /// label the user added via Fully Noded. Fully Noded automatically saves the utxo labels.
+                                        
+                                        if savedUtxoStr.txid == unlockedUtxo.txid && savedUtxoStr.vout == unlockedUtxo.vout && wallet.label != savedUtxoStr.label {
+                                            self.unlockedUtxos[i].label = savedUtxoStr.label
+                                            
+                                            let param = "[{ \"scriptPubKey\": { \"address\": \"\(unlockedUtxo.address!)\" }, \"label\": \"\(savedUtxoStr.label!)\", \"timestamp\": \"now\", \"watchonly\": true, \"keypool\": false, \"internal\": false }], ''{\"rescan\": false}''"
+                                            
+                                            Reducer.makeCommand(command: .importmulti, param: param) { (_, _) in }
+                                        }
+                                        
+                                        if s + 1 == savedUtxos.count && u + 1 == self.unlockedUtxos.count {
+                                            self.finishedLoading()
+                                        }
                                     }
                                 }
-                            } else if u + 1 == self.unlockedUtxos.count {
-                                self.finishedLoading()
+                                
+                                if unlockedUtxo.label == "" || unlockedUtxo.label == wallet.label {
+                                    loopSavedUtxos()
+                                } else if u + 1 == self.unlockedUtxos.count {
+                                    self.finishedLoading()
+                                }
                             }
                         }
                     }

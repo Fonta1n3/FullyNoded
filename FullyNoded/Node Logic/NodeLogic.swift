@@ -336,7 +336,7 @@ class NodeLogic {
                     for (i, savedUtxo) in savedUtxos.enumerated() {
                         let savedUtxoStr = UtxosStruct(dictionary: savedUtxo)
                         
-                        if savedUtxoStr.txid == utxo.txid && savedUtxoStr.vout == utxo.vout && savedUtxoStr.walletId == wallet.id && savedUtxoStr.label == utxo.label {
+                        if savedUtxoStr.txid == utxo.txid && savedUtxoStr.vout == utxo.vout {
                             alreadySaved = true
                             
                             if savedUtxoStr.label == "" && utxo.label != "" {
@@ -348,7 +348,7 @@ class NodeLogic {
                             if !alreadySaved {
                                 saveUtxo(utxo, wallet)
                             } else if updateLabel {
-                                updateUtxoLabel(id: savedUtxoStr.id!, newLabel: utxo.label ?? "")
+                                updateUtxoLabel(id: savedUtxoStr.id!, newLabel: savedUtxoStr.label ?? "")
                             }
                         }
                     }
