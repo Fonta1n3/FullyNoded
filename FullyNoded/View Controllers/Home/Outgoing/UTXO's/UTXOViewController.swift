@@ -303,7 +303,9 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             self.addSpinner()
         }
         
-        Reducer.makeCommand(command: .listunspent, param: "0") { (response, errorMessage) in
+        Reducer.makeCommand(command: .listunspent, param: "0") { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
             guard let utxos = response as? NSArray else {
                 self.finishedLoading()
                 showAlert(vc: self, title: "Error", message: errorMessage ?? "unknown error fecthing your utxos")
@@ -323,7 +325,35 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 
                 if i + 1 == utxos.count {
                     self.unlockedUtxos = self.unlockedUtxos.sorted { $0.confs ?? 0 < $1.confs ?? 0 }
-                    self.finishedLoading()
+                    
+                    CoreDataService.retrieveEntity(entityName: .utxos) { savedUtxos in
+                        guard let savedUtxos = savedUtxos, savedUtxos.count > 0 else {
+                            self.finishedLoading()
+                            
+                            return
+                        }
+                        
+                        for (u, unlockedUtxo) in self.unlockedUtxos.enumerated() {
+                            if unlockedUtxo.label == "" {
+                                for (s, savedUtxo) in savedUtxos.enumerated() {
+                                    let savedUtxoStr = UtxosStruct(dictionary: savedUtxo)
+                                    
+                                    /// We always use the Bitcoin Core address label as the utxo label, when recovering with a new node the user will see the
+                                    /// label the user added via Fully Noded. Fully Noded automatically saves the utxo labels.
+                                    
+                                    if savedUtxoStr.txid == unlockedUtxo.txid && savedUtxoStr.vout == unlockedUtxo.vout {
+                                        self.unlockedUtxos[i].label = savedUtxoStr.label
+                                    }
+                                    
+                                    if s + 1 == savedUtxos.count && u + 1 == self.unlockedUtxos.count {
+                                        self.finishedLoading()
+                                    }
+                                }
+                            } else if u + 1 == self.unlockedUtxos.count {
+                                self.finishedLoading()
+                            }
+                        }
+                    }
                 }
             }
         }

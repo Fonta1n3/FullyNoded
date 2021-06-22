@@ -268,7 +268,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
         case 1:
             if indexPath.row == 0 {
-                alertToBackup()
+                warnToBackup()
             } else {
                 alertToRecover()
             }
@@ -281,9 +281,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             }
             
         case 3:
-            print("enable Esplora")
-        
-        
+            print("enable Esplora")        
             
         default:
             break
@@ -299,6 +297,24 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         }
     }
     
+    private func warnToBackup() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let tit = "WARNING!"
+            let mess = "THIS BACKUP DOES ***NOT*** INCLUDE ANY PRIVATE KEY MATERIAL!\n\nAlways backup your signers offline on paper or metal, ensuring you keep them safe and secure."
+            
+            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in
+                self.alertToBackup()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
     private func alertToBackup() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -308,7 +324,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
             let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
             
-            alert.addAction(UIAlertAction(title: "Backup", style: .default, handler: { action in
+            alert.addAction(UIAlertAction(title: "Create backup", style: .default, handler: { action in
                 self.exportJson()
             }))
             
@@ -379,10 +395,12 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         }
     }
     
-    private func saveFile(_ file: [String:Any]) {        
+    private func saveFile(_ file: [String:Any]) {
         let fileManager = FileManager.default
         let fileURL = fileManager.temporaryDirectory.appendingPathComponent("wallets.fullynoded")
+        
         guard let json = file.json() else { return }
+        
         try? json.dataUsingUTF8StringEncoding.write(to: fileURL)
         
         DispatchQueue.main.async { [weak self] in

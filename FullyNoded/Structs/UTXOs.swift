@@ -11,7 +11,7 @@ import Foundation
 public struct UtxosStruct: CustomStringConvertible, Codable {
     
     let id: UUID?
-    let label: String?
+    var label: String?
     let address: String?
     let amount: Double?
     let desc: String?

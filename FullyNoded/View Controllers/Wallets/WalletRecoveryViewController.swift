@@ -48,31 +48,41 @@ class WalletRecoveryViewController: UIViewController, UIDocumentPickerDelegate {
                         
                         let data = string.dataUsingUTF8StringEncoding
                         
-                        guard let dict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] else {
+                        guard let walletDict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] else {
                             showAlert(vc: self, title: "", message: "That does not appear to be a recognized wallet backup file. This is only compatible with Fully Noded wallet backup files.")
+                            
                             return
                         }
                         
-                        guard let desc = dict["descriptor"] as? String else { return }
+                        guard let desc = walletDict["descriptor"] as? String else { return }
                         
                         let descriptorParser = DescriptorParser()
                         let descStr = descriptorParser.descriptor(desc)
                         if descStr.chain == "Mainnet" {
-                            mainnetWallets.append(dict)
+                            mainnetWallets.append(walletDict)
                         } else if descStr.chain == "Testnet" {
-                            testnetWallets.append(dict)
+                            testnetWallets.append(walletDict)
                         }
                     }
                     
                     if i + 1 == wallets.count {
-                        alertToRecoverWalletsTransactions(mainnetWallets, testnetWallets, transactions)
+                        let utxos = dict["utxos"] as! String
+                        let utxosData = utxos.dataUsingUTF8StringEncoding
+                        
+                        guard let utxoArray = try? JSONSerialization.jsonObject(with: utxosData, options: []) as? [[String:Any]] else {
+                            alertToRecoverWalletsTransactions(mainnetWallets, testnetWallets, transactions, [[:]])
+                            
+                            return
+                        }
+                        
+                        alertToRecoverWalletsTransactions(mainnetWallets, testnetWallets, transactions, utxoArray)
                     }
                 }
             }
         }
     }
     
-    private func alertToRecoverWalletsTransactions(_ mainnetWallets: [[String:Any]], _ testnetWallets: [[String:Any]], _ transactions: [[String:Any]]) {
+    private func alertToRecoverWalletsTransactions(_ mainnetWallets: [[String:Any]], _ testnetWallets: [[String:Any]], _ transactions: [[String:Any]], _ utxos: [[String:Any]]) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -87,16 +97,14 @@ class WalletRecoveryViewController: UIViewController, UIDocumentPickerDelegate {
                 wallets = testnetWallets
             }
             
-            let mess = "This will recover \(wallets.count) wallets and \(transactions.count) transactions (labels, memos, and capital gains info)."
-            
-            
+            let mess = "This will recover \(wallets.count) wallets, \(transactions.count) transactions (labels, memos, and capital gains info), and \(utxos.count) utxos."
             
             let tit = "Recover Now?"
             
             let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Recover", style: .default, handler: { action in
-                self.recover(wallets, transactions)
+                self.recover(wallets, transactions, utxos)
             }))
             
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
@@ -104,7 +112,7 @@ class WalletRecoveryViewController: UIViewController, UIDocumentPickerDelegate {
         }
     }
     
-    private func recover(_ wallets: [[String:Any]], _ transactions: [[String:Any]]) {
+    private func recover(_ wallets: [[String:Any]], _ transactions: [[String:Any]], _ utxos: [[String:Any]]?) {
         spinner.addConnectingView(vc: self, description: "recovering transaction metadata...")
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
@@ -135,7 +143,7 @@ class WalletRecoveryViewController: UIViewController, UIDocumentPickerDelegate {
                             }
                             
                             if i + 1 == transactions.count {
-                                self.recoverWallet(wallets)
+                                self.recoverUtxos(wallets, utxos)
                             }
                         }
                     }
@@ -175,7 +183,7 @@ class WalletRecoveryViewController: UIViewController, UIDocumentPickerDelegate {
                                         }
                                         
                                         if i + 1 == transactions.count {
-                                            self.recoverWallet(wallets)
+                                            self.recoverUtxos(wallets, utxos)
                                         }
                                     }
                                 }
@@ -197,6 +205,40 @@ class WalletRecoveryViewController: UIViewController, UIDocumentPickerDelegate {
                     }
                 } else {
                     saveNew()
+                }
+            }
+        }
+    }
+    
+    private func recoverUtxos(_ wallets: [[String:Any]], _ utxos: [[String:Any]]?) {
+        guard var utxos = utxos, utxos.count > 0 else {
+            self.recoverWallet(wallets)
+            
+            return
+        }
+        
+        //var utxosToSave = utxos
+        
+        for (i, utxo) in utxos.enumerated() {
+            for (key, value) in utxo {
+                print("\(key): \(value)")
+                switch key {
+                case "id":
+                    utxos[i]["id"] = UUID(uuidString: (value as! String))
+                case "walletId":
+                    utxos[i]["walletId"] = UUID(uuidString: (value as! String))
+                default:
+                    break
+                }
+            }
+            
+            CoreDataService.saveEntity(dict: utxos[i], entityName: .utxos) { saved in
+                if !saved {
+                    showAlert(vc: self, title: "", message: "There was an issue recovering your utxos, please let us know about it!")
+                }
+                
+                if i + 1 == utxos.count {
+                    self.recoverWallet(wallets)
                 }
             }
         }

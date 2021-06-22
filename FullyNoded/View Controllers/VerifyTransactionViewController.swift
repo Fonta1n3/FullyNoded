@@ -1194,7 +1194,17 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             if unsignedPsbt != "" {
                 label.text = "Transaction incomplete."
             } else {
-                label.text = "This feature requires at least Bitcoin Core 0.20.0"
+                if signedRawTx != "" {
+                    label.text = "Transaction complete."
+                } else {
+                    let version = UserDefaults.standard.object(forKey: "version") as? String ?? "0.20"
+                    
+                    if version.contains("0.1") {
+                        label.text = "This feature requires at least Bitcoin Core 0.20.0"
+                    } else {
+                        label.text = "There was an issue verifying your tx with mempoolaccept."
+                    }
+                }
             }
             
             background.backgroundColor = .darkGray

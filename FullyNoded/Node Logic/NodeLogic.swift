@@ -338,20 +338,17 @@ class NodeLogic {
                         
                         if savedUtxoStr.txid == utxo.txid && savedUtxoStr.vout == utxo.vout && savedUtxoStr.walletId == wallet.id && savedUtxoStr.label == utxo.label {
                             alreadySaved = true
-                        } else if savedUtxoStr.txid == utxo.txid && savedUtxoStr.vout == utxo.vout && savedUtxoStr.walletId == wallet.id && savedUtxoStr.label != utxo.label {
-                            alreadySaved = true
-                            updateLabel = true
+                            
+                            if savedUtxoStr.label == "" && utxo.label != "" {
+                                updateLabel = true
+                            }
                         }
 
                         if i + 1 == savedUtxos.count {
                             if !alreadySaved {
                                 saveUtxo(utxo, wallet)
                             } else if updateLabel {
-                                CoreDataService.update(id: savedUtxoStr.id!, keyToUpdate: "label", newValue: utxo.label as Any, entity: .utxos) { success in
-                                    #if DEBUG
-                                    print("updated utxo locally: \(success)\nlabel: \(utxo.label ?? "")")
-                                    #endif
-                                }
+                                updateUtxoLabel(id: savedUtxoStr.id!, newLabel: utxo.label ?? "")
                             }
                         }
                     }
@@ -359,6 +356,14 @@ class NodeLogic {
                     saveUtxo(utxo, wallet)
                 }
             }
+        }
+    }
+    
+    class private func updateUtxoLabel(id: UUID, newLabel: String) {
+        CoreDataService.update(id: id, keyToUpdate: "label", newValue: newLabel, entity: .utxos) { success in
+            #if DEBUG
+            print("updated utxo locally: \(success)\nlabel: \(newLabel)")
+            #endif
         }
     }
     
