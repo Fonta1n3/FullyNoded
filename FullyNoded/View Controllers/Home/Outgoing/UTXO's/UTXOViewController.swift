@@ -355,7 +355,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                         for (u, unlockedUtxo) in self.unlockedUtxos.enumerated() {
                                                         
                             activeWallet { wallet in
-                                                                
                                 guard let wallet = wallet else {
                                     self.finishedLoading()
                                     
@@ -508,6 +507,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         rawTransaction.changeAmount = rounded(number: changeAmount)
         rawTransaction.sweep = self.isSweeping
         rawTransaction.inputArray = self.inputArray
+        
         rawTransaction.createRawTransaction { [weak self] (signedTx, psbt, errorMessage) in
             if self != nil {
                 if signedTx != nil {

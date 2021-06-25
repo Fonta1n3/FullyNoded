@@ -52,11 +52,12 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         detailTable.delegate = self
         detailTable.dataSource = self
         addTapGesture()
-        setCoinType()
         
         if (UIDevice.current.userInterfaceIdiom == .pad) {
           alertStyle = UIAlertController.Style.alert
         }
+        
+        load()
     }
     
     private func exportJson() {
@@ -163,30 +164,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         }
     }
     
-    private func setCoinType() {
-        spinner.addConnectingView(vc: self, description: "fetching chain type...")
-        Reducer.makeCommand(command: .getblockchaininfo, param: "") { [weak self] (response, errorMessage) in
-            if let dict = response as? NSDictionary {
-                guard let self = self else { return }
-                if let chain = dict["chain"] as? String {
-                    if chain == "test" {
-                        self.coinType = "1"
-                        self.load()
-                        self.spinner.removeConnectingView()
-                    } else {
-                        self.load()
-                        self.spinner.removeConnectingView()
-                    }
-                }
-            } else {
-                self?.showError(error: "Error getting blockchain info, please chack your connection to your node.")
-                DispatchQueue.main.async {
-                    self?.navigationController?.popToRootViewController(animated: true)
-                }
-            }
-        }
-    }
-    
     private func addTapGesture() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
         tapGesture.numberOfTapsRequired = 1
@@ -206,7 +183,6 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
         promptToDeleteWallet()
     }
     
-    
     private func load() {
         CoreDataService.retrieveEntity(entityName: .wallets) { [weak self] wallets in
             guard let self = self, let wallets = wallets, wallets.count > 0 else { return }
@@ -215,6 +191,13 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
                 let walletStruct = Wallet(dictionary: w)
                 if walletStruct.id == self.walletId {
                     self.wallet = walletStruct
+                    
+                    if self.wallet.receiveDescriptor.contains("xpub") || self.wallet.receiveDescriptor.contains("xprv") {
+                        self.coinType = "0"
+                    } else {
+                        self.coinType = "1"
+                    }
+                    
                     self.json = AccountMap.create(wallet: self.wallet) ?? ""
                     
                     let generator = QRGenerator()
