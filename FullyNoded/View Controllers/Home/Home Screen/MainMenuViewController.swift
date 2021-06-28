@@ -417,7 +417,7 @@ class MainMenuViewController: UIViewController {
         
         case .memPool:
             if mempoolInfo != nil {
-                label.text = "\(mempoolInfo.mempoolCount.withCommas()) mempool"
+                label.text = "\(mempoolInfo.mempoolCount.withCommas()) transactions"
                 icon.image = UIImage(systemName: "waveform.path.ecg")
                 background.backgroundColor = .systemGreen
                 chevron.alpha = 0
@@ -886,17 +886,7 @@ extension MainMenuViewController: OnionManagerDelegate {
             self?.torProgressLabel.isHidden = true
             self?.progressView.isHidden = true
             self?.blurView.isHidden = true
-            //LndRpc.getInfo()
         }
-                
-//        if KeyChain.getData("hasPaid") == nil {
-//            guard let data = KeyChain.getData("paymentAddress"), let paid = data.utf8 else {
-//                goToPaywall()
-//                return
-//            }
-//
-//            checkIfPaymentReceived(paid)
-//        }
     }
     
     func torConnDifficulties() {
@@ -907,7 +897,6 @@ extension MainMenuViewController: OnionManagerDelegate {
             self?.blurView.isHidden = true
         }
     }
-    
 }
 
 extension MainMenuViewController: UITableViewDelegate {

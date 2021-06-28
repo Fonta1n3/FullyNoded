@@ -15,61 +15,99 @@ class QuickConnect {
     /// btcrpc://rpcuser:rpcpassword@uhqefiu873h827h3ufnjecnkajbciw7bui3hbuf233b.onion:18332/?
     /// btcrpc://rpcuser:rpcpassword@uhqefiu873h827h3ufnjecnkajbciw7bui3hbuf233b.onion:18443
     /// clightning-rpc://rpcuser:rpcpassword@kjhfefe.onion:1312?label=BTCPay%20C-Lightning
+    /// lndconnect://hbdfhjwbfwbfhwbj.onion:8080?cert=xxx&macaroon=xxx
     
     static var uncleJim = false
     
     class func addNode(uncleJim: Bool, url: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
+        var newNode = [String:Any]()
+        newNode["id"] = UUID()
         var label = "Node"
         
         guard var host = URLComponents(string: url)?.host,
-            let port = URLComponents(string: url)?.port,
-            let rpcPassword = URLComponents(string: url)?.password,
-            let rpcUser = URLComponents(string: url)?.user else {
+            let port = URLComponents(string: url)?.port else {
                 completion((false, "invalid url"))
                 return
         }
         
         host += ":" + String(port)
         
-        if let labelCheck = URL(string: url)?.value(for: "label") {
-            label = labelCheck
-        }
-        
-        guard host != "", rpcUser != "", rpcPassword != "" else {
-            completion((false, "either the hostname, rpcuser or rpcpassword is empty"))
-            return
-        }
-                
         // Encrypt credentials
-        guard let torNodeHost = Crypto.encrypt(host.dataUsingUTF8StringEncoding),
-            let torNodeRPCPass = Crypto.encrypt(rpcPassword.dataUsingUTF8StringEncoding),
-            let torNodeRPCUser = Crypto.encrypt(rpcUser.dataUsingUTF8StringEncoding) else {
+        guard let torNodeHost = Crypto.encrypt(host.dataUsingUTF8StringEncoding) else {
                 completion((false, "error encrypting your credentials"))
                 return
         }
         
-        // Set node data for storage
-        var newNode = [String:Any]()
-        newNode["id"] = UUID()
-        newNode["onionAddress"] = torNodeHost
-        newNode["label"] = label
-        newNode["rpcuser"] = torNodeRPCUser
-        newNode["rpcpassword"] = torNodeRPCPass
-        newNode["uncleJim"] = uncleJim
-        
-        if !url.hasPrefix("clightning-rpc") {
-            newNode["isActive"] = true
-            newNode["isLightning"] = false
-        } else {
+        if url.hasPrefix("lndconnect://") {
+            
+            guard let urlSafeMacaroon = URL(string: url)?.value(for: "macaroon"),
+                  let certCheck = URL(string: url)?.value(for: "cert"),
+                  let macaroonData = try? Data.decodeUrlSafeBase64(urlSafeMacaroon),
+                  let certData = try? Data.decodeUrlSafeBase64(certCheck) else {
+                completion((false, "Credentials missing."))
+                return
+            }
+            
+            // Encrypt credentials
+            guard let encryptedMacaroonHex = Crypto.encrypt(macaroonData.hexString.dataUsingUTF8StringEncoding),
+                  let encryptedCert = Crypto.encrypt(certData) else {
+                    completion((false, "error encrypting your credentials"))
+                    return
+            }
+            
+            newNode["onionAddress"] = torNodeHost
+            newNode["label"] = "LND"
+            newNode["uncleJim"] = false
             newNode["isLightning"] = true
             newNode["isActive"] = false
+            newNode["macaroon"] = encryptedMacaroonHex
+            newNode["cert"] = encryptedCert
+            
+            processNode(newNode, url, completion: completion)
+            
+        } else {
+            guard let rpcPassword = URLComponents(string: url)?.password,
+                let rpcUser = URLComponents(string: url)?.user else {
+                    completion((false, "invalid url"))
+                    return
+            }
+                        
+            if let labelCheck = URL(string: url)?.value(for: "label") {
+                label = labelCheck
+            }
+            
+            guard host != "", rpcUser != "", rpcPassword != "" else {
+                completion((false, "either the hostname, rpcuser or rpcpassword is empty"))
+                return
+            }
+                    
+            // Encrypt credentials
+            guard let torNodeRPCPass = Crypto.encrypt(rpcPassword.dataUsingUTF8StringEncoding),
+                let torNodeRPCUser = Crypto.encrypt(rpcUser.dataUsingUTF8StringEncoding) else {
+                    completion((false, "error encrypting your credentials"))
+                    return
+            }
+            
+            newNode["onionAddress"] = torNodeHost
+            newNode["label"] = label
+            newNode["rpcuser"] = torNodeRPCUser
+            newNode["rpcpassword"] = torNodeRPCPass
+            newNode["uncleJim"] = uncleJim
+            
+            if !url.hasPrefix("clightning-rpc") {
+                newNode["isActive"] = true
+                newNode["isLightning"] = false
+            } else {
+                newNode["isLightning"] = true
+                newNode["isActive"] = false
+            }
+            
+            processNode(newNode, url, completion: completion)
         }
-        
-        processNode(newNode, url, completion: completion)
     }
     
     private class func processNode(_ newNode: [String:Any], _ url: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-        if url.hasPrefix("clightning-rpc") {
+        if url.hasPrefix("clightning-rpc") || url.hasPrefix("lndconnect") {
             saveNode(newNode, url, completion: completion)
             
         } else {
@@ -94,7 +132,7 @@ class QuickConnect {
     private class func saveNode(_ node: [String:Any], _ url: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
         CoreDataService.saveEntity(dict: node, entityName: .newNodes) { success in
             if success {
-                if !url.hasPrefix("clightning-rpc") && !uncleJim {
+                if !url.hasPrefix("clightning-rpc") && !url.hasPrefix("lndconnect") && !uncleJim {
                     UserDefaults.standard.removeObject(forKey: "walletName")
                 }
                 

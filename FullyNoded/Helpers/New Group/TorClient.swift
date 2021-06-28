@@ -16,7 +16,7 @@ protocol OnionManagerDelegate: class {
     func torConnDifficulties()
 }
 
-class TorClient {
+class TorClient: NSObject, URLSessionDelegate {
     
     enum TorState {
         case none
@@ -43,6 +43,7 @@ class TorClient {
     
     // Start the tor client.
     func start(delegate: OnionManagerDelegate?) {
+        //session.delegate = self
         weak var weakDelegate = delegate
         state = .started
         
@@ -50,7 +51,7 @@ class TorClient {
                                                           kCFStreamPropertySOCKSProxyHost: "localhost",
                                                           kCFStreamPropertySOCKSProxyPort: 19050]
         
-        session = URLSession(configuration: sessionConfiguration)
+        session = URLSession(configuration: sessionConfiguration, delegate: self, delegateQueue: .main)
         
         #if targetEnvironment(macCatalyst)
             // Code specific to Mac.
@@ -158,6 +159,14 @@ class TorClient {
                         self.state = .none
                     }
                 }
+            }
+        }
+    }
+    
+    func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust {
+            if let trust = challenge.protectionSpace.serverTrust {
+                completionHandler(.useCredential, URLCredential(trust: trust))
             }
         }
     }

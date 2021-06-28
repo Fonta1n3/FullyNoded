@@ -12,6 +12,7 @@ class LightningRPC {
 
     static let torClient = TorClient.sharedInstance
     static var attempts = 0
+    
     class func command(id: UUID, method: LIGHTNING_CLI, param: Any, completion: @escaping ((id: UUID, response: Any?, errorDesc: String?)) -> Void) {
         
         var rpcusername = ""

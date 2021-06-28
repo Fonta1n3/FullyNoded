@@ -36,16 +36,21 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
         showInactive = false
         showActive = false
         showPending = false
+        
         if newlyAdded {
             newlyAdded = false
             showAlert(vc: self, title: "⚡️ Lightning Node added ⚡️", message: "We are now fecthing info from your node, to view this screen from now on just tap the ⚡️ on the home screen to toggle between Lightning and onchcain.")
         } else {
-            checkForLightningNodes { [weak self] (exists) in
-                if exists {
-                    self?.getInfo()
-                } else {
-                    self?.promptToAddNode()
+            checkForLightningNodes { [weak self] node in
+                guard let self = self else { return }
+                
+                guard let node = node else {
+                    self.promptToAddNode()
+                    
+                    return
                 }
+                
+                self.getInfo(node: node)
             }
         }
     }
@@ -58,42 +63,51 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
     
     private func promptToAddNode() {
         DispatchQueue.main.async { [weak self] in
-            if self != nil {
-                var alertStyle = UIAlertController.Style.actionSheet
-                if (UIDevice.current.userInterfaceIdiom == .pad) {
-                  alertStyle = UIAlertController.Style.alert
-                }
-                let alert = UIAlertController(title: "No lightning nodes added yet", message: "You need to add one in order to use lightning features", preferredStyle: alertStyle)
-                alert.addAction(UIAlertAction(title: "add a node", style: .default, handler: { [weak self] action in
-                    self?.performSegue(withIdentifier: "segueToLightningCreds", sender: self)
-                }))
-                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-                alert.popoverPresentationController?.sourceView = self?.view
-                self?.present(alert, animated: true, completion: nil)
+            guard let self = self else { return }
+            
+            var alertStyle = UIAlertController.Style.actionSheet
+            
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+                alertStyle = UIAlertController.Style.alert
             }
+            
+            let alert = UIAlertController(title: "No lightning nodes added yet.", message: "You can add the node credentials manually or scan a QR code.", preferredStyle: alertStyle)
+            
+            alert.addAction(UIAlertAction(title: "Add manually", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.performSegue(withIdentifier: "segueToLightningCreds", sender: self)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Scan QR", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.performSegue(withIdentifier: "segueToScanLightningNode", sender: self)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            
+            self.present(alert, animated: true, completion: nil)
         }
     }
     
-    private func checkForLightningNodes(completion: @escaping ((Bool)) -> Void) {
-        CoreDataService.retrieveEntity(entityName: .newNodes) { (nodes) in
-            if nodes != nil {
-                if nodes!.count > 0 {
-                    var islightning = false
-                    for (i, node) in nodes!.enumerated() {
-                        let ns = NodeStruct(dictionary: node)
-                        if ns.isLightning {
-                            islightning = true
-                            self.activeNode = node
-                        }
-                        if i + 1 == nodes!.count {
-                            completion(islightning)
-                        }
-                    }
-                } else {
-                    completion(false)
+    private func checkForLightningNodes(completion: @escaping ((NodeStruct?)) -> Void) {
+        CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
+            guard let nodes = nodes, nodes.count > 0 else {
+                completion(nil)
+                return
+            }
+            
+            for (i, node) in nodes.enumerated() {
+                let ns = NodeStruct(dictionary: node)
+                
+                if ns.isLightning {
+                    self.activeNode = node
+                    completion(ns)
+                } else if i + 1 == nodes.count {
+                    completion(nil)
                 }
-            } else {
-                completion(false)
             }
         }
     }
@@ -116,52 +130,106 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
         }
     }
     
-    private func getInfo() {
+    private func getInfo(node: NodeStruct) {
         if initialLoad {
             spinner.addConnectingView(vc: self, description: "loading...")
             initialLoad = false
         }
+        
         tableArray.removeAll()
+        
+        if node.macaroon == nil {
+            clightningGetInfo()
+        } else {
+            lndGetInfo()
+        }
+    }
+    
+    private func clightningGetInfo() {
         let commandId = UUID()
+        
         LightningRPC.command(id: commandId, method: .getinfo, param: "") { [weak self] (uuid, response, errorDesc) in
-            if commandId == uuid {
-                if let dict = response as? NSDictionary {
-                    let alias = dict["alias"] as? String ?? ""
-                    let num_peers = dict["num_peers"] as? Int ?? 0
-                    let num_pending_channels = dict["num_pending_channels"] as? Int ?? 0
-                    let num_active_channels = dict["num_active_channels"] as? Int ?? 0
-                    let num_inactive_channels = dict["num_inactive_channels"] as? Int ?? 0
-                    let addresses = dict["address"] as? NSArray ?? []
-                    var ip = ""
-                    var port = 9735
-                    if addresses.count > 0 {
-                        ip = (addresses[0] as! NSDictionary)["address"] as? String ?? ""
-                        port = (addresses[0] as! NSDictionary)["port"] as? Int ?? 9735
-                    }
-                    let id = dict["id"] as? String ?? ""
-                    let feesCollected = dict["fees_collected_msat"] as? String ?? "0msat"
-                    let version = dict["version"] as? String ?? ""
-                    if self != nil {
-                        self?.color = dict["color"] as? String ?? "03c304"
-                        self?.myId = id
-                        self?.tableArray.append(alias)
-                        self?.tableArray.append("\(num_peers)")
-                        self?.tableArray.append("\(num_active_channels)")
-                        self?.tableArray.append("\(num_inactive_channels)")
-                        self?.tableArray.append("\(num_pending_channels)")
-                        self?.tableArray.append(feesCollected)
-                        self?.tableArray.append(version)
-                        self!.url = "\(id)@\(ip):\(port)"
-                    }
-                    DispatchQueue.main.async { [weak self] in
-                        self?.nodeTable.reloadData()
-                    }
-                    self?.spinner.removeConnectingView()
-                    
-                } else {
-                    self?.spinner.removeConnectingView()
-                    showAlert(vc: self, title: "Error", message: errorDesc ?? "error getting info from lightning node")
-                }
+            guard let self = self else { return }
+            
+            guard commandId == uuid, let dict = response as? NSDictionary else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Error", message: errorDesc ?? "error getting info from lightning node")
+                return
+            }
+            
+            let alias = dict["alias"] as? String ?? ""
+            let num_peers = dict["num_peers"] as? Int ?? 0
+            let num_pending_channels = dict["num_pending_channels"] as? Int ?? 0
+            let num_active_channels = dict["num_active_channels"] as? Int ?? 0
+            let num_inactive_channels = dict["num_inactive_channels"] as? Int ?? 0
+            let addresses = dict["address"] as? NSArray ?? []
+            var ip = ""
+            var port = 9735
+            
+            if addresses.count > 0 {
+                ip = (addresses[0] as! NSDictionary)["address"] as? String ?? ""
+                port = (addresses[0] as! NSDictionary)["port"] as? Int ?? 9735
+            }
+            
+            let id = dict["id"] as? String ?? ""
+            let feesCollected = dict["fees_collected_msat"] as? String ?? "0msat"
+            let version = dict["version"] as? String ?? ""
+            
+            self.color = dict["color"] as? String ?? "03c304"
+            self.myId = id
+            self.tableArray.append(alias)
+            self.tableArray.append("\(num_peers)")
+            self.tableArray.append("\(num_active_channels)")
+            self.tableArray.append("\(num_inactive_channels)")
+            self.tableArray.append("\(num_pending_channels)")
+            self.tableArray.append(feesCollected)
+            self.tableArray.append(version)
+            self.url = "\(id)@\(ip):\(port)"
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.nodeTable.reloadData()
+                self.spinner.removeConnectingView()
+            }
+        }
+    }
+    
+    private func lndGetInfo() {
+        let lnd = LndRpc.sharedInstance
+        
+        lnd.makeLndCommand(command: .getinfo) { (response, error) in
+            guard let dict = response else {
+                showAlert(vc: self, title: "Error", message: error ?? "unknown")
+                return
+            }
+            
+            let alias = dict["alias"] as? String ?? ""
+            let num_peers = dict["num_peers"] as? Int ?? 0
+            let num_pending_channels = dict["num_pending_channels"] as? Int ?? 0
+            let num_active_channels = dict["num_active_channels"] as? Int ?? 0
+            let num_inactive_channels = dict["num_inactive_channels"] as? Int ?? 0
+            let id = dict["id"] as? String ?? ""
+            let feesCollected = dict["fees_collected_msat"] as? String ?? "unknown"
+            let version = dict["version"] as? String ?? ""
+            let uris = dict["uris"] as? NSArray ?? []
+            
+            self.color = dict["color"] as? String ?? "03c304"
+            self.myId = id
+            self.tableArray.append(alias)
+            self.tableArray.append("\(num_peers)")
+            self.tableArray.append("\(num_active_channels)")
+            self.tableArray.append("\(num_inactive_channels)")
+            self.tableArray.append("\(num_pending_channels)")
+            self.tableArray.append(feesCollected)
+            self.tableArray.append(version)
+            self.url = "\(uris[0])"
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.nodeTable.reloadData()
+                self.spinner.removeConnectingView()
             }
         }
     }
@@ -264,20 +332,24 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        switch indexPath.section {
-        case 1:
-            goToPeers()
-        case 2:
-            showActive = true
-            goToChannels()
-        case 3:
-            showInactive = true
-            goToChannels()
-        case 4:
-            showPending = true
-            goToChannels()
-        default:
-            break
+        if activeNode?["macaroon"] == nil {
+            switch indexPath.section {
+            case 1:
+                goToPeers()
+            case 2:
+                showActive = true
+                goToChannels()
+            case 3:
+                showInactive = true
+                goToChannels()
+            case 4:
+                showPending = true
+                goToChannels()
+            default:
+                break
+            }
+        } else {
+            showAlert(vc: self, title: "Coming soon.", message: "LND functionality is currently limited, future releases will expand on this.")
         }
     }
     
@@ -306,6 +378,14 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
                 vc.isLightning = true
                 vc.selectedNode = activeNode
             }
+            
+        case "segueToScanLightningNode":
+            guard let vc = segue.destination as? NodeDetailViewController else { fallthrough }
+            
+            vc.isLightning = true
+            vc.selectedNode = activeNode
+            vc.scanNow = true
+            
         default:
             break
         }

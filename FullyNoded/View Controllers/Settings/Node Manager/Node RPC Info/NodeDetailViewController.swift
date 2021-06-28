@@ -21,7 +21,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     var hostname: String?
     let imagePicker = UIImagePickerController()
     var alertStyle = UIAlertController.Style.actionSheet
+    var scanNow = false
     
+    @IBOutlet weak var passwordHeader: UILabel!
+    @IBOutlet weak var usernameHeader: UILabel!
     @IBOutlet weak var scanQROutlet: UIBarButtonItem!
     @IBOutlet weak var header: UILabel!
     @IBOutlet var nodeLabel: UITextField!
@@ -64,6 +67,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     
     override func viewDidAppear(_ animated: Bool) {
         loadValues()
+        
+        if scanNow {
+            segueToScanNow()
+        }
     }
     
     @IBAction func showGuideAction(_ sender: Any) {
@@ -104,6 +111,10 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     
     
     @IBAction func scanQuickConnect(_ sender: Any) {
+        segueToScanNow()
+    }
+    
+    private func segueToScanNow() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -117,7 +128,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             let id = nodestr.id
             CoreDataService.deleteEntity(id: id!, entityName: .newNodes) { [unowned vc = self] (success) in
                 if success {
-                    showAlert(vc: vc, title: "Deleted", message: "Your lightning node has been deleted, you can always add another by tapping the bolt on node manager.")
                     vc.selectedNode = nil
                     vc.createNew = true
                     DispatchQueue.main.async { [unowned vc = self] in
@@ -125,7 +135,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                         vc.onionAddressField.text = ""
                         vc.rpcPassword.text = ""
                         vc.rpcUserField.text = ""
-                        vc.loadValues()
+                        vc.navigationController?.popToRootViewController(animated: true)
                     }
                 }
             }
@@ -280,6 +290,19 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         view.addGestureRecognizer(tapGesture)
     }
     
+    private func hideValues(node: NodeStruct) {
+        if node.macaroon != nil {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.rpcUserField.alpha = 0
+                self.rpcPassword.alpha = 0
+                self.passwordHeader.alpha = 0
+                self.usernameHeader.alpha = 0
+            }
+        }
+    }
+    
     func loadValues() {
         
         func decryptedValue(_ encryptedValue: Data) -> String {
@@ -290,6 +313,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         
         if selectedNode != nil {
             let node = NodeStruct(dictionary: selectedNode!)
+            
+            hideValues(node: node)
             
             if node.id != nil {
                 
@@ -379,7 +404,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             
             onionAddressField.attributedPlaceholder = NSAttributedString(string: "127.0.0.1:8332",
                                                                          attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
-            
+                        
             #if targetEnvironment(macCatalyst)
                 onionAddressField.text = placeHolder
             #endif

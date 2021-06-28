@@ -18,9 +18,10 @@ public struct NodeStruct: CustomStringConvertible {
     let rpcuser:Data?
     let isLightning:Bool
     let uncleJim:Bool
+    let macaroon:Data?
+    let cert:Data?
     
     init(dictionary: [String: Any]) {
-        
         id = dictionary["id"] as? UUID
         label = dictionary["label"] as? String ?? ""
         isActive = dictionary["isActive"] as? Bool ?? false
@@ -29,6 +30,8 @@ public struct NodeStruct: CustomStringConvertible {
         rpcuser = dictionary["rpcuser"] as? Data
         isLightning = dictionary["isLightning"] as? Bool ?? false
         uncleJim = dictionary["uncleJim"] as? Bool ?? false
+        macaroon = dictionary["macaroon"] as? Data
+        cert = dictionary["cert"] as? Data
     }
     
     public var description: String {

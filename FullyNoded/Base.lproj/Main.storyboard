@@ -5785,37 +5785,37 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                         <fontDescription key="fontDescription" name="HiraginoSans-W3" family="Hiragino Sans" pointSize="14"/>
                                         <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
                                     </textField>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="RPC username:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Shd-1m-99a">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Address: (xxx.onion:8332 or 127.0.0.1:8332) " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1oS-WI-SUN">
                                         <rect key="frame" x="0.0" y="65" width="343" height="17"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <textField opaque="NO" tag="6" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="uRk-PX-ulA">
+                                    <textField opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="ushshdududh8373bd.onion:8332" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="o4M-Vw-QWb">
                                         <rect key="frame" x="0.0" y="89" width="343" height="34"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <fontDescription key="fontDescription" name="HiraginoSans-W3" family="Hiragino Sans" pointSize="14"/>
                                         <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
                                     </textField>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="RPC password:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ojR-cB-7rc">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="RPC username:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Shd-1m-99a">
                                         <rect key="frame" x="0.0" y="130" width="343" height="17"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <textField opaque="NO" tag="6" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="4YC-xq-wqu">
+                                    <textField opaque="NO" tag="6" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="uRk-PX-ulA">
                                         <rect key="frame" x="0.0" y="154" width="343" height="34"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <fontDescription key="fontDescription" name="HiraginoSans-W3" family="Hiragino Sans" pointSize="14"/>
                                         <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardAppearance="alert" returnKeyType="done"/>
                                     </textField>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Address: (xxx.onion:8332 or 127.0.0.1:8332) " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1oS-WI-SUN">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="RPC password:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ojR-cB-7rc">
                                         <rect key="frame" x="0.0" y="195" width="343" height="17"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <textField opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="ushshdududh8373bd.onion:8332" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="o4M-Vw-QWb">
+                                    <textField opaque="NO" tag="6" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="4YC-xq-wqu">
                                         <rect key="frame" x="0.0" y="219" width="343" height="34"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <fontDescription key="fontDescription" name="HiraginoSans-W3" family="Hiragino Sans" pointSize="14"/>
@@ -5837,37 +5837,39 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                     </button>
                                 </subviews>
                             </stackView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eoi-B9-9wY">
-                                <rect key="frame" x="166" y="617" width="43" height="30"/>
-                                <state key="normal" title="delete">
-                                    <color key="titleColor" systemColor="systemRedColor"/>
-                                </state>
-                                <connections>
-                                    <action selector="deleteLightningNode:" destination="B99-yZ-naR" eventType="touchUpInside" id="VqJ-IU-TRy"/>
-                                </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4Lc-CO-CxA">
-                                <rect key="frame" x="99" y="534" width="177" height="30"/>
-                                <state key="normal" title="how to connect my node?">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4Lc-CO-CxA">
+                                <rect key="frame" x="67" y="422" width="241" height="22"/>
+                                <color key="tintColor" systemColor="systemTealColor"/>
+                                <state key="normal" title="   how to connect my node?" image="info.circle" catalog="system">
                                     <color key="titleColor" systemColor="systemTealColor"/>
                                 </state>
                                 <connections>
                                     <action selector="showGuideAction:" destination="B99-yZ-naR" eventType="touchUpInside" id="gLf-qJ-WNO"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eoi-B9-9wY">
+                                <rect key="frame" x="67" y="468" width="162.5" height="22"/>
+                                <color key="tintColor" systemColor="systemRedColor"/>
+                                <state key="normal" title="   delete this node" image="trash" catalog="system">
+                                    <color key="titleColor" systemColor="systemRedColor"/>
+                                </state>
+                                <connections>
+                                    <action selector="deleteLightningNode:" destination="B99-yZ-naR" eventType="touchUpInside" id="VqJ-IU-TRy"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="uUf-aQ-0bN"/>
                         <color key="backgroundColor" red="0.050706155598163605" green="0.058625258505344391" blue="0.071102283895015717" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="4Lc-CO-CxA" firstAttribute="centerX" secondItem="B9e-yr-KMo" secondAttribute="centerX" id="7YO-d1-B4Z"/>
                             <constraint firstItem="qBh-RP-hWz" firstAttribute="top" secondItem="DTI-AZ-owi" secondAttribute="bottom" constant="7.5" id="ACa-qM-sgb"/>
                             <constraint firstItem="uUf-aQ-0bN" firstAttribute="trailing" secondItem="qBh-RP-hWz" secondAttribute="trailing" constant="16" id="HV2-84-YUw"/>
+                            <constraint firstItem="eoi-B9-9wY" firstAttribute="top" secondItem="4Lc-CO-CxA" secondAttribute="bottom" constant="24" id="QhC-OV-ji5"/>
                             <constraint firstItem="DTI-AZ-owi" firstAttribute="leading" secondItem="uUf-aQ-0bN" secondAttribute="leading" constant="16" id="RC6-xc-GeH"/>
-                            <constraint firstItem="eoi-B9-9wY" firstAttribute="top" secondItem="4Lc-CO-CxA" secondAttribute="bottom" constant="53" id="Tap-gt-aVa"/>
-                            <constraint firstItem="eoi-B9-9wY" firstAttribute="centerX" secondItem="B9e-yr-KMo" secondAttribute="centerX" id="edZ-7P-yIT"/>
+                            <constraint firstItem="eoi-B9-9wY" firstAttribute="leading" secondItem="4Lc-CO-CxA" secondAttribute="leading" id="ZfB-Y5-10k"/>
                             <constraint firstItem="qBh-RP-hWz" firstAttribute="leading" secondItem="uUf-aQ-0bN" secondAttribute="leading" constant="16" id="gOe-Le-cG0"/>
-                            <constraint firstItem="uUf-aQ-0bN" firstAttribute="bottom" secondItem="eoi-B9-9wY" secondAttribute="bottom" constant="20" id="jc2-gh-9Hl"/>
                             <constraint firstItem="DTI-AZ-owi" firstAttribute="top" secondItem="uUf-aQ-0bN" secondAttribute="top" constant="11" id="kzr-7F-vnw"/>
+                            <constraint firstItem="4Lc-CO-CxA" firstAttribute="top" secondItem="qBh-RP-hWz" secondAttribute="bottom" constant="12" id="s6S-H3-wnk"/>
+                            <constraint firstItem="4Lc-CO-CxA" firstAttribute="centerX" secondItem="B9e-yr-KMo" secondAttribute="centerX" id="y0W-9T-Qx7"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="J9p-j8-H8t">
@@ -5898,10 +5900,12 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <outlet property="header" destination="DTI-AZ-owi" id="puY-tw-wga"/>
                         <outlet property="nodeLabel" destination="LM8-fJ-o94" id="kkD-Ha-NwZ"/>
                         <outlet property="onionAddressField" destination="o4M-Vw-QWb" id="hON-oG-n3p"/>
+                        <outlet property="passwordHeader" destination="ojR-cB-7rc" id="0oQ-TO-zvv"/>
                         <outlet property="rpcPassword" destination="4YC-xq-wqu" id="KIS-dN-d6I"/>
                         <outlet property="rpcUserField" destination="uRk-PX-ulA" id="pCP-J4-Y3p"/>
                         <outlet property="saveButton" destination="p2J-sn-A5I" id="ZWz-y2-s1b"/>
                         <outlet property="scanQROutlet" destination="awp-qu-L3a" id="pQ4-ao-MZ5"/>
+                        <outlet property="usernameHeader" destination="Shd-1m-99a" id="WmB-Kw-SMe"/>
                         <segue destination="GlR-4A-eAx" kind="show" identifier="segueToExportNode" id="8MS-xS-DMP"/>
                         <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScanNodeCreds" id="07E-4w-Zh7"/>
                     </connections>
@@ -6043,6 +6047,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <segue destination="aoj-WH-UVD" kind="show" identifier="goToSeeLightningPeers" id="2y9-PV-6Nh"/>
                         <segue destination="a32-zP-STg" kind="show" identifier="segueToLightningChannels" id="YuM-96-FnM"/>
                         <segue destination="B99-yZ-naR" kind="show" identifier="segueToLightningCreds" id="2uq-d6-8Xa"/>
+                        <segue destination="B99-yZ-naR" kind="show" identifier="segueToScanLightningNode" id="fMA-4V-4zE"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="oL2-EX-61b" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -7379,7 +7384,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
     </scenes>
     <inferredMetricsTieBreakers>
         <segue reference="ckQ-WD-ole"/>
-        <segue reference="dhu-ZV-762"/>
+        <segue reference="fMA-4V-4zE"/>
         <segue reference="gF6-29-ZCL"/>
         <segue reference="w2g-bl-j8v"/>
         <segue reference="kq8-dj-bJ2"/>
@@ -7435,6 +7440,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <image name="square.and.arrow.up" catalog="system" width="115" height="128"/>
         <image name="square.stack.3d.down.right" catalog="system" width="124" height="128"/>
         <image name="timer" catalog="system" width="128" height="121"/>
+        <image name="trash" catalog="system" width="121" height="128"/>
         <image name="trash.circle" catalog="system" width="128" height="121"/>
         <image name="tray.and.arrow.up" catalog="system" width="128" height="114"/>
         <image name="whiteCheck.png" width="2048" height="2048"/>
