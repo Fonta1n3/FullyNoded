@@ -30,7 +30,7 @@ class NodeLogic {
         Reducer.makeCommand(command: .listunspent, param: "0") { (response, errorMessage) in
             if let utxos = response as? NSArray {
                 parseUtxos(utxos: utxos)
-                getOffChainBalance(completion: completion)
+                getLightningBalances(completion: completion)
             } else if errorMessage != nil {
                 if errorMessage!.contains("Method not found") {
                     walletDisabled = true
@@ -42,7 +42,54 @@ class NodeLogic {
         }
     }
     
-    class func getOffChainBalance(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+    class func getLightningBalances(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
+            guard let nodes = nodes else { return }
+            
+            for node in nodes {
+                let nodeStr = NodeStruct(dictionary: node)
+                
+                if nodeStr.isLightning {
+                    if nodeStr.macaroon == nil {
+                        getOffChainBalanceCL(completion: completion)
+                        break
+                    } else {
+                        getOffChainBalanceLND(completion: completion)
+                        break
+                    }
+                }
+            }
+        }
+    }
+    
+    class func getOffChainBalanceLND(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
+        let lnd = LndRpc.sharedInstance
+        lnd.makeLndCommand(command: .channelbalance) { (response, error) in
+            guard let dict = response,
+                  let localBalance = dict["local_balance"] as? NSDictionary else {
+                dictToReturn["offchainBalance"] = "0.00000000"
+                completion((dictToReturn, error ?? ""))
+                return
+            }
+            
+            let localBalanceSats = localBalance["sat"] as! String
+            
+            lnd.makeLndCommand(command: .walletbalance) { (response, error) in
+                guard let dict = response,
+                      let walletBalance = dict["total_balance"] as? String else {
+                    dictToReturn["offchainBalance"] = localBalanceSats
+                    completion((dictToReturn, error ?? ""))
+                    return
+                }
+                
+                let total = Int(localBalanceSats)! + Int(walletBalance)!
+                dictToReturn["offchainBalance"] = "\(total)"
+                completion((dictToReturn, error ?? ""))
+            }
+        }
+    }
+    
+    class func getOffChainBalanceCL(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         let id = UUID()
         LightningRPC.command(id: id, method: .listfunds, param: "") { (uuid, responseDict, errorDesc) in
             guard uuid == id, let dict = responseDict as? NSDictionary, let outputs = dict["outputs"] as? NSArray, outputs.count > 0 else {

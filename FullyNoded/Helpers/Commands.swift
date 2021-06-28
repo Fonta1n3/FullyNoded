@@ -107,4 +107,5 @@ public enum LIGHTNING_CLI: String {
 public enum LND_REST: String {
     case walletbalance = "v1/balance/blockchain"
     case getinfo = "v1/getinfo"
+    case channelbalance = "v1/balance/channels"
 }
