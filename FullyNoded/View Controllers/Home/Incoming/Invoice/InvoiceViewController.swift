@@ -143,6 +143,64 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     @IBAction func generateLightningAction(_ sender: Any) {
         spinner.addConnectingView(vc: self, description: "creating lightning invoice...")
         
+        isLndNode { [weak self] isLnd in
+            guard let self = self else { return }
+            
+            guard isLnd else {
+                self.createCLInvoice()
+                return
+            }
+            
+            self.createLNDInvoice()
+        }
+        
+    }
+    
+    private func createLNDInvoice() {
+        var amount = ""
+
+        if amountField.text != "" {
+            if isBtc {
+                if let dbl = Double(amountField.text!) {
+                    let int = Int(dbl * 100000000.0)
+                    amount = "\(int)"
+                }
+            } else if isSats {
+                if let int = Double(amountField.text!) {
+                    amount = "\(Int(int))"
+                }
+            }
+        }
+        
+        var memoValue = labelField.text ?? "Fully Noded"
+        
+        if messageField.text != "" {
+            memoValue += "- \(messageField.text!)"
+        }
+        
+        let param:[String:Any] = ["memo":"\(memoValue)",
+                                  "value":amount]
+        
+        LndRpc.sharedInstance.makeLndCommand(command: .addinvoice, param: param, urlExt: nil) { (response, error) in
+            guard let dict = response, let bolt11 = dict["payment_request"] as? String else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Error", message: error ?? "we had an issue getting your lightning invoice")
+                return
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.showLightningInvoice(bolt11)
+            }
+        }
+    }
+    
+//    private func decode(_ invoice: String) {
+//        LndRpc.sharedInstance.makeLndCommand(command: .payreq, param: [:], urlExt: invoice) { (_, _) in }
+//    }
+    
+    private func createCLInvoice() {
         var millisats = "\"any\""
         var label = "Fully-Noded-\(randomString(length: 5))"
         var description = "\(Date())"
@@ -342,17 +400,16 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     func updateQRImage() {
         var newImage = UIImage()
         var amount = self.amountField.text ?? ""
-        
+                
         if isSats {
             if amount != "" {
                 if let int = Int(amount) {
-                    amount = "\(Double(int) * 100000000.0)"
+                    amount = (Double(int) / 100000000.0).avoidNotation
                 }
             }
         }
         
         if !addressString.hasPrefix("lntb") && !addressString.hasPrefix("lightning:") && !addressString.hasPrefix("lnbc") && !addressString.hasPrefix("lnbcrt") {
-            let amount = self.amountField.text ?? ""
             let label = self.labelField.text?.replacingOccurrences(of: " ", with: "%20") ?? ""
             let message = self.messageField.text?.replacingOccurrences(of: " ", with: "%20") ?? ""
             textToShareViaQRCode = "bitcoin:\(self.addressString)?amount=\(amount)&label=\(label)&message=\(message)"
@@ -382,6 +439,10 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         view.endEditing(true)
         return false
+    }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        updateQRImage()
     }
     
     func addDoneButtonOnKeyboard() {

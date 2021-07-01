@@ -15,7 +15,7 @@ class LndRpc {
     
     private init() {}
     
-    func makeLndCommand(command: LND_REST, completion: @escaping ((response: [String:Any]?, error: String?)) -> Void) {
+    func makeLndCommand(command: LND_REST, param: [String:Any], urlExt: String?, completion: @escaping ((response: [String:Any]?, error: String?)) -> Void) {
         #if DEBUG
         print("makeLndCommand")
         #endif
@@ -53,17 +53,42 @@ class LndRpc {
             let onionAddress = decryptedValue(encAddress)
             let macaroonHex = decryptedValue(encryptedMacaroon)
             
-            guard let url = URL(string: "https://\(onionAddress)/\(command.rawValue)") else {
+            var urlString = "https://\(onionAddress)/\(command.rawValue)"
+            
+            if command == .payreq {
+                urlString += "/\(param)"
+            }
+            
+            guard let url = URL(string: urlString) else {
                 completion((nil, "error converting your url"))
                 return
             }
             
+            #if DEBUG
+                print("url: \(url)")
+            #endif
+            
             var request = URLRequest(url: url)
             request.addValue(macaroonHex, forHTTPHeaderField: "Grpc-Metadata-macaroon")
             
-            #if DEBUG
-            print("request: \(request)")
-            #endif
+            
+            switch command {
+            case .addinvoice:
+                guard let jsonData = try? JSONSerialization.data(withJSONObject: param) else { return }
+                
+                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                request.httpBody = jsonData
+                request.setValue("\(jsonData.count)", forHTTPHeaderField: "Content-Length")
+                request.httpMethod = "POST"
+                #if DEBUG
+                print("request: {\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"addinvoice\",\"params\":[\(param)]}")
+                #endif
+            default:
+                request.httpMethod = "GET"
+                #if DEBUG
+                print("request: \(request)")
+                #endif
+            }            
             
             let task = self.torClient.session.dataTask(with: request as URLRequest) { (data, response, error) -> Void in
                 guard let urlContent = data,
@@ -80,6 +105,8 @@ class LndRpc {
                         switch httpResponse.statusCode {
                         case 401:
                             completion((nil, "Looks like your LND credentials are incorrect, please double check them."))
+                        case 404:
+                            completion((nil, "Command not found."))
                         default:
                             completion((nil, "Unable to decode the response from your node, http status code: \(httpResponse.statusCode)"))
                         }

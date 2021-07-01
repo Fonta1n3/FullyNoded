@@ -64,7 +64,7 @@ class NodeLogic {
     
     class func getOffChainBalanceLND(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         let lnd = LndRpc.sharedInstance
-        lnd.makeLndCommand(command: .channelbalance) { (response, error) in
+        lnd.makeLndCommand(command: .channelbalance, param: [:], urlExt: nil) { (response, error) in
             guard let dict = response,
                   let localBalance = dict["local_balance"] as? NSDictionary else {
                 dictToReturn["offchainBalance"] = "0.00000000"
@@ -74,7 +74,7 @@ class NodeLogic {
             
             let localBalanceSats = localBalance["sat"] as! String
             
-            lnd.makeLndCommand(command: .walletbalance) { (response, error) in
+            lnd.makeLndCommand(command: .walletbalance, param: [:], urlExt: nil) { (response, error) in
                 guard let dict = response,
                       let walletBalance = dict["total_balance"] as? String else {
                     dictToReturn["offchainBalance"] = localBalanceSats
