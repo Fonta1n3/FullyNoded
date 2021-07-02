@@ -172,7 +172,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             }
         }
         
-        var memoValue = labelField.text ?? "Fully Noded"
+        var memoValue = labelField.text ?? "Fully Noded LND Invoice"
         
         if messageField.text != "" {
             memoValue += "- \(messageField.text!)"

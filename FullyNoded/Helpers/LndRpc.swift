@@ -55,8 +55,8 @@ class LndRpc {
             
             var urlString = "https://\(onionAddress)/\(command.rawValue)"
             
-            if command == .payreq {
-                urlString += "/\(param)"
+            if let urlExt = urlExt {
+                urlString += "/\(urlExt)"
             }
             
             guard let url = URL(string: urlString) else {
@@ -83,6 +83,10 @@ class LndRpc {
                 #if DEBUG
                 print("request: {\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"addinvoice\",\"params\":[\(param)]}")
                 #endif
+                
+            case .getnewaddress:
+                request.httpMethod = "POST"
+                
             default:
                 request.httpMethod = "GET"
                 #if DEBUG

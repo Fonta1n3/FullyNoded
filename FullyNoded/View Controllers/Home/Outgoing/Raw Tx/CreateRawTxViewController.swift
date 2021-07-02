@@ -345,25 +345,53 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     @IBAction func fundLightning(_ sender: Any) {
         spinner.addConnectingView(vc: self, description: "Fetching lightning funding address...")
         
+        isLndNode(completion: { [weak self] isLnd in
+            guard let self = self else { return }
+            
+            guard isLnd else {
+                self.getCLAddress()
+                
+                return
+            }
+            
+            self.getLndAddress()
+        })
+    }
+    
+    private func getLndAddress() {
+        LndRpc.sharedInstance.makeLndCommand(command: .getnewaddress, param: [:], urlExt: nil) { (response, error) in
+            guard let dict = response, let address = dict["addr"] as? String else {
+                return
+            }
+            
+            self.showFundingAddr(address)
+        }
+    }
+    
+    private func getCLAddress() {
         let commandId = UUID()
         
         LightningRPC.command(id: commandId, method: .newaddr, param: "") { [weak self] (uuid, response, errorDesc) in
             guard commandId == uuid, let self = self else { return }
-            
-            self.spinner.removeConnectingView()
-            
+                        
             guard let dict = response as? NSDictionary, let address = dict["address"] as? String else {
                 showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error fetching lightning wallet address")
                 return
             }
             
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                self.addressInput.text = address
-                
-                showAlert(vc: self, title: "⚡️ Nice! ⚡️", message: "This is an address you can use to fund your lightning node with, its your first step in transacting on the lightning network.")
-            }
+            self.showFundingAddr(address)
+        }
+    }
+    
+    private func showFundingAddr(_ addr: String) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.spinner.removeConnectingView()
+            
+            self.addressInput.text = addr
+            
+            showAlert(vc: self, title: "⚡️ Nice! ⚡️", message: "This is an address you can use to fund your lightning node with, its your first step in transacting on the lightning network.")
         }
     }
     
