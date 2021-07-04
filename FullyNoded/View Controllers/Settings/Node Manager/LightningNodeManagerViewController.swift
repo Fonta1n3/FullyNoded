@@ -332,24 +332,20 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if activeNode?["macaroon"] == nil {
-            switch indexPath.section {
-            case 1:
-                goToPeers()
-            case 2:
-                showActive = true
-                goToChannels()
-            case 3:
-                showInactive = true
-                goToChannels()
-            case 4:
-                showPending = true
-                goToChannels()
-            default:
-                break
-            }
-        } else {
-            showAlert(vc: self, title: "Coming soon.", message: "LND functionality is currently limited, future releases will expand on this.")
+        switch indexPath.section {
+        case 1:
+            goToPeers()
+        case 2:
+            showActive = true
+            goToChannels()
+        case 3:
+            showInactive = true
+            goToChannels()
+        case 4:
+            showPending = true
+            goToChannels()
+        default:
+            break
         }
     }
     

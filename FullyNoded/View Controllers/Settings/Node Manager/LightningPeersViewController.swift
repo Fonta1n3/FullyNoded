@@ -41,36 +41,81 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
         peerArray.removeAll()
         selectedPeer = nil
         id = ""
+        
+        isLndNode { [weak self] isLnd in
+            guard let self = self else { return }
+            
+            guard isLnd else {
+                self.loadCLPeers()
+                return
+            }
+            
+            self.loadLNDPeers()
+        }
+    }
+    
+    private func loadLNDPeers() {
+        LndRpc.sharedInstance.makeLndCommand(command: .listpeers, param: [:], urlExt: nil) { [weak self] (response, error) in
+            guard let self = self else { return }
+            
+            guard let dict = response, let peers = dict["peers"] as? NSArray else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Error", message: error ?? "unknown error fetching peers")
+                return
+            }
+            
+            guard peers.count > 0 else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "No peers yet", message: "Tap the + button to connect to a peer and start a channel")
+                return
+            }
+            
+            self.parsePeers(peers: peers)
+        }
+    }
+    
+    private func loadCLPeers() {
         let commandId = UUID()
         LightningRPC.command(id: commandId, method: .listpeers, param: "") { [weak self] (uuid, response, errorDesc) in
-            if commandId == uuid {
-                if let dict = response as? NSDictionary {
-                    if let peers = dict["peers"] as? NSArray {
-                        if peers.count > 0 {
-                            self?.parsePeers(peers: peers)
-                        } else {
-                            self?.spinner.removeConnectingView()
-                            showAlert(vc: self, title: "No peers yet", message: "Tap the + button to connect to a peer and start a channel")
-                        }
-                    }
-                } else {
-                    self?.spinner.removeConnectingView()
-                    showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error fetching peers")
-                }
+            guard let self = self else { return }
+            
+            guard commandId == uuid, let dict = response as? NSDictionary, let peers = dict["peers"] as? NSArray else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error fetching peers")
+                return
             }
+            
+            guard peers.count > 0 else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "No peers yet", message: "Tap the + button to connect to a peer and start a channel")
+                return
+            }
+            
+            self.parsePeers(peers: peers)
         }
     }
     
     private func parsePeers(peers: NSArray) {
         for (i, peer) in peers.enumerated() {
-            if let peerDict = peer as? [String:Any] {
+            if var peerDict = peer as? [String:Any] {
+                if let sync_type = peerDict["sync_type"] as? String {
+                    if sync_type == "ACTIVE_SYNC" {
+                        peerDict["connected"] = true
+                    } else {
+                        peerDict["connected"] = false
+                    }
+                }
+                
                 peerArray.append(peerDict)
             }
+            
             if i + 1 == peers.count {
                 fetchLocalPeers { _ in
-                    DispatchQueue.main.async { [unowned vc = self] in
-                        vc.peersTable.reloadData()
-                        vc.spinner.removeConnectingView()
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        
+                        self.peersTable.reloadData()
+                        self.spinner.removeConnectingView()
                     }
                 }
             }
@@ -102,7 +147,7 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
             if let name = dict["name"] as? String {
                 idLabel.text = name
             } else {
-                idLabel.text = dict["id"] as? String ?? ""
+                idLabel.text = dict["id"] as? String ?? dict["pub_key"] as? String ?? "unknown ID"
             }
             
             if let connected = dict["connected"] as? Bool {
@@ -169,31 +214,30 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
     }
     
     private func fetchLocalPeers(completion: @escaping ((Bool)) -> Void) {
-        CoreDataService.retrieveEntity(entityName: .peers) { [weak self] (peers) in
-            if peers != nil {
-                if peers!.count > 0 {
-                    for (x, peer) in peers!.enumerated() {
-                        let peerStruct = PeersStruct(dictionary: peer)
-                        if self != nil {
-                            for (i, p) in self!.peerArray.enumerated() {
-                                if p["id"] as! String == peerStruct.pubkey {
-                                    if peerStruct.label == "" {
-                                        self?.peerArray[i]["name"] = peerStruct.alias
-                                    } else {
-                                        self?.peerArray[i]["name"] = peerStruct.label
-                                    }
-                                }
-                                if i + 1 == self?.peerArray.count && x + 1 == peers!.count {
-                                    completion(true)
-                                }
-                            }
+        CoreDataService.retrieveEntity(entityName: .peers) { [weak self] peers in
+            guard let self = self else { return }
+            
+            guard let peers = peers, peers.count > 0 else {
+                completion(true)
+                return
+            }
+            
+            for (x, peer) in peers.enumerated() {
+                let peerStruct = PeersStruct(dictionary: peer)
+                
+                for (i, p) in self.peerArray.enumerated() {
+                    if p["id"] as! String == peerStruct.pubkey {
+                        if peerStruct.label == "" {
+                            self.peerArray[i]["name"] = peerStruct.alias
+                        } else {
+                            self.peerArray[i]["name"] = peerStruct.label
                         }
                     }
-                } else {
-                    completion(true)
+                    
+                    if i + 1 == self.peerArray.count && x + 1 == peers.count {
+                        completion(true)
+                    }
                 }
-            } else {
-                completion(true)
             }
         }
     }

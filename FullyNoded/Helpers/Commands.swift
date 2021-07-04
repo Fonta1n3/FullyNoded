@@ -108,7 +108,18 @@ public enum LND_REST: String {
     case walletbalance = "v1/balance/blockchain"
     case getinfo = "v1/getinfo"
     case channelbalance = "v1/balance/channels"
-    case addinvoice, payinvoice = "v1/invoices"
-    case payreq = "v1/payreq"
+    case addinvoice = "v1/invoices"
+    case payreq, decodepayreq = "v1/payreq"
     case getnewaddress = "v2/wallet/address/next"
+    case sendcoins, gettransactions = "v1/transactions"
+    case payinvoice = "v1/channels/transactions"
+    case listpeers = "v1/peers"
+    
+//    var stringValue: String {
+//            switch self {
+//            case .addinvoice: return "v1/invoices"
+//            default:
+//                return self.rawValue
+//            }
+//        }
 }

@@ -324,6 +324,37 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     private func withdrawLightningNow(address: String, sats: Int) {
         spinner.addConnectingView(vc: self, description: "withdrawing from lightning wallet...")
         
+        isLndNode { [weak self] isLnd in
+            guard let self = self else { return }
+            
+            guard isLnd else {
+                self.withdrawFromCL(address: address, sats: sats)
+                
+                return
+            }
+            
+            self.withdrawFromLND(address: address, sats: sats)
+        }
+    }
+    
+    private func withdrawFromLND(address: String, sats: Int) {
+        let param:[String:Any] = ["address": address, "amount": "\(sats)"]
+        
+        LndRpc.sharedInstance.makeLndCommand(command: .sendcoins, param: param, urlExt: nil) { [weak self] (response, error) in
+            guard let self = self else { return }
+            
+            self.spinner.removeConnectingView()
+            
+            guard let dict = response, let _ = dict["txid"] as? String else {
+                showAlert(vc: self, title: "Uh oh, somehting is not right", message: error ?? "unknow error")
+                return
+            }
+            
+            showAlert(vc: self, title: "Success ✅", message: "⚡️ Lightning wallet withdraw to \(address) completed ⚡️")
+        }
+    }
+    
+    private func withdrawFromCL(address: String, sats: Int) {
         let param = "\"\(address)\", \(sats)"
         let commandId = UUID()
         
@@ -938,6 +969,92 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     private func decodeLighnting(invoice: String) {
         spinner.addConnectingView(vc: self, description: "decoding lightning invoice...")
         
+        isLndNode { [weak self] isLnd in
+            guard let self = self else { return }
+            
+            guard isLnd else {
+                self.decodeFromCL(invoice)
+                return
+            }
+            
+            self.decodeFromLND(invoice)
+        }
+    }
+    
+    private func decodeFromLND(_ invoice: String) {
+        LndRpc.sharedInstance.makeLndCommand(command: .decodepayreq, param: [:], urlExt: invoice) { [weak self] (response, error) in
+            guard let self = self else { return }
+            /*
+             ["description": , "payment_hash": 51ff1cb93738e1c259f24feb8b0666803d22222375f11161fa813f290f78280a, "num_satoshis": 1, "payment_addr": dHSlTcYNaUWAnSae+xhcOHV1XLgVmmkaS5CkCwfhDPk=, "timestamp": 1625376640, "destination": 02a64b954a87ee7d1c2312f3ba2529bf4e05173e16a9734942a589b9ac569bfa44, "route_hints": <__NSArrayM 0x600003435560>(
+
+             )
+             , "features": {
+                 14 =     {
+                     "is_known" = 1;
+                     "is_required" = 1;
+                     name = "payment-addr";
+                 };
+                 17 =     {
+                     "is_known" = 1;
+                     "is_required" = 0;
+                     name = "multi-path-payments";
+                 };
+                 9 =     {
+                     "is_known" = 1;
+                     "is_required" = 0;
+                     name = "tlv-onion";
+                 };
+             }, "cltv_expiry": 40, "fallback_addr": , "description_hash": , "expiry": 3600, "num_msat": 1000]
+             */
+            
+            self.spinner.removeConnectingView()
+            
+            guard let dict = response else {
+                showAlert(vc: self, title: "Error", message: error ?? "unknown error")
+                return
+            }
+            
+            if let _ = dict["num_satoshis"] as? String {
+                self.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: nil)
+                
+            } else {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    guard let amountText = self.amountInput.text, amountText != "" else {
+                        self.spinner.removeConnectingView()
+                        showAlert(vc: self, title: "Oops", message: "You need to enter an amount to send for an invoice that does not include one.")
+                        return
+                    }
+                    
+                    let dblAmount = amountText.doubleValue
+                    
+                    guard dblAmount > 0.0 else {
+                        self.spinner.removeConnectingView()
+                        showAlert(vc: self, title: "Oops", message: "You need to enter an amount to send for an invoice that does not include one.")
+                        return
+                    }
+                    
+                    if self.isFiat {
+                        let btcamount = rounded(number: dblAmount / self.fxRate)
+                        let msats = Int(btcamount * 100000000000.0)
+                        self.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: msats)
+                        
+                    } else if self.isSats {
+                        let msats = Int(dblAmount * 1000.0)
+                        self.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: msats)
+                        
+                    } else {
+                        let msats = Int(dblAmount * 100000000000.0)
+                        self.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: msats)
+                        
+                    }
+                }
+            }
+        }
+    }
+    
+    private func decodeFromCL(_ invoice: String) {
         let commandId = UUID()
         
         LightningRPC.command(id: commandId, method: .decodepay, param: "\"\(invoice)\"") { [weak self] (uuid, response, errorDesc) in
@@ -1005,9 +1122,37 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func payLightningNow(invoice: String, msat: Int?) {
-        var params = ""
-        
         spinner.addConnectingView(vc: self, description: "paying lightning invoice...")
+        
+        isLndNode { [weak self] isLnd in
+            guard let self = self else { return }
+            
+            guard isLnd else {
+                self.payFromCL(invoice: invoice, msat: msat)
+                return
+            }
+            
+            self.payFromLND(invoice: invoice, msat: msat)
+        }
+    }
+    
+    private func payFromLND(invoice: String, msat: Int?) {
+        let param:[String:Any] = ["payment_request": invoice, "allow_self_payment": true]
+        LndRpc.sharedInstance.makeLndCommand(command: .payinvoice, param: param, urlExt: nil) { [weak self] (response, error) in
+            guard let self = self else { return }
+            
+            self.spinner.removeConnectingView()
+            
+            guard let dict = response else { return }
+            
+            if let payment_error = dict["payment_error"] as? String {
+                showAlert(vc: self, title: "Payment Error", message: payment_error)
+            }
+        }
+    }
+    
+    private func payFromCL(invoice: String, msat: Int?) {
+        var params = ""
         
         if msat != nil {
             params = "\"\(invoice)\", \(msat!)"

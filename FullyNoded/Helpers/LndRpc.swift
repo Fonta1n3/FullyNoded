@@ -52,7 +52,6 @@ class LndRpc {
             
             let onionAddress = decryptedValue(encAddress)
             let macaroonHex = decryptedValue(encryptedMacaroon)
-            
             var urlString = "https://\(onionAddress)/\(command.rawValue)"
             
             if let urlExt = urlExt {
@@ -71,17 +70,17 @@ class LndRpc {
             var request = URLRequest(url: url)
             request.addValue(macaroonHex, forHTTPHeaderField: "Grpc-Metadata-macaroon")
             
-            
             switch command {
-            case .addinvoice:
+            case .addinvoice, .sendcoins, .payinvoice:
                 guard let jsonData = try? JSONSerialization.data(withJSONObject: param) else { return }
                 
                 request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-                request.httpBody = jsonData
                 request.setValue("\(jsonData.count)", forHTTPHeaderField: "Content-Length")
+                request.httpBody = jsonData
                 request.httpMethod = "POST"
+                
                 #if DEBUG
-                print("request: {\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"addinvoice\",\"params\":[\(param)]}")
+                print("request: \(request)")
                 #endif
                 
             case .getnewaddress:
@@ -89,6 +88,7 @@ class LndRpc {
                 
             default:
                 request.httpMethod = "GET"
+                
                 #if DEBUG
                 print("request: \(request)")
                 #endif

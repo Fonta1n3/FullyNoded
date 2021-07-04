@@ -83,7 +83,9 @@ class NodeLogic {
                 }
                 
                 let total = Int(localBalanceSats)! + Int(walletBalance)!
-                dictToReturn["offchainBalance"] = "\(total)"
+                let btc = Double(total) / 100000000.0
+                let roundedBalance = rounded(number: btc).avoidNotation
+                dictToReturn["offchainBalance"] = "\(roundedBalance)"
                 completion((dictToReturn, error ?? ""))
             }
         }
@@ -248,7 +250,75 @@ class NodeLogic {
     }
     
     class func getOffchainTransactions(completion: @escaping ((response: [[String:Any]]?, errorMessage: String?)) -> Void) {
-        
+        isLndNode { isLnd in
+            if isLnd {
+                getLNDTransactions(completion: completion)
+            } else {
+                getCLTransactions(completion: completion)
+            }
+        }
+    }
+    
+    private class func getLNDTransactions(completion: @escaping ((response: [[String:Any]]?, errorMessage: String?)) -> Void) {
+        LndRpc.sharedInstance.makeLndCommand(command: .gettransactions, param: [:], urlExt: nil) { (response, error) in
+            guard let dict = response, let transactions = dict["transactions"] as? NSArray, transactions.count > 0 else {
+                arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
+                completion((arrayToReturn, nil))
+                return
+            }
+            
+            for (t, transaction) in transactions.enumerated() {
+                guard let txDict = transaction as? NSDictionary, let hash = txDict["tx_hash"] as? String else {
+                    arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
+                    completion((arrayToReturn, nil))
+                    return
+                }
+                
+                let amountSat = Int(txDict["amount"] as? String ?? "0")!.withCommas()
+                let confs = txDict["num_confirmations"] as? Int ?? 0
+                let label = txDict["label"] as? String ?? ""
+                let time_stamp = txDict["time_stamp"] as? String ?? "0"
+                let dest_addresses = txDict["dest_addresses"] as? NSArray ?? []
+                
+                var addresses = ""
+                
+                for address in dest_addresses {
+                    addresses += (address as! String) + ", "
+                }
+                
+                let date = Date(timeIntervalSince1970: Double(time_stamp)!)
+                dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
+                let dateString = dateFormatter.string(from: date)
+                
+                arrayToReturn.append(["address": addresses,
+                                      "amount": "\(amountSat) sats",
+                                      "confirmations": "\(confs)",
+                                      "label": label,
+                                      "date": dateString,
+                                      "rbf": false,
+                                      "txID": hash,
+                                      "replacedBy": "",
+                                      "selfTransfer":false,
+                                      "remove":false,
+                                      "onchain":true,
+                                      "isLightning":true,
+                                      "sortDate":date])
+                
+                for (o, onchainTx) in arrayToReturn.enumerated() {
+                    if onchainTx["txID"] as! String == hash {
+                        arrayToReturn[o]["isLightning"] = true
+                    }
+                    
+                    if t + 1 == transactions.count && o + 1 == arrayToReturn.count {
+                        arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
+                        completion((arrayToReturn, nil))
+                    }
+                }
+            }
+        }
+    }
+    
+    private class func getCLTransactions(completion: @escaping ((response: [[String:Any]]?, errorMessage: String?)) -> Void) {
         func getPaid() {
             let id = UUID()
             LightningRPC.command(id: id, method: .listinvoices, param: "") { (uuid, response, errorDesc) in

@@ -153,7 +153,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             
             self.createLNDInvoice()
         }
-        
     }
     
     private func createLNDInvoice() {
@@ -178,8 +177,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             memoValue += "- \(messageField.text!)"
         }
         
-        let param:[String:Any] = ["memo":"\(memoValue)",
-                                  "value":amount]
+        let param:[String:Any] = ["memo":"\(memoValue)", "value":amount]
         
         LndRpc.sharedInstance.makeLndCommand(command: .addinvoice, param: param, urlExt: nil) { (response, error) in
             guard let dict = response, let bolt11 = dict["payment_request"] as? String else {
