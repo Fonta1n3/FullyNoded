@@ -27,6 +27,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     var utxoTotal = 0.0
     let ud = UserDefaults.standard
     var alertStyle = UIAlertController.Style.actionSheet
+    var index = 0
     
     @IBOutlet weak private var miningTargetLabel: UILabel!
     @IBOutlet weak private var satPerByteLabel: UILabel!
@@ -1015,7 +1016,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             }
             
             if let _ = dict["num_satoshis"] as? String {
-                self.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: nil)
+                self.promptToSendLightningPayment(invoice: invoice, dict: dict, msat: nil)
                 
             } else {
                 DispatchQueue.main.async { [weak self] in
@@ -1038,15 +1039,15 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                     if self.isFiat {
                         let btcamount = rounded(number: dblAmount / self.fxRate)
                         let msats = Int(btcamount * 100000000000.0)
-                        self.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: msats)
+                        self.promptToSendLightningPayment(invoice: invoice, dict: dict, msat: msats)
                         
                     } else if self.isSats {
                         let msats = Int(dblAmount * 1000.0)
-                        self.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: msats)
+                        self.promptToSendLightningPayment(invoice: invoice, dict: dict, msat: msats)
                         
                     } else {
                         let msats = Int(dblAmount * 100000000000.0)
-                        self.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: msats)
+                        self.promptToSendLightningPayment(invoice: invoice, dict: dict, msat: msats)
                         
                     }
                 }
@@ -1062,13 +1063,13 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             
             self.spinner.removeConnectingView()
             
-            guard let dict = response as? NSDictionary else {
+            guard let dict = response as? [String:Any] else {
                 showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error")
                 return
             }
             
             if let _ = dict["msatoshi"] as? Int {
-                self.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: nil)
+                self.promptToSendLightningPayment(invoice: invoice, dict: dict, msat: nil)
                 
             } else {
                 DispatchQueue.main.async { [weak self] in
@@ -1091,15 +1092,15 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                     if self.isFiat {
                         let btcamount = rounded(number: dblAmount / self.fxRate)
                         let msats = Int(btcamount * 100000000000.0)
-                        self.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: msats)
+                        self.promptToSendLightningPayment(invoice: invoice, dict: dict, msat: msats)
                         
                     } else if self.isSats {
                         let msats = Int(dblAmount * 1000.0)
-                        self.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: msats)
+                        self.promptToSendLightningPayment(invoice: invoice, dict: dict, msat: msats)
                         
                     } else {
                         let msats = Int(dblAmount * 100000000000.0)
-                        self.promptToSendLightningPayment(invoice: invoice, dict: "\(dict)", msat: msats)
+                        self.promptToSendLightningPayment(invoice: invoice, dict: dict, msat: msats)
                         
                     }
                 }
@@ -1107,13 +1108,13 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
-    private func promptToSendLightningPayment(invoice: String, dict: String, msat: Int?) {
+    private func promptToSendLightningPayment(invoice: String, dict: [String:Any], msat: Int?) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let alert = UIAlertController(title: "Pay lightning invoice?", message: dict, preferredStyle: self.alertStyle)
+            let alert = UIAlertController(title: "Pay lightning invoice?", message: "\(dict)", preferredStyle: self.alertStyle)
             alert.addAction(UIAlertAction(title: "Pay now", style: .default, handler: { action in
-                self.payLightningNow(invoice: invoice, msat: msat)
+                self.payLightningNow(invoice: invoice, msat: msat, dict: dict)
             }))
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
             alert.popoverPresentationController?.sourceView = self.view
@@ -1121,7 +1122,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
-    private func payLightningNow(invoice: String, msat: Int?) {
+    private func payLightningNow(invoice: String, msat: Int?, dict: [String:Any]) {
         spinner.addConnectingView(vc: self, description: "paying lightning invoice...")
         
         isLndNode { [weak self] isLnd in
@@ -1132,21 +1133,44 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 return
             }
             
-            self.payFromLND(invoice: invoice, msat: msat)
+            self.payFromLND(invoice: invoice, msat: msat, dict: dict)
         }
     }
     
-    private func payFromLND(invoice: String, msat: Int?) {
-        let param:[String:Any] = ["payment_request": invoice, "allow_self_payment": true]
-        LndRpc.sharedInstance.makeLndCommand(command: .payinvoice, param: param, urlExt: nil, query: nil) { [weak self] (response, error) in
+    private func payFromLND(invoice: String, msat: Int?, dict: [String:Any]) {
+        let destination = dict["destination"] as? String ?? ""
+        let amount = dict["num_satoshis"] as? String ?? ""
+        let paymentHash = dict["payment_hash"] as? String ?? ""
+        let paymentHashData = Data(hexString: paymentHash)!.base64EncodedString()
+        
+        LndRpc.sharedInstance.makeLndCommand(command: .queryroutes, param: [:], urlExt: "\(destination)/\(amount)", query: nil) { [weak self] (response, error) in
             guard let self = self else { return }
             
-            self.spinner.removeConnectingView()
+            guard let routes = response?["routes"] as? NSArray, routes.count > 0 else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Payment Error", message: error ?? "Unknown error.")
+                return
+            }
             
-            guard let dict = response else { return }
+            let lnrpcRouteToTry = routes[self.index]
             
-            if let payment_error = dict["payment_error"] as? String {
-                showAlert(vc: self, title: "Payment Error", message: payment_error)
+            let param:[String:Any] = ["route": lnrpcRouteToTry, "payment_hash": paymentHashData]
+            LndRpc.sharedInstance.makeLndCommand(command: .routepayment, param: param, urlExt: nil, query: nil) { [weak self] (response, error) in
+                guard let self = self else { return }
+
+                self.spinner.removeConnectingView()
+
+                guard let response = response else { return }
+
+                if let payment_error = response["payment_error"] as? String, payment_error != "" {
+                    if routes.count < self.index {
+                        self.index += 1
+                        self.payFromLND(invoice: invoice, msat: msat, dict: dict)
+                    } else {
+                        self.index = 0
+                        showAlert(vc: self, title: "Payment Error", message: payment_error)
+                    }
+                }
             }
         }
     }
@@ -1309,8 +1333,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 guard let addrss = addrss else { return }
                 
                 DispatchQueue.main.async { [unowned thisVc = self] in
-                    if addrss.hasPrefix("lntb") || addrss.hasPrefix("lightning:") || addrss.hasPrefix("lnbc") || addrss.hasPrefix("lnbcrt") {
-                        thisVc.decodeLighnting(invoice: addrss.replacingOccurrences(of: "lightning:", with: ""))
+                    let potentialLightning = addrss.lowercased()
+                    if potentialLightning.hasPrefix("lntb") || potentialLightning.hasPrefix("lightning:") || potentialLightning.hasPrefix("lnbc") || potentialLightning.hasPrefix("lnbcrt") {
+                        thisVc.decodeLighnting(invoice: potentialLightning.replacingOccurrences(of: "lightning:", with: ""))
                     } else {
                         thisVc.processBIP21(url: addrss)
                     }

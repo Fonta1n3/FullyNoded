@@ -112,8 +112,10 @@ public enum LND_REST: String {
     case payreq, decodepayreq = "v1/payreq"
     case getnewaddress = "v2/wallet/address/next"
     case sendcoins, gettransactions = "v1/transactions"
+    case routepayment = "v1/channels/transactions/route"
     case payinvoice = "v1/channels/transactions"
     case listpeers = "v1/peers"
     case listchannels = "v1/channels"
     case getnodeinfo = "v1/graph/node"
+    case queryroutes = "v1/graph/routes"
 }

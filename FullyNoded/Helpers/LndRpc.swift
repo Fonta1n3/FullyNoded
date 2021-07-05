@@ -17,7 +17,7 @@ class LndRpc {
     
     func makeLndCommand(command: LND_REST, param: [String:Any], urlExt: String?, query: [String:Any]?, completion: @escaping ((response: [String:Any]?, error: String?)) -> Void) {
         #if DEBUG
-        print("makeLndCommand")
+        print("makeLndCommand: \(command.rawValue)")
         #endif
         
         CoreDataService.retrieveEntity(entityName: .newNodes) { [weak self] nodes in
@@ -81,7 +81,7 @@ class LndRpc {
             request.addValue(macaroonHex, forHTTPHeaderField: "Grpc-Metadata-macaroon")
             
             switch command {
-            case .addinvoice, .sendcoins, .payinvoice:
+            case .addinvoice, .sendcoins, .payinvoice, .routepayment:
                 guard let jsonData = try? JSONSerialization.data(withJSONObject: param) else { return }
                 
                 request.setValue("application/json", forHTTPHeaderField: "Content-Type")

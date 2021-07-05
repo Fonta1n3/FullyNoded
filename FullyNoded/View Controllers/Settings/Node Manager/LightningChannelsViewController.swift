@@ -94,6 +94,15 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
             }
             
             return cell
+        } else if showPending {
+            //remote_node_pub
+            let cell = tableView.dequeueReusableCell(withIdentifier: "channelCell", for: indexPath)
+            cell.selectionStyle = .none
+            let dict = channels[indexPath.section]
+            let id = dict["remote_node_pub"] as? String ?? "?"
+            cell.textLabel?.text = id
+            cell.textLabel?.textColor = .lightGray
+            return cell
         } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: "channelCell", for: indexPath)
             cell.selectionStyle = .none
@@ -222,19 +231,19 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
             var allPendingChannels:[[String:Any]] = []
             
             for channel in waiting_close_channels {
-                allPendingChannels.append(channel as! [String:Any])
+                allPendingChannels.append((channel as! [String:Any])["channel"] as! [String:Any])
             }
             
             for channel in pending_force_closing_channels {
-                allPendingChannels.append(channel as! [String:Any])
+                allPendingChannels.append((channel as! [String:Any])["channel"] as! [String:Any])
             }
             
             for channel in pending_open_channels {
-                allPendingChannels.append(channel as! [String:Any])
+                allPendingChannels.append((channel as! [String:Any])["channel"] as! [String:Any])
             }
             
             for channel in pending_closing_channels {
-                allPendingChannels.append(channel as! [String:Any])
+                allPendingChannels.append((channel as! [String:Any])["channel"] as! [String:Any])
             }
             
             self.parsePendingLNDChannels(allPendingChannels)
@@ -298,31 +307,7 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     
     private func parsePendingLNDChannels(_ channels: [[String:Any]]) {
         for (i, channel) in channels.enumerated() {
-            var dict = channel
-            
-            let localBalance = Int(dict["local_balance"] as! String)!
-            let remoteBalance = Int(dict["remote_balance"] as! String)!
-            if remoteBalance == 0 {
-                dict["ratio"] = Float(1)
-            } else {
-                dict["ratio"] = Float(Double(localBalance) / Double(remoteBalance))
-            }
-            
-            for (key, value) in dict {
-                switch key {
-                case "local_balance":
-                    dict["to_us_msat"] = "\(localBalance * 1000)"
-                    dict["spendable_msatoshi"] = Int(value as! String)! * 1000
-                case "capacity":
-                    dict["total_msat"] = "\(remoteBalance * 1000)"
-                case "remote_balance":
-                    dict["receivable_msatoshi"] = remoteBalance * 1000
-                default:
-                    break
-                }
-            }
-                        
-            self.channels.append(dict)
+            self.channels.append(channel)
             
             if i + 1 == channels.count {
                 load()

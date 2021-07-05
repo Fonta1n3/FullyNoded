@@ -15,6 +15,7 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
     var peerArray = [[String:Any]]()
     var selectedPeer:[String:Any]?
     var lndNode = false
+    var initialLoad = true
 
     @IBOutlet weak var iconBackground: UIView!
     @IBOutlet weak var peersTable: UITableView!
@@ -29,6 +30,7 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
     
     override func viewDidAppear(_ animated: Bool) {
         loadPeers()
+        initialLoad = false
     }
     
     @IBAction func addPeerAction(_ sender: Any) {
@@ -38,7 +40,10 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
     }
     
     private func loadPeers() {
-        spinner.addConnectingView(vc: self, description: "getting peers...")
+        if initialLoad {
+            spinner.addConnectingView(vc: self, description: "getting peers...")
+        }
+        
         peerArray.removeAll()
         selectedPeer = nil
         id = ""

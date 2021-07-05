@@ -27,6 +27,7 @@ class TorClient: NSObject, URLSessionDelegate {
     }
     
     public var state: TorState = .none
+    public var cert:String?
     static let sharedInstance = TorClient()
     private var config: TorConfiguration = TorConfiguration()
     private var thread: TorThread?
@@ -163,11 +164,38 @@ class TorClient: NSObject, URLSessionDelegate {
         }
     }
     
+//    func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+//        if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust {
+//            if let trust = challenge.protectionSpace.serverTrust {
+//                completionHandler(.useCredential, URLCredential(trust: trust))
+//            }
+//        }
+//    }
+    
     func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust {
-            if let trust = challenge.protectionSpace.serverTrust {
-                completionHandler(.useCredential, URLCredential(trust: trust))
+        guard let trust = challenge.protectionSpace.serverTrust else { return }
+        let credential = URLCredential(trust: trust)
+
+        if let certificate = cert,
+            let remoteCert = SecTrustGetCertificateAtIndex(trust, 0) {
+            let remoteCertData = SecCertificateCopyData(remoteCert) as NSData
+
+            let cert = certificate
+                .components(separatedBy: "\n")
+                .filter { !$0.isEmpty }
+                .dropLast()
+                .dropFirst()
+                .joined()
+            let certData = Data(base64Encoded: cert)
+
+            if let pinnedCertData = certData,
+                remoteCertData.isEqual(to: pinnedCertData as Data) {
+                completionHandler(.useCredential, credential)
+            } else {
+                completionHandler(.rejectProtectionSpace, nil)
             }
+        } else {
+            completionHandler(.useCredential, credential)
         }
     }
     
