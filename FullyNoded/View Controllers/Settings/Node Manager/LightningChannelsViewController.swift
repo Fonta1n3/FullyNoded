@@ -19,6 +19,7 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     var showActive = Bool()
     var showInactive = Bool()
     var myId = ""
+    var lndNode = false
 
     @IBOutlet weak var header: UILabel!
     @IBOutlet weak var channelsTable: UITableView!
@@ -31,6 +32,7 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
         channelsTable.dataSource = self
         iconBackground.clipsToBounds = true
         iconBackground.layer.cornerRadius = 5
+        
         if showPending {
             header.text = "Pending Channels"
             iconBackground.backgroundColor = .systemOrange
@@ -44,12 +46,15 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
             iconBackground.backgroundColor = .systemIndigo
             iconHeader.image = UIImage(systemName: "moon.zzz")
         }
-        loadPeers()
+        
+        loadChannels()
     }
     
     @IBAction func addChannel(_ sender: Any) {
-        DispatchQueue.main.async { [weak self] in
-            self?.performSegue(withIdentifier: "segueToCreateChannel", sender: self)
+        if !lndNode {
+            DispatchQueue.main.async { [weak self] in
+                self?.performSegue(withIdentifier: "segueToCreateChannel", sender: self)
+            }
         }
     }
     
@@ -66,26 +71,34 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
         if showActive {
             let cell = tableView.dequeueReusableCell(withIdentifier: "activeChannelCell", for: indexPath)
             cell.selectionStyle = .none
+            
             let amountReceivableLabel = cell.viewWithTag(1) as! UILabel
             let amountSpendableLabel = cell.viewWithTag(2) as! UILabel
             let bar = cell.viewWithTag(3) as! UIProgressView
             let dict = channels[indexPath.section]
             let amountReceivable = dict["receivable_msatoshi"] as? Int ?? 0
             let amountSpendable = dict["spendable_msatoshi"] as? Int ?? 0
-            let ourAmount = dict["to_us_msat"] as? String ?? ""
-            let totalAmount = dict["total_msat"] as? String ?? ""
-            let ourAmountInt = Int(ourAmount.replacingOccurrences(of: "msat", with: "")) ?? 0
-            let totalAmountInt = Int(totalAmount.replacingOccurrences(of: "msat", with: "")) ?? 0
-            let ratio = Double(ourAmountInt) / Double(totalAmountInt)
-            bar.setProgress(Float(ratio), animated: true)
+            
             amountReceivableLabel.text = "\(Double(amountReceivable) / 1000.0) sats"
             amountSpendableLabel.text = "\(Double(amountSpendable) / 1000.0) sats"
+            
+            if lndNode {
+                bar.setProgress((dict["ratio"] as! Float), animated: true)
+            } else {
+                let ourAmount = dict["to_us_msat"] as? String ?? ""
+                let totalAmount = dict["total_msat"] as? String ?? ""
+                let ourAmountInt = Int(ourAmount.replacingOccurrences(of: "msat", with: "")) ?? 0
+                let totalAmountInt = Int(totalAmount.replacingOccurrences(of: "msat", with: "")) ?? 0
+                let ratio = Double(ourAmountInt) / Double(totalAmountInt)
+                bar.setProgress(Float(ratio), animated: true)
+            }
+            
             return cell
         } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: "channelCell", for: indexPath)
             cell.selectionStyle = .none
             let dict = channels[indexPath.section]
-            let id = dict["channel_id"] as? String ?? ""
+            let id = dict["channel_id"] as? String ?? dict["chan_id"] as? String ?? "?"
             cell.textLabel?.text = id
             cell.textLabel?.textColor = .lightGray
             return cell
@@ -109,21 +122,22 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
         textLabel.textAlignment = .left
         textLabel.font = UIFont.systemFont(ofSize: 15, weight: .regular)
         textLabel.textColor = .lightGray
-        textLabel.frame = CGRect(x: 0, y: 0, width: 200, height: 50)
+        textLabel.frame = CGRect(x: 0, y: 0, width: view.frame.width - 32, height: 50)
         let dict = channels[section]
         if showActive {
             if let name = dict["name"] as? String {
                 textLabel.text = name
             } else {
-                textLabel.text = "short id: " + "\(dict["short_channel_id"] as? String ?? "")"
+                textLabel.text = "ID: " + "\(dict["short_channel_id"] as? String ?? "\(dict["chan_id"] as? String ?? "")")"
             }
         } else {
             if let name = dict["name"] as? String {
                 textLabel.text = name
             } else {
-                textLabel.text = "id: " + "\(dict["channel_id"] as? String ?? "")"
+                textLabel.text = "ID: " + "\(dict["channel_id"] as? String ?? dict["chan_id"] as? String ?? "")"
             }
         }
+        
         header.addSubview(textLabel)
         return header
     }
@@ -133,35 +147,190 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if showActive {
+        if showActive && !lndNode {
             selectedChannel = channels[indexPath.section]
-            promptToRebalance()
+            promptToRebalanceCL()
+        } else if lndNode && showActive {
+            promptToRebalanceLND()
         }
     }
     
-    private func loadPeers() {
+    private func loadChannels() {
         spinner.addConnectingView(vc: self, description: "getting channels...")
-        let commandId = UUID()
-        LightningRPC.command(id: commandId, method: .listpeers, param: "") { [weak self] (uuid, response, errorDesc) in
-            if commandId == uuid {
-                if let dict = response as? NSDictionary {
-                    if let peers = dict["peers"] as? NSArray {
-                        if peers.count > 0 {
-                            self?.parsePeers(peers: peers)
-                        } else {
-                            self?.spinner.removeConnectingView()
-                            showAlert(vc: self, title: "No channels yet", message: "Tap the + button to connect to a peer and start a channel")
-                        }
-                    }
-                } else {
-                    self?.spinner.removeConnectingView()
-                    showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error fetching peers")
+        
+        isLndNode { [weak self] isLnd in
+            guard let self = self else { return }
+            
+            self.lndNode = isLnd
+            
+            guard isLnd else {
+                self.loadCLPeers()
+                return
+            }
+            
+            self.loadLndChannels()
+        }
+    }
+    
+    private func loadLndChannels() {
+        if showPending {
+            showPendingLndChannels()
+        } else {
+            LndRpc.sharedInstance.makeLndCommand(command: .listchannels, param: [:], urlExt: nil, query: ["inactive_only":showInactive,"active_only":showActive]) { [weak self] (response, error) in
+                guard let self = self else { return }
+                
+                guard let channels = response?["channels"] as? NSArray else {
+                    self.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "Error", message: error ?? "Unknown error fetching channels.")
+                    return
                 }
+                
+                guard channels.count > 0 else {
+                    self.spinner.removeConnectingView()
+                    var title = "No channels yet."
+                    if self.showInactive {
+                        title = "No inactive channels."
+                    }
+                    showAlert(vc: self, title: title, message: "Tap the + button to connect to a peer and start a channel.")
+                    return
+                }
+                
+                self.parseLNDChannels(channels)
             }
         }
     }
     
-    private func parsePeers(peers: NSArray) {
+    private func showPendingLndChannels() {
+        LndRpc.sharedInstance.makeLndCommand(command: .listchannels, param: [:], urlExt: "pending", query: nil) { [weak self] (response, error) in
+            guard let self = self else { return }
+            
+            guard let waiting_close_channels = response?["waiting_close_channels"] as? NSArray,
+                  let pending_force_closing_channels = response?["pending_force_closing_channels"] as? NSArray,
+                  let pending_open_channels = response?["pending_open_channels"] as? NSArray,
+                  let pending_closing_channels = response?["pending_closing_channels"] as? NSArray else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Error", message: error ?? "Unknown error fetching channels.")
+                return
+            }
+            
+            guard waiting_close_channels.count > 0 || pending_force_closing_channels.count > 0 || pending_open_channels.count > 0 || pending_closing_channels.count > 0 else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "No pending channels.", message: "Tap the + button to connect to a peer and start a channel.")
+                return
+            }
+            
+            var allPendingChannels:[[String:Any]] = []
+            
+            for channel in waiting_close_channels {
+                allPendingChannels.append(channel as! [String:Any])
+            }
+            
+            for channel in pending_force_closing_channels {
+                allPendingChannels.append(channel as! [String:Any])
+            }
+            
+            for channel in pending_open_channels {
+                allPendingChannels.append(channel as! [String:Any])
+            }
+            
+            for channel in pending_closing_channels {
+                allPendingChannels.append(channel as! [String:Any])
+            }
+            
+            self.parsePendingLNDChannels(allPendingChannels)
+        }
+    }
+    
+    private func loadCLPeers() {
+        let commandId = UUID()
+        LightningRPC.command(id: commandId, method: .listpeers, param: "") { [weak self] (uuid, response, errorDesc) in
+            guard let self = self else { return }
+            
+            guard commandId == uuid, let dict = response as? NSDictionary, let peers = dict["peers"] as? NSArray else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Error", message: errorDesc ?? "Unknown error fetching channels.")
+                return
+            }
+            
+            guard peers.count > 0 else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "No channels yet.", message: "Tap the + button to connect to a peer and start a channel.")
+                return
+            }
+            
+            self.parseCLPeers(peers)
+        }
+    }
+    
+    private func parseLNDChannels(_ channels: NSArray) {
+        for (i, channel) in channels.enumerated() {
+            var dict = channel as! [String:Any]
+            
+            let localBalance = Int(dict["local_balance"] as! String)!
+            let remoteBalance = Int(dict["remote_balance"] as! String)!
+            if remoteBalance == 0 {
+                dict["ratio"] = Float(1)
+            } else {
+                dict["ratio"] = Float(Double(localBalance) / Double(remoteBalance))
+            }
+            
+            for (key, value) in dict {
+                switch key {
+                case "local_balance":
+                    dict["to_us_msat"] = "\(localBalance * 1000)"
+                    dict["spendable_msatoshi"] = Int(value as! String)! * 1000
+                case "capacity":
+                    dict["total_msat"] = "\(remoteBalance * 1000)"
+                case "remote_balance":
+                    dict["receivable_msatoshi"] = remoteBalance * 1000
+                default:
+                    break
+                }
+            }
+                        
+            self.channels.append(dict)
+            
+            if i + 1 == channels.count {
+                load()
+            }
+        }
+    }
+    
+    private func parsePendingLNDChannels(_ channels: [[String:Any]]) {
+        for (i, channel) in channels.enumerated() {
+            var dict = channel
+            
+            let localBalance = Int(dict["local_balance"] as! String)!
+            let remoteBalance = Int(dict["remote_balance"] as! String)!
+            if remoteBalance == 0 {
+                dict["ratio"] = Float(1)
+            } else {
+                dict["ratio"] = Float(Double(localBalance) / Double(remoteBalance))
+            }
+            
+            for (key, value) in dict {
+                switch key {
+                case "local_balance":
+                    dict["to_us_msat"] = "\(localBalance * 1000)"
+                    dict["spendable_msatoshi"] = Int(value as! String)! * 1000
+                case "capacity":
+                    dict["total_msat"] = "\(remoteBalance * 1000)"
+                case "remote_balance":
+                    dict["receivable_msatoshi"] = remoteBalance * 1000
+                default:
+                    break
+                }
+            }
+                        
+            self.channels.append(dict)
+            
+            if i + 1 == channels.count {
+                load()
+            }
+        }
+    }
+    
+    private func parseCLPeers(_ peers: NSArray) {
         for (i, peer) in peers.enumerated() {
             if let peerDict = peer as? [String:Any] {
                 if let channls = peerDict["channels"] as? NSArray {
@@ -191,7 +360,7 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
                     }
                     if i + 1 == peers.count {
                         fetchLocalPeers { [weak self] _ in
-                            self?.parseChannels()
+                            self?.load()
                         }
                     }
                 }
@@ -200,36 +369,33 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     }
     
     private func fetchLocalPeers(completion: @escaping ((Bool)) -> Void) {
-        CoreDataService.retrieveEntity(entityName: .peers) { [weak self] (peers) in
-            if peers != nil && self != nil {
-                if peers!.count > 0 && self!.channels.count > 0 {
-                    for (x, peer) in peers!.enumerated() {
-                        let peerStruct = PeersStruct(dictionary: peer)
-                        if self != nil {
-                            for (i, p) in self!.channels.enumerated() {
-                                if p["peerId"] as! String == peerStruct.pubkey {
-                                    if peerStruct.label == "" {
-                                        self?.channels[i]["name"] = peerStruct.alias
-                                    } else {
-                                        self?.channels[i]["name"] = peerStruct.label
-                                    }
-                                }
-                                if i + 1 == self?.channels.count && x + 1 == peers!.count {
-                                    completion(true)
-                                }
-                            }
+        CoreDataService.retrieveEntity(entityName: .peers) { [weak self] peers in
+            guard let self = self, let peers = peers, peers.count > 0, self.channels.count > 0 else {
+                completion(true)
+                return
+            }
+            
+            for (x, peer) in peers.enumerated() {
+                let peerStruct = PeersStruct(dictionary: peer)
+                
+                for (i, p) in self.channels.enumerated() {
+                    if p["peerId"] as! String == peerStruct.pubkey {
+                        if peerStruct.label == "" {
+                            self.channels[i]["name"] = peerStruct.alias
+                        } else {
+                            self.channels[i]["name"] = peerStruct.label
                         }
                     }
-                } else {
-                    completion(true)
+                    
+                    if i + 1 == self.channels.count && x + 1 == peers.count {
+                        completion(true)
+                    }
                 }
-            } else {
-                completion(true)
             }
         }
     }
     
-    private func parseChannels() {
+    private func load() {
         DispatchQueue.main.async { [weak self] in
             self?.channelsTable.reloadData()
             self?.spinner.removeConnectingView()
@@ -244,7 +410,20 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     
     // MARK: - Rebalancing
     
-    private func promptToRebalance() {
+    private func promptToRebalanceLND() {
+        DispatchQueue.main.async { [weak self] in
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "Coming soon for LND.", message: "For now rebalancing only works with c-lightning.", preferredStyle: alertStyle)
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self?.view
+            self?.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func promptToRebalanceCL() {
         DispatchQueue.main.async { [weak self] in
             var alertStyle = UIAlertController.Style.actionSheet
             if (UIDevice.current.userInterfaceIdiom == .pad) {
@@ -252,10 +431,9 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
             }
             let alert = UIAlertController(title: "Send circular payment to rebalance?", message: "This action depends upon the rebalance.py plugin, if you are not using the plugin then this will not work. It can take up to 60 seconds for this command to complete, it will attempt to rebalance the channel you have selected with an ideal counterpart and strive to acheive a 50/50 balance of incoming and outgoing capacity by routing a payment to yourself from one channel to another.", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "Rebalance", style: .default, handler: { [weak self] action in
-                if self != nil {
-                    self?.spinner.addConnectingView(vc: self!, description: "rebalancing, this can take up to 60 seconds...")
-                    self?.parseChannelsForRebalancing()
-                }
+                guard let self = self else { return }
+                self.spinner.addConnectingView(vc: self, description: "rebalancing, this can take up to 60 seconds...")
+                self.parseChannelsForRebalancing()
             }))
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
             alert.popoverPresentationController?.sourceView = self?.view
@@ -334,7 +512,7 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
         channels.removeAll()
         ours.removeAll()
         theirs.removeAll()
-        loadPeers()
+        loadChannels()
         spinner.removeConnectingView()
     }
     

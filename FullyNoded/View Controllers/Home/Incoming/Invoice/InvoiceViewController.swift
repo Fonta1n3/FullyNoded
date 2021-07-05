@@ -179,7 +179,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         
         let param:[String:Any] = ["memo":"\(memoValue)", "value":amount]
         
-        LndRpc.sharedInstance.makeLndCommand(command: .addinvoice, param: param, urlExt: nil) { (response, error) in
+        LndRpc.sharedInstance.makeLndCommand(command: .addinvoice, param: param, urlExt: nil, query: nil) { (response, error) in
             guard let dict = response, let bolt11 = dict["payment_request"] as? String else {
                 self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "Error", message: error ?? "we had an issue getting your lightning invoice")

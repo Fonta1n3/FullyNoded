@@ -95,16 +95,17 @@ class MakeRPCCall {
             let loginString = String(format: "%@:%@", rpcusername, rpcpassword)
             let loginData = loginString.data(using: String.Encoding.utf8)!
             let base64LoginString = loginData.base64EncodedString()
+            let id = UUID()
             
             request.timeoutInterval = timeout
             request.httpMethod = "POST"
             request.addValue("Basic \(base64LoginString)", forHTTPHeaderField: "Authorization")
             request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
-            request.httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method.rawValue)\",\"params\":[\(formattedParam)]}".data(using: .utf8)
+            request.httpBody = "{\"jsonrpc\":\"1.0\",\"id\":\"\(id)\",\"method\":\"\(method.rawValue)\",\"params\":[\(formattedParam)]}".data(using: .utf8)
             
             #if DEBUG
             print("url = \(url)")
-            print("request: \("{\"jsonrpc\":\"1.0\",\"id\":\"curltest\",\"method\":\"\(method.rawValue)\",\"params\":[\(formattedParam)]}")")
+            print("request: \("{\"jsonrpc\":\"1.0\",\"id\":\"\(id)\",\"method\":\"\(method.rawValue)\",\"params\":[\(formattedParam)]}")")
             #endif
             
             var sesh = URLSession(configuration: .default)
@@ -113,24 +114,26 @@ class MakeRPCCall {
                 sesh = self.torClient.session
             }
             
-            let task = sesh.dataTask(with: request as URLRequest) { [unowned vc = self] (data, response, error) in
+            let task = sesh.dataTask(with: request as URLRequest) { [weak self] (data, response, error) in
+                guard let self = self else { return }
+                
                 guard let urlContent = data else {
                     
                     guard let error = error else {
-                        if vc.attempts < 20 {
-                            vc.executeRPCCommand(method: method, param: param, completion: completion)
+                        if self.attempts < 20 {
+                            self.executeRPCCommand(method: method, param: param, completion: completion)
                         } else {
-                            vc.attempts = 0
+                            self.attempts = 0
                             completion((nil, "Unknown error, ran out of attempts"))
                         }
                         
                         return
                     }
                     
-                    if vc.attempts < 20 {
-                        vc.executeRPCCommand(method: method, param: param, completion: completion)
+                    if self.attempts < 20 {
+                        self.executeRPCCommand(method: method, param: param, completion: completion)
                     } else {
-                        vc.attempts = 0
+                        self.attempts = 0
                         #if DEBUG
                         print("error: \(error.localizedDescription)")
                         #endif
@@ -140,9 +143,9 @@ class MakeRPCCall {
                     return
                 }
                 
-                vc.attempts = 0
+                self.attempts = 0
                 
-                guard let json = try? JSONSerialization.jsonObject(with: urlContent, options: JSONSerialization.ReadingOptions.mutableLeaves) as? NSDictionary else {
+                guard let json = try? JSONSerialization.jsonObject(with: urlContent, options: .mutableLeaves) as? NSDictionary else {
                     if let httpResponse = response as? HTTPURLResponse {
                         switch httpResponse.statusCode {
                         case 401:

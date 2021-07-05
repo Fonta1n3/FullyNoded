@@ -114,12 +114,6 @@ public enum LND_REST: String {
     case sendcoins, gettransactions = "v1/transactions"
     case payinvoice = "v1/channels/transactions"
     case listpeers = "v1/peers"
-    
-//    var stringValue: String {
-//            switch self {
-//            case .addinvoice: return "v1/invoices"
-//            default:
-//                return self.rawValue
-//            }
-//        }
+    case listchannels = "v1/channels"
+    case getnodeinfo = "v1/graph/node"
 }

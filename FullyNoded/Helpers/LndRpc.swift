@@ -15,7 +15,7 @@ class LndRpc {
     
     private init() {}
     
-    func makeLndCommand(command: LND_REST, param: [String:Any], urlExt: String?, completion: @escaping ((response: [String:Any]?, error: String?)) -> Void) {
+    func makeLndCommand(command: LND_REST, param: [String:Any], urlExt: String?, query: [String:Any]?, completion: @escaping ((response: [String:Any]?, error: String?)) -> Void) {
         #if DEBUG
         print("makeLndCommand")
         #endif
@@ -58,8 +58,18 @@ class LndRpc {
                 urlString += "/\(urlExt)"
             }
             
-            guard let url = URL(string: urlString) else {
-                completion((nil, "error converting your url"))
+            guard var urlComponents = URLComponents(string: urlString) else { return }
+            
+            if let query = query {
+                for (key, value) in query {
+                    urlComponents.queryItems = [
+                        URLQueryItem(name: key, value: "\(value)")
+                    ]
+                }
+            }
+            
+            guard let url = urlComponents.url else {
+                completion((nil, "Error converting your url."))
                 return
             }
             
@@ -85,7 +95,7 @@ class LndRpc {
                 
             case .getnewaddress:
                 request.httpMethod = "POST"
-                
+                                
             default:
                 request.httpMethod = "GET"
                 

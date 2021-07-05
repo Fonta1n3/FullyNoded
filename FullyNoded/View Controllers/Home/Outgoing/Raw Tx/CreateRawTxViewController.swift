@@ -340,7 +340,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     private func withdrawFromLND(address: String, sats: Int) {
         let param:[String:Any] = ["address": address, "amount": "\(sats)"]
         
-        LndRpc.sharedInstance.makeLndCommand(command: .sendcoins, param: param, urlExt: nil) { [weak self] (response, error) in
+        LndRpc.sharedInstance.makeLndCommand(command: .sendcoins, param: param, urlExt: nil, query: nil) { [weak self] (response, error) in
             guard let self = self else { return }
             
             self.spinner.removeConnectingView()
@@ -390,7 +390,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func getLndAddress() {
-        LndRpc.sharedInstance.makeLndCommand(command: .getnewaddress, param: [:], urlExt: nil) { (response, error) in
+        LndRpc.sharedInstance.makeLndCommand(command: .getnewaddress, param: [:], urlExt: nil, query: nil) { (response, error) in
             guard let dict = response, let address = dict["addr"] as? String else {
                 return
             }
@@ -982,7 +982,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func decodeFromLND(_ invoice: String) {
-        LndRpc.sharedInstance.makeLndCommand(command: .decodepayreq, param: [:], urlExt: invoice) { [weak self] (response, error) in
+        LndRpc.sharedInstance.makeLndCommand(command: .decodepayreq, param: [:], urlExt: invoice, query: nil) { [weak self] (response, error) in
             guard let self = self else { return }
             /*
              ["description": , "payment_hash": 51ff1cb93738e1c259f24feb8b0666803d22222375f11161fa813f290f78280a, "num_satoshis": 1, "payment_addr": dHSlTcYNaUWAnSae+xhcOHV1XLgVmmkaS5CkCwfhDPk=, "timestamp": 1625376640, "destination": 02a64b954a87ee7d1c2312f3ba2529bf4e05173e16a9734942a589b9ac569bfa44, "route_hints": <__NSArrayM 0x600003435560>(
@@ -1138,7 +1138,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     private func payFromLND(invoice: String, msat: Int?) {
         let param:[String:Any] = ["payment_request": invoice, "allow_self_payment": true]
-        LndRpc.sharedInstance.makeLndCommand(command: .payinvoice, param: param, urlExt: nil) { [weak self] (response, error) in
+        LndRpc.sharedInstance.makeLndCommand(command: .payinvoice, param: param, urlExt: nil, query: nil) { [weak self] (response, error) in
             guard let self = self else { return }
             
             self.spinner.removeConnectingView()

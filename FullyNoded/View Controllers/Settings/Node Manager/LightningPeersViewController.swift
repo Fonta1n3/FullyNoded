@@ -14,6 +14,7 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
     let spinner = ConnectingView()
     var peerArray = [[String:Any]]()
     var selectedPeer:[String:Any]?
+    var lndNode = false
 
     @IBOutlet weak var iconBackground: UIView!
     @IBOutlet weak var peersTable: UITableView!
@@ -45,6 +46,8 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
         isLndNode { [weak self] isLnd in
             guard let self = self else { return }
             
+            self.lndNode = isLnd
+            
             guard isLnd else {
                 self.loadCLPeers()
                 return
@@ -55,7 +58,7 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
     }
     
     private func loadLNDPeers() {
-        LndRpc.sharedInstance.makeLndCommand(command: .listpeers, param: [:], urlExt: nil) { [weak self] (response, error) in
+        LndRpc.sharedInstance.makeLndCommand(command: .listpeers, param: [:], urlExt: nil, query: nil) { [weak self] (response, error) in
             guard let self = self else { return }
             
             guard let dict = response, let peers = dict["peers"] as? NSArray else {
@@ -95,27 +98,67 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
         }
     }
     
+    private func getLNDChannels() {
+        LndRpc.sharedInstance.makeLndCommand(command: .listchannels, param: [:], urlExt: nil, query: nil) { [weak self] (response, error) in
+            guard let self = self else { return }
+            
+            guard let response = response, let channels = response["channels"] as? NSArray, channels.count > 0 else { return }
+            
+            for (c, channel) in channels.enumerated() {
+                let dict = channel as! [String:Any]
+                let remote_pubkey = dict["remote_pubkey"] as! String
+                let channelActive = dict["active"] as! Bool
+                let channelStatus = dict["chan_status_flags"] as! String
+                
+                for (i, peer) in self.peerArray.enumerated() {
+                    let pub_key = peer["pub_key"] as! String
+                    
+                    if pub_key == remote_pubkey {
+                        self.peerArray[i]["hasChannel"] = true
+                        self.peerArray[i]["channelActive"] = channelActive
+                        self.peerArray[i]["channelStatus"] = channelStatus
+                    }
+                    
+                    if i + 1 == self.peerArray.count && c + 1 == channels.count {
+                        self.fetchLocalPeers { _ in
+                            DispatchQueue.main.async { [weak self] in
+                                guard let self = self else { return }
+                                
+                                self.peersTable.reloadData()
+                                self.spinner.removeConnectingView()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     private func parsePeers(peers: NSArray) {
         for (i, peer) in peers.enumerated() {
             if var peerDict = peer as? [String:Any] {
-                if let sync_type = peerDict["sync_type"] as? String {
-                    if sync_type == "ACTIVE_SYNC" {
-                        peerDict["connected"] = true
-                    } else {
-                        peerDict["connected"] = false
-                    }
+                if lndNode {
+                    peerDict["connected"] = true
+                    peerDict["hasChannel"] = false
+                    peerDict["channelActive"] = false
+                    peerDict["channelStatus"] = ""
                 }
                 
                 peerArray.append(peerDict)
             }
             
             if i + 1 == peers.count {
-                fetchLocalPeers { _ in
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        
-                        self.peersTable.reloadData()
-                        self.spinner.removeConnectingView()
+                
+                if lndNode {
+                    self.getLNDChannels()
+                } else {
+                    fetchLocalPeers { _ in
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+                            
+                            self.peersTable.reloadData()
+                            self.spinner.removeConnectingView()
+                        }
                     }
                 }
             }
@@ -160,7 +203,27 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
                 }
             }
             
-            if let channels = dict["channels"] as? NSArray {
+            if lndNode {
+                let hasChannel = dict["hasChannel"] as! Bool
+                let channelActive = dict["channelActive"] as! Bool
+                let status = dict["channelStatus"] as! String
+                
+                if hasChannel {
+                    if channelActive {
+                        channelsImageView.image = UIImage(systemName: "bolt")
+                        channelsImageView.tintColor = .systemYellow
+                    } else {
+                        channelsImageView.image = UIImage(systemName: "bolt")
+                        channelsImageView.tintColor = .systemBlue
+                    }
+                    channelStatus.text = status
+                } else {
+                    channelsImageView.image = UIImage(systemName: "bolt.slash")
+                    channelsImageView.tintColor = .systemBlue
+                    channelStatus.text = "No channels with peer."
+                }
+                
+            } else if let channels = dict["channels"] as? NSArray {
                 if channels.count > 0 {
                     channelsImageView.image = UIImage(systemName: "bolt")
                     channelsImageView.tintColor = .systemYellow
@@ -182,8 +245,12 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         DispatchQueue.main.async { [weak self] in
-            self?.id = self?.peerArray[indexPath.section]["id"] as? String ?? ""
-            self?.performSegue(withIdentifier: "segueToPeerDetails", sender: self)
+            guard let self = self else { return }
+            
+            let peer = self.peerArray[indexPath.section]
+            
+            self.id = peer["id"] as? String ?? peer["pub_key"] as? String ?? ""
+            self.performSegue(withIdentifier: "segueToPeerDetails", sender: self)
         }
     }
     
@@ -226,7 +293,13 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
                 let peerStruct = PeersStruct(dictionary: peer)
                 
                 for (i, p) in self.peerArray.enumerated() {
-                    if p["id"] as! String == peerStruct.pubkey {
+                    var id = ""
+                    if self.lndNode {
+                        id = p["pub_key"] as! String
+                    } else {
+                        id = p["id"] as! String
+                    }
+                    if id == peerStruct.pubkey {
                         if peerStruct.label == "" {
                             self.peerArray[i]["name"] = peerStruct.alias
                         } else {
