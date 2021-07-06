@@ -6994,7 +6994,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 <nil key="highlightedColor"/>
                             </label>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="OAQ-xE-0Rf">
-                                <rect key="frame" x="0.0" y="107" width="375" height="560"/>
+                                <rect key="frame" x="0.0" y="181" width="375" height="486"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="separatorColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
@@ -7078,7 +7078,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                                 <constraint firstAttribute="bottom" secondItem="2mq-sl-3hg" secondAttribute="bottom" id="xD5-8S-sy1"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="backgroundColor" red="0.089602126288659822" green="0.089602126288659822" blue="0.089602126288659822" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                     </tableViewCell>
                                 </prototypes>
                                 <connections>
@@ -7086,16 +7086,87 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                     <outlet property="delegate" destination="a32-zP-STg" id="wQw-gr-rph"/>
                                 </connections>
                             </tableView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Total receivable: 2,000,000 sats" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hRB-sI-isu">
+                                <rect key="frame" x="16" y="107" width="207" height="17"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Total spendable: 2,000,000 sats" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BHZ-qw-HDM">
+                                <rect key="frame" x="16" y="132" width="208" height="17"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Our balance" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kR4-4H-OZY">
+                                <rect key="frame" x="40" y="156" width="79" height="17"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="IJo-6J-E1F">
+                                <rect key="frame" x="17" y="157" width="15" height="15"/>
+                                <color key="backgroundColor" red="0.34509804840000002" green="0.33725491169999999" blue="0.8392156959" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="15" id="9Dx-aG-9N4"/>
+                                    <constraint firstAttribute="width" constant="15" id="Fk1-rC-g3D"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dAY-rl-Ess">
+                                <rect key="frame" x="180" y="157" width="15" height="15"/>
+                                <color key="backgroundColor" red="0.34901961679999999" green="0.77647060160000003" blue="0.97254908080000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="15" id="NzS-Lu-ZjG"/>
+                                    <constraint firstAttribute="height" constant="15" id="gMS-hF-aUZ"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eUg-nn-cIM">
+                                <rect key="frame" x="263" y="72" width="96" height="19.5"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <color key="tintColor" red="0.34901961679999999" green="0.77647060160000003" blue="0.97254908080000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                <state key="normal" title=" rebalance" image="arrowtriangle.right.and.line.vertical.and.arrowtriangle.left" catalog="system">
+                                    <color key="titleColor" red="0.34901961679999999" green="0.77647060160000003" blue="0.97254908080000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                </state>
+                                <connections>
+                                    <action selector="rebalanceAction:" destination="a32-zP-STg" eventType="touchUpInside" id="5WZ-Bv-XdJ"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Their balance" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="g5z-6c-4Q1">
+                                <rect key="frame" x="203" y="156" width="88" height="17"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="bgH-br-M6S"/>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
+                            <constraint firstItem="hRB-sI-isu" firstAttribute="leading" secondItem="bgH-br-M6S" secondAttribute="leading" constant="16" id="6Ol-LX-3IJ"/>
+                            <constraint firstItem="dAY-rl-Ess" firstAttribute="leading" secondItem="kR4-4H-OZY" secondAttribute="trailing" constant="61" id="DbH-Vg-3P4"/>
+                            <constraint firstItem="kR4-4H-OZY" firstAttribute="leading" secondItem="IJo-6J-E1F" secondAttribute="trailing" constant="8" symbolic="YES" id="EQf-LU-4DA"/>
                             <constraint firstItem="OAQ-xE-0Rf" firstAttribute="leading" secondItem="bgH-br-M6S" secondAttribute="leading" id="EwQ-K0-8uk"/>
+                            <constraint firstItem="IJo-6J-E1F" firstAttribute="top" secondItem="BHZ-qw-HDM" secondAttribute="bottom" constant="8" symbolic="YES" id="LiV-gg-g0D"/>
                             <constraint firstItem="bHd-Kf-94v" firstAttribute="leading" secondItem="bgH-br-M6S" secondAttribute="leading" constant="16" id="OFz-Hp-tOz"/>
-                            <constraint firstItem="OAQ-xE-0Rf" firstAttribute="top" secondItem="bHd-Kf-94v" secondAttribute="bottom" constant="8" id="UOS-AA-xET"/>
+                            <constraint firstItem="IJo-6J-E1F" firstAttribute="leading" secondItem="bgH-br-M6S" secondAttribute="leading" constant="17" id="SGb-9x-xZQ"/>
+                            <constraint firstItem="BHZ-qw-HDM" firstAttribute="leading" secondItem="bgH-br-M6S" secondAttribute="leading" constant="16" id="SHY-bD-7d1"/>
                             <constraint firstItem="OAQ-xE-0Rf" firstAttribute="trailing" secondItem="bgH-br-M6S" secondAttribute="trailing" id="UP4-3W-90C"/>
+                            <constraint firstItem="kR4-4H-OZY" firstAttribute="centerY" secondItem="IJo-6J-E1F" secondAttribute="centerY" id="bjD-IT-nKl"/>
+                            <constraint firstItem="hRB-sI-isu" firstAttribute="top" secondItem="bHd-Kf-94v" secondAttribute="bottom" constant="8" symbolic="YES" id="eoU-6d-wpB"/>
+                            <constraint firstItem="OAQ-xE-0Rf" firstAttribute="top" secondItem="kR4-4H-OZY" secondAttribute="bottom" constant="8" id="fNc-lE-wWY"/>
+                            <constraint firstItem="eUg-nn-cIM" firstAttribute="centerY" secondItem="aXF-jg-BOC" secondAttribute="centerY" id="fSm-AK-Pu8"/>
+                            <constraint firstItem="BHZ-qw-HDM" firstAttribute="top" secondItem="hRB-sI-isu" secondAttribute="bottom" constant="8" symbolic="YES" id="i02-Rc-eOi"/>
+                            <constraint firstItem="bgH-br-M6S" firstAttribute="trailing" secondItem="eUg-nn-cIM" secondAttribute="trailing" constant="16" id="lql-So-1v7"/>
+                            <constraint firstItem="g5z-6c-4Q1" firstAttribute="leading" secondItem="dAY-rl-Ess" secondAttribute="trailing" constant="8" symbolic="YES" id="nTR-tK-r3u"/>
+                            <constraint firstItem="dAY-rl-Ess" firstAttribute="centerY" secondItem="kR4-4H-OZY" secondAttribute="centerY" id="qe7-Jw-s9x"/>
                             <constraint firstItem="OAQ-xE-0Rf" firstAttribute="bottom" secondItem="bgH-br-M6S" secondAttribute="bottom" id="sXZ-M3-qA9"/>
                             <constraint firstItem="aXF-jg-BOC" firstAttribute="centerY" secondItem="bHd-Kf-94v" secondAttribute="centerY" id="vFO-2u-81T"/>
+                            <constraint firstItem="g5z-6c-4Q1" firstAttribute="centerY" secondItem="dAY-rl-Ess" secondAttribute="centerY" id="vf2-8e-bix"/>
                             <constraint firstItem="bHd-Kf-94v" firstAttribute="top" secondItem="bgH-br-M6S" secondAttribute="top" constant="20" id="wwX-zU-0Gt"/>
                             <constraint firstItem="aXF-jg-BOC" firstAttribute="leading" secondItem="bHd-Kf-94v" secondAttribute="trailing" constant="8" id="yrZ-tM-waD"/>
                         </constraints>
@@ -7113,6 +7184,10 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <outlet property="header" destination="aXF-jg-BOC" id="xRy-58-tVE"/>
                         <outlet property="iconBackground" destination="bHd-Kf-94v" id="puu-2N-mzT"/>
                         <outlet property="iconHeader" destination="Syc-8C-tLM" id="hgJ-8U-aM8"/>
+                        <outlet property="oursIcon" destination="IJo-6J-E1F" id="Tit-dC-O5Y"/>
+                        <outlet property="theirsIcon" destination="dAY-rl-Ess" id="NJm-LJ-dCX"/>
+                        <outlet property="totalReceivableLabel" destination="hRB-sI-isu" id="nwx-J5-Bny"/>
+                        <outlet property="totalSpendableLabel" destination="BHZ-qw-HDM" id="yWN-23-9fz"/>
                         <segue destination="Ccs-1J-WKN" kind="show" identifier="segueToCreateChannel" id="duP-8F-304"/>
                         <segue destination="lIG-dj-4lO" kind="show" identifier="segueToChannelDetails" id="QEv-nW-5ec"/>
                     </connections>
@@ -7342,6 +7417,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <image name="arrow.down.left" catalog="system" width="128" height="112"/>
         <image name="arrow.down.right.and.arrow.up.left" catalog="system" width="128" height="118"/>
         <image name="arrow.up.right" catalog="system" width="128" height="112"/>
+        <image name="arrowtriangle.right.and.line.vertical.and.arrowtriangle.left" catalog="system" width="128" height="89"/>
         <image name="bitcoinsign.circle" catalog="system" width="128" height="121"/>
         <image name="bitcoinsign.square" catalog="system" width="128" height="114"/>
         <image name="bolt" catalog="system" width="101" height="128"/>

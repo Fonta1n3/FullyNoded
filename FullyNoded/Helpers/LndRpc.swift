@@ -89,6 +89,10 @@ class LndRpc {
                 request.httpBody = jsonData
                 request.httpMethod = "POST"
                 
+                if command == .payinvoice {
+                    request.timeoutInterval = 90
+                }
+                
                 #if DEBUG
                 print("request: \(request)")
                 #endif

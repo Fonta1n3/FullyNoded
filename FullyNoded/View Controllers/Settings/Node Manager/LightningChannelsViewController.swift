@@ -20,18 +20,34 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     var showInactive = Bool()
     var myId = ""
     var lndNode = false
+    var outgoingChannel:[String:Any]?
+    var incomingChannel:[String:Any]?
 
     @IBOutlet weak var header: UILabel!
     @IBOutlet weak var channelsTable: UITableView!
     @IBOutlet weak var iconBackground: UIView!
     @IBOutlet weak var iconHeader: UIImageView!
+    @IBOutlet weak var totalReceivableLabel: UILabel!
+    @IBOutlet weak var totalSpendableLabel: UILabel!
+    @IBOutlet weak var oursIcon: UILabel!
+    @IBOutlet weak var theirsIcon: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         channelsTable.delegate = self
         channelsTable.dataSource = self
+        
         iconBackground.clipsToBounds = true
         iconBackground.layer.cornerRadius = 5
+        
+        oursIcon.clipsToBounds = true
+        oursIcon.layer.cornerRadius = oursIcon.frame.width / 2
+        
+        theirsIcon.clipsToBounds = true
+        theirsIcon.layer.cornerRadius = theirsIcon.frame.width / 2
+        
+        totalReceivableLabel.text = ""
+        totalSpendableLabel.text = ""
         
         if showPending {
             header.text = "Pending Channels"
@@ -58,6 +74,11 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
         }
     }
     
+    @IBAction func rebalanceAction(_ sender: Any) {
+        showAlert(vc: self, title: "Rebalance Channels", message: "For best results tap an outgoing channel which has a higher balance on the spendable side, when prompted tap an incoming channel where the receivable balance is higher. The goal is to get a 50/50 balance in each channel. Fully Noded will automatically determine the ideal amount to send to rebalance the channel and get your confirmation before sending funds.")
+    }
+    
+    
     func numberOfSections(in tableView: UITableView) -> Int {
         return channels.count
     }
@@ -71,6 +92,8 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
         if showActive {
             let cell = tableView.dequeueReusableCell(withIdentifier: "activeChannelCell", for: indexPath)
             cell.selectionStyle = .none
+            cell.layer.borderColor = UIColor.lightGray.cgColor
+            cell.layer.borderWidth = 0.5
             
             let amountReceivableLabel = cell.viewWithTag(1) as! UILabel
             let amountSpendableLabel = cell.viewWithTag(2) as! UILabel
@@ -95,9 +118,11 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
             
             return cell
         } else if showPending {
-            //remote_node_pub
             let cell = tableView.dequeueReusableCell(withIdentifier: "channelCell", for: indexPath)
             cell.selectionStyle = .none
+            cell.layer.borderColor = UIColor.lightGray.cgColor
+            cell.layer.borderWidth = 0.5
+            
             let dict = channels[indexPath.section]
             let id = dict["remote_node_pub"] as? String ?? "?"
             cell.textLabel?.text = id
@@ -106,6 +131,9 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
         } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: "channelCell", for: indexPath)
             cell.selectionStyle = .none
+            cell.layer.borderColor = UIColor.lightGray.cgColor
+            cell.layer.borderWidth = 0.5
+            
             let dict = channels[indexPath.section]
             let id = dict["channel_id"] as? String ?? dict["chan_id"] as? String ?? "?"
             cell.textLabel?.text = id
@@ -160,12 +188,103 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
             selectedChannel = channels[indexPath.section]
             promptToRebalanceCL()
         } else if lndNode && showActive {
-            promptToRebalanceLND()
+            if outgoingChannel == nil {
+                outgoingChannel = channels[indexPath.section]
+                userSelectedOutgoing()
+            } else {
+                incomingChannel = channels[indexPath.section]
+                userSelectedIncoming()
+            }
+        }
+    }
+    
+    private func rebalanceChannel() {
+        let ourAmountOutgoing = Int(self.outgoingChannel!["local_balance"] as! String)!
+        let theirAmountOutgoing = Int(self.outgoingChannel!["remote_balance"] as! String)!
+        let totalOutgoingChannelBalance = ourAmountOutgoing + theirAmountOutgoing
+        let targetOutgoingBalance = totalOutgoingChannelBalance / 2
+        let idealOutgoingAmount = ourAmountOutgoing - targetOutgoingBalance
+        
+        let ourAmountIncoming = Int(self.incomingChannel!["local_balance"] as! String)!
+        let theirAmountIncoming = Int(self.incomingChannel!["remote_balance"] as! String)!
+        let totalIncomingChannelBalance = ourAmountIncoming + theirAmountIncoming
+        let targetIncomingBalance = totalIncomingChannelBalance / 2
+        let idealIncomingAmount = theirAmountIncoming - targetIncomingBalance
+        
+        var idealAmount = 0
+        if idealOutgoingAmount < idealIncomingAmount {
+            idealAmount = idealOutgoingAmount
+        } else {
+            idealAmount = idealIncomingAmount
+        }
+        
+        self.promptToBalanceLndIdealAmount(amount: idealAmount)
+    }
+    
+    private func promptToBalanceLndIdealAmount(amount: Int) {
+        DispatchQueue.main.async { [weak self] in
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "Confirm Amount", message: "The ideal amount to rebalance with is \(amount) sats.", preferredStyle: alertStyle)
+            alert.addAction(UIAlertAction(title: "Rebalance \(amount) sats", style: .default, handler: { action in
+                self?.rebalanceLndNow(amount: amount)
+            }))
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { [weak self] action in
+                self?.outgoingChannel = nil
+                self?.incomingChannel = nil
+            }))
+            alert.popoverPresentationController?.sourceView = self?.view
+            self?.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func rebalanceLndNow(amount: Int) {
+        spinner.addConnectingView(vc: self, description: "Rebalancing...")
+        
+        let param:[String:Any] = ["memo":"Rebalance", "value":"\(amount)"]
+        
+        LndRpc.sharedInstance.makeLndCommand(command: .addinvoice, param: param, urlExt: nil, query: nil) { [weak self] (response, error) in
+            guard let self = self else { return }
+
+            guard let dict = response, let invoice = dict["payment_request"] as? String else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Error", message: error ?? "we had an issue getting your lightning invoice")
+                return
+            }
+
+            let outgoingId = self.outgoingChannel!["chan_id"] as! String
+            let incomingId = self.incomingChannel!["chan_id"] as! String
+
+            let paymentParam:[String:Any] = ["allow_self_payment":true, "outgoing_chan_id": outgoingId, "last_hop": incomingId, "payment_request": invoice]
+            LndRpc.sharedInstance.makeLndCommand(command: .payinvoice, param: paymentParam, urlExt: nil, query: nil) { (response, error) in
+                self.spinner.removeConnectingView()
+
+                guard let response = response else {
+                    self.outgoingChannel = nil
+                    self.incomingChannel = nil
+                    showAlert(vc: self, title: "There was an issue.", message: error ?? "Unknown error when rebalancing.")
+                    return
+                }
+
+                if let payment_error = response["payment_error"] as? String, payment_error != "" {
+                    self.outgoingChannel = nil
+                    self.incomingChannel = nil
+                    showAlert(vc: self, title: "There was an issue while attempting to rebalance.", message: payment_error)
+                } else {
+                    self.outgoingChannel = nil
+                    self.incomingChannel = nil
+                    self.loadChannels()
+                    showAlert(vc: self, title: "Rebalance success ✓", message: "")
+                }
+            }
         }
     }
     
     private func loadChannels() {
         spinner.addConnectingView(vc: self, description: "getting channels...")
+        self.channels.removeAll()
         
         isLndNode { [weak self] isLnd in
             guard let self = self else { return }
@@ -272,15 +391,22 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     }
     
     private func parseLNDChannels(_ channels: NSArray) {
+        var totalSpendable = 0
+        var totalReceivable = 0
+        
         for (i, channel) in channels.enumerated() {
             var dict = channel as! [String:Any]
             
             let localBalance = Int(dict["local_balance"] as! String)!
+            totalSpendable += localBalance
+            
             let remoteBalance = Int(dict["remote_balance"] as! String)!
+            totalReceivable += remoteBalance
+            
             if remoteBalance == 0 {
                 dict["ratio"] = Float(1)
             } else {
-                dict["ratio"] = Float(Double(localBalance) / Double(remoteBalance))
+                dict["ratio"] = Float((Double(localBalance) / Double(remoteBalance)) / 2.0)
             }
             
             for (key, value) in dict {
@@ -300,7 +426,18 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
             self.channels.append(dict)
             
             if i + 1 == channels.count {
-                load()
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.totalSpendableLabel.text = "Total spendable: \(totalSpendable.withCommas()) sats"
+                    self.totalReceivableLabel.text = "Total receivable: \(totalReceivable.withCommas()) sats"
+                }
+                
+                fetchLocalPeers { [weak self] _ in
+                    guard let self = self else { return }
+                    
+                    self.load()
+                }
             }
         }
     }
@@ -364,7 +501,7 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
                 let peerStruct = PeersStruct(dictionary: peer)
                 
                 for (i, p) in self.channels.enumerated() {
-                    if p["peerId"] as! String == peerStruct.pubkey {
+                    if (p["peerId"] as? String ?? p["remote_pubkey"] as? String) == peerStruct.pubkey {
                         if peerStruct.label == "" {
                             self.channels[i]["name"] = peerStruct.alias
                         } else {
@@ -395,14 +532,59 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     
     // MARK: - Rebalancing
     
-    private func promptToRebalanceLND() {
+    private func userSelectedOutgoing() {
+        let ourAmountOutgoing = Int(self.outgoingChannel!["local_balance"] as! String)!
+        let theirAmountOutgoing = Int(self.outgoingChannel!["remote_balance"] as! String)!
+        
+        guard ourAmountOutgoing > theirAmountOutgoing else {
+            self.outgoingChannel = nil
+            self.incomingChannel = nil
+            
+            showAlert(vc: self, title: "Try Again", message: "Choose an outgoing channel which has a significantly higher spendable balance then receivable.")
+            return
+        }
+        
         DispatchQueue.main.async { [weak self] in
             var alertStyle = UIAlertController.Style.actionSheet
             if (UIDevice.current.userInterfaceIdiom == .pad) {
               alertStyle = UIAlertController.Style.alert
             }
-            let alert = UIAlertController(title: "Coming soon for LND.", message: "For now rebalancing only works with c-lightning.", preferredStyle: alertStyle)
+            let alert = UIAlertController(title: "Rebalance?", message: "We will use this channel for the outgoing payment. Now tap the channel to use for the incoming payment to continue.", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in }))
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { [weak self] action in
+                self?.outgoingChannel = nil
+                self?.incomingChannel = nil
+            }))
+            alert.popoverPresentationController?.sourceView = self?.view
+            self?.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func userSelectedIncoming() {
+        let ourAmountIncoming = Int(self.incomingChannel!["local_balance"] as! String)!
+        let theirAmountIncoming = Int(self.incomingChannel!["remote_balance"] as! String)!
+        
+        guard theirAmountIncoming > ourAmountIncoming else {
+            self.outgoingChannel = nil
+            self.incomingChannel = nil
+            
+            showAlert(vc: self, title: "Try Again", message: "Choose an incoming channel which has a significantly higher receivable balance then spendable.")
+            return
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "Rebalance?", message: "We will use this channel for the incoming payment.", preferredStyle: alertStyle)
+            alert.addAction(UIAlertAction(title: "Rebalance Now", style: .default, handler: { action in
+                self?.rebalanceChannel()
+            }))
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { [weak self] action in
+                self?.outgoingChannel = nil
+                self?.incomingChannel = nil
+            }))
             alert.popoverPresentationController?.sourceView = self?.view
             self?.present(alert, animated: true, completion: nil)
         }
@@ -516,7 +698,7 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
 
 }
 
-// MARK: TODO: Rebalance without the plugin, this code is a start, good luck with that.
+// MARK: TODO: Rebalance without the c-lightning plugin, this code is a start, good luck with that.
 /*
  
  /*

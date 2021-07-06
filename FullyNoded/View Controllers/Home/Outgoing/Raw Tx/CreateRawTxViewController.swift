@@ -1145,15 +1145,15 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         
         LndRpc.sharedInstance.makeLndCommand(command: .queryroutes, param: [:], urlExt: "\(destination)/\(amount)", query: nil) { [weak self] (response, error) in
             guard let self = self else { return }
-            
+
             guard let routes = response?["routes"] as? NSArray, routes.count > 0 else {
                 self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "Payment Error", message: error ?? "Unknown error.")
                 return
             }
-            
+
             let lnrpcRouteToTry = routes[self.index]
-            
+
             let param:[String:Any] = ["route": lnrpcRouteToTry, "payment_hash": paymentHashData]
             LndRpc.sharedInstance.makeLndCommand(command: .routepayment, param: param, urlExt: nil, query: nil) { [weak self] (response, error) in
                 guard let self = self else { return }
