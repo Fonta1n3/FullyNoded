@@ -256,6 +256,8 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
 
             let outgoingId = self.outgoingChannel!["chan_id"] as! String
             let incomingId = self.incomingChannel!["chan_id"] as! String
+            
+            //"fee_limit": ["fixed":"1"] may need to increase fee limit, look into this if constant routing issues.
 
             let paymentParam:[String:Any] = ["allow_self_payment":true, "outgoing_chan_id": outgoingId, "last_hop": incomingId, "payment_request": invoice]
             LndRpc.sharedInstance.makeLndCommand(command: .payinvoice, param: paymentParam, urlExt: nil, query: nil) { (response, error) in

@@ -105,17 +105,48 @@ public enum LIGHTNING_CLI: String {
 }
 
 public enum LND_REST: String {
-    case walletbalance = "v1/balance/blockchain"
-    case getinfo = "v1/getinfo"
-    case channelbalance = "v1/balance/channels"
-    case addinvoice = "v1/invoices"
-    case payreq, decodepayreq = "v1/payreq"
-    case getnewaddress = "v2/wallet/address/next"
-    case sendcoins, gettransactions = "v1/transactions"
-    case routepayment = "v1/channels/transactions/route"
-    case payinvoice = "v1/channels/transactions"
-    case listpeers = "v1/peers"
-    case listchannels = "v1/channels"
-    case getnodeinfo = "v1/graph/node"
-    case queryroutes = "v1/graph/routes"
+    case walletbalance
+    case getinfo
+    case channelbalance
+    case addinvoice
+    case payreq, decodepayreq
+    case getnewaddress
+    case sendcoins, gettransactions
+    case routepayment
+    case payinvoice
+    case listpeers, connect
+    case listchannels
+    case getnodeinfo
+    case queryroutes
+    
+    var stringValue:String {
+        switch self {
+        case .connect, .listpeers:
+            return "v1/peers"
+        case .sendcoins, .gettransactions:
+            return "v1/transactions"
+        case .payreq, .decodepayreq:
+            return "v1/payreq"
+        case .walletbalance:
+            return "v1/balance/blockchain"
+        case .getinfo:
+            return "v1/getinfo"
+        case .channelbalance:
+            return "v1/balance/channels"
+        case .addinvoice:
+            return "v1/invoices"
+        case .getnewaddress:
+            return "v2/wallet/address/next"
+        case .routepayment:
+            return "v1/channels/transactions/route"
+        case .payinvoice:
+            return "v1/channels/transactions"
+        case .listchannels:
+            return "v1/channels"
+        case .getnodeinfo:
+            return "v1/graph/node"
+        case .queryroutes:
+            return "v1/graph/routes"
+        }
+    }
 }

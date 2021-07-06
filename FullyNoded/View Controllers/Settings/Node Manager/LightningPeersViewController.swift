@@ -265,6 +265,41 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
     
     private func addPeer(id: String, ip: String, port: String?) {
         spinner.addConnectingView(vc: self, description: "connecting peer...")
+        
+        isLndNode { [weak self] isLnd in
+            guard let self = self else { return }
+            
+            guard isLnd else {
+                self.addPeerCL(id: id, ip: ip, port: port)
+                return
+            }
+            
+            self.addPeerLND(id: id, ip: ip, port: port)
+        }
+    }
+    
+    private func addPeerLND(id: String, ip: String, port: String?) {
+        let host = "\(ip):\(port ?? "9735")"
+        LndRpc.sharedInstance.makeLndCommand(command: .connect, param: ["addr": ["pubkey":id, "host": host]], urlExt: nil, query: nil) { [weak self] (response, error) in
+            guard let self = self else { return }
+            
+            self.spinner.removeConnectingView()
+            
+            guard let response = response else {
+                showAlert(vc: self, title: "Error", message: error ?? "Unknown error connecting peer.")
+                return
+            }
+            
+            if let errorMessage = response["error"] as? String, errorMessage != "" {
+                showAlert(vc: self, title: "Error", message: errorMessage)
+            } else {
+                showAlert(vc: self, title: "Peer connected ✓", message: "")
+                self.loadPeers()
+            }
+        }
+    }
+    
+    private func addPeerCL(id: String, ip: String, port: String?) {
         let param = "\(id)@\(ip):\(port ?? "9735")"
         let commandId = UUID()
         LightningRPC.command(id: commandId, method: .connect, param: "\(param)") { [weak self] (uuid, response, errorDesc) in
