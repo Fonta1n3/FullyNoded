@@ -5997,33 +5997,26 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Create a Channel" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bqn-kZ-3bA">
-                                <rect key="frame" x="16" y="63" width="226" height="35"/>
+                                <rect key="frame" x="59" y="63" width="226" height="35"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bmf-3G-mD0">
-                                <rect key="frame" x="16" y="195.5" width="343" height="54"/>
-                                <string key="text">You may scan any QR code in the format of publicKey@ip:port with the port being optional, if no port is supplied we will try the default 9735</string>
-                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
-                                <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="To create the channel scan a QR code in the format of publickey@ip:port (standard URI format)." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bmf-3G-mD0">
+                                <rect key="frame" x="16" y="344" width="343" height="29"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="example:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2Jh-Pw-BYC">
-                                <rect key="frame" x="16" y="255" width="51" height="15"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <color key="highlightedColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                            </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="t7F-SI-0t5">
-                                <rect key="frame" x="16" y="106" width="343" height="81.5"/>
-                                <string key="text">This tool will connect to a peer, open a channel, fund a channel and secure the channel. If something goes wrong along the way a descriptive error message will appear.</string>
+                                <rect key="frame" x="16" y="106" width="343" height="122"/>
+                                <string key="text">If you are using LND and an onchain Fully Noded wallet you will be prompted to add a closing address which is generated from that wallet. When the channel closes the funds will be sent to that address. Alternatively you can opt to use the LND wallet.</string>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LVT-jy-ind">
-                                <rect key="frame" x="16" y="607" width="343" height="40"/>
+                                <rect key="frame" x="16" y="388" width="343" height="40"/>
                                 <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="40" id="98w-8t-E49"/>
@@ -6036,49 +6029,69 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                     <action selector="scanNowAction:" destination="Ccs-1J-WKN" eventType="touchUpInside" id="Rio-wy-aRF"/>
                                 </connections>
                             </button>
-                            <textField opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="SRg-gq-aWa">
-                                <rect key="frame" x="16" y="381" width="343" height="34"/>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="SRg-gq-aWa">
+                                <rect key="frame" x="16" y="280" width="343" height="34"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" keyboardType="numberPad" keyboardAppearance="alert" returnKeyType="done"/>
                             </textField>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="030f375d8aecdddc852309c15c3b67c2934de0de4d31e1e04a03d656ca0a78d008@104.131.26.124:9735" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="HaU-Rd-di3">
-                                <rect key="frame" x="16" y="278" width="345" height="61"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Enter an amount of satoshis to commit to the channel:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dQ2-EQ-aje">
+                                <rect key="frame" x="16" y="257" width="345" height="15"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="highlightedColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </label>
+                            <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1Ed-BV-iZs">
+                                <rect key="frame" x="16" y="63" width="35" height="35"/>
+                                <subviews>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="slider.horizontal.3" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="nGY-Ky-scY">
+                                        <rect key="frame" x="5" y="6.5" width="25" height="21.5"/>
+                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="25" id="jTB-zW-gp5"/>
+                                            <constraint firstAttribute="width" constant="25" id="p7k-UA-Dhx"/>
+                                        </constraints>
+                                    </imageView>
+                                </subviews>
+                                <color key="backgroundColor" systemColor="systemBlueColor"/>
+                                <constraints>
+                                    <constraint firstItem="nGY-Ky-scY" firstAttribute="centerY" secondItem="1Ed-BV-iZs" secondAttribute="centerY" id="Kx0-5N-ns3"/>
+                                    <constraint firstAttribute="height" constant="35" id="cLx-ka-tdl"/>
+                                    <constraint firstItem="nGY-Ky-scY" firstAttribute="centerX" secondItem="1Ed-BV-iZs" secondAttribute="centerX" id="gU0-Z1-krH"/>
+                                    <constraint firstAttribute="width" constant="35" id="vQd-KD-a0B"/>
+                                </constraints>
+                            </view>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Channels are always created as private and can be funded with unconfirmed funds." lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gUo-3Y-mJY">
+                                <rect key="frame" x="16" y="618" width="343" height="29"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                 <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
-                            </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="choose an amount of satoshis to commit to the channel:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dQ2-EQ-aje">
-                                <rect key="frame" x="16" y="358" width="345" height="15"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <color key="highlightedColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Dig-wA-gAJ"/>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="HaU-Rd-di3" firstAttribute="leading" secondItem="Dig-wA-gAJ" secondAttribute="leading" constant="16" id="08J-Rd-ZbB"/>
-                            <constraint firstAttribute="trailing" secondItem="bmf-3G-mD0" secondAttribute="trailing" constant="16" id="0Je-1c-Mck"/>
-                            <constraint firstItem="Dig-wA-gAJ" firstAttribute="bottom" secondItem="LVT-jy-ind" secondAttribute="bottom" constant="20" id="16v-im-DA6"/>
                             <constraint firstAttribute="trailing" secondItem="t7F-SI-0t5" secondAttribute="trailing" constant="16" id="1X1-56-DmX"/>
                             <constraint firstItem="dQ2-EQ-aje" firstAttribute="leading" secondItem="Dig-wA-gAJ" secondAttribute="leading" constant="16" id="1ed-H1-Zte"/>
                             <constraint firstItem="Dig-wA-gAJ" firstAttribute="trailing" secondItem="LVT-jy-ind" secondAttribute="trailing" constant="16" id="2OH-jI-1wz"/>
-                            <constraint firstItem="Dig-wA-gAJ" firstAttribute="trailing" secondItem="HaU-Rd-di3" secondAttribute="trailing" constant="14" id="3X6-7q-bJO"/>
+                            <constraint firstItem="LVT-jy-ind" firstAttribute="top" secondItem="bmf-3G-mD0" secondAttribute="bottom" constant="15" id="34D-RD-igw"/>
+                            <constraint firstItem="1Ed-BV-iZs" firstAttribute="top" secondItem="Dig-wA-gAJ" secondAttribute="top" constant="19" id="5wX-Yz-PHm"/>
                             <constraint firstItem="Dig-wA-gAJ" firstAttribute="trailing" secondItem="SRg-gq-aWa" secondAttribute="trailing" constant="16" id="9GU-Qr-1nb"/>
                             <constraint firstItem="LVT-jy-ind" firstAttribute="leading" secondItem="Dig-wA-gAJ" secondAttribute="leading" constant="16" id="9hN-av-ItR"/>
+                            <constraint firstItem="Dig-wA-gAJ" firstAttribute="bottom" secondItem="gUo-3Y-mJY" secondAttribute="bottom" constant="20" id="CQC-aH-5FO"/>
+                            <constraint firstItem="gUo-3Y-mJY" firstAttribute="leading" secondItem="Dig-wA-gAJ" secondAttribute="leading" constant="16" id="D6h-oV-aTT"/>
                             <constraint firstItem="SRg-gq-aWa" firstAttribute="top" secondItem="dQ2-EQ-aje" secondAttribute="bottom" constant="8" id="IQt-lS-vuN"/>
-                            <constraint firstItem="2Jh-Pw-BYC" firstAttribute="top" secondItem="bmf-3G-mD0" secondAttribute="bottom" constant="5.5" id="KXR-Eb-GXz"/>
+                            <constraint firstItem="dQ2-EQ-aje" firstAttribute="top" secondItem="t7F-SI-0t5" secondAttribute="bottom" constant="29" id="Jtr-ti-TZk"/>
+                            <constraint firstItem="Dig-wA-gAJ" firstAttribute="trailing" secondItem="bmf-3G-mD0" secondAttribute="trailing" constant="16" id="L82-V3-Fg0"/>
+                            <constraint firstItem="1Ed-BV-iZs" firstAttribute="leading" secondItem="Dig-wA-gAJ" secondAttribute="leading" constant="16" id="LfY-OV-pCz"/>
                             <constraint firstItem="t7F-SI-0t5" firstAttribute="top" secondItem="bqn-kZ-3bA" secondAttribute="bottom" constant="8" id="M32-xd-f8s"/>
-                            <constraint firstItem="bmf-3G-mD0" firstAttribute="top" secondItem="t7F-SI-0t5" secondAttribute="bottom" constant="8" id="MbS-vf-cNf"/>
-                            <constraint firstItem="dQ2-EQ-aje" firstAttribute="top" secondItem="HaU-Rd-di3" secondAttribute="bottom" constant="19" id="QO3-qf-zce"/>
                             <constraint firstItem="t7F-SI-0t5" firstAttribute="leading" secondItem="Dig-wA-gAJ" secondAttribute="leading" constant="16" id="R1H-ER-N2c"/>
-                            <constraint firstItem="bmf-3G-mD0" firstAttribute="leading" secondItem="Dig-wA-gAJ" secondAttribute="leading" constant="16" id="RKq-4m-Agz"/>
                             <constraint firstItem="SRg-gq-aWa" firstAttribute="leading" secondItem="Dig-wA-gAJ" secondAttribute="leading" constant="16" id="Wpr-He-yYl"/>
-                            <constraint firstItem="HaU-Rd-di3" firstAttribute="top" secondItem="2Jh-Pw-BYC" secondAttribute="bottom" constant="8" id="cuD-tj-HF8"/>
                             <constraint firstItem="Dig-wA-gAJ" firstAttribute="trailing" secondItem="dQ2-EQ-aje" secondAttribute="trailing" constant="14" id="frx-r6-hHJ"/>
-                            <constraint firstItem="bqn-kZ-3bA" firstAttribute="top" secondItem="Dig-wA-gAJ" secondAttribute="top" constant="19" id="npo-Db-WYd"/>
-                            <constraint firstItem="2Jh-Pw-BYC" firstAttribute="leading" secondItem="Dig-wA-gAJ" secondAttribute="leading" constant="16" id="pAH-R3-Ail"/>
-                            <constraint firstItem="bqn-kZ-3bA" firstAttribute="leading" secondItem="Dig-wA-gAJ" secondAttribute="leading" constant="16" id="zHe-Zy-rhb"/>
+                            <constraint firstItem="bqn-kZ-3bA" firstAttribute="leading" secondItem="1Ed-BV-iZs" secondAttribute="trailing" constant="8" symbolic="YES" id="hWb-t3-YSS"/>
+                            <constraint firstItem="bmf-3G-mD0" firstAttribute="top" secondItem="SRg-gq-aWa" secondAttribute="bottom" constant="30" id="k3Y-a5-yNS"/>
+                            <constraint firstItem="Dig-wA-gAJ" firstAttribute="trailing" secondItem="gUo-3Y-mJY" secondAttribute="trailing" constant="16" id="mo4-Pu-say"/>
+                            <constraint firstItem="bmf-3G-mD0" firstAttribute="leading" secondItem="Dig-wA-gAJ" secondAttribute="leading" constant="16" id="nFZ-id-dAR"/>
+                            <constraint firstItem="bqn-kZ-3bA" firstAttribute="centerY" secondItem="1Ed-BV-iZs" secondAttribute="centerY" id="ziO-fc-g8n"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="MUD-Sj-984"/>
@@ -7403,7 +7416,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="LMu-1F-VvA"/>
         <segue reference="oY9-Pq-H5b"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="sXG-y0-yya"/>
+        <segue reference="hqP-uS-RkV"/>
         <segue reference="8MS-xS-DMP"/>
         <segue reference="veA-tY-zvZ"/>
         <segue reference="7PS-EL-3d2"/>
