@@ -108,7 +108,7 @@ class LndRpc {
                 request.setValue("\(jsonData.count)", forHTTPHeaderField: "Content-Length")
                 request.httpBody = jsonData
                 
-            case .closechannel:
+            case .closechannel, .disconnect:
                 request.httpMethod = "DELETE"
                 request.timeoutInterval = 90
                 

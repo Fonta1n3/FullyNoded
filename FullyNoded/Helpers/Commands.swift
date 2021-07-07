@@ -122,10 +122,11 @@ public enum LND_REST: String {
     case fundingstep
     case closechannel
     case fwdinghistory
+    case disconnect
     
     var stringValue:String {
         switch self {
-        case .connect, .listpeers:
+        case .connect, .listpeers, .disconnect:
             return "v1/peers"
         case .sendcoins, .gettransactions:
             return "v1/transactions"
@@ -145,18 +146,14 @@ public enum LND_REST: String {
             return "v1/channels/transactions/route"
         case .payinvoice:
             return "v1/channels/transactions"
-        case .listchannels:
+        case .listchannels, .openchannel, .closechannel:
             return "v1/channels"
         case .getnodeinfo:
             return "v1/graph/node"
         case .queryroutes:
             return "v1/graph/routes"
-        case .openchannel:
-            return "v1/channels"
         case .fundingstep:
             return "v1/funding/step"
-        case .closechannel:
-            return "v1/channels"
         case .fwdinghistory:
             return "v1/switch"
         }

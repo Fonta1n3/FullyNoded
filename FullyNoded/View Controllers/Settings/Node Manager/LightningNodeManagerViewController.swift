@@ -353,7 +353,7 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
         case 3:
             textLabel.text = "Inactive channels"
         case 4:
-            textLabel.text = "Pending Channels"
+            textLabel.text = "Pending channels"
         case 5:
             textLabel.text = "Fees collected"
         case 6:

@@ -6714,7 +6714,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                                 <constraint firstItem="yhI-6Z-Bmv" firstAttribute="centerY" secondItem="tr7-4F-cQd" secondAttribute="centerY" id="sKj-rZ-j6G"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="backgroundColor" red="0.090196087960000004" green="0.090196087960000004" blue="0.090196087960000004" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                     </tableViewCell>
                                 </prototypes>
                                 <connections>
@@ -7416,9 +7416,9 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="LMu-1F-VvA"/>
         <segue reference="oY9-Pq-H5b"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="hqP-uS-RkV"/>
+        <segue reference="sXG-y0-yya"/>
         <segue reference="8MS-xS-DMP"/>
-        <segue reference="veA-tY-zvZ"/>
+        <segue reference="yAt-Ra-aPH"/>
         <segue reference="7PS-EL-3d2"/>
         <segue reference="j10-wi-hpr"/>
         <segue reference="qmy-fM-U4p"/>

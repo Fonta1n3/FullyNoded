@@ -263,6 +263,90 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
         return 96
     }
     
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let header = UIView()
+        header.backgroundColor = UIColor.clear
+        header.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 50)
+        
+        let closeButton = UIButton()
+        let closeImage = UIImage(systemName: "xmark.circle")!
+        closeButton.tag = section
+        closeButton.tintColor = .systemTeal
+        closeButton.setImage(closeImage, for: .normal)
+        closeButton.addTarget(self, action: #selector(disconnect(_:)), for: .touchUpInside)
+        closeButton.frame = CGRect(x: header.frame.maxX - 50, y: 0, width: 40, height: 40)
+        closeButton.center.y = header.center.y
+        closeButton.showsTouchWhenHighlighted = true
+        header.addSubview(closeButton)
+        
+        return header
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 50
+    }
+    
+    @objc func disconnect(_ sender: UIButton) {
+        promptToDisconnect(peerArray[sender.tag])
+    }
+    
+    
+     private func promptToDisconnect(_ peer: [String:Any]) {
+         isLndNode { [weak self] isLnd in
+             guard let self = self else { return }
+             
+             guard isLnd else {
+                 showAlert(vc: self, title: "LND Only", message: "Coming soon for c-lightning.")
+                 return
+             }
+             
+             DispatchQueue.main.async { [weak self] in
+                 let alertStyle = UIAlertController.Style.alert
+                 
+                 let alert = UIAlertController(title: "Disconnect peer?", message: "", preferredStyle: alertStyle)
+                 
+                 alert.addAction(UIAlertAction(title: "Disconnect", style: .destructive, handler: { [weak self] action in
+                     guard let self = self else { return }
+                     
+                     self.disconnectlLnd(peer)
+                 }))
+                 
+                 alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+                 alert.popoverPresentationController?.sourceView = self?.view
+                 self?.present(alert, animated: true, completion: nil)
+             }
+         }
+     }
+     
+     private func disconnectlLnd(_ peer: [String:Any]) {
+         spinner.addConnectingView(vc: self, description: "Disconnecting peer...")
+         
+         guard let pubkey = peer["pub_key"] as? String else {
+            self.spinner.removeConnectingView()
+            showAlert(vc: self, title: "Unable to disconnect.", message: "No pubkey found.")
+            return
+         }
+         
+         LndRpc.sharedInstance.command(.disconnect, nil, pubkey, nil) { [weak self] (response, error) in
+             guard let self = self else { return }
+             
+             self.spinner.removeConnectingView()
+             
+             if let error = error {
+                 showAlert(vc: self, title: "Error", message: error)
+             } else {
+                 
+                 guard let _ = response else {
+                     showAlert(vc: self, title: "Error", message: "We did not get a response from your node.")
+                     return
+                 }
+                 
+                self.loadPeers()
+                showAlert(vc: self, title: "Peer disconnected ✓", message: "")
+             }
+         }
+     }
+    
     private func addPeer(id: String, ip: String, port: String?) {
         spinner.addConnectingView(vc: self, description: "connecting peer...")
         
