@@ -85,7 +85,15 @@ class LndRpc {
             request.addValue(macaroonHex, forHTTPHeaderField: "Grpc-Metadata-macaroon")
             
             switch command {
-            case .addinvoice, .sendcoins, .payinvoice, .routepayment, .connect, .openchannel, .fundingstep:
+            case .addinvoice,
+                 .sendcoins,
+                 .payinvoice,
+                 .routepayment,
+                 .connect,
+                 .openchannel,
+                 .fundingstep,
+                 .fwdinghistory:
+                
                 request.httpMethod = "POST"
                 
                 if command == .payinvoice {

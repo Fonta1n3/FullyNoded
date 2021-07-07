@@ -121,6 +121,7 @@ public enum LND_REST: String {
     case openchannel
     case fundingstep
     case closechannel
+    case fwdinghistory
     
     var stringValue:String {
         switch self {
@@ -156,6 +157,8 @@ public enum LND_REST: String {
             return "v1/funding/step"
         case .closechannel:
             return "v1/channels"
+        case .fwdinghistory:
+            return "v1/switch"
         }
     }
 }

@@ -210,7 +210,6 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
             let num_active_channels = dict["num_active_channels"] as? Int ?? 0
             let num_inactive_channels = dict["num_inactive_channels"] as? Int ?? 0
             let id = dict["id"] as? String ?? ""
-            let feesCollected = dict["fees_collected_msat"] as? String ?? "unknown"
             let version = dict["version"] as? String ?? ""
             let uris = dict["uris"] as? NSArray ?? []
             
@@ -221,7 +220,7 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
             self.tableArray.append("\(num_active_channels)")
             self.tableArray.append("\(num_inactive_channels)")
             self.tableArray.append("\(num_pending_channels)")
-            self.tableArray.append(feesCollected)
+            self.tableArray.append("fetching...")
             self.tableArray.append(version)
             self.url = "\(uris[0])"
             
@@ -230,6 +229,49 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
                 
                 self.nodeTable.reloadData()
                 self.spinner.removeConnectingView()
+                self.lndGetFees()
+            }
+        }
+    }
+    
+    private func lndGetFees() {
+        let start = Int(Calendar.current.date(byAdding: .year, value: -6, to: Date())!.timeIntervalSince1970)
+        let now = Int(Date().timeIntervalSince1970)
+        let body:[String:Any] = ["start_time":"\(start)", "end_time":"\(now)"]
+        
+        LndRpc.sharedInstance.command(.fwdinghistory, body, nil, nil) { (response, error) in
+            guard let response = response else { return }
+            
+            var totalEarned = 0
+            
+            guard let events = response["forwarding_events"] as? NSArray, events.count > 0 else {
+                self.tableArray[5] = "\(totalEarned) sats"
+                
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.nodeTable.reloadData()
+                }
+                
+                return
+            }
+            
+            for (i, event) in events.enumerated() {
+                if let dict = event as? [String:Any] {
+                    if let fee = dict["fee"] as? String, let int = Int(fee) {
+                        totalEarned += int
+                    }
+                    
+                    if i + 1 == events.count {
+                        self.tableArray[5] = "\(totalEarned) sats"
+                        
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+                            
+                            self.nodeTable.reloadData()
+                        }
+                    }
+                }
             }
         }
     }
