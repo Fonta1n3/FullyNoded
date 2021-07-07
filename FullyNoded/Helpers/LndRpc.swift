@@ -15,9 +15,13 @@ class LndRpc {
     
     private init() {}
     
-    func makeLndCommand(command: LND_REST, param: [String:Any], urlExt: String?, query: [String:Any]?, completion: @escaping ((response: [String:Any]?, error: String?)) -> Void) {
+    func command(_ command: LND_REST,
+                        _ param: [String:Any]?,
+                        _ urlExt: String?,
+                        _ query: [String:Any]?,
+                        completion: @escaping ((response: [String:Any]?, error: String?)) -> Void) {
         #if DEBUG
-        print("makeLndCommand: \(command.stringValue)")
+        print("lndCommand: \(command.rawValue) \(command.stringValue)")
         #endif
         
         CoreDataService.retrieveEntity(entityName: .newNodes) { [weak self] nodes in
@@ -81,21 +85,24 @@ class LndRpc {
             request.addValue(macaroonHex, forHTTPHeaderField: "Grpc-Metadata-macaroon")
             
             switch command {
-            case .addinvoice, .sendcoins, .payinvoice, .routepayment, .connect:
-                guard let jsonData = try? JSONSerialization.data(withJSONObject: param) else { return }
-                
-                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-                request.setValue("\(jsonData.count)", forHTTPHeaderField: "Content-Length")
-                request.httpBody = jsonData
+            case .addinvoice, .sendcoins, .payinvoice, .routepayment, .connect, .openchannel, .fundingstep:
                 request.httpMethod = "POST"
                 
                 if command == .payinvoice {
                     request.timeoutInterval = 90
                 }
                 
-                #if DEBUG
-                print("request: \(request)")
-                #endif
+                guard let param = param else { fallthrough }
+                
+                guard let jsonData = try? JSONSerialization.data(withJSONObject: param) else { return }
+                
+                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                request.setValue("\(jsonData.count)", forHTTPHeaderField: "Content-Length")
+                request.httpBody = jsonData
+                
+            case .closechannel:
+                request.httpMethod = "DELETE"
+                request.timeoutInterval = 90
                 
             case .getnewaddress:
                 request.httpMethod = "POST"

@@ -63,7 +63,7 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
     }
     
     private func loadLNDPeers() {
-        LndRpc.sharedInstance.makeLndCommand(command: .listpeers, param: [:], urlExt: nil, query: nil) { [weak self] (response, error) in
+        LndRpc.sharedInstance.command(.listpeers, nil, nil, nil) { [weak self] (response, error) in
             guard let self = self else { return }
             
             guard let dict = response, let peers = dict["peers"] as? NSArray else {
@@ -104,7 +104,7 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
     }
     
     private func getLNDChannels() {
-        LndRpc.sharedInstance.makeLndCommand(command: .listchannels, param: [:], urlExt: nil, query: nil) { [weak self] (response, error) in
+        LndRpc.sharedInstance.command(.listchannels, nil, nil, nil) { [weak self] (response, error) in
             guard let self = self else { return }
             
             guard let response = response, let channels = response["channels"] as? NSArray, channels.count > 0 else { return }
@@ -280,7 +280,8 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
     
     private func addPeerLND(id: String, ip: String, port: String?) {
         let host = "\(ip):\(port ?? "9735")"
-        LndRpc.sharedInstance.makeLndCommand(command: .connect, param: ["addr": ["pubkey":id, "host": host]], urlExt: nil, query: nil) { [weak self] (response, error) in
+        let param = ["addr": ["pubkey":id, "host": host]]
+        LndRpc.sharedInstance.command(.connect, param, nil, nil) { [weak self] (response, error) in
             guard let self = self else { return }
             
             self.spinner.removeConnectingView()

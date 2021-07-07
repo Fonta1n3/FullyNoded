@@ -179,7 +179,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         
         let param:[String:Any] = ["memo":"\(memoValue)", "value":amount]
         
-        LndRpc.sharedInstance.makeLndCommand(command: .addinvoice, param: param, urlExt: nil, query: nil) { (response, error) in
+        LndRpc.sharedInstance.command(.addinvoice, param, nil, nil) { (response, error) in
             guard let dict = response, let bolt11 = dict["payment_request"] as? String else {
                 self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "Error", message: error ?? "we had an issue getting your lightning invoice")
@@ -193,10 +193,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             }
         }
     }
-    
-//    private func decode(_ invoice: String) {
-//        LndRpc.sharedInstance.makeLndCommand(command: .payreq, param: [:], urlExt: invoice) { (_, _) in }
-//    }
     
     private func createCLInvoice() {
         var millisats = "\"any\""

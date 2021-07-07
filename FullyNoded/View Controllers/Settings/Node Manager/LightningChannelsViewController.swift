@@ -31,6 +31,9 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     @IBOutlet weak var totalSpendableLabel: UILabel!
     @IBOutlet weak var oursIcon: UILabel!
     @IBOutlet weak var theirsIcon: UILabel!
+    @IBOutlet weak var ourBalanceLabel: UILabel!
+    @IBOutlet weak var theirBalanceLabel: UILabel!
+    @IBOutlet weak var rebalanceOutlet: UIButton!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -50,6 +53,11 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
         totalSpendableLabel.text = ""
         
         if showPending {
+            rebalanceOutlet.alpha = 0
+            theirBalanceLabel.alpha = 0
+            ourBalanceLabel.alpha = 0
+            oursIcon.alpha = 0
+            theirsIcon.alpha = 0
             header.text = "Pending Channels"
             iconBackground.backgroundColor = .systemOrange
             iconHeader.image = UIImage(systemName: "hourglass")
@@ -62,15 +70,16 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
             iconBackground.backgroundColor = .systemIndigo
             iconHeader.image = UIImage(systemName: "moon.zzz")
         }
-        
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        channels.removeAll()
         loadChannels()
     }
     
     @IBAction func addChannel(_ sender: Any) {
-        if !lndNode {
-            DispatchQueue.main.async { [weak self] in
-                self?.performSegue(withIdentifier: "segueToCreateChannel", sender: self)
-            }
+        DispatchQueue.main.async { [weak self] in
+            self?.performSegue(withIdentifier: "segueToCreateChannel", sender: self)
         }
     }
     
@@ -161,12 +170,25 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
         textLabel.textColor = .lightGray
         textLabel.frame = CGRect(x: 0, y: 0, width: view.frame.width - 32, height: 50)
         let dict = channels[section]
+        
         if showActive {
             if let name = dict["name"] as? String {
                 textLabel.text = name
             } else {
                 textLabel.text = "ID: " + "\(dict["short_channel_id"] as? String ?? "\(dict["chan_id"] as? String ?? "")")"
             }
+            
+            let closeButton = UIButton()
+            let closeImage = UIImage(systemName: "xmark.circle")!
+            closeButton.tag = section
+            closeButton.tintColor = .systemTeal
+            closeButton.setImage(closeImage, for: .normal)
+            closeButton.addTarget(self, action: #selector(closeChannel(_:)), for: .touchUpInside)
+            closeButton.frame = CGRect(x: header.frame.maxX - 50, y: 0, width: 40, height: 40)
+            closeButton.center.y = textLabel.center.y
+            closeButton.showsTouchWhenHighlighted = true
+            header.addSubview(closeButton)
+            
         } else {
             if let name = dict["name"] as? String {
                 textLabel.text = name
@@ -194,6 +216,69 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
             } else {
                 incomingChannel = channels[indexPath.section]
                 userSelectedIncoming()
+            }
+        }
+    }
+    
+    @objc func closeChannel(_ sender: UIButton) {
+        promptToCloseChannel(channel: channels[sender.tag])
+    }
+    
+    private func promptToCloseChannel(channel: [String:Any]) {
+        isLndNode { [weak self] isLnd in
+            guard let self = self else { return }
+            
+            guard isLnd else {
+                showAlert(vc: self, title: "LND Only", message: "Coming soon for c-lightning.")
+                return
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                let alertStyle = UIAlertController.Style.alert
+                
+                let alert = UIAlertController(title: "Close channel?", message: "This action will start the process of closing this channel.", preferredStyle: alertStyle)
+                
+                alert.addAction(UIAlertAction(title: "Close", style: .default, handler: { [weak self] action in
+                    guard let self = self else { return }
+                    
+                    self.closeChannelLnd(channel: channel)
+                }))
+                
+                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+                alert.popoverPresentationController?.sourceView = self?.view
+                self?.present(alert, animated: true, completion: nil)
+            }
+        }
+    }
+    
+    private func closeChannelLnd(channel: [String:Any]) {
+        spinner.addConnectingView(vc: self, description: "Closing channel...")
+        
+        guard let channelPoint = channel["channel_point"] as? String else { return }
+        
+        let arr = channelPoint.split(separator: ":")
+        
+        guard arr.count > 0 else { return }
+        
+        let fundingTxid = "\(arr[0])"
+        let index = Int64(arr[1])!
+        
+        let ext = "\(fundingTxid)/\(index)"
+        LndRpc.sharedInstance.command(.closechannel, nil, ext, nil) { [weak self] (response, error) in
+            guard let self = self else { return }
+            
+            self.spinner.removeConnectingView()
+            
+            if let error = error {
+                showAlert(vc: self, title: "Error", message: error)
+            } else {
+                
+                guard let _ = response else {
+                    showAlert(vc: self, title: "Error", message: "We did not get a response from your node.")
+                    return
+                }
+                
+                showAlert(vc: self, title: "Channel is being closed ✓", message: "")
             }
         }
     }
@@ -245,7 +330,7 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
         
         let param:[String:Any] = ["memo":"Rebalance", "value":"\(amount)"]
         
-        LndRpc.sharedInstance.makeLndCommand(command: .addinvoice, param: param, urlExt: nil, query: nil) { [weak self] (response, error) in
+        LndRpc.sharedInstance.command(.addinvoice, param, nil, nil) { [weak self] (response, error) in
             guard let self = self else { return }
 
             guard let dict = response, let invoice = dict["payment_request"] as? String else {
@@ -255,12 +340,13 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
             }
 
             let outgoingId = self.outgoingChannel!["chan_id"] as! String
-            let incomingId = self.incomingChannel!["chan_id"] as! String
+            let incomingId = self.incomingChannel!["remote_pubkey"] as! String
+            let lastHopPubkey = Data(hexString: incomingId)!.base64EncodedString()
             
             //"fee_limit": ["fixed":"1"] may need to increase fee limit, look into this if constant routing issues.
-
-            let paymentParam:[String:Any] = ["allow_self_payment":true, "outgoing_chan_id": outgoingId, "last_hop": incomingId, "payment_request": invoice]
-            LndRpc.sharedInstance.makeLndCommand(command: .payinvoice, param: paymentParam, urlExt: nil, query: nil) { (response, error) in
+            
+            let paymentParam:[String:Any] = ["allow_self_payment":true, "outgoing_chan_id": outgoingId, "last_hop_pubkey": lastHopPubkey, "payment_request": invoice]
+            LndRpc.sharedInstance.command(.payinvoice, paymentParam, nil, nil) { (response, error) in
                 self.spinner.removeConnectingView()
 
                 guard let response = response else {
@@ -306,7 +392,9 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
         if showPending {
             showPendingLndChannels()
         } else {
-            LndRpc.sharedInstance.makeLndCommand(command: .listchannels, param: [:], urlExt: nil, query: ["inactive_only":showInactive,"active_only":showActive]) { [weak self] (response, error) in
+            let query:[String:Any] = ["inactive_only":showInactive,"active_only":showActive]
+            
+            LndRpc.sharedInstance.command(.listchannels, nil, nil, query ) { [weak self] (response, error) in
                 guard let self = self else { return }
                 
                 guard let channels = response?["channels"] as? NSArray else {
@@ -331,7 +419,7 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     }
     
     private func showPendingLndChannels() {
-        LndRpc.sharedInstance.makeLndCommand(command: .listchannels, param: [:], urlExt: "pending", query: nil) { [weak self] (response, error) in
+        LndRpc.sharedInstance.command(.listchannels, nil, "pending", nil) { [weak self] (response, error) in
             guard let self = self else { return }
             
             guard let waiting_close_channels = response?["waiting_close_channels"] as? NSArray,
@@ -408,7 +496,9 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
             if remoteBalance == 0 {
                 dict["ratio"] = Float(1)
             } else {
-                dict["ratio"] = Float((Double(localBalance) / Double(remoteBalance)) / 2.0)
+                let total = Double(localBalance) + Double(remoteBalance)
+                let ratio = (total - Double(remoteBalance)) / total
+                dict["ratio"] = Float(ratio)
             }
             
             for (key, value) in dict {
@@ -537,6 +627,8 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     private func userSelectedOutgoing() {
         let ourAmountOutgoing = Int(self.outgoingChannel!["local_balance"] as! String)!
         let theirAmountOutgoing = Int(self.outgoingChannel!["remote_balance"] as! String)!
+        let name = self.outgoingChannel!["name"] as? String
+        let fallback = self.outgoingChannel!["remote_pubkey"] as? String ?? ""
         
         guard ourAmountOutgoing > theirAmountOutgoing else {
             self.outgoingChannel = nil
@@ -551,7 +643,7 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
             if (UIDevice.current.userInterfaceIdiom == .pad) {
               alertStyle = UIAlertController.Style.alert
             }
-            let alert = UIAlertController(title: "Rebalance?", message: "We will use this channel for the outgoing payment. Now tap the channel to use for the incoming payment to continue.", preferredStyle: alertStyle)
+            let alert = UIAlertController(title: "Rebalance?", message: "We will use this channel for the outgoing payment. Now tap the channel to use for the incoming payment to continue.\n\n\(name ?? fallback)", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in }))
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { [weak self] action in
                 self?.outgoingChannel = nil
@@ -565,6 +657,8 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     private func userSelectedIncoming() {
         let ourAmountIncoming = Int(self.incomingChannel!["local_balance"] as! String)!
         let theirAmountIncoming = Int(self.incomingChannel!["remote_balance"] as! String)!
+        let name = self.incomingChannel!["name"] as? String
+        let fallback = self.incomingChannel!["remote_pubkey"] as? String ?? ""
         
         guard theirAmountIncoming > ourAmountIncoming else {
             self.outgoingChannel = nil
@@ -579,7 +673,7 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
             if (UIDevice.current.userInterfaceIdiom == .pad) {
               alertStyle = UIAlertController.Style.alert
             }
-            let alert = UIAlertController(title: "Rebalance?", message: "We will use this channel for the incoming payment.", preferredStyle: alertStyle)
+            let alert = UIAlertController(title: "Rebalance?", message: "We will use this channel for the incoming payment.\n\n\(name ?? fallback)", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "Rebalance Now", style: .default, handler: { action in
                 self?.rebalanceChannel()
             }))
@@ -699,212 +793,3 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
 //    }
 
 }
-
-// MARK: TODO: Rebalance without the c-lightning plugin, this code is a start, good luck with that.
-/*
- 
- /*
- excludes = []
- # excude all own channels to prevent unwanted shortcuts [out,mid,in]
- mychannels = plugin.rpc.listchannels(source=my_node_id)['channels']
- for channel in mychannels:
-     excludes += [channel['short_channel_id'] + '/0', channel['short_channel_id'] + '/1']
- */
-             
-              "amount_msat" = 43151000msat;
-              channel = 643463x779x0;
-              delay = 9;
-              direction = 1;
-              id = 022d89add5b1ec7b5993f9c814c7a5abb83d6baeeb242bffb0dbec1792dc0c7d9b;
-              msatoshi = 43151000;
-              style = tlv;
-              
- //            routeOut = ["amount_msat":"","channel":sourceShortId,"delay":9,"direction": !(myId < source),"id":source,"msatoshi":0,"style":"tlv"]
- //            routeIn = ["amount_msat":"","channel":destinationShortId,"delay":9,"direction": !(destination < myId),"id":myId,"msatoshi":0,"style":"tlv"]
- //            LightningRPC.command(method: .invoice, param: "\(msat), \"rebalance - \(Date())\", \"FullyNoded-\(randomString(length: 5))\"") { [weak self] (response, errorDesc) in
- //                if let dict = response as? NSDictionary {
- //                    if let hash = dict["payment_hash"] as? String {
- //                        self?.paymentHash = hash
- //                        self?.getRoute(destination, msat, source)
- //                    }
- //                }
- //            }
- 
- func json(from object:Any) -> String? {
-         guard let data = try? JSONSerialization.data(withJSONObject: object, options: []) else {
-             return nil
-         }
-         return String(data: data, encoding: String.Encoding.utf8)
-     }
-     
-     private func getRoute(_ destinationId: String, _ msat: Int, _ fromId: String) {
-         //getroute id msatoshi riskfactor [cltv] [fromid] [fuzzpercent] [exclude] [maxhops]
-         //getroute(target, msatoshi, riskfactor=1, cltv=9, fromid=source)
-         LightningRPC.command(method: .getroute, param: "\"\(destinationId)\", \(msat), 1, 9, \"\(fromId)\", 5.0, \(excludes)") { [weak self] (response, errorDesc) in
-             if let dict = response as? NSDictionary {
-                 if let route = dict["route"] as? NSArray {
-                     for r in route {
-                         if let d = r as? NSDictionary {
-                             self?.routeMid = d as! [String:Any]
-                         }
-                         
-                         //if self?.json(from: r) != nil {
- //                            var processed = ((self?.json(from: r)?.condenseWhitespace())!).replacingOccurrences(of: "\\", with: "")
- //                            processed = processed.replacingOccurrences(of: "}\"", with: "}")
- //                            processed = processed.replacingOccurrences(of: "\"{", with: "{")
-                             
-                         //}
-                     }
-                     self?.getFee(destinationId, msat)
-                 }
-             } else {
-                 if self != nil {
-                     let reduced = Int(Double(msat) / 1.1)
-                     self?.getRoute(destinationId, reduced, fromId)
-                 }
-             }
-         }
-     }
-     /*
-      route =         (
-                      {
-              "amount_msat" = 501005msat;
-              channel = 643969x194x0;
-              delay = 23;
-              direction = 0;
-              id = 03c304a6a6d64771aa70b05fbe1137dbcc7b585f6150acfd27680cf82c0913e579;
-              msatoshi = 501005;
-              style = tlv;
-          },
-                      {
-              "amount_msat" = 500000msat;
-              channel = 643983x1159x0;
-              delay = 9;
-              direction = 1;
-              id = 022d89add5b1ec7b5993f9c814c7a5abb83d6baeeb242bffb0dbec1792dc0c7d9b;
-              msatoshi = 500000;
-              style = tlv;
-          }
-      )
-      */
-     
-     private func getFee(_ destination: String, _ amount: Int) {
-         var msatoshi = amount
-         var delay = 9
-         let routeGroup = DispatchGroup()
-         routes = [routeOut, routeMid, routeIn]
-         for (i, r) in routes.reversed().enumerated() {
-             routeGroup.enter()
-             routes[i]["msatoshi"] = amount
-             routes[i]["amount_msat"] = "\(amount)msat"
-             routes[i]["delay"] = delay
-             if let channel = r["channel"] as? String {
-                 LightningRPC.command(method: .listchannels, param: "\"\(channel)\"") { (response, errorDesc) in
-                     if let channelsResponse = response as? NSDictionary {
-                         if let channels = channelsResponse["channels"] as? NSArray {
-                             for channel in channels {
-                                 if let d = channel as? [String:Any] {
-                                     if d["destination"] as! String == r["id"] as! String {
-                                         /*
-                                          fee = Millisatoshi(ch['base_fee_millisatoshi'])
-                                          # BOLT #7 requires fee >= fee_base_msat + ( amount_to_forward * fee_proportional_millionths / 1000000 )
-                                          fee += (msatoshi * ch['fee_per_millionth'] + 10**6 - 1) // 10**6 # integer math trick to round up
-                                          msatoshi += fee
-                                          delay += ch['delay']
-                                          */
-                                         
-                                         var fee = d["base_fee_millisatoshi"] as! Int
-                                         let feePerMillionth = d["fee_per_millionth"] as! Int
-                                         fee += Int(Double((amount * feePerMillionth)) / 1000000.0)
-                                         msatoshi += fee
-                                         delay += d["delay"] as! Int
-                                     }
-                                 }
-                             }
-                             routeGroup.leave()
-                         }
-                     }
-                 }
-             }
-         }
-         routeGroup.notify(queue: .main) { [weak self] in
-             if self != nil {
-                 self?.promptToRebalance(self!.routes.count, msatoshi, msatoshi - amount, amount)
-             }
-         }
-     }
-     
-     private func promptToRebalance(_ nodeCount: Int, _ totalAmount: Int, _ totalFee: Int, _ originalAmount: Int) {
-         DispatchQueue.main.async { [weak self] in
-             var alertStyle = UIAlertController.Style.actionSheet
-             if (UIDevice.current.userInterfaceIdiom == .pad) {
-               alertStyle = UIAlertController.Style.alert
-             }
-             let alert = UIAlertController(title: "Send circular payment to rebalance?", message: "Route contains \(nodeCount) nodes, amount including the fee: \(totalAmount), total fee: \(totalFee), amount to receive: \(originalAmount)", preferredStyle: alertStyle)
-             alert.addAction(UIAlertAction(title: "Send", style: .default, handler: { action in
-                 self?.sendNow()
-             }))
-             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-             alert.popoverPresentationController?.sourceView = self?.view
-             self?.present(alert, animated: true, completion: nil)
-         }
-     }
-     
-     //var processed = ((self?.json(from: r)?.condenseWhitespace())!).replacingOccurrences(of: "\\", with: "")
-     //                            processed = processed.replacingOccurrences(of: "}\"", with: "}")
-     //                            processed = processed.replacingOccurrences(of: "\"{", with: "{")
-     
-     private func sendNow() {
-         
- //        var r = "[{\"id\":\(outgoingId)}, \(routes), {\"id\":\(myId)}]"
- //        r = r.condenseWhitespace()
- //        r = r.replacingOccurrences(of: "\\", with: "")
- //        r = r.replacingOccurrences(of: "}\"", with: "}")
- //        r = r.replacingOccurrences(of: "\"{", with: "{")
-         //routeOut = ["amount_msat":"","channel":sourceShortId,"delay":9,"direction": !(myId < source),"id":source,"msatoshi":0,"style":"tlv"]
-         //routeIn = ["amount_msat":"","channel":destinationShortId,"delay":9,"direction": !(destination < myId),"id":myId,"msatoshi":0,"style":"tlv"]
-         
-         let routeOutMsat = routes[0]["amount_msat"] as! String
-         let routeOutSourceShortId = routes[0]["channel"] as! String
-         let routeOutDirection = (routes[0]["direction"] as! Bool) ? 1 : 0
-         let routeOutId = routes[0]["id"] as! String
-         let routeOutMsatoshi = routes[0]["msatoshi"] as! Int
-
-         let routeMidMsat = routeMid["amount_msat"] as! String
-         let routeMidSourceShortId = routeMid["channel"] as! String
-         let routeMidDirection = (routeMid["direction"] as! Bool) ? 1 : 0
-         let routeMidId = routeMid["id"] as! String
-         let routeMidMsatoshi = routeMid["msatoshi"] as! Int
-
-         let routeInMsat = routes[2]["amount_msat"] as! String
-         let routeInSourceShortId = routes[2]["channel"] as! String
-         let routeInDirection = (routes[2]["direction"] as! Bool) ? 1 : 0
-         let routeInId = routes[2]["id"] as! String
-         let routeInMsatoshi = routes[2]["msatoshi"] as! Int
-         
-         /*
-          "amount_msat" = 43151000msat;
-                         channel = 643463x779x0;
-                         delay = 9;
-                         direction = 1;
-                         id = 022d89add5b1ec7b5993f9c814c7a5abb83d6baeeb242bffb0dbec1792dc0c7d9b;
-                         msatoshi = 43151000;
-                         style = tlv;
-          */
-         
-         let processedRoutes = "[[\"msatoshi\":\(routeOutMsatoshi),\"channel\":\"\(routeOutSourceShortId)\",\"delay\":9,\"direction\":\(routeOutDirection),\"id\":\"\(routeOutId)\", \"style\":\"tlv\"], [\"msatoshi\":\(routeMidMsatoshi),\"channel\":\"\(routeMidSourceShortId)\",\"delay\":9,\"direction\":\(routeMidDirection),\"id\":\"\(routeMidId)\", \"style\":\"tlv\"], [\"msatoshi\":\(routeInMsatoshi),\"channel\":\"\(routeInSourceShortId)\",\"delay\":9,\"direction\":\(routeInDirection),\"id\":\"\(routeInId)\", \"style\":\"tlv\"]]"
-         LightningRPC.command(method: .sendpay, param: "[\(processedRoutes), \"\(paymentHash)\"") { (response, errorDesc) in
-             if let dict = response as? NSDictionary {
-                 print("dict: \(dict)")
-             }
-         }
-     }
- private func getChannelToPeer(peerId: String, completion: @escaping ((String?)) -> Void) {
-     LightningRPC.command(method: .listpeers, param: "\"\(peerId)\"") { (response, errorDesc) in
-         if let dict = response as? NSDictionary {
-             print("getPeerDict: \(dict)")
-         }
-     }
- }
- 
- */

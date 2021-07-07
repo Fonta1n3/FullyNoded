@@ -198,7 +198,7 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
     private func lndGetInfo() {
         let lnd = LndRpc.sharedInstance
         
-        lnd.makeLndCommand(command: .getinfo, param: [:], urlExt: nil, query: nil) { (response, error) in
+        lnd.command(.getinfo, nil, nil, nil) { (response, error) in
             guard let dict = response else {
                 showAlert(vc: self, title: "Error", message: error ?? "unknown")
                 return

@@ -7184,7 +7184,10 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <outlet property="header" destination="aXF-jg-BOC" id="xRy-58-tVE"/>
                         <outlet property="iconBackground" destination="bHd-Kf-94v" id="puu-2N-mzT"/>
                         <outlet property="iconHeader" destination="Syc-8C-tLM" id="hgJ-8U-aM8"/>
+                        <outlet property="ourBalanceLabel" destination="kR4-4H-OZY" id="Hg7-UO-Jht"/>
                         <outlet property="oursIcon" destination="IJo-6J-E1F" id="Tit-dC-O5Y"/>
+                        <outlet property="rebalanceOutlet" destination="eUg-nn-cIM" id="wgo-cj-tXa"/>
+                        <outlet property="theirBalanceLabel" destination="g5z-6c-4Q1" id="OJy-fm-yPJ"/>
                         <outlet property="theirsIcon" destination="dAY-rl-Ess" id="NJm-LJ-dCX"/>
                         <outlet property="totalReceivableLabel" destination="hRB-sI-isu" id="nwx-J5-Bny"/>
                         <outlet property="totalSpendableLabel" destination="BHZ-qw-HDM" id="yWN-23-9fz"/>

@@ -118,6 +118,9 @@ public enum LND_REST: String {
     case listchannels
     case getnodeinfo
     case queryroutes
+    case openchannel
+    case fundingstep
+    case closechannel
     
     var stringValue:String {
         switch self {
@@ -147,6 +150,12 @@ public enum LND_REST: String {
             return "v1/graph/node"
         case .queryroutes:
             return "v1/graph/routes"
+        case .openchannel:
+            return "v1/channels"
+        case .fundingstep:
+            return "v1/funding/step"
+        case .closechannel:
+            return "v1/channels"
         }
     }
 }

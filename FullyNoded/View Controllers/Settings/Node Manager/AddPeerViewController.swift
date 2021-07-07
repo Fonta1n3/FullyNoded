@@ -45,13 +45,139 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
     private func addChannel(id: String, ip: String, port: String?) {
         spinner.addConnectingView(vc: self, description: "creating a channel...")
         
-        guard let amountText = amountField.text, let int = Int(amountText) else {
+        guard let amountText = amountField.text, let amount = Int(amountText) else {
             spinner.removeConnectingView()
             showAlert(vc: self, title: "Invalid committment amount", message: "")
             return
         }
         
-        Lightning.connect(amount: int, id: id, ip: ip, port: port ?? "9735") { [weak self] (result, errorMessage) in
+        isLndNode { [weak self] isLnd in
+            guard let self = self else { return }
+            
+            guard isLnd else {
+                self.openChannelCL(amount: amount, id: id, ip: ip, port: port)
+                return
+            }
+            
+            activeWallet { [weak self] wallet in
+                guard let self = self else { return }
+                
+                guard let wallet = wallet else {
+                    self.connect(amount, id, ip, port, nil)
+                    return
+                }
+                
+                self.getAddress(amount, id, ip, port, wallet)
+            }
+        }
+    }
+    
+    private func getAddress(_ amount: Int, _ id: String, _ ip: String, _ port: String?, _ wallet: Wallet) {
+        let index = Int(wallet.index) + 1
+        let param = "\"\(wallet.receiveDescriptor)\", [\(index),\(index)]"
+        Reducer.makeCommand(command: .deriveaddresses, param: param) { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            guard let addresses = response as? NSArray, let address = addresses[0] as? String else {
+                showAlert(vc: self, title: "", message: errorMessage ?? "error getting closing address")
+                return
+            }
+            
+            self.promptToUseClosingAddress(amount, id, ip, port, wallet, address)
+        }
+    }
+    
+    private func promptToUseClosingAddress(_ amount: Int, _ id: String, _ ip: String, _ port: String?, _ wallet: Wallet, _ address: String?) {
+        DispatchQueue.main.async { [weak self] in
+            var alertStyle = UIAlertController.Style.actionSheet
+            if (UIDevice.current.userInterfaceIdiom == .pad) {
+              alertStyle = UIAlertController.Style.alert
+            }
+            let alert = UIAlertController(title: "Automatically close to \(wallet.label)?", message: "This means funds will automatically be sent to \(wallet.label) whenever the channel happens to close! This is NOT reversible!", preferredStyle: alertStyle)
+            
+            alert.addAction(UIAlertAction(title: "Close to \(wallet.label)", style: .default, handler: { action in
+                CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(Int(wallet.index) + 1), entity: .wallets) { _ in }
+                
+                self?.connect(amount, id, ip, port, address)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Use LND wallet", style: .default, handler: { action in
+                self?.connect(amount, id, ip, port, nil)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self?.view
+            self?.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func connect(_ amount: Int, _ id: String, _ ip: String, _ port: String?, _ address: String?) {
+        let host = "\(ip):\(port ?? "9735")"
+        let param = ["addr": ["pubkey":id, "host": host]]
+        
+        LndRpc.sharedInstance.command(.connect, param, nil, nil) { [weak self] (response, error) in
+            guard let self = self else { return }
+                        
+            guard let response = response else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Error", message: error ?? "Unknown error connecting peer.")
+                return
+            }
+            
+            if let errorMessage = response["error"] as? String, errorMessage != "", !errorMessage.contains("already connected to peer:") {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Error", message: errorMessage)
+            } else {
+                self.openChannelLND(amount: amount, id: id, address: address)
+            }
+        }
+    }
+    
+    
+    private func openChannelLND(amount: Int, id: String, address: String?) {
+        guard let data = Data(hexString: id) else { return }
+        
+        let param:[String:Any] = ["node_pubkey": data.base64EncodedString(),
+                                  "local_funding_amount": amount,
+                                  "close_address": address ?? "",
+                                  "private":true,
+                                  "spend_unconfirmed":true]
+        
+        LndRpc.sharedInstance.command(.openchannel, param, nil, nil) { [weak self] (response, error) in
+            guard let self = self else { return }
+            
+            self.spinner.removeConnectingView()
+            
+            guard let response = response else {
+                showAlert(vc: self, title: "Error", message: error ?? "Unknown error during channel funding.")
+                return
+            }
+            
+            guard let _ = response["funding_txid_bytes"] as? String else {
+                let errorMess = response["error"] as? String ?? "Unknown channel funding error."
+                showAlert(vc: self, title: "Channel created ✓", message: errorMess)
+                return
+            }
+            
+            showAlert(vc: self, title: "Channel created ✓", message: "")
+        }
+    }
+    
+//    private func generateRandomBytes() -> String? {
+//        var keyData = Data(count: 32)
+//        let result = keyData.withUnsafeMutableBytes {
+//            SecRandomCopyBytes(kSecRandomDefault, 32, $0.baseAddress!)
+//        }
+//        if result == errSecSuccess {
+//            return keyData.base64EncodedString()
+//        } else {
+//            print("Problem generating random bytes")
+//            return nil
+//        }
+//    }
+    
+    private func openChannelCL(amount: Int, id: String, ip: String, port: String?) {
+        Lightning.connect(amount: amount, id: id, ip: ip, port: port ?? "9735") { [weak self] (result, errorMessage) in
             guard let self = self else { return }
             
             self.spinner.removeConnectingView()

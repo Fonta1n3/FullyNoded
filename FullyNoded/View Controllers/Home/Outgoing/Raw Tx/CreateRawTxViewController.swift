@@ -341,7 +341,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     private func withdrawFromLND(address: String, sats: Int) {
         let param:[String:Any] = ["address": address, "amount": "\(sats)"]
         
-        LndRpc.sharedInstance.makeLndCommand(command: .sendcoins, param: param, urlExt: nil, query: nil) { [weak self] (response, error) in
+        LndRpc.sharedInstance.command(.sendcoins, param, nil, nil) { [weak self] (response, error) in
             guard let self = self else { return }
             
             self.spinner.removeConnectingView()
@@ -391,7 +391,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func getLndAddress() {
-        LndRpc.sharedInstance.makeLndCommand(command: .getnewaddress, param: [:], urlExt: nil, query: nil) { (response, error) in
+        LndRpc.sharedInstance.command(.getnewaddress, nil, nil, nil) { (response, error) in
             guard let dict = response, let address = dict["addr"] as? String else {
                 return
             }
@@ -983,30 +983,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func decodeFromLND(_ invoice: String) {
-        LndRpc.sharedInstance.makeLndCommand(command: .decodepayreq, param: [:], urlExt: invoice, query: nil) { [weak self] (response, error) in
+        LndRpc.sharedInstance.command(.decodepayreq, nil, invoice, nil) { [weak self] (response, error) in
             guard let self = self else { return }
-            /*
-             ["description": , "payment_hash": 51ff1cb93738e1c259f24feb8b0666803d22222375f11161fa813f290f78280a, "num_satoshis": 1, "payment_addr": dHSlTcYNaUWAnSae+xhcOHV1XLgVmmkaS5CkCwfhDPk=, "timestamp": 1625376640, "destination": 02a64b954a87ee7d1c2312f3ba2529bf4e05173e16a9734942a589b9ac569bfa44, "route_hints": <__NSArrayM 0x600003435560>(
-
-             )
-             , "features": {
-                 14 =     {
-                     "is_known" = 1;
-                     "is_required" = 1;
-                     name = "payment-addr";
-                 };
-                 17 =     {
-                     "is_known" = 1;
-                     "is_required" = 0;
-                     name = "multi-path-payments";
-                 };
-                 9 =     {
-                     "is_known" = 1;
-                     "is_required" = 0;
-                     name = "tlv-onion";
-                 };
-             }, "cltv_expiry": 40, "fallback_addr": , "description_hash": , "expiry": 3600, "num_msat": 1000]
-             */
             
             self.spinner.removeConnectingView()
             
@@ -1142,8 +1120,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         let amount = dict["num_satoshis"] as? String ?? ""
         let paymentHash = dict["payment_hash"] as? String ?? ""
         let paymentHashData = Data(hexString: paymentHash)!.base64EncodedString()
-        
-        LndRpc.sharedInstance.makeLndCommand(command: .queryroutes, param: [:], urlExt: "\(destination)/\(amount)", query: nil) { [weak self] (response, error) in
+        let ext = "\(destination)/\(amount)"
+        LndRpc.sharedInstance.command(.queryroutes, nil, ext, nil) { [weak self] (response, error) in
             guard let self = self else { return }
 
             guard let routes = response?["routes"] as? NSArray, routes.count > 0 else {
@@ -1155,7 +1133,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             let lnrpcRouteToTry = routes[self.index]
 
             let param:[String:Any] = ["route": lnrpcRouteToTry, "payment_hash": paymentHashData]
-            LndRpc.sharedInstance.makeLndCommand(command: .routepayment, param: param, urlExt: nil, query: nil) { [weak self] (response, error) in
+            LndRpc.sharedInstance.command(.routepayment, param, nil, nil) { [weak self] (response, error) in
                 guard let self = self else { return }
 
                 self.spinner.removeConnectingView()

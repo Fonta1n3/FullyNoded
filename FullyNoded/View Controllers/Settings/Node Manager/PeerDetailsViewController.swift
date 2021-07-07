@@ -87,7 +87,7 @@ class PeerDetailsViewController: UIViewController, UITextFieldDelegate {
     }
     
     private func getPeerLND() {
-        LndRpc.sharedInstance.makeLndCommand(command: .getnodeinfo, param: [:], urlExt: self.id, query: nil) { [weak self] (response, error) in
+        LndRpc.sharedInstance.command(.getnodeinfo, nil, self.id, nil) { [weak self] (response, error) in
             guard let self = self else { return }
             
             guard let node = response?["node"] as? [String:Any] else {

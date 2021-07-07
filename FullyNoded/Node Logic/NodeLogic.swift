@@ -64,7 +64,7 @@ class NodeLogic {
     
     class func getOffChainBalanceLND(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         let lnd = LndRpc.sharedInstance
-        lnd.makeLndCommand(command: .channelbalance, param: [:], urlExt: nil, query: nil) { (response, error) in
+        lnd.command(.channelbalance, nil, nil, nil) { (response, error) in
             guard let dict = response,
                   let localBalance = dict["local_balance"] as? NSDictionary else {
                 dictToReturn["offchainBalance"] = "0.00000000"
@@ -74,7 +74,7 @@ class NodeLogic {
             
             let localBalanceSats = localBalance["sat"] as! String
             
-            lnd.makeLndCommand(command: .walletbalance, param: [:], urlExt: nil, query: nil) { (response, error) in
+            lnd.command(.walletbalance, nil, nil, nil) { (response, error) in
                 guard let dict = response,
                       let walletBalance = dict["total_balance"] as? String else {
                     dictToReturn["offchainBalance"] = localBalanceSats
@@ -261,7 +261,7 @@ class NodeLogic {
     
     private class func getLNDTransactions(completion: @escaping ((response: [[String:Any]]?, errorMessage: String?)) -> Void) {
         
-        LndRpc.sharedInstance.makeLndCommand(command: .gettransactions, param: [:], urlExt: nil, query: nil) { (response, error) in
+        LndRpc.sharedInstance.command(.gettransactions, nil, nil, nil) { (response, error) in
             guard let dict = response, let transactions = dict["transactions"] as? NSArray, transactions.count > 0 else {
                 arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
                 completion((arrayToReturn, nil))
