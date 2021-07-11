@@ -1154,8 +1154,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                         self.payInvoiceLND(invoice: invoice, sats: Int(amount)!, dict: dict)
                     }
                 } else if let _ = response["payment_preimage"] as? String {
-                    self.spinner.removeConnectingView()
-                    showAlert(vc: self, title: "Lightning payment sent ⚡️", message: "")
+                    self.saveTx(memo: dict["description"] as? String ?? "no memo", hash: dict["payment_hash"] as! String, sats: Int(amount)!)
                 }
             }
         }
@@ -1176,7 +1175,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "Payment Error", message: payment_error)
             } else if let _ = response["payment_preimage"] as? String {
-                self.saveTx(memo: dict["memo"] as! String, hash: response["payment_hash"] as! String, sats: sats)
+                self.saveTx(memo: dict["description"] as? String ?? "no memo", hash: dict["payment_hash"] as! String, sats: sats)
             } else if let message = response["message"] as? String {
                 self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "There was an issue...", message: message)
