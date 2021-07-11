@@ -13,7 +13,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     var isFiat = false
     var isBtc = true
     var isSats = false
-    var fxRate = Double()
+    var fxRate:Double?
     var spendable = Double()
     var rawTxUnsigned = String()
     var rawTxSigned = String()
@@ -28,6 +28,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     let ud = UserDefaults.standard
     var alertStyle = UIAlertController.Style.actionSheet
     var index = 0
+    var invoice:[String:Any]?
+    var invoiceString = ""
     
     @IBOutlet weak private var miningTargetLabel: UILabel!
     @IBOutlet weak private var satPerByteLabel: UILabel!
@@ -231,6 +233,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
         
         if isFiat {
+            guard let fxRate = fxRate else { return }
+            
             amount = "\(rounded(number: dblAmount / fxRate).avoidNotation)"
         } else if isSats {
             amount = "\(rounded(number: dblAmount / 100000000.0).avoidNotation)"
@@ -296,6 +300,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         let dblAmount = amountString.doubleValue
         
         if isFiat {
+            guard let fxRate = fxRate else { return }
             let btcamount = rounded(number: amount / fxRate)
             sats = Int(btcamount * 100000000.0)
             title = "Withdraw $\(dblAmount) USD (\(sats) sats) from lightning wallet to \(address)?"
@@ -834,6 +839,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 let dblAmount = amount.doubleValue
                 
                 if isFiat {
+                    guard let fxRate = fxRate else { return }
                     amount = "\(rounded(number: dblAmount / fxRate).avoidNotation)"
                 } else if isSats {
                     amount = "\(rounded(number: dblAmount / 100000000).avoidNotation)"
@@ -1015,7 +1021,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                     }
                     
                     if self.isFiat {
-                        let btcamount = rounded(number: dblAmount / self.fxRate)
+                        guard let fxRate = self.fxRate else { return }
+                        let btcamount = rounded(number: dblAmount / fxRate)
                         let msats = Int(btcamount * 100000000000.0)
                         self.promptToSendLightningPayment(invoice: invoice, dict: dict, msat: msats)
                         
@@ -1068,7 +1075,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                     }
                     
                     if self.isFiat {
-                        let btcamount = rounded(number: dblAmount / self.fxRate)
+                        guard let fxRate = self.fxRate else { return }
+                        let btcamount = rounded(number: dblAmount / fxRate)
                         let msats = Int(btcamount * 100000000000.0)
                         self.promptToSendLightningPayment(invoice: invoice, dict: dict, msat: msats)
                         
@@ -1087,16 +1095,28 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func promptToSendLightningPayment(invoice: String, dict: [String:Any], msat: Int?) {
-        DispatchQueue.main.async { [weak self] in
+//        DispatchQueue.main.async { [weak self] in
+//            guard let self = self else { return }
+//
+//            let alert = UIAlertController(title: "Pay lightning invoice?", message: "\(dict)", preferredStyle: self.alertStyle)
+//            alert.addAction(UIAlertAction(title: "Pay now", style: .default, handler: { action in
+//                self.payLightningNow(invoice: invoice, msat: msat, dict: dict)
+//            }))
+//            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+//            alert.popoverPresentationController?.sourceView = self.view
+//            self.present(alert, animated: true, completion: nil)
+//        }
+        FiatConverter.sharedInstance.getFxRate { [weak self] fxRate in
             guard let self = self else { return }
             
-            let alert = UIAlertController(title: "Pay lightning invoice?", message: "\(dict)", preferredStyle: self.alertStyle)
-            alert.addAction(UIAlertAction(title: "Pay now", style: .default, handler: { action in
-                self.payLightningNow(invoice: invoice, msat: msat, dict: dict)
-            }))
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = self.view
-            self.present(alert, animated: true, completion: nil)
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.fxRate = fxRate
+                self.invoice = dict
+                self.invoiceString = invoice
+                self.performSegue(withIdentifier: "segueToLightningConf", sender: self)
+            }            
         }
     }
     
@@ -1154,7 +1174,10 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                         self.payInvoiceLND(invoice: invoice, sats: Int(amount)!, dict: dict)
                     }
                 } else if let _ = response["payment_preimage"] as? String {
-                    self.saveTx(memo: dict["description"] as? String ?? "no memo", hash: dict["payment_hash"] as! String, sats: Int(amount)!)
+                    let route = response["payment_route"] as! [String:Any]
+                    let feesSat = (route["total_fees_msat"] as! String).msatToSat
+                    
+                    self.saveTx(memo: dict["description"] as? String ?? "no memo", hash: dict["payment_hash"] as! String, sats: Int(amount)!, fee: feesSat)
                 }
             }
         }
@@ -1175,7 +1198,11 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "Payment Error", message: payment_error)
             } else if let _ = response["payment_preimage"] as? String {
-                self.saveTx(memo: dict["description"] as? String ?? "no memo", hash: dict["payment_hash"] as! String, sats: sats)
+                
+                let route = response["payment_route"] as! [String:Any]
+                let feesSat = (route["total_fees_msat"] as! String).msatToSat
+                
+                self.saveTx(memo: dict["description"] as? String ?? "no memo", hash: dict["payment_hash"] as! String, sats: sats, fee: feesSat)
             } else if let message = response["message"] as? String {
                 self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "There was an issue...", message: message)
@@ -1183,37 +1210,29 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
-    private func saveTx(memo: String, hash: String, sats: Int) {
+    private func saveTx(memo: String, hash: String, sats: Int, fee: Double?) {
         FiatConverter.sharedInstance.getFxRate { [weak self] fxRate in
             guard let self = self else { return }
+            
+            var dict:[String:Any] = ["txid":hash, "id":UUID(), "memo":memo, "date":Date(), "label":"Fully Noded ⚡️ payment"]
             
             self.spinner.removeConnectingView()
             
             guard let originRate = fxRate else {
-                let dict = [
-                    "txid":hash,
-                    "id":UUID(),
-                    "memo":memo,
-                    "date":Date(),
-                    "label":"Fully Noded ⚡️ payment",
-                ] as [String:Any]
-                
                 CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in }
                 
-                showAlert(vc: self, title: "Lightning payment sent ⚡️", message: "\(sats) sats sent.")
+                showAlert(vc: self, title: "Lightning payment sent ⚡️", message: "\n\(sats) sats sent.\n\nFor a fee of \(fee!.avoidNotation).")
                 return
             }
             
-            let dict = [
-                "txid":hash,
-                "id":UUID(),
-                "memo":memo,
-                "date":Date(),
-                "label":"Fully Noded ⚡️ payment",
-                "originFxRate": originRate
-            ] as [String:Any]
+            dict["originFxRate"] = originRate
             
-            showAlert(vc: self, title: "Lightning payment sent ⚡️", message: "\(sats) sats sent.")
+            let tit = "Lightning payment sent ⚡️"
+            
+            let mess = "\n\(sats) sats / $\((sats.satsToBtcDouble * originRate).avoidNotation) USD sent.\n\nFor a fee of \(fee!.avoidNotation) sats / $\((fee!.satsToBtcDouble * originRate).avoidNotation) USD."
+            
+            showAlert(vc: self, title: tit, message: mess)
+            
             CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in }
         }
     }
@@ -1394,6 +1413,23 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 vc.signedRawTx = rawTxSigned
             } else if rawTxUnsigned != "" {
                 vc.unsignedPsbt = rawTxUnsigned
+            }
+            
+        case "segueToLightningConf":
+            guard let vc = segue.destination as? ConfirmLightningPaymentViewController else { fallthrough }
+            
+            vc.fxRate = self.fxRate
+            vc.invoice = self.invoice
+            
+            vc.doneBlock = { [weak self] confirmed in
+                guard let self = self else { return }
+                
+                if confirmed {
+                    self.payLightningNow(invoice: self.invoiceString, msat: nil, dict: self.invoice!)
+                } else {
+                    self.invoice = nil
+                    self.invoiceString = ""
+                }
             }
             
         default:

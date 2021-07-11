@@ -22,6 +22,8 @@
 		0A52680E264E0C4F005E6459 /* ProgressHudView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0A1E4895264D3EA500E530E0 /* ProgressHudView.xib */; };
 		0A526813264E0D62005E6459 /* MFIKeyActionSheetView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0A1E488E264D3E9F00E530E0 /* MFIKeyActionSheetView.xib */; };
 		0A590357269875CD00510626 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A590356269875CB00510626 /* Extensions.swift */; };
+		0A59035A269B080700510626 /* ConfirmLightningPaymentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A590359269B080700510626 /* ConfirmLightningPaymentViewController.swift */; };
+		0A59035D269B0CA800510626 /* InvoiceStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A59035C269B0CA700510626 /* InvoiceStruct.swift */; };
 		0AE19ED725F4AC0D000F0AD4 /* WalletRecoveryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AE19ED625F4AC0D000F0AD4 /* WalletRecoveryViewController.swift */; };
 		844D2A4B2512D4F60046372E /* UTXOCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844D2A492512D4F60046372E /* UTXOCell.swift */; };
 		844D2A4C2512D4F60046372E /* UTXOCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 844D2A4A2512D4F60046372E /* UTXOCell.xib */; };
@@ -213,6 +215,8 @@
 		0A1E48A7264D3F6F00E530E0 /* NamedColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NamedColor.swift; sourceTree = "<group>"; };
 		0A3013D7266B361E004DA35C /* LndRpc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LndRpc.swift; sourceTree = "<group>"; };
 		0A590356269875CB00510626 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		0A590359269B080700510626 /* ConfirmLightningPaymentViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmLightningPaymentViewController.swift; sourceTree = "<group>"; };
+		0A59035C269B0CA700510626 /* InvoiceStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceStruct.swift; sourceTree = "<group>"; };
 		0AE19ED625F4AC0D000F0AD4 /* WalletRecoveryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletRecoveryViewController.swift; sourceTree = "<group>"; };
 		844D2A492512D4F60046372E /* UTXOCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOCell.swift; sourceTree = "<group>"; };
 		844D2A4A2512D4F60046372E /* UTXOCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = UTXOCell.xib; sourceTree = "<group>"; };
@@ -666,6 +670,7 @@
 				D0CC0E1F24F0F35A001BF905 /* Peers.swift */,
 				D0E54DD425207A1C00BD859E /* UTXOs.swift */,
 				D093E2A625A59B9C0038B59A /* TransactionStruct.swift */,
+				0A59035C269B0CA700510626 /* InvoiceStruct.swift */,
 			);
 			path = Structs;
 			sourceTree = "<group>";
@@ -874,6 +879,7 @@
 				D09F9E5124B1F8DE006B588C /* AddSignerViewController.swift */,
 				D0B80A882516020A006B88F0 /* ImportXpubViewController.swift */,
 				0AE19ED625F4AC0D000F0AD4 /* WalletRecoveryViewController.swift */,
+				0A590359269B080700510626 /* ConfirmLightningPaymentViewController.swift */,
 			);
 			path = Wallets;
 			sourceTree = "<group>";
@@ -1167,6 +1173,8 @@
 				D0233F262361EA380041FFBA /* StringExtension.swift in Sources */,
 				D07EC09022DBFB5400F9160D /* JoinPSBTViewController.swift in Sources */,
 				D0C20EDE24A6E70A00C62AA4 /* SmartFee.swift in Sources */,
+				0A59035D269B0CA800510626 /* InvoiceStruct.swift in Sources */,
+				0A59035A269B080700510626 /* ConfirmLightningPaymentViewController.swift in Sources */,
 				D082397924DAE4CB0098D4F4 /* LightningNodeManagerViewController.swift in Sources */,
 				D0233F242361EA090041FFBA /* Base32.swift in Sources */,
 				D020480F249605AB00EF52DB /* ActiveWalletsViewController.swift in Sources */,

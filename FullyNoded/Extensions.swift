@@ -9,6 +9,16 @@
 import Foundation
 import UIKit
 
+public extension Date {
+    
+    var displayDate: String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
+        return dateFormatter.string(from: self)
+    }
+    
+}
+
 public extension UITextView {
   func addHyperLinksToText(originalText: String, hyperLinks: [String: String]) {
     let style = NSMutableParagraphStyle()
@@ -100,6 +110,10 @@ public extension String {
     
     var sha256Hash: String {
         return Crypto.sha256hash(self)
+    }
+    
+    var msatToSat: Double {
+        return Double(self)! / 1000.0
     }
 }
 
@@ -212,6 +226,10 @@ public extension Double {
             return "$\(dbl.withCommas()) USD"
         }
     }
+    
+    var satsToBtcDouble: Double {
+        return self / 100000000.0
+    }
 }
 
 public extension Int {
@@ -221,6 +239,10 @@ public extension Int {
         numberFormatter.maximumFractionDigits = 8
         numberFormatter.numberStyle = .decimal
         return numberFormatter.string(for: self) ?? ""
+    }
+    
+    var satsToBtcDouble: Double {
+        return Double(self) / 100000000.0
     }
     
 }
