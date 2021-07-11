@@ -490,7 +490,7 @@ class ActiveWalletViewController: UIViewController {
                 var dbl = 0.0
                 
                 if isLightning {
-                    dbl = (amount.satsToBtc / 100000000.0 * exchangeRate)
+                    dbl = (amount.satsToBtc * exchangeRate)
                     
                     if dbl > 1.0 {
                         dbl = round(dbl)
@@ -500,19 +500,7 @@ class ActiveWalletViewController: UIViewController {
                     dbl = round((amount.doubleValue * exchangeRate))
                 }
                 
-                if dbl < 0 {
-                    dbl = dbl * -1.0
-                }
-                
-                var stringValue = ""
-                
-                if dbl < 1.0 {
-                    stringValue = "$\(dbl.avoidNotation) USD"
-                } else {
-                    stringValue = "$\(dbl.withCommas()) USD"
-                }
-                
-                currentFiatValueLabel.text = stringValue
+                currentFiatValueLabel.text = dbl.balanceText
             } else {
                 currentFiatValueLabel.text = "current exchange rate missing"
             }

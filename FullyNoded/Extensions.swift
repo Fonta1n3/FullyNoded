@@ -199,7 +199,19 @@ public extension Double {
         return btc.avoidNotation
     }
     
-    //var
+    var balanceText: String {
+        var dbl = self
+        
+        if dbl < 0 {
+            dbl = dbl * -1.0
+        }
+        
+        if dbl < 1.0 {
+            return "$\(dbl.avoidNotation) USD"
+        } else {
+            return "$\(dbl.withCommas()) USD"
+        }
+    }
 }
 
 public extension Int {

@@ -13,6 +13,7 @@ class KeySendViewController: UIViewController, UITextFieldDelegate {
     let spinner = ConnectingView()
     var id = ""
     var peer:PeersStruct?
+    var peerName = ""
     @IBOutlet weak var idLabel: UILabel!
     @IBOutlet weak var textField: UITextField!
     @IBOutlet weak var iconBackground: UIView!
@@ -31,7 +32,12 @@ class KeySendViewController: UIViewController, UITextFieldDelegate {
             idLabel.text = peer!.label
             iconBackground.backgroundColor = hexStringToUIColor(hex: peer!.color)
             aliasLabel.text = peer!.alias
+            peerName = peer!.label
+            if peer!.label == "" {
+                peerName = peer!.alias
+            }
         } else {
+            peerName = id
             idLabel.text = id
             aliasLabel.text = "Key Send"
         }
@@ -85,8 +91,8 @@ class KeySendViewController: UIViewController, UITextFieldDelegate {
         
         let hash = Crypto.sha256hash(preimage)
         let b64 = hash.base64EncodedString()
-                
-        let param:[String:Any] = ["memo":"Why do I need to create an invoice for an invoiceless payment? 🤔", "hash":b64, "value":"\(sats)", "r_preimage": preimage.base64EncodedString(), "is_keysend": true]
+        let memo = "Fully Noded Keysend: \(sats) sats sent to \(self.peerName) ⚡️"
+        let param:[String:Any] = ["memo": memo, "hash":b64, "value":"\(sats)", "r_preimage": preimage.base64EncodedString(), "is_keysend": true]
         
         LndRpc.sharedInstance.command(.addinvoice, param, nil, nil) { [weak self] (response, error) in
             guard let self = self else { return }
@@ -95,7 +101,7 @@ class KeySendViewController: UIViewController, UITextFieldDelegate {
                 return
             }
 
-            self.keysend(hash: b64, sats: sats, payreq: payreq, payment_addr: payment_addr)
+            self.keysend(hash: b64, sats: sats, payreq: payreq, payment_addr: payment_addr, memo: memo)
         }
     }
     
@@ -111,7 +117,7 @@ class KeySendViewController: UIViewController, UITextFieldDelegate {
         return Data(bytes)
     }
     
-    private func keysend(hash: String, sats: Int, payreq: String, payment_addr: String) {
+    private func keysend(hash: String, sats: Int, payreq: String, payment_addr: String, memo: String) {
         let dest = Data(hexString: peer!.pubkey)!.base64EncodedString()
         
         guard let preimage = secret() else { return }
@@ -123,20 +129,33 @@ class KeySendViewController: UIViewController, UITextFieldDelegate {
         LndRpc.sharedInstance.command(.keysend, param, nil, nil) { [weak self] (response, error) in
             guard let self = self else { return }
 
-            self.spinner.removeConnectingView()
-
             guard let response = response else {
+                self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "There was an issue...", message: error ?? "Unknown error.")
                 return
             }
             
             if let payment_error = response["payment_error"] as? String, payment_error != "" {
+                self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "Payment Error", message: payment_error)
             } else if let _ = response["payment_preimage"] as? String {
-                showAlert(vc: self, title: "Lightning payment sent ⚡️", message: "\(sats) sent to \(self.peer!.label)")
+                self.decodePayreq(memo: memo, payreq: payreq, sats: sats)
             } else if let message = response["message"] as? String {
+                self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "There was an issue...", message: message)
             }
+        }
+    }
+    
+    private func decodePayreq(memo: String, payreq: String, sats: Int) {
+        LndRpc.sharedInstance.command(.decodepayreq, nil, payreq, nil) { [weak self] (response, error) in
+            guard let self = self else { return }
+            
+            guard let response = response, let paymentHash = response["payment_hash"] as? String else {
+                return
+            }
+            
+            self.saveTx(memo: memo, hash: paymentHash, sats: sats)
         }
     }
     
@@ -189,6 +208,38 @@ class KeySendViewController: UIViewController, UITextFieldDelegate {
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
         textField.resignFirstResponder()
+    }
+    
+    private func saveTx(memo: String, hash: String, sats: Int) {
+        FiatConverter.sharedInstance.getFxRate { fxRate in
+            self.spinner.removeConnectingView()
+            
+            guard let originRate = fxRate else {
+                let dict = [
+                    "txid":hash,
+                    "id":UUID(),
+                    "memo":memo,
+                    "date":Date(),
+                    "label":"Fully Noded Keysend",
+                ] as [String:Any]
+                
+                CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in }
+                showAlert(vc: self, title: "Lightning payment sent ⚡️", message: "\(sats) sats sent to \(self.peerName)")
+                return
+            }
+            
+            let dict = [
+                "txid":hash,
+                "id":UUID(),
+                "memo":memo,
+                "date":Date(),
+                "label":"Fully Noded Keysend",
+                "originFxRate": originRate
+            ] as [String:Any]
+            
+            CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in }
+            showAlert(vc: self, title: "Lightning payment sent ⚡️", message: "\(sats) sats sent to \(self.peerName)")
+        }        
     }
     
     /*

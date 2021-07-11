@@ -1135,6 +1135,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             let lnrpcRouteToTry = routes[self.index]
 
             let param:[String:Any] = ["route": lnrpcRouteToTry, "payment_hash": paymentHashData]
+            
             LndRpc.sharedInstance.command(.routepayment, param, nil, nil) { [weak self] (response, error) in
                 guard let self = self else { return }
 
@@ -1150,7 +1151,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                         self.payFromLNDViaRoutes(invoice: invoice, msat: msat, dict: dict)
                     } else {
                         self.index = 0
-                        self.payInvoiceLND(invoice: invoice, msat: nil, dict: dict)
+                        self.payInvoiceLND(invoice: invoice, sats: Int(amount)!, dict: dict)
                     }
                 } else if let _ = response["payment_preimage"] as? String {
                     self.spinner.removeConnectingView()
@@ -1160,32 +1161,63 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
-    private func payInvoiceLND(invoice: String, msat: Int?, dict: [String:Any]) {
+    private func payInvoiceLND(invoice: String, sats: Int, dict: [String:Any]) {
         let param:[String:Any] = ["payment_request":invoice,"fee_limit":["fixed":"1"], "allow_self_payment":true]
         LndRpc.sharedInstance.command(.payinvoice, param, nil, nil) { [weak self] (response, error) in
             guard let self = self else { return }
-            
-            self.spinner.removeConnectingView()
 
             guard let response = response else {
+                self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "There was an issue...", message: error ?? "Unknown error.")
                 return
             }
             
             if let payment_error = response["payment_error"] as? String, payment_error != "" {
+                self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "Payment Error", message: payment_error)
             } else if let _ = response["payment_preimage"] as? String {
-                showAlert(vc: self, title: "Lightning payment sent ⚡️", message: "")
+                self.saveTx(memo: dict["memo"] as! String, hash: response["payment_hash"] as! String, sats: sats)
             } else if let message = response["message"] as? String {
+                self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "There was an issue...", message: message)
             }
         }
     }
     
-//    private func addPaidInvoiceLnd(invoice: String) {
-//        let param:[String:Any] = ["payment_request": invoice]
-//        LndRpc.sharedInstance.command(.addinvoice, param, nil, nil) { (_, _) in }
-//    }
+    private func saveTx(memo: String, hash: String, sats: Int) {
+        FiatConverter.sharedInstance.getFxRate { [weak self] fxRate in
+            guard let self = self else { return }
+            
+            self.spinner.removeConnectingView()
+            
+            guard let originRate = fxRate else {
+                let dict = [
+                    "txid":hash,
+                    "id":UUID(),
+                    "memo":memo,
+                    "date":Date(),
+                    "label":"Fully Noded ⚡️ payment",
+                ] as [String:Any]
+                
+                CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in }
+                
+                showAlert(vc: self, title: "Lightning payment sent ⚡️", message: "\(sats) sats sent.")
+                return
+            }
+            
+            let dict = [
+                "txid":hash,
+                "id":UUID(),
+                "memo":memo,
+                "date":Date(),
+                "label":"Fully Noded ⚡️ payment",
+                "originFxRate": originRate
+            ] as [String:Any]
+            
+            showAlert(vc: self, title: "Lightning payment sent ⚡️", message: "\(sats) sats sent.")
+            CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in }
+        }
+    }
     
     private func payFromCL(invoice: String, msat: Int?) {
         var params = ""

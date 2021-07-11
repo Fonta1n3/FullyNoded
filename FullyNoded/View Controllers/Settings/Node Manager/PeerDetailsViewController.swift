@@ -259,10 +259,7 @@ class PeerDetailsViewController: UIViewController, UITextFieldDelegate {
     func textFieldDidEndEditing(_ textField: UITextField) {
         if textField == nameField && textField.text != "" {
             if self.uuid != nil {
-                CoreDataService.update(id: self.uuid!, keyToUpdate: "label", newValue: textField.text!, entity: .peers) { (success) in
-//                    if success {
-//                        showAlert(vc: self, title: "Success", message: "Peer's name updated")
-//                    }
+                CoreDataService.update(id: self.uuid!, keyToUpdate: "label", newValue: textField.text!, entity: .peers) { _ in
                     return
                 }
             }

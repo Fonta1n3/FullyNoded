@@ -373,6 +373,20 @@ class NodeLogic {
         }
     }
     
+    private class func saveLocally(txid: String, date: Date) {
+        print("save lightning transaction locally")
+
+        let dict = [
+            "txid":txid,
+            "id":UUID(),
+            "memo":"no transaction memo",
+            "date":date,
+            "label":""
+        ] as [String:Any]
+
+        CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in }
+    }
+    
     class func getOutgoingPaymentsLND(completion: @escaping ((response: [[String:Any]]?, errorMessage: String?)) -> Void) {
         let lnd = LndRpc.sharedInstance
         
@@ -385,91 +399,64 @@ class NodeLogic {
                 return
             }
             
-            for (i, payment) in payments.enumerated() {
-                let payment_hash = payment["payment_hash"] as? String ?? ""
-                let amount = Int(payment["value_sat"] as? String ?? "")!.withCommas()
-                let status = payment["status"] as? String ?? ""
-                let created = Double(payment["creation_time_ns"] as? String ?? "0.0")! / 1000000000.0
-                let invoice = payment["payment_request"] as? String ?? ""
-                let date = Date(timeIntervalSince1970: created)
-                dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
-                let dateString = dateFormatter.string(from: date)
+            CoreDataService.retrieveEntity(entityName: .transactions) { savedTxs in
                 
-                if status == "SUCCEEDED" {
-                    arrayToReturn.append([
-                                            "address": invoice,
-                                            "amount": "-\(amount) sats",
-                                            "confirmations": status,
-                                            "label": "",
-                                            "date": dateString,
-                                            "rbf": false,
-                                            "txID": payment_hash,
-                                            "replacedBy": "",
-                                            "selfTransfer":false,
-                                            "remove":false,
-                                            "onchain":false,
-                                            "isLightning":true,
-                                            "sortDate":date])
+                for (p, payment) in payments.enumerated() {
+                    var alreadySaved = false
+                    let payment_hash = payment["payment_hash"] as? String ?? ""
+                    let amount = Int(payment["value_sat"] as? String ?? "")!.withCommas()
+                    let status = payment["status"] as? String ?? ""
+                    let created = Double(payment["creation_time_ns"] as? String ?? "0.0")! / 1000000000.0
+                    let invoice = payment["payment_request"] as? String ?? ""
+                    let date = Date(timeIntervalSince1970: created)
+                    dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
+                    let dateString = dateFormatter.string(from: date)
                     
-                    
-                }
-                
-                if i + 1 == payments.count {
-                    arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
-                    
-                    for (x, tx) in arrayToReturn.enumerated() {
-                        let txID = tx["txID"] as! String
-                        var label = tx["label"] as! String
-                        let date = tx["sortDate"] as! Date
+                    if status == "SUCCEEDED" {
+                        arrayToReturn.append([
+                                                "address": invoice,
+                                                "amount": "-\(amount) sats",
+                                                "confirmations": status,
+                                                "label": "",
+                                                "date": dateString,
+                                                "rbf": false,
+                                                "txID": payment_hash,
+                                                "replacedBy": "",
+                                                "selfTransfer":false,
+                                                "remove":false,
+                                                "onchain":false,
+                                                "isLightning":true,
+                                                "sortDate":date])
                         
-                        if label == "" {
-                            label = "no label added"
-                        }
-                        
-                        if tx["onchain"] as! Bool == true {
-                            label = "no label added"
-                        }
-                        
-                        func saveLocally() {
-                         print("save lightning transaction locally")
-                             let dict = [
-                                 "txid":txID,
-                                 "id":UUID(),
-                                 "memo":"no transaction memo",
-                                 "date":date,
-                                 "label":label
-                             ] as [String:Any]
-                             
-                             CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in }
-                         }
-                         
-                        CoreDataService.retrieveEntity(entityName: .transactions) { savedTxs in
-                            guard let savedTxs = savedTxs, savedTxs.count > 0 else {
-                                saveLocally()
+                        guard let savedTxs = savedTxs else {
+                            saveLocally(txid: payment_hash, date: date)
+                            
+                            if p + 1 == payments.count {
+                                arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
                                 completion((arrayToReturn, nil))
-                                return
                             }
                             
-                            var alreadySaved = false
+                            return
+                        }
+                        
+                        for (s, savedTx) in savedTxs.enumerated() {
+                            let savedTxStruct = TransactionStruct(dictionary: savedTx)
                             
-                            for (i, savedTx) in savedTxs.enumerated() {
-                                let txStruct = TransactionStruct(dictionary: savedTx)
-                                
-                                if txStruct.txid == payment_hash {
-                                    alreadySaved = true
-                                }
-                                
-                                if i + 1 == savedTxs.count {
-                                    if !alreadySaved {
-                                        saveLocally()
-                                    }
-                                    
-                                    if x + 1 == arrayToReturn.count {
-                                        completion((arrayToReturn, nil))
-                                    }
+                            if savedTxStruct.txid == payment_hash {
+                                alreadySaved = true
+                            }
+                            
+                            if s + 1 == savedTxs.count {
+                                if !alreadySaved {
+                                    saveLocally(txid: payment_hash, date: date)
                                 }
                             }
                         }
+                    }
+                    
+                    if p + 1 == payments.count {
+                        arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
+                        completion((arrayToReturn, nil))
                     }
                 }
             }
