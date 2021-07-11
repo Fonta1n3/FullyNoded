@@ -4719,10 +4719,10 @@ xxxxx</string>
                                 </subviews>
                             </stackView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FTc-X9-DAY">
-                                <rect key="frame" x="271" y="55" width="88" height="23"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="10"/>
+                                <rect key="frame" x="113" y="55" width="246" height="23"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <color key="tintColor" red="0.25174289789999998" green="0.82675522769999998" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <state key="normal" title=" paste invoice" image="doc.on.clipboard" catalog="system">
+                                <state key="normal" title=" paste a lightning or bitcoin invoice" image="doc.on.clipboard" catalog="system">
                                     <color key="titleColor" red="0.25174289789999998" green="0.82675522769999998" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <connections>
@@ -4764,7 +4764,7 @@ xxxxx</string>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="Gt1-eH-cey">
-                        <barButtonItem key="rightBarButtonItem" image="qrcode.viewfinder" catalog="system" id="bKr-tP-r4V">
+                        <barButtonItem key="rightBarButtonItem" title="scan invoice" image="qrcode.viewfinder" catalog="system" id="bKr-tP-r4V">
                             <color key="tintColor" systemColor="systemTealColor"/>
                             <connections>
                                 <action selector="scanNow:" destination="pUo-bf-sNm" id="o7d-7Q-geJ"/>
@@ -7410,16 +7410,16 @@ COLD means no keys will be generated and no private keys can be imported.</strin
     <inferredMetricsTieBreakers>
         <segue reference="ckQ-WD-ole"/>
         <segue reference="fMA-4V-4zE"/>
-        <segue reference="gF6-29-ZCL"/>
+        <segue reference="DLx-HT-rGm"/>
         <segue reference="w2g-bl-j8v"/>
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="LMu-1F-VvA"/>
-        <segue reference="oY9-Pq-H5b"/>
+        <segue reference="IAz-j1-Gq6"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="sXG-y0-yya"/>
+        <segue reference="CQp-9r-70w"/>
         <segue reference="8MS-xS-DMP"/>
         <segue reference="yAt-Ra-aPH"/>
-        <segue reference="7PS-EL-3d2"/>
+        <segue reference="gzO-Lb-E0s"/>
         <segue reference="j10-wi-hpr"/>
         <segue reference="qmy-fM-U4p"/>
     </inferredMetricsTieBreakers>

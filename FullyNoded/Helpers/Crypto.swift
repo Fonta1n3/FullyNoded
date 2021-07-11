@@ -16,6 +16,12 @@ enum Crypto {
         return digest.map { String(format: "%02hhx", $0) }.joined()
     }
     
+    static func sha256hash(_ data: Data) -> Data {
+        let digest = SHA256.hash(data: data)
+        
+        return Data(digest)
+    }
+    
     static func privateKey() -> Data {
         
         return P256.Signing.PrivateKey().rawRepresentation

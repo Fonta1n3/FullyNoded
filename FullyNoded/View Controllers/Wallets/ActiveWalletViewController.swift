@@ -37,6 +37,7 @@ class ActiveWalletViewController: UIViewController {
     private var labelToEdit = ""
     private var psbt = ""
     private var rawTx = ""
+    private var dateFormatter = DateFormatter()
     
     @IBOutlet weak private var backgroundView: UIVisualEffectView!
     @IBOutlet weak private var walletTable: UITableView!
@@ -167,7 +168,6 @@ class ActiveWalletViewController: UIViewController {
     @IBAction func getDetails(_ sender: Any) {
         guard let wallet = wallet else {
             showAlert(vc: self, title: "", message: "That button only works for \"Fully Noded Wallets\" which can be created by tapping the plus button, you can see your Fully Noded Wallets by tapping the squares button. Fully Noded allows you to access, use and create wallets with ultimate flexibility using your node but it comes with some limitations. In order to get a better user experience we recommend creating a Fully Noded Wallet.")
-            
             return
         }
         
@@ -327,7 +327,7 @@ class ActiveWalletViewController: UIViewController {
                 let localTransactionStruct = TransactionStruct(dictionary: transaction)
                 
                 for (t, tx) in self.transactionArray.enumerated() {
-                    if !(tx["isLightning"] as! Bool) && (tx["txID"] as! String) == localTransactionStruct.txid {
+                    if (tx["txID"] as! String) == localTransactionStruct.txid {
                         self.transactionArray[t]["memo"] = localTransactionStruct.memo
                         self.transactionArray[t]["transactionLabel"] = localTransactionStruct.label
                         
@@ -481,31 +481,63 @@ class ActiveWalletViewController: UIViewController {
         
         let amount = dict["amount"] as! String
         
-        if isOnchain {
             utxoLabel.text = utxoLabelText
             editLabelButton.alpha = 1
             seeDetailButton.alpha = 1
             fetchOriginRateButton.alpha = 1
             
             if let exchangeRate = fxRate {
-                var dbl = round((amount.doubleValue * exchangeRate))
+                var dbl = 0.0
+                
+                if isLightning {
+                    dbl = (amount.satsToBtc / 100000000.0 * exchangeRate)
+                    
+                    if dbl > 1.0 {
+                        dbl = round(dbl)
+                    }
+                    
+                } else {
+                    dbl = round((amount.doubleValue * exchangeRate))
+                }
+                
                 if dbl < 0 {
                     dbl = dbl * -1.0
                 }
-                currentFiatValueLabel.text = "$\(dbl.withCommas()) USD"
+                
+                var stringValue = ""
+                
+                if dbl < 1.0 {
+                    stringValue = "$\(dbl.avoidNotation) USD"
+                } else {
+                    stringValue = "$\(dbl.withCommas()) USD"
+                }
+                
+                currentFiatValueLabel.text = stringValue
             } else {
                 currentFiatValueLabel.text = "current exchange rate missing"
             }
             
             if let originRate = dict["originRate"] as? Double {
-                var amountProcessed = amount.doubleValue
+                var amountProcessed = 0.0
+                
+                if isLightning {
+                    amountProcessed = amount.satsToBtc
+                } else {
+                    amountProcessed = amount.doubleValue
+                }
+                
                 if amountProcessed < 0.0 {
                     amountProcessed = amountProcessed * -1.0
                 }
-                var dbl = round((amountProcessed * originRate))
+                
+                 var dbl = 0.0
+                
+                dbl = round((amountProcessed * originRate))
+                
                 if dbl < 0.0 {
                     dbl = dbl * -1.0
                 }
+                
                 originFiatValueLabel.text = "$\(round((dbl)).withCommas()) USD"
                 
                 if let exchangeRate = fxRate {
@@ -528,16 +560,6 @@ class ActiveWalletViewController: UIViewController {
             
             memoLabel.text = dict["memo"] as? String ?? "no transaction memo"
             transactionLabel.text = dict["transactionLabel"] as? String ?? "no transaction label"
-        } else {
-            memoLabel.text = "N/A"
-            transactionLabel.text = "N/A"
-            currentFiatValueLabel.text = "N/A"
-            originFiatValueLabel.text = "N/A"
-            utxoLabel.text = "N/A"
-            editLabelButton.alpha = 0
-            seeDetailButton.alpha = 0
-            fetchOriginRateButton.alpha = 0
-        }
                 
         if amount.hasPrefix("-") {
             categoryImage.image = UIImage(systemName: "arrow.up.right")
@@ -717,10 +739,12 @@ class ActiveWalletViewController: UIViewController {
             for (t, transaction) in transactions.enumerated() {
                 let txStruct = TransactionStruct(dictionary: transaction)
                 if txStruct.txid == id {
-                    guard let date = txStruct.date, let uuid = txStruct.id else { return }
-                    
-                    foundMatch = true
-                    self.addOriginRate(date, uuid)
+                    if let date = txStruct.date, let uuid = txStruct.id {
+                        foundMatch = true
+                        self.addOriginRate(date, uuid)
+                    } else {
+                        print("fail here")
+                    }
                 }
                 
                 if t + 1 == transactions.count && !foundMatch {
@@ -728,12 +752,23 @@ class ActiveWalletViewController: UIViewController {
                     
                     if self.wallet != nil {
                         // not been saved so save it
+                        
+                        var dateToSave:Date!
+                        
+                        if let date = tx["date"] as? Date {
+                            dateToSave = date
+                        } else if let dateString = tx["date"] as? String {
+                            if let datestr = self.dateFromStr(date: dateString) {
+                                dateToSave = datestr
+                            }
+                        }
+                        
                         let dict = [
                             "txid":id,
                             "id":UUID(),
                             "walletId":self.wallet!.id,
                             "memo":"no transaction memo",
-                            "date":tx["date"] as! Date,
+                            "date":dateToSave!,
                             "label":"no transaction label"
                         ] as [String:Any]
                         
@@ -744,7 +779,7 @@ class ActiveWalletViewController: UIViewController {
                             }
                             
                             let newTxStruct = TransactionStruct(dictionary: dict)
-                            guard let date = newTxStruct.date, let uuid = newTxStruct.id else { return }
+                            guard let date = newTxStruct.date, let uuid = newTxStruct.id else { print("actually failing here"); return }
                             
                             self.addOriginRate(date, uuid)
                         }
@@ -754,6 +789,11 @@ class ActiveWalletViewController: UIViewController {
                 }
             }
         }
+    }
+    
+    private func dateFromStr(date: String) -> Date? {
+        dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
+        return dateFormatter.date(from: date)
     }
     
     private func addOriginRate(_ date: Date, _ id: UUID) {

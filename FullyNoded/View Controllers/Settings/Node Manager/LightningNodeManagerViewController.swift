@@ -39,7 +39,7 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
         
         if newlyAdded {
             newlyAdded = false
-            showAlert(vc: self, title: "⚡️ Lightning Node added ⚡️", message: "We are now fecthing info from your node, to view this screen from now on just tap the ⚡️ on the home screen to toggle between Lightning and onchcain.")
+            showAlert(vc: self, title: "Node added ⚡️", message: "Fecthing info from your node...\n\nTo view this screen from now on just tap the ⚡️ on the home screen.")
         } else {
             checkForLightningNodes { [weak self] node in
                 guard let self = self else { return }

@@ -1111,17 +1111,19 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 return
             }
             
-            self.payFromLND(invoice: invoice, msat: msat, dict: dict)
+            self.payFromLNDViaRoutes(invoice: invoice, msat: msat, dict: dict)
         }
     }
     
-    private func payFromLND(invoice: String, msat: Int?, dict: [String:Any]) {
+    private func payFromLNDViaRoutes(invoice: String, msat: Int?, dict: [String:Any]) {
         let destination = dict["destination"] as? String ?? ""
         let amount = dict["num_satoshis"] as? String ?? ""
         let paymentHash = dict["payment_hash"] as? String ?? ""
         let paymentHashData = Data(hexString: paymentHash)!.base64EncodedString()
         let ext = "\(destination)/\(amount)"
-        LndRpc.sharedInstance.command(.queryroutes, nil, ext, nil) { [weak self] (response, error) in
+        let query:[String:Any] = ["fee_limit.fixed":"1"]
+        
+        LndRpc.sharedInstance.command(.queryroutes, nil, ext, query) { [weak self] (response, error) in
             guard let self = self else { return }
 
             guard let routes = response?["routes"] as? NSArray, routes.count > 0 else {
@@ -1136,22 +1138,54 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             LndRpc.sharedInstance.command(.routepayment, param, nil, nil) { [weak self] (response, error) in
                 guard let self = self else { return }
 
-                self.spinner.removeConnectingView()
-
-                guard let response = response else { return }
+                guard let response = response else {
+                    self.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "There was an issue...", message: error ?? "Unknown error.")
+                    return
+                }
 
                 if let payment_error = response["payment_error"] as? String, payment_error != "" {
                     if routes.count < self.index {
                         self.index += 1
-                        self.payFromLND(invoice: invoice, msat: msat, dict: dict)
+                        self.payFromLNDViaRoutes(invoice: invoice, msat: msat, dict: dict)
                     } else {
                         self.index = 0
-                        showAlert(vc: self, title: "Payment Error", message: payment_error)
+                        self.payInvoiceLND(invoice: invoice, msat: nil, dict: dict)
                     }
+                } else if let _ = response["payment_preimage"] as? String {
+                    self.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "Lightning payment sent ⚡️", message: "")
                 }
             }
         }
     }
+    
+    private func payInvoiceLND(invoice: String, msat: Int?, dict: [String:Any]) {
+        let param:[String:Any] = ["payment_request":invoice,"fee_limit":["fixed":"1"], "allow_self_payment":true]
+        LndRpc.sharedInstance.command(.payinvoice, param, nil, nil) { [weak self] (response, error) in
+            guard let self = self else { return }
+            
+            self.spinner.removeConnectingView()
+
+            guard let response = response else {
+                showAlert(vc: self, title: "There was an issue...", message: error ?? "Unknown error.")
+                return
+            }
+            
+            if let payment_error = response["payment_error"] as? String, payment_error != "" {
+                showAlert(vc: self, title: "Payment Error", message: payment_error)
+            } else if let _ = response["payment_preimage"] as? String {
+                showAlert(vc: self, title: "Lightning payment sent ⚡️", message: "")
+            } else if let message = response["message"] as? String {
+                showAlert(vc: self, title: "There was an issue...", message: message)
+            }
+        }
+    }
+    
+//    private func addPaidInvoiceLnd(invoice: String) {
+//        let param:[String:Any] = ["payment_request": invoice]
+//        LndRpc.sharedInstance.command(.addinvoice, param, nil, nil) { (_, _) in }
+//    }
     
     private func payFromCL(invoice: String, msat: Int?) {
         var params = ""

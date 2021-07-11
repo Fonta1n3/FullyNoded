@@ -14,6 +14,7 @@ class PeerDetailsViewController: UIViewController, UITextFieldDelegate {
     let spinner = ConnectingView()
     var id = ""
     var peer:PeersStruct?
+    var isLnd = false
     
     @IBOutlet weak var uriField: UITextView!
     @IBOutlet weak var iconBackground: UIView!
@@ -40,9 +41,14 @@ class PeerDetailsViewController: UIViewController, UITextFieldDelegate {
     }
     
     @IBAction func noiseAction(_ sender: Any) {
-        DispatchQueue.main.async { [weak self] in
-            self?.performSegue(withIdentifier: "segueToNoise", sender: self)
+        if !isLnd {
+            DispatchQueue.main.async { [weak self] in
+                self?.performSegue(withIdentifier: "segueToNoise", sender: self)
+            }
+        } else {
+            showAlert(vc: self, title: "Coming to LND soon", message: "")
         }
+        
     }
     
     private func listNodes() {
@@ -76,6 +82,8 @@ class PeerDetailsViewController: UIViewController, UITextFieldDelegate {
         
         isLndNode { [weak self] isLnd in
             guard let self = self else { return }
+            
+            self.isLnd = isLnd
             
             guard isLnd else {
                 self.getPeerCL()
@@ -252,9 +260,10 @@ class PeerDetailsViewController: UIViewController, UITextFieldDelegate {
         if textField == nameField && textField.text != "" {
             if self.uuid != nil {
                 CoreDataService.update(id: self.uuid!, keyToUpdate: "label", newValue: textField.text!, entity: .peers) { (success) in
-                    if success {
-                        showAlert(vc: self, title: "Success", message: "Peer's name updated")
-                    }
+//                    if success {
+//                        showAlert(vc: self, title: "Success", message: "Peer's name updated")
+//                    }
+                    return
                 }
             }
         }

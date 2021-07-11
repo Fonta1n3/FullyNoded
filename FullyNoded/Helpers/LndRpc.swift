@@ -92,7 +92,9 @@ class LndRpc {
                  .connect,
                  .openchannel,
                  .fundingstep,
-                 .fwdinghistory:
+                 .fwdinghistory,
+                 .keysend,
+                 .addholdinvoice:
                 
                 request.httpMethod = "POST"
                 
@@ -114,7 +116,7 @@ class LndRpc {
                 
             case .getnewaddress:
                 request.httpMethod = "POST"
-                                
+                
             default:
                 request.httpMethod = "GET"
                 
@@ -136,6 +138,8 @@ class LndRpc {
                         
                     } else if let httpResponse = response as? HTTPURLResponse {
                         switch httpResponse.statusCode {
+                        case 200:
+                            completion((nil, "HTTP status code 200."))
                         case 401:
                             completion((nil, "Looks like your LND credentials are incorrect, please double check them."))
                         case 404:

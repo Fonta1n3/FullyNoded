@@ -64,11 +64,13 @@ class NodeLogic {
     
     class func getOffChainBalanceLND(completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
         let lnd = LndRpc.sharedInstance
+        
         lnd.command(.channelbalance, nil, nil, nil) { (response, error) in
             guard let dict = response,
                   let localBalance = dict["local_balance"] as? NSDictionary else {
                 dictToReturn["offchainBalance"] = "0.00000000"
                 completion((dictToReturn, error ?? ""))
+                //getOutgoingPaymentsLND(completion: completion)
                 return
             }
             
@@ -79,6 +81,7 @@ class NodeLogic {
                       let walletBalance = dict["total_balance"] as? String else {
                     dictToReturn["offchainBalance"] = localBalanceSats
                     completion((dictToReturn, error ?? ""))
+                    //getOutgoingPaymentsLND(completion: completion)
                     return
                 }
                 
@@ -87,6 +90,7 @@ class NodeLogic {
                 let roundedBalance = rounded(number: btc).avoidNotation
                 dictToReturn["offchainBalance"] = "\(roundedBalance)"
                 completion((dictToReturn, error ?? ""))
+                //getOutgoingPaymentsLND(completion: completion)
             }
         }
     }
@@ -264,14 +268,14 @@ class NodeLogic {
         LndRpc.sharedInstance.command(.gettransactions, nil, nil, nil) { (response, error) in
             guard let dict = response, let transactions = dict["transactions"] as? NSArray, transactions.count > 0 else {
                 arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
-                completion((arrayToReturn, nil))
+                getPaidLND(completion: completion)
                 return
             }
             
             for (t, transaction) in transactions.enumerated() {
                 guard let txDict = transaction as? NSDictionary, let hash = txDict["tx_hash"] as? String else {
                     arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
-                    completion((arrayToReturn, nil))
+                    getPaidLND(completion: completion)
                     return
                 }
                 
@@ -312,7 +316,160 @@ class NodeLogic {
                     
                     if t + 1 == transactions.count && o + 1 == arrayToReturn.count {
                         arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
-                        completion((arrayToReturn, nil))
+                        getPaidLND(completion: completion)
+                    }
+                }
+            }
+        }
+    }
+    
+    class func getPaidLND(completion: @escaping ((response: [[String:Any]]?, errorMessage: String?)) -> Void) {
+        let lnd = LndRpc.sharedInstance
+        //let param:[String:Any] = ["pending_only": false]
+        
+        lnd.command(.listinvoices, nil, nil, nil) { (response, error) in
+            
+            guard let invoices = response?["invoices"] as? [[String:Any]], invoices.count > 0 else {
+                arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
+                getOutgoingPaymentsLND(completion: completion)
+                return
+            }
+            
+            for (i, invoice) in invoices.enumerated() {
+                let payment_hash = invoice["payment_hash"] as? String ?? ""
+                let amt_paid_sat = Int(invoice["amt_paid_sat"] as? String ?? "")!.withCommas()
+                let state = invoice["state"] as? String ?? ""
+                let payment_request = invoice["payment_request"] as? String ?? ""
+                let label = invoice["memo"] as? String ?? ""
+                let paid_at = invoice["settle_date"] as? String ?? ""
+                let settled = invoice["settled"] as! Bool
+                
+                let date = Date(timeIntervalSince1970: Double(paid_at)!)
+                dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
+                let dateString = dateFormatter.string(from: date)
+                
+                if settled {
+                    arrayToReturn.append([
+                                            "address": payment_request,
+                                            "amount": "\(amt_paid_sat) sats",
+                                            "confirmations": state,
+                                            "label": "",
+                                            "date": dateString,
+                                            "rbf": false,
+                                            "txID": payment_hash,
+                                            "replacedBy": "",
+                                            "selfTransfer":false,
+                                            "remove":false,
+                                            "onchain":false,
+                                            "isLightning":true,
+                                            "sortDate":date])
+                }
+                
+                if i + 1 == invoice.count {
+                    arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
+                    getOutgoingPaymentsLND(completion: completion)
+                }
+            }
+        }
+    }
+    
+    class func getOutgoingPaymentsLND(completion: @escaping ((response: [[String:Any]]?, errorMessage: String?)) -> Void) {
+        let lnd = LndRpc.sharedInstance
+        
+        let param:[String:Any] = ["include_incomplete":false]
+        
+        lnd.command(.listpayments, param, nil, nil) { (response, error) in
+            guard let payments = response?["payments"] as? [[String:Any]], payments.count > 0 else {
+                arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
+                completion((arrayToReturn, nil))
+                return
+            }
+            
+            for (i, payment) in payments.enumerated() {
+                let payment_hash = payment["payment_hash"] as? String ?? ""
+                let amount = Int(payment["value_sat"] as? String ?? "")!.withCommas()
+                let status = payment["status"] as? String ?? ""
+                let created = Double(payment["creation_time_ns"] as? String ?? "0.0")! / 1000000000.0
+                let invoice = payment["payment_request"] as? String ?? ""
+                let date = Date(timeIntervalSince1970: created)
+                dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
+                let dateString = dateFormatter.string(from: date)
+                
+                if status == "SUCCEEDED" {
+                    arrayToReturn.append([
+                                            "address": invoice,
+                                            "amount": "-\(amount) sats",
+                                            "confirmations": status,
+                                            "label": "",
+                                            "date": dateString,
+                                            "rbf": false,
+                                            "txID": payment_hash,
+                                            "replacedBy": "",
+                                            "selfTransfer":false,
+                                            "remove":false,
+                                            "onchain":false,
+                                            "isLightning":true,
+                                            "sortDate":date])
+                    
+                    
+                }
+                
+                if i + 1 == payments.count {
+                    arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
+                    
+                    for (x, tx) in arrayToReturn.enumerated() {
+                        let txID = tx["txID"] as! String
+                        var label = tx["label"] as! String
+                        let date = tx["sortDate"] as! Date
+                        
+                        if label == "" {
+                            label = "no label added"
+                        }
+                        
+                        if tx["onchain"] as! Bool == true {
+                            label = "no label added"
+                        }
+                        
+                        func saveLocally() {
+                         print("save lightning transaction locally")
+                             let dict = [
+                                 "txid":txID,
+                                 "id":UUID(),
+                                 "memo":"no transaction memo",
+                                 "date":date,
+                                 "label":label
+                             ] as [String:Any]
+                             
+                             CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in }
+                         }
+                         
+                        CoreDataService.retrieveEntity(entityName: .transactions) { savedTxs in
+                            guard let savedTxs = savedTxs, savedTxs.count > 0 else {
+                                saveLocally()
+                                completion((arrayToReturn, nil))
+                                return
+                            }
+                            
+                            var alreadySaved = false
+                            
+                            for (i, savedTx) in savedTxs.enumerated() {
+                                let txStruct = TransactionStruct(dictionary: savedTx)
+                                
+                                if txStruct.txid == payment_hash {
+                                    alreadySaved = true
+                                }
+                                
+                                if i + 1 == savedTxs.count {
+                                    if !alreadySaved {
+                                        saveLocally()
+                                    }
+                                    
+                                    if x + 1 == arrayToReturn.count {
+                                        completion((arrayToReturn, nil))
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -584,21 +741,15 @@ class NodeLogic {
         var blockchainInfoToReturn = [String:Any]()
         
         if let currentblockheight = blockchainInfo["blocks"] as? Int {
-            
             blockchainInfoToReturn["blocks"] = currentblockheight
-            
         }
         
         if let difficultyCheck = blockchainInfo["difficulty"] as? Double {
-            
             blockchainInfoToReturn["difficulty"] = "difficulty \(Int(difficultyCheck / 1000000000000).withCommas()) trillion"
-            
         }
         
         if let sizeCheck = blockchainInfo["size_on_disk"] as? Int {
-            
             blockchainInfoToReturn["size"] = "\(sizeCheck/1000000000)gb blockchain"
-            
         }
         
         if let progressCheck = blockchainInfo["verificationprogress"] as? Double {
@@ -618,11 +769,9 @@ class NodeLogic {
         
         if let pruned = blockchainInfo["pruned"] as? Bool {
             blockchainInfoToReturn["pruned"] = pruned
-            
         }
         
         completion((blockchainInfoToReturn, nil))
-        
     }
     
     class func parsePeerInfo(peerInfo: NSArray, completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
@@ -631,26 +780,19 @@ class NodeLogic {
         var outgoingCount = 0
         
         for peer in peerInfo {
-            
             let peerDict = peer as! NSDictionary
-            
             let incoming = peerDict["inbound"] as! Bool
             
             if incoming {
-                
                 incomingCount += 1
                 peerInfoToReturn["incomingCount"] = incomingCount
-                
             } else {
-                
                 outgoingCount += 1
                 peerInfoToReturn["outgoingCount"] = outgoingCount
-                
             }
-            
         }
-        completion((peerInfoToReturn, nil))
         
+        completion((peerInfoToReturn, nil))
     }
     
     class func parseNetworkInfo(networkInfo: NSDictionary, completion: @escaping ((response: [String:Any]?, errorMessage: String?)) -> Void) {
@@ -663,20 +805,16 @@ class NodeLogic {
         let networks = networkInfo["networks"] as! NSArray
         
         for network in networks {
-            
             let dict = network as! NSDictionary
             let name = dict["name"] as! String
             
             if name == "onion" {
-                
                 let reachable = dict["reachable"] as! Bool
                 networkInfoToReturn["reachable"] = reachable
-                
             }
-            
         }
-        completion((networkInfoToReturn, nil))
         
+        completion((networkInfoToReturn, nil))
     }
     
     class func parseTransactions(transactions: NSArray) {
@@ -784,13 +922,18 @@ class NodeLogic {
                     ])
                     
                     func saveLocally() {
+                        var labelToSave = "no transaction label"
+                        
+                        if label != "" {
+                            labelToSave = label
+                        }
+                        
                         let dict = [
                             "txid":txID,
                             "id":UUID(),
-                            "walletId":activeWalletId!,
                             "memo":"no transaction memo",
                             "date":date,
-                            "label":"no transaction label"
+                            "label":labelToSave
                         ] as [String:Any]
                         
                         CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in }

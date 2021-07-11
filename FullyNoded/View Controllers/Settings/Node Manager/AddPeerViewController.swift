@@ -89,11 +89,11 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
     
     private func promptToUseClosingAddress(_ amount: Int, _ id: String, _ ip: String, _ port: String?, _ wallet: Wallet, _ address: String?) {
         DispatchQueue.main.async { [weak self] in
-            var alertStyle = UIAlertController.Style.actionSheet
-            if (UIDevice.current.userInterfaceIdiom == .pad) {
-              alertStyle = UIAlertController.Style.alert
-            }
-            let alert = UIAlertController(title: "Automatically close to \(wallet.label)?", message: "This means funds will automatically be sent to \(wallet.label) whenever the channel happens to close! This is NOT reversible!", preferredStyle: alertStyle)
+            let alertStyle = UIAlertController.Style.actionSheet
+            let tit = "Automatically close to \(wallet.label)?"
+            let mess = "This means funds will automatically be sent to \(wallet.label) whenever the channel happens to close! This is NOT reversible!"
+            
+            let alert = UIAlertController(title: tit, message: mess, preferredStyle: alertStyle)
             
             alert.addAction(UIAlertAction(title: "Close to \(wallet.label)", style: .default, handler: { action in
                 CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(Int(wallet.index) + 1), entity: .wallets) { _ in }

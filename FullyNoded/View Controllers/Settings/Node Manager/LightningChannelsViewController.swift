@@ -342,9 +342,7 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
             let outgoingId = self.outgoingChannel!["chan_id"] as! String
             let incomingId = self.incomingChannel!["remote_pubkey"] as! String
             let lastHopPubkey = Data(hexString: incomingId)!.base64EncodedString()
-            
-            //"fee_limit": ["fixed":"1"] may need to increase fee limit, look into this if constant routing issues.
-            
+                        
             let paymentParam:[String:Any] = ["allow_self_payment":true, "outgoing_chan_id": outgoingId, "last_hop_pubkey": lastHopPubkey, "payment_request": invoice]
             LndRpc.sharedInstance.command(.payinvoice, paymentParam, nil, nil) { (response, error) in
                 self.spinner.removeConnectingView()

@@ -68,6 +68,79 @@ class KeySendViewController: UIViewController, UITextFieldDelegate {
     }
     
     private func send(sats: Double) {
+        isLndNode { [weak self] isLnd in
+            guard let self = self else { return }
+            
+            guard isLnd else {
+                self.keysendCL(sats: sats)
+                return
+            }
+            
+            self.createInvoice(Int(sats))
+        }
+    }
+    
+    private func createInvoice(_ sats: Int) {
+        guard let preimage = secret() else { return }
+        
+        let hash = Crypto.sha256hash(preimage)
+        let b64 = hash.base64EncodedString()
+                
+        let param:[String:Any] = ["memo":"Why do I need to create an invoice for an invoiceless payment? 🤔", "hash":b64, "value":"\(sats)", "r_preimage": preimage.base64EncodedString(), "is_keysend": true]
+        
+        LndRpc.sharedInstance.command(.addinvoice, param, nil, nil) { [weak self] (response, error) in
+            guard let self = self else { return }
+
+            guard let response = response, let payreq = response["payment_request"] as? String, let payment_addr = response["payment_addr"] as? String else {
+                return
+            }
+
+            self.keysend(hash: b64, sats: sats, payreq: payreq, payment_addr: payment_addr)
+        }
+    }
+    
+    private func secret() -> Data? {
+        var bytes = [UInt8](repeating: 0, count: 32)
+        let result = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
+        
+        guard result == errSecSuccess else {
+            print("Problem generating random bytes")
+            return nil
+        }
+        
+        return Data(bytes)
+    }
+    
+    private func keysend(hash: String, sats: Int, payreq: String, payment_addr: String) {
+        let dest = Data(hexString: peer!.pubkey)!.base64EncodedString()
+        
+        guard let preimage = secret() else { return }
+        
+        let hash = Crypto.sha256hash(preimage)
+        let b64 = hash.base64EncodedString()
+        
+        let param:[String:Any] = ["dest":dest, "amt":"\(sats)", "payment_hash": b64, "payment_request": payreq, "payment_addr": payment_addr, "allow_self_payment": true]
+        LndRpc.sharedInstance.command(.keysend, param, nil, nil) { [weak self] (response, error) in
+            guard let self = self else { return }
+
+            self.spinner.removeConnectingView()
+
+            guard let response = response else {
+                showAlert(vc: self, title: "There was an issue...", message: error ?? "Unknown error.")
+                return
+            }
+            
+            if let payment_error = response["payment_error"] as? String, payment_error != "" {
+                showAlert(vc: self, title: "Payment Error", message: payment_error)
+            } else if let _ = response["payment_preimage"] as? String {
+                showAlert(vc: self, title: "Lightning payment sent ⚡️", message: "\(sats) sent to \(self.peer!.label)")
+            } else if let message = response["message"] as? String {
+                showAlert(vc: self, title: "There was an issue...", message: message)
+            }
+        }
+    }
+    
+    private func keysendCL(sats: Double) {
         let msats = Int(sats * 1000.0)
         let commandId = UUID()
         LightningRPC.command(id: commandId, method: .keysend, param: "\"\(id)\", \(msats)") { [weak self] (uuid, response, errorDesc) in

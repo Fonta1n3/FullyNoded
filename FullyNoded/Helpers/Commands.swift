@@ -123,6 +123,10 @@ public enum LND_REST: String {
     case closechannel
     case fwdinghistory
     case disconnect
+    case keysend
+    case listpayments
+    case listinvoices
+    case addholdinvoice
     
     var stringValue:String {
         switch self {
@@ -138,13 +142,13 @@ public enum LND_REST: String {
             return "v1/getinfo"
         case .channelbalance:
             return "v1/balance/channels"
-        case .addinvoice:
+        case .addinvoice, .listinvoices:
             return "v1/invoices"
         case .getnewaddress:
             return "v2/wallet/address/next"
         case .routepayment:
             return "v1/channels/transactions/route"
-        case .payinvoice:
+        case .payinvoice, .keysend:
             return "v1/channels/transactions"
         case .listchannels, .openchannel, .closechannel:
             return "v1/channels"
@@ -156,6 +160,10 @@ public enum LND_REST: String {
             return "v1/funding/step"
         case .fwdinghistory:
             return "v1/switch"
+        case .listpayments:
+            return "v1/payments"
+        case .addholdinvoice:
+            return "v2/invoices/hodl"
         }
     }
 }
