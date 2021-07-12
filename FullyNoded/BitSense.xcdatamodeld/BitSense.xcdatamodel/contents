@@ -80,7 +80,7 @@
         <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="receiveDescriptor" optional="YES" attributeType="String"/>
         <attribute name="type" optional="YES" attributeType="String"/>
-        <attribute name="watching" optional="YES" attributeType="Transformable"/>
+        <attribute name="watching" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData"/>
     </entity>
     <elements>
         <element name="AuthKeys" positionX="-36" positionY="126" width="128" height="88"/>
@@ -91,6 +91,6 @@
         <element name="Signers" positionX="-27" positionY="189" width="128" height="118"/>
         <element name="Transactions" positionX="-36" positionY="279" width="128" height="148"/>
         <element name="Utxos" positionX="-36" positionY="234" width="128" height="238"/>
-        <element name="Wallets" positionX="-36" positionY="180" width="128" height="208"/>
+        <element name="Wallets" positionX="-36" positionY="180" width="128" height="194"/>
     </elements>
 </model>
