@@ -39,7 +39,7 @@ class FiatConverter {
                         completion(nil)
                         return
                 }
-                completion(price)
+                completion(price.rounded())
             }
             task.resume()
         }

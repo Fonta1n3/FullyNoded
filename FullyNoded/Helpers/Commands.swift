@@ -126,7 +126,6 @@ public enum LND_REST: String {
     case keysend
     case listpayments
     case listinvoices
-    case addholdinvoice
     
     var stringValue:String {
         switch self {
@@ -162,8 +161,6 @@ public enum LND_REST: String {
             return "v1/switch"
         case .listpayments:
             return "v1/payments"
-        case .addholdinvoice:
-            return "v2/invoices/hodl"
         }
     }
 }

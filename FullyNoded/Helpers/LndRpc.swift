@@ -93,8 +93,7 @@ class LndRpc {
                  .openchannel,
                  .fundingstep,
                  .fwdinghistory,
-                 .keysend,
-                 .addholdinvoice:
+                 .keysend:
                 
                 request.httpMethod = "POST"
                 

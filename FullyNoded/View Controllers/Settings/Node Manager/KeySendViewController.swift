@@ -120,11 +120,6 @@ class KeySendViewController: UIViewController, UITextFieldDelegate {
     private func keysend(hash: String, sats: Int, payreq: String, payment_addr: String, memo: String) {
         let dest = Data(hexString: peer!.pubkey)!.base64EncodedString()
         
-//        guard let preimage = secret() else { return }
-//
-//        let hash = Crypto.sha256hash(preimage)
-//        let b64 = hash.base64EncodedString()
-        
         let param:[String:Any] = ["dest":dest, "amt":"\(sats)", "payment_hash": hash, "payment_request": payreq, "payment_addr": payment_addr, "allow_self_payment": true]
         LndRpc.sharedInstance.command(.keysend, param, nil, nil) { [weak self] (response, error) in
             guard let self = self else { return }
