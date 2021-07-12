@@ -422,13 +422,24 @@
                                                     </state>
                                                 </button>
                                                 <button opaque="NO" tag="15" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Wu0-bi-1p1">
-                                                    <rect key="frame" x="219" y="80" width="110" height="17"/>
+                                                    <rect key="frame" x="208" y="80" width="121" height="17"/>
                                                     <constraints>
-                                                        <constraint firstAttribute="width" constant="110" id="U1A-EO-8hw"/>
+                                                        <constraint firstAttribute="width" constant="121" id="U1A-EO-8hw"/>
                                                         <constraint firstAttribute="height" constant="17" id="gG8-p2-khI"/>
                                                     </constraints>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                     <state key="normal" title="edit label / memo">
+                                                        <color key="titleColor" red="0.25174289789999998" green="0.82675522769999998" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    </state>
+                                                </button>
+                                                <button opaque="NO" tag="16" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ABr-IV-uTq">
+                                                    <rect key="frame" x="246" y="264.5" width="83" height="29"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="height" constant="29" id="JkH-0i-w7C"/>
+                                                        <constraint firstAttribute="width" constant="83" id="lfj-KP-CER"/>
+                                                    </constraints>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                    <state key="normal" title="fetch memo">
                                                         <color key="titleColor" red="0.25174289789999998" green="0.82675522769999998" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     </state>
                                                 </button>
@@ -441,6 +452,7 @@
                                                 <constraint firstItem="mSR-MF-OgT" firstAttribute="top" secondItem="j15-PJ-5Li" secondAttribute="bottom" constant="8" id="AMk-19-zai"/>
                                                 <constraint firstItem="ma6-2X-mkG" firstAttribute="trailing" secondItem="UZl-0k-oWM" secondAttribute="trailingMargin" id="DbM-Po-gYW"/>
                                                 <constraint firstItem="xGs-ch-XfM" firstAttribute="leading" secondItem="mSR-MF-OgT" secondAttribute="leading" id="EId-gZ-A9l"/>
+                                                <constraint firstAttribute="trailing" secondItem="ABr-IV-uTq" secondAttribute="trailing" constant="14" id="HGg-0a-UsH"/>
                                                 <constraint firstItem="mbE-fL-dzu" firstAttribute="centerY" secondItem="UZl-0k-oWM" secondAttribute="centerY" id="LOn-Nz-3so"/>
                                                 <constraint firstItem="xGs-ch-XfM" firstAttribute="top" secondItem="mSR-MF-OgT" secondAttribute="bottom" constant="4" id="LPl-SV-DTk"/>
                                                 <constraint firstItem="QUk-HX-zhZ" firstAttribute="trailing" secondItem="UZl-0k-oWM" secondAttribute="trailingMargin" id="NVC-qS-Pz2"/>
@@ -451,10 +463,11 @@
                                                 <constraint firstItem="Ihm-1X-hpr" firstAttribute="top" secondItem="UZl-0k-oWM" secondAttribute="topMargin" id="UVn-fS-Ehk"/>
                                                 <constraint firstItem="Rcj-YL-Sd1" firstAttribute="top" secondItem="xGs-ch-XfM" secondAttribute="bottom" constant="8" id="ZcY-ZI-Y4N"/>
                                                 <constraint firstItem="NOo-Kv-MdB" firstAttribute="leading" secondItem="UZl-0k-oWM" secondAttribute="leadingMargin" id="ZtZ-yu-czE"/>
+                                                <constraint firstItem="ABr-IV-uTq" firstAttribute="centerY" secondItem="ma6-2X-mkG" secondAttribute="centerY" id="cOV-1x-TC7"/>
                                                 <constraint firstItem="zAg-cb-nc5" firstAttribute="top" secondItem="M9l-cP-pX6" secondAttribute="bottom" constant="2" id="clS-N2-nhb"/>
                                                 <constraint firstItem="j15-PJ-5Li" firstAttribute="leading" secondItem="UZl-0k-oWM" secondAttribute="leadingMargin" id="dza-KI-F8T"/>
                                                 <constraint firstItem="cVA-1D-uR8" firstAttribute="top" secondItem="NOo-Kv-MdB" secondAttribute="bottom" constant="8" id="fYX-TK-rgu"/>
-                                                <constraint firstItem="Wu0-bi-1p1" firstAttribute="trailing" secondItem="UZl-0k-oWM" secondAttribute="trailingMargin" constant="1" id="feA-Td-tMP"/>
+                                                <constraint firstItem="Wu0-bi-1p1" firstAttribute="trailing" secondItem="UZl-0k-oWM" secondAttribute="trailingMargin" constant="2" id="feA-Td-tMP"/>
                                                 <constraint firstItem="M9l-cP-pX6" firstAttribute="top" secondItem="cVA-1D-uR8" secondAttribute="bottom" constant="7.5" id="fhK-8n-4iw"/>
                                                 <constraint firstItem="QUk-HX-zhZ" firstAttribute="leading" secondItem="UZl-0k-oWM" secondAttribute="leadingMargin" id="gFa-5H-naH"/>
                                                 <constraint firstItem="7HR-IX-uHk" firstAttribute="leading" secondItem="UZl-0k-oWM" secondAttribute="leadingMargin" id="im3-eu-fgu"/>
@@ -2218,6 +2231,7 @@ xxxxx</string>
                             </textView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="l5K-si-l3Z">
                                 <rect key="frame" x="143" y="318" width="89" height="30"/>
+                                <color key="backgroundColor" red="0.1217279823" green="0.1217279823" blue="0.1217279823" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="30" id="HeP-k6-b8v"/>
                                     <constraint firstAttribute="width" constant="89" id="vxt-Np-wBR"/>
@@ -2229,9 +2243,9 @@ xxxxx</string>
                                     <action selector="saveAction:" destination="4V7-jZ-58Y" eventType="touchUpInside" id="HCt-fp-pbf"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="wkr-Ud-L7f">
-                                <rect key="frame" x="322" y="15" width="37" height="30"/>
-                                <state key="normal" title="close">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="close" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="wkr-Ud-L7f">
+                                <rect key="frame" x="329" y="15" width="30" height="30"/>
+                                <state key="normal">
                                     <color key="titleColor" red="0.25174289789999998" green="0.82675522769999998" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <connections>
@@ -6332,10 +6346,10 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 </constraints>
                             </stackView>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="tgH-bF-LjE">
-                                <rect key="frame" x="16" y="237.5" width="343" height="68"/>
+                                <rect key="frame" x="16" y="238" width="343" height="173"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="68" id="kGg-ey-nia"/>
+                                    <constraint firstAttribute="height" constant="173" id="kGg-ey-nia"/>
                                 </constraints>
                                 <color key="textColor" systemColor="labelColor"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
@@ -6348,7 +6362,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3qy-CI-bOa">
-                                <rect key="frame" x="112" y="337" width="151" height="40"/>
+                                <rect key="frame" x="112" y="418" width="151" height="40"/>
                                 <color key="backgroundColor" red="0.1217279822898969" green="0.1217279822898969" blue="0.1217279822898969" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="40" id="XKC-zT-JyW"/>
@@ -6375,7 +6389,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                             <constraint firstItem="Lx7-wN-xFo" firstAttribute="trailing" secondItem="LPk-cp-yF7" secondAttribute="trailing" constant="16" id="aBv-vH-wMW"/>
                             <constraint firstItem="tgH-bF-LjE" firstAttribute="top" secondItem="inr-oj-oMV" secondAttribute="bottom" constant="8" id="aMN-AL-MD8"/>
                             <constraint firstItem="LPk-cp-yF7" firstAttribute="top" secondItem="EXd-lG-rzd" secondAttribute="bottom" constant="21" id="gVm-tc-G9b"/>
-                            <constraint firstItem="3qy-CI-bOa" firstAttribute="top" secondItem="tgH-bF-LjE" secondAttribute="bottom" constant="31.5" id="ghj-Vt-lgY"/>
+                            <constraint firstItem="3qy-CI-bOa" firstAttribute="top" secondItem="tgH-bF-LjE" secondAttribute="bottom" constant="7" id="ghj-Vt-lgY"/>
                             <constraint firstItem="lsm-47-Co8" firstAttribute="leading" secondItem="Lx7-wN-xFo" secondAttribute="leading" constant="16" id="iJL-nl-0dC"/>
                             <constraint firstItem="LPk-cp-yF7" firstAttribute="leading" secondItem="Lx7-wN-xFo" secondAttribute="leading" constant="16" id="iVk-lZ-YCW"/>
                             <constraint firstItem="thK-Tl-slu" firstAttribute="top" secondItem="Lx7-wN-xFo" secondAttribute="top" constant="20" id="khs-hI-CiA"/>
@@ -7537,7 +7551,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="hWt-Pf-vqK"/>
         <segue reference="8MS-xS-DMP"/>
         <segue reference="yAt-Ra-aPH"/>
-        <segue reference="7PS-EL-3d2"/>
+        <segue reference="gzO-Lb-E0s"/>
         <segue reference="j10-wi-hpr"/>
         <segue reference="qmy-fM-U4p"/>
     </inferredMetricsTieBreakers>

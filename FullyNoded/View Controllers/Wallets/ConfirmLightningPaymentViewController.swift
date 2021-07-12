@@ -82,10 +82,19 @@ class ConfirmLightningPaymentViewController: UIViewController {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
+            var invoiceDoubleAmount = Double(invoice.amount)!
+            
             var amountText = "Send: " + invoice.amount + " sats"
             
+            print("invoice.userSpecifiedAmount: \(invoice.userSpecifiedAmount)")
+            
+            if let customAmount = invoice.userSpecifiedAmount {
+                invoiceDoubleAmount = (Double(customAmount)! / 1000.0)
+                amountText = "Send: " + "\(invoiceDoubleAmount)" + " sats"
+            }            
+            
             if let fxRate = self.fxRate {
-                let usd = (Double(invoice.amount)! / 100000000.0) * fxRate
+                let usd = (invoiceDoubleAmount / 100000000.0) * fxRate
                 
                 amountText += " / $\(usd) USD"
             }

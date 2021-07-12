@@ -157,6 +157,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     private func createLNDInvoice() {
         var amount = ""
+        var param:[String:Any] = [:]
 
         if amountField.text != "" {
             if isBtc {
@@ -169,15 +170,21 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
                     amount = "\(Int(int))"
                 }
             }
+            
+            param["value"] = amount
         }
         
-        var memoValue = labelField.text ?? "Fully Noded LND Invoice"
+        var memoValue = labelField.text ?? "Fully Noded LND Invoice ⚡️"
+        
+        if memoValue == "" {
+            memoValue = "Fully Noded LND Invoice ⚡️"
+        }
         
         if messageField.text != "" {
             memoValue += "- \(messageField.text!)"
         }
         
-        let param:[String:Any] = ["memo":"\(memoValue)", "value":amount]
+        param["memo"] = "\(memoValue)"
         
         LndRpc.sharedInstance.command(.addinvoice, param, nil, nil) { (response, error) in
             guard let dict = response, let bolt11 = dict["payment_request"] as? String else {

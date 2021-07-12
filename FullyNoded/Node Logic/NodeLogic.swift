@@ -325,7 +325,6 @@ class NodeLogic {
     
     class func getPaidLND(completion: @escaping ((response: [[String:Any]]?, errorMessage: String?)) -> Void) {
         let lnd = LndRpc.sharedInstance
-        //let param:[String:Any] = ["pending_only": false]
         
         lnd.command(.listinvoices, nil, nil, nil) { (response, error) in
             
@@ -340,7 +339,6 @@ class NodeLogic {
                 let amt_paid_sat = Int(invoice["amt_paid_sat"] as? String ?? "")!.withCommas()
                 let state = invoice["state"] as? String ?? ""
                 let payment_request = invoice["payment_request"] as? String ?? ""
-                let label = invoice["memo"] as? String ?? ""
                 let paid_at = invoice["settle_date"] as? String ?? ""
                 let settled = invoice["settled"] as! Bool
                 
@@ -374,8 +372,6 @@ class NodeLogic {
     }
     
     private class func saveLocally(txid: String, date: Date) {
-        print("save lightning transaction locally")
-
         let dict = [
             "txid":txid,
             "id":UUID(),

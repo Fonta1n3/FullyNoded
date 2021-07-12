@@ -992,14 +992,15 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         LndRpc.sharedInstance.command(.decodepayreq, nil, invoice, nil) { [weak self] (response, error) in
             guard let self = self else { return }
             
-            self.spinner.removeConnectingView()
+            //self.spinner.removeConnectingView()
             
             guard let dict = response else {
+                self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "Error", message: error ?? "unknown error")
                 return
             }
             
-            if let _ = dict["num_satoshis"] as? String {
+            if let numSatoshis = dict["num_satoshis"] as? String, numSatoshis != "0" {
                 self.promptToSendLightningPayment(invoice: invoice, dict: dict, msat: nil)
                 
             } else {
@@ -1008,7 +1009,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                     
                     guard let amountText = self.amountInput.text, amountText != "" else {
                         self.spinner.removeConnectingView()
-                        showAlert(vc: self, title: "Oops", message: "You need to enter an amount to send for an invoice that does not include one.")
+                        showAlert(vc: self, title: "No amount specified.", message: "You need to enter an amount to send for an invoice that does not include one.")
                         return
                     }
                     
@@ -1016,7 +1017,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                     
                     guard dblAmount > 0.0 else {
                         self.spinner.removeConnectingView()
-                        showAlert(vc: self, title: "Oops", message: "You need to enter an amount to send for an invoice that does not include one.")
+                        showAlert(vc: self, title: "No amount specified.", message: "You need to enter an amount to send for an invoice that does not include one.")
                         return
                     }
                     
@@ -1062,7 +1063,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                     
                     guard let amountText = self.amountInput.text, amountText != "" else {
                         self.spinner.removeConnectingView()
-                        showAlert(vc: self, title: "Oops", message: "You need to enter an amount to send for an invoice that does not include one.")
+                        showAlert(vc: self, title: "No amount specified.", message: "You need to enter an amount to send for an invoice that does not include one.")
                         return
                     }
                     
@@ -1070,7 +1071,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                     
                     guard dblAmount > 0.0 else {
                         self.spinner.removeConnectingView()
-                        showAlert(vc: self, title: "Oops", message: "You need to enter an amount to send for an invoice that does not include one.")
+                        showAlert(vc: self, title: "No amount specified.", message: "You need to enter an amount to send for an invoice that does not include one.")
                         return
                     }
                     
@@ -1095,17 +1096,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func promptToSendLightningPayment(invoice: String, dict: [String:Any], msat: Int?) {
-//        DispatchQueue.main.async { [weak self] in
-//            guard let self = self else { return }
-//
-//            let alert = UIAlertController(title: "Pay lightning invoice?", message: "\(dict)", preferredStyle: self.alertStyle)
-//            alert.addAction(UIAlertAction(title: "Pay now", style: .default, handler: { action in
-//                self.payLightningNow(invoice: invoice, msat: msat, dict: dict)
-//            }))
-//            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-//            alert.popoverPresentationController?.sourceView = self.view
-//            self.present(alert, animated: true, completion: nil)
-//        }
         FiatConverter.sharedInstance.getFxRate { [weak self] fxRate in
             guard let self = self else { return }
             
@@ -1114,8 +1104,12 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 
                 self.fxRate = fxRate
                 self.invoice = dict
+                if let msat = msat {
+                    self.invoice!["userSpecifiedAmount"] = "\(msat)"
+                }
                 self.invoiceString = invoice
                 self.performSegue(withIdentifier: "segueToLightningConf", sender: self)
+                self.spinner.removeConnectingView()
             }            
         }
     }
@@ -1136,8 +1130,11 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func payFromLNDViaRoutes(invoice: String, msat: Int?, dict: [String:Any]) {
+        var amount = dict["num_satoshis"] as? String ?? "0"
+        if let msat = msat {
+            amount = "\(Int(Double(msat) / 1000.0))"
+        }
         let destination = dict["destination"] as? String ?? ""
-        let amount = dict["num_satoshis"] as? String ?? ""
         let paymentHash = dict["payment_hash"] as? String ?? ""
         let paymentHashData = Data(hexString: paymentHash)!.base64EncodedString()
         let ext = "\(destination)/\(amount)"
@@ -1147,8 +1144,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             guard let self = self else { return }
 
             guard let routes = response?["routes"] as? NSArray, routes.count > 0 else {
-                self.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Payment Error", message: error ?? "Unknown error.")
+                self.index = 0
+                self.payInvoiceLND(invoice: invoice, sats: Int(amount)!, dict: dict)
                 return
             }
 
@@ -1176,7 +1173,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 } else if let _ = response["payment_preimage"] as? String {
                     let route = response["payment_route"] as! [String:Any]
                     let feesSat = (route["total_fees_msat"] as! String).msatToSat
-                    
                     self.saveTx(memo: dict["description"] as? String ?? "no memo", hash: dict["payment_hash"] as! String, sats: Int(amount)!, fee: feesSat)
                 }
             }
@@ -1184,7 +1180,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func payInvoiceLND(invoice: String, sats: Int, dict: [String:Any]) {
-        let param:[String:Any] = ["payment_request":invoice,"fee_limit":["fixed":"1"], "allow_self_payment":true]
+        let param:[String:Any] = ["payment_request":invoice,"fee_limit":["fixed":"1"], "allow_self_payment":true, "amt": "\(sats)"]
         LndRpc.sharedInstance.command(.payinvoice, param, nil, nil) { [weak self] (response, error) in
             guard let self = self else { return }
 
@@ -1425,7 +1421,12 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 guard let self = self else { return }
                 
                 if confirmed {
-                    self.payLightningNow(invoice: self.invoiceString, msat: nil, dict: self.invoice!)
+                    if let userSpecifiedAmount = self.invoice!["userSpecifiedAmount"] as? String {
+                        self.payLightningNow(invoice: self.invoiceString, msat: Int(userSpecifiedAmount)!, dict: self.invoice!)
+                    } else {
+                        self.payLightningNow(invoice: self.invoiceString, msat: nil, dict: self.invoice!)
+                    }
+                    
                 } else {
                     self.invoice = nil
                     self.invoiceString = ""
@@ -1437,13 +1438,3 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
 }
-
-//fileprivate func convertFromUIImagePickerControllerInfoKeyDictionary(_ input: [UIImagePickerController.InfoKey: Any]) -> [String: Any] {
-//    return Dictionary(uniqueKeysWithValues: input.map {key, value in (key.rawValue, value)})
-//}
-//
-//// Helper function inserted by Swift 4.2 migrator.
-//fileprivate func convertFromUIImagePickerControllerInfoKey(_ input: UIImagePickerController.InfoKey) -> String {
-//    return input.rawValue
-//}
-

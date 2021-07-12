@@ -422,12 +422,14 @@ class ActiveWalletViewController: UIViewController {
         let fetchOriginRateButton = cell.viewWithTag(13) as! UIButton
         let seeDetailButton = cell.viewWithTag(14) as! UIButton
         let editLabelButton = cell.viewWithTag(15) as! UIButton
+        let loadLightningMemoButton = cell.viewWithTag(16) as! UIButton
         
         amountLabel.alpha = 1
         confirmationsLabel.alpha = 1
         utxoLabel.alpha = 1
         dateLabel.alpha = 1
         fetchOriginRateButton.alpha = 0
+        loadLightningMemoButton.alpha = 0
         
         let index = indexPath.section - 1
         
@@ -440,11 +442,15 @@ class ActiveWalletViewController: UIViewController {
         editLabelButton.addTarget(self, action: #selector(editTx(_:)), for: .touchUpInside)
         editLabelButton.restorationIdentifier = "\(index)"
         
+        loadLightningMemoButton.addTarget(self, action: #selector(fetchMemo(_:)), for: .touchUpInside)
+        loadLightningMemoButton.restorationIdentifier = "\(index)"
+        
         let dict = self.transactionArray[index]
         
         let selfTransfer = dict["selfTransfer"] as! Bool
         
         let confs = dict["confirmations"] as! String
+        
         if confs.contains("complete") {
             confirmationsLabel.text = confs
         } else if confs.contains("incomplete") || confs.contains("unpaid") || confs.contains("expired") || confs.contains("paid") {
@@ -469,6 +475,11 @@ class ActiveWalletViewController: UIViewController {
         let isLightning = dict["isLightning"] as? Bool ?? false
         if isLightning {
             lightningImage.alpha = 1
+            if dict["memo"] as? String == nil || dict["memo"] as? String == "" || dict["memo"] as? String == "no transaction memo" {
+                loadLightningMemoButton.alpha = 1
+            } else {
+                loadLightningMemoButton.alpha = 0
+            }
         } else {
             lightningImage.alpha = 0
         }
@@ -577,6 +588,59 @@ class ActiveWalletViewController: UIViewController {
         cell.selectionStyle = .none
         cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         return cell
+    }
+    
+    @objc func fetchMemo(_ sender: UIButton) {
+        guard let intString = sender.restorationIdentifier, let int = Int(intString) else { return }
+        
+        let tx = transactionArray[int]
+        
+        guard let invoice = tx["address"] as? String, invoice != "" else {
+            showAlert(vc: self, title: "No invoice.", message: "We do not seem to have an invoice for that transaction.  You can add your own memo by tapping the \"edit memo\" button.")
+            return
+        }
+        
+        self.decodeInvoice(invoice: invoice, section: int)
+    }
+    
+    private func decodeInvoice(invoice: String, section: Int) {
+        spinner.addConnectingView(vc: self, description: "decoding invoice...")
+        
+        LndRpc.sharedInstance.command(.decodepayreq, nil, invoice, nil) { [weak self] (response, error) in
+            guard let self = self else { return }
+            
+            guard let response = response,
+                  let memo = response["description"] as? String,
+                  memo != "" else {
+                showAlert(vc: self, title: "No memo.", message: "This invoice does not include a memo. You can add your own by tapping the \"edit memo\" button.")
+                return
+            }
+            
+            CoreDataService.retrieveEntity(entityName: .transactions) { transactions in
+                guard let transactions = transactions, transactions.count > 0 else {
+                    return
+                }
+                
+                for savedTx in transactions {
+                    let txStruct = TransactionStruct(dictionary: savedTx)
+                    
+                    if txStruct.txid == response["payment_hash"] as? String {
+                        CoreDataService.update(id: txStruct.id!, keyToUpdate: "memo", newValue: memo, entity: .transactions) { [weak self] updated in
+                            guard let self = self else { return }
+                            
+                            self.spinner.removeConnectingView()
+                            
+                            if updated {
+                                self.loadTable()
+                                showAlert(vc: self, title: "Memo updated ✓", message: "")
+                            } else {
+                                showAlert(vc: self, title: "Error", message: "There was an issue updatinng your memo.")
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
     
     @objc func editTx(_ sender: UIButton) {
