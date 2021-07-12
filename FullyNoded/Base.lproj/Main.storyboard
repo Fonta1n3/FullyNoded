@@ -630,8 +630,8 @@
                                 <blurEffect style="systemChromeMaterialDark"/>
                             </visualEffectView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oLf-4U-6TA">
-                                <rect key="frame" x="295" y="26" width="64" height="30"/>
-                                <state key="normal" title="sign psbt">
+                                <rect key="frame" x="249" y="26" width="110" height="30"/>
+                                <state key="normal" title="sign / broadcast">
                                     <color key="titleColor" systemColor="systemTealColor"/>
                                 </state>
                                 <connections>

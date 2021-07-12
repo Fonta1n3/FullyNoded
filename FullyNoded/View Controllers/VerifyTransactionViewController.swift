@@ -347,7 +347,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             return
         }
                     
-        signedRawTx = text
+        signedRawTx = text.condenseWhitespace()
         load()
     }
     
