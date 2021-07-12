@@ -308,64 +308,150 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     
     private func promptToBalanceLndIdealAmount(amount: Int) {
         DispatchQueue.main.async { [weak self] in
-            var alertStyle = UIAlertController.Style.actionSheet
-            if (UIDevice.current.userInterfaceIdiom == .pad) {
-              alertStyle = UIAlertController.Style.alert
-            }
+            let alertStyle = UIAlertController.Style.alert
+            
             let alert = UIAlertController(title: "Confirm Amount", message: "The ideal amount to rebalance with is \(amount) sats.", preferredStyle: alertStyle)
+            
             alert.addAction(UIAlertAction(title: "Rebalance \(amount) sats", style: .default, handler: { action in
-                self?.rebalanceLndNow(amount: amount)
+                self?.addRebalanceInvoice(amount: amount)
             }))
+            
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { [weak self] action in
                 self?.outgoingChannel = nil
                 self?.incomingChannel = nil
             }))
+            
             alert.popoverPresentationController?.sourceView = self?.view
             self?.present(alert, animated: true, completion: nil)
         }
     }
     
-    private func rebalanceLndNow(amount: Int) {
+    private func addRebalanceInvoice(amount: Int) {
         spinner.addConnectingView(vc: self, description: "Rebalancing...")
         
-        let param:[String:Any] = ["memo":"Rebalance", "value":"\(amount)"]
+        guard let preimage = secret() else { return }
+        
+        let hash = Crypto.sha256hash(preimage)
+        let b64 = hash.base64EncodedString()
+        let outgoingId = self.outgoingChannel!["chan_id"] as! String
+        let incomingId = self.incomingChannel!["remote_pubkey"] as! String
+        let incomingChanId = self.incomingChannel!["chan_id"] as! String
+        let lastHopPubkey = Data(hexString: incomingId)!.base64EncodedString()
+        let ourPubkey = UserDefaults.standard.object(forKey: "LightningPubkey") as! String
+        let dest = Data(hexString: ourPubkey)!.base64EncodedString()
+        
+        let memo = "Fully Noded Rebalance ⚡️ - \(outgoingId) to \(incomingChanId)"
+        
+        let param:[String:Any] = ["memo": memo,
+                                  "value": "\(amount)",
+                                  "hash":b64,
+                                  "r_preimage": preimage.base64EncodedString(),
+                                  "is_keysend": true]
         
         LndRpc.sharedInstance.command(.addinvoice, param, nil, nil) { [weak self] (response, error) in
             guard let self = self else { return }
 
-            guard let dict = response, let invoice = dict["payment_request"] as? String else {
+            guard let dict = response,
+                  let invoice = dict["payment_request"] as? String,
+                  let payment_addr = dict["payment_addr"] as? String else {
                 self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "Error", message: error ?? "we had an issue getting your lightning invoice")
                 return
             }
 
-            let outgoingId = self.outgoingChannel!["chan_id"] as! String
-            let incomingId = self.incomingChannel!["remote_pubkey"] as! String
-            let lastHopPubkey = Data(hexString: incomingId)!.base64EncodedString()
-                        
-            let paymentParam:[String:Any] = ["allow_self_payment":true, "outgoing_chan_id": outgoingId, "last_hop_pubkey": lastHopPubkey, "payment_request": invoice]
-            LndRpc.sharedInstance.command(.payinvoice, paymentParam, nil, nil) { (response, error) in
+            self.rebalanceLndNow(amount, outgoingId, lastHopPubkey, invoice, dest, b64, payment_addr, memo)
+        }
+    }
+    
+    private func rebalanceLndNow(_ amount: Int,
+                                 _ outgoingId: String,
+                                 _ lastHopPubkey: String,
+                                 _ invoice: String,
+                                 _ dest: String,
+                                 _ hash: String,
+                                 _ payment_addr: String,
+                                 _ memo: String) {
+        
+        let paymentParam:[String:Any] = ["allow_self_payment":true,
+                                         "outgoing_chan_id": outgoingId,
+                                         "last_hop_pubkey": lastHopPubkey,
+                                         "payment_request": invoice,
+                                         "dest": dest,
+                                         "amt":"\(amount)",
+                                         "payment_hash": hash,
+                                         "payment_addr": payment_addr]
+        
+        LndRpc.sharedInstance.command(.keysend, paymentParam, nil, nil) { (response, error) in
+            guard let response = response else {
                 self.spinner.removeConnectingView()
+                self.outgoingChannel = nil
+                self.incomingChannel = nil
+                showAlert(vc: self, title: "There was an issue.", message: error ?? "Unknown error when rebalancing.")
+                return
+            }
 
-                guard let response = response else {
-                    self.outgoingChannel = nil
-                    self.incomingChannel = nil
-                    showAlert(vc: self, title: "There was an issue.", message: error ?? "Unknown error when rebalancing.")
-                    return
-                }
-
-                if let payment_error = response["payment_error"] as? String, payment_error != "" {
-                    self.outgoingChannel = nil
-                    self.incomingChannel = nil
-                    showAlert(vc: self, title: "There was an issue while attempting to rebalance.", message: payment_error)
-                } else {
-                    self.outgoingChannel = nil
-                    self.incomingChannel = nil
-                    self.loadChannels()
-                    showAlert(vc: self, title: "Rebalance success ✓", message: "")
-                }
+            if let payment_error = response["payment_error"] as? String, payment_error != "" {
+                self.spinner.removeConnectingView()
+                self.outgoingChannel = nil
+                self.incomingChannel = nil
+                showAlert(vc: self, title: "There was an issue while attempting to rebalance.", message: payment_error)
+            } else {
+                self.outgoingChannel = nil
+                self.incomingChannel = nil
+                self.decodePayreq(memo: memo, payreq: invoice, sats: amount)
             }
         }
+    }
+    
+    private func decodePayreq(memo: String, payreq: String, sats: Int) {
+        LndRpc.sharedInstance.command(.decodepayreq, nil, payreq, nil) { [weak self] (response, error) in
+            guard let self = self else { return }
+            
+            guard let response = response, let paymentHash = response["payment_hash"] as? String else {
+                return
+            }
+            
+            self.saveTx(memo: memo, hash: paymentHash, sats: sats)
+        }
+    }
+    
+    private func saveTx(memo: String, hash: String, sats: Int) {
+        FiatConverter.sharedInstance.getFxRate { [weak self] fxRate in
+            guard let self = self else { return }
+            
+            var dict:[String:Any] = ["txid":hash, "id":UUID(), "memo":memo, "date":Date(), "label":"Fully Noded Rebalance ⚡️"]
+            
+            self.spinner.removeConnectingView()
+            
+            let tit = "Rebalance Success ⚡️"
+            
+            guard let originRate = fxRate else {
+                CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in }
+                
+                showAlert(vc: self, title: tit, message: "\n\(sats) sats rebalanced.")
+                return
+            }
+            
+            dict["originFxRate"] = originRate
+                        
+            let mess = "\n\(sats) sats / $\((sats.satsToBtcDouble * originRate).avoidNotation) USD rebalanced."
+            
+            showAlert(vc: self, title: tit, message: mess)
+            
+            CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in }
+        }
+    }
+    
+    private func secret() -> Data? {
+        var bytes = [UInt8](repeating: 0, count: 32)
+        let result = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
+        
+        guard result == errSecSuccess else {
+            print("Problem generating random bytes")
+            return nil
+        }
+        
+        return Data(bytes)
     }
     
     private func loadChannels() {

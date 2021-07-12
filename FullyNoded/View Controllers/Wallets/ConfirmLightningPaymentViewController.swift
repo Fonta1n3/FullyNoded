@@ -19,6 +19,7 @@ class ConfirmLightningPaymentViewController: UIViewController {
     @IBOutlet weak var recipientLabel: UILabel!
     @IBOutlet weak var expiryLabel: UILabel!
     @IBOutlet weak var textView: UITextView!
+    @IBOutlet weak var sendButton: UIButton!
     
 
     override func viewDidLoad() {
@@ -29,7 +30,10 @@ class ConfirmLightningPaymentViewController: UIViewController {
         recipientLabel.alpha = 0
         expiryLabel.alpha = 0
         textView.alpha = 0
+        sendButton.alpha = 0
         
+        sendButton.layer.cornerRadius = 8
+        sendButton.clipsToBounds = true
         textView.layer.cornerRadius = 8
         textView.clipsToBounds = true
         textView.layer.borderWidth = 0.5
@@ -91,6 +95,7 @@ class ConfirmLightningPaymentViewController: UIViewController {
             self.textView.text = invoice.memo
             self.recipientLabel.text = "To: " + displayName
             
+            self.sendButton.alpha = 1
             self.amountLabel.alpha = 1
             self.recipientLabel.alpha = 1
             self.expiryLabel.alpha = 1
