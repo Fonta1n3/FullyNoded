@@ -500,7 +500,7 @@ class ActiveWalletViewController: UIViewController {
             if let exchangeRate = fxRate {
                 var dbl = 0.0
                 
-                if isLightning {
+                if isLightning && !isOnchain {
                     dbl = (amount.satsToBtc * exchangeRate)
                     
                     if dbl > 1.0 {
@@ -519,7 +519,7 @@ class ActiveWalletViewController: UIViewController {
             if let originRate = dict["originRate"] as? Double {
                 var amountProcessed = 0.0
                 
-                if isLightning {
+                if isLightning && !isOnchain {
                     amountProcessed = amount.satsToBtc
                 } else {
                     amountProcessed = amount.doubleValue

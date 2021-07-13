@@ -17,10 +17,27 @@ public struct InvoiceStruct: CustomStringConvertible, Codable {
     let userSpecifiedAmount:String?
     
     init(_ dictionary: [String: Any]) {
-        recipient = dictionary["destination"] as? String ?? "no recipient"
+        recipient = dictionary["destination"] as? String ?? dictionary["payee"] as? String ?? "unknown"
+        
         memo = dictionary["description"] as? String ?? "no transaction memo"
-        expiry = convertedDate(seconds: dictionary["expiry"] as! String)
-        amount = dictionary["num_satoshis"] as? String ?? "\((Double(dictionary["num_msat"] as! String)! / 1000.0))"
+        
+        if let expiryString = dictionary["expiry"] as? String {
+            expiry = convertedDate(seconds: expiryString)
+        } else {
+            let expiryInt = dictionary["expiry"] as! Int
+            expiry = convertedDate(seconds: "\(expiryInt)")
+        }
+        
+        if let num_satoshis = dictionary["num_satoshis"] as? String {
+            amount = num_satoshis
+        } else if let num_msat = dictionary["num_msat"] as? String {
+            amount = "\(Double(num_msat)! / 1000.0)"
+        } else if let msatoshi = dictionary["msatoshi"] as? Double {
+            amount = "\(msatoshi / 1000.0)"
+        } else {
+            amount = "0"
+        }
+        
         userSpecifiedAmount = dictionary["userSpecifiedAmount"] as? String
     }
     

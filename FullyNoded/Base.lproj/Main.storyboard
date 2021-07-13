@@ -4806,7 +4806,7 @@ xxxxx</string>
                         <outlet property="sweepButton" destination="z0X-Gf-fTM" id="tyE-D1-8MJ"/>
                         <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScannerToGetAddress" id="CQp-9r-70w"/>
                         <segue destination="XA2-Lt-01p" kind="show" identifier="segueToBroadcaster" id="7PS-EL-3d2"/>
-                        <segue destination="Kdg-W7-roj" kind="presentation" identifier="segueToLightningConf" modalPresentationStyle="automatic" id="5Cj-Af-E6m"/>
+                        <segue destination="Kdg-W7-roj" kind="presentation" identifier="segueToLightningConf" modalPresentationStyle="fullScreen" id="5Cj-Af-E6m"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="BlL-9x-Sif" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -6299,7 +6299,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
             <objects>
                 <viewController id="Kdg-W7-roj" customClass="ConfirmLightningPaymentViewController" customModule="FullyNoded" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="nRP-I7-UOh">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="close" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="thK-Tl-slu">
@@ -6318,23 +6318,14 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="2 sats / $0.0004 USD" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LPk-cp-yF7">
-                                <rect key="frame" x="16" y="111" width="343" height="27.5"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="23"/>
-                                <color key="textColor" systemColor="systemGray2Color"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="lsm-47-Co8">
-                                <rect key="frame" x="16" y="160" width="343" height="41"/>
+                                <rect key="frame" x="16" y="214.5" width="343" height="60"/>
                                 <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Recipient: Bluenode" textAlignment="natural" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OnW-xX-8zO">
-                                        <rect key="frame" x="0.0" y="0.0" width="343" height="20.5"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Expiry: xxxxxxxx" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PiH-lx-rzA">
-                                        <rect key="frame" x="0.0" y="20.5" width="343" height="20.5"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="TopLeft" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Recipient: Bluenode" lineBreakMode="characterWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OnW-xX-8zO">
+                                        <rect key="frame" x="0.0" y="0.0" width="343" height="60"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="60" id="LrR-u5-ECT"/>
+                                        </constraints>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
@@ -6346,7 +6337,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 </constraints>
                             </stackView>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="tgH-bF-LjE">
-                                <rect key="frame" x="16" y="238" width="343" height="173"/>
+                                <rect key="frame" x="16" y="316" width="343" height="173"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="173" id="kGg-ey-nia"/>
@@ -6356,13 +6347,13 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Memo:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="inr-oj-oMV">
-                                <rect key="frame" x="16" y="209" width="52.5" height="20.5"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <rect key="frame" x="16" y="293.5" width="38.5" height="14.5"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3qy-CI-bOa">
-                                <rect key="frame" x="112" y="418" width="151" height="40"/>
+                                <rect key="frame" x="112" y="496" width="151" height="40"/>
                                 <color key="backgroundColor" red="0.1217279822898969" green="0.1217279822898969" blue="0.1217279822898969" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="40" id="XKC-zT-JyW"/>
@@ -6375,17 +6366,47 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                     <action selector="sendAction:" destination="Kdg-W7-roj" eventType="touchUpInside" id="dLA-5V-aea"/>
                                 </connections>
                             </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Expiry: xxxxxxxx" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PiH-lx-rzA">
+                                <rect key="frame" x="266.5" y="293.5" width="92.5" height="14.5"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="x0e-3F-UsP">
+                                <rect key="frame" x="138" y="595" width="99" height="52"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="52" id="4qE-qz-See"/>
+                                    <constraint firstAttribute="width" constant="99" id="96Q-N1-lZQ"/>
+                                </constraints>
+                                <state key="normal" title="Cancel"/>
+                                <connections>
+                                    <action selector="cancelAction:" destination="Kdg-W7-roj" eventType="touchUpInside" id="sCu-pQ-Ang"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="TopLeft" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="2 sats $0.0004 USD" textAlignment="natural" lineBreakMode="characterWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LPk-cp-yF7">
+                                <rect key="frame" x="16" y="111" width="343" height="82"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="82" id="21Y-Om-tVN"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="23"/>
+                                <color key="textColor" systemColor="systemGreenColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Lx7-wN-xFo"/>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="tgH-bF-LjE" firstAttribute="leading" secondItem="Lx7-wN-xFo" secondAttribute="leading" constant="16" id="2tH-ml-cLU"/>
                             <constraint firstItem="EXd-lG-rzd" firstAttribute="top" secondItem="Lx7-wN-xFo" secondAttribute="top" constant="30" id="2z1-ux-KAb"/>
+                            <constraint firstItem="Lx7-wN-xFo" firstAttribute="bottom" secondItem="x0e-3F-UsP" secondAttribute="bottom" constant="20" id="C55-i2-nD6"/>
                             <constraint firstItem="Lx7-wN-xFo" firstAttribute="trailing" secondItem="lsm-47-Co8" secondAttribute="trailing" constant="16" id="Edj-JC-07P"/>
                             <constraint firstItem="thK-Tl-slu" firstAttribute="leading" secondItem="EXd-lG-rzd" secondAttribute="trailing" constant="8" symbolic="YES" id="EzZ-Yo-zCM"/>
+                            <constraint firstItem="tgH-bF-LjE" firstAttribute="top" secondItem="PiH-lx-rzA" secondAttribute="bottom" constant="8" symbolic="YES" id="OyS-Vb-jVF"/>
                             <constraint firstItem="EXd-lG-rzd" firstAttribute="leading" secondItem="Lx7-wN-xFo" secondAttribute="leading" constant="16" id="PZt-aZ-Cvs"/>
                             <constraint firstItem="Lx7-wN-xFo" firstAttribute="trailing" secondItem="thK-Tl-slu" secondAttribute="trailing" constant="16" id="Qai-cd-wJP"/>
                             <constraint firstItem="Lx7-wN-xFo" firstAttribute="trailing" secondItem="tgH-bF-LjE" secondAttribute="trailing" constant="16" id="Uda-Qk-N4v"/>
+                            <constraint firstItem="x0e-3F-UsP" firstAttribute="centerX" secondItem="nRP-I7-UOh" secondAttribute="centerX" id="Ypt-Bn-dFn"/>
+                            <constraint firstItem="Lx7-wN-xFo" firstAttribute="trailing" secondItem="PiH-lx-rzA" secondAttribute="trailing" constant="16" id="Zmz-cW-dTJ"/>
                             <constraint firstItem="Lx7-wN-xFo" firstAttribute="trailing" secondItem="LPk-cp-yF7" secondAttribute="trailing" constant="16" id="aBv-vH-wMW"/>
                             <constraint firstItem="tgH-bF-LjE" firstAttribute="top" secondItem="inr-oj-oMV" secondAttribute="bottom" constant="8" id="aMN-AL-MD8"/>
                             <constraint firstItem="LPk-cp-yF7" firstAttribute="top" secondItem="EXd-lG-rzd" secondAttribute="bottom" constant="21" id="gVm-tc-G9b"/>
@@ -6394,7 +6415,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                             <constraint firstItem="LPk-cp-yF7" firstAttribute="leading" secondItem="Lx7-wN-xFo" secondAttribute="leading" constant="16" id="iVk-lZ-YCW"/>
                             <constraint firstItem="thK-Tl-slu" firstAttribute="top" secondItem="Lx7-wN-xFo" secondAttribute="top" constant="20" id="khs-hI-CiA"/>
                             <constraint firstItem="3qy-CI-bOa" firstAttribute="centerX" secondItem="nRP-I7-UOh" secondAttribute="centerX" id="oZx-Ot-Pgi"/>
-                            <constraint firstItem="inr-oj-oMV" firstAttribute="top" secondItem="lsm-47-Co8" secondAttribute="bottom" constant="8" symbolic="YES" id="rOQ-t3-QFf"/>
+                            <constraint firstItem="inr-oj-oMV" firstAttribute="top" secondItem="lsm-47-Co8" secondAttribute="bottom" constant="19" id="rOQ-t3-QFf"/>
                             <constraint firstItem="lsm-47-Co8" firstAttribute="top" secondItem="LPk-cp-yF7" secondAttribute="bottom" constant="21.5" id="rjn-Bc-0hg"/>
                             <constraint firstItem="inr-oj-oMV" firstAttribute="leading" secondItem="Lx7-wN-xFo" secondAttribute="leading" constant="16" id="yYH-uX-kCy"/>
                         </constraints>
@@ -7611,9 +7632,6 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         </systemColor>
         <systemColor name="systemBlueColor">
             <color red="0.0" green="0.47843137254901963" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </systemColor>
-        <systemColor name="systemGray2Color">
-            <color red="0.68235294117647061" green="0.68235294117647061" blue="0.69803921568627447" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemGreenColor">
             <color red="0.20392156862745098" green="0.7803921568627451" blue="0.34901960784313724" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

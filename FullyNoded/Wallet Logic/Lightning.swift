@@ -56,7 +56,7 @@ class Lightning {
     
     class func txprepare(channelId: String, scriptPubKey: String, address: String, amount: Int, completion: @escaping ((result: NSDictionary?, errorMessage: String?)) -> Void) {
         let commandId = UUID()
-        let param = "\"\(address)\", \(amount)"
+        let param = "[{\"\(address)\":\(amount)}]"
         LightningRPC.command(id: commandId, method: .txprepare, param: param) { (uuid, response, errorDesc) in
             if commandId == uuid {
                 if let dict = response as? NSDictionary {

@@ -163,19 +163,6 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
-//    private func generateRandomBytes() -> String? {
-//        var keyData = Data(count: 32)
-//        let result = keyData.withUnsafeMutableBytes {
-//            SecRandomCopyBytes(kSecRandomDefault, 32, $0.baseAddress!)
-//        }
-//        if result == errSecSuccess {
-//            return keyData.base64EncodedString()
-//        } else {
-//            print("Problem generating random bytes")
-//            return nil
-//        }
-//    }
-    
     private func openChannelCL(amount: Int, id: String, ip: String, port: String?) {
         Lightning.connect(amount: amount, id: id, ip: ip, port: port ?? "9735") { [weak self] (result, errorMessage) in
             guard let self = self else { return }
@@ -188,7 +175,7 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
             }
             
             if success {
-                showAlert(vc: self, title: "⚡️⚡️⚡️⚡️⚡️⚡️", message: "Peer connected, channel created, channel started, channel funded and channel commitment secured! That wasn't hard now was it?")
+                showAlert(vc: self, title: "Channel created ⚡️", message: "Channel commitment secured!")
             } else {
                 showAlert(vc: self, title: "Uh oh", message: "So close yet so far! The channel is connected yet we did not seem to get our commitment secured...")
             }

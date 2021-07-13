@@ -15,7 +15,6 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
     var peerArray = [[String:Any]]()
     var selectedPeer:[String:Any]?
     var lndNode = false
-    var initialLoad = true
 
     @IBOutlet weak var iconBackground: UIView!
     @IBOutlet weak var peersTable: UITableView!
@@ -29,8 +28,8 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
     }
     
     override func viewDidAppear(_ animated: Bool) {
+        spinner.addConnectingView(vc: self, description: "getting peers...")
         loadPeers()
-        initialLoad = false
     }
     
     @IBAction func addPeerAction(_ sender: Any) {
@@ -40,10 +39,6 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
     }
     
     private func loadPeers() {
-        if initialLoad {
-            spinner.addConnectingView(vc: self, description: "getting peers...")
-        }
-        
         peerArray.removeAll()
         selectedPeer = nil
         id = ""
@@ -295,20 +290,21 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
          isLndNode { [weak self] isLnd in
              guard let self = self else { return }
              
-             guard isLnd else {
-                 showAlert(vc: self, title: "LND Only", message: "Coming soon for c-lightning.")
-                 return
-             }
-             
-             DispatchQueue.main.async { [weak self] in
+            DispatchQueue.main.async { [weak self] in
                  let alertStyle = UIAlertController.Style.alert
                  
                  let alert = UIAlertController(title: "Disconnect peer?", message: "", preferredStyle: alertStyle)
                  
                  alert.addAction(UIAlertAction(title: "Disconnect", style: .destructive, handler: { [weak self] action in
                      guard let self = self else { return }
+                    
+                    self.spinner.addConnectingView(vc: self, description: "disconnecting peer...")
                      
-                     self.disconnectlLnd(peer)
+                    if isLnd {
+                        self.disconnectlLnd(peer)
+                    } else {
+                        self.disconnectPeerCL(peer)
+                    }
                  }))
                  
                  alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
@@ -317,10 +313,36 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
              }
          }
      }
+    
+    private func disconnectPeerCL(_ peer: [String:Any]) {
+        let commandId = UUID()
+        LightningRPC.command(id: commandId, method: .disconnect, param: "\(peer["id"] as! String)") { [weak self] (id, response, errorDesc) in
+            guard let self = self, commandId == id else { return }
+            
+            self.spinner.removeConnectingView()
+            
+            guard errorDesc == nil else {
+                showAlert(vc: self, title: "Error", message: errorDesc ?? "error disconnecting peer")
+                return
+            }
+            
+            guard let response = response as? [String:Any] else {
+                showAlert(vc: self, title: "Error", message: errorDesc ?? "error disconnecting peer")
+                return
+            }
+            
+            if let message = response["message"] as? String {
+                showAlert(vc: self, title: "Error disconnecting peer.", message: message)
+            } else {
+                showAlert(vc: self, title: "Peer disconnected ⚡️", message: "")
+                self.loadPeers()
+                return
+            }
+            
+        }
+    }
      
-     private func disconnectlLnd(_ peer: [String:Any]) {
-         spinner.addConnectingView(vc: self, description: "Disconnecting peer...")
-         
+     private func disconnectlLnd(_ peer: [String:Any]) {         
          guard let pubkey = peer["pub_key"] as? String else {
             self.spinner.removeConnectingView()
             showAlert(vc: self, title: "Unable to disconnect.", message: "No pubkey found.")
@@ -391,8 +413,8 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
             if commandId == uuid {
                 if let dict = response as? NSDictionary {
                     self?.spinner.removeConnectingView()
-                    if let id = dict["id"] as? String {
-                        showAlert(vc: self, title: "Success ✅", message: "⚡️ peer added with id: \(id)")
+                    if let _ = dict["id"] as? String {
+                        showAlert(vc: self, title: "Peer connected ⚡️", message: "")
                     } else {
                         showAlert(vc: self, title: "Something is not quite right", message: "This is the response we got: \(dict)")
                     }

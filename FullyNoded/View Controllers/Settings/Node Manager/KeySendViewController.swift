@@ -157,7 +157,7 @@ class KeySendViewController: UIViewController, UITextFieldDelegate {
     private func keysendCL(sats: Double) {
         let msats = Int(sats * 1000.0)
         let commandId = UUID()
-        LightningRPC.command(id: commandId, method: .keysend, param: "\"\(id)\", \(msats)") { [weak self] (uuid, response, errorDesc) in
+        LightningRPC.command(id: commandId, method: .keysend, param: "\"\(id)\", \(msats), \"Fully Noded Keysend ⚡️\"") { [weak self] (uuid, response, errorDesc) in
             if commandId == uuid {
                 self?.spinner.removeConnectingView()
                 if let dict = response as? NSDictionary {

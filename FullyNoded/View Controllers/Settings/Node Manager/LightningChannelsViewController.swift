@@ -66,6 +66,11 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
             iconBackground.backgroundColor = .systemBlue
             iconHeader.image = UIImage(systemName: "slider.horizontal.3")
         } else {
+            rebalanceOutlet.alpha = 0
+            theirBalanceLabel.alpha = 0
+            ourBalanceLabel.alpha = 0
+            oursIcon.alpha = 0
+            theirsIcon.alpha = 0
             header.text = "Inactive Channels"
             iconBackground.backgroundColor = .systemIndigo
             iconHeader.image = UIImage(systemName: "moon.zzz")
@@ -73,8 +78,13 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        channels.removeAll()
-        loadChannels()
+        isLndNode { [weak self] isLnd in
+            guard let self = self else { return }
+            
+            self.lndNode = isLnd
+            self.channels.removeAll()
+            self.loadChannels()
+        }
     }
     
     @IBAction func addChannel(_ sender: Any) {
@@ -84,7 +94,12 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     }
     
     @IBAction func rebalanceAction(_ sender: Any) {
-        showAlert(vc: self, title: "Rebalance Channels", message: "For best results tap an outgoing channel which has a higher balance on the spendable side, when prompted tap an incoming channel where the receivable balance is higher. The goal is to get a 50/50 balance in each channel. Fully Noded will automatically determine the ideal amount to send to rebalance the channel and get your confirmation before sending funds.")
+        if lndNode {
+            showAlert(vc: self, title: "Rebalance Channels", message: "For best results tap an outgoing channel which has a higher balance on the spendable side, when prompted tap an incoming channel where the receivable balance is higher. The goal is to get a 50/50 balance in each channel. Fully Noded will automatically determine the ideal amount to send to rebalance the channel and get your confirmation before sending funds.")
+        } else {
+            showAlert(vc: self, title: "Rebalance Channels", message: "This action depends upon the rebalance.py plugin. If you have the plugin installed simply tap a channel to rebalance, this command can take a bit of time.")
+        }
+        
     }
     
     
@@ -206,6 +221,11 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard channels.count > 1 else {
+            showAlert(vc: self, title: "You need more then 1 channel to rebalance.", message: "")
+            return
+        }
+        
         if showActive && !lndNode {
             selectedChannel = channels[indexPath.section]
             promptToRebalanceCL()
@@ -225,35 +245,117 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     }
     
     private func promptToCloseChannel(channel: [String:Any]) {
-        isLndNode { [weak self] isLnd in
+        DispatchQueue.main.async { [weak self] in
+            let alertStyle = UIAlertController.Style.alert
+            
+            let alert = UIAlertController(title: "Close channel?", message: "This action will start the process of closing this channel.", preferredStyle: alertStyle)
+            
+            alert.addAction(UIAlertAction(title: "Close", style: .destructive, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                if self.lndNode {
+                    self.closeChannelLnd(channel: channel)
+                } else {
+                    activeWallet { [weak self] wallet in
+                        guard let self = self else { return }
+                        
+                        guard let wallet = wallet else {
+                            self.closeChannelCL(channel, nil)
+                            return
+                        }
+                        
+                        self.getAddress(wallet, channel)
+                    }
+                }
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self?.view
+            self?.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func promptToUseClosingAddress(_ wallet: Wallet, _ address: String, _ channel: [String:Any]) {
+        DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            guard isLnd else {
-                showAlert(vc: self, title: "LND Only", message: "Coming soon for c-lightning.")
+            let alertStyle = UIAlertController.Style.alert
+            let tit = "Automatically send your channel funds to \(wallet.label)?"
+            let mess = "This means funds will automatically be sent to \(wallet.label) when the channel closes. This is NOT reversible!\n\nAddress: \(address)"
+            
+            let alert = UIAlertController(title: tit, message: mess, preferredStyle: alertStyle)
+            
+            alert.addAction(UIAlertAction(title: "Send to \(wallet.label)", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                self.spinner.addConnectingView(vc: self, description: "closing...")
+                
+                CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(Int(wallet.index) + 1), entity: .wallets) { _ in }
+                
+                self.closeChannelCL(channel, address)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Use Lightning wallet", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                self.spinner.addConnectingView(vc: self, description: "closing...")
+                
+                self.closeChannelCL(channel, nil)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func getAddress(_ wallet: Wallet, _ channel: [String:Any]) {
+        let index = Int(wallet.index) + 1
+        let param = "\"\(wallet.receiveDescriptor)\", [\(index),\(index)]"
+        
+        Reducer.makeCommand(command: .deriveaddresses, param: param) { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            guard let addresses = response as? NSArray, let address = addresses[0] as? String else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "", message: errorMessage ?? "error getting closing address")
                 return
             }
             
-            DispatchQueue.main.async { [weak self] in
-                let alertStyle = UIAlertController.Style.alert
-                
-                let alert = UIAlertController(title: "Close channel?", message: "This action will start the process of closing this channel.", preferredStyle: alertStyle)
-                
-                alert.addAction(UIAlertAction(title: "Close", style: .default, handler: { [weak self] action in
-                    guard let self = self else { return }
-                    
-                    self.closeChannelLnd(channel: channel)
-                }))
-                
-                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-                alert.popoverPresentationController?.sourceView = self?.view
-                self?.present(alert, animated: true, completion: nil)
+            self.promptToUseClosingAddress(wallet, address, channel)
+        }
+    }
+    
+    private func closeChannelCL(_ channel: [String:Any], _ address: String?) {
+        let commandId = UUID()
+        let channelId = channel["channel_id"] as! String
+        let param = "\"\(channelId)\", 0, \"\(address ?? "")\""
+        
+        LightningRPC.command(id: commandId, method: .close, param: param) { [weak self] (id, response, errorDesc) in
+            guard let self = self, commandId == id else { return }
+            
+            self.spinner.removeConnectingView()
+            
+            guard errorDesc == nil else {
+                showAlert(vc: self, title: "Error", message: errorDesc ?? "error disconnecting peer")
+                return
             }
+            
+            guard let response = response as? [String:Any] else {
+                showAlert(vc: self, title: "Error", message: errorDesc ?? "error disconnecting peer")
+                return
+            }
+            
+            if let message = response["message"] as? String {
+                showAlert(vc: self, title: "Error disconnecting peer.", message: message)
+            } else {
+                showAlert(vc: self, title: "Channel disconnected ⚡️", message: "")
+                self.loadChannels()
+                return
+            }
+            
         }
     }
     
     private func closeChannelLnd(channel: [String:Any]) {
-        spinner.addConnectingView(vc: self, description: "Closing channel...")
-        
         guard let channelPoint = channel["channel_point"] as? String else { return }
         
         let arr = channelPoint.split(separator: ":")
@@ -629,12 +731,23 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     }
     
     private func parseCLPeers(_ peers: NSArray) {
+        var totalSpendable = 0.0
+        var totalReceivable = 0.0
+        
         for (i, peer) in peers.enumerated() {
             if let peerDict = peer as? [String:Any] {
                 if let channls = peerDict["channels"] as? NSArray {
                     if channls.count > 0 {
                         for ch in channls {
                             if let dict = ch as? [String:Any] {
+                                
+                                let spendable = (dict["spendable_msatoshi"] as! Double) / 1000.0
+                                totalSpendable += spendable
+                                
+                                let receivable = (dict["receivable_msatoshi"] as! Double) / 1000.0
+                                totalReceivable += receivable
+                                
+                                
                                 if let state = dict["state"] as? String {
                                     if showActive {
                                         if state == "CHANNELD_NORMAL" {
@@ -657,6 +770,13 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
                         }
                     }
                     if i + 1 == peers.count {
+                         DispatchQueue.main.async { [weak self] in
+                             guard let self = self else { return }
+                             
+                             self.totalSpendableLabel.text = "Total spendable: \(totalSpendable.withCommas()) sats"
+                             self.totalReceivableLabel.text = "Total receivable: \(totalReceivable.withCommas()) sats"
+                         }
+                         
                         fetchLocalPeers { [weak self] _ in
                             self?.load()
                         }
@@ -776,7 +896,7 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
             if (UIDevice.current.userInterfaceIdiom == .pad) {
               alertStyle = UIAlertController.Style.alert
             }
-            let alert = UIAlertController(title: "Send circular payment to rebalance?", message: "This action depends upon the rebalance.py plugin, if you are not using the plugin then this will not work. It can take up to 60 seconds for this command to complete, it will attempt to rebalance the channel you have selected with an ideal counterpart and strive to acheive a 50/50 balance of incoming and outgoing capacity by routing a payment to yourself from one channel to another.", preferredStyle: alertStyle)
+            let alert = UIAlertController(title: "Send circular payment to rebalance?", message: "This action depends upon the rebalance.py plugin, if you are not using the plugin then this will not work and the spinner will never go away. It can take up to 60 seconds for this command to complete.", preferredStyle: alertStyle)
             alert.addAction(UIAlertAction(title: "Rebalance", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
                 self.spinner.addConnectingView(vc: self, description: "rebalancing, this can take up to 60 seconds...")
@@ -791,6 +911,7 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     private func parseChannelsForRebalancing() {
         ours.removeAll()
         theirs.removeAll()
+        
         for (i, ch) in channels.enumerated() {
             let ourAmount = ch["to_us_msat"] as? String ?? ""
             let totalAmount = ch["total_msat"] as? String ?? ""
@@ -809,7 +930,7 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     }
     
     private func selectCounterpart() {
-        if selectedChannel != nil {
+        if selectedChannel != nil && ours.count > 0 && theirs.count > 0 {
             for ch in ours {
                 if ch["short_channel_id"] as! String == selectedChannel!["short_channel_id"] as! String {
                     chooseTheirsCounterpart()
@@ -820,6 +941,9 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
                     chooseOursCounterpart()
                 }
             }
+        } else {
+            spinner.removeConnectingView()
+            showAlert(vc: self, title: "Rebalancing issue...", message: "It does not look like you have enough suitable channels to rebalance with. This can usually happen if all your channels are 100% spendable or receivable.")
         }
     }
     

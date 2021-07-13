@@ -26,6 +26,7 @@ class ConfirmLightningPaymentViewController: UIViewController {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
+        spinner.addConnectingView(vc: self, description: "")
         amountLabel.alpha = 0
         recipientLabel.alpha = 0
         expiryLabel.alpha = 0
@@ -39,10 +40,13 @@ class ConfirmLightningPaymentViewController: UIViewController {
         textView.layer.borderWidth = 0.5
         textView.layer.borderColor = UIColor.lightGray.cgColor
         
-        spinner.addConnectingView(vc: self, description: "")
-        
         load()
     }
+    
+    @IBAction func cancelAction(_ sender: Any) {
+        close(confirmed: false)
+    }
+    
     
     @IBAction func closeAction(_ sender: Any) {
         close(confirmed: false)
@@ -51,11 +55,6 @@ class ConfirmLightningPaymentViewController: UIViewController {
     @IBAction func sendAction(_ sender: Any) {
         close(confirmed: true)
     }
-    
-    @IBAction func cancelAction(_ sender: Any) {
-        close(confirmed: false)
-    }
-    
     
     private func close(confirmed: Bool) {
         DispatchQueue.main.async { [weak self] in
@@ -84,19 +83,17 @@ class ConfirmLightningPaymentViewController: UIViewController {
             
             var invoiceDoubleAmount = Double(invoice.amount)!
             
-            var amountText = "Send: " + invoice.amount + " sats"
-            
-            print("invoice.userSpecifiedAmount: \(invoice.userSpecifiedAmount)")
+            var amountText = invoice.amount + " sats"
             
             if let customAmount = invoice.userSpecifiedAmount {
                 invoiceDoubleAmount = (Double(customAmount)! / 1000.0)
-                amountText = "Send: " + "\(invoiceDoubleAmount)" + " sats"
+                amountText = "\(invoiceDoubleAmount)" + " sats"
             }            
             
             if let fxRate = self.fxRate {
                 let usd = (invoiceDoubleAmount / 100000000.0) * fxRate
                 
-                amountText += " / $\(usd) USD"
+                amountText += "\n$\(usd) USD"
             }
             
             self.amountLabel.text = amountText

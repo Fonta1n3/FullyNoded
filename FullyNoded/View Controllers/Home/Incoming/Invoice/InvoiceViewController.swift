@@ -203,8 +203,14 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     private func createCLInvoice() {
         var millisats = "\"any\""
-        var label = "Fully-Noded-\(randomString(length: 5))"
-        var description = "\(Date())"
+        
+        var description = labelField.text ?? "Fully Noded c-lightning invoice ⚡️"
+        
+        if description == "" {
+            description = "Fully Noded c-lightning invoice ⚡️"
+        }
+        
+        let label = "Fully Noded c-lightning invoice ⚡️ \(randomString(length: 10))"
         
         if amountField.text != "" {
             if isBtc {
@@ -219,12 +225,8 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             }
         }
         
-        if labelField.text != "" {
-            label = labelField.text!
-        }
-        
         if messageField.text != "" {
-            description = messageField.text!
+            description += "\n\nmessage: " + messageField.text!
         }
         
         let param = "\(millisats), \"\(label)\", \"\(description)\", \(86400)"
@@ -246,7 +248,9 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             
             if let warning = dict["warning_capacity"] as? String {
                 if warning != "" {
-                    showAlert(vc: self, title: "Warning", message: warning)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                        showAlert(vc: self, title: "Warning", message: warning)
+                    }
                 }
             }
         }

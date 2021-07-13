@@ -304,7 +304,7 @@ enum Keys {
                     }
                 }
                 
-                if i + 1 == wallets.count {
+                if i + 1 == wallets.count && providedDescStr.isMulti {
                     for (d, derivation) in providedDescStr.derivationArray.enumerated() {
                         guard let fullPath = try? BIP32Path(string: derivation) else {
                             completion((isOurs, walletLabel, signable, signer))

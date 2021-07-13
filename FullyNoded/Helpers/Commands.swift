@@ -102,6 +102,8 @@ public enum LIGHTNING_CLI: String {
     case listnodes = "listnodes"
     case sendmsg = "sendmsg"
     case recvmsg = "recvmsg"
+    case close = "close"
+    case disconnect = "disconnect"
 }
 
 public enum LND_REST: String {

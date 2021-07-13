@@ -407,11 +407,10 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     
     private func getCLAddress() {
         let commandId = UUID()
-        
         LightningRPC.command(id: commandId, method: .newaddr, param: "") { [weak self] (uuid, response, errorDesc) in
             guard commandId == uuid, let self = self else { return }
                         
-            guard let dict = response as? NSDictionary, let address = dict["address"] as? String else {
+            guard let dict = response as? NSDictionary, let address = dict["bech32"] as? String else {
                 showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error fetching lightning wallet address")
                 return
             }
@@ -992,8 +991,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         LndRpc.sharedInstance.command(.decodepayreq, nil, invoice, nil) { [weak self] (response, error) in
             guard let self = self else { return }
             
-            //self.spinner.removeConnectingView()
-            
             guard let dict = response else {
                 self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "Error", message: error ?? "unknown error")
@@ -1109,14 +1106,11 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 }
                 self.invoiceString = invoice
                 self.performSegue(withIdentifier: "segueToLightningConf", sender: self)
-                self.spinner.removeConnectingView()
-            }            
+            }
         }
     }
     
     private func payLightningNow(invoice: String, msat: Int?, dict: [String:Any]) {
-        spinner.addConnectingView(vc: self, description: "paying lightning invoice...")
-        
         isLndNode { [weak self] isLnd in
             guard let self = self else { return }
             
@@ -1416,9 +1410,12 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             
             vc.fxRate = self.fxRate
             vc.invoice = self.invoice
+            self.spinner.removeConnectingView()
             
             vc.doneBlock = { [weak self] confirmed in
                 guard let self = self else { return }
+                
+                self.spinner.addConnectingView(vc: self, description: "paying lightning invoice...")
                 
                 if confirmed {
                     if let userSpecifiedAmount = self.invoice!["userSpecifiedAmount"] as? String {
