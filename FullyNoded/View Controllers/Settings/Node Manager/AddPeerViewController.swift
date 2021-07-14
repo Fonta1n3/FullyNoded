@@ -13,6 +13,7 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var amountField: UITextField!
     @IBOutlet weak var acnNowOutlet: UIButton!
     let spinner = ConnectingView()
+    var psbt = ""
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -164,20 +165,36 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
     }
     
     private func openChannelCL(amount: Int, id: String, ip: String?, port: String?) {
-        Lightning.connect(amount: amount, id: id, ip: ip, port: port ?? "9735") { [weak self] (result, errorMessage) in
+        Lightning.connect(amount: amount, id: id, ip: ip, port: port) { [weak self] (result, errorMessage) in
             guard let self = self else { return }
             
             self.spinner.removeConnectingView()
             
-            guard let result = result, let success = result["commitments_secured"] as? Bool else {
+            guard let result = result else {
                 showAlert(vc: self, title: "There was an issue.", message: errorMessage ?? "Unknown error connecting and funding that peer/channel.")
                 return
             }
             
-            if success {
-                showAlert(vc: self, title: "Channel created ⚡️", message: "Channel commitment secured!")
-            } else {
-                showAlert(vc: self, title: "Uh oh", message: "So close yet so far! The channel is connected yet we did not seem to get our commitment secured...")
+            if let success = result["success"] as? Bool {
+                if success {
+                    showAlert(vc: self, title: "Channel created ⚡️", message: "Channel commitment secured!")
+                } else {
+                    showAlert(vc: self, title: "There was an issue...", message: errorMessage ?? "Unknown error.")
+                }
+            } else if let psbt = result["psbt"] as? String {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.psbt = psbt
+                    self.performSegue(withIdentifier: "segueToExportPsbtForChannelFunding", sender: self)
+                }
+                
+            } else if let rawTx = result["rawTx"] as? String {
+                DispatchQueue.main.async {
+                    UIPasteboard.general.string = rawTx
+                }
+                
+                showAlert(vc: self, title: "Channel funding had an issue...", message: "The raw transaction has been copied to your clipboard. Error: \(errorMessage ?? "Unknown error. Try broadcasting the transaction manually. Go to active wallet and tap the send / broadcast button then tap paste.")")
             }
         }
     }
@@ -221,6 +238,12 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
                     
                     self.addChannel(id: id, ip: ip, port: port)
                 }
+            }
+        }
+        
+        if segue.identifier == "segueToExportPsbtForChannelFunding" {
+            if let vc = segue.destination as? VerifyTransactionViewController {
+                vc.unsignedPsbt = self.psbt
             }
         }
     }

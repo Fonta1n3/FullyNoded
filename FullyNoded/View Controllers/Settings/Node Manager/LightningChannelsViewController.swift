@@ -741,12 +741,13 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
                         for ch in channls {
                             if let dict = ch as? [String:Any] {
                                 
-                                let spendable = (dict["spendable_msatoshi"] as! Double) / 1000.0
-                                totalSpendable += spendable
+                                if let spendable = dict["spendable_msatoshi"] as? Double {
+                                    totalSpendable += spendable / 1000.0
+                                }
                                 
-                                let receivable = (dict["receivable_msatoshi"] as! Double) / 1000.0
-                                totalReceivable += receivable
-                                
+                                if let receivable = dict["receivable_msatoshi"] as? Double {
+                                    totalReceivable += receivable / 1000.0
+                                }
                                 
                                 if let state = dict["state"] as? String {
                                     if showActive {

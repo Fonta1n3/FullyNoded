@@ -1115,7 +1115,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             guard let self = self else { return }
             
             guard isLnd else {
-                self.payFromCL(invoice: invoice, msat: msat)
+                self.payFromCL(invoice: invoice, msat: msat, dict: dict)
                 return
             }
             
@@ -1227,7 +1227,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
-    private func payFromCL(invoice: String, msat: Int?) {
+    private func payFromCL(invoice: String, msat: Int?, dict: [String:Any]) {
         var params = ""
         
         if msat != nil {
@@ -1235,6 +1235,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         } else {
             params = "\"\(invoice)\""
         }
+        
+        let memo = dict["description"] as? String ?? "no memo added"
+        let payment_hash = dict["payment_hash"] as? String ?? ""
         
         let commandId = UUID()
         
@@ -1262,7 +1265,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 return
             }
             
-            showAlert(vc: self, title: "Success ✅", message: "Lightning payment completed!\n\nAmount paid \(Double(msatInt) / 1000.0) sats for a fee of \(Double((msatSentInt - msatInt)) / 1000.0) sats")
+            let fee = Double((msatSentInt - msatInt)) / 1000.0
+            
+            self.saveTx(memo: memo, hash: payment_hash, sats: Int(Double(msatSentInt) / 1000.0), fee: fee)            
         }
     }
     

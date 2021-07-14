@@ -18,7 +18,7 @@ public func isLndNode(completion: @escaping (Bool) -> Void) {
         for (i, node) in nodes.enumerated() {
             let nodeStr = NodeStruct(dictionary: node)
             
-            if nodeStr.isLightning {
+            if nodeStr.isLightning && nodeStr.isActive {
                 if nodeStr.macaroon != nil {
                     isLnd = true
                 }

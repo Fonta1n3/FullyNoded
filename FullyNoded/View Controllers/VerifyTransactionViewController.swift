@@ -10,6 +10,8 @@ import UIKit
 
 class VerifyTransactionViewController: UIViewController, UINavigationControllerDelegate, UITextFieldDelegate, UIDocumentPickerDelegate {
     
+    var isChannelFunding = false
+    var voutChannelFunding:Int?
     var smartFee = Double()
     var txSize = Int()
     var rejectionMessage = ""
@@ -369,7 +371,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     @IBAction func sendAction(_ sender: Any) {
         if signedRawTx != "" {
-            broadcast()
+            if !isChannelFunding {
+                broadcast()
+            } else {
+                promptToCompleteChannelFunding()
+            }
+            
         } else {
             showAlert(vc: self, title: "", message: "Transaction not fully signed, you can export it to another signer or sign it if the sign button is enabled.")
         }
@@ -405,6 +412,43 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "Error Signing", message: errorMessage ?? "unknown")
             }
+        }
+    }
+    
+    private func fundChannelComplete() {
+        let chanId = UserDefaults.standard.object(forKey: "channelId") as? String ?? ""
+        if let vout = self.voutChannelFunding {
+            Lightning.fundchannelcomplete(channelId: chanId, txid: self.txid, vout: vout, rawTx: self.signedRawTx) { [weak self] (result, errorMessage) in
+                guard let self = self else { return }
+                
+                self.spinner.removeConnectingView()
+                
+                guard let result = result, let success = result["success"] as? Bool, success else {
+                    showAlert(vc: self, title: "Error", message: errorMessage ?? "Unknown error.")
+                    return
+                }
+                
+                showAlert(vc: self, title: "Success ⚡️", message: "Lightning channel funding complete.")
+            }
+        }
+    }
+    
+    private func promptToCompleteChannelFunding() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let alert = UIAlertController(title: "Complete ⚡️ channel funding?", message: "This will broadcast the transaction and is irreversible!", preferredStyle: self.alertStyle)
+            
+            alert.addAction(UIAlertAction(title: "Broadcast now", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.spinner.addConnectingView(vc: self, description: "")
+                self.fundChannelComplete()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true) {}
         }
     }
     
@@ -702,6 +746,23 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     
                     if fxRate != nil {
                         amountString += " btc / \(fiatAmount(btc: amount))"
+                    }
+                                        
+                    if let clightningFundingSPK = UserDefaults.standard.object(forKey: "scriptPubKey") as? String {
+                        if let hex = scriptpubkey["hex"] as? String {
+                            if hex == clightningFundingSPK {
+                                if let clightningFundingAddr = UserDefaults.standard.object(forKey: "address") as? String {
+                                    for address in addresses {
+                                        if (address as? String) == clightningFundingAddr {
+                                            self.isChannelFunding = true
+                                            if let vout = output["n"] as? Int {
+                                                self.voutChannelFunding = vout
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                                         
                     let outputDict:[String:Any] = [
@@ -2008,18 +2069,26 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     private func shareText(_ text: String) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            let activityViewController = UIActivityViewController(activityItems: [text], applicationActivities: nil)
-            
-            if UIDevice.current.userInterfaceIdiom == .pad {
-                activityViewController.popoverPresentationController?.sourceView = self.view
-                activityViewController.popoverPresentationController?.sourceRect = CGRect(x: 0, y: 0, width: 100, height: 100)
+            #if os(macOS)
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                let activityViewController = UIActivityViewController(activityItems: [text], applicationActivities: nil)
+                
+                if UIDevice.current.userInterfaceIdiom == .pad {
+                    activityViewController.popoverPresentationController?.sourceView = self.view
+                    activityViewController.popoverPresentationController?.sourceRect = CGRect(x: 0, y: 0, width: 100, height: 100)
+                }
+                
+                self.present(activityViewController, animated: true) {}
             }
-            
-            self.present(activityViewController, animated: true) {}
-        }
+            #else
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                UIPasteboard.general.string = text
+                showAlert(vc: self, title: "Transaction copied to clipboard ✓", message: "")
+            }
+            #endif
     }
     
     private func exportTxn(txn: String) {

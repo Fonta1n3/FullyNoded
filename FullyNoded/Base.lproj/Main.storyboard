@@ -6026,33 +6026,13 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="To create the channel scan a QR code in the format of publickey@ip:port (standard URI format)." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bmf-3G-mD0">
-                                <rect key="frame" x="16" y="344" width="343" height="29"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="t7F-SI-0t5">
                                 <rect key="frame" x="16" y="106" width="343" height="122"/>
-                                <string key="text">If you are using LND and an onchain Fully Noded wallet you will be prompted to add a closing address which is generated from that wallet. When the channel closes the funds will be sent to that address. Alternatively you can opt to use the LND wallet.</string>
+                                <string key="text">When using c-lightning channels are always funded from and closed to the active Fully Noded onchain wallet. For LND users the LND onchain wallet is used for funding, the channel closes to the active Fully Noded wallet.</string>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LVT-jy-ind">
-                                <rect key="frame" x="16" y="388" width="343" height="40"/>
-                                <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="40" id="98w-8t-E49"/>
-                                </constraints>
-                                <color key="tintColor" systemColor="systemTealColor"/>
-                                <state key="normal" title="  scan now" image="qrcode.viewfinder" catalog="system">
-                                    <color key="titleColor" systemColor="systemTealColor"/>
-                                </state>
-                                <connections>
-                                    <action selector="scanNowAction:" destination="Ccs-1J-WKN" eventType="touchUpInside" id="Rio-wy-aRF"/>
-                                </connections>
-                            </button>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="SRg-gq-aWa">
                                 <rect key="frame" x="16" y="280" width="343" height="34"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
@@ -6084,23 +6064,42 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                     <constraint firstAttribute="width" constant="35" id="vQd-KD-a0B"/>
                                 </constraints>
                             </view>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Channels are always created as private and can be funded with unconfirmed funds." lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gUo-3Y-mJY">
-                                <rect key="frame" x="16" y="618" width="343" height="29"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Channels are always created as private." lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gUo-3Y-mJY">
+                                <rect key="frame" x="16" y="632.5" width="343" height="14.5"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                 <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="To create the channel scan a QR code in the format of publickey@ip:port (standard URI format)." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bmf-3G-mD0">
+                                <rect key="frame" x="16" y="322" width="343" height="29"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LVT-jy-ind">
+                                <rect key="frame" x="103" y="366" width="167" height="40"/>
+                                <color key="backgroundColor" systemColor="viewFlipsideBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="40" id="98w-8t-E49"/>
+                                    <constraint firstAttribute="width" constant="167" id="d26-R0-PRs"/>
+                                </constraints>
+                                <color key="tintColor" systemColor="systemTealColor"/>
+                                <state key="normal" title="  scan now" image="qrcode.viewfinder" catalog="system">
+                                    <color key="titleColor" systemColor="systemTealColor"/>
+                                </state>
+                                <connections>
+                                    <action selector="scanNowAction:" destination="Ccs-1J-WKN" eventType="touchUpInside" id="Rio-wy-aRF"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Dig-wA-gAJ"/>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="t7F-SI-0t5" secondAttribute="trailing" constant="16" id="1X1-56-DmX"/>
                             <constraint firstItem="dQ2-EQ-aje" firstAttribute="leading" secondItem="Dig-wA-gAJ" secondAttribute="leading" constant="16" id="1ed-H1-Zte"/>
-                            <constraint firstItem="Dig-wA-gAJ" firstAttribute="trailing" secondItem="LVT-jy-ind" secondAttribute="trailing" constant="16" id="2OH-jI-1wz"/>
                             <constraint firstItem="LVT-jy-ind" firstAttribute="top" secondItem="bmf-3G-mD0" secondAttribute="bottom" constant="15" id="34D-RD-igw"/>
                             <constraint firstItem="1Ed-BV-iZs" firstAttribute="top" secondItem="Dig-wA-gAJ" secondAttribute="top" constant="19" id="5wX-Yz-PHm"/>
                             <constraint firstItem="Dig-wA-gAJ" firstAttribute="trailing" secondItem="SRg-gq-aWa" secondAttribute="trailing" constant="16" id="9GU-Qr-1nb"/>
-                            <constraint firstItem="LVT-jy-ind" firstAttribute="leading" secondItem="Dig-wA-gAJ" secondAttribute="leading" constant="16" id="9hN-av-ItR"/>
                             <constraint firstItem="Dig-wA-gAJ" firstAttribute="bottom" secondItem="gUo-3Y-mJY" secondAttribute="bottom" constant="20" id="CQC-aH-5FO"/>
                             <constraint firstItem="gUo-3Y-mJY" firstAttribute="leading" secondItem="Dig-wA-gAJ" secondAttribute="leading" constant="16" id="D6h-oV-aTT"/>
                             <constraint firstItem="SRg-gq-aWa" firstAttribute="top" secondItem="dQ2-EQ-aje" secondAttribute="bottom" constant="8" id="IQt-lS-vuN"/>
@@ -6109,10 +6108,11 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                             <constraint firstItem="1Ed-BV-iZs" firstAttribute="leading" secondItem="Dig-wA-gAJ" secondAttribute="leading" constant="16" id="LfY-OV-pCz"/>
                             <constraint firstItem="t7F-SI-0t5" firstAttribute="top" secondItem="bqn-kZ-3bA" secondAttribute="bottom" constant="8" id="M32-xd-f8s"/>
                             <constraint firstItem="t7F-SI-0t5" firstAttribute="leading" secondItem="Dig-wA-gAJ" secondAttribute="leading" constant="16" id="R1H-ER-N2c"/>
+                            <constraint firstItem="LVT-jy-ind" firstAttribute="centerX" secondItem="NUp-Zk-LeU" secondAttribute="centerX" constant="-1" id="S3L-ec-nhg"/>
                             <constraint firstItem="SRg-gq-aWa" firstAttribute="leading" secondItem="Dig-wA-gAJ" secondAttribute="leading" constant="16" id="Wpr-He-yYl"/>
                             <constraint firstItem="Dig-wA-gAJ" firstAttribute="trailing" secondItem="dQ2-EQ-aje" secondAttribute="trailing" constant="14" id="frx-r6-hHJ"/>
                             <constraint firstItem="bqn-kZ-3bA" firstAttribute="leading" secondItem="1Ed-BV-iZs" secondAttribute="trailing" constant="8" symbolic="YES" id="hWb-t3-YSS"/>
-                            <constraint firstItem="bmf-3G-mD0" firstAttribute="top" secondItem="SRg-gq-aWa" secondAttribute="bottom" constant="30" id="k3Y-a5-yNS"/>
+                            <constraint firstItem="bmf-3G-mD0" firstAttribute="top" secondItem="SRg-gq-aWa" secondAttribute="bottom" constant="8" id="k3Y-a5-yNS"/>
                             <constraint firstItem="Dig-wA-gAJ" firstAttribute="trailing" secondItem="gUo-3Y-mJY" secondAttribute="trailing" constant="16" id="mo4-Pu-say"/>
                             <constraint firstItem="bmf-3G-mD0" firstAttribute="leading" secondItem="Dig-wA-gAJ" secondAttribute="leading" constant="16" id="nFZ-id-dAR"/>
                             <constraint firstItem="bqn-kZ-3bA" firstAttribute="centerY" secondItem="1Ed-BV-iZs" secondAttribute="centerY" id="ziO-fc-g8n"/>
@@ -6123,6 +6123,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <outlet property="acnNowOutlet" destination="LVT-jy-ind" id="zal-7F-IWu"/>
                         <outlet property="amountField" destination="SRg-gq-aWa" id="Idy-Uj-A1T"/>
                         <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToScannerFromLightningManager" id="hqP-uS-RkV"/>
+                        <segue destination="XA2-Lt-01p" kind="show" identifier="segueToExportPsbtForChannelFunding" id="eLW-PX-CgI"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="BWE-L0-Kij" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -6935,7 +6936,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                     <connections>
                         <outlet property="iconBackground" destination="UuX-D9-fxh" id="VYa-mz-Yva"/>
                         <outlet property="peersTable" destination="2BG-H0-7TA" id="4kE-HP-4n2"/>
-                        <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToAddPeer" id="sXG-y0-yya"/>
+                        <segue destination="HJc-Yu-EXJ" kind="presentation" identifier="segueToAddPeer" modalPresentationStyle="fullScreen" id="sXG-y0-yya"/>
                         <segue destination="yNw-mi-HbQ" kind="show" identifier="segueToPeerDetails" id="kP1-4t-Akr"/>
                     </connections>
                 </viewController>
@@ -7578,10 +7579,10 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="LMu-1F-VvA"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="07E-4w-Zh7"/>
+        <segue reference="hqP-uS-RkV"/>
         <segue reference="8MS-xS-DMP"/>
         <segue reference="yAt-Ra-aPH"/>
-        <segue reference="gzO-Lb-E0s"/>
+        <segue reference="eLW-PX-CgI"/>
         <segue reference="j10-wi-hpr"/>
         <segue reference="qmy-fM-U4p"/>
     </inferredMetricsTieBreakers>

@@ -42,14 +42,32 @@ class Lightning {
     }
     
     class func fundchannelstart(channelId: String, amount: Int, completion: @escaping ((result: NSDictionary?, errorMessage: String?)) -> Void) {
-        let param = "\"\(channelId)\", \(amount)"
-        let commandId = UUID()
-        LightningRPC.command(id: commandId, method: .fundchannel_start, param: param) { (uuid, response, errorDesc) in
-            if commandId == uuid {
-                if let fundedChannelDict = response as? NSDictionary {
-                    Lightning.parseFundChannelStart(channelId: channelId, amount: amount, dict: fundedChannelDict, completion: completion)
-                } else {
-                    completion((nil, errorDesc ?? "unknown error funding that channel"))
+        activeWallet { wallet in
+            guard let wallet = wallet else {
+                completion((nil, "No active wallet, in order to create a channel you need to be using an active FN onchain wallet. This can be single sig, multisig, hot or cold. Funds will always be retruned to this wallet when this channel closes. The channel will be funded directly from your active FN wallet."))
+                return
+            }
+            
+            let index = Int(wallet.index) + 1
+            let param = "\"\(wallet.receiveDescriptor)\", [\(index),\(index)]"
+            
+            Reducer.makeCommand(command: .deriveaddresses, param: param) { (response, errorMessage) in
+                guard let addresses = response as? NSArray, let address = addresses[0] as? String else {
+                    completion((nil, "Error getting closing address: \(errorMessage ?? "unknown")"))
+                    return
+                }
+                
+                let param = "\"\(channelId)\", \(amount), \"normal\", false, \"\(address)\""
+                let commandId = UUID()
+                
+                LightningRPC.command(id: commandId, method: .fundchannel_start, param: param) { (uuid, response, errorDesc) in
+                    if commandId == uuid {
+                        if let fundedChannelDict = response as? NSDictionary {
+                            Lightning.parseFundChannelStart(channelId: channelId, amount: amount, dict: fundedChannelDict, completion: completion)
+                        } else {
+                            completion((nil, errorDesc ?? "unknown error funding that channel"))
+                        }
+                    }
                 }
             }
         }
@@ -57,88 +75,67 @@ class Lightning {
     
     class func parseFundChannelStart(channelId: String, amount: Int, dict: NSDictionary, completion: @escaping ((result: NSDictionary?, errorMessage: String?)) -> Void) {
         if let address = dict["funding_address"] as? String, let scriptPubKey = dict["scriptpubkey"] as? String {
-            Lightning.txprepare(channelId: channelId, scriptPubKey: scriptPubKey, address: address, amount: amount, completion: completion)
+            createFundingPsbt(channelId, scriptPubKey, address, amount, completion: completion)
         } else {
             completion((nil, "error parsing channel funding start"))
         }
     }
     
-    class func txprepare(channelId: String, scriptPubKey: String, address: String, amount: Int, completion: @escaping ((result: NSDictionary?, errorMessage: String?)) -> Void) {
-        let commandId = UUID()
-        let param = "[{\"\(address)\":\(amount)}]"
-        LightningRPC.command(id: commandId, method: .txprepare, param: param) { (uuid, response, errorDesc) in
-            if commandId == uuid {
-                if let dict = response as? NSDictionary {
-                    Lightning.parseTxPrepareResult(channelId: channelId, scriptPubKey: scriptPubKey, dict: dict, completion: completion)
-                } else {
-                    completion((nil, errorDesc ?? "unknown error preparing channel funding transaction"))
-                }
+    class func createFundingPsbt(_ channelId: String,
+                                 _ scriptPubKey: String,
+                                 _ address: String,
+                                 _ amount: Int, completion: @escaping ((result: NSDictionary?, errorMessage: String?)) -> Void) {
+        
+        let btcAmount = "\(rounded(number: Double(amount) / 100000000.0).avoidNotation)"
+        
+        CreatePSBT.create(inputs: "", outputs: "\"\(address)\":\(btcAmount)") { (psbt, rawTx, errorMessage) in
+            guard errorMessage == nil else {
+                completion((nil, "Error creating funding psbt: \(errorMessage ?? "unknown error")"))
+                return
             }
-        }
-    }
-    
-    class func parseTxPrepareResult(channelId: String, scriptPubKey: String, dict: NSDictionary, completion: @escaping ((result: NSDictionary?, errorMessage: String?)) -> Void) {
-        if let txid = dict["txid"] as? String {
-            Lightning.txsend(channelId: channelId, scriptPubKey: scriptPubKey, txid: txid, completion: completion)
-        } else {
-            completion((nil, "error parsing tx prepare result"))
-        }
-    }
-    
-    class func txsend(channelId: String, scriptPubKey: String, txid: String, completion: @escaping ((result: NSDictionary?, errorMessage: String?)) -> Void) {
-        let param = "\"\(txid)\""
-        let commandId = UUID()
-        LightningRPC.command(id: commandId, method: .txsend, param: param) { (uuid, response, errorDesc) in
-            if commandId == uuid {
-                if let dict = response as? NSDictionary {
-                    Lightning.parseTxSendResult(channelId: channelId, scriptPubKey: scriptPubKey, dict: dict, completion: completion)
-                } else {
-                    completion((nil, errorDesc ?? "unknown error sending transaction"))
+            
+            guard let psbt = psbt else {
+                
+                guard let rawTx = rawTx else {
+                    return
                 }
+                
+                decodeFundingTx(rawTx, channelId, scriptPubKey, address, amount, completion: completion)
+                
+                return
             }
+            
+            UserDefaults.standard.setValue(scriptPubKey, forKey: "scriptPubKey")
+            UserDefaults.standard.setValue(address, forKey: "address")
+            UserDefaults.standard.setValue(amount, forKey: "amount")
+            UserDefaults.standard.setValue(channelId, forKey: "channelId")
+            
+            completion((["psbt":psbt], nil))
         }
     }
     
-    class func parseTxSendResult(channelId: String, scriptPubKey: String, dict: NSDictionary, completion: @escaping ((result: NSDictionary?, errorMessage: String?)) -> Void) {
-        if let txid = dict["txid"] as? String {
-            Lightning.listtransactions(channelId: channelId, scriptPubKey: scriptPubKey, txid: txid, completion: completion)
-        } else {
-            completion((nil, "unknown error parsing tx send result"))
-        }
-    }
-    
-    class func listtransactions(channelId: String, scriptPubKey: String, txid: String, completion: @escaping ((result: NSDictionary?, errorMessage: String?)) -> Void) {
-        let commandId = UUID()
-        LightningRPC.command(id: commandId, method: .listtransactions, param: "") { (uuid, response, errorDesc) in
-            if commandId == uuid {
-                if let dict = response as? NSDictionary {
-                    Lightning.parseTransactionsResult(channelId: channelId, scriptPubKey: scriptPubKey, txid: txid, dict: dict, completion: completion)
-                } else {
-                    completion((nil, errorDesc ?? "unknown error listing your lightning wallets transactions"))
-                }
-            }
-        }
-    }
-    
-    class func parseTransactionsResult(channelId: String, scriptPubKey: String, txid: String, dict: NSDictionary, completion: @escaping ((result: NSDictionary?, errorMessage: String?)) -> Void) {
-        if let transactions = dict["transactions"] as? NSArray {
-            for tx in transactions {
-                if let txDict = tx as? NSDictionary {
-                    if let hash = txDict["hash"] as? String {
-                        if hash == txid {
-                            if let outputs = txDict["outputs"] as? NSArray {
-                                if outputs.count > 0 {
-                                    for output in outputs {
-                                        if let outputDict = output as? NSDictionary {
-                                            if let spk = outputDict["scriptPubKey"] as? String {
-                                                if spk == scriptPubKey {
-                                                    if let vout = outputDict["index"] as? Int {
-                                                        Lightning.fundchannelcomplete(channelId: channelId, txid: txid, vout: vout, completion: completion)
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
+    class func decodeFundingTx(_ rawTx: String,
+                               _ channelId: String,
+                               _ scriptPubKey: String,
+                               _ address: String,
+                               _ amount: Int, completion: @escaping ((result: NSDictionary?, errorMessage: String?)) -> Void) {
+        
+        Reducer.makeCommand(command: .decoderawtransaction, param: "\"\(rawTx)\"") { (response, errorMessage) in
+            guard let response = response as? [String:Any],
+                  let txid = response["txid"] as? String,
+                  let outputs = response["vout"] as? NSArray,
+                  outputs.count > 0 else {
+                    completion((nil, "error decoding funding tx: \(errorMessage ?? "unknown error")"))
+                    return
+                  }
+            
+            for output in outputs {
+                if let outputDict = output as? NSDictionary {
+                    if let index = outputDict["n"] as? Int {
+                        if let spk = outputDict["scriptPubKey"] as? [String:Any] {
+                            if let hex = spk["hex"] as? String {
+                                if hex == scriptPubKey {
+                                    Lightning.fundchannelcomplete(channelId: channelId, txid: txid, vout: index, rawTx: rawTx, completion: completion)
                                 }
                             }
                         }
@@ -148,18 +145,48 @@ class Lightning {
         }
     }
     
-    class func fundchannelcomplete(channelId: String, txid: String, vout: Int, completion: @escaping ((result: NSDictionary?, errorMessage: String?)) -> Void) {
+    class func fundchannelcomplete(channelId: String, txid: String, vout: Int, rawTx: String, completion: @escaping ((result: NSDictionary?, errorMessage: String?)) -> Void) {
         let param = "\"\(channelId)\", \"\(txid)\", \(vout)"
         let commandId = UUID()
+        
         LightningRPC.command(id: commandId, method: .fundchannel_complete, param: param) { (uuid, response, errorDesc) in
-            if commandId == uuid {
-                if let dict = response as? NSDictionary {
-                    completion((dict, nil))
-                } else {
-                    completion((nil, errorDesc ?? "unknown error completing the channel funding"))
+            guard commandId == uuid, let dict = response as? NSDictionary, let commitments_secured = dict["commitments_secured"] as? Bool, commitments_secured else {
+                completion((nil, "Transaction not sent! Funding completion failed." + (errorDesc ?? "Unknown error completing the channel funding.")))
+                return
+            }
+            
+            Reducer.makeCommand(command: .sendrawtransaction, param: "\"\(rawTx)\"") { (response, errorMessage) in
+                guard let _ = response as? String else {
+                    completion((["rawTx":rawTx], "There was an issue broadcasting your funding transaction. Error: \(errorMessage ?? "unknown error")"))
+                    return
                 }
+                
+                UserDefaults.standard.removeObject(forKey: "scriptPubKey")
+                UserDefaults.standard.removeObject(forKey: "address")
+                UserDefaults.standard.removeObject(forKey: "amount")
+                UserDefaults.standard.removeObject(forKey: "channelId")
+                
+                let memo = "⚡️ channel \(channelId) funded with Fully Noded psbt."
+                saveTx(memo: memo, txid: txid, completion: completion)                
             }
         }
     }
     
+    class private func saveTx(memo: String, txid: String, completion: @escaping ((result: NSDictionary?, errorMessage: String?)) -> Void) {
+        FiatConverter.sharedInstance.getFxRate { fxRate in
+            var dict:[String:Any] = ["txid":txid, "id":UUID(), "memo":memo, "date":Date(), "label":"Fully Noded ⚡️ psbt channel funding."]
+            
+            guard let originRate = fxRate else {
+                CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in }
+                completion((["success": true], nil))
+                return
+            }
+            
+            dict["originFxRate"] = originRate
+                        
+            CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in }
+            
+            completion((["success": true], nil))
+        }
+    }
 }

@@ -600,46 +600,71 @@ class ActiveWalletViewController: UIViewController {
             return
         }
         
-        self.decodeInvoice(invoice: invoice, section: int)
-    }
-    
-    private func decodeInvoice(invoice: String, section: Int) {
         spinner.addConnectingView(vc: self, description: "decoding invoice...")
         
+        isLndNode { isLnd in
+            if isLnd {
+                self.decodeInvoiceLND(invoice: invoice, section: int)
+            } else {
+                self.decodeInvoiceCL(invoice: invoice, section: int)
+            }
+        }
+    }
+    
+    private func decodeInvoiceCL(invoice: String, section: Int) {
+        let commandId = UUID()
+        
+        LightningRPC.command(id: commandId, method: .decodepay, param: "\"\(invoice)\"") { [weak self] (uuid, response, errorDesc) in
+            guard let self = self, commandId == uuid else { return }
+                        
+            guard let dict = response as? [String:Any], let txid = dict["payment_hash"] as? String, let description = dict["description"] as? String else {
+                showAlert(vc: self, title: "Error", message: errorDesc ?? "unknown error")
+                return
+            }
+            
+            self.updateMemo(txid: txid, memo: description)
+        }
+    }
+    
+    private func decodeInvoiceLND(invoice: String, section: Int) {
         LndRpc.sharedInstance.command(.decodepayreq, nil, invoice, nil) { [weak self] (response, error) in
             guard let self = self else { return }
             
             guard let response = response,
                   let memo = response["description"] as? String,
-                  memo != "" else {
+                  memo != "",
+                  let txid = response["payment_hash"] as? String else {
                 showAlert(vc: self, title: "No memo.", message: "This invoice does not include a memo. You can add your own by tapping the \"edit memo\" button.")
                 return
             }
             
-            CoreDataService.retrieveEntity(entityName: .transactions) { transactions in
-                guard let transactions = transactions, transactions.count > 0 else {
-                    return
-                }
+            self.updateMemo(txid: txid, memo: memo)
+        }
+    }
+    
+    private func updateMemo(txid: String, memo: String) {
+        CoreDataService.retrieveEntity(entityName: .transactions) { savedTxs in
+            guard let savedTxs = savedTxs, savedTxs.count > 0 else {
+                return
+            }
+                        
+            for savedTx in savedTxs {
+                let txStruct = TransactionStruct(dictionary: savedTx)
                 
-                for savedTx in transactions {
-                    let txStruct = TransactionStruct(dictionary: savedTx)
-                    
-                    if txStruct.txid == response["payment_hash"] as? String {
-                        CoreDataService.update(id: txStruct.id!, keyToUpdate: "memo", newValue: memo, entity: .transactions) { [weak self] updated in
-                            guard let self = self else { return }
-                            
-                            self.spinner.removeConnectingView()
-                            
-                            if updated {
-                                self.loadTable()
-                                showAlert(vc: self, title: "Memo updated ✓", message: "")
-                            } else {
-                                showAlert(vc: self, title: "Error", message: "There was an issue updatinng your memo.")
-                            }
+                if txStruct.txid == txid {
+                    CoreDataService.update(id: txStruct.id!, keyToUpdate: "memo", newValue: memo, entity: .transactions) { [weak self] updated in
+                        guard let self = self else { return }
+                                                
+                        if updated {
+                            self.loadTable()
+                            showAlert(vc: self, title: "Memo updated ✓", message: "")
+                        } else {
+                            showAlert(vc: self, title: "Error", message: "There was an issue updatinng your memo.")
                         }
                     }
                 }
             }
+            self.spinner.removeConnectingView()
         }
     }
     

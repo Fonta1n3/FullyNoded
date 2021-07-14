@@ -70,7 +70,6 @@ class NodeLogic {
                   let localBalance = dict["local_balance"] as? NSDictionary else {
                 dictToReturn["offchainBalance"] = "0.00000000"
                 completion((dictToReturn, error ?? ""))
-                //getOutgoingPaymentsLND(completion: completion)
                 return
             }
             
@@ -81,7 +80,6 @@ class NodeLogic {
                       let walletBalance = dict["total_balance"] as? String else {
                     dictToReturn["offchainBalance"] = localBalanceSats
                     completion((dictToReturn, error ?? ""))
-                    //getOutgoingPaymentsLND(completion: completion)
                     return
                 }
                 
@@ -90,7 +88,6 @@ class NodeLogic {
                 let roundedBalance = rounded(number: btc).avoidNotation
                 dictToReturn["offchainBalance"] = "\(roundedBalance)"
                 completion((dictToReturn, error ?? ""))
-                //getOutgoingPaymentsLND(completion: completion)
             }
         }
     }
@@ -469,42 +466,64 @@ class NodeLogic {
                     return
                 }
                 
-                for (i, payment) in payments.enumerated() {
-                    if let paymentDict = payment as? NSDictionary {
-                        let payment_hash = paymentDict["payment_hash"] as? String ?? ""
-                        var amountMsat = paymentDict["msatoshi"] as? Int ?? 0
-                        if amountMsat == 0 {
-                            amountMsat = paymentDict["msatoshi_received"] as? Int ?? 0
-                        }
-                        let status = paymentDict["status"] as? String ?? ""
-                        let bolt11 = paymentDict["bolt11"] as? String ?? ""
-                        let label = paymentDict["label"] as? String ?? ""
-                        let paid_at = paymentDict["paid_at"] as? Int ?? 0
-                        
-                        let date = Date(timeIntervalSince1970: Double(paid_at))
-                        dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
-                        let dateString = dateFormatter.string(from: date)
-                        
-                        if status == "paid" {
-                            arrayToReturn.append([
-                                "address": bolt11,
-                                "amount": "\(Double(amountMsat) / 1000.0) sats",
-                                "confirmations": status,
-                                "label": label,
-                                "date": dateString,
-                                "rbf": false,
-                                "txID": payment_hash,
-                                "replacedBy": "",
-                                "selfTransfer":false,
-                                "remove":false,
-                                "onchain":false,
-                                "isLightning":true,
-                                "sortDate":date])
-                        }
-                                                            
-                        if i + 1 == payments.count {
-                            arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
-                            completion((arrayToReturn, nil))
+                CoreDataService.retrieveEntity(entityName: .transactions) { savedTxs in
+                    var alreadySaved = false
+                    
+                    for (i, payment) in payments.enumerated() {
+                        if let paymentDict = payment as? NSDictionary {
+                            let payment_hash = paymentDict["payment_hash"] as? String ?? ""
+                            var amountMsat = paymentDict["msatoshi"] as? Int ?? 0
+                            if amountMsat == 0 {
+                                amountMsat = paymentDict["msatoshi_received"] as? Int ?? 0
+                            }
+                            let status = paymentDict["status"] as? String ?? ""
+                            let bolt11 = paymentDict["bolt11"] as? String ?? ""
+                            let label = paymentDict["label"] as? String ?? ""
+                            let paid_at = paymentDict["paid_at"] as? Int ?? 0
+                            
+                            let date = Date(timeIntervalSince1970: Double(paid_at))
+                            dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
+                            let dateString = dateFormatter.string(from: date)
+                            
+                            if status == "paid" {
+                                arrayToReturn.append([
+                                                        "address": bolt11,
+                                                        "amount": "\(Double(amountMsat) / 1000.0) sats",
+                                                        "confirmations": status,
+                                                        "label": label,
+                                                        "date": dateString,
+                                                        "rbf": false,
+                                                        "txID": payment_hash,
+                                                        "replacedBy": "",
+                                                        "selfTransfer":false,
+                                                        "remove":false,
+                                                        "onchain":false,
+                                                        "isLightning":true,
+                                                        "sortDate":date])
+                                
+                                if let savedTxs = savedTxs, savedTxs.count > 0 {
+                                    for (s, savedTx) in savedTxs.enumerated() {
+                                        let savedTxStruct = TransactionStruct(dictionary: savedTx)
+                                        
+                                        if savedTxStruct.txid == payment_hash {
+                                            alreadySaved = true
+                                        }
+                                        
+                                        if s + 1 == savedTxs.count {
+                                            if !alreadySaved {
+                                                saveLocally(txid: payment_hash, date: date)
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    saveLocally(txid: payment_hash, date: date)
+                                }
+                            }
+                            
+                            if i + 1 == payments.count {
+                                arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
+                                completion((arrayToReturn, nil))
+                            }
                         }
                     }
                 }
