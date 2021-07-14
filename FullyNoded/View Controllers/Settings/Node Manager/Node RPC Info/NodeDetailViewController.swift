@@ -126,11 +126,17 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     
     @IBAction func exportNode(_ sender: Any) {
         if onionAddressField.text != "" && rpcPassword.text != "" && rpcUserField.text != "" {
-            DispatchQueue.main.async { [unowned vc = self] in
-                vc.performSegue(withIdentifier: "segueToExportNode", sender: vc)
-            }
+            segueToExport()
+        } else if onionAddressField.text != "" && macaroonField.text != "" {
+            segueToExport()
         } else {
-            showAlert(vc: self, title: "Ooops", message: "You can not export something that does not exist")
+            showAlert(vc: self, title: "Incomplete node creds.", message: "This button is for sharing your nodes quick connect or lndconnect QR code so trusted others can use your node.")
+        }
+    }
+    
+    private func segueToExport() {
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "segueToExportNode", sender: vc)
         }
     }
     
@@ -300,19 +306,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         tapGesture.numberOfTapsRequired = 1
         view.addGestureRecognizer(tapGesture)
     }
-    
-//    private func hideValues(node: NodeStruct) {
-//        if node.macaroon != nil {
-//            DispatchQueue.main.async { [weak self] in
-//                guard let self = self else { return }
-//
-//                self.rpcUserField.alpha = 0
-//                self.rpcPassword.alpha = 0
-//                self.passwordHeader.alpha = 0
-//                self.usernameHeader.alpha = 0
-//            }
-//        }
-//    }
     
     func loadValues() {
         
@@ -580,20 +573,32 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         if segue.identifier == "segueToExportNode" {
             if let vc = segue.destination as? QRDisplayerViewController {
                 var prefix = "btcrpc"
-                if isLightning {
+                
+                if onionAddressField.text!.hasSuffix(":8080") {
                     prefix = "clightning-rpc"
+                    
+                    if macaroonField.text != "" {
+                        prefix = "lndconnect"
+                    }
                 }
-                if isHost {
+                
+                if isHost && !onionAddressField.text!.hasSuffix(":8080") {
                     vc.text = "\(prefix)://\(rpcUserField.text ?? ""):\(rpcPassword.text ?? "")@\(hostname!):11221/?label=\(nodeLabel.text?.replacingOccurrences(of: " ", with: "%20") ?? "")"
                     vc.headerText = "Quick Connect - Remote Control"
                     vc.descriptionText = "Fully Noded macOS hosts a secure hidden service for your node which can be used to remotely connect to it.\n\nSimply scan this QR with your iPhone or iPad using the Fully Noded iOS app and connect to your node remotely from anywhere in the world!"
                     isHost = false
                     vc.headerIcon = UIImage(systemName: "antenna.radiowaves.left.and.right")
                     
-                } else {
+                } else if self.selectedNode?["macaroon"] == nil {
                     vc.text = "\(prefix)://\(rpcUserField.text ?? ""):\(rpcPassword.text ?? "")@\(onionAddressField.text ?? "")/?label=\(nodeLabel.text?.replacingOccurrences(of: " ", with: "%20") ?? "")"
                     vc.headerText = "QuickConnect QR"
-                    vc.descriptionText = "You can share this QR with trusted others who you want to share your node with, they will have access to all wallets on your node! If you want to maintain privacy and share your node you can look at running Bitcoin Knots which allows you to configure specific wallets to be accessed by specific rpcuser's."
+                    vc.descriptionText = "You can share this QR with trusted others who you want to share your node with, they will have access to all wallets on your node!"
+                    vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
+                } else {
+                    //its LND
+                    vc.text = "\(prefix)://\(onionAddressField.text ?? "")?cert=\(certField.text ?? "")&macaroon=\(macaroonField.text ?? "")"
+                    vc.headerText = "LNDConnect QR"
+                    vc.descriptionText = "You can share this QR with trusted others who you want to share your node with, they will have access to all wallets on your node!"
                     vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
                 }
                 

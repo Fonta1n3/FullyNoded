@@ -22,12 +22,11 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         navigationController?.delegate = self
         nodeTable.tableFooterView = UIView(frame: .zero)
+        addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addNode))
+        editButton = UIBarButtonItem(barButtonSystemItem: .edit, target: self, action: #selector(editNodes))
         addButton.tintColor = .systemTeal
         editButton.tintColor = .systemTeal
-        addButton = UIBarButtonItem.init(barButtonSystemItem: .add, target: self, action: #selector(addNode))
-        editButton = UIBarButtonItem.init(barButtonSystemItem: .edit, target: self, action: #selector(editNodes))
         self.navigationItem.setRightBarButtonItems([addButton, editButton], animated: true)
-        
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -102,8 +101,6 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         background.layer.cornerRadius = 8
         
         let nodeStruct = NodeStruct(dictionary: nodeArray[indexPath.section])
-        //let dec = decryptedValue(nodeStruct.onionAddress!)
-        //let abbreviated = reduced(label: dec)
         
         if !nodeStruct.uncleJim {
             label.text = nodeStruct.label
@@ -134,24 +131,6 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         return cell
     }
     
-//    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-//        let header = UIView()
-//        header.backgroundColor = UIColor.clear
-//        header.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 50)
-//        let textLabel = UILabel()
-//        textLabel.textAlignment = .left
-//        textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
-//        textLabel.textColor = .white
-//        textLabel.frame = CGRect(x: 0, y: 0, width: 400, height: 50)
-//        textLabel.text =  nodeArray[section]["label"] as? String ?? "No Label"
-//        header.addSubview(textLabel)
-//        return header
-//    }
-//
-//    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-//        return 50
-//    }
-    
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 54
     }
@@ -173,13 +152,16 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     @objc func editNodes() {
         nodeTable.setEditing(!nodeTable.isEditing, animated: true)
+        
         if nodeTable.isEditing {
             editButton = UIBarButtonItem(title: "Done", style: .plain, target: self, action: #selector(editNodes))
-            
         } else {
             editButton = UIBarButtonItem(title: "Edit", style: .plain, target: self, action: #selector(editNodes))
-            
         }
+        
+        addButton.tintColor = .systemTeal
+        editButton.tintColor = .systemTeal
+        
         self.navigationItem.setRightBarButtonItems([addButton, editButton], animated: true)
     }
     

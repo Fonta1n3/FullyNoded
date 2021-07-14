@@ -179,7 +179,7 @@ public extension Data {
     }
     
     var urlSafeB64String: String {
-        return self.base64EncodedString().replacingOccurrences(of: "/", with: "_").replacingOccurrences(of: "=", with: "")
+        return self.base64EncodedString().replacingOccurrences(of: "/", with: "_").replacingOccurrences(of: "=", with: "").replacingOccurrences(of: "+", with: "-")
     }
          
 }

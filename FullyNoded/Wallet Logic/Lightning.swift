@@ -11,8 +11,6 @@ import Foundation
 class Lightning {
     
     class func connect(amount: Int, id: String, ip: String?, port: String?, completion: @escaping ((result: NSDictionary?, errorMessage: String?)) -> Void) {
-        //let param = "\(id)@\(ip):\(port ?? "9735")"
-        
         var param = "\(id)"
         
         if let ip = ip {
