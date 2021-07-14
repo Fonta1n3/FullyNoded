@@ -65,11 +65,7 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            var alertStyle = UIAlertController.Style.actionSheet
-            
-            if (UIDevice.current.userInterfaceIdiom == .pad) {
-                alertStyle = UIAlertController.Style.alert
-            }
+            let alertStyle = UIAlertController.Style.alert
             
             let alert = UIAlertController(title: "No lightning nodes added yet.", message: "You can add the node credentials manually or scan a QR code.", preferredStyle: alertStyle)
             
@@ -99,14 +95,18 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
                 return
             }
             
+            var lightningNode:NodeStruct?
+            
             for (i, node) in nodes.enumerated() {
-                let ns = NodeStruct(dictionary: node)
+                let ns = NodeStruct(dictionary: node)                
                 
-                if ns.isLightning {
+                if ns.isLightning && ns.isActive {
+                    lightningNode = ns
                     self.activeNode = node
-                    completion(ns)
-                } else if i + 1 == nodes.count {
-                    completion(nil)
+                }
+                
+                if i + 1 == nodes.count {
+                    completion(lightningNode)
                 }
             }
         }

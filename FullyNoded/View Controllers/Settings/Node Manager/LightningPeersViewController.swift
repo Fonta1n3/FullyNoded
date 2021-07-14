@@ -478,7 +478,7 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
                 vc.onAddressDoneBlock = { url in
                     if url != nil {
                         let arr = url!.split(separator: "@")
-                        if arr.count > 0 {
+                        if arr.count > 1 {
                             let arr1 = "\(arr[1])".split(separator: ":")
                             let id = "\(arr[0])"
                             let ip = "\(arr1[0])"
@@ -486,6 +486,8 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
                                 let port = "\(arr1[1])"
                                 self.addPeer(id: id, ip: ip, port: port)
                             }
+                        } else {
+                            showAlert(vc: self, title: "Incomplete URI", message: "In order to connect to a peer we need a URI not just a public key.")
                         }
                     }
                 }

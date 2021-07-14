@@ -163,14 +163,14 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
-    private func openChannelCL(amount: Int, id: String, ip: String, port: String?) {
+    private func openChannelCL(amount: Int, id: String, ip: String?, port: String?) {
         Lightning.connect(amount: amount, id: id, ip: ip, port: port ?? "9735") { [weak self] (result, errorMessage) in
             guard let self = self else { return }
             
             self.spinner.removeConnectingView()
             
             guard let result = result, let success = result["commitments_secured"] as? Bool else {
-                showAlert(vc: self, title: "Ooops something did not go quite right", message: errorMessage ?? "unknown error connecting and funding that peer/channel")
+                showAlert(vc: self, title: "There was an issue.", message: errorMessage ?? "Unknown error connecting and funding that peer/channel.")
                 return
             }
             
@@ -213,7 +213,11 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
                     
                     guard arr1.count > 0 else { return }
                     
-                    let port = "\(arr1[1])"
+                    var port = "9735"
+                    
+                    if arr1.count >= 2 {
+                        port = "\(arr1[1])"
+                    }
                     
                     self.addChannel(id: id, ip: ip, port: port)
                 }

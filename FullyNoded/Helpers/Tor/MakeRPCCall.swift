@@ -30,7 +30,7 @@ class MakeRPCCall {
             var activeNode: [String:Any]?
             
             for node in nodes {
-                if let isActive = node["isActive"] as? Bool {
+                if let isActive = node["isActive"] as? Bool, let isLightning = node["isLightning"] as? Bool, !isLightning {
                     if isActive {
                         activeNode = node
                     }

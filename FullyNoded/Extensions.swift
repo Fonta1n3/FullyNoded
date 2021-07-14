@@ -177,6 +177,10 @@ public extension Data {
         b.append(contentsOf: self)
         return b
     }
+    
+    var urlSafeB64String: String {
+        return self.base64EncodedString().replacingOccurrences(of: "/", with: "_").replacingOccurrences(of: "=", with: "")
+    }
          
 }
 

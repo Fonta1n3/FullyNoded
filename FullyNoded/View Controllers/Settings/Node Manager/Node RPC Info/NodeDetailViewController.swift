@@ -20,9 +20,11 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     var isHost = Bool()
     var hostname: String?
     let imagePicker = UIImagePickerController()
-    var alertStyle = UIAlertController.Style.actionSheet
+    var alertStyle = UIAlertController.Style.alert
     var scanNow = false
     
+    @IBOutlet weak var certField: UITextField!
+    @IBOutlet weak var macaroonField: UITextField!
     @IBOutlet weak var passwordHeader: UILabel!
     @IBOutlet weak var usernameHeader: UILabel!
     @IBOutlet weak var scanQROutlet: UIBarButtonItem!
@@ -33,7 +35,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     @IBOutlet var rpcLabel: UILabel!
     @IBOutlet var saveButton: UIButton!
     @IBOutlet weak var onionAddressField: UITextField!
-    @IBOutlet weak var deleteLightningOutlet: UIButton!
     @IBOutlet weak var addressHeaderOutlet: UILabel!
     
     override func viewDidLoad() {
@@ -48,20 +49,13 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         onionAddressField.isSecureTextEntry = false
         saveButton.clipsToBounds = true
         saveButton.layer.cornerRadius = 8
+        header.text = "Node Credentials"
+        
         if isLightning {
             addressHeaderOutlet.text = "Address: (xxx.onion:8080 or 127.0.0.1:8080)"
-            if selectedNode != nil {
-                deleteLightningOutlet.alpha = 1
-            }
-            header.text = "Lightning Node"
         } else {
             addressHeaderOutlet.text = "Address: (xxx.onion:8332 or xxx.127.0.0.1:8332)"
-            deleteLightningOutlet.alpha = 0
-            header.text = "Bitcoin Core Node"
-        }
-        
-        if (UIDevice.current.userInterfaceIdiom == .pad) {
-          alertStyle = UIAlertController.Style.alert
+            
         }
     }
     
@@ -122,46 +116,6 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         }
     }
     
-    private func deleteLightningNodeNow() {
-        if selectedNode != nil {
-            let nodestr = NodeStruct(dictionary: selectedNode!)
-            let id = nodestr.id
-            CoreDataService.deleteEntity(id: id!, entityName: .newNodes) { [unowned vc = self] (success) in
-                if success {
-                    vc.selectedNode = nil
-                    vc.createNew = true
-                    DispatchQueue.main.async { [unowned vc = self] in
-                        vc.nodeLabel.text = ""
-                        vc.onionAddressField.text = ""
-                        vc.rpcPassword.text = ""
-                        vc.rpcUserField.text = ""
-                        vc.navigationController?.popToRootViewController(animated: true)
-                    }
-                }
-            }
-        }
-    }
-    
-    private func promptToDeleteLightningNode() {
-        DispatchQueue.main.async { [weak self] in
-            var alertStyle = UIAlertController.Style.actionSheet
-            if (UIDevice.current.userInterfaceIdiom == .pad) {
-              alertStyle = UIAlertController.Style.alert
-            }
-            let alert = UIAlertController(title: "Delete lightning node?", message: "You will no longer be able to access your lightning node!", preferredStyle: alertStyle)
-            alert.addAction(UIAlertAction(title: "Delete", style: .destructive, handler: { [weak self] action in
-                self?.deleteLightningNodeNow()
-            }))
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = self?.view
-            self?.present(alert, animated: true) {}
-        }
-    }
-    
-    @IBAction func deleteLightningNode(_ sender: Any) {
-        promptToDeleteLightningNode()
-    }
-    
     @IBAction func goManageLightning(_ sender: Any) {
         if isLightning {
             DispatchQueue.main.async { [unowned vc = self] in
@@ -189,6 +143,13 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         if createNew || selectedNode == nil {
             
             newNode["id"] = UUID()
+            
+            var isLightning = false
+            
+            if onionAddressField.text!.hasSuffix(":8080") {
+                isLightning = true
+            }
+            
             newNode["isLightning"] = isLightning
             
             if nodeLabel.text != "" {
@@ -205,18 +166,30 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                 newNode["rpcpassword"] = enc
             }
             
+            if macaroonField.text != "" {
+                guard let macaroonData = try? Data.decodeUrlSafeBase64(macaroonField.text!) else { return }
+                
+                guard let encryptedMacaroonHex = Crypto.encrypt(macaroonData.hexString.dataUsingUTF8StringEncoding) else { return }
+                
+                newNode["macaroon"] = encryptedMacaroonHex
+            }
+            
+            if certField.text != "" {
+                guard let certData = try? Data.decodeUrlSafeBase64(certField.text!) else { return }
+                
+                guard let encryptedCert = Crypto.encrypt(certData) else { return }
+                
+                newNode["cert"] = encryptedCert
+            }
+            
             guard let encryptedOnionAddress = encryptedValue((onionAddressField.text)!.dataUsingUTF8StringEncoding)  else { return }
             newNode["onionAddress"] = encryptedOnionAddress
             
-            if nodeLabel.text != "" && rpcPassword.text != "" && rpcUserField.text != "" && onionAddressField.text != "" {
+            func save() {
                 CoreDataService.retrieveEntity(entityName: .newNodes) { [unowned vc = self] nodes in
                     if nodes != nil {
-                        if !vc.isLightning {
-                            if nodes!.count == 0 {
-                                vc.newNode["isActive"] = true
-                            } else {
-                                vc.newNode["isActive"] = false
-                            }
+                        if nodes!.count == 0 {
+                            vc.newNode["isActive"] = true
                         } else {
                             vc.newNode["isActive"] = false
                         }
@@ -230,7 +203,12 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                         }
                     }
                 }
-                
+            }
+            
+            if nodeLabel.text != "" && rpcPassword.text != "" && rpcUserField.text != "" && onionAddressField.text != "" {
+                save()
+            } else if nodeLabel.text != "" && onionAddressField.text != "" && macaroonField.text != "" {
+                save()
             } else {
                 
                 displayAlert(viewController: self,
@@ -272,6 +250,39 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             }
             
             let decryptedAddress = (onionAddressField.text)!.dataUsingUTF8StringEncoding
+            
+            if onionAddressField.text!.hasSuffix(":8080") {
+                CoreDataService.update(id: id, keyToUpdate: "isLightning", newValue: true, entity: .newNodes) { success in
+                    if !success {
+                        displayAlert(viewController: self, isError: true, message: "error updating isLightning")
+                    }
+                }
+            }
+            
+            if macaroonField.text != "" {
+                guard let macaroonData = try? Data.decodeUrlSafeBase64(macaroonField.text!) else { return }
+                
+                guard let encryptedMacaroonHex = Crypto.encrypt(macaroonData.hexString.dataUsingUTF8StringEncoding) else { return }
+                
+                CoreDataService.update(id: id, keyToUpdate: "macaroon", newValue: encryptedMacaroonHex, entity: .newNodes) { success in
+                    if !success {
+                        displayAlert(viewController: self, isError: true, message: "error updating macaroon")
+                    }
+                }
+            }
+            
+            if certField.text != "" {
+                guard let certData = try? Data.decodeUrlSafeBase64(certField.text!) else { return }
+                
+                guard let encryptedCert = Crypto.encrypt(certData) else { return }
+                
+                CoreDataService.update(id: id, keyToUpdate: "cert", newValue: encryptedCert, entity: .newNodes) { success in
+                    if !success {
+                        displayAlert(viewController: self, isError: true, message: "error updating cert")
+                    }
+                }
+            }
+            
             guard let encryptedOnionAddress = encryptedValue(decryptedAddress) else { return }
             
             CoreDataService.update(id: id, keyToUpdate: "onionAddress", newValue: encryptedOnionAddress, entity: .newNodes) { [unowned vc = self] success in
@@ -290,18 +301,18 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         view.addGestureRecognizer(tapGesture)
     }
     
-    private func hideValues(node: NodeStruct) {
-        if node.macaroon != nil {
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                self.rpcUserField.alpha = 0
-                self.rpcPassword.alpha = 0
-                self.passwordHeader.alpha = 0
-                self.usernameHeader.alpha = 0
-            }
-        }
-    }
+//    private func hideValues(node: NodeStruct) {
+//        if node.macaroon != nil {
+//            DispatchQueue.main.async { [weak self] in
+//                guard let self = self else { return }
+//
+//                self.rpcUserField.alpha = 0
+//                self.rpcPassword.alpha = 0
+//                self.passwordHeader.alpha = 0
+//                self.usernameHeader.alpha = 0
+//            }
+//        }
+//    }
     
     func loadValues() {
         
@@ -313,42 +324,30 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         
         if selectedNode != nil {
             let node = NodeStruct(dictionary: selectedNode!)
-            
-            hideValues(node: node)
+            //hideValues(node: node)
             
             if node.id != nil {
                 
                 if node.label != "" {
-                    
                     nodeLabel.text = node.label
-                    
                 } else {
-                    
                     nodeLabel.attributedPlaceholder = NSAttributedString(string: "Give your node a label",
                                                                          attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
-                    
                 }
                 
                 if node.rpcuser != nil {
-                    
                     rpcUserField.text = decryptedValue(node.rpcuser!)
-                    
                 } else {
-                    
                     rpcUserField.attributedPlaceholder = NSAttributedString(string: "rpcuser",
                                                                             attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
-                    
                 }
                 
                 if node.rpcpassword != nil {
-                    
                     rpcPassword.text = decryptedValue(node.rpcpassword!)
                     
                 } else {
-                    
                     rpcPassword.attributedPlaceholder = NSAttributedString(string: "rpcpassword",
                                                                            attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
-                    
                 }
                 
                 if let enc = node.onionAddress {
@@ -362,6 +361,17 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     
                     onionAddressField.attributedPlaceholder = NSAttributedString(string: placeHolder,
                                                                                  attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightText])
+                }
+                
+                if node.cert != nil {
+                    if let decryptedCert = Crypto.decrypt(node.cert!) {
+                        certField.text = decryptedCert.urlSafeB64String
+                    }
+                }
+                
+                if node.macaroon != nil {
+                    let hex = decryptedValue(node.macaroon!)
+                    macaroonField.text = Data(hexString: hex)!.urlSafeB64String
                 }
                 
             } else {
@@ -501,9 +511,31 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         for (i, node) in nodes.enumerated() {
             let str = NodeStruct(dictionary: node)
             let isActive = str.isActive
-            if isActive {
-                CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+            
+            if createNew {
+                let newNodeStr = NodeStruct(dictionary: self.newNode)
+                if isActive && newNodeStr.isLightning && str.isLightning {
+                    CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                }
+                
+                if isActive && !newNodeStr.isLightning && !str.isLightning {
+                    CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                }
+                
+            } else {
+                if selectedNode != nil {
+                    let selectedNodeStr = NodeStruct(dictionary: selectedNode!)
+                    
+                    if isActive && selectedNodeStr.isLightning && str.isLightning {
+                        CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                    }
+                    
+                    if isActive && !selectedNodeStr.isLightning && !str.isLightning {
+                        CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                    }
+                }
             }
+            
             if i + 1 == nodes.count {
                 if createNew {
                     let id = newNode["id"] as! UUID
@@ -512,7 +544,9 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
                     }
                 } else {
                     if selectedNode != nil {
-                        if let id = selectedNode!["id"] as? UUID {
+                        let selectedNodeStr = NodeStruct(dictionary: selectedNode!)
+                        
+                        if let id = selectedNodeStr.id {
                             CoreDataService.update(id: id, keyToUpdate: "isActive", newValue: true, entity: .newNodes) { success in
                                 completion()
                             }
@@ -579,12 +613,3 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
 }
-
-//fileprivate func convertFromUIImagePickerControllerInfoKeyDictionary(_ input: [UIImagePickerController.InfoKey: Any]) -> [String: Any] {
-//    return Dictionary(uniqueKeysWithValues: input.map {key, value in (key.rawValue, value)})
-//}
-//
-//// Helper function inserted by Swift 4.2 migrator.
-//fileprivate func convertFromUIImagePickerControllerInfoKey(_ input: UIImagePickerController.InfoKey) -> String {
-//    return input.rawValue
-//}

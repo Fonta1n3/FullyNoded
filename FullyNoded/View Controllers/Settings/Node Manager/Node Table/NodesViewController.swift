@@ -10,7 +10,6 @@ import UIKit
 
 class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UINavigationControllerDelegate {
     
-    var colors = [UIColor.systemIndigo, UIColor.systemOrange, UIColor.systemGreen, UIColor.systemBlue, UIColor.systemYellow, UIColor.systemPurple, UIColor.systemPink]
     var nodeArray = [[String:Any]]()
     var selectedIndex = Int()
     let ud = UserDefaults.standard
@@ -23,6 +22,8 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         navigationController?.delegate = self
         nodeTable.tableFooterView = UIView(frame: .zero)
+        addButton.tintColor = .systemTeal
+        editButton.tintColor = .systemTeal
         addButton = UIBarButtonItem.init(barButtonSystemItem: .add, target: self, action: #selector(addNode))
         editButton = UIBarButtonItem.init(barButtonSystemItem: .edit, target: self, action: #selector(editNodes))
         self.navigationItem.setRightBarButtonItems([addButton, editButton], animated: true)
@@ -41,7 +42,7 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 vc.nodeArray.removeAll()
                 for node in nodes! {
                     let nodeStr = NodeStruct(dictionary: node)
-                    if nodeStr.id != nil && !nodeStr.isLightning {
+                    if nodeStr.id != nil {
                         vc.nodeArray.append(node)
                     }
                 }
@@ -93,54 +94,63 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let background = cell.viewWithTag(3)!
         let icon = cell.viewWithTag(4) as! UIImageView
         let button = cell.viewWithTag(5) as! UIButton
+        
         button.restorationIdentifier = "\(indexPath.section)"
         button.addTarget(self, action: #selector(editNode(_:)), for: .touchUpInside)
+        
         background.clipsToBounds = true
         background.layer.cornerRadius = 8
         
         let nodeStruct = NodeStruct(dictionary: nodeArray[indexPath.section])
-        let dec = decryptedValue(nodeStruct.onionAddress!)
-        let abbreviated = reduced(label: dec)
+        //let dec = decryptedValue(nodeStruct.onionAddress!)
+        //let abbreviated = reduced(label: dec)
+        
         if !nodeStruct.uncleJim {
-            label.text = abbreviated
+            label.text = nodeStruct.label
         } else {
             label.text = "***shared node***"
         }
+        
         isActive.isOn = nodeArray[indexPath.section]["isActive"] as? Bool ?? false
         isActive.restorationIdentifier = "\(indexPath.section)"
         isActive.addTarget(self, action: #selector(setActiveNow(_:)), for: .touchUpInside)
+        
         if !isActive.isOn {
             label.textColor = .darkGray
         } else {
             label.textColor = .white
         }
+        
         icon.tintColor = .white
-        icon.image = UIImage(systemName: "desktopcomputer")
-        if nodeArray.count < 7 {
-            background.backgroundColor = colors[indexPath.section]
+        
+        if nodeStruct.isLightning {
+            icon.image = UIImage(systemName: "bolt")
+            background.backgroundColor = .systemOrange
         } else {
-            background.backgroundColor = colors.randomElement()
+            icon.image = UIImage(systemName: "link")
+            background.backgroundColor = .systemBlue
         }
+        
         return cell
     }
     
-    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let header = UIView()
-        header.backgroundColor = UIColor.clear
-        header.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 50)
-        let textLabel = UILabel()
-        textLabel.textAlignment = .left
-        textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
-        textLabel.textColor = .white
-        textLabel.frame = CGRect(x: 0, y: 0, width: 400, height: 50)
-        textLabel.text =  nodeArray[section]["label"] as? String ?? "No Label"
-        header.addSubview(textLabel)
-        return header
-    }
-    
-    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 50
-    }
+//    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+//        let header = UIView()
+//        header.backgroundColor = UIColor.clear
+//        header.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - 32, height: 50)
+//        let textLabel = UILabel()
+//        textLabel.textAlignment = .left
+//        textLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
+//        textLabel.textColor = .white
+//        textLabel.frame = CGRect(x: 0, y: 0, width: 400, height: 50)
+//        textLabel.text =  nodeArray[section]["label"] as? String ?? "No Label"
+//        header.addSubview(textLabel)
+//        return header
+//    }
+//
+//    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+//        return 50
+//    }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 54
@@ -209,22 +219,21 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         let selectedSwitch = selectedCell.viewWithTag(2) as! UISwitch
         
+        let nodeStr = NodeStruct(dictionary: nodeArray[index])
+        
         if index < nodeArray.count {
             
-            let str = NodeStruct(dictionary: nodeArray[index])
-            
-            CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: selectedSwitch.isOn, entity: .newNodes) { [unowned vc = self] success in
+            CoreDataService.update(id: nodeStr.id!, keyToUpdate: "isActive", newValue: selectedSwitch.isOn, entity: .newNodes) { [unowned vc = self] success in
                 if success {
+                    if !nodeStr.isLightning {
+                        vc.ud.removeObject(forKey: "walletName")
+                    }
                     
-                    vc.ud.removeObject(forKey: "walletName")
                     if vc.nodeArray.count == 1 {
                         vc.reloadTable()
                     }
-                    
                 } else {
-                    
                     displayAlert(viewController: vc, isError: true, message: "error updating node")
-                    
                 }
             }
             
@@ -234,7 +243,16 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                     
                     if i != index {
                         let str = NodeStruct(dictionary: node)
-                        CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                        
+                        if str.id != nodeStr.id {
+                            if !nodeStr.isLightning && !str.isLightning {
+                                CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                            }
+                            
+                            if nodeStr.isLightning && str.isLightning {
+                                CoreDataService.update(id: str.id!, keyToUpdate: "isActive", newValue: false, entity: .newNodes) { _ in }
+                            }
+                        }
                     }
                     
                     if i + 1 == nodeArray.count {
@@ -244,12 +262,16 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                                     vc.nodeArray.removeAll()
                                     for node in nodes! {
                                         let str = NodeStruct(dictionary: node)
-                                        if str.id != nil && !str.isLightning {
+                                        if str.id != nil {
                                             vc.nodeArray.append(node)
                                         }
                                     }
                                     vc.nodeTable.reloadData()
-                                    NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
+                                    
+                                    if !nodeStr.isLightning {
+                                        NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
+                                    }
+                                    
                                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                                 }
                             }
@@ -267,15 +289,13 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     func reloadTable() {
-        
         CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
-            
             if nodes != nil {
                 DispatchQueue.main.async { [unowned vc = self] in
                     vc.nodeArray.removeAll()
                     for node in nodes! {
                         let ns = NodeStruct(dictionary: node)
-                        if ns.id != nil && !ns.isLightning {
+                        if ns.id != nil {
                             vc.nodeArray.append(node)
                         }
                     }
@@ -303,8 +323,60 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     @IBAction func addNode(_ sender: Any) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let alertStyle = UIAlertController.Style.alert
+            
+            let alert = UIAlertController(title: "Scan QR or add manually?", message: "You can add the node credentials manually or scan a QR code.", preferredStyle: alertStyle)
+            
+            alert.addAction(UIAlertAction(title: "Add manually", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.segueToAddNodeManually()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Scan QR", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.segueToScanNode()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func segueToAddNodeManually() {
         DispatchQueue.main.async { [unowned vc = self] in
             vc.performSegue(withIdentifier: "segueToAddBitcoinCoreNode", sender: vc)
+        }
+    }
+    
+    private func segueToScanNode() {
+        DispatchQueue.main.async { [unowned vc = self] in
+            vc.performSegue(withIdentifier: "segueToScanAddNode", sender: vc)
+        }
+    }
+    
+    private func addBtcRpcQr(url: String) {
+        QuickConnect.addNode(uncleJim: false, url: url) { [weak self] (success, errorMessage) in
+            if success {
+                if !url.hasPrefix("clightning-rpc") && !url.hasPrefix("lndconnect:") {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        
+                        self.navigationController?.popViewController(animated: true)
+                        NotificationCenter.default.post(name: .refreshNode, object: nil, userInfo: nil)
+                    }
+                } else {
+                    self?.reloadTable()
+                }
+            } else {
+                displayAlert(viewController: self, isError: true, message: "Error adding that node: \(errorMessage ?? "unknown")")
+            }
         }
     }
     
@@ -338,6 +410,17 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
                                 vc.selectedNode = node
                             }
                         }
+                    }
+                }
+            }
+        }
+        
+        if segue.identifier == "segueToScanAddNode" {
+            if let vc = segue.destination as? QRScannerViewController {
+                vc.isQuickConnect = true
+                vc.onQuickConnectDoneBlock = { [unowned thisVc = self] url in
+                    if url != nil {
+                        thisVc.addBtcRpcQr(url: url!)
                     }
                 }
             }

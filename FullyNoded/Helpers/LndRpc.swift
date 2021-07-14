@@ -35,7 +35,7 @@ class LndRpc {
             var potentialLightningNode: [String:Any]?
                         
             for node in nodes {
-                if let isLightning = node["isLightning"] as? Bool, isLightning {
+                if let isLightning = node["isLightning"] as? Bool, isLightning, let isActive = node["isActive"] as? Bool, isActive {
                     if node["macaroon"] != nil {
                         potentialLightningNode = node
                     }
@@ -97,7 +97,7 @@ class LndRpc {
                 
                 request.httpMethod = "POST"
                 
-                if command == .payinvoice {
+                if command == .payinvoice, command == .connect {
                     request.timeoutInterval = 90
                 }
                 

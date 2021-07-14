@@ -28,7 +28,7 @@ class LightningRPC {
             var potentialLightningNode: [String:Any]?
             
             for node in nodes {
-                if let isLightning = node["isLightning"] as? Bool, isLightning {
+                if let isLightning = node["isLightning"] as? Bool, isLightning, let isActive = node["isActive"] as? Bool, isActive {
                     potentialLightningNode = node
                 }
             }
@@ -62,12 +62,15 @@ class LightningRPC {
             let loginData = loginString.data(using: String.Encoding.utf8)!
             let base64LoginString = loginData.base64EncodedString()
             
-            if method == .rebalance {
+            switch method {
+            case .rebalance:
                 request.timeoutInterval = 120
-            } else if method == .recvmsg {
+            case .recvmsg:
                 request.timeoutInterval = 180
-            } else {
-                request.timeoutInterval = 60
+            case .connect:
+                request.timeoutInterval = 90
+            default:
+                break
             }
             
             request.addValue("application/json", forHTTPHeaderField: "Accept")

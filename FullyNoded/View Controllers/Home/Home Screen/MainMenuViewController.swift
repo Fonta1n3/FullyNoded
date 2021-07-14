@@ -221,7 +221,7 @@ class MainMenuViewController: UIViewController {
         var activeNode:[String:Any]?
         for (i, node) in nodes.enumerated() {
             let nodeStruct = NodeStruct.init(dictionary: node)
-            if nodeStruct.isActive {
+            if nodeStruct.isActive && !nodeStruct.isLightning {
                 activeNode = node
                 self.activeNode = node
             }

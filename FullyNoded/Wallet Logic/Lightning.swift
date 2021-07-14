@@ -10,8 +10,19 @@ import Foundation
 
 class Lightning {
     
-    class func connect(amount: Int, id: String, ip: String, port: String?, completion: @escaping ((result: NSDictionary?, errorMessage: String?)) -> Void) {
-        let param = "\(id)@\(ip):\(port ?? "9735")"
+    class func connect(amount: Int, id: String, ip: String?, port: String?, completion: @escaping ((result: NSDictionary?, errorMessage: String?)) -> Void) {
+        //let param = "\(id)@\(ip):\(port ?? "9735")"
+        
+        var param = "\(id)"
+        
+        if let ip = ip {
+            param += "@\(ip)"
+        }
+        
+        if let port = port {
+            param += ":\(port)"
+        }
+        
         let commandId = UUID()
         LightningRPC.command(id: commandId, method: .connect, param: "\(param)") { (uuid, response, errorDesc) in
             if commandId == uuid {
