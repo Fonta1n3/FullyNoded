@@ -54,7 +54,6 @@ log-file=/home/you/.lightning/lightning.log
 plugin=/home/you/.lightning/plugins/c-lightning-http-plugin/target/release/c-lightning-http-plugin
 log-level=debug:plugin
 http-pass=aPasswordYouWillSoonCreate
-http-port=1312
 ```
 
 ### Create the log file
