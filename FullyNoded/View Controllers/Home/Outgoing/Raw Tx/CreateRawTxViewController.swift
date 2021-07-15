@@ -30,6 +30,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     var index = 0
     var invoice:[String:Any]?
     var invoiceString = ""
+    let fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
     
     @IBOutlet weak private var miningTargetLabel: UILabel!
     @IBOutlet weak private var satPerByteLabel: UILabel!
@@ -95,6 +96,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         slider.addTarget(self, action: #selector(setFee), for: .allEvents)
         slider.maximumValue = 2 * -1
         slider.minimumValue = 432 * -1
+        
+        segmentedControlOutlet.setTitle(fiatCurrency.lowercased(), forSegmentAt: 2)
         
         if ud.object(forKey: "feeTarget") != nil {
             let numberOfBlocks = ud.object(forKey: "feeTarget") as! Int
@@ -303,7 +306,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             guard let fxRate = fxRate else { return }
             let btcamount = rounded(number: amount / fxRate)
             sats = Int(btcamount * 100000000.0)
-            title = "Withdraw $\(dblAmount) USD (\(sats) sats) from lightning wallet to \(address)?"
+            title = "Withdraw $\(dblAmount) \(fiatCurrency) (\(sats) sats) from lightning wallet to \(address)?"
             
         } else if isSats {
             sats = Int(dblAmount)
@@ -489,12 +492,22 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 guard let self = self else { return }
                 
                 self.fxRate = fxrate
-                self.fxRateLabel.text = "$\(fxrate.withCommas()) / btc"
-                self.denominationImage.image = UIImage(systemName: "dollarsign.circle")
+                self.fxRateLabel.text = fxrate.exchangeRate
+                switch self.fiatCurrency {
+                case "USD":
+                    self.denominationImage.image = UIImage(systemName: "dollarsign.circle")
+                case "GBP":
+                    self.denominationImage.image = UIImage(systemName: "sterlingsign.circle")
+                case "EUR":
+                    self.denominationImage.image = UIImage(systemName: "eurosign.circle")
+                default:
+                    break
+                }
+                
                 self.amountIcon.backgroundColor = .systemBlue
                 
                 if UserDefaults.standard.object(forKey: "fiatAlert") == nil {
-                    showAlert(vc: self, title: "$USD denomination", message: "You may enter an amount denominated in USD, we will calculate the equivalent amount in BTC based on the current exchange rate of $\(fxrate.withCommas())")
+                    showAlert(vc: self, title: "\(self.fiatCurrency) denomination", message: "You may enter an amount denominated in \(self.fiatCurrency), we will calculate the equivalent amount in BTC based on the current exchange rate of \(fxrate.exchangeRate)")
                     UserDefaults.standard.set(true, forKey: "fiatAlert")
                 }
             }
@@ -1204,7 +1217,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         FiatConverter.sharedInstance.getFxRate { [weak self] fxRate in
             guard let self = self else { return }
             
-            var dict:[String:Any] = ["txid":hash, "id":UUID(), "memo":memo, "date":Date(), "label":"Fully Noded ⚡️ payment"]
+            var dict:[String:Any] = ["txid":hash, "id":UUID(), "memo":memo, "date":Date(), "label":"Fully Noded ⚡️ payment", "fiatCurrency": self.fiatCurrency]
             
             self.spinner.removeConnectingView()
             
@@ -1219,7 +1232,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             
             let tit = "Lightning payment sent ⚡️"
             
-            let mess = "\n\(sats) sats / $\((sats.satsToBtcDouble * originRate).avoidNotation) USD sent.\n\nFor a fee of \(fee!.avoidNotation) sats / $\((fee!.satsToBtcDouble * originRate).avoidNotation) USD."
+            let mess = "\n\(sats) sats / \((sats.satsToBtcDouble * originRate).fiatString) sent.\n\nFor a fee of \(fee!.avoidNotation) sats / \((fee!.satsToBtcDouble * originRate).fiatString)."
             
             showAlert(vc: self, title: tit, message: mess)
             

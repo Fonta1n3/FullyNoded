@@ -521,7 +521,9 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
         FiatConverter.sharedInstance.getFxRate { [weak self] fxRate in
             guard let self = self else { return }
             
-            var dict:[String:Any] = ["txid":hash, "id":UUID(), "memo":memo, "date":Date(), "label":"Fully Noded Rebalance ⚡️"]
+            let fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+            
+            var dict:[String:Any] = ["txid":hash, "id":UUID(), "memo":memo, "date":Date(), "label":"Fully Noded Rebalance ⚡️", "fiatCurrency": fiatCurrency]
             
             self.spinner.removeConnectingView()
             
@@ -536,7 +538,7 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
             
             dict["originFxRate"] = originRate
                         
-            let mess = "\n\(sats) sats / $\((sats.satsToBtcDouble * originRate).avoidNotation) USD rebalanced."
+            let mess = "\n\(sats) sats / \((sats.satsToBtcDouble * originRate).balanceText) rebalanced."
             
             showAlert(vc: self, title: tit, message: mess)
             

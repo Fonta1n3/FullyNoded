@@ -209,28 +209,24 @@ class KeySendViewController: UIViewController, UITextFieldDelegate {
         FiatConverter.sharedInstance.getFxRate { fxRate in
             self.spinner.removeConnectingView()
             
-            guard let originRate = fxRate else {
-                let dict = [
-                    "txid":hash,
-                    "id":UUID(),
-                    "memo":memo,
-                    "date":Date(),
-                    "label":"Fully Noded Keysend",
-                ] as [String:Any]
-                
-                CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in }
-                showAlert(vc: self, title: "Lightning payment sent ⚡️", message: "\(sats) sats sent to \(self.peerName)")
-                return
-            }
+            let fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
             
-            let dict = [
+            var dict:[String:Any] = [
                 "txid":hash,
                 "id":UUID(),
                 "memo":memo,
                 "date":Date(),
                 "label":"Fully Noded Keysend",
-                "originFxRate": originRate
-            ] as [String:Any]
+                "fiatCurrency": fiatCurrency
+            ]
+            
+            guard let originRate = fxRate else {
+                CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in }
+                showAlert(vc: self, title: "Lightning payment sent ⚡️", message: "\(sats) sats sent to \(self.peerName)")
+                return
+            }
+            
+            dict["originFxRate"] = originRate
             
             CoreDataService.saveEntity(dict: dict, entityName: .transactions) { _ in }
             showAlert(vc: self, title: "Lightning payment sent ⚡️", message: "\(sats) sats sent to \(self.peerName)")

@@ -83,7 +83,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func esploraCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let esploraCell = settingsTable.dequeueReusableCell(withIdentifier: "esploraCell", for: indexPath)
+        let esploraCell = settingsTable.dequeueReusableCell(withIdentifier: "toggleCell", for: indexPath)
         configureCell(esploraCell)
         
         let label = esploraCell.viewWithTag(1) as! UILabel
@@ -117,7 +117,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func blockchainInfoCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let blockchainInfoCell = settingsTable.dequeueReusableCell(withIdentifier: "esploraCell", for: indexPath)
+        let blockchainInfoCell = settingsTable.dequeueReusableCell(withIdentifier: "toggleCell", for: indexPath)
         configureCell(blockchainInfoCell)
         
         let label = blockchainInfoCell.viewWithTag(1) as! UILabel
@@ -150,7 +150,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func coinDeskCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let coinDeskCell = settingsTable.dequeueReusableCell(withIdentifier: "esploraCell", for: indexPath)
+        let coinDeskCell = settingsTable.dequeueReusableCell(withIdentifier: "toggleCell", for: indexPath)
         configureCell(coinDeskCell)
         
         let label = coinDeskCell.viewWithTag(1) as! UILabel
@@ -182,6 +182,51 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         return coinDeskCell
     }
     
+    func currencyCell(_ indexPath: IndexPath, _ currency: String) -> UITableViewCell {
+        let currencyCell = settingsTable.dequeueReusableCell(withIdentifier: "toggleCell", for: indexPath)
+        configureCell(currencyCell)
+        
+        let label = currencyCell.viewWithTag(1) as! UILabel
+        label.textColor = .lightGray
+        label.adjustsFontSizeToFitWidth = true
+        
+        let background = currencyCell.viewWithTag(2)!
+        background.clipsToBounds = true
+        background.layer.cornerRadius = 8
+        
+        label.text = currency
+        
+        let icon = currencyCell.viewWithTag(3) as! UIImageView
+        icon.tintColor = .white
+        
+        let toggle = currencyCell.viewWithTag(4) as! UISwitch
+        toggle.restorationIdentifier = currency
+        toggle.addTarget(self, action: #selector(toggleCurrency(_:)), for: .valueChanged)
+        
+        let currencyToUse = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+        
+        if currencyToUse == currency {
+            background.backgroundColor = .systemGreen
+        } else {
+            background.backgroundColor = .systemGray
+        }
+        
+        toggle.setOn(currencyToUse == currency, animated: true)
+        
+        switch currency {
+        case "USD":
+            icon.image = UIImage(systemName: "dollarsign.circle")
+        case "GBP":
+            icon.image = UIImage(systemName: "sterlingsign.circle")
+        case "EUR":
+            icon.image = UIImage(systemName: "eurosign.circle")
+        default:
+            break
+        }
+        
+        return currencyCell
+    }
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch indexPath.section {
         case 0, 1, 2:
@@ -195,6 +240,18 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                 return blockchainInfoCell(indexPath)
             } else {
                 return coinDeskCell(indexPath)
+            }
+            
+        case 5:
+            switch indexPath.row {
+            case 0:
+                return currencyCell(indexPath, "USD")
+            case 1:
+                return currencyCell(indexPath, "GBP")
+            case 2:
+                return currencyCell(indexPath, "EUR")
+            default:
+                return UITableViewCell()
             }
             
         default:
@@ -227,20 +284,26 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         case 4:
             textLabel.text = "Exchange Rate API"
             
+        case 5:
+            textLabel.text = "Fiat Currency"
+            
         default:
             break
         }
+        
         header.addSubview(textLabel)
         return header
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 5
+        return 6
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if section == 4 || section == 1 {
             return 2
+        } else if section == 5 {
+            return 3
         } else {
             return 1
         }
@@ -286,6 +349,22 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         default:
             break
             
+        }
+    }
+    
+    @objc func toggleCurrency(_ sender: UISwitch) {
+        let currency = sender.restorationIdentifier!
+        
+        if sender.isOn {
+            UserDefaults.standard.setValue(currency, forKey: "currency")
+        } else {
+            UserDefaults.standard.setValue("USD", forKey: "currency")
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.settingsTable.reloadData()
         }
     }
     

@@ -4945,7 +4945,7 @@ You can upload the wallets.fullynoded file that was created when you made the ba
                                         </tableViewCellContentView>
                                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="esploraCell" rowHeight="54" id="EMG-Xr-7Ch">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="toggleCell" rowHeight="54" id="EMG-Xr-7Ch">
                                         <rect key="frame" x="16" y="109.5" width="343" height="54"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="EMG-Xr-7Ch" id="6yr-Fa-gT8">
@@ -7579,10 +7579,10 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="LMu-1F-VvA"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="hqP-uS-RkV"/>
+        <segue reference="CQp-9r-70w"/>
         <segue reference="8MS-xS-DMP"/>
         <segue reference="yAt-Ra-aPH"/>
-        <segue reference="eLW-PX-CgI"/>
+        <segue reference="7PS-EL-3d2"/>
         <segue reference="j10-wi-hpr"/>
         <segue reference="qmy-fM-U4p"/>
     </inferredMetricsTieBreakers>

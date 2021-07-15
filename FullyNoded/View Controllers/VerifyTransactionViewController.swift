@@ -464,13 +464,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         transaction["memo"] = memoText
         transaction["date"] = Date()
         transaction["txid"] = txid
+        transaction["fiatCurrency"] = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
         
         if let fx = fxRate {
             transaction["originFxRate"] = fx
-        }
-        
-        if let w = self.wallet {
-            transaction["walletId"] = w.id
         }
         
         CoreDataService.saveEntity(dict: transaction, entityName: .transactions) { _ in }
@@ -1099,7 +1096,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         guard let fxRate = fxRate else { return "error getting fiat rate" }
         let fiat = fxRate * btc
         let roundedFiat = Double(round(100*fiat)/100)
-        return "$\(roundedFiat.withCommas())"
+        return roundedFiat.fiatString
     }
     
     func loadTableData() {

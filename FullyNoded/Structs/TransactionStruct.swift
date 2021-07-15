@@ -15,17 +15,17 @@ public struct TransactionStruct: CustomStringConvertible, Codable {
     let txid: String
     let fxRate: Double?
     let memo: String
-    //let walletId: UUID?
     let date: Date?
+    let fiatCurrency:String
     
     init(dictionary: [String: Any]) {
         id = dictionary["id"] as? UUID
         label = dictionary["label"] as? String ?? "no transaction label"
         fxRate = dictionary["originFxRate"] as? Double
         txid = dictionary["txid"] as? String ?? ""
-        //walletId = dictionary["walletId"] as? UUID
         memo = dictionary["memo"] as? String ?? "no transaction memo"
         date = dictionary["date"] as? Date
+        fiatCurrency = dictionary["fiatCurrency"] as? String ?? "USD"
     }
     
     public var description: String {

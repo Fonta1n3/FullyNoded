@@ -218,6 +218,21 @@ public extension Double {
     }
     
     var balanceText: String {
+        let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+        
+        var symbol = "$"
+        
+        switch currency {
+        case "USD":
+            symbol = "$"
+        case "GBP":
+            symbol = "£"
+        case "EUR":
+            symbol = "€"
+        default:
+            break
+        }
+        
         var dbl = self
         
         if dbl < 0 {
@@ -225,10 +240,48 @@ public extension Double {
         }
         
         if dbl < 1.0 {
-            return "$\(dbl.avoidNotation) USD"
+            return "\(symbol)\(dbl.avoidNotation) \(currency)"
         } else {
-            return "$\(dbl.withCommas()) USD"
+            return "\(symbol)\(dbl.withCommas()) \(currency)"
         }
+    }
+    
+    var exchangeRate: String {
+        let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+        
+        var symbol = "$"
+        
+        switch currency {
+        case "USD":
+            symbol = "$"
+        case "GBP":
+            symbol = "£"
+        case "EUR":
+            symbol = "€"
+        default:
+            break
+        }
+        
+        return "\(symbol)\(self.withCommas()) \(currency) / btc"
+    }
+    
+    var fiatString: String {
+        let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+        
+        var symbol = "$"
+        
+        switch currency {
+        case "USD":
+            symbol = "$"
+        case "GBP":
+            symbol = "£"
+        case "EUR":
+            symbol = "€"
+        default:
+            break
+        }
+        
+        return "\(symbol)\(self.withCommas()) \(currency)"
     }
     
     var satsToBtcDouble: Double {

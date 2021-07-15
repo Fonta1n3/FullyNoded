@@ -323,6 +323,8 @@ class ActiveWalletViewController: UIViewController {
                 return
             }
             
+            let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+            
             for (i, transaction) in transactions.enumerated() {
                 let localTransactionStruct = TransactionStruct(dictionary: transaction)
                 
@@ -332,7 +334,9 @@ class ActiveWalletViewController: UIViewController {
                         self.transactionArray[t]["transactionLabel"] = localTransactionStruct.label
                         
                         if let originRate = localTransactionStruct.fxRate, originRate > 0 {
-                            self.transactionArray[t]["originRate"] = originRate
+                            if localTransactionStruct.fiatCurrency == currency {
+                                self.transactionArray[t]["originRate"] = originRate
+                            }
                         }
                     }
                     
@@ -545,15 +549,15 @@ class ActiveWalletViewController: UIViewController {
                 dbl = dbl * -1.0
             }
             
-            originFiatValueLabel.text = "$\(round((dbl)).withCommas()) USD"
+            originFiatValueLabel.text = round((dbl)).fiatString
             
             if let exchangeRate = fxRate {
                 var gain = round((amountProcessed * exchangeRate) - (dbl))
                 if Int(gain) > 0 {
-                    originFiatValueLabel.text! += " / gain of $\(gain.withCommas()) USD / \(Int((gain / dbl) * 100.0))%"
+                    originFiatValueLabel.text! += " / gain of \(gain.fiatString) / \(Int((gain / dbl) * 100.0))%"
                 } else if Int(gain) < 0 {
                     gain = gain * -1.0
-                    originFiatValueLabel.text! += " / loss of $\(gain.withCommas()) USD / \(Int((gain / dbl) * 100.0))%"
+                    originFiatValueLabel.text! += " / loss of \(gain.fiatString) / \(Int((gain / dbl) * 100.0))%"
                 } else {
                     originFiatValueLabel.text! += " (no change)"
                 }
@@ -561,7 +565,7 @@ class ActiveWalletViewController: UIViewController {
             fetchOriginRateButton.alpha = 0
             
         } else {
-            originFiatValueLabel.text = "origin exchange rate missing"
+            originFiatValueLabel.text = "origin exchange rate missing or mismatched"
             fetchOriginRateButton.alpha = 1
         }
         
@@ -750,11 +754,11 @@ class ActiveWalletViewController: UIViewController {
                 if let exchangeRate = self.fxRate {
                     let onchainBalance = balances.onchainBalance.doubleValue
                     let onchainBalanceFiat = onchainBalance * exchangeRate
-                    self.onchainFiat = "$\(round(onchainBalanceFiat).withCommas())"
+                    self.onchainFiat = round(onchainBalanceFiat).fiatString
                     
                     let offchainBalance = balances.offchainBalance.doubleValue
                     let offchainBalanceFiat = offchainBalance * exchangeRate
-                    self.offchainFiat = "$\(round(offchainBalanceFiat).withCommas())"
+                    self.offchainFiat = round(offchainBalanceFiat).fiatString
                 }
                 
                 self.sectionZeroLoaded = true
@@ -789,7 +793,7 @@ class ActiveWalletViewController: UIViewController {
             self.fxRate = rate
             
             DispatchQueue.main.async { [unowned vc = self] in
-                vc.fxRateLabel.text = "$\(rate.withCommas()) / btc"
+                vc.fxRateLabel.text = rate.exchangeRate
             }
             
             DispatchQueue.main.async {
