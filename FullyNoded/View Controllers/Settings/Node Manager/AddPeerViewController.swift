@@ -186,7 +186,7 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
                     guard let self = self else { return }
                     
                     self.psbt = psbt
-                    self.performSegue(withIdentifier: "segueToExportPsbtForChannelFunding", sender: self)
+                    self.promptToExportPsbt(psbt)
                 }
                 
             } else if let rawTx = result["rawTx"] as? String {
@@ -196,6 +196,36 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
                 
                 showAlert(vc: self, title: "Channel funding had an issue...", message: "The raw transaction has been copied to your clipboard. Error: \(errorMessage ?? "Unknown error. Try broadcasting the transaction manually. Go to active wallet and tap the send / broadcast button then tap paste.")")
             }
+        }
+    }
+    
+    private func promptToExportPsbt(_ psbt: String) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let alertStyle = UIAlertController.Style.alert
+            let tit = "Export PSBT"
+            let mess = "⚠️ Warning!\n\nYou MUST broadcast the signed transaction with Fully Noded! Otherwise there is a chance of loss of funds!"
+            
+            let alert = UIAlertController(title: tit, message: mess, preferredStyle: alertStyle)
+            
+            alert.addAction(UIAlertAction(title: "Export", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.exportPsbt()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func exportPsbt() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.performSegue(withIdentifier: "segueToExportPsbtForChannelFunding", sender: self)
         }
     }
     
