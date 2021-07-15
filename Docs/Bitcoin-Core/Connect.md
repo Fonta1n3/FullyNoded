@@ -1,5 +1,9 @@
 # Connect Your Node
 
+## [Lightning]
+
+Please see [this document](https://github.com/Fonta1n3/FullyNoded/blob/v0.2.18/Docs/Lightning.md) for connecting your lightning nodes.
+
 ## [Bitcoin Core](https://bitcoincore.org/en/releases/)
 
 - On your mac you can install Bitcoin Core or you can configure a Tor hidden service that controls your nodes `rpcport`, for details on how to do that see this [guide](../Tor/Tor.md)
