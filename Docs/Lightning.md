@@ -1,8 +1,21 @@
 # ⚡️⚡️⚡️Lightning ⚡️⚡️⚡️
 
-### #Reckless
+***Whenever you create a channel with Fully Noded via c-lightning it will automatically use the active onchain Fully Noded wallet to fund the channel and to close to!***
 
-This document explains how to use Fully Noded to remotely connect to and control your c-lightning node via a Tor V3 hidden service.
+***Whenever you create a channel with Fully Noded via LND it will automatically close to the active onchain Fully Noded wallet! Funding from the Fully Noded wallet for LND is coming soon.***
+
+***In order for Fully Noded to recognize your node as a lightning node you must set the port to 8080 (this is the default).***
+
+***In order for Fully Noded to recognize your node as LND you must have a macaroon in the node details (lndconnect always has a macaroon).***
+
+## LND
+
+To connect your LND node find the onion (Tor) REST based lndconnect QR code in your nodes settings.
+
+In Fully Noded go to "Settings" > "Node Manger" > "scan QR". Thats it. You can also add the credentials manually.
+
+## C-Lightning
+The remainder of this document explains how to use Fully Noded to remotely connect to and control your c-lightning node via a Tor V3 hidden service.
 
 ### TLDR
 You need an http server that exposes the lightning-rpc unix domain socket to a port which you must expose to a Tor V3 hidden service.
@@ -51,13 +64,16 @@ http-port=1312
 
 Create a directory for the plugins we need:<br/>
 `mkdir /home/you/.lightning/plugins/`
+`cd /home/you/.lightning/plugins/`
 
 Download the plugin:<br/>
 `git clone https://github.com/Start9Labs/c-lightning-http-plugin.git`<br/>
 
-Compile the plugin (it's built in Rust so first install Rust):<br/>
+Install Rust:<br/>
 `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`<br/>
 Close the terminal and reopen it so that the Rust command `cargo` is automatically added to your `path`<br/>
+
+Build the plugin:<br/>
 ```
 cd /home/you/.lightning/plugins/c-lightning-http-plugin
 cargo build --release
@@ -69,15 +85,16 @@ When it finishes building give it permissions:<br/>
 
 Start lightning:<br/>
 `cd /home/you/lightning`<br/>
-`./lightningd/lightningd`<br/>
+`lightningd --conf=/home/you/.lightning/config`<br/>
 
 ### Connect Fully Noded
 
-In Fully Noded go to Home screen  and tap the  ⚡️, from there you will be automatically prompted to add a node:<br/>
+In Fully Noded go to "Settings" > "Node Manager" > +, from there you will be automatically prompted to add a node:<br/>
 - add a label
 - add the rpc user: `lightning`
 - add the rpc password which is the `http-pass` you added to the config from above: `aPasswordYouWillSoonCreate`
 - add the onion address (hostname) we created earlier, ensure you add the port at the end: `theHostnameYouJustSavedFromThePreviousSteps.onion:1312`
+- ignore the macaroon and cert as that is for LND only
 
 Thats it, Fully Noded will now automatically use those credentials for any lightning related functionality. You can only have one lightning node at a a time, to add a new one just overwrite the existing credentials.
 
@@ -110,8 +127,7 @@ There is a lightning ⚡️in the top right too, that is for withdrawing from yo
 In this view you can always paste in or scan a bolt11 invoice with an optional amount filled in, if the bolt11 invoice does not specify an amount you must fill one out in the amount input text field.
 
 ### Channel management
-For creating channels go to "settings" > "node manager" > ⚡️ > ⚙️:
-This will fetch all your peers and display their ID's. You can tap each one to see the raw json data from your c-lightning node.
+For creating channels go to "Home" > ⚡️ (top left button) > "Active channels" > + (top right button):
 
 You can tap the + button to scan a QR (that consists of <publicKey>@IP:port>) to connect to a peer, create and fund a channel.
 
@@ -121,9 +137,12 @@ Scanning a valid node url will trigger a series of calls:
 
 - we establish a connection
 - create a channel
-- fund the channel (from your lightning wallet's on-chain wallet)
+- fund the channel (from your active on-chain Fully Noded wallet)
 - confirm that the funding is secured
 
 If all goes well you will get a success message, if not you'll get an error.
 
-Thats it for now! It is a bit rough and ready but very functional, please report bugs, crashes and feature requests ⚡️⚡️⚡️⚡️⚡️⚡️⚡️
+Channels always close to the active on-chain Fully Noded wallet.
+
+### Rebalancing
+C-lightning users must have the rebalnce.py plugin installed. Just tap the channel you want to rebalance.
