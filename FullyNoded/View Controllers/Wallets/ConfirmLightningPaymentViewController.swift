@@ -66,7 +66,11 @@ class ConfirmLightningPaymentViewController: UIViewController {
     }
     
     private func load() {
-        guard let invoice = invoice else { return }
+        guard let invoice = invoice else {
+            spinner.removeConnectingView()
+            showAlert(vc: self, title: "No invoice...", message: "There was an issue and no invoice was included.")
+            return
+        }
         
         let str = InvoiceStruct(invoice)
         
@@ -91,9 +95,9 @@ class ConfirmLightningPaymentViewController: UIViewController {
             }            
             
             if let fxRate = self.fxRate {
-                let usd = (invoiceDoubleAmount / 100000000.0) * fxRate
+                let fiat = (invoiceDoubleAmount / 100000000.0) * fxRate
                 
-                amountText += "\n$\(usd) USD"
+                amountText += "\n\(fiat.fiatString)"
             }
             
             self.amountLabel.text = amountText
@@ -129,7 +133,9 @@ class ConfirmLightningPaymentViewController: UIViewController {
                     } else {
                         string = peerStruct.label
                     }
-                } else if i + 1 == peers.count {
+                }
+                
+                if i + 1 == peers.count {
                     completion(string)
                 }
             }
