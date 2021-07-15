@@ -148,8 +148,8 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
             cell.layer.borderWidth = 0.5
             
             let dict = channels[indexPath.section]
-            let id = dict["remote_node_pub"] as? String ?? "?"
-            cell.textLabel?.text = id
+            let state = dict["state"] as? String ?? "?"
+            cell.textLabel?.text = state
             cell.textLabel?.textColor = .lightGray
             return cell
         } else {

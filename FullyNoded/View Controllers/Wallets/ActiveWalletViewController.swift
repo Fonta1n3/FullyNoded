@@ -467,16 +467,25 @@ class ActiveWalletViewController: UIViewController {
         
         let isOnchain = dict["onchain"] as? Bool ?? false
         if isOnchain {
+            seeDetailButton.alpha = 1
             onchainImage.alpha = 1
         } else {
             onchainImage.alpha = 0
         }
         
-        let isLightning = dict["isLightning"] as? Bool ?? false
+        let isLightning = dict["isLightning"] as? Bool ?? false        
+        
         if isLightning {
             lightningImage.alpha = 1
+            
+            if !isOnchain {
+                seeDetailButton.alpha = 0
+            }
+            
             if dict["memo"] as? String == nil || dict["memo"] as? String == "" || dict["memo"] as? String == "no transaction memo" {
-                loadLightningMemoButton.alpha = 1
+                if !isOnchain {
+                    loadLightningMemoButton.alpha = 1
+                }
             } else {
                 loadLightningMemoButton.alpha = 0
             }
@@ -492,74 +501,73 @@ class ActiveWalletViewController: UIViewController {
         
         let amount = dict["amount"] as! String
         
-            utxoLabel.text = utxoLabelText
-            editLabelButton.alpha = 1
-            seeDetailButton.alpha = 1
-            fetchOriginRateButton.alpha = 1
+        utxoLabel.text = utxoLabelText
+        editLabelButton.alpha = 1
+        fetchOriginRateButton.alpha = 1
+        
+        if let exchangeRate = fxRate {
+            var dbl = 0.0
+            
+            if isLightning && !isOnchain {
+                dbl = (amount.satsToBtc * exchangeRate)
+                
+                if dbl > 1.0 {
+                    dbl = round(dbl)
+                }
+                
+            } else {
+                dbl = round((amount.doubleValue * exchangeRate))
+            }
+            
+            currentFiatValueLabel.text = dbl.balanceText
+        } else {
+            currentFiatValueLabel.text = "current exchange rate missing"
+        }
+        
+        if let originRate = dict["originRate"] as? Double {
+            var amountProcessed = 0.0
+            
+            if isLightning && !isOnchain {
+                amountProcessed = amount.satsToBtc
+            } else {
+                amountProcessed = amount.doubleValue
+            }
+            
+            if amountProcessed < 0.0 {
+                amountProcessed = amountProcessed * -1.0
+            }
+            
+            var dbl = 0.0
+            
+            dbl = round((amountProcessed * originRate))
+            
+            if dbl < 0.0 {
+                dbl = dbl * -1.0
+            }
+            
+            originFiatValueLabel.text = "$\(round((dbl)).withCommas()) USD"
             
             if let exchangeRate = fxRate {
-                var dbl = 0.0
-                
-                if isLightning && !isOnchain {
-                    dbl = (amount.satsToBtc * exchangeRate)
-                    
-                    if dbl > 1.0 {
-                        dbl = round(dbl)
-                    }
-                    
+                var gain = round((amountProcessed * exchangeRate) - (dbl))
+                if Int(gain) > 0 {
+                    originFiatValueLabel.text! += " / gain of $\(gain.withCommas()) USD / \(Int((gain / dbl) * 100.0))%"
+                } else if Int(gain) < 0 {
+                    gain = gain * -1.0
+                    originFiatValueLabel.text! += " / loss of $\(gain.withCommas()) USD / \(Int((gain / dbl) * 100.0))%"
                 } else {
-                    dbl = round((amount.doubleValue * exchangeRate))
+                    originFiatValueLabel.text! += " (no change)"
                 }
-                
-                currentFiatValueLabel.text = dbl.balanceText
-            } else {
-                currentFiatValueLabel.text = "current exchange rate missing"
             }
+            fetchOriginRateButton.alpha = 0
             
-            if let originRate = dict["originRate"] as? Double {
-                var amountProcessed = 0.0
-                
-                if isLightning && !isOnchain {
-                    amountProcessed = amount.satsToBtc
-                } else {
-                    amountProcessed = amount.doubleValue
-                }
-                
-                if amountProcessed < 0.0 {
-                    amountProcessed = amountProcessed * -1.0
-                }
-                
-                 var dbl = 0.0
-                
-                dbl = round((amountProcessed * originRate))
-                
-                if dbl < 0.0 {
-                    dbl = dbl * -1.0
-                }
-                
-                originFiatValueLabel.text = "$\(round((dbl)).withCommas()) USD"
-                
-                if let exchangeRate = fxRate {
-                    var gain = round((amountProcessed * exchangeRate) - (dbl))
-                    if Int(gain) > 0 {
-                        originFiatValueLabel.text! += " / gain of $\(gain.withCommas()) USD / \(Int((gain / dbl) * 100.0))%"
-                    } else if Int(gain) < 0 {
-                        gain = gain * -1.0
-                        originFiatValueLabel.text! += " / loss of $\(gain.withCommas()) USD / \(Int((gain / dbl) * 100.0))%"
-                    } else {
-                        originFiatValueLabel.text! += " (no change)"
-                    }
-                }
-                fetchOriginRateButton.alpha = 0
-                
-            } else {
-                originFiatValueLabel.text = "origin exchange rate missing"
-                fetchOriginRateButton.alpha = 1
-            }
-            
-            memoLabel.text = dict["memo"] as? String ?? "no transaction memo"
-            transactionLabel.text = dict["transactionLabel"] as? String ?? "no transaction label"
-                
+        } else {
+            originFiatValueLabel.text = "origin exchange rate missing"
+            fetchOriginRateButton.alpha = 1
+        }
+        
+        memoLabel.text = dict["memo"] as? String ?? "no transaction memo"
+        transactionLabel.text = dict["transactionLabel"] as? String ?? "no transaction label"
+        
         if amount.hasPrefix("-") {
             categoryImage.image = UIImage(systemName: "arrow.up.right")
             categoryImage.tintColor = .systemRed

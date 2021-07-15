@@ -96,6 +96,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     private func processPsbt(_ psbt: String) {
+        spinner.addConnectingView(vc: self, description: "processing psbt...")
         Reducer.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt)\", true, \"ALL\", true") { [weak self] (object, errorDescription) in
             guard let self = self else { return }
             
@@ -113,6 +114,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             guard let self = self else { return }
 
             guard let result = object as? NSDictionary, let complete = result["complete"] as? Bool else {
+                self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "", message: "There was an issue finalizing your psbt: \(errorDescription ?? "unknown error")")
                 return
             }
@@ -121,6 +123,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
 
             guard complete, let hex = result["hex"] as? String else {
                 guard let psbt = result["psbt"] as? String else {
+                    self.spinner.removeConnectingView()
                     showAlert(vc: self, title: "", message: "There was an issue finalizing your psbt: \(errorDescription ?? "unknown error")")
                     return
                 }
@@ -539,7 +542,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     private func load() {
-        if !isSigning {
+        if !isSigning || unsignedPsbt == "" {
             spinner.addConnectingView(vc: self, description: "getting exchange rate....")
         } else {
             updateLabel("reloading signed transaction...")

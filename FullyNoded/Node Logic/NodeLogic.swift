@@ -49,7 +49,7 @@ class NodeLogic {
             for node in nodes {
                 let nodeStr = NodeStruct(dictionary: node)
                 
-                if nodeStr.isLightning {
+                if nodeStr.isLightning && nodeStr.isActive {
                     if nodeStr.macaroon == nil {
                         getOffChainBalanceCL(completion: completion)
                         break
@@ -241,8 +241,8 @@ class NodeLogic {
             Reducer.makeCommand(command: .listtransactions, param: "\"*\", 1000, 0, true") { (response, errorMessage) in
                 if let transactions = response as? NSArray {
                     parseTransactions(transactions: transactions)
-                    getOffchainTransactions(completion: completion)
                 }
+                getOffchainTransactions(completion: completion)
             }
         } else {
             arrayToReturn = []
