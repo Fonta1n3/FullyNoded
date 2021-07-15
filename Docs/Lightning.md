@@ -24,7 +24,7 @@ Add the hostname `jeifeif.onion:port` to Fully Noded > Node Manager > ⚡️ alo
 ### Security
 You should take advanatge of Tor V3 auth by exporting the V3 authentication key from Fully Noded > Settings > Security Center > Tor V3 Authentication and add the pubkey to your lightning-rpc `HiddenServiceDir` authorized_clients.
 
-You should disable allowing any incoming connections to the lightning-rpc port and only allow `localhost` to access it. Following these suggestions will go a very long way in ensureing your remote connection to your lightning node is highly secure.
+You should disable allowing any incoming connections to the lightning-rpc port and only allow `localhost` to access it. Following these suggestions will go a very long way in ensuring your remote connection to your lightning node is secure.
 
 ### Step by step
 
@@ -107,7 +107,7 @@ From v0.1.72 FN has a nice new visualization for your active lightning channels 
 For invoices, Fully Noded by default creates on-chain invoice's from your Bitcoin Core node, tap the lightning bolt to create a lightning invoice, you can add optional amount (btc) and label for the bolt11 invoices.
 
 ### Balances
-Fully Noded no longer differentiates between hot and cold balances. Your balances now shows an on-chain 🔗 balance and a lightning ⚡️ balance.
+Balances shows an on-chain 🔗  and lightning ⚡️ balance.
 
 ### Transaction history
 The transaction history will automatically show any lightning related on-chain transactions (deposits/withdraws to your lightning wallet) as well as your Bitcoin Core wallet's on-chain transaction.
@@ -129,20 +129,33 @@ In this view you can always paste in or scan a bolt11 invoice with an optional a
 ### Channel management
 For creating channels go to "Home" > ⚡️ (top left button) > "Active channels" > + (top right button):
 
-You can tap the + button to scan a QR (that consists of <publicKey>@IP:port>) to connect to a peer, create and fund a channel.
+You can tap the + button to scan a QR (that consists of <publicKey>@IP:port>) to connect to a peer, create and fund a channel, works with just a pubkey too.
 
-First add an amount in satoshi's which you want to to commit to the channel.
+Add an amount in satoshi's which you want to to commit to the channel.
 
-Scanning a valid node url will trigger a series of calls:
+Scanning a valid node uri or pubkey will trigger a series of calls:
 
-- we establish a connection
+- we establish a connection to the peer
 - create a channel
-- fund the channel (from your active on-chain Fully Noded wallet)
-- confirm that the funding is secured
+- fund the channel **from your active on-chain Fully Noded wallet**
+
+***If you use cold storage you will be presented with a psbt.***
+
+Export it, and sign it.
+
+***⚠️ To avoid possible loss of funds it is important that you broadcast the signed raw transaction with Fully Noded!***
+
+Upload the signed raw transaction (or signed psbt) to Fully Noded to complete the channel funding. The transaction will not be broadcast unless the funding completes successfully, *if you broadcast the transaction outside of Fully Noded there is a chance of loss of funds!*
+
+FN will automatically recognize the transaction as the one you last created a channel with, when you tap "send" FN will issue the [`fundchannel_complete`](https://lightning.readthedocs.io/lightning-fundchannel_complete.7.html?highlight=fundchannel_complete) command and wait for it to succeed. If it fails the transaction **will not** be broadcast. 
+
+From the [c-lightning docs](https://lightning.readthedocs.io/lightning-fundchannel_complete.7.html?highlight=fundchannel_complete):
+
+**"Note that the funding transaction MUST NOT be broadcast until after channel establishment has been successfully completed, as the commitment transactions for this channel are not secured until this command successfully completes. Broadcasting transaction before can lead to unrecoverable loss of funds."**
 
 If all goes well you will get a success message, if not you'll get an error.
 
-Channels always close to the active on-chain Fully Noded wallet.
+***Channels always close to the active on-chain Fully Noded wallet.***
 
 ### Rebalancing
 C-lightning users must have the rebalnce.py plugin installed. Just tap the channel you want to rebalance.
