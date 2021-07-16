@@ -115,6 +115,13 @@ public extension String {
     var msatToSat: Double {
         return Double(self)! / 1000.0
     }
+    
+    var bitcoinVersion: Int {
+        var versionString = String(self.dropFirst())
+        versionString = String(versionString.dropFirst())
+        versionString = versionString.replacingOccurrences(of: ".", with: "")
+        return Int(versionString)!
+    }
 }
 
 public extension Notification.Name {

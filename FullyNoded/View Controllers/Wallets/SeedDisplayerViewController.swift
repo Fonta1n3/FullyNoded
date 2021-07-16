@@ -120,28 +120,92 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     }
     
     private func primaryDescriptor(_ fingerprint: String, _ xpub: String) -> String {
-        return "combo([\(fingerprint)/84h/\(coinType)h/0h]\(xpub)/0/*)"
+        return "wpkh([\(fingerprint)/84h/\(coinType)h/0h]\(xpub)/0/*)"
     }
     
     private func changeDescriptor(_ fingerprint: String, _ xpub: String) -> String {
-        return "combo([\(fingerprint)/84h/\(coinType)h/0h]\(xpub)/1/*)"
+        return "wpkh([\(fingerprint)/84h/\(coinType)h/0h]\(xpub)/1/*)"
     }
     
     private func createWallet(fingerprint: String, xpub: String, completion: @escaping ((Bool)) -> Void) {
-        primDesc = primaryDescriptor(fingerprint, xpub)
-        let walletName = "FullyNoded-\(Crypto.sha256hash(primDesc))"
-        let param = "\"\(walletName)\", true, true, \"\", true"
         
+        // check if version is at least 0.21.0 to use native descriptors
+        guard let version = UserDefaults.standard.object(forKey: "version") as? String else {
+            spinner.removeConnectingView()
+            showAlert(vc: self, title: "Version unknown.", message: "In order to create a wallet we need to know which version of Bitcoin Core you are running, please go the the home screen and refresh then try to create this wallet again.")
+            
+            return
+        }
+        
+        primDesc = primaryDescriptor(fingerprint, xpub)
+        
+        let walletName = "FullyNoded-\(Crypto.sha256hash(primDesc))"
+        var param = "\"\(walletName)\", true, true, \"\", true"
+        
+        if version.bitcoinVersion >= 21 {
+            param += ", true, true"
+        }
+
         Reducer.makeCommand(command: .createwallet, param: param) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
-            
+
             guard let dict = response as? NSDictionary,
                 let name = dict["name"] as? String else {
                     self.showError(error: "Error creating wallet on your node: \(errorMessage ?? "unknown")")
                     return
             }
             
-            self.importKeys(name, fingerprint, xpub, self.primDesc, completion: completion)
+            if version.bitcoinVersion >= 21 {
+                self.importDescriptors(name, fingerprint, xpub, self.primDesc, completion: completion)
+            } else {
+                self.importKeys(name, fingerprint, xpub, self.primDesc, completion: completion)
+            }
+        }
+    }
+    
+    private func importDescriptors(_ name: String, _ fingerprint: String, _ xpub: String, _ desc: String, completion: @escaping ((Bool)) -> Void) {
+        self.name = name
+        UserDefaults.standard.set(name, forKey: "walletName")
+        
+        let changeDesc = self.changeDescriptor(fingerprint, xpub)
+        
+        self.getDescriptorInfo(desc: desc) { completePrimDesc in
+            guard let completePrimDesc = completePrimDesc else { completion(false); return }
+            
+            self.getDescriptorInfo(desc: changeDesc) { completeChangeDesc in
+                guard let completeChangeDesc = completeChangeDesc else { completion(false); return }
+                
+                self.changeDesc = completeChangeDesc
+                self.primDesc = completePrimDesc
+                
+                let params = "[{\"desc\": \"\(completePrimDesc)\", \"active\": true, \"range\": [0,2500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": false}, {\"desc\": \"\(completeChangeDesc)\", \"active\": true, \"range\": [0,2500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": true}]"
+                
+                Reducer.makeCommand(command: .importdescriptors, param: params) { (response, errorMessage) in
+                    guard let responseArray = response as? [[String:Any]] else {
+                        self.showError(error: "Error importing descriptors: \(errorMessage ?? "unknown error")")
+                        
+                        return
+                    }
+                    
+                    for (i, response) in responseArray.enumerated() {
+                        guard let success = response["success"] as? Bool, success else {
+                            
+                            if let error = response["error"] as? [String:Any], let message = error["message"] as? String {
+                                self.showError(error: "Error importing descriptors: \(message)")
+                            } else {
+                                self.showError(error: "Error importing descriptors.")
+                            }
+                            
+                            completion(false)
+                            return
+                        }
+                        
+                        if i + 1 == responseArray.count {
+                            completion(true)
+                        }
+                    }
+                }
+            }
         }
     }
     
