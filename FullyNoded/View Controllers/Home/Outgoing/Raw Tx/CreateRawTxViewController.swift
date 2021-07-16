@@ -640,9 +640,9 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         var param = ""
         
         if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
-            param = "''\(processInputs())'', ''{\"\(receivingAddress)\":\(rounded(number: utxoTotal))}'', 0, ''{\"includeWatching\": \(true), \"replaceable\": true, \"fee_rate\": \(feeRate), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
+            param = "''\(inputArray.processedInputs)'', ''{\"\(receivingAddress)\":\(rounded(number: utxoTotal))}'', 0, ''{\"includeWatching\": \(true), \"replaceable\": true, \"fee_rate\": \(feeRate), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
         } else {
-            param = "''\(processInputs())'', ''{\"\(receivingAddress)\":\(rounded(number: utxoTotal))}'', 0, ''{\"includeWatching\": \(true), \"replaceable\": true, \"conf_target\": \(ud.object(forKey: "feeTarget") as? Int ?? 432), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
+            param = "''\(inputArray.processedInputs)'', ''{\"\(receivingAddress)\":\(rounded(number: utxoTotal))}'', 0, ''{\"includeWatching\": \(true), \"replaceable\": true, \"conf_target\": \(ud.object(forKey: "feeTarget") as? Int ?? 432), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
         }
         
                 
@@ -727,12 +727,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 inputArray.append(input)
             }
             
-            inputs = inputArray.description
-            inputs = inputs.replacingOccurrences(of: "[\"", with: "[")
-            inputs = inputs.replacingOccurrences(of: "\"]", with: "]")
-            inputs = inputs.replacingOccurrences(of: "\"{", with: "{")
-            inputs = inputs.replacingOccurrences(of: "}\"", with: "}")
-            inputs = inputs.replacingOccurrences(of: "\\", with: "")
+            inputs = inputArray.processedInputs
             
             var param = ""
             
@@ -807,19 +802,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
-    private func processInputs() -> String {
-        if inputArray.count > 0 {
-            var processed = inputArray.description
-            processed = processed.replacingOccurrences(of: "[\"", with: "[")
-            processed = processed.replacingOccurrences(of: "\"]", with: "]")
-            processed = processed.replacingOccurrences(of: "\"{", with: "{")
-            processed = processed.replacingOccurrences(of: "}\"", with: "}")
-            return processed.replacingOccurrences(of: "\\", with: "")
-        } else {
-            return ""
-        }
-    }
-    
     @objc func tryRaw() {
         spinner.addConnectingView(vc: self, description: "creating psbt...")
         
@@ -835,7 +817,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             }
             
             if inputArray.count > 0 {
-                self.inputsString = processInputs()
+                self.inputsString = inputArray.processedInputs
             }
             
             outputsString = outputs.description
@@ -1346,7 +1328,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     func getRawTx() {
-        CreatePSBT.create(inputs: processInputs(), outputs: outputsString) { [weak self] (psbt, rawTx, errorMessage) in
+        CreatePSBT.create(inputs: inputArray.processedInputs, outputs: outputsString) { [weak self] (psbt, rawTx, errorMessage) in
             guard let self = self else { return }
             
             self.spinner.removeConnectingView()

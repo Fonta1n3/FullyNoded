@@ -74,17 +74,27 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
     }
     
     private func getAddress(_ amount: Int, _ id: String, _ ip: String, _ port: String?, _ wallet: Wallet) {
-        let index = Int(wallet.index) + 1
-        let param = "\"\(wallet.receiveDescriptor)\", [\(index),\(index)]"
-        Reducer.makeCommand(command: .deriveaddresses, param: param) { [weak self] (response, errorMessage) in
-            guard let self = self else { return }
+        if wallet.type != "Native-Descriptor" {
+            let index = Int(wallet.index) + 1
+            let param = "\"\(wallet.receiveDescriptor)\", [\(index),\(index)]"
             
-            guard let addresses = response as? NSArray, let address = addresses[0] as? String else {
-                showAlert(vc: self, title: "", message: errorMessage ?? "error getting closing address")
-                return
+            Reducer.makeCommand(command: .deriveaddresses, param: param) { (response, errorMessage) in
+                guard let addresses = response as? NSArray, let address = addresses[0] as? String else {
+                    showAlert(vc: self, title: "", message: errorMessage ?? "error getting closing address")
+                    return
+                }
+                
+                self.promptToUseClosingAddress(amount, id, ip, port, wallet, address)
             }
-            
-            self.promptToUseClosingAddress(amount, id, ip, port, wallet, address)
+        } else {
+            Reducer.makeCommand(command: .getnewaddress, param: "") { (response, errorMessage) in
+                guard let address = response as? String else {
+                    showAlert(vc: self, title: "", message: errorMessage ?? "error getting closing address")
+                    return
+                }
+                
+                self.promptToUseClosingAddress(amount, id, ip, port, wallet, address)
+            }
         }
     }
     
@@ -97,7 +107,9 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
             let alert = UIAlertController(title: tit, message: mess, preferredStyle: alertStyle)
             
             alert.addAction(UIAlertAction(title: "Close to \(wallet.label)", style: .default, handler: { action in
-                CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(Int(wallet.index) + 1), entity: .wallets) { _ in }
+                if wallet.type != "Native-Descriptor" {
+                    CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(Int(wallet.index) + 1), entity: .wallets) { _ in }
+                }
                 
                 self?.connect(amount, id, ip, port, address)
             }))
@@ -205,7 +217,7 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
             
             let alertStyle = UIAlertController.Style.alert
             let tit = "Export PSBT"
-            let mess = "⚠️ Warning!\n\nYou MUST broadcast the signed transaction with Fully Noded! Otherwise there is a chance of loss of funds!"
+            let mess = "⚠️ Warning!\n\nYou MUST broadcast the signed transaction with this device using Fully Noded! Otherwise there is a chance of loss of funds and channel funding WILL FAIL!"
             
             let alert = UIAlertController(title: tit, message: mess, preferredStyle: alertStyle)
             

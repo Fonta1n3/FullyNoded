@@ -7,20 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0A1E4886264D3DCC00E530E0 /* StatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E4885264D3DCC00E530E0 /* StatusView.swift */; };
-		0A1E4891264D3E9F00E530E0 /* MFIKeyActionSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E4890264D3E9F00E530E0 /* MFIKeyActionSheetView.swift */; };
-		0A1E4892264D3E9F00E530E0 /* MFIKeyInteractionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E488F264D3E9F00E530E0 /* MFIKeyInteractionViewController.swift */; };
-		0A1E4896264D3EA500E530E0 /* ProgressHudView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E4894264D3EA500E530E0 /* ProgressHudView.swift */; };
-		0A1E48A0264D3F2300E530E0 /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E489A264D3F2300E530E0 /* RootViewController.swift */; };
-		0A1E48A1264D3F2300E530E0 /* ApplicationUIAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E489B264D3F2300E530E0 /* ApplicationUIAppearance.swift */; };
-		0A1E48A2264D3F2300E530E0 /* FIDO2PinInputController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E489C264D3F2300E530E0 /* FIDO2PinInputController.swift */; };
-		0A1E48A3264D3F2300E530E0 /* SceneObserver in Resources */ = {isa = PBXBuildFile; fileRef = 0A1E489D264D3F2300E530E0 /* SceneObserver */; };
-		0A1E48A4264D3F2300E530E0 /* UIView+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E489E264D3F2300E530E0 /* UIView+Extensions.swift */; };
-		0A1E48A5264D3F2300E530E0 /* DemoCustomTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E489F264D3F2300E530E0 /* DemoCustomTabBar.swift */; };
-		0A1E48A8264D3F6F00E530E0 /* NamedColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1E48A7264D3F6F00E530E0 /* NamedColor.swift */; };
 		0A3013D8266B361E004DA35C /* LndRpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A3013D7266B361E004DA35C /* LndRpc.swift */; };
-		0A52680E264E0C4F005E6459 /* ProgressHudView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0A1E4895264D3EA500E530E0 /* ProgressHudView.xib */; };
-		0A526813264E0D62005E6459 /* MFIKeyActionSheetView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0A1E488E264D3E9F00E530E0 /* MFIKeyActionSheetView.xib */; };
 		0A590357269875CD00510626 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A590356269875CB00510626 /* Extensions.swift */; };
 		0A59035A269B080700510626 /* ConfirmLightningPaymentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A590359269B080700510626 /* ConfirmLightningPaymentViewController.swift */; };
 		0A59035D269B0CA800510626 /* InvoiceStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A59035C269B0CA700510626 /* InvoiceStruct.swift */; };
@@ -200,19 +187,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		0A1E4885264D3DCC00E530E0 /* StatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusView.swift; sourceTree = "<group>"; };
-		0A1E488E264D3E9F00E530E0 /* MFIKeyActionSheetView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = MFIKeyActionSheetView.xib; path = "FullyNoded/Sub Views/MFIKeyActionSheetView.xib"; sourceTree = SOURCE_ROOT; };
-		0A1E488F264D3E9F00E530E0 /* MFIKeyInteractionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MFIKeyInteractionViewController.swift; sourceTree = "<group>"; };
-		0A1E4890264D3E9F00E530E0 /* MFIKeyActionSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MFIKeyActionSheetView.swift; sourceTree = "<group>"; };
-		0A1E4894264D3EA500E530E0 /* ProgressHudView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressHudView.swift; sourceTree = "<group>"; };
-		0A1E4895264D3EA500E530E0 /* ProgressHudView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = ProgressHudView.xib; path = "FullyNoded/Sub Views/ProgressHudView.xib"; sourceTree = SOURCE_ROOT; };
-		0A1E489A264D3F2300E530E0 /* RootViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
-		0A1E489B264D3F2300E530E0 /* ApplicationUIAppearance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ApplicationUIAppearance.swift; sourceTree = "<group>"; };
-		0A1E489C264D3F2300E530E0 /* FIDO2PinInputController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FIDO2PinInputController.swift; sourceTree = "<group>"; };
-		0A1E489D264D3F2300E530E0 /* SceneObserver */ = {isa = PBXFileReference; lastKnownFileType = folder; path = SceneObserver; sourceTree = "<group>"; };
-		0A1E489E264D3F2300E530E0 /* UIView+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIView+Extensions.swift"; sourceTree = "<group>"; };
-		0A1E489F264D3F2300E530E0 /* DemoCustomTabBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DemoCustomTabBar.swift; sourceTree = "<group>"; };
-		0A1E48A7264D3F6F00E530E0 /* NamedColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NamedColor.swift; sourceTree = "<group>"; };
 		0A3013D7266B361E004DA35C /* LndRpc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LndRpc.swift; sourceTree = "<group>"; };
 		0A590356269875CB00510626 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		0A590359269B080700510626 /* ConfirmLightningPaymentViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmLightningPaymentViewController.swift; sourceTree = "<group>"; };
@@ -540,23 +514,10 @@
 		D02094F122593698002E8E7A /* Sub Views */ = {
 			isa = PBXGroup;
 			children = (
-				0A1E489B264D3F2300E530E0 /* ApplicationUIAppearance.swift */,
-				0A1E489F264D3F2300E530E0 /* DemoCustomTabBar.swift */,
-				0A1E489C264D3F2300E530E0 /* FIDO2PinInputController.swift */,
-				0A1E489A264D3F2300E530E0 /* RootViewController.swift */,
-				0A1E489D264D3F2300E530E0 /* SceneObserver */,
-				0A1E489E264D3F2300E530E0 /* UIView+Extensions.swift */,
-				0A1E4890264D3E9F00E530E0 /* MFIKeyActionSheetView.swift */,
-				0A1E488E264D3E9F00E530E0 /* MFIKeyActionSheetView.xib */,
-				0A1E488F264D3E9F00E530E0 /* MFIKeyInteractionViewController.swift */,
-				0A1E4894264D3EA500E530E0 /* ProgressHudView.swift */,
-				0A1E4895264D3EA500E530E0 /* ProgressHudView.xib */,
 				D08495FD22EBCA97003FE8EB /* Number Pad */,
 				D08495FE22EBCABC003FE8EB /* Spinner View */,
 				D084960022EBCAF7003FE8EB /* QR Generator */,
 				D084960122EBCB04003FE8EB /* Alert View */,
-				0A1E4885264D3DCC00E530E0 /* StatusView.swift */,
-				0A1E48A7264D3F6F00E530E0 /* NamedColor.swift */,
 			);
 			path = "Sub Views";
 			sourceTree = "<group>";
@@ -1027,8 +988,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0A52680E264E0C4F005E6459 /* ProgressHudView.xib in Resources */,
-				0A1E48A3264D3F2300E530E0 /* SceneObserver in Resources */,
 				D0358D9521B1B44B007D56ED /* whiteCheck.png in Resources */,
 				D084960622EC0A94003FE8EB /* LICENSE.md in Resources */,
 				D0A291912251743B0099A2F3 /* settings90.png in Resources */,
@@ -1037,7 +996,6 @@
 				D05D9730226425730035F1DE /* images.png in Resources */,
 				D00B9A352111427200E8B95A /* LaunchScreen.storyboard in Resources */,
 				D00B9A322111427200E8B95A /* Assets.xcassets in Resources */,
-				0A526813264E0D62005E6459 /* MFIKeyActionSheetView.xib in Resources */,
 				D05692E92144AC13006DF0F4 /* back.png in Resources */,
 				D0FA417C213C7CDA0028E4F8 /* whiteLock.png in Resources */,
 				D0196DD721B5AB300081E0AB /* KeyPadButtonView.xib in Resources */,
@@ -1118,7 +1076,6 @@
 				D02094F02257FB78002E8E7A /* FirstTime.swift in Sources */,
 				D069052124EA8E95007F939D /* LightningChannelsViewController.swift in Sources */,
 				D0C1F9152531E71F0079C2B8 /* UR.swift in Sources */,
-				0A1E48A0264D3F2300E530E0 /* RootViewController.swift in Sources */,
 				D0B80A892516020A006B88F0 /* ImportXpubViewController.swift in Sources */,
 				D0C20EE024A6EF3800C62AA4 /* Balances.swift in Sources */,
 				D08A92B7233E113B00409D6E /* LockedViewController.swift in Sources */,
@@ -1131,12 +1088,9 @@
 				D0233F282361EA5F0041FFBA /* shim.swift in Sources */,
 				D0F3919424C0147400EA8A2A /* QRScannerViewController.swift in Sources */,
 				D05692E321434452006DF0F4 /* MainMenuViewController.swift in Sources */,
-				0A1E4891264D3E9F00E530E0 /* MFIKeyActionSheetView.swift in Sources */,
 				D07399D9245EEA5F00860B7E /* Broadcaster.swift in Sources */,
-				0A1E48A1264D3F2300E530E0 /* ApplicationUIAppearance.swift in Sources */,
 				D03968B3246F769C0010D821 /* KeychainKeys.swift in Sources */,
 				D02FE43323136A600048F8C4 /* NodeLogic.swift in Sources */,
-				0A1E48A2264D3F2300E530E0 /* FIDO2PinInputController.swift in Sources */,
 				D05D973422647CE60035F1DE /* QRGenerator.swift in Sources */,
 				D09A330724A982F3009FA0B2 /* FullyNodedWalletsViewController.swift in Sources */,
 				D07AED042435B62B00C2FADB /* Entities.swift in Sources */,
@@ -1150,7 +1104,6 @@
 				D088E9D824FBA4E00097D755 /* CreateMultisigViewController.swift in Sources */,
 				D0C20EE724A78A9700C62AA4 /* CreateFullyNodedWalletViewController.swift in Sources */,
 				D00F851F2494A7CA008D7CD3 /* AuthKeysStruct.swift in Sources */,
-				0A1E48A8264D3F6F00E530E0 /* NamedColor.swift in Sources */,
 				D02958D5235053B300ED8F72 /* SecurityCenterViewController.swift in Sources */,
 				D09A331124AC4BF6009FA0B2 /* DescriptorParser.swift in Sources */,
 				D0C20ED224A6DB9D00C62AA4 /* BlockchainInfo.swift in Sources */,
@@ -1158,7 +1111,6 @@
 				D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */,
 				D0E51E592265640F005D1909 /* ErrorView.swift in Sources */,
 				D02152DC23666CB400AD9007 /* QuickConnect.swift in Sources */,
-				0A1E4892264D3E9F00E530E0 /* MFIKeyInteractionViewController.swift in Sources */,
 				0AE19ED725F4AC0D000F0AD4 /* WalletRecoveryViewController.swift in Sources */,
 				D00F851B24949691008D7CD3 /* AppPasswordViewController.swift in Sources */,
 				D0D71DA32351F835005CCDB9 /* UtilitieMenuViewController.swift in Sources */,
@@ -1185,7 +1137,6 @@
 				D08A92A92337755600409D6E /* AddDescriptors.swift in Sources */,
 				D0F3919624C0379200EA8A2A /* ImportWallet.swift in Sources */,
 				D0A519B9226C212C00860D5C /* SendUTXO.swift in Sources */,
-				0A1E4896264D3EA500E530E0 /* ProgressHudView.swift in Sources */,
 				D0855FC622B08EE000DBBFC2 /* TorClient.swift in Sources */,
 				D03F65F124EFB25100901D06 /* KeySendViewController.swift in Sources */,
 				D0E51E5B226592C9005D1909 /* NodeDetailViewController.swift in Sources */,
@@ -1209,7 +1160,6 @@
 				D0806B4522EE9FBA002C20A1 /* TXChain.swift in Sources */,
 				D08A92B923403DB200409D6E /* NodesViewController.swift in Sources */,
 				D0384E31246AC4D8002FEE94 /* Base58.swift in Sources */,
-				0A1E48A4264D3F2300E530E0 /* UIView+Extensions.swift in Sources */,
 				0A590357269875CD00510626 /* Extensions.swift in Sources */,
 				D033D1CF22B5D1FA00523BEE /* ProcessPSBTViewController.swift in Sources */,
 				D09A32FF24A8419D009FA0B2 /* CreateFullyNodedWallet.swift in Sources */,
@@ -1221,7 +1171,6 @@
 				D0560EE92277F75900C3E909 /* UTXOViewController.swift in Sources */,
 				D0257E6524D6C5F5000EB854 /* LightningRPC.swift in Sources */,
 				D00F851D2494A616008D7CD3 /* TorAuthViewController.swift in Sources */,
-				0A1E4886264D3DCC00E530E0 /* StatusView.swift in Sources */,
 				D09A330F24A9B853009FA0B2 /* RecoveryViewController.swift in Sources */,
 				D0C20EDA24A6E46E00C62AA4 /* Uptime.swift in Sources */,
 				D09A330124A848DA009FA0B2 /* SeedDisplayerViewController.swift in Sources */,
@@ -1239,7 +1188,6 @@
 				D073E16E22558CDE0012A28C /* CoreDataService.swift in Sources */,
 				D0E54DD525207A1C00BD859E /* UTXOs.swift in Sources */,
 				D01EB4F325AD685700ADF6E4 /* TransactionLabelMemoViewController.swift in Sources */,
-				0A1E48A5264D3F2300E530E0 /* DemoCustomTabBar.swift in Sources */,
 				D0F3919224BFEBBB00EA8A2A /* QRDisplayerViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

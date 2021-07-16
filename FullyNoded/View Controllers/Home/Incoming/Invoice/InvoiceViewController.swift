@@ -291,10 +291,14 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             let descriptorParser = DescriptorParser()
             let descriptorStruct = descriptorParser.descriptor(wallet.receiveDescriptor)
             
-            if descriptorStruct.isMulti {
-                self.getReceieveAddressForFullyNodedMultiSig(wallet)
+            if wallet.type == "Native-Descriptor" {
+                self.fetchDescriptorAddress()
             } else {
-                self.fetchAddress()
+                if descriptorStruct.isMulti {
+                    self.getReceieveAddressForFullyNodedMultiSig(wallet)
+                } else {
+                    self.fetchAddress()
+                }
             }
         }
     }
@@ -339,6 +343,10 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         }
         
         self.getAddress(params)
+    }
+    
+    private func fetchDescriptorAddress() {
+        getAddress("")
     }
     
     func showAddress(address: String) {

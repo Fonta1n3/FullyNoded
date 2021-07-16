@@ -35,39 +35,54 @@ class Lightning {
     
     class func parseConnection(amount: Int, dict: NSDictionary, completion: @escaping ((result: NSDictionary?, errorMessage: String?)) -> Void) {
         if let id = dict["id"] as? String {
-            Lightning.fundchannelstart(channelId: id, amount: amount, completion: completion)
+            Lightning.getClosingAddress(channelId: id, amount: amount, completion: completion)
         } else {
             completion((nil, "error parsing the connection result"))
         }
     }
     
-    class func fundchannelstart(channelId: String, amount: Int, completion: @escaping ((result: NSDictionary?, errorMessage: String?)) -> Void) {
+    class func getClosingAddress(channelId: String, amount: Int, completion: @escaping ((result: NSDictionary?, errorMessage: String?)) -> Void) {
         activeWallet { wallet in
             guard let wallet = wallet else {
-                completion((nil, "No active wallet, in order to create a channel you need to be using an active FN onchain wallet. This can be single sig, multisig, hot or cold. Funds will always be retruned to this wallet when this channel closes. The channel will be funded directly from your active FN wallet."))
+                completion((nil, "No active wallet, in order to create a channel you need to be using an active FN onchain wallet. This can be single sig, multisig, hot or cold. Funds will always be returned to this wallet when this channel closes. The channel will be funded directly from your active FN wallet."))
                 return
             }
             
-            let index = Int(wallet.index) + 1
-            let param = "\"\(wallet.receiveDescriptor)\", [\(index),\(index)]"
-            
-            Reducer.makeCommand(command: .deriveaddresses, param: param) { (response, errorMessage) in
-                guard let addresses = response as? NSArray, let address = addresses[0] as? String else {
-                    completion((nil, "Error getting closing address: \(errorMessage ?? "unknown")"))
-                    return
-                }
+            if wallet.type != "Native-Descriptor" {
+                let index = Int(wallet.index) + 1
+                let param = "\"\(wallet.receiveDescriptor)\", [\(index),\(index)]"
                 
-                let param = "\"\(channelId)\", \(amount), \"normal\", false, \"\(address)\""
-                let commandId = UUID()
-                
-                LightningRPC.command(id: commandId, method: .fundchannel_start, param: param) { (uuid, response, errorDesc) in
-                    if commandId == uuid {
-                        if let fundedChannelDict = response as? NSDictionary {
-                            Lightning.parseFundChannelStart(channelId: channelId, amount: amount, dict: fundedChannelDict, completion: completion)
-                        } else {
-                            completion((nil, errorDesc ?? "unknown error funding that channel"))
-                        }
+                Reducer.makeCommand(command: .deriveaddresses, param: param) { (response, errorMessage) in
+                    guard let addresses = response as? NSArray, let address = addresses[0] as? String else {
+                        completion((nil, "Error getting closing address: \(errorMessage ?? "unknown")"))
+                        return
                     }
+                    
+                    Lightning.fundchannelstart(channelId: channelId, amount: amount, address: address, completion: completion)
+                }
+            } else {
+                Reducer.makeCommand(command: .getnewaddress, param: "") { (response, errorMessage) in
+                    guard let address = response as? String else {
+                        completion((nil, "Error getting closing address: \(errorMessage ?? "unknown")"))
+                        return
+                    }
+                    
+                    Lightning.fundchannelstart(channelId: channelId, amount: amount, address: address, completion: completion)
+                }
+            }
+        }
+    }
+    
+    class func fundchannelstart(channelId: String, amount: Int, address: String, completion: @escaping ((result: NSDictionary?, errorMessage: String?)) -> Void) {
+        let param = "\"\(channelId)\", \(amount), \"normal\", false, \"\(address)\""
+        let commandId = UUID()
+        
+        LightningRPC.command(id: commandId, method: .fundchannel_start, param: param) { (uuid, response, errorDesc) in
+            if commandId == uuid {
+                if let fundedChannelDict = response as? NSDictionary {
+                    Lightning.parseFundChannelStart(channelId: channelId, amount: amount, dict: fundedChannelDict, completion: completion)
+                } else {
+                    completion((nil, errorDesc ?? "unknown error funding that channel"))
                 }
             }
         }

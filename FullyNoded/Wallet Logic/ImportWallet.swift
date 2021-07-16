@@ -14,6 +14,7 @@ class ImportWallet {
     static var processedWatching = [String]()
     static var isColdcard = false
     static var isRecovering = false
+    static var version:Int = 0
             
     class func accountMap(_ accountMap: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
         var wallet = [String:Any]()
@@ -36,12 +37,25 @@ class ImportWallet {
         
         var descStruct = descriptorParser.descriptor(primDescriptor)
         
-        if descStruct.isMulti {
-            wallet["type"] = "Multi-Sig"
+        guard let version = UserDefaults.standard.object(forKey: "version") as? String else {
+            completion((false, "Version unknown. In order to create a wallet we need to know which version of Bitcoin Core you are running, please go the the home screen and refresh then try to create this wallet again."))
+            
+            return
+        }
+        
+        self.version = version.bitcoinVersion
+        
+        if self.version >= 21 {
+            wallet["type"] = "Native-Descriptor"
             keypool = false
         } else {
-            wallet["type"] = "Single-Sig"
-            keypool = true
+            if descStruct.isMulti {
+                wallet["type"] = "Multi-Sig"
+                keypool = false
+            } else {
+                wallet["type"] = "Single-Sig"
+                keypool = true
+            }
         }
         
         primDescriptor = primDescriptor.replacingOccurrences(of: "'", with: "h")
@@ -127,36 +141,81 @@ class ImportWallet {
                 wallet["name"] = name
                 UserDefaults.standard.set(wallet["name"] as! String, forKey: "walletName")
                 
-                importReceiveDesc(recDesc, label, keypool) { (success, errorMessage) in
-                    guard success else {
-                        UserDefaults.standard.removeObject(forKey: "walletName")
-                        completion((false, "error importing receive descriptor: \(errorMessage ?? "unknown error")"))
-                        return
-                    }
-                    
-                    importChangeDesc(changeDesc, keypool) { (success, errorMessage) in
+                if version.bitcoinVersion >= 21 {
+                    importPrimaryDescriptors(recDesc, changeDesc) { (success, errorMessage) in
                         guard success else {
                             UserDefaults.standard.removeObject(forKey: "walletName")
-                            completion((false, "error importing change descriptor: \(errorMessage ?? "unknown error")"))
+                            completion((false, "error importing descriptor: \(errorMessage ?? "unknown error")"))
                             return
                         }
                         
                         if watching.count > 0 {
-                            index = 0
-                            processedWatching.removeAll()
-                            
-                            importWatching(watching: watching) { (watchingArray, errorMessage) in
-                                guard let watchingArray = watchingArray else {
+                            self.processWatching(watching: watching) { (watchingArray, errorMessage) in
+                                guard let watchingArray = watchingArray, watchingArray.count > 0 else {
                                     UserDefaults.standard.removeObject(forKey: "walletName")
-                                    completion((false, "error importing watching descriptors: \(errorMessage ?? "unknown error importing watching descriptors")"))
+                                    completion((false, "Error processing watching descriptors: \(errorMessage ?? "unknown")"))
                                     return
                                 }
                                 
-                                wallet["watching"] = watchingArray
-                                rescan(wallet: wallet, completion: completion)
+                                var params = ""
+                                
+                                for (i, watchingDesc) in watchingArray.enumerated() {
+                                    let param = "{\"desc\": \"\(watchingDesc)\", \"active\": false, \"range\": [0,2500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": false}"
+                                    
+                                    if i < watchingArray.count {
+                                        params += ", "
+                                    }
+                                    
+                                    params += "\(param)"
+                                    
+                                    if i + 1 == watchingArray.count {
+                                        self.importDescriptors(params) { (success, errorMessage) in
+                                            if success {
+                                                rescan(wallet: wallet, completion: completion)
+                                            } else {
+                                                UserDefaults.standard.removeObject(forKey: "walletName")
+                                                completion((false, "Error importing watching descriptors: \(errorMessage ?? "unknown")"))
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         } else {
                             rescan(wallet: wallet, completion: completion)
+                        }
+                    }
+                } else {
+                    importReceiveDesc(recDesc, label, keypool) { (success, errorMessage) in
+                        guard success else {
+                            UserDefaults.standard.removeObject(forKey: "walletName")
+                            completion((false, "error importing receive descriptor: \(errorMessage ?? "unknown error")"))
+                            return
+                        }
+                        
+                        importChangeDesc(changeDesc, keypool) { (success, errorMessage) in
+                            guard success else {
+                                UserDefaults.standard.removeObject(forKey: "walletName")
+                                completion((false, "error importing change descriptor: \(errorMessage ?? "unknown error")"))
+                                return
+                            }
+                            
+                            if watching.count > 0 {
+                                index = 0
+                                processedWatching.removeAll()
+                                
+                                importWatching(watching: watching) { (watchingArray, errorMessage) in
+                                    guard let watchingArray = watchingArray else {
+                                        UserDefaults.standard.removeObject(forKey: "walletName")
+                                        completion((false, "error importing watching descriptors: \(errorMessage ?? "unknown error importing watching descriptors")"))
+                                        return
+                                    }
+                                    
+                                    wallet["watching"] = watchingArray
+                                    rescan(wallet: wallet, completion: completion)
+                                }
+                            } else {
+                                rescan(wallet: wallet, completion: completion)
+                            }
                         }
                     }
                 }
@@ -251,7 +310,12 @@ class ImportWallet {
     }
     
     class func createWallet(_ walletName: String, completion: @escaping ((name: String?, errorMessage: String?)) -> Void) {
-        let param = "\"\(walletName)\", true, true, \"\", true"
+        var param = "\"\(walletName)\", true, true, \"\", true"
+        
+        if version >= 21 {
+            param += ", true, true"
+        }
+        
         Reducer.makeCommand(command: .createwallet, param: param) { (response, errorMessage) in
             guard let dict = response as? NSDictionary, let name = dict["name"] as? String else {
                 completion((nil, errorMessage))
@@ -259,6 +323,38 @@ class ImportWallet {
             }
             
             completion((name, nil))
+        }
+    }
+    
+    class func importPrimaryDescriptors(_ recDesc: String, _ changeDesc: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
+        let params = "[{\"desc\": \"\(recDesc)\", \"active\": true, \"range\": [0,2500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": false}, {\"desc\": \"\(changeDesc)\", \"active\": true, \"range\": [0,2500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": true}]"
+        
+        importDescriptors(params, completion: completion)
+    }
+    
+    class func importDescriptors(_ params: String, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
+        Reducer.makeCommand(command: .importdescriptors, param: params) { (response, errorMessage) in
+            guard let responseArray = response as? [[String:Any]] else {
+                completion((false, "Error importing descriptors: \(errorMessage ?? "unknown error")"))
+                return
+            }
+            
+            for (i, response) in responseArray.enumerated() {
+                guard let success = response["success"] as? Bool, success else {
+                    var errorMessage = "Error importing descriptors."
+                    
+                    if let error = response["error"] as? [String:Any], let message = error["message"] as? String {
+                        errorMessage = "Error importing descriptors: \(message)"
+                    }
+                    
+                    completion((false, errorMessage))
+                    return
+                }
+                
+                if i + 1 == responseArray.count {
+                    completion((true, nil))
+                }
+            }
         }
     }
     

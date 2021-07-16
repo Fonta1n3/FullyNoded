@@ -55,6 +55,16 @@ public extension Array {
         
         return jsonString
     }
+    
+    var processedInputs: String {
+        var inputs = self.description
+        inputs = inputs.replacingOccurrences(of: "[\"", with: "[")
+        inputs = inputs.replacingOccurrences(of: "\"]", with: "]")
+        inputs = inputs.replacingOccurrences(of: "\"{", with: "{")
+        inputs = inputs.replacingOccurrences(of: "}\"", with: "}")
+        inputs = inputs.replacingOccurrences(of: "\\", with: "")
+        return inputs
+    }
 }
 
 extension Array where Element == UInt8 {
