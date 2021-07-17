@@ -7,6 +7,24 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0A1F10CF26A1A47F00BE2707 /* DerivationPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10CE26A1A47F00BE2707 /* DerivationPath.swift */; };
+		0A1F10D226A1A4EE00BE2707 /* DerivationStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10D126A1A4EE00BE2707 /* DerivationStep.swift */; };
+		0A1F10D526A1A52600BE2707 /* ChildIndexSpec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10D426A1A52600BE2707 /* ChildIndexSpec.swift */; };
+		0A1F10D826A1A54E00BE2707 /* ChildIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10D726A1A54E00BE2707 /* ChildIndex.swift */; };
+		0A1F10DB26A1A58100BE2707 /* GeneralError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10DA26A1A58100BE2707 /* GeneralError.swift */; };
+		0A1F10DE26A1A5F200BE2707 /* ChildIndexRange.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10DD26A1A5F200BE2707 /* ChildIndexRange.swift */; };
+		0A1F10E126A1A62B00BE2707 /* ChildIndexWildcard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10E026A1A62B00BE2707 /* ChildIndexWildcard.swift */; };
+		0A1F10E526A1A6C200BE2707 /* CBORExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10E426A1A6C200BE2707 /* CBORExtensions.swift */; };
+		0A1F10E826A1A83E00BE2707 /* IntUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10E726A1A83E00BE2707 /* IntUtils.swift */; };
+		0A1F10EB26A1A8C300BE2707 /* DataExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F10EA26A1A8C300BE2707 /* DataExtension.swift */; };
+		0A1F10FD26A1AF3200BE2707 /* URKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0A1F10FC26A1AF3200BE2707 /* URKit */; };
+		0A1F110526A2783000BE2707 /* UseInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F110026A2783000BE2707 /* UseInfo.swift */; };
+		0A1F110626A2783000BE2707 /* HDKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F110126A2783000BE2707 /* HDKey.swift */; };
+		0A1F110726A2783000BE2707 /* KeyType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F110226A2783000BE2707 /* KeyType.swift */; };
+		0A1F110826A2783000BE2707 /* Network.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F110326A2783000BE2707 /* Network.swift */; };
+		0A1F110926A2783000BE2707 /* Asset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F110426A2783000BE2707 /* Asset.swift */; };
+		0A1F110C26A278C100BE2707 /* ModelObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F110B26A278C100BE2707 /* ModelObject.swift */; };
+		0A1F111026A2791B00BE2707 /* ModelObjectType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F110F26A2791B00BE2707 /* ModelObjectType.swift */; };
 		0A3013D8266B361E004DA35C /* LndRpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A3013D7266B361E004DA35C /* LndRpc.swift */; };
 		0A590357269875CD00510626 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A590356269875CB00510626 /* Extensions.swift */; };
 		0A59035A269B080700510626 /* ConfirmLightningPaymentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A590359269B080700510626 /* ConfirmLightningPaymentViewController.swift */; };
@@ -126,7 +144,6 @@
 		D0AD9B6823E7ECC20032C607 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0AD9B6723E7ECC20032C607 /* SceneDelegate.swift */; };
 		D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B3149E216C4DB1008FDC53 /* CreateRawTxViewController.swift */; };
 		D0B80A892516020A006B88F0 /* ImportXpubViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B80A882516020A006B88F0 /* ImportXpubViewController.swift */; };
-		D0C1F9132531E5970079C2B8 /* URKit in Frameworks */ = {isa = PBXBuildFile; productRef = D0C1F9122531E5970079C2B8 /* URKit */; };
 		D0C1F9152531E71F0079C2B8 /* UR.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C1F9142531E71F0079C2B8 /* UR.swift */; };
 		D0C20ED224A6DB9D00C62AA4 /* BlockchainInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20ED124A6DB9D00C62AA4 /* BlockchainInfo.swift */; };
 		D0C20ED424A6DFE600C62AA4 /* PeerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0C20ED324A6DFE500C62AA4 /* PeerInfo.swift */; };
@@ -187,6 +204,23 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0A1F10CE26A1A47F00BE2707 /* DerivationPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivationPath.swift; sourceTree = "<group>"; };
+		0A1F10D126A1A4EE00BE2707 /* DerivationStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivationStep.swift; sourceTree = "<group>"; };
+		0A1F10D426A1A52600BE2707 /* ChildIndexSpec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildIndexSpec.swift; sourceTree = "<group>"; };
+		0A1F10D726A1A54E00BE2707 /* ChildIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildIndex.swift; sourceTree = "<group>"; };
+		0A1F10DA26A1A58100BE2707 /* GeneralError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralError.swift; sourceTree = "<group>"; };
+		0A1F10DD26A1A5F200BE2707 /* ChildIndexRange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildIndexRange.swift; sourceTree = "<group>"; };
+		0A1F10E026A1A62B00BE2707 /* ChildIndexWildcard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildIndexWildcard.swift; sourceTree = "<group>"; };
+		0A1F10E426A1A6C200BE2707 /* CBORExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBORExtensions.swift; sourceTree = "<group>"; };
+		0A1F10E726A1A83E00BE2707 /* IntUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntUtils.swift; sourceTree = "<group>"; };
+		0A1F10EA26A1A8C300BE2707 /* DataExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataExtension.swift; sourceTree = "<group>"; };
+		0A1F110026A2783000BE2707 /* UseInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UseInfo.swift; sourceTree = "<group>"; };
+		0A1F110126A2783000BE2707 /* HDKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HDKey.swift; sourceTree = "<group>"; };
+		0A1F110226A2783000BE2707 /* KeyType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeyType.swift; sourceTree = "<group>"; };
+		0A1F110326A2783000BE2707 /* Network.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Network.swift; sourceTree = "<group>"; };
+		0A1F110426A2783000BE2707 /* Asset.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Asset.swift; sourceTree = "<group>"; };
+		0A1F110B26A278C100BE2707 /* ModelObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelObject.swift; sourceTree = "<group>"; };
+		0A1F110F26A2791B00BE2707 /* ModelObjectType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelObjectType.swift; sourceTree = "<group>"; };
 		0A3013D7266B361E004DA35C /* LndRpc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LndRpc.swift; sourceTree = "<group>"; };
 		0A590356269875CB00510626 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		0A590359269B080700510626 /* ConfirmLightningPaymentViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmLightningPaymentViewController.swift; sourceTree = "<group>"; };
@@ -352,8 +386,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0A1F10FD26A1AF3200BE2707 /* URKit in Frameworks */,
 				D06D788C25B817B500769157 /* LifeHash in Frameworks */,
-				D0C1F9132531E5970079C2B8 /* URKit in Frameworks */,
 				D016AE7525B0284300A59E93 /* Tor.xcframework in Frameworks */,
 				D016AE4825AFFCA400A59E93 /* LibWally.xcframework in Frameworks */,
 			);
@@ -369,6 +403,31 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0A1F10CB26A1A25600BE2707 /* UR */ = {
+			isa = PBXGroup;
+			children = (
+				0A1F110F26A2791B00BE2707 /* ModelObjectType.swift */,
+				0A1F110B26A278C100BE2707 /* ModelObject.swift */,
+				0A1F110426A2783000BE2707 /* Asset.swift */,
+				0A1F110126A2783000BE2707 /* HDKey.swift */,
+				0A1F110226A2783000BE2707 /* KeyType.swift */,
+				0A1F110326A2783000BE2707 /* Network.swift */,
+				0A1F110026A2783000BE2707 /* UseInfo.swift */,
+				D0C1F9142531E71F0079C2B8 /* UR.swift */,
+				0A1F10CE26A1A47F00BE2707 /* DerivationPath.swift */,
+				0A1F10D126A1A4EE00BE2707 /* DerivationStep.swift */,
+				0A1F10D426A1A52600BE2707 /* ChildIndexSpec.swift */,
+				0A1F10D726A1A54E00BE2707 /* ChildIndex.swift */,
+				0A1F10DA26A1A58100BE2707 /* GeneralError.swift */,
+				0A1F10DD26A1A5F200BE2707 /* ChildIndexRange.swift */,
+				0A1F10E026A1A62B00BE2707 /* ChildIndexWildcard.swift */,
+				0A1F10E426A1A6C200BE2707 /* CBORExtensions.swift */,
+				0A1F10E726A1A83E00BE2707 /* IntUtils.swift */,
+				0A1F10EA26A1A8C300BE2707 /* DataExtension.swift */,
+			);
+			path = UR;
+			sourceTree = "<group>";
+		};
 		A084FD6F2359E9C900DA63CF /* Build */ = {
 			isa = PBXGroup;
 			children = (
@@ -557,7 +616,7 @@
 				D0F3918F24BFE48600EA8A2A /* AccountMap.swift */,
 				D0257E6424D6C5F5000EB854 /* LightningRPC.swift */,
 				D06FD7CF25062F7A00481185 /* GetTx.swift */,
-				D0C1F9142531E71F0079C2B8 /* UR.swift */,
+				0A1F10CB26A1A25600BE2707 /* UR */,
 				D00B27BB255A27F300269B51 /* WalletURL.swift */,
 				D06D788E25B817E100769157 /* Lifehash.swift */,
 				0A3013D7266B361E004DA35C /* LndRpc.swift */,
@@ -896,8 +955,8 @@
 			);
 			name = FullyNoded;
 			packageProductDependencies = (
-				D0C1F9122531E5970079C2B8 /* URKit */,
 				D06D788B25B817B500769157 /* LifeHash */,
+				0A1F10FC26A1AF3200BE2707 /* URKit */,
 			);
 			productName = BitSense;
 			productReference = D00B9A242111427200E8B95A /* FullyNoded.app */;
@@ -970,8 +1029,8 @@
 			);
 			mainGroup = D00B9A1B2111427200E8B95A;
 			packageReferences = (
-				D0C1F9112531E5960079C2B8 /* XCRemoteSwiftPackageReference "URKit" */,
 				D06D788A25B817B500769157 /* XCRemoteSwiftPackageReference "LifeHash" */,
+				0A1F10FB26A1AF3200BE2707 /* XCRemoteSwiftPackageReference "URKit" */,
 			);
 			productRefGroup = D00B9A252111427200E8B95A /* Products */;
 			projectDirPath = "";
@@ -1069,14 +1128,18 @@
 				D0E9B63C211A94C600B416E7 /* Utilities.swift in Sources */,
 				D0C20ED424A6DFE600C62AA4 /* PeerInfo.swift in Sources */,
 				D09F9E5024B1BAC3006B588C /* SignerDetailViewController.swift in Sources */,
+				0A1F10DE26A1A5F200BE2707 /* ChildIndexRange.swift in Sources */,
 				D09A330524A8C4F6009FA0B2 /* Wallet.swift in Sources */,
 				D039D3CA2332440D00D1ED18 /* HDMusigStruct.swift in Sources */,
+				0A1F10D226A1A4EE00BE2707 /* DerivationStep.swift in Sources */,
 				D09A330924A98EE1009FA0B2 /* WalletDetailViewController.swift in Sources */,
 				D096EDFE249DCF970084A065 /* ShowDetailViewController.swift in Sources */,
+				0A1F110526A2783000BE2707 /* UseInfo.swift in Sources */,
 				D02094F02257FB78002E8E7A /* FirstTime.swift in Sources */,
 				D069052124EA8E95007F939D /* LightningChannelsViewController.swift in Sources */,
 				D0C1F9152531E71F0079C2B8 /* UR.swift in Sources */,
 				D0B80A892516020A006B88F0 /* ImportXpubViewController.swift in Sources */,
+				0A1F10D826A1A54E00BE2707 /* ChildIndex.swift in Sources */,
 				D0C20EE024A6EF3800C62AA4 /* Balances.swift in Sources */,
 				D08A92B7233E113B00409D6E /* LockedViewController.swift in Sources */,
 				D039D3C823322F1300D1ED18 /* NodeStruct.swift in Sources */,
@@ -1092,17 +1155,21 @@
 				D03968B3246F769C0010D821 /* KeychainKeys.swift in Sources */,
 				D02FE43323136A600048F8C4 /* NodeLogic.swift in Sources */,
 				D05D973422647CE60035F1DE /* QRGenerator.swift in Sources */,
+				0A1F10E126A1A62B00BE2707 /* ChildIndexWildcard.swift in Sources */,
 				D09A330724A982F3009FA0B2 /* FullyNodedWalletsViewController.swift in Sources */,
 				D07AED042435B62B00C2FADB /* Entities.swift in Sources */,
 				D0DBC7062501CEFE00F6787C /* VerifyTransactionViewController.swift in Sources */,
 				D0855FCA22B0CEA800DBBFC2 /* CreatePSBT.swift in Sources */,
+				0A1F110726A2783000BE2707 /* KeyType.swift in Sources */,
 				D02094F3225936D2002E8E7A /* ConnectingView.swift in Sources */,
 				D09F9E5224B1F8DE006B588C /* AddSignerViewController.swift in Sources */,
 				D0196DDB21B5AC5F0081E0AB /* KeyPad.swift in Sources */,
 				D09F9E4C24B0673C006B588C /* SignersViewController.swift in Sources */,
 				D0E2A1052496EE9400AE0C04 /* ActiveWalletViewController.swift in Sources */,
 				D088E9D824FBA4E00097D755 /* CreateMultisigViewController.swift in Sources */,
+				0A1F110926A2783000BE2707 /* Asset.swift in Sources */,
 				D0C20EE724A78A9700C62AA4 /* CreateFullyNodedWalletViewController.swift in Sources */,
+				0A1F10E826A1A83E00BE2707 /* IntUtils.swift in Sources */,
 				D00F851F2494A7CA008D7CD3 /* AuthKeysStruct.swift in Sources */,
 				D02958D5235053B300ED8F72 /* SecurityCenterViewController.swift in Sources */,
 				D09A331124AC4BF6009FA0B2 /* DescriptorParser.swift in Sources */,
@@ -1110,6 +1177,7 @@
 				D08A92B3233B527F00409D6E /* KillSwitch.swift in Sources */,
 				D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */,
 				D0E51E592265640F005D1909 /* ErrorView.swift in Sources */,
+				0A1F110826A2783000BE2707 /* Network.swift in Sources */,
 				D02152DC23666CB400AD9007 /* QuickConnect.swift in Sources */,
 				0AE19ED725F4AC0D000F0AD4 /* WalletRecoveryViewController.swift in Sources */,
 				D00F851B24949691008D7CD3 /* AppPasswordViewController.swift in Sources */,
@@ -1117,6 +1185,7 @@
 				D03968B1246F6CBA0010D821 /* Crypto.swift in Sources */,
 				D0452ADD224743C50013E225 /* LogInViewController.swift in Sources */,
 				D02958D3234F82E000ED8F72 /* IdentityViewController.swift in Sources */,
+				0A1F10DB26A1A58100BE2707 /* GeneralError.swift in Sources */,
 				D09A330324A86C7C009FA0B2 /* Signer.swift in Sources */,
 				D08A92B1233B213300409D6E /* ChooseWalletViewController.swift in Sources */,
 				D0A2918F225114670099A2F3 /* MakeRPCCall.swift in Sources */,
@@ -1130,6 +1199,7 @@
 				D082397924DAE4CB0098D4F4 /* LightningNodeManagerViewController.swift in Sources */,
 				D0233F242361EA090041FFBA /* Base32.swift in Sources */,
 				D020480F249605AB00EF52DB /* ActiveWalletsViewController.swift in Sources */,
+				0A1F110C26A278C100BE2707 /* ModelObject.swift in Sources */,
 				D0CC0E2224F0FA98001BF905 /* PeerDetailsViewController.swift in Sources */,
 				D0452ADB2247417F0013E225 /* ImportPrivKeyViewController.swift in Sources */,
 				D0384E2F246AC4B1002FEE94 /* XpubConverter.swift in Sources */,
@@ -1141,6 +1211,7 @@
 				D03F65F124EFB25100901D06 /* KeySendViewController.swift in Sources */,
 				D0E51E5B226592C9005D1909 /* NodeDetailViewController.swift in Sources */,
 				D0233F222361E68F0041FFBA /* KeyGen.swift in Sources */,
+				0A1F10D526A1A52600BE2707 /* ChildIndexSpec.swift in Sources */,
 				D042FABC250C9F0600E99D9B /* Torrc.swift in Sources */,
 				D0126FF622446E3800412629 /* InvoiceViewController.swift in Sources */,
 				D00B27BC255A27F300269B51 /* WalletURL.swift in Sources */,
@@ -1148,9 +1219,11 @@
 				D07E0DE622F9168F00A81FA8 /* WalletManagerViewController.swift in Sources */,
 				D0384E34246AC53B002FEE94 /* base58.c in Sources */,
 				D011702824EBA3CE00ACC44B /* ChannelDetailViewController.swift in Sources */,
+				0A1F110626A2783000BE2707 /* HDKey.swift in Sources */,
 				D0CC0E2024F0F35A001BF905 /* Peers.swift in Sources */,
 				D044ED78235AF42D00300D62 /* ImportStruct.swift in Sources */,
 				D0C20ED624A6E19600C62AA4 /* NetworkInfo.swift in Sources */,
+				0A1F10CF26A1A47F00BE2707 /* DerivationPath.swift in Sources */,
 				D06FD7D025062F7A00481185 /* GetTx.swift in Sources */,
 				D096EE00249DFADD0084A065 /* HelpViewController.swift in Sources */,
 				D09F9E4E24B06A63006B588C /* SignerStruct.swift in Sources */,
@@ -1167,6 +1240,7 @@
 				D0D4B9A624DA616300572811 /* Lightning.swift in Sources */,
 				D07E0DE822F9570A00A81FA8 /* WalletCreatorViewController.swift in Sources */,
 				D0AD9B6823E7ECC20032C607 /* SceneDelegate.swift in Sources */,
+				0A1F10EB26A1A8C300BE2707 /* DataExtension.swift in Sources */,
 				D0C20ED824A6E2FF00C62AA4 /* MiningInfo.swift in Sources */,
 				D0560EE92277F75900C3E909 /* UTXOViewController.swift in Sources */,
 				D0257E6524D6C5F5000EB854 /* LightningRPC.swift in Sources */,
@@ -1182,8 +1256,10 @@
 				D00B9A282111427200E8B95A /* AppDelegate.swift in Sources */,
 				D09A331324AC4C93009FA0B2 /* Descriptor.swift in Sources */,
 				D07AED032435B62800C2FADB /* Commands.swift in Sources */,
+				0A1F10E526A1A6C200BE2707 /* CBORExtensions.swift in Sources */,
 				D0EDDF1124972CEF00657931 /* InvoiceSettingsViewController.swift in Sources */,
 				D069051F24EA6C1F007F939D /* LightningPeersViewController.swift in Sources */,
+				0A1F111026A2791B00BE2707 /* ModelObjectType.swift in Sources */,
 				D084960422EBCD3B003FE8EB /* GetInfoViewController.swift in Sources */,
 				D073E16E22558CDE0012A28C /* CoreDataService.swift in Sources */,
 				D0E54DD525207A1C00BD859E /* UTXOs.swift in Sources */,
@@ -1500,6 +1576,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		0A1F10FB26A1AF3200BE2707 /* XCRemoteSwiftPackageReference "URKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Fonta1n3/URKit";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
 		D06D788A25B817B500769157 /* XCRemoteSwiftPackageReference "LifeHash" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/BlockchainCommons/LifeHash";
@@ -1508,26 +1592,18 @@
 				minimumVersion = 6.0.2;
 			};
 		};
-		D0C1F9112531E5960079C2B8 /* XCRemoteSwiftPackageReference "URKit" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/BlockchainCommons/URKit";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.0.0;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		0A1F10FC26A1AF3200BE2707 /* URKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0A1F10FB26A1AF3200BE2707 /* XCRemoteSwiftPackageReference "URKit" */;
+			productName = URKit;
+		};
 		D06D788B25B817B500769157 /* LifeHash */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = D06D788A25B817B500769157 /* XCRemoteSwiftPackageReference "LifeHash" */;
 			productName = LifeHash;
-		};
-		D0C1F9122531E5970079C2B8 /* URKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D0C1F9112531E5960079C2B8 /* XCRemoteSwiftPackageReference "URKit" */;
-			productName = URKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 

@@ -50,6 +50,12 @@ enum Crypto {
         return descriptor + "#" + hex
     }
     
+    static func checksum(_ data: Data) -> String {
+        let hash = SHA256.hash(data: Data(SHA256.hash(data: data)))
+        let checksum = Data(hash).subdata(in: Range(0...3))
+        return checksum.hexString
+    }
+    
 //    static func rpcAuth() {
 //        guard let salt = generateRandomBytes(16),
 //            let password = generateRandomBytes(32) else { return }

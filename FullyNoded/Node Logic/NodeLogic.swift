@@ -46,10 +46,14 @@ class NodeLogic {
         CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
             guard let nodes = nodes else { return }
             
-            for node in nodes {
+            var activeLightningNode = false
+            
+            for (i, node) in nodes.enumerated() {
                 let nodeStr = NodeStruct(dictionary: node)
                 
                 if nodeStr.isLightning && nodeStr.isActive {
+                    activeLightningNode = true
+                    
                     if nodeStr.macaroon == nil {
                         getOffChainBalanceCL(completion: completion)
                         break
@@ -57,6 +61,11 @@ class NodeLogic {
                         getOffChainBalanceLND(completion: completion)
                         break
                     }
+                }
+                
+                if i + 1 == nodes.count && !activeLightningNode {
+                    dictToReturn["offchainBalance"] = "0.00000000"
+                    completion((dictToReturn, nil))
                 }
             }
         }
