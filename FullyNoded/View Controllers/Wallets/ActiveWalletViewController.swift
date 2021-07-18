@@ -12,10 +12,12 @@ class ActiveWalletViewController: UIViewController {
     
     private var existingWallet = ""
     private var walletDisabled = Bool()
-    private var onchainBalance = ""
-    private var offchainBalance = ""
-    private var onchainFiat = ""
-    private var offchainFiat = ""
+    private var onchainBalanceBtc = ""
+    private var onchainBalanceSats = ""
+    private var onchainBalanceFiat = ""
+    private var offchainBalanceBtc = ""
+    private var offchainBalanceSats = ""
+    private var offchainBalanceFiat = ""
     private var sectionZeroLoaded = Bool()
     private var wallets = NSArray()
     private var transactionArray = [[String:Any]]()
@@ -38,7 +40,12 @@ class ActiveWalletViewController: UIViewController {
     private var psbt = ""
     private var rawTx = ""
     private var dateFormatter = DateFormatter()
+    private var isFiat = false
+    private var isBtc = true
+    private var isSats = false
+    let fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
     
+    @IBOutlet weak private var currencyControl: UISegmentedControl!
     @IBOutlet weak private var backgroundView: UIVisualEffectView!
     @IBOutlet weak private var walletTable: UITableView!
     @IBOutlet weak private var sendView: UIView!
@@ -56,6 +63,8 @@ class ActiveWalletViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(broadcast(_:)), name: .broadcastTxn, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(signPsbt(_:)), name: .signPsbt, object: nil)
         existingWallet = ud.object(forKey: "walletName") as? String ?? ""
+        currencyControl.setTitle(fiatCurrency.lowercased(), forSegmentAt: 2)
+        setCurrency()
         sectionZeroLoaded = false
         setNotifications()
         addNavBarSpinner()
@@ -86,6 +95,82 @@ class ActiveWalletViewController: UIViewController {
             }
         }
     }
+    
+    private func setCurrency() {
+        if ud.object(forKey: "unit") != nil {
+            let unit = ud.object(forKey: "unit") as! String
+            var index = 0
+            switch unit {
+            case "btc":
+                index = 0
+                isBtc = true
+                isFiat = false
+                isSats = false
+            case "sats":
+                index = 1
+                isSats = true
+                isFiat = false
+                isBtc = false
+            case "fiat":
+                index = 2
+                isFiat = true
+                isBtc = false
+                isSats = false
+            default:
+                break
+            }
+            
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.currencyControl.selectedSegmentIndex = index
+            }
+            
+        } else {
+            isBtc = true
+            isFiat = false
+            isSats = false
+            
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.currencyControl.selectedSegmentIndex = 0
+            }
+        }
+    }
+    
+    private func refreshBalanceCell() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.walletTable.reloadSections(IndexSet(arrayLiteral: 0), with: .none)
+        }
+    }
+    
+    @IBAction func switchCurrency(_ sender: UISegmentedControl) {
+        switch sender.selectedSegmentIndex {
+        case 0:
+            isFiat = false
+            isBtc = true
+            isSats = false
+            ud.set("btc", forKey: "unit")
+            refreshBalanceCell()
+            //reloadWalletData()
+        case 1:
+            isFiat = false
+            isBtc = false
+            isSats = true
+            ud.set("sats", forKey: "unit")
+            refreshBalanceCell()
+            //reloadWalletData()
+        case 2:
+            isFiat = true
+            isBtc = false
+            isSats = false
+            ud.set("fiat", forKey: "unit")
+            refreshBalanceCell()
+            //reloadWalletData()
+        default:
+            break
+        }
+    }
+    
     
     @objc func signPsbt(_ notification: NSNotification) {
         guard let psbtDict = notification.userInfo as? [String:Any], let psbtCheck = psbtDict["psbt"] as? String else {
@@ -381,25 +466,30 @@ class ActiveWalletViewController: UIViewController {
         
         let onchainBalanceLabel = cell.viewWithTag(1) as! UILabel
         let offchainBalanceLabel = cell.viewWithTag(2) as! UILabel
-        let onchainFiatLabel = cell.viewWithTag(4) as! UILabel
-        let offchainFiatLabel = cell.viewWithTag(5) as! UILabel
-        let onchainIconBackground = cell.viewWithTag(7)!
-        let offchainIconBackground = cell.viewWithTag(8)!
         
-        if onchainBalance == "" {
-            onchainBalance = "0.00000000"
+        if onchainBalanceBtc == "" {
+            onchainBalanceBtc = "0.00000000"
         }
         
-        if offchainBalance == "" {
-            offchainBalance = "0.00000000"
+        if offchainBalanceBtc == "" {
+            offchainBalanceBtc = "0.00000000"
         }
         
-        onchainIconBackground.layer.cornerRadius = 5
-        offchainIconBackground.layer.cornerRadius = 5
-        onchainFiatLabel.text = onchainFiat
-        offchainFiatLabel.text = offchainFiat
-        onchainBalanceLabel.text = onchainBalance
-        offchainBalanceLabel.text = offchainBalance
+        if isBtc {
+            onchainBalanceLabel.text = onchainBalanceBtc
+            offchainBalanceLabel.text = offchainBalanceBtc
+        }
+        
+        if isSats {
+            onchainBalanceLabel.text = onchainBalanceSats
+            offchainBalanceLabel.text = offchainBalanceSats
+        }
+        
+        if isFiat {
+            onchainBalanceLabel.text = onchainBalanceFiat
+            offchainBalanceLabel.text = offchainBalanceFiat
+        }
+        
         onchainBalanceLabel.adjustsFontSizeToFitWidth = true
         offchainBalanceLabel.adjustsFontSizeToFitWidth = true
         
@@ -747,18 +837,20 @@ class ActiveWalletViewController: UIViewController {
             }
             
             let balances = Balances(dictionary: response)
-            self.onchainBalance = balances.onchainBalance
-            self.offchainBalance = balances.offchainBalance
+            self.onchainBalanceBtc = balances.onchainBalance
+            self.offchainBalanceBtc = balances.offchainBalance
+            self.onchainBalanceSats = balances.onchainBalance.btcToSats
+            self.offchainBalanceSats = balances.offchainBalance.btcToSats
             
             DispatchQueue.main.async {
                 if let exchangeRate = self.fxRate {
                     let onchainBalance = balances.onchainBalance.doubleValue
                     let onchainBalanceFiat = onchainBalance * exchangeRate
-                    self.onchainFiat = round(onchainBalanceFiat).fiatString
+                    self.onchainBalanceFiat = round(onchainBalanceFiat).fiatString
                     
                     let offchainBalance = balances.offchainBalance.doubleValue
                     let offchainBalanceFiat = offchainBalance * exchangeRate
-                    self.offchainFiat = round(offchainBalanceFiat).fiatString
+                    self.offchainBalanceFiat = round(offchainBalanceFiat).fiatString
                 }
                 
                 self.sectionZeroLoaded = true
@@ -781,8 +873,6 @@ class ActiveWalletViewController: UIViewController {
             guard let self = self else { return }
             
             guard let rate = rate else {
-                self.onchainFiat = ""
-                self.offchainFiat = ""
                 DispatchQueue.main.async {
                     self.fxRateLabel.text = "no fx rate data"
                 }
@@ -992,7 +1082,10 @@ class ActiveWalletViewController: UIViewController {
             }
             
             let balances = Balances(dictionary: response)
-            self.onchainBalance = balances.onchainBalance
+            self.onchainBalanceBtc = balances.onchainBalance
+            self.offchainBalanceBtc = balances.offchainBalance
+            self.onchainBalanceSats = balances.onchainBalance.btcToSats
+            self.offchainBalanceSats = balances.offchainBalance.btcToSats
             
             DispatchQueue.main.async {
                 self.sectionZeroLoaded = true
@@ -1055,10 +1148,12 @@ class ActiveWalletViewController: UIViewController {
         wallet = nil
         walletLabel = nil
         existingWallet = ""
-        onchainBalance = ""
-        offchainBalance = ""
-        onchainFiat = ""
-        offchainFiat = ""
+        onchainBalanceSats = ""
+        onchainBalanceFiat = ""
+        onchainBalanceBtc = ""
+        offchainBalanceSats = ""
+        offchainBalanceFiat = ""
+        offchainBalanceBtc = ""
         
         DispatchQueue.main.async { [ weak self] in
             guard let self = self else { return }
@@ -1229,13 +1324,13 @@ extension ActiveWalletViewController: UITableViewDelegate {
         switch indexPath.section {
         case 0:
             if sectionZeroLoaded {
-                return 116
+                return 100
             } else {
                 return 47
             }
         default:
             if sectionZeroLoaded {
-                return 303
+                return 322
             } else {
                 return 47
             }

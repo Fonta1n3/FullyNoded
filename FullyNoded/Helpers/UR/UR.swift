@@ -26,22 +26,24 @@ class URHelper {
     }
     
     static func parseUr(urString: String) -> [String]? {
-        switch urString {
-        case _ where urString.hasPrefix("ur:crypto-hdkey"):
+        let lowercased = urString.lowercased()
+        
+        switch lowercased {
+        case _ where lowercased.hasPrefix("ur:crypto-hdkey"):
             if let descriptor = parseHdkey(urString: urString) {
                 return [descriptor]
             } else {
                 return nil
             }
             
-        case _ where urString.hasPrefix("ur:crypto-account"):
-            if let keyArray = parseCryptoAccount(urString) {
-                return keyArray
+        case _ where lowercased.hasPrefix("ur:crypto-account"):
+            if let descriptorArray = parseCryptoAccount(urString) {
+                return descriptorArray
             } else {
                 return nil
             }
             
-        case _ where urString.hasPrefix("ur:crypto-output"):
+        case _ where lowercased.hasPrefix("ur:crypto-output"):
             if let descriptor = parseCryptoOutput(urString) {
                 return [descriptor]
             } else {

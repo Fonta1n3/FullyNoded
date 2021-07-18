@@ -132,6 +132,10 @@ public extension String {
         versionString = versionString.replacingOccurrences(of: ".", with: "")
         return Int(versionString)!
     }
+    
+    var btcToSats: String {
+        return (self.doubleValue * 100000000.0).avoidNotation
+    }
 }
 
 public extension Notification.Name {
@@ -279,7 +283,7 @@ public extension Double {
             break
         }
         
-        return "\(symbol)\(self.withCommas()) \(currency) / btc"
+        return "\(symbol)\(self.withCommas())) / btc"
     }
     
     var fiatString: String {
@@ -298,7 +302,7 @@ public extension Double {
             break
         }
         
-        return "\(symbol)\(self.withCommas()) \(currency)"
+        return "\(symbol)\(self.withCommas())"
     }
     
     var satsToBtcDouble: Double {
