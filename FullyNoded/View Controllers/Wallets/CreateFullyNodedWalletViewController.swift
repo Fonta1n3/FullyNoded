@@ -542,6 +542,42 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         }
     }
     
+    private func setPrimDesc(descriptors: [String], descriptorToUseIndex: Int) {
+        var accountMap:[String:Any] = ["descriptor": "", "blockheight": 0, "watching": [], "label": "Wallet Import"]
+        accountMap["descriptor"] = descriptors[descriptorToUseIndex]
+        var arrayOfWatching:[String] = []
+        
+        for (i, desc) in descriptors.enumerated() {
+            if i != descriptorToUseIndex {
+                arrayOfWatching.append(desc)
+            }
+        }
+        
+        accountMap["watching"] = arrayOfWatching
+        self.importAccountMap(accountMap)
+    }
+    
+    func prompToChoosePrimaryDesc(descriptors: [String]) {
+        DispatchQueue.main.async { [unowned vc = self] in
+            let alert = UIAlertController(title: "Select primary address format.", message: "You are adding multiple descriptors which is great, but you need to choose one to be the primary descriptor we use to derive receive addresses.", preferredStyle: vc.alertStyle)
+            
+            for (i, descriptor) in descriptors.enumerated() {
+                let descParser = DescriptorParser()
+                let descStr = descParser.descriptor(descriptor)
+                
+                alert.addAction(UIAlertAction(title: descStr.format, style: .default, handler: { [weak self] action in
+                    guard let self = self else { return }
+                    
+                    self.setPrimDesc(descriptors: descriptors, descriptorToUseIndex: i)
+                }))
+            }
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = vc.view
+            vc.present(alert, animated: true, completion: nil)
+        }
+    }
+    
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
@@ -576,8 +612,27 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                         }
                     }
                 }
+                
+                vc.onAddressDoneBlock = { [weak self] urString in
+                    guard let self = self else { return }
+                    
+                    guard let urString = urString,
+                          let descriptors = URHelper.parseUr(urString: urString) else {
+                        return
+                    }
+                    
+                    var accountMap:[String:Any] = ["descriptor": "", "blockheight": 0, "watching": [], "label": "Wallet Import"]
+                    
+                    if descriptors.count > 1 {
+                        self.prompToChoosePrimaryDesc(descriptors: descriptors)
+                    } else {
+                        accountMap["descriptor"] = descriptors[0]
+                        self.importAccountMap(accountMap)
+                    }
+                }
             }
         }
+        
         if segue.identifier == "segueToCreateMultiSig" {
             if let vc = segue.destination as? CreateMultisigViewController {
                 vc.ccXfp = ccXfp

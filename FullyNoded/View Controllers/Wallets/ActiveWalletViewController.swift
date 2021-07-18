@@ -1153,7 +1153,7 @@ class ActiveWalletViewController: UIViewController {
                     self.refreshWallet()
                     
                     guard let uncleJim = UserDefaults.standard.object(forKey: "UncleJim") as? Bool, uncleJim else {
-                        showAlert(vc: self, title: "Wallet imported ✅", message: "Wallet imported successfully, it is now rescanning the blockchain you can monitor rescan status by refreshing this page, balances and historic transactions will not display until the rescan completes.")
+                        showAlert(vc: self, title: "Wallet imported ✓", message: "Your node is now rescanning the blockchain you can monitor rescan status by refreshing this page, balances and historic transactions will not display until the rescan completes.\n\n⚠️ Always verify the addresses match what you expect them to. Just tap the info button above and scroll down till you see the address explorer.")
                         
                         return
                     }

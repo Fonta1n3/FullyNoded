@@ -116,16 +116,15 @@ class DescriptorParser {
                                 let rootPath = arr[0].replacingOccurrences(of: "[", with: "")
                                 
                                 let rootPathArr = rootPath.split(separator: "/")
-                                fingerprints.append("[\(rootPathArr[0])]")
+                                if rootPathArr.count > 0 {
+                                    fingerprints.append("[\(rootPathArr[0])]")
+                                }
+                                
                                 var deriv = "m"
                                 for (i, rootPathItem) in rootPathArr.enumerated() {
-                                    
                                     if i > 0 {
-                                        
                                         deriv += "/" + "\(rootPathItem)"
-                                        
                                     }
-                                    
                                 }
                                 derivationArray.append(deriv)
                                 
@@ -311,9 +310,7 @@ class DescriptorParser {
             }
             
             if descriptor.contains("combo") {
-                
                 dict["format"] = "Combo"
-                
             } else {
                 
                 let arr = descriptor.split(separator: "(")
@@ -321,8 +318,9 @@ class DescriptorParser {
                 for (i, item) in arr.enumerated() {
                     
                     if i == 0 {
-                        
                         switch item {
+                        case "wsh":
+                            dict["format"] = "P2WSH"
                             
                         case "wpkh":
                             dict["format"] = "P2WPKH"
@@ -330,14 +328,12 @@ class DescriptorParser {
                             
                         case "sh":
                             if arr[1] == "wpkh" {
-                                
                                 dict["format"] = "P2SH-P2WPKH"
                                 dict["isP2SHP2WPKH"] = true
-                                
+                            } else if arr[1] == "wsh" {
+                                dict["format"] = "P2SH-P2WSH"
                             } else {
-                                
                                 dict["format"] = "P2SH"
-                                
                             }
                             
                         case "pk":

@@ -263,6 +263,8 @@ class QRScannerViewController: UIViewController {
     }
     
     private func process(text: String) {
+        let lowercased = text.lowercased()
+        
         if fromSignAndVerify {
             hasScanned = false
             
@@ -277,7 +279,7 @@ class QRScannerViewController: UIViewController {
             } else if text.hasPrefix("p") {
                 // could be a specter animated psbt
                 parseSpecterAnimatedQr(text)
-            } else if text.hasPrefix("ur:crypto-psbt") || text.hasPrefix("UR:CRYPTO-PSBT") {
+            } else if lowercased.hasPrefix("ur:crypto-psbt") {
                 processUrPsbt(text: text)
             } else {
                 spinner.removeConnectingView()
@@ -285,7 +287,10 @@ class QRScannerViewController: UIViewController {
             }
             
         } else if isAccountMap {
-            if let data = text.data(using: .utf8) {
+            if lowercased.hasPrefix("ur:crypto-output") || lowercased.hasPrefix("ur:crypto-account") || lowercased.hasPrefix("ur:crypto-hdkey") {
+                hasScanned = true
+                stopScanning(text)
+            } else if let data = text.data(using: .utf8) {
                 do {
                     let accountMap = try JSONSerialization.jsonObject(with: data, options: []) as! [String:Any]
                     spinner.removeConnectingView()
