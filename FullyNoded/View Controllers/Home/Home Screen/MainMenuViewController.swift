@@ -750,7 +750,7 @@ class MainMenuViewController: UIViewController {
                 vc.text = host
                 vc.headerIcon = UIImage(systemName: "antenna.radiowaves.left.and.right")
                 vc.headerText = "Remote Control - Quick Connect"
-                vc.descriptionText = "Fully Noded macOS hosts a secure hidden service for your node which can be used to remotely connect to it.\n\nSimply scan this QR with your iPhone or iPad using the Fully Noded iOS app and connect to your node remotely from anywhere in the world!"
+                vc.descriptionText = "Fully Noded macOS hosts a secure hidden service for your node which can be used to remotely connect to it.\n\nSimply scan this QR with your iPhone or iPad using the Fully Noded iOS app and connect to your node remotely from anywhere in the world! This feature works with mainnet only."
             }
             
         case "segueToPaywall":

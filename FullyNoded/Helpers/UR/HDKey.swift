@@ -352,32 +352,28 @@ extension HDKey_ {
     }
 
     convenience init(cbor: CBOR) throws {
-        guard case let CBOR.map(pairs) = cbor
-        else {
+        guard case let CBOR.map(pairs) = cbor else {
             print("HDKey: Doesn't contain a map.")
             throw GeneralError("HDKey: Doesn't contain a map.")
         }
         
-        guard case let CBOR.boolean(isMaster) = pairs[1] ?? CBOR.boolean(false)
-        else {
+        guard case let CBOR.boolean(isMaster) = pairs[1] ?? CBOR.boolean(false) else {
             print("HDKey: Invalid `isMaster` field.")
             throw GeneralError("HDKey: Invalid `isMaster` field.")
         }
         
-        guard case let CBOR.boolean(isPrivate) = pairs[2] ?? CBOR.boolean(isMaster)
-        else {
+        guard case let CBOR.boolean(isPrivate) = pairs[2] ?? CBOR.boolean(isMaster) else {
             print("HDKey: Invalid `isPrivate` field.")
             throw GeneralError("HDKey: Invalid `isPrivate` field.")
         }
+        
         if isMaster && !isPrivate {
             print("HDKey: Master key cannot be public.")
             throw GeneralError("HDKey: Master key cannot be public.")
         }
         
-        guard
-            case let CBOR.byteString(keyDataValue) = pairs[3] ?? CBOR.null,
-            keyDataValue.count == 33
-        else {
+        guard case let CBOR.byteString(keyDataValue) = pairs[3] ?? CBOR.null,
+            keyDataValue.count == 33 else {
             print("HDKey: Invalid key data.")
             throw GeneralError("HDKey: Invalid key data.")
         }
@@ -386,10 +382,8 @@ extension HDKey_ {
         
         let chainCode: Data?
         if let chainCodeItem = pairs[4] {
-            guard
-                case let CBOR.byteString(chainCodeValue) = chainCodeItem,
-                chainCodeValue.count == 32
-            else {
+            guard case let CBOR.byteString(chainCodeValue) = chainCodeItem,
+                chainCodeValue.count == 32 else {
                 print("HDKey: Invalid key chain code.")
                 throw GeneralError("HDKey: Invalid key chain code.")
             }
@@ -415,7 +409,7 @@ extension HDKey_ {
         } else {
             origin = nil
         }
-                
+                        
         let children: DerivationPath?
         if let childrenItem = pairs[7] {
             children = try DerivationPath(taggedCBOR: childrenItem)

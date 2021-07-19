@@ -281,14 +281,14 @@ class URHelper {
             case 1:
                 guard case let CBOR.unsignedInt(fingerprint) = value else {
                     error = "Unable to decode the master key fingerprint."
-                    break
+                    fallthrough
                 }
                 
                 xfp = String(Int(fingerprint), radix: 16)
                 
             case 2:
                 guard case let CBOR.array(accounts) = value else { fallthrough }
-                                
+                                                
                 for (i, elem) in accounts.enumerated() {
                     if case let CBOR.tagged(tag, taggedCbor) = elem {
                         

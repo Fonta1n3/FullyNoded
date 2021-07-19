@@ -45,6 +45,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         rpcPassword.delegate = self
         rpcUserField.delegate = self
         onionAddressField.delegate = self
+        certField.delegate = self
+        macaroonField.delegate = self
         rpcPassword.isSecureTextEntry = true
         onionAddressField.isSecureTextEntry = false
         saveButton.clipsToBounds = true
@@ -302,7 +304,7 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
     }
     
     func configureTapGesture() {
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard (_:)))
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard(_:)))
         tapGesture.numberOfTapsRequired = 1
         view.addGestureRecognizer(tapGesture)
     }
@@ -419,6 +421,8 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
         nodeLabel.resignFirstResponder()
         rpcUserField.resignFirstResponder()
         rpcPassword.resignFirstResponder()
+        certField.resignFirstResponder()
+        macaroonField.resignFirstResponder()
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
