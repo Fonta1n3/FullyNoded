@@ -328,16 +328,14 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let documentPicker = UIDocumentPickerViewController(documentTypes: ["public.item"], in: .import)
+            let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.item], asCopy: true)
             documentPicker.delegate = self
             documentPicker.modalPresentationStyle = .formSheet
             self.present(documentPicker, animated: true, completion: nil)
         }
     }
     
-    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-        guard controller.documentPickerMode == .import else { return }
-        
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {        
         guard let text = try? String(contentsOf: urls[0].absoluteURL), Keys.validTx(text) else {
             
             guard let data = try? Data(contentsOf: urls[0].absoluteURL) else {
@@ -1379,7 +1377,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             }
             
             if isChange {
-                isChangeImageView.image = UIImage(systemName: "arrow.2.circlepath")
+                isChangeImageView.image = UIImage(systemName: "arrow.triangle.2.circlepath")
                 backgroundView2.backgroundColor = .systemPurple
                 inputTypeLabel.text = "Change input"
             } else {
@@ -1541,7 +1539,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             }
             
             if isChange {
-                isChangeImageView.image = UIImage(systemName: "arrow.2.circlepath")
+                isChangeImageView.image = UIImage(systemName: "arrow.triangle.2.circlepath")
                 backgroundView2.backgroundColor = .systemPurple
                 addressTypeLabel.text = "Change address"
             } else {
@@ -2126,7 +2124,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             
             try? data.write(to: fileURL)
             
-            let controller = UIDocumentPickerViewController(url: fileURL, in: .exportToService)
+            let controller = UIDocumentPickerViewController(forExporting: [fileURL], asCopy: true)
             self.present(controller, animated: true)
         }
     }

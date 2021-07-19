@@ -8,7 +8,7 @@
 
 import UIKit
 
-protocol UTXOCellDelegate: class {
+protocol UTXOCellDelegate: AnyObject {
     func didTapToLock(_ utxo: UtxosStruct)
     func didTapToEditLabel(_ utxo: UtxosStruct)
 }

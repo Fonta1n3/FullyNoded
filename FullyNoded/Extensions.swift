@@ -283,7 +283,7 @@ public extension Double {
             break
         }
         
-        return "\(symbol)\(self.withCommas())) / btc"
+        return "\(symbol)\(self.withCommas()) / btc"
     }
     
     var fiatString: String {

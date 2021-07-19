@@ -10,7 +10,7 @@
 import Foundation
 import Tor
 
-protocol OnionManagerDelegate: class {
+protocol OnionManagerDelegate: AnyObject {
     func torConnProgress(_ progress: Int)
     func torConnFinished()
     func torConnDifficulties()
@@ -164,18 +164,10 @@ class TorClient: NSObject, URLSessionDelegate {
         }
     }
     
-//    func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-//        if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust {
-//            if let trust = challenge.protectionSpace.serverTrust {
-//                completionHandler(.useCredential, URLCredential(trust: trust))
-//            }
-//        }
-//    }
-    
     func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         guard let trust = challenge.protectionSpace.serverTrust else { return }
         let credential = URLCredential(trust: trust)
-
+        
         if let certificate = cert,
             let remoteCert = SecTrustGetCertificateAtIndex(trust, 0) {
             let remoteCertData = SecCertificateCopyData(remoteCert) as NSData

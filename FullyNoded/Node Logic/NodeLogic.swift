@@ -418,7 +418,7 @@ class NodeLogic {
                         arrayToReturn.append([
                                                 "address": invoice,
                                                 "amount": "-\(amount) sats",
-                                                "confirmations": status,
+                                                "confirmations": "Sent",
                                                 "label": "",
                                                 "date": dateString,
                                                 "rbf": false,

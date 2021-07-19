@@ -43,7 +43,7 @@ class ActiveWalletViewController: UIViewController {
     private var isFiat = false
     private var isBtc = true
     private var isSats = false
-    let fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+    var fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
     
     @IBOutlet weak private var currencyControl: UISegmentedControl!
     @IBOutlet weak private var backgroundView: UIVisualEffectView!
@@ -72,6 +72,8 @@ class ActiveWalletViewController: UIViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
+        fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+        
         if KeyChain.getData("UnlockPassword") == nil && UserDefaults.standard.object(forKey: "doNotShowWarning") == nil {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
@@ -546,9 +548,11 @@ class ActiveWalletViewController: UIViewController {
         let confs = dict["confirmations"] as! String
         
         if confs.contains("complete") {
-            confirmationsLabel.text = confs
-        } else if confs.contains("incomplete") || confs.contains("unpaid") || confs.contains("expired") || confs.contains("paid") {
-            confirmationsLabel.text = confs
+            confirmationsLabel.text = "Sent"
+        } else if confs.contains("paid") {
+            confirmationsLabel.text = "Received"
+        } else if confs.contains("Sent") {
+            confirmationsLabel.text = "Sent"
         } else {
             confirmationsLabel.text = confs + " " + "confs"
         }
@@ -655,12 +659,20 @@ class ActiveWalletViewController: UIViewController {
             fetchOriginRateButton.alpha = 0
             
         } else {
-            originFiatValueLabel.text = "origin exchange rate missing or mismatched"
+            originFiatValueLabel.text = ""
             fetchOriginRateButton.alpha = 1
         }
         
         memoLabel.text = dict["memo"] as? String ?? "no transaction memo"
         transactionLabel.text = dict["transactionLabel"] as? String ?? "no transaction label"
+        
+        if memoLabel.text == "" {
+            memoLabel.text = "no transaction memo"
+        }
+        
+        if transactionLabel.text == "" {
+            transactionLabel.text = "no transaction label"
+        }
         
         if amount.hasPrefix("-") {
             categoryImage.image = UIImage(systemName: "arrow.up.right")
@@ -678,7 +690,7 @@ class ActiveWalletViewController: UIViewController {
             amountLabel.text = (amountLabel.text!).replacingOccurrences(of: "+", with: "")
             amountLabel.text = (amountLabel.text!).replacingOccurrences(of: "-", with: "")
             amountLabel.textColor = .darkGray
-            categoryImage.image = UIImage.init(systemName: "arrow.2.circlepath")
+            categoryImage.image = UIImage.init(systemName: "arrow.triangle.2.circlepath")
             categoryImage.tintColor = .darkGray
         }
         

@@ -198,7 +198,7 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
                     connectedImageView.image = UIImage(systemName: "person.crop.circle.badge.checkmark")
                     connectedImageView.tintColor = .systemGreen
                 } else {
-                    connectedImageView.image = UIImage(systemName: "person.crop.circle.badge.exclam")
+                    connectedImageView.image = UIImage(systemName: "person.crop.circle.badge.exclamationmark")
                     connectedImageView.tintColor = .systemRed
                 }
             }

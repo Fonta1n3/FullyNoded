@@ -61,7 +61,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             let alert = UIAlertController(title: "Upload a file?", message: "Here you can upload files from your Hardware Wallets to easily create Fully Noded Wallet's", preferredStyle: vc.alertStyle)
             
             alert.addAction(UIAlertAction(title: "Upload", style: .default, handler: { [unowned vc = self] action in
-                let documentPicker = UIDocumentPickerViewController(documentTypes: ["public.item"], in: .import)//public.item in iOS and .import
+                let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.item], asCopy: true)
                 documentPicker.delegate = vc
                 documentPicker.modalPresentationStyle = .formSheet
                 vc.present(documentPicker, animated: true, completion: nil)
@@ -118,144 +118,141 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     }
     
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-        if controller.documentPickerMode == .import {
+        guard let data = try? Data(contentsOf: urls[0].absoluteURL) else {
+            spinner.removeConnectingView()
+            showAlert(vc: self, title: "", message: "That does not appear to be a recognized wallet backup/export/import file")
+            return
+        }
+        
+        guard let dict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] else {
             
-            guard let data = try? Data(contentsOf: urls[0].absoluteURL) else {
+            guard let txt = String(bytes: data, encoding: .utf8) else {
                 spinner.removeConnectingView()
                 showAlert(vc: self, title: "", message: "That does not appear to be a recognized wallet backup/export/import file")
                 return
             }
-                        
-            guard let dict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] else {
-                                
-                guard let txt = String(bytes: data, encoding: .utf8) else {
-                    spinner.removeConnectingView()
-                    showAlert(vc: self, title: "", message: "That does not appear to be a recognized wallet backup/export/import file")
-                    return
-                }
-                
-                let myStrings = txt.components(separatedBy: .newlines)
-                var name = ""
-                var sigsRequired = ""
-                var deriv = ""
-                var keys = [String]()
-                var descriptor = ""
-                
-                for item in myStrings {
-                    if item.contains("Name: ") {
-                        name = item.replacingOccurrences(of: "Name: ", with: "")
-                    } else if item.contains("Policy: ") {
-                        let policy = item.replacingOccurrences(of: "Policy: ", with: "")
-                        let arr = policy.split(separator: " ")
-                        sigsRequired = "\(arr[0])"
-                    } else if item.contains("Format: ") {
-                        guard item.contains("P2WSH") else {
-                            showAlert(vc: self, title: "Unsupported policy", message: "Currently we only support p2wsh multisig imports.")
-                            return
-                        }
-                    } else if item.contains("Derivation: ") {
-                        deriv = item.replacingOccurrences(of: "Derivation: ", with: "")
-                    } else {
-                        var processed = item.condenseWhitespace()
-                        processed = processed.replacingOccurrences(of: "\n", with: "")
-                        if processed != "" {
-                            keys.append(processed.replacingOccurrences(of: " ", with: ""))
-                        }
+            
+            let myStrings = txt.components(separatedBy: .newlines)
+            var name = ""
+            var sigsRequired = ""
+            var deriv = ""
+            var keys = [String]()
+            var descriptor = ""
+            
+            for item in myStrings {
+                if item.contains("Name: ") {
+                    name = item.replacingOccurrences(of: "Name: ", with: "")
+                } else if item.contains("Policy: ") {
+                    let policy = item.replacingOccurrences(of: "Policy: ", with: "")
+                    let arr = policy.split(separator: " ")
+                    sigsRequired = "\(arr[0])"
+                } else if item.contains("Format: ") {
+                    guard item.contains("P2WSH") else {
+                        showAlert(vc: self, title: "Unsupported policy", message: "Currently we only support p2wsh multisig imports.")
+                        return
                     }
-                }
-                
-                descriptor = "wsh(sortedmulti(\(sigsRequired),"
-                
-                for (i, key) in keys.enumerated() {
-                    if !key.hasPrefix("#") {
-                        let arr = key.split(separator: ":")
-                        let xfp = "\(arr[0])"
-                        let xpub = "\(arr[1])"
-                        if !xpub.hasPrefix("xpub") && !xpub.hasPrefix("tpub") {
-                            guard let extKey = XpubConverter.convert(extendedKey: xpub) else {
-                                showAlert(vc: self, title: "Error", message: "There was a problem converting your extended key to an xpub.")
-                                return
-                            }
-                            
-                            descriptor += "[\(xfp)/\(deriv.replacingOccurrences(of: "m/", with: ""))]\(extKey)/0/*"
-                        } else {
-                            descriptor += "[\(xfp)/\(deriv.replacingOccurrences(of: "m/", with: ""))]\(xpub)/0/*"
-                        }
-                        
-                        if i < keys.count {
-                            descriptor += ","
-                        } else {
-                            descriptor += "))"
-                        }
-                    }
-                }
-                
-                let accountMap = ["descriptor": descriptor, "blockheight": 0, "watching": [], "label": name] as [String : Any]
-                promptToImportCoboMultiSig(accountMap)
-                /*
-                 Name: CV_85C39000_2-3
-                 Policy: 2 of 3
-                 Derivation: m/48'/1'/0'/2'
-                 Format: P2WSH
-
-                 C2202A77: Vpub5nbpJQxCxQu9Nv5Effa1F8gdQsijrgk7KrMkioLs5DoRwb7MCjC3t1P2y9mXbnBgu29yL8EYexZqzniFdX7Xo3q8TuwkVAqbQpgxfAfrRiW
-                 5271C071: Vpub5mpRVCzdkDTtCwH9LrfiiPonePjP4CZSakA4wynC4zVBVAooaykiCzjUniYbLpWxoRotGiXwoKGcHC5kSxiJGX1Ybjf2ioNommVmCJg7AV2
-                 748CC6AA: Vpub5mcrJpVp9X8ZKsjyxwNu36SLRAWTMbqUtbmtcapahAtqVa66JtXhT4Uc9SVLN1nF782sPRRT2jbUbe7XzT8eue6vXsyDJKBvexGJHewyPxQ
-                 */
-                return
-            }
-                        
-            if let extendedPublicKeys = dict["extendedPublicKeys"] as? NSArray,
-               let quorum = dict["quorum"] as? NSDictionary,
-               let requiredSigners = quorum["requiredSigners"] as? Int {
-                let name = dict["name"] as? String ?? "Unchained"
-                var descriptor = "sh(sortedmulti(\(requiredSigners),"
-                
-                for (i, key) in extendedPublicKeys.enumerated() {
-                    if let keyDict = key as? NSDictionary {
-                        if var keyPath = keyDict["bip32Path"] as? String,
-                           let xfp = keyDict["xfp"] as? String,
-                           let xpub = keyDict["xpub"] as? String {
-                            
-                            if keyPath != "Unknown" {
-                                keyPath = "[\(keyPath.replacingOccurrences(of: "m", with: xfp))]\(xpub)/0/*"
-                            } else {
-                                keyPath = "[\(xfp)]\(xpub)/0/*"
-                            }
-                            
-                            descriptor += keyPath
-                            
-                            if i + 1 == extendedPublicKeys.count {
-                                descriptor += "))"
-                                print("descriptor: \(descriptor)")
-                                let accountMap = ["descriptor": descriptor, "blockheight": 0, "watching": [], "label": name] as [String : Any]
-                                promptToImportUnchained(accountMap)
-                            } else {
-                                descriptor += ","
-                            }
-                        }
+                } else if item.contains("Derivation: ") {
+                    deriv = item.replacingOccurrences(of: "Derivation: ", with: "")
+                } else {
+                    var processed = item.condenseWhitespace()
+                    processed = processed.replacingOccurrences(of: "\n", with: "")
+                    if processed != "" {
+                        keys.append(processed.replacingOccurrences(of: " ", with: ""))
                     }
                 }
             }
             
-            if let _ = dict["chain"] as? String {
-                /// We think its a coldcard skeleton import
-                promptToImportColdcardSingleSig(dict)
-                
-            } else if let deriv = dict["p2wsh_deriv"] as? String, let xfp = dict["xfp"] as? String, let p2wsh = dict["p2wsh"] as? String {
-                /// It is most likely a multi-sig wallet export
-                promptToImportColdcardMsig(xfp, p2wsh, deriv)
-                
-            } else if let _ = dict["wallet_type"] as? String {
-                /// We think its an Electrum wallet
-                promptToImportElectrumMsig(dict)
-                
-            } else if let _ = dict["descriptor"] as? String {
-                promptToImportAccountMap(dict: dict)
-                
-            } else if let _ = dict["ExtPubKey"] as? String {
-                promptToImportCoboSingleSig(dict)
+            descriptor = "wsh(sortedmulti(\(sigsRequired),"
+            
+            for (i, key) in keys.enumerated() {
+                if !key.hasPrefix("#") {
+                    let arr = key.split(separator: ":")
+                    let xfp = "\(arr[0])"
+                    let xpub = "\(arr[1])"
+                    if !xpub.hasPrefix("xpub") && !xpub.hasPrefix("tpub") {
+                        guard let extKey = XpubConverter.convert(extendedKey: xpub) else {
+                            showAlert(vc: self, title: "Error", message: "There was a problem converting your extended key to an xpub.")
+                            return
+                        }
+                        
+                        descriptor += "[\(xfp)/\(deriv.replacingOccurrences(of: "m/", with: ""))]\(extKey)/0/*"
+                    } else {
+                        descriptor += "[\(xfp)/\(deriv.replacingOccurrences(of: "m/", with: ""))]\(xpub)/0/*"
+                    }
+                    
+                    if i < keys.count {
+                        descriptor += ","
+                    } else {
+                        descriptor += "))"
+                    }
+                }
             }
+            
+            let accountMap = ["descriptor": descriptor, "blockheight": 0, "watching": [], "label": name] as [String : Any]
+            promptToImportCoboMultiSig(accountMap)
+            /*
+             Name: CV_85C39000_2-3
+             Policy: 2 of 3
+             Derivation: m/48'/1'/0'/2'
+             Format: P2WSH
+             
+             C2202A77: Vpub5nbpJQxCxQu9Nv5Effa1F8gdQsijrgk7KrMkioLs5DoRwb7MCjC3t1P2y9mXbnBgu29yL8EYexZqzniFdX7Xo3q8TuwkVAqbQpgxfAfrRiW
+             5271C071: Vpub5mpRVCzdkDTtCwH9LrfiiPonePjP4CZSakA4wynC4zVBVAooaykiCzjUniYbLpWxoRotGiXwoKGcHC5kSxiJGX1Ybjf2ioNommVmCJg7AV2
+             748CC6AA: Vpub5mcrJpVp9X8ZKsjyxwNu36SLRAWTMbqUtbmtcapahAtqVa66JtXhT4Uc9SVLN1nF782sPRRT2jbUbe7XzT8eue6vXsyDJKBvexGJHewyPxQ
+             */
+            return
+        }
+        
+        if let extendedPublicKeys = dict["extendedPublicKeys"] as? NSArray,
+           let quorum = dict["quorum"] as? NSDictionary,
+           let requiredSigners = quorum["requiredSigners"] as? Int {
+            let name = dict["name"] as? String ?? "Unchained"
+            var descriptor = "sh(sortedmulti(\(requiredSigners),"
+            
+            for (i, key) in extendedPublicKeys.enumerated() {
+                if let keyDict = key as? NSDictionary {
+                    if var keyPath = keyDict["bip32Path"] as? String,
+                       let xfp = keyDict["xfp"] as? String,
+                       let xpub = keyDict["xpub"] as? String {
+                        
+                        if keyPath != "Unknown" {
+                            keyPath = "[\(keyPath.replacingOccurrences(of: "m", with: xfp))]\(xpub)/0/*"
+                        } else {
+                            keyPath = "[\(xfp)]\(xpub)/0/*"
+                        }
+                        
+                        descriptor += keyPath
+                        
+                        if i + 1 == extendedPublicKeys.count {
+                            descriptor += "))"
+                            print("descriptor: \(descriptor)")
+                            let accountMap = ["descriptor": descriptor, "blockheight": 0, "watching": [], "label": name] as [String : Any]
+                            promptToImportUnchained(accountMap)
+                        } else {
+                            descriptor += ","
+                        }
+                    }
+                }
+            }
+        }
+        
+        if let _ = dict["chain"] as? String {
+            /// We think its a coldcard skeleton import
+            promptToImportColdcardSingleSig(dict)
+            
+        } else if let deriv = dict["p2wsh_deriv"] as? String, let xfp = dict["xfp"] as? String, let p2wsh = dict["p2wsh"] as? String {
+            /// It is most likely a multi-sig wallet export
+            promptToImportColdcardMsig(xfp, p2wsh, deriv)
+            
+        } else if let _ = dict["wallet_type"] as? String {
+            /// We think its an Electrum wallet
+            promptToImportElectrumMsig(dict)
+            
+        } else if let _ = dict["descriptor"] as? String {
+            promptToImportAccountMap(dict: dict)
+            
+        } else if let _ = dict["ExtPubKey"] as? String {
+            promptToImportCoboSingleSig(dict)
         }
     }
     
@@ -616,8 +613,14 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                 vc.onAddressDoneBlock = { [weak self] urString in
                     guard let self = self else { return }
                     
-                    guard let urString = urString,
-                          let descriptors = URHelper.parseUr(urString: urString) else {
+                    guard let urString = urString else {
+                        return
+                    }
+                    
+                    let (descriptors, error) = URHelper.parseUr(urString: urString)
+                    
+                    guard error == nil, let descriptors = descriptors else {
+                        showAlert(vc: self, title: "Error", message: error!)
                         return
                     }
                     

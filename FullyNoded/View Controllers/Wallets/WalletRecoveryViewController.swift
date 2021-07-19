@@ -22,7 +22,7 @@ class WalletRecoveryViewController: UIViewController, UIDocumentPickerDelegate {
     @IBAction func uploadFileAction(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            let documentPicker = UIDocumentPickerViewController(documentTypes: ["public.item"], in: .import)
+            let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.item], asCopy: true)
             documentPicker.delegate = self
             documentPicker.modalPresentationStyle = .formSheet
             self.present(documentPicker, animated: true, completion: nil)
@@ -30,53 +30,50 @@ class WalletRecoveryViewController: UIViewController, UIDocumentPickerDelegate {
     }
     
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-        if controller.documentPickerMode == .import {
+        guard let data = try? Data(contentsOf: urls[0].absoluteURL),
+              let dict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] else {
+            showAlert(vc: self, title: "", message: "That does not appear to be a recognized wallet backup file. This is only compatible with Fully Noded wallet backup files.")
+            return
+        }
+        
+        if let wallets = dict["wallets"] as? [[String:Any]], let transactions = dict["transactions"] as? [[String:Any]] {
+            var mainnetWallets = [[String:Any]]()
+            var testnetWallets = [[String:Any]]()
             
-            guard let data = try? Data(contentsOf: urls[0].absoluteURL),
-                  let dict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] else {
-                showAlert(vc: self, title: "", message: "That does not appear to be a recognized wallet backup file. This is only compatible with Fully Noded wallet backup files.")
-                return
-            }
-            
-            if let wallets = dict["wallets"] as? [[String:Any]], let transactions = dict["transactions"] as? [[String:Any]] {
-                var mainnetWallets = [[String:Any]]()
-                var testnetWallets = [[String:Any]]()
-                
-                for (i, wallet) in wallets.enumerated() {
-                    for (_, value) in wallet {
-                        guard let string = value as? String else { return }
+            for (i, wallet) in wallets.enumerated() {
+                for (_, value) in wallet {
+                    guard let string = value as? String else { return }
+                    
+                    let data = string.dataUsingUTF8StringEncoding
+                    
+                    guard let walletDict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] else {
+                        showAlert(vc: self, title: "", message: "That does not appear to be a recognized wallet backup file. This is only compatible with Fully Noded wallet backup files.")
                         
-                        let data = string.dataUsingUTF8StringEncoding
-                        
-                        guard let walletDict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String:Any] else {
-                            showAlert(vc: self, title: "", message: "That does not appear to be a recognized wallet backup file. This is only compatible with Fully Noded wallet backup files.")
-                            
-                            return
-                        }
-                        
-                        guard let desc = walletDict["descriptor"] as? String else { return }
-                        
-                        let descriptorParser = DescriptorParser()
-                        let descStr = descriptorParser.descriptor(desc)
-                        if descStr.chain == "Mainnet" {
-                            mainnetWallets.append(walletDict)
-                        } else if descStr.chain == "Testnet" {
-                            testnetWallets.append(walletDict)
-                        }
+                        return
                     }
                     
-                    if i + 1 == wallets.count {
-                        let utxos = dict["utxos"] as! String
-                        let utxosData = utxos.dataUsingUTF8StringEncoding
-                        
-                        guard let utxoArray = try? JSONSerialization.jsonObject(with: utxosData, options: []) as? [[String:Any]] else {
-                            alertToRecoverWalletsTransactions(mainnetWallets, testnetWallets, transactions, [[:]])
-                            
-                            return
-                        }
-                        
-                        alertToRecoverWalletsTransactions(mainnetWallets, testnetWallets, transactions, utxoArray)
+                    guard let desc = walletDict["descriptor"] as? String else { return }
+                    
+                    let descriptorParser = DescriptorParser()
+                    let descStr = descriptorParser.descriptor(desc)
+                    if descStr.chain == "Mainnet" {
+                        mainnetWallets.append(walletDict)
+                    } else if descStr.chain == "Testnet" {
+                        testnetWallets.append(walletDict)
                     }
+                }
+                
+                if i + 1 == wallets.count {
+                    let utxos = dict["utxos"] as! String
+                    let utxosData = utxos.dataUsingUTF8StringEncoding
+                    
+                    guard let utxoArray = try? JSONSerialization.jsonObject(with: utxosData, options: []) as? [[String:Any]] else {
+                        alertToRecoverWalletsTransactions(mainnetWallets, testnetWallets, transactions, [[:]])
+                        
+                        return
+                    }
+                    
+                    alertToRecoverWalletsTransactions(mainnetWallets, testnetWallets, transactions, utxoArray)
                 }
             }
         }

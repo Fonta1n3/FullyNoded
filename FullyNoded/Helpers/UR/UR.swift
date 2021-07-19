@@ -25,41 +25,29 @@ class URHelper {
         return Data(bytes).base64EncodedString()
     }
     
-    static func parseUr(urString: String) -> [String]? {
+    static func parseUr(urString: String) -> (descriptors: [String]?, error: String?) {
         let lowercased = urString.lowercased()
         
         switch lowercased {
         case _ where lowercased.hasPrefix("ur:crypto-hdkey"):
-            if let descriptor = parseHdkey(urString: urString) {
-                return [descriptor]
-            } else {
-                return nil
-            }
+            return parseHdkey(urString: urString)
             
         case _ where lowercased.hasPrefix("ur:crypto-account"):
-            if let descriptorArray = parseCryptoAccount(urString) {
-                return descriptorArray
-            } else {
-                return nil
-            }
+            return parseCryptoAccount(urString)
             
         case _ where lowercased.hasPrefix("ur:crypto-output"):
-            if let descriptor = parseCryptoOutput(urString) {
-                return [descriptor]
-            } else {
-                return nil
-            }
+            return parseCryptoOutput(urString)
             
         default:
-            return nil
+            return (nil, "Unsupported UR type. Please let us know about it on Twitter, Telegram or Github.")
         }
     }
     
-    static func parseCryptoOutput(_ urString: String) -> String? {        
+    static func parseCryptoOutput(_ urString: String) -> (descriptors: [String]?, error: String?) {
         guard let ur = try? URDecoder.decode(urString.condenseWhitespace()),
               let decodedCbor = try? CBOR.decode(ur.cbor.bytes),
               case let CBOR.tagged(tag, taggedCbor) = decodedCbor else {
-            return nil
+            return (nil, "Error decoding your output UR.")
         }
         
         switch tag.rawValue {
@@ -79,42 +67,44 @@ class URHelper {
             return parseWPKHCbor(taggedCbor: taggedCbor)
 
         default:
-            return nil
+            return (nil, "Unsupported script type for output. Please let us know about it on Twitter, Github or Telegram.")
         }
     }
     
-    static func parseWPKHCbor(taggedCbor: CBOR) -> String? {
+    static func parseWPKHCbor(taggedCbor: CBOR) -> (descriptors: [String]?, error: String?) {
         guard let key = try? HDKey_(taggedCBOR: taggedCbor),
               let origin = key.origin,
               let extKey = key.base58 else {
-            return nil
+            return (nil, "Error deriving hdkey/origin/xpub from your witness public key hash CBOR.")
         }
         
-        return "wpkh([\(origin)]\(extKey)/0/*)"
+        return (["wpkh([\(origin)]\(extKey)/0/*)"], nil)
     }
     
-    static func parsePKHCbor(taggedCbor: CBOR) -> String? {
+    static func parsePKHCbor(taggedCbor: CBOR) -> (descriptors: [String]?, error: String?) {
         guard let key = try? HDKey_(taggedCBOR: taggedCbor),
               let origin = key.origin,
               let extKey = key.base58 else {
-            return nil
+            return (nil, "Error deriving hdkey/origin/xpub from your public key hash CBOR.")
         }
         
-        return "pkh([\(origin)]\(extKey)/0/*)"
+        return (["pkh([\(origin)]\(extKey)/0/*)"], nil)
     }
     
-    static func parseWSHCbor(taggedCbor: CBOR) -> String? {
-        guard case let CBOR.tagged(embeddedTag, embeddedCbor) = taggedCbor else { return nil }
+    static func parseWSHCbor(taggedCbor: CBOR) -> (descriptors: [String]?, error: String?) {
+        guard case let CBOR.tagged(embeddedTag, embeddedCbor) = taggedCbor else {
+            return (nil, "No tagged CBOR in your witness script hash CBOR.")
+        }
         
         switch embeddedTag {
         case 406:
             return parseMultisig(isBIP67: false, script: "wsh(multi())", cbor: embeddedCbor)
         case 407:
             return parseMultisig(isBIP67: true, script: "wsh(sortedmulti())", cbor: embeddedCbor)
-        case 303:
-            return parsePlainWSHCbor(taggedCbor: taggedCbor)
+//        case 303:
+//            return parsePlainWSHCbor(taggedCbor: taggedCbor)
         default:
-            return nil
+            return (nil, "Unsupported script. Fully Noded does not support single sig descriptors with multisig scripts.")
         }
     }
     
@@ -128,8 +118,9 @@ class URHelper {
         return "wsh([\(origin)]\(extKey)/0/*)"
     }
     
-    static func parseSHCbor(taggedCbor: CBOR) -> String? {
-        guard case let CBOR.tagged(embeddedTag, embeddedCbor) = taggedCbor else { return nil }
+    static func parseSHCbor(taggedCbor: CBOR) -> (descriptors: [String]?, error: String?) {
+        guard case let CBOR.tagged(embeddedTag, embeddedCbor) = taggedCbor else { return (nil, "No tagged CBOR in your script hash UR.") }
+        
         switch embeddedTag {
         case 406: // multisig
             return parseMultisig(isBIP67: false, script: "sh", cbor: embeddedCbor)
@@ -142,28 +133,30 @@ class URHelper {
             return parseSHWPKHCbor(embeddedCbor: embeddedCbor)
         case 303:
             // sh()
-            return parsePlainSHCbor(taggedCbor: taggedCbor)
+            return (nil, "Fully Noded does not support multisig scripts for single sig descriptors.")
         case 401:
             // sh(wsh())
-            return parseSHWSHCbor(embeddedCbor: embeddedCbor)
+            return (nil, "Fully Noded does not support multisig scripts for single sig descriptors.")
             
         default:
-            return nil
+            return (nil, "Unsupported script hash. Please let us know about it on Twitter, Github or Telegram.")
         }
     }
     
-    static func parseSHWSHCbor(embeddedCbor: CBOR) -> String? {
-        guard case let CBOR.tagged(embeddedTag_, embeddedCbor_) = embeddedCbor else { return nil }
+    static func parseSHWSHCbor(embeddedCbor: CBOR) -> (descriptors: [String]?, error: String?) {
+        guard case let CBOR.tagged(embeddedTag_, embeddedCbor_) = embeddedCbor else {
+            return (nil, "No tagged CBOR in your script hash witness script hash UR.")
+        }
         
         switch embeddedTag_ {
         case 406:
             return parseMultisig(isBIP67: false, script: "sh(wsh(multi()))", cbor: embeddedCbor_)
         case 407:
             return parseMultisig(isBIP67: true, script: "sh(wsh(sortedmulti()))", cbor: embeddedCbor_)
-        case 303:
-            return parsePlainWSHCbor(taggedCbor: embeddedCbor)
+//        case 303:
+//            return parsePlainWSHCbor(taggedCbor: embeddedCbor)
         default:
-            return nil
+            return (nil, "Unsupported script type. Fully Noded does not support multisig scripts for single sig descriptors.")
         }
     }
     
@@ -187,18 +180,18 @@ class URHelper {
         return "sh([\(origin)]\(extKey)/0/*)"
     }
     
-    static func parseSHWPKHCbor(embeddedCbor: CBOR) -> String? {
+    static func parseSHWPKHCbor(embeddedCbor: CBOR) -> (descriptors: [String]?, error: String?) {
         guard let key = try? HDKey_(taggedCBOR: embeddedCbor),
               let origin = key.origin,
               let extKey = key.base58 else {
-            return nil
+            return (nil, "Error deriving hdkey/origin/base58 from your script hash witness public key hash CBOR.")
         }
         
-        return "sh(wpkh([\(origin)]\(extKey)/0/*))"
+        return (["sh(wpkh([\(origin)]\(extKey)/0/*))"], nil)
     }
     
-    static func parseMultisig(isBIP67: Bool, script: String, cbor: CBOR) -> String? {
-        guard case let CBOR.map(map) = cbor else { return nil }
+    static func parseMultisig(isBIP67: Bool, script: String, cbor: CBOR) -> (descriptors: [String]?, error: String?) {
+        guard case let CBOR.map(map) = cbor else { return (nil, "No map found in your multisig UR.") }
         
         var thresholdCheck:Int?
         var keys = ""
@@ -206,7 +199,9 @@ class URHelper {
         for (key, value) in map {
             switch key {
             case 1:
-                guard case let CBOR.unsignedInt(thresholdRaw) = value else { fallthrough }
+                guard case let CBOR.unsignedInt(thresholdRaw) = value else {
+                    return (nil, "Invalid multisig hdkey, no threshold provided.")
+                }
                 
                 thresholdCheck = Int(thresholdRaw)
 
@@ -221,12 +216,11 @@ class URHelper {
                               let xpub = hdkey.base58,
                               let origin = hdkey.origin else {
                             
-                            return nil
+                            return (nil, "Error converting hdkey CBOR into xpub and origin.")
                         }
                         
                         guard origin.description != "" else {
-                            print("invalid hdkey, no origin info?")
-                            return nil
+                            return (nil, "Invalid hdkey, no origin info! Fully Noded does not support hdkeys with origin info missing.")
                         }
                         
                         var childPath = "/0/*"
@@ -236,9 +230,9 @@ class URHelper {
                         }
                                                 
                         if let _ = origin.sourceFingerprint {
-                            keys += "," + "[\(origin.description)]" + xpub + childPath
+                            keys += "," + "[\(origin)]" + xpub + childPath
                         } else {
-                            keys += "," + "[00000000/\(origin.description)]" + xpub + childPath
+                            keys += "," + "[00000000/\(origin)]" + xpub + childPath
                         }
                     }
                 }
@@ -248,42 +242,47 @@ class URHelper {
             }
         }
         
-        guard let threshold = thresholdCheck else { return nil }
+        guard let threshold = thresholdCheck else { return (nil, "Invalid multisig hdkey, no threshold provided.") }
         
         switch script {
         case "wsh(multi())":
-            return "wsh(multi(\(threshold)\(keys)))"
+            return (["wsh(multi(\(threshold)\(keys)))"], nil)
         case "wsh(sortedmulti())":
-            return "wsh(sortedmulti(\(threshold)\(keys)))"
+            return (["wsh(sortedmulti(\(threshold)\(keys)))"], nil)
         case "sh(wsh(sortedmulti()))":
-            return "sh(wsh(sortedmulti(\(threshold)\(keys))))"
+            return (["sh(wsh(sortedmulti(\(threshold)\(keys))))"], nil)
         case "sh(wsh(multi()))":
-            return "sh(wsh(multi(\(threshold)\(keys))))"
+            return (["sh(wsh(multi(\(threshold)\(keys))))"], nil)
         case "sh(sortedmulti())":
-            return "sh(sortedmulti(\(threshold)\(keys)))"
+            return (["sh(sortedmulti(\(threshold)\(keys)))"], nil)
         case "sh(multi())":
-            return "sh(multi(\(threshold)\(keys)))"
+            return (["sh(multi(\(threshold)\(keys)))"], nil)
         default:
-            return nil
+            return (nil, "Unsupported multisig script. Please let us know about this via Twitter, Github or Telegram.")
         }
     }
     
-    static func parseCryptoAccount(_ urString: String) -> [String]? {
+    static func parseCryptoAccount(_ urString: String) -> (descriptors: [String]?, error: String?) {
         guard let ur = try? URDecoder.decode(urString.condenseWhitespace()),
               let decodedCbor = try? CBOR.decode(ur.cbor.bytes),
               case let CBOR.map(dict) = decodedCbor else {
             
-            return nil
+            return (nil, "Error decoding account UR.")
         }
         
+        var error:String?
         var xfp:String?
         var descriptorArray:[String] = []
+        var arrayToReturn:[String]?
         
         for (key, value) in dict {
             
             switch key {
             case 1:
-                guard case let CBOR.unsignedInt(fingerprint) = value else { fallthrough }
+                guard case let CBOR.unsignedInt(fingerprint) = value else {
+                    error = "Unable to decode the master key fingerprint."
+                    break
+                }
                 
                 xfp = String(Int(fingerprint), radix: 16)
                 
@@ -311,49 +310,49 @@ class URHelper {
                                         }
                                     }
                                     
-                                case 303:
-                                    // sh()
-                                    if let key = try? HDKey_(taggedCBOR: taggedCbor),
-                                       let origin = key.origin,
-                                       let extKey = key.base58 {
-                                        
-                                        if let _ = origin.sourceFingerprint {
-                                            descriptorArray.append("sh([\(origin)]\(extKey)/0/*)")
-                                        } else {
-                                            descriptorArray.append("sh([_xfp_/\(origin)]\(extKey)/0/*)")
-                                        }
-                                    }
+//                                case 303:
+//                                    // sh()
+//                                    if let key = try? HDKey_(taggedCBOR: taggedCbor),
+//                                       let origin = key.origin,
+//                                       let extKey = key.base58 {
+//
+//                                        if let _ = origin.sourceFingerprint {
+//                                            descriptorArray.append("sh([\(origin)]\(extKey)/0/*)")
+//                                        } else {
+//                                            descriptorArray.append("sh([_xfp_/\(origin)]\(extKey)/0/*)")
+//                                        }
+//                                    }
                             
-                                case 401:
-                                    // sh(wsh())
-                                    if let key = try? HDKey_(taggedCBOR: embeddedCbor),
-                                       let origin = key.origin,
-                                       let extKey = key.base58 {
-                                        
-                                        if let _ = origin.sourceFingerprint {
-                                            descriptorArray.append("sh(wsh([\(origin)]\(extKey)/0/*))")
-                                        } else {
-                                            descriptorArray.append("sh(wsh([_xfp_/\(origin)]\(extKey)/0/*))")
-                                        }
-                                    }
+//                                case 401:
+//                                    // sh(wsh())
+//                                    if let key = try? HDKey_(taggedCBOR: embeddedCbor),
+//                                       let origin = key.origin,
+//                                       let extKey = key.base58 {
+//
+//                                        if let _ = origin.sourceFingerprint {
+//                                            descriptorArray.append("sh(wsh([\(origin)]\(extKey)/0/*))")
+//                                        } else {
+//                                            descriptorArray.append("sh(wsh([_xfp_/\(origin)]\(extKey)/0/*))")
+//                                        }
+//                                    }
                                     
                                 default:
                                     break
                                 }
                             }
                             
-                        case 401:
-                            // wsh()
-                            if let key = try? HDKey_(taggedCBOR: taggedCbor),
-                               let origin = key.origin,
-                               let extKey = key.base58 {
-                                
-                                if let _ = origin.sourceFingerprint {
-                                    descriptorArray.append("wsh([\(origin)]\(extKey)/0/*)")
-                                } else {
-                                    descriptorArray.append("wsh([_xfp_/\(origin)]\(extKey)/0/*)")
-                                }
-                            }
+//                        case 401:
+//                            // wsh()
+//                            if let key = try? HDKey_(taggedCBOR: taggedCbor),
+//                               let origin = key.origin,
+//                               let extKey = key.base58 {
+//
+//                                if let _ = origin.sourceFingerprint {
+//                                    descriptorArray.append("wsh([\(origin)]\(extKey)/0/*)")
+//                                } else {
+//                                    descriptorArray.append("wsh([_xfp_/\(origin)]\(extKey)/0/*)")
+//                                }
+//                            }
                             
                         case 403:
                             // pkh()
@@ -390,6 +389,10 @@ class URHelper {
                         for (d, descriptor) in descriptorArray.enumerated() {
                             let desc = descriptor.replacingOccurrences(of: "_xfp_", with: xfp)
                             descriptorArray[d] = desc
+                            
+                            if d + 1 == descriptorArray.count {
+                                arrayToReturn = descriptorArray
+                            }
                         }
                     }
                 }
@@ -398,56 +401,56 @@ class URHelper {
             }
         }
                 
-        return descriptorArray
+        return (arrayToReturn, error)
     }
         
-    static func parseHdkey(urString: String) -> String? {
-        var descriptor:String?
+    static func parseHdkey(urString: String) -> (descriptors: [String]?, error: String?) {
+        var descriptor:[String]?
         guard let ur = try? URDecoder.decode(urString.condenseWhitespace()),
               let decodedCbor = try? CBOR.decode(ur.cbor.bytes),
               let hdkey = try? HDKey_.init(cbor: decodedCbor),
               let origin = hdkey.origin else {
-            return nil
+            return (nil, "UR decoding/hdkey/conversion/origin missing.")
         }
         
         let path = origin.description
                         
         switch path {
         case _ where path.contains("44'/0'/0'") || path.contains("44'/1'/0'"):
-            guard let pkh = pkhDesc(key: hdkey) else { return nil }
+            guard let pkh = pkhDesc(key: hdkey) else { return (nil, "Error getting public key hash descriptor.") }
             
-            descriptor = pkh
+            descriptor = [pkh]
             
         case _ where path.contains("84'/0'/0'") || path.contains("84'/1'/0'"):
-            guard let wpkh = wpkhDesc(key: hdkey) else { return nil }
+            guard let wpkh = wpkhDesc(key: hdkey) else { return (nil, "Error getting witness public key hash descriptor.") }
             
-            descriptor = wpkh
+            descriptor = [wpkh]
             
         case _ where path.contains("49'/0'/0'") || path.contains("49'/1'/0'"):
-            guard let shwpkh = shwpkhDesc(key: hdkey) else { return nil }
+            guard let shwpkh = shwpkhDesc(key: hdkey) else { return (nil, "Error getting script hash witness public key hash descriptor.") }
             
-            descriptor = shwpkh
+            descriptor = [shwpkh]
             
         case _ where path.contains("45'/0'/0'") || path.contains("45'/1'/0'"):
-            guard let sh = shDesc(key: hdkey) else { return nil }
+            guard let sh = shDesc(key: hdkey) else { return (nil, "Error getting script hash descriptor.") }
             
-            descriptor = sh
+            descriptor = [sh]
             
         case _ where path.contains("48'/0'/0'/1'") || path.contains("48'/1'/0'/1'"):
-            guard let shwsh = shwshDesc(key: hdkey) else { return nil }
+            guard let shwsh = shwshDesc(key: hdkey) else { return (nil, "Error getting script hash dwitness script hash escriptor.") }
             
-            descriptor = shwsh
+            descriptor = [shwsh]
             
         case _ where path.contains("48'/0'/0'/2'") || path.contains("48'/1'/0'/2'"):
-            guard let wsh = wshDesc(key: hdkey) else { return nil }
+            guard let wsh = wshDesc(key: hdkey) else { return (nil, "Error getting witness script hash descriptor.") }
             
-            descriptor = wsh
+            descriptor = [wsh]
             
         default:
             break
         }
         
-        return descriptor
+        return (descriptor, nil)
     }
     
     static func pkhDesc(key: HDKey_) -> String? {
