@@ -137,12 +137,11 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
-    private func refreshBalanceCell() {
+    private func refreshDenomination() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            self.walletTable.reloadSections(IndexSet(arrayLiteral: 0), with: .none)
-            self.walletTable.reloadSections(IndexSet(arrayLiteral: 1), with: .none)
+            self.walletTable.reloadSections(IndexSet(arrayLiteral: 0, 1), with: .none)
         }
     }
     
@@ -153,22 +152,19 @@ class ActiveWalletViewController: UIViewController {
             isBtc = true
             isSats = false
             ud.set("btc", forKey: "unit")
-            refreshBalanceCell()
-            //reloadWalletData()
+            refreshDenomination()
         case 1:
             isFiat = false
             isBtc = false
             isSats = true
             ud.set("sats", forKey: "unit")
-            refreshBalanceCell()
-            //reloadWalletData()
+            refreshDenomination()
         case 2:
             isFiat = true
             isBtc = false
             isSats = false
             ud.set("fiat", forKey: "unit")
-            refreshBalanceCell()
-            //reloadWalletData()
+            refreshDenomination()
         default:
             break
         }
