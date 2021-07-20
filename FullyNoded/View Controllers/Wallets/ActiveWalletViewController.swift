@@ -510,7 +510,7 @@ class ActiveWalletViewController: UIViewController {
         let lightningImage = cell.viewWithTag(7) as! UIImageView
         let onchainImage = cell.viewWithTag(8) as! UIImageView
         let currentFiatValueLabel = cell.viewWithTag(9) as! UILabel
-        let memoLabel = cell.viewWithTag(10) as! UILabel
+        let memoLabel = cell.viewWithTag(10) as! UITextView
         let transactionLabel = cell.viewWithTag(11) as! UILabel
         let originFiatValueLabel = cell.viewWithTag(12) as! UILabel
         let fetchOriginRateButton = cell.viewWithTag(13) as! UIButton
@@ -524,6 +524,7 @@ class ActiveWalletViewController: UIViewController {
         dateLabel.alpha = 1
         fetchOriginRateButton.alpha = 0
         loadLightningMemoButton.alpha = 0
+        //memoLabel.textContainerInset = UIEdgeInsets(top: -0.2, left: 0, bottom: 0, right: 0)
         
         let index = indexPath.section - 1
         
@@ -599,13 +600,11 @@ class ActiveWalletViewController: UIViewController {
         let amountSats = dict["amountSats"] as! String
         let amountFiat = dict["amountFiat"] as! String
         
-        
-        
         utxoLabel.text = utxoLabelText
         editLabelButton.alpha = 1
         fetchOriginRateButton.alpha = 1
         
-        if let exchangeRate = fxRate {
+        if let _ = fxRate {
 //            var dbl = 0.0
 //
 //            if isLightning && !isOnchain {
@@ -678,26 +677,36 @@ class ActiveWalletViewController: UIViewController {
             
             amountLabel.textColor = UIColor.darkGray
             
+            var amountText = ""
+            
             if isBtc {
-                amountLabel.text = amountBtc
+                amountText = amountBtc.btc
             } else if isSats {
-                amountLabel.text = amountSats
+                amountText = amountSats.sats
             } else if isFiat {
-                amountLabel.text = amountFiat
+                amountText = amountFiat
             }
+            
+            amountText = amountText.replacingOccurrences(of: "-", with: "")
+            amountLabel.text = amountText
             
         } else {
             categoryImage.image = UIImage(systemName: "arrow.down.left")
             categoryImage.tintColor = .systemGreen
             amountLabel.textColor = .white
             
+            var amountText = ""
+            
             if isBtc {
-                amountLabel.text = "+" + amountBtc
+                amountText = "+" + amountBtc.btc
             } else if isSats {
-                amountLabel.text = "+" + amountSats
+                amountText = "+" + amountSats.sats
             } else if isFiat {
-                amountLabel.text = "+" + amountFiat
+                amountText = "+" + amountFiat
             }
+            
+            amountText = amountText.replacingOccurrences(of: "+", with: "")
+            amountLabel.text = amountText
         }
         
         if selfTransfer {
@@ -771,8 +780,11 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func updateMemo(txid: String, memo: String) {
+        addNavBarSpinner()
+        
         CoreDataService.retrieveEntity(entityName: .transactions) { savedTxs in
             guard let savedTxs = savedTxs, savedTxs.count > 0 else {
+                self.removeSpinner()
                 return
             }
                         
@@ -784,15 +796,16 @@ class ActiveWalletViewController: UIViewController {
                         guard let self = self else { return }
                                                 
                         if updated {
+                            self.spinner.removeConnectingView()
                             self.loadTable()
                             showAlert(vc: self, title: "Memo updated ✓", message: "")
                         } else {
+                            self.removeSpinner()
                             showAlert(vc: self, title: "Error", message: "There was an issue updatinng your memo.")
                         }
                     }
                 }
             }
-            self.spinner.removeConnectingView()
         }
     }
     
@@ -954,11 +967,8 @@ class ActiveWalletViewController: UIViewController {
                 }
                 
                 if t + 1 == transactions.count && !foundMatch {
-                    self.spinner.removeConnectingView()
-                    
                     if self.wallet != nil {
                         // not been saved so save it
-                        
                         var dateToSave:Date!
                         
                         if let date = tx["date"] as? Date {
@@ -990,6 +1000,7 @@ class ActiveWalletViewController: UIViewController {
                             self.addOriginRate(date, uuid)
                         }
                     } else {
+                        self.spinner.removeConnectingView()
                         showAlert(vc: self, title: "", message: "This usually means you are using the nodes default wallet, this feature only works with Fully Noded wallets.")
                     }
                 }
@@ -1030,6 +1041,7 @@ class ActiveWalletViewController: UIViewController {
                     }
                     
                     self.transactionArray.removeAll()
+                    self.addNavBarSpinner()
                     self.loadTransactions()
                 }
             }
@@ -1359,7 +1371,7 @@ extension ActiveWalletViewController: UITableViewDelegate {
             }
         default:
             if sectionZeroLoaded {
-                return 322
+                return 339
             } else {
                 return 47
             }

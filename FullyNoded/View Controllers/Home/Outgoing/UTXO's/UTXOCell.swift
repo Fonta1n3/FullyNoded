@@ -130,7 +130,7 @@ class UTXOCell: UITableViewCell {
             }
             
             if fxRate != nil {
-                fiatLabel.text = "$\((utxo.amount! * fxRate!).rounded().withCommas())"
+                fiatLabel.text = "$\((utxo.amount! * fxRate!).rounded().withCommas)"
             }
             
         }  else {

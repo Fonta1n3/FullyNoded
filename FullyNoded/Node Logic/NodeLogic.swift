@@ -306,7 +306,7 @@ class NodeLogic {
                 let amountFiat = (amountBtc.doubleValue * fxRate).balanceText
                 
                 arrayToReturn.append(["address": addresses,
-                                      "amountSats": "\(amountSat) sats",
+                                      "amountSats": "\(amountSat)",
                                       "amountFiat": amountFiat,
                                       "amountBtc": amountBtc,
                                       "confirmations": "\(confs)",
@@ -366,7 +366,7 @@ class NodeLogic {
                     
                     arrayToReturn.append([
                                             "address": payment_request,
-                                            "amountSats": "\(amt_paid_sat) sats",
+                                            "amountSats": "\(amt_paid_sat)",
                                             "amountBtc": amountBtc,
                                             "amountFiat": amountFiat,
                                             "confirmations": state,
@@ -435,7 +435,7 @@ class NodeLogic {
                         
                         arrayToReturn.append([
                                                 "address": invoice,
-                                                "amountSats": "-\(amount) sats",
+                                                "amountSats": "-\(amount)",
                                                 "amountBtc": amountBtc,
                                                 "amountFiat": amountFiat,
                                                 "confirmations": "Sent",
@@ -523,7 +523,7 @@ class NodeLogic {
                                 
                                 arrayToReturn.append([
                                                         "address": bolt11,
-                                                        "amountSats": "\(amountSats) sats",
+                                                        "amountSats": "\(amountSats)",
                                                         "amountBtc": amountBtc,
                                                         "amountFiat": amountFiat,
                                                         "confirmations": status,
@@ -595,7 +595,7 @@ class NodeLogic {
                             
                             arrayToReturn.append([
                                                     "address": bolt11,
-                                                    "amountSats": "-\(amountSats) sats",
+                                                    "amountSats": "-\(amountSats)",
                                                     "amountBtc": amountBtc,
                                                     "amountFiat": amountFiat,
                                                     "confirmations": status,

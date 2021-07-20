@@ -82,6 +82,27 @@ public extension Int {
 }
 
 public extension String {
+    var btc: String {
+        return self + " btc"
+    }
+    
+    var sats: String {
+        var sats = self
+        sats = sats.replacingOccurrences(of: "-", with: "")
+        
+        guard let dbl = Double(sats) else {
+            return self + " sats"
+        }
+        
+        if dbl < 1.0 {
+            return dbl.avoidNotation
+        } else if dbl == 1.0 {
+            return "1 sat"
+        } else {
+            return "\(Int(dbl)) sats"
+        }
+    }
+    
     var withCommas: String {
         let dbl = Double(self)!
         let numberFormatter = NumberFormatter()
@@ -213,7 +234,7 @@ public extension Data {
 }
 
 public extension Double {
-    func withCommas() -> String {
+    var withCommas: String {
         let numberFormatter = NumberFormatter()
         numberFormatter.numberStyle = NumberFormatter.Style.decimal
         return numberFormatter.string(from: NSNumber(value:self))!
@@ -290,7 +311,7 @@ public extension Double {
             break
         }
         
-        return "\(symbol)\(self.withCommas()) / btc"
+        return "\(symbol)\(self.withCommas) / btc"
     }
     
     var fiatString: String {
@@ -309,7 +330,7 @@ public extension Double {
             break
         }
         
-        return "\(symbol)\(self.withCommas())"
+        return "\(symbol)\(self.withCommas)"
     }
     
     var satsToBtcDouble: Double {

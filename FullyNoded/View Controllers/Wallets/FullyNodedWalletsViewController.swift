@@ -188,7 +188,7 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
                 
                 self.totalBalanceLabel.text = "\(self.totalBtcBalance.avoidNotation) btc"
                 self.totalBalanceLabel.alpha = 1
-                self.fxRateLabel.text = "$\(self.fxRate.withCommas()) / 1 btc"
+                self.fxRateLabel.text = "$\(self.fxRate.withCommas) / 1 btc"
                 self.fxRateLabel.alpha = 1
                 self.balanceFiatLabel.text = "$\(roundedFiat.withCommas())"
                 self.balanceFiatLabel.alpha = 1

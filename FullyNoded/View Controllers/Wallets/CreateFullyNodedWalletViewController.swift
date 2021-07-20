@@ -625,7 +625,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                     }
                     
                     var accountMap:[String:Any] = ["descriptor": "", "blockheight": 0, "watching": [], "label": "Wallet Import"]
-                    
+                                        
                     if descriptors.count > 1 {
                         self.prompToChoosePrimaryDesc(descriptors: descriptors)
                     } else {

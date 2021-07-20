@@ -74,16 +74,23 @@ class ShowDetailViewController: UIViewController, UITextViewDelegate, UINavigati
     private func getFiatRate() {
         let fx = FiatConverter.sharedInstance
         fx.getFxRate { (fxRate) in
-            if fxRate != nil {
+            guard let fxRate = fxRate else { return }
                 DispatchQueue.main.async { [weak self] in
-                    if self != nil {
-                        self!.subHeaderLabel.text = self!.totalAmount.withCommasNotRounded()  + " " + "btc"
-                        self!.textView.text += "\n\nTotal supply in USD:\n$\((self!.totalAmount * fxRate!).withCommas())\n\nTotal number of utxos:\n\(Double(self!.utxoCount).withCommas())\n\nAverage value per utxo:\n \(rounded(number: (self!.totalAmount / Double(self!.utxoCount)))) btc - $\(((self!.totalAmount * fxRate!) / Double(self!.utxoCount)).withCommas())\n\nCurrent exchange rate:\n$\(fxRate!.withCommas()) USD / 1 btc"
-                        self!.textView.addHyperLinksToText(originalText: self!.textView.text, hyperLinks: ["bitcoin-cli gettxoutsetinfo": self!.gettxoutsetinfo])
-                        self!.spinner.removeConnectingView()
-                    }
+                    guard let self = self else { return }
+                    
+                    self.subHeaderLabel.text = self.totalAmount.withCommasNotRounded()  + " " + "btc"
+                    
+                    let fiatAmount = self.totalAmount * fxRate
+                    let utxoCount = Double(self.utxoCount)
+                    let valuePerUtxo = rounded(number: (self.totalAmount / utxoCount))
+                    let fiatPerUtxo = fiatAmount / utxoCount
+                    
+                    self.textView.text += "\n\nTotal supply in USD:\n$\(fiatAmount.withCommas)\n\nTotal number of utxos:\n\(utxoCount.withCommas)\n\nAverage value per utxo:\n\(valuePerUtxo) btc - $\(fiatPerUtxo.withCommas)\n\nCurrent exchange rate:\n$\(fxRate.withCommas) USD / 1 btc"
+                    
+                    self.textView.addHyperLinksToText(originalText: self.textView.text, hyperLinks: ["bitcoin-cli gettxoutsetinfo": self.gettxoutsetinfo])
+                    
+                    self.spinner.removeConnectingView()
                 }
-            }
         }
     }
     

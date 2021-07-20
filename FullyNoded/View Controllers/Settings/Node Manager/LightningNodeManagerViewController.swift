@@ -196,8 +196,52 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
                 
                 self.nodeTable.reloadData()
                 self.spinner.removeConnectingView()
+                self.listFundsCL()
             }
         }
+    }
+    
+    private func listFundsCL() {
+        let commandId = UUID()
+        
+        LightningRPC.command(id: commandId, method: .listfunds, param: "") { [weak self] (uuid, response, errorDesc) in
+            guard let self = self else { return }
+            
+            guard commandId == uuid, let dict = response as? NSDictionary, let outputs = dict["outputs"] as? [[String:Any]] else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Error", message: errorDesc ?? "error getting info from lightning node")
+                return
+            }
+            
+            var onchainConfirmed = 0.0
+            var onchainUnconfirmed = 0.0
+            
+            for (i, output) in outputs.enumerated() {
+                if let value = output["value"] as? String {
+                    
+                    if let status = output["status"] as? String {
+                        if status == "confirmed" {
+                            onchainConfirmed += value.doubleValue
+                        } else if status == "unconfirmed" {
+                            onchainUnconfirmed += value.doubleValue
+                        }
+                    }
+                }
+                
+                if i + 1 == outputs.count {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        
+                        self.onchainBalanceConf.text = "Onchain confirmed: " + onchainConfirmed.withCommas + " sats"
+                        self.onchainBalanceUnconfirmed.text = "Onchain unconfirmed: " + onchainUnconfirmed.withCommas + " sats"
+                        self.onchainBalanceConf.alpha = 1
+                        self.onchainBalanceUnconfirmed.alpha = 1
+                    }
+                }
+            }
+            
+        }
+
     }
     
     private func lndGetInfo() {
@@ -277,7 +321,7 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
                             guard let self = self else { return }
                             
                             self.nodeTable.reloadSections(IndexSet(arrayLiteral: 5), with: .none)
-                            self.getOnchainSpendable()
+                            self.getOnchainSpendableLND()
                         }
                     }
                 }
@@ -285,7 +329,7 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
         }
     }
     
-    private func getOnchainSpendable() {
+    private func getOnchainSpendableLND() {
         LndRpc.sharedInstance.command(.walletbalance, nil, nil, nil) { (response, error) in
             guard let response = response,
                   let confirmed_balance = response["confirmed_balance"] as? String,
