@@ -287,7 +287,7 @@
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" userInteractionEnabled="NO" tag="4" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Groceries" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QUk-HX-zhZ">
-                                                    <rect key="frame" x="16" y="140" width="311" height="17"/>
+                                                    <rect key="frame" x="16" y="140" width="263" height="17"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                     <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
@@ -413,7 +413,6 @@
                                                 <constraint firstAttribute="trailing" secondItem="ABr-IV-uTq" secondAttribute="trailing" constant="14" id="HGg-0a-UsH"/>
                                                 <constraint firstItem="mbE-fL-dzu" firstAttribute="centerY" secondItem="UZl-0k-oWM" secondAttribute="centerY" id="LOn-Nz-3so"/>
                                                 <constraint firstItem="xGs-ch-XfM" firstAttribute="top" secondItem="mSR-MF-OgT" secondAttribute="bottom" constant="4" id="LPl-SV-DTk"/>
-                                                <constraint firstItem="QUk-HX-zhZ" firstAttribute="trailing" secondItem="UZl-0k-oWM" secondAttribute="trailingMargin" id="NVC-qS-Pz2"/>
                                                 <constraint firstItem="7HR-IX-uHk" firstAttribute="top" secondItem="QUk-HX-zhZ" secondAttribute="bottom" constant="8" id="R8W-sJ-mKH"/>
                                                 <constraint firstAttribute="trailing" secondItem="Wu0-bi-1p1" secondAttribute="trailing" constant="14" id="SqJ-ro-7F5"/>
                                                 <constraint firstItem="zAg-cb-nc5" firstAttribute="leading" secondItem="UZl-0k-oWM" secondAttribute="leadingMargin" id="Swn-EW-65t"/>
@@ -430,6 +429,7 @@
                                                 <constraint firstItem="ABr-IV-uTq" firstAttribute="centerY" secondItem="Rcj-YL-Sd1" secondAttribute="centerY" id="hac-LO-4YO"/>
                                                 <constraint firstItem="7HR-IX-uHk" firstAttribute="leading" secondItem="UZl-0k-oWM" secondAttribute="leadingMargin" id="im3-eu-fgu"/>
                                                 <constraint firstItem="GJa-3H-e6Q" firstAttribute="leading" secondItem="UZl-0k-oWM" secondAttribute="leadingMargin" id="kQg-6W-j7X"/>
+                                                <constraint firstItem="mbE-fL-dzu" firstAttribute="leading" secondItem="QUk-HX-zhZ" secondAttribute="trailing" constant="8" symbolic="YES" id="kwx-0y-3Gr"/>
                                                 <constraint firstItem="NOo-Kv-MdB" firstAttribute="top" secondItem="UZl-0k-oWM" secondAttribute="topMargin" id="m2I-Xj-teq"/>
                                                 <constraint firstItem="Rcj-YL-Sd1" firstAttribute="leading" secondItem="UZl-0k-oWM" secondAttribute="leadingMargin" id="mM7-W8-EPe"/>
                                                 <constraint firstItem="Ihm-1X-hpr" firstAttribute="trailing" secondItem="UZl-0k-oWM" secondAttribute="trailingMargin" id="mY3-LS-3uP"/>
@@ -5861,7 +5861,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="Nr0-IP-E1K">
-                                <rect key="frame" x="0.0" y="96" width="375" height="571"/>
+                                <rect key="frame" x="0.0" y="146" width="375" height="521"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="separatorColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
@@ -5948,18 +5948,34 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Onchain balance confirmed:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QRE-GA-P3f">
+                                <rect key="frame" x="16" y="96" width="181.5" height="17"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Onchain balance unconfirmed:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="E74-nJ-llU">
+                                <rect key="frame" x="16" y="121" width="197.5" height="17"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="wIc-WS-cg9"/>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="Nr0-IP-E1K" firstAttribute="bottom" secondItem="wIc-WS-cg9" secondAttribute="bottom" id="02S-V0-lxV"/>
+                            <constraint firstItem="E74-nJ-llU" firstAttribute="leading" secondItem="wIc-WS-cg9" secondAttribute="leading" constant="16" id="3tw-qR-89q"/>
+                            <constraint firstItem="QRE-GA-P3f" firstAttribute="top" secondItem="cW4-kO-AmG" secondAttribute="bottom" constant="8" symbolic="YES" id="4vS-m0-7lA"/>
                             <constraint firstItem="cW4-kO-AmG" firstAttribute="leading" secondItem="wIc-WS-cg9" secondAttribute="leading" constant="16" id="9FH-8P-HHl"/>
                             <constraint firstItem="uhK-ee-N3A" firstAttribute="centerY" secondItem="cW4-kO-AmG" secondAttribute="centerY" id="EgO-C7-oup"/>
-                            <constraint firstItem="Nr0-IP-E1K" firstAttribute="top" secondItem="cW4-kO-AmG" secondAttribute="bottom" constant="8" id="KLb-G5-ZXA"/>
                             <constraint firstItem="uhK-ee-N3A" firstAttribute="leading" secondItem="cW4-kO-AmG" secondAttribute="trailing" constant="8" id="O1r-7l-zPb"/>
                             <constraint firstItem="Nr0-IP-E1K" firstAttribute="leading" secondItem="wIc-WS-cg9" secondAttribute="leading" id="OEe-fR-Kmz"/>
+                            <constraint firstItem="QRE-GA-P3f" firstAttribute="leading" secondItem="wIc-WS-cg9" secondAttribute="leading" constant="16" id="RvD-ld-VXQ"/>
                             <constraint firstItem="Nr0-IP-E1K" firstAttribute="trailing" secondItem="wIc-WS-cg9" secondAttribute="trailing" id="YH6-Jv-cR6"/>
                             <constraint firstItem="cW4-kO-AmG" firstAttribute="top" secondItem="wIc-WS-cg9" secondAttribute="top" constant="9" id="bpp-xY-BsM"/>
+                            <constraint firstItem="E74-nJ-llU" firstAttribute="top" secondItem="QRE-GA-P3f" secondAttribute="bottom" constant="8" symbolic="YES" id="f0I-tE-lqw"/>
+                            <constraint firstItem="Nr0-IP-E1K" firstAttribute="top" secondItem="E74-nJ-llU" secondAttribute="bottom" constant="8" symbolic="YES" id="hRV-qn-OKg"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="ETb-EZ-yt9">
@@ -5973,6 +5989,8 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                     <connections>
                         <outlet property="iconBackground" destination="cW4-kO-AmG" id="llE-kn-b7a"/>
                         <outlet property="nodeTable" destination="Nr0-IP-E1K" id="v2R-0a-Otb"/>
+                        <outlet property="onchainBalanceConf" destination="QRE-GA-P3f" id="QNB-Xp-ZaU"/>
+                        <outlet property="onchainBalanceUnconfirmed" destination="E74-nJ-llU" id="EOU-0Z-tnB"/>
                         <segue destination="GlR-4A-eAx" kind="show" identifier="segueToShareLightningUrl" id="7UD-TA-0Dv"/>
                         <segue destination="aoj-WH-UVD" kind="show" identifier="goToSeeLightningPeers" id="2y9-PV-6Nh"/>
                         <segue destination="a32-zP-STg" kind="show" identifier="segueToLightningChannels" id="YuM-96-FnM"/>
@@ -7538,7 +7556,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
     </scenes>
     <inferredMetricsTieBreakers>
         <segue reference="ckQ-WD-ole"/>
-        <segue reference="aQN-4W-cSW"/>
+        <segue reference="fMA-4V-4zE"/>
         <segue reference="DLx-HT-rGm"/>
         <segue reference="w2g-bl-j8v"/>
         <segue reference="kq8-dj-bJ2"/>
@@ -7546,7 +7564,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="6KH-E3-p33"/>
         <segue reference="CQp-9r-70w"/>
-        <segue reference="8MS-xS-DMP"/>
+        <segue reference="7UD-TA-0Dv"/>
         <segue reference="yAt-Ra-aPH"/>
         <segue reference="gzO-Lb-E0s"/>
         <segue reference="j10-wi-hpr"/>

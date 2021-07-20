@@ -105,6 +105,10 @@ class LndRpc {
                 
                 guard let jsonData = try? JSONSerialization.data(withJSONObject: param) else { return }
                 
+                #if DEBUG
+                    print("LND param: \(param)")
+                #endif
+                
                 request.setValue("application/json", forHTTPHeaderField: "Content-Type")
                 request.setValue("\(jsonData.count)", forHTTPHeaderField: "Content-Length")
                 request.httpBody = jsonData
@@ -138,7 +142,7 @@ class LndRpc {
                     } else if let httpResponse = response as? HTTPURLResponse {
                         switch httpResponse.statusCode {
                         case 200:
-                            completion((nil, "HTTP status code 200."))
+                            completion((["success":true], nil))
                         case 401:
                             completion((nil, "Looks like your LND credentials are incorrect, please double check them."))
                         case 404:

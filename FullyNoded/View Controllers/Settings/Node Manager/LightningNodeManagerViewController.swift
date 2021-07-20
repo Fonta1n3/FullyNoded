@@ -22,7 +22,10 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
     var color = ""
     var activeNode:[String:Any]?
     var initialLoad = Bool()
+    
     @IBOutlet weak var nodeTable: UITableView!
+    @IBOutlet weak var onchainBalanceConf: UILabel!
+    @IBOutlet weak var onchainBalanceUnconfirmed: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -30,6 +33,8 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
         nodeTable.dataSource = self
         iconBackground.layer.cornerRadius = 5
         initialLoad = true
+        onchainBalanceConf.alpha = 0
+        onchainBalanceUnconfirmed.alpha = 0
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -198,7 +203,9 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
     private func lndGetInfo() {
         let lnd = LndRpc.sharedInstance
         
-        lnd.command(.getinfo, nil, nil, nil) { (response, error) in
+        lnd.command(.getinfo, nil, nil, nil) { [weak self] (response, error) in
+            guard let self = self else { return }
+            
             guard let dict = response else {
                 showAlert(vc: self, title: "Error", message: error ?? "unknown")
                 return
@@ -269,10 +276,30 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
                         DispatchQueue.main.async { [weak self] in
                             guard let self = self else { return }
                             
-                            self.nodeTable.reloadData()
+                            self.nodeTable.reloadSections(IndexSet(arrayLiteral: 5), with: .none)
+                            self.getOnchainSpendable()
                         }
                     }
                 }
+            }
+        }
+    }
+    
+    private func getOnchainSpendable() {
+        LndRpc.sharedInstance.command(.walletbalance, nil, nil, nil) { (response, error) in
+            guard let response = response,
+                  let confirmed_balance = response["confirmed_balance"] as? String,
+                  let unconfirmed_balance = response["unconfirmed_balance"] as? String else {
+                return
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.onchainBalanceConf.text = "Onchain confirmed: " + confirmed_balance.withCommas + " sats"
+                self.onchainBalanceUnconfirmed.text = "Onchain unconfirmed: " + unconfirmed_balance.withCommas + " sats"
+                self.onchainBalanceConf.alpha = 1
+                self.onchainBalanceUnconfirmed.alpha = 1
             }
         }
     }

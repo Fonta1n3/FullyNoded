@@ -365,6 +365,7 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func loadTable() {
+        self.sectionZeroLoaded = false
         existingWallet = ""
         walletLabel = ""
         
@@ -1077,6 +1078,7 @@ class ActiveWalletViewController: UIViewController {
     
     func reloadWalletData() {
         transactionArray.removeAll()
+        sectionZeroLoaded = false
         
         NodeLogic.loadBalances { [weak self] (response, errorMessage) in
             guard let self = self else { return }
@@ -1157,6 +1159,7 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func refreshAll() {
+        sectionZeroLoaded = false
         wallet = nil
         walletLabel = nil
         existingWallet = ""

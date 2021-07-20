@@ -45,6 +45,7 @@ class KeySendViewController: UIViewController, UITextFieldDelegate {
     }
     
     @IBAction func sendAction(_ sender: Any) {
+        textField.resignFirstResponder()
         if textField.text != "" {
             if let sats = Double(textField.text!) {
                 promptToSend(sats: sats)
@@ -118,7 +119,13 @@ class KeySendViewController: UIViewController, UITextFieldDelegate {
     }
     
     private func keysend(hash: String, sats: Int, payreq: String, payment_addr: String, memo: String) {
-        let dest = Data(hexString: peer!.pubkey)!.base64EncodedString()
+        guard let pubkey = (peer?.pubkey ?? idLabel.text), let destData = Data(hexString: pubkey) else {
+            self.spinner.removeConnectingView()
+            showAlert(vc: self, title: "", message: "Pubkey missing!")
+            return
+        }
+        
+        let dest = destData.base64EncodedString()
         
         let param:[String:Any] = ["dest":dest, "amt":"\(sats)", "payment_hash": hash, "payment_request": payreq, "payment_addr": payment_addr, "allow_self_payment": true]
         LndRpc.sharedInstance.command(.keysend, param, nil, nil) { [weak self] (response, error) in

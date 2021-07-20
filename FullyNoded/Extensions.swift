@@ -82,6 +82,13 @@ public extension Int {
 }
 
 public extension String {
+    var withCommas: String {
+        let dbl = Double(self)!
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = NumberFormatter.Style.decimal
+        return numberFormatter.string(from: NSNumber(value:dbl))!
+    }
+    
     var utf8: Data {
         return data(using: .utf8)!
     }
@@ -134,7 +141,7 @@ public extension String {
     }
     
     var btcToSats: String {
-        return (self.doubleValue * 100000000.0).avoidNotation
+        return (Int(self.doubleValue * 100000000.0)).avoidNotation
     }
 }
 

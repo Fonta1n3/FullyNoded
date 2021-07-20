@@ -148,7 +148,7 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
             cell.layer.borderWidth = 0.5
             
             let dict = channels[indexPath.section]
-            let state = dict["state"] as? String ?? "?"
+            let state = dict["state"] as? String ?? dict["peerId"] as? String ?? "?"
             cell.textLabel?.text = state
             cell.textLabel?.textColor = .lightGray
             return cell
@@ -205,7 +205,7 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
             header.addSubview(closeButton)
             
         } else {
-            if let name = dict["name"] as? String {
+            if let name = dict["name"] as? String ?? dict["peerId"] as? String {
                 textLabel.text = name
             } else {
                 textLabel.text = "ID: " + "\(dict["channel_id"] as? String ?? dict["chan_id"] as? String ?? "")"
@@ -254,12 +254,14 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
                 guard let self = self else { return }
                 
                 if self.lndNode {
+                    self.spinner.addConnectingView(vc: self, description: "closing...")
                     self.closeChannelLnd(channel: channel)
                 } else {
                     activeWallet { [weak self] wallet in
                         guard let self = self else { return }
                         
                         guard let wallet = wallet else {
+                            self.spinner.addConnectingView(vc: self, description: "closing...")
                             self.closeChannelCL(channel, nil)
                             return
                         }
@@ -371,17 +373,12 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
             
             self.spinner.removeConnectingView()
             
-            if let error = error {
-                showAlert(vc: self, title: "Error", message: error)
-            } else {
-                
-                guard let _ = response else {
-                    showAlert(vc: self, title: "Error", message: "We did not get a response from your node.")
-                    return
-                }
-                
-                showAlert(vc: self, title: "Channel is being closed ✓", message: "")
+            guard let _ = response else {
+                showAlert(vc: self, title: "Error", message: "We did not get a response from your node.")
+                return
             }
+            
+            showAlert(vc: self, title: "Channel is being closed ✓", message: "")
         }
     }
     
@@ -435,13 +432,19 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
         
         let hash = Crypto.sha256hash(preimage)
         let b64 = hash.base64EncodedString()
+        
         let outgoingId = self.outgoingChannel!["chan_id"] as! String
         let incomingId = self.incomingChannel!["remote_pubkey"] as! String
         let incomingChanId = self.incomingChannel!["chan_id"] as! String
-        let lastHopPubkey = Data(hexString: incomingId)!.base64EncodedString()
-        let ourPubkey = UserDefaults.standard.object(forKey: "LightningPubkey") as! String
-        let dest = Data(hexString: ourPubkey)!.base64EncodedString()
         
+        
+        guard let lastHopPubkeyData = Data(hexString: incomingId), let ourPubkey = UserDefaults.standard.object(forKey: "LightningPubkey") as? String, let destData = Data(hexString: ourPubkey) else {
+            showAlert(vc: self, title: "Pubkey missing.", message: "Go back, refresh the lightning home screen and try again.")
+            return
+        }
+        
+        let lastHopPubkey = lastHopPubkeyData.base64EncodedString()
+        let dest = destData.base64EncodedString()
         let memo = "Fully Noded Rebalance ⚡️ - \(outgoingId) to \(incomingChanId)"
         
         let param:[String:Any] = ["memo": memo,
@@ -473,7 +476,7 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
                                  _ hash: String,
                                  _ payment_addr: String,
                                  _ memo: String) {
-        
+        print("dest: \(dest)")
         let paymentParam:[String:Any] = ["allow_self_payment":true,
                                          "outgoing_chan_id": outgoingId,
                                          "last_hop_pubkey": lastHopPubkey,
@@ -483,7 +486,9 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
                                          "payment_hash": hash,
                                          "payment_addr": payment_addr]
         
-        LndRpc.sharedInstance.command(.keysend, paymentParam, nil, nil) { (response, error) in
+        LndRpc.sharedInstance.command(.keysend, paymentParam, nil, nil) { [weak self] (response, error) in
+            guard let self = self else { return }
+            
             guard let response = response else {
                 self.spinner.removeConnectingView()
                 self.outgoingChannel = nil
@@ -523,7 +528,12 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
             
             let fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
             
-            var dict:[String:Any] = ["txid":hash, "id":UUID(), "memo":memo, "date":Date(), "label":"Fully Noded Rebalance ⚡️", "fiatCurrency": fiatCurrency]
+            var dict:[String:Any] = ["txid":hash,
+                                     "id":UUID(),
+                                     "memo":memo,
+                                     "date":Date(),
+                                     "label":"Fully Noded Rebalance ⚡️",
+                                     "fiatCurrency": fiatCurrency]
             
             self.spinner.removeConnectingView()
             
@@ -610,14 +620,10 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
         LndRpc.sharedInstance.command(.listchannels, nil, "pending", nil) { [weak self] (response, error) in
             guard let self = self else { return }
             
-            guard let waiting_close_channels = response?["waiting_close_channels"] as? NSArray,
-                  let pending_force_closing_channels = response?["pending_force_closing_channels"] as? NSArray,
-                  let pending_open_channels = response?["pending_open_channels"] as? NSArray,
-                  let pending_closing_channels = response?["pending_closing_channels"] as? NSArray else {
-                self.spinner.removeConnectingView()
-                showAlert(vc: self, title: "Error", message: error ?? "Unknown error fetching channels.")
-                return
-            }
+            let waiting_close_channels = response?["waiting_close_channels"] as? NSArray ?? []
+            let pending_force_closing_channels = response?["pending_force_closing_channels"] as? NSArray ?? []
+            let pending_open_channels = response?["pending_open_channels"] as? NSArray ?? []
+            let pending_closing_channels = response?["pending_closing_channels"] as? NSArray ?? []
             
             guard waiting_close_channels.count > 0 || pending_force_closing_channels.count > 0 || pending_open_channels.count > 0 || pending_closing_channels.count > 0 else {
                 self.spinner.removeConnectingView()
@@ -702,8 +708,16 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
                     break
                 }
             }
+            
+            if showInactive {
+                if let active = dict["active"] as? Bool, !active {
+                    self.channels.append(dict)
+                }
+            } else {
+                self.channels.append(dict)
+            }
                         
-            self.channels.append(dict)
+            
             
             if i + 1 == channels.count {
                 DispatchQueue.main.async { [weak self] in
@@ -724,10 +738,15 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     
     private func parsePendingLNDChannels(_ channels: [[String:Any]]) {
         for (i, channel) in channels.enumerated() {
-            self.channels.append(channel)
+            var dict = channel
+            dict["peerId"] = dict["remote_node_pub"] as! String
+            
+            self.channels.append(dict)
             
             if i + 1 == channels.count {
-                load()
+                fetchLocalPeers { [weak self] _ in
+                    self?.load()
+                }
             }
         }
     }

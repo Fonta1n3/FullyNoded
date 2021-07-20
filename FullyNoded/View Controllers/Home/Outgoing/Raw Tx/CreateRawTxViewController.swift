@@ -276,7 +276,13 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let alert = UIAlertController(title: "Withdraw from lightning wallet?", message: "This action will withdraw the amount specified to the given address from your lightning wallet", preferredStyle: self.alertStyle)
+            var mess = "This action will withdraw the amount specified to the given address from your lightning wallet"
+            
+            if self.amountInput.text == "" || self.amountInput.text == "0" || self.amountInput.text == "0.0" {
+                mess = "This sweep action will withdraw the TOTAL onchain amount specified to the given address from your lightning wallet!"
+            }
+            
+            let alert = UIAlertController(title: "Withdraw from lightning wallet?", message: mess, preferredStyle: self.alertStyle)
             alert.addAction(UIAlertAction(title: "Withdraw now", style: .default, handler: { action in
                 self.withdrawLightningSanity()
             }))
@@ -287,8 +293,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func withdrawLightningSanity() {
-        guard let amountString = amountInput.text, amountString != "", let address = addressInput.text, address != "" else {
-            showAlert(vc: self, title: "Oops", message: "Add an amount and address first")
+        guard let amountString = amountInput.text, let address = addressInput.text, address != "" else {
+            showAlert(vc: self, title: "Oops", message: "Add an address first.")// add option to withdraw to onchain wallet too
             return
         }
                 
@@ -302,21 +308,26 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         let amountString = amountInput.text ?? ""
         let dblAmount = amountString.doubleValue
         
-        if isFiat {
-            guard let fxRate = fxRate else { return }
-            let btcamount = rounded(number: amount / fxRate)
-            sats = Int(btcamount * 100000000.0)
-            title = "Withdraw $\(dblAmount) \(fiatCurrency) (\(sats) sats) from lightning wallet to \(address)?"
-            
-        } else if isSats {
-            sats = Int(dblAmount)
-            title = "Withdraw \(dblAmount) sats from lightning wallet to \(address)?"
-            
+        if amount > 0.0 {
+            if isFiat {
+                guard let fxRate = fxRate else { return }
+                let btcamount = rounded(number: amount / fxRate)
+                sats = Int(btcamount * 100000000.0)
+                title = "Withdraw $\(dblAmount) \(fiatCurrency) (\(sats) sats) from lightning wallet to \(address)?"
+                
+            } else if isSats {
+                sats = Int(dblAmount)
+                title = "Withdraw \(dblAmount) sats from lightning wallet to \(address)?"
+                
+            } else {
+                sats = Int(amount * 100000000.0)
+                title = "Withdraw \(amount.avoidNotation) btc (\(sats) sats) from lightning wallet to \(address)?"
+            }
         } else {
-            sats = Int(amount * 100000000.0)
-            title = "Withdraw \(amount.avoidNotation) btc (\(sats) sats) from lightning wallet to \(address)?"
+            sats = 0
+            title = "Sweep ALL funds from onchain lightning wallet?"
         }
-        
+                
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -347,7 +358,10 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func withdrawFromLND(address: String, sats: Int) {
-        let param:[String:Any] = ["address": address, "amount": "\(sats)"]
+        let param:[String:Any] = ["addr": address,
+                                  "amount": "\(sats)",
+                                  "spend_unconfirmed": true,
+                                  "send_all": !(sats > 0)]
         
         LndRpc.sharedInstance.command(.sendcoins, param, nil, nil) { [weak self] (response, error) in
             guard let self = self else { return }
@@ -526,7 +540,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 vc.addressInput.text = address
                 vc.addressImageView.image = LifeHash.image(address)
                 vc.addressImageView.alpha = 1
-                showAlert(vc: vc, title: "Thank you!", message: "A donation address has automatically been added so you may build a transaction which will fund further development of Fully Noded.")
+                showAlert(vc: vc, title: "Thank you!",
+                          message: "A donation address has automatically been added so you may build a transaction which will fund further development of Fully Noded.")
             }
         }
     }
