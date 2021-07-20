@@ -268,9 +268,9 @@ public extension Double {
         }
         
         if dbl < 1.0 {
-            return "\(symbol)\(dbl.avoidNotation) \(currency)"
+            return "\(symbol)\(dbl.avoidNotation)"
         } else {
-            return "\(symbol)\(dbl.withCommas()) \(currency)"
+            return "\(symbol)\(Int(dbl).withCommas())"
         }
     }
     

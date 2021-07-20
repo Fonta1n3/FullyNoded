@@ -216,7 +216,7 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
             let num_pending_channels = dict["num_pending_channels"] as? Int ?? 0
             let num_active_channels = dict["num_active_channels"] as? Int ?? 0
             let num_inactive_channels = dict["num_inactive_channels"] as? Int ?? 0
-            let id = dict["id"] as? String ?? ""
+            let id = dict["identity_pubkey"] as? String ?? ""
             UserDefaults.standard.setValue(id, forKey: "LightningPubkey")
             let version = dict["version"] as? String ?? ""
             let uris = dict["uris"] as? NSArray ?? []

@@ -445,6 +445,13 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
         
         let lastHopPubkey = lastHopPubkeyData.base64EncodedString()
         let dest = destData.base64EncodedString()
+        
+        guard lastHopPubkey != "", dest != "" else {
+            spinner.removeConnectingView()
+            showAlert(vc: self, title: "Pubkey missing.", message: "Go back, refresh the lightning home screen and try again.")
+            return
+        }
+        
         let memo = "Fully Noded Rebalance ⚡️ - \(outgoingId) to \(incomingChanId)"
         
         let param:[String:Any] = ["memo": memo,
@@ -634,19 +641,27 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
             var allPendingChannels:[[String:Any]] = []
             
             for channel in waiting_close_channels {
-                allPendingChannels.append((channel as! [String:Any])["channel"] as! [String:Any])
+                var channelDict = (channel as! [String:Any])["channel"] as! [String:Any]
+                channelDict["state"] = "waiting_close"
+                allPendingChannels.append(channelDict)
             }
             
             for channel in pending_force_closing_channels {
-                allPendingChannels.append((channel as! [String:Any])["channel"] as! [String:Any])
+                var channelDict = (channel as! [String:Any])["channel"] as! [String:Any]
+                channelDict["state"] = "pending_force_close"
+                allPendingChannels.append(channelDict)
             }
             
             for channel in pending_open_channels {
-                allPendingChannels.append((channel as! [String:Any])["channel"] as! [String:Any])
+                var channelDict = (channel as! [String:Any])["channel"] as! [String:Any]
+                channelDict["state"] = "pending_open"
+                allPendingChannels.append(channelDict)
             }
             
             for channel in pending_closing_channels {
-                allPendingChannels.append((channel as! [String:Any])["channel"] as! [String:Any])
+                var channelDict = (channel as! [String:Any])["channel"] as! [String:Any]
+                channelDict["state"] = "pending_close"
+                allPendingChannels.append(channelDict)
             }
             
             self.parsePendingLNDChannels(allPendingChannels)

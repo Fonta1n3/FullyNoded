@@ -301,8 +301,14 @@ class NodeLogic {
                 dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
                 let dateString = dateFormatter.string(from: date)
                 
+                let amountBtc = amountSat.satsToBtc.avoidNotation
+                let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double ?? 0.0
+                let amountFiat = (amountBtc.doubleValue * fxRate).balanceText
+                
                 arrayToReturn.append(["address": addresses,
-                                      "amount": "\(amountSat) sats",
+                                      "amountSats": "\(amountSat) sats",
+                                      "amountFiat": amountFiat,
+                                      "amountBtc": amountBtc,
                                       "confirmations": "\(confs)",
                                       "label": label,
                                       "date": dateString,
@@ -353,9 +359,16 @@ class NodeLogic {
                 let dateString = dateFormatter.string(from: date)
                 
                 if settled {
+                    
+                    let amountBtc = amt_paid_sat.satsToBtc.avoidNotation
+                    let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double ?? 0.0
+                    let amountFiat = (amountBtc.doubleValue * fxRate).balanceText
+                    
                     arrayToReturn.append([
                                             "address": payment_request,
-                                            "amount": "\(amt_paid_sat) sats",
+                                            "amountSats": "\(amt_paid_sat) sats",
+                                            "amountBtc": amountBtc,
+                                            "amountFiat": amountFiat,
                                             "confirmations": state,
                                             "label": "",
                                             "date": dateString,
@@ -415,9 +428,16 @@ class NodeLogic {
                     let dateString = dateFormatter.string(from: date)
                     
                     if status == "SUCCEEDED" {
+                        
+                        let amountBtc = amount.satsToBtc.avoidNotation
+                        let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double ?? 0.0
+                        let amountFiat = (amountBtc.doubleValue * fxRate).balanceText
+                        
                         arrayToReturn.append([
                                                 "address": invoice,
-                                                "amount": "-\(amount) sats",
+                                                "amountSats": "-\(amount) sats",
+                                                "amountBtc": amountBtc,
+                                                "amountFiat": amountFiat,
                                                 "confirmations": "Sent",
                                                 "label": "",
                                                 "date": dateString,
@@ -495,9 +515,17 @@ class NodeLogic {
                             let dateString = dateFormatter.string(from: date)
                             
                             if status == "paid" {
+                                
+                                let amountSats = Double(amountMsat) / 1000.0
+                                let amountBtc = "\(amountSats)".satsToBtc.avoidNotation
+                                let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double ?? 0.0
+                                let amountFiat = (amountBtc.doubleValue * fxRate).balanceText
+                                
                                 arrayToReturn.append([
                                                         "address": bolt11,
-                                                        "amount": "\(Double(amountMsat) / 1000.0) sats",
+                                                        "amountSats": "\(amountSats) sats",
+                                                        "amountBtc": amountBtc,
+                                                        "amountFiat": amountFiat,
                                                         "confirmations": status,
                                                         "label": label,
                                                         "date": dateString,
@@ -559,20 +587,28 @@ class NodeLogic {
                         let dateString = dateFormatter.string(from: date)
                         
                         if status != "failed" {
+                            
+                            let amountSats = Double(amountMsat) / 1000.0
+                            let amountBtc = "\(amountSats)".satsToBtc.avoidNotation
+                            let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double ?? 0.0
+                            let amountFiat = (amountBtc.doubleValue * fxRate).balanceText
+                            
                             arrayToReturn.append([
-                                "address": bolt11,
-                                "amount": "-\(Double(amountMsat) / 1000.0) sats",
-                                "confirmations": status,
-                                "label": "",
-                                "date": dateString,
-                                "rbf": false,
-                                "txID": payment_hash,
-                                "replacedBy": "",
-                                "selfTransfer":false,
-                                "remove":false,
-                                "onchain":false,
-                                "isLightning":true,
-                                "sortDate":date])
+                                                    "address": bolt11,
+                                                    "amountSats": "-\(amountSats) sats",
+                                                    "amountBtc": amountBtc,
+                                                    "amountFiat": amountFiat,
+                                                    "confirmations": status,
+                                                    "label": "",
+                                                    "date": dateString,
+                                                    "rbf": false,
+                                                    "txID": payment_hash,
+                                                    "replacedBy": "",
+                                                    "selfTransfer":false,
+                                                    "remove":false,
+                                                    "onchain":false,
+                                                    "isLightning":true,
+                                                    "sortDate":date])
                         }
                         
                         if i + 1 == payments.count {
@@ -915,10 +951,17 @@ class NodeLogic {
                             }
                         }
                     }
+                    
+                    let amountSats = amountString.btcToSats
+                    let amountBtc = amountString.doubleValue.avoidNotation
+                    let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double ?? 0.0
+                    let amountFiat = (amountBtc.doubleValue * fxRate).balanceText
                                     
                     transactionArray.append([
                         "address": address,
-                        "amount": amountString,
+                        "amountBtc": amountBtc,
+                        "amountSats": amountSats,
+                        "amountFiat": amountFiat,
                         "confirmations": confirmations,
                         "label": label,
                         "date": dateString,

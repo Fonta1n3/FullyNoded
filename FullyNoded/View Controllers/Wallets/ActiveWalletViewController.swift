@@ -142,6 +142,7 @@ class ActiveWalletViewController: UIViewController {
             guard let self = self else { return }
             
             self.walletTable.reloadSections(IndexSet(arrayLiteral: 0), with: .none)
+            self.walletTable.reloadSections(IndexSet(arrayLiteral: 1), with: .none)
         }
     }
     
@@ -598,27 +599,31 @@ class ActiveWalletViewController: UIViewController {
             cell.backgroundColor = .red
         }
         
-        let amount = dict["amount"] as! String
+        let amountBtc = dict["amountBtc"] as! String
+        let amountSats = dict["amountSats"] as! String
+        let amountFiat = dict["amountFiat"] as! String
+        
+        
         
         utxoLabel.text = utxoLabelText
         editLabelButton.alpha = 1
         fetchOriginRateButton.alpha = 1
         
         if let exchangeRate = fxRate {
-            var dbl = 0.0
+//            var dbl = 0.0
+//
+//            if isLightning && !isOnchain {
+//                dbl = (amount.satsToBtc * exchangeRate)
+//
+//                if dbl > 1.0 {
+//                    dbl = round(dbl)
+//                }
+//
+//            } else {
+//                dbl = round((amount.doubleValue * exchangeRate))
+//            }
             
-            if isLightning && !isOnchain {
-                dbl = (amount.satsToBtc * exchangeRate)
-                
-                if dbl > 1.0 {
-                    dbl = round(dbl)
-                }
-                
-            } else {
-                dbl = round((amount.doubleValue * exchangeRate))
-            }
-            
-            currentFiatValueLabel.text = dbl.balanceText
+            currentFiatValueLabel.text = amountFiat
         } else {
             currentFiatValueLabel.text = "current exchange rate missing"
         }
@@ -626,11 +631,7 @@ class ActiveWalletViewController: UIViewController {
         if let originRate = dict["originRate"] as? Double {
             var amountProcessed = 0.0
             
-            if isLightning && !isOnchain {
-                amountProcessed = amount.satsToBtc
-            } else {
-                amountProcessed = amount.doubleValue
-            }
+            amountProcessed = amountBtc.doubleValue
             
             if amountProcessed < 0.0 {
                 amountProcessed = amountProcessed * -1.0
@@ -675,16 +676,32 @@ class ActiveWalletViewController: UIViewController {
             transactionLabel.text = "no transaction label"
         }
         
-        if amount.hasPrefix("-") {
+        if amountBtc.hasPrefix("-") || amountSats.hasPrefix("-") {
             categoryImage.image = UIImage(systemName: "arrow.up.right")
             categoryImage.tintColor = .systemRed
-            amountLabel.text = amount
+            
             amountLabel.textColor = UIColor.darkGray
+            
+            if isBtc {
+                amountLabel.text = amountBtc
+            } else if isSats {
+                amountLabel.text = amountSats
+            } else if isFiat {
+                amountLabel.text = amountFiat
+            }
+            
         } else {
             categoryImage.image = UIImage(systemName: "arrow.down.left")
             categoryImage.tintColor = .systemGreen
-            amountLabel.text = "+" + amount
             amountLabel.textColor = .white
+            
+            if isBtc {
+                amountLabel.text = "+" + amountBtc
+            } else if isSats {
+                amountLabel.text = "+" + amountSats
+            } else if isFiat {
+                amountLabel.text = "+" + amountFiat
+            }
         }
         
         if selfTransfer {
@@ -894,6 +911,7 @@ class ActiveWalletViewController: UIViewController {
             }
             
             self.fxRate = rate
+            UserDefaults.standard.setValue(rate, forKey: "fxRate")
             
             DispatchQueue.main.async { [unowned vc = self] in
                 vc.fxRateLabel.text = rate.exchangeRate
