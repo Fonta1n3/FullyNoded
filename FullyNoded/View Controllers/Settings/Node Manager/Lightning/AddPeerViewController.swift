@@ -74,7 +74,7 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
     }
     
     private func getAddress(_ amount: Int, _ id: String, _ ip: String, _ port: String?, _ wallet: Wallet) {
-        if wallet.type != "Native-Descriptor" {
+        if wallet.type != WalletType.descriptor.stringValue {
             let index = Int(wallet.index) + 1
             let param = "\"\(wallet.receiveDescriptor)\", [\(index),\(index)]"
             
@@ -107,7 +107,7 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
             let alert = UIAlertController(title: tit, message: mess, preferredStyle: alertStyle)
             
             alert.addAction(UIAlertAction(title: "Close to \(wallet.label)", style: .default, handler: { action in
-                if wallet.type != "Native-Descriptor" {
+                if wallet.type != WalletType.descriptor.stringValue {
                     CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(Int(wallet.index) + 1), entity: .wallets) { _ in }
                 }
                 

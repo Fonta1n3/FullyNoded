@@ -29,6 +29,7 @@
 		0A590357269875CD00510626 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A590356269875CB00510626 /* Extensions.swift */; };
 		0A59035A269B080700510626 /* ConfirmLightningPaymentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A590359269B080700510626 /* ConfirmLightningPaymentViewController.swift */; };
 		0A59035D269B0CA800510626 /* InvoiceStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A59035C269B0CA700510626 /* InvoiceStruct.swift */; };
+		0A9FDC9126A84CE30050C4AE /* WalletTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9FDC9026A84CE30050C4AE /* WalletTypes.swift */; };
 		0AE19ED725F4AC0D000F0AD4 /* WalletRecoveryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AE19ED625F4AC0D000F0AD4 /* WalletRecoveryViewController.swift */; };
 		844D2A4B2512D4F60046372E /* UTXOCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844D2A492512D4F60046372E /* UTXOCell.swift */; };
 		844D2A4C2512D4F60046372E /* UTXOCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 844D2A4A2512D4F60046372E /* UTXOCell.xib */; };
@@ -225,6 +226,7 @@
 		0A590356269875CB00510626 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		0A590359269B080700510626 /* ConfirmLightningPaymentViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmLightningPaymentViewController.swift; sourceTree = "<group>"; };
 		0A59035C269B0CA700510626 /* InvoiceStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceStruct.swift; sourceTree = "<group>"; };
+		0A9FDC9026A84CE30050C4AE /* WalletTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletTypes.swift; sourceTree = "<group>"; };
 		0AE19ED625F4AC0D000F0AD4 /* WalletRecoveryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletRecoveryViewController.swift; sourceTree = "<group>"; };
 		844D2A492512D4F60046372E /* UTXOCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOCell.swift; sourceTree = "<group>"; };
 		844D2A4A2512D4F60046372E /* UTXOCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = UTXOCell.xib; sourceTree = "<group>"; };
@@ -428,6 +430,21 @@
 			path = UR;
 			sourceTree = "<group>";
 		};
+		0A9FDC8F26A83EC10050C4AE /* Lightning */ = {
+			isa = PBXGroup;
+			children = (
+				D082397824DAE4CB0098D4F4 /* LightningNodeManagerViewController.swift */,
+				D082397A24DBDB330098D4F4 /* AddPeerViewController.swift */,
+				D069051E24EA6C1F007F939D /* LightningPeersViewController.swift */,
+				D069052024EA8E95007F939D /* LightningChannelsViewController.swift */,
+				D011702724EBA3CE00ACC44B /* ChannelDetailViewController.swift */,
+				D03F65F024EFB25100901D06 /* KeySendViewController.swift */,
+				D0CC0E2124F0FA98001BF905 /* PeerDetailsViewController.swift */,
+				D0CC0E2324F2069D001BF905 /* NoiseViewController.swift */,
+			);
+			path = Lightning;
+			sourceTree = "<group>";
+		};
 		A084FD6F2359E9C900DA63CF /* Build */ = {
 			isa = PBXGroup;
 			children = (
@@ -463,14 +480,7 @@
 			children = (
 				D08495F822EBCA3F003FE8EB /* Node Table */,
 				D08495F922EBCA4A003FE8EB /* Node RPC Info */,
-				D082397824DAE4CB0098D4F4 /* LightningNodeManagerViewController.swift */,
-				D082397A24DBDB330098D4F4 /* AddPeerViewController.swift */,
-				D069051E24EA6C1F007F939D /* LightningPeersViewController.swift */,
-				D069052024EA8E95007F939D /* LightningChannelsViewController.swift */,
-				D011702724EBA3CE00ACC44B /* ChannelDetailViewController.swift */,
-				D03F65F024EFB25100901D06 /* KeySendViewController.swift */,
-				D0CC0E2124F0FA98001BF905 /* PeerDetailsViewController.swift */,
-				D0CC0E2324F2069D001BF905 /* NoiseViewController.swift */,
+				0A9FDC8F26A83EC10050C4AE /* Lightning */,
 			);
 			path = "Node Manager";
 			sourceTree = "<group>";
@@ -900,6 +910,7 @@
 				D0B80A882516020A006B88F0 /* ImportXpubViewController.swift */,
 				0AE19ED625F4AC0D000F0AD4 /* WalletRecoveryViewController.swift */,
 				0A590359269B080700510626 /* ConfirmLightningPaymentViewController.swift */,
+				0A9FDC9026A84CE30050C4AE /* WalletTypes.swift */,
 			);
 			path = Wallets;
 			sourceTree = "<group>";
@@ -1153,6 +1164,7 @@
 				D05692E321434452006DF0F4 /* MainMenuViewController.swift in Sources */,
 				D07399D9245EEA5F00860B7E /* Broadcaster.swift in Sources */,
 				D03968B3246F769C0010D821 /* KeychainKeys.swift in Sources */,
+				0A9FDC9126A84CE30050C4AE /* WalletTypes.swift in Sources */,
 				D02FE43323136A600048F8C4 /* NodeLogic.swift in Sources */,
 				D05D973422647CE60035F1DE /* QRGenerator.swift in Sources */,
 				0A1F10E126A1A62B00BE2707 /* ChildIndexWildcard.swift in Sources */,

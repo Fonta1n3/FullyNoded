@@ -291,7 +291,7 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
             let descriptorParser = DescriptorParser()
             let descriptorStruct = descriptorParser.descriptor(wallet.receiveDescriptor)
             
-            if wallet.type == "Native-Descriptor" {
+            if wallet.type == WalletType.descriptor.stringValue {
                 self.fetchDescriptorAddress()
             } else {
                 if descriptorStruct.isMulti {

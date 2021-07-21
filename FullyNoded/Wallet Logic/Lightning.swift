@@ -48,7 +48,7 @@ class Lightning {
                 return
             }
             
-            if wallet.type != "Native-Descriptor" {
+            if wallet.type != WalletType.descriptor.stringValue {
                 let index = Int(wallet.index) + 1
                 let param = "\"\(wallet.receiveDescriptor)\", [\(index),\(index)]"
                 

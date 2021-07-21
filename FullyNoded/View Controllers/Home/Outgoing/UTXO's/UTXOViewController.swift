@@ -192,45 +192,19 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 
                 self.spinner.addConnectingView(vc: self, description: "updating utxo label")
                 
-                let param = "[{ \"scriptPubKey\": { \"address\": \"\(address)\" }, \"label\": \"\(label)\", \"timestamp\": \"now\", \"watchonly\": \(!isHot), \"keypool\": false, \"internal\": false }], ''{\"rescan\": false}''"
-                
-                Reducer.makeCommand(command: .importmulti, param: param) { [weak self] (response, errorMessage) in
-                    guard let self = self else { return }
-                    
-                    guard let result = response as? NSArray,
-                        let dict = result[0] as? NSDictionary,
-                        let success = dict["success"] as? Bool,
-                        success else {
-                        self.spinner.removeConnectingView()
-                        showAlert(vc: self, title: "Something went wrong...", message: "error: \(errorMessage ?? "unknown error")")
-                        return
-                    }
-                    
-                    func saved() {
-                        showAlert(vc: self, title: "Label updated ✅", message: "")
+                // need to check if its a native descriptor wallet then add label
+                activeWallet { wallet in
+                    guard let wallet = wallet else { return }
+                                        
+                    if wallet.type == WalletType.descriptor.stringValue {
+                        guard let desc = utxo.desc else { return }
                         
-                        DispatchQueue.main.async { [weak self] in
-                            self?.loadUnlockedUtxos()
-                        }
+                        let params = "[{\"desc\": \"\(desc)\", \"active\": false, \"timestamp\": \"now\", \"internal\": false, \"label\": \"\(label)\"}]"
+                        self.importdesc(params: params, utxo: utxo, label: label)
                         
-                        self.spinner.removeConnectingView()
-                    }
-                    
-                    CoreDataService.retrieveEntity(entityName: .utxos) { savedUtxos in
-                        guard let savedUtxos = savedUtxos, savedUtxos.count > 0 else {
-                            saved()
-                            return
-                        }
-                        
-                        for savedUtxo in savedUtxos {
-                            let savedUtxoStr = UtxosStruct(dictionary: savedUtxo)
-                            
-                            if savedUtxoStr.txid == utxo.txid && savedUtxoStr.vout == utxo.vout {
-                                CoreDataService.update(id: savedUtxoStr.id!, keyToUpdate: "label", newValue: label as Any, entity: .utxos) { _ in }
-                            }
-                        }
-                        
-                        saved()
+                    } else {
+                        let param = "[{ \"scriptPubKey\": { \"address\": \"\(address)\" }, \"label\": \"\(label)\", \"timestamp\": \"now\", \"watchonly\": \(!isHot), \"keypool\": false, \"internal\": false }], ''{\"rescan\": false}''"
+                        self.importmulti(param: param, utxo: utxo, label: label)
                     }
                 }
             }
@@ -244,6 +218,60 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             let cancel = UIAlertAction(title: "Cancel", style: .default) { (alertAction) in }
             alert.addAction(cancel)
             self.present(alert, animated:true, completion: nil)
+        }
+    }
+    
+    private func importdesc(params: String, utxo: UtxosStruct, label: String) {
+        Reducer.makeCommand(command: .importdescriptors, param: params) { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            self.updateLocally(utxo: utxo, label: label)
+        }
+    }
+    
+    private func importmulti(param: String, utxo: UtxosStruct, label: String) {
+        Reducer.makeCommand(command: .importmulti, param: param) { [weak self] (response, errorMessage) in
+            guard let self = self else { return }
+            
+            guard let result = response as? NSArray,
+                let dict = result[0] as? NSDictionary,
+                let success = dict["success"] as? Bool,
+                success else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Something went wrong...", message: "error: \(errorMessage ?? "unknown error")")
+                return
+            }
+            
+            self.updateLocally(utxo: utxo, label: label)
+        }
+    }
+    
+    private func updateLocally(utxo: UtxosStruct, label: String) {
+        func saved() {
+            showAlert(vc: self, title: "Label updated ✅", message: "")
+            
+            DispatchQueue.main.async { [weak self] in
+                self?.loadUnlockedUtxos()
+            }
+            
+            self.spinner.removeConnectingView()
+        }
+        
+        CoreDataService.retrieveEntity(entityName: .utxos) { savedUtxos in
+            guard let savedUtxos = savedUtxos, savedUtxos.count > 0 else {
+                saved()
+                return
+            }
+            
+            for savedUtxo in savedUtxos {
+                let savedUtxoStr = UtxosStruct(dictionary: savedUtxo)
+                
+                if savedUtxoStr.txid == utxo.txid && savedUtxoStr.vout == utxo.vout {
+                    CoreDataService.update(id: savedUtxoStr.id!, keyToUpdate: "label", newValue: label as Any, entity: .utxos) { _ in }
+                }
+            }
+            
+            saved()
         }
     }
     
@@ -370,10 +398,19 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                                         
                                         if savedUtxoStr.txid == unlockedUtxo.txid && savedUtxoStr.vout == unlockedUtxo.vout && wallet.label != savedUtxoStr.label {
                                             self.unlockedUtxos[i].label = savedUtxoStr.label
-                                            
-                                            let param = "[{ \"scriptPubKey\": { \"address\": \"\(unlockedUtxo.address!)\" }, \"label\": \"\(savedUtxoStr.label!)\", \"timestamp\": \"now\", \"watchonly\": true, \"keypool\": false, \"internal\": false }], ''{\"rescan\": false}''"
-                                            
-                                            Reducer.makeCommand(command: .importmulti, param: param) { (_, _) in }
+                                                                                        
+                                            if wallet.type == WalletType.descriptor.stringValue {
+                                                guard let desc = unlockedUtxo.desc else { return }
+                                                
+                                                let params = "[{\"desc\": \"\(desc)\", \"active\": false, \"timestamp\": \"now\", \"internal\": false, \"label\": \"\(savedUtxoStr.label!)\"}]"
+                                                
+                                                Reducer.makeCommand(command: .importdescriptors, param: params) { (_, _) in }
+                                                
+                                            } else {
+                                                let param = "[{ \"scriptPubKey\": { \"address\": \"\(unlockedUtxo.address!)\" }, \"label\": \"\(savedUtxoStr.label!)\", \"timestamp\": \"now\", \"watchonly\": true, \"keypool\": false, \"internal\": false }], ''{\"rescan\": false}''"
+                                                
+                                                Reducer.makeCommand(command: .importmulti, param: param) { (_, _) in }
+                                            }
                                         }
                                         
                                         if s + 1 == savedUtxos.count && u + 1 == self.unlockedUtxos.count {
@@ -526,9 +563,9 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     
    private func createRawNow() {
         if !isSweeping {
-            activeWallet { [weak self] (wallet) in
+            activeWallet { [weak self] wallet in
                 if wallet != nil {
-                    if wallet!.type == "Multi-Sig" {
+                    if wallet!.type == WalletType.multi.stringValue {
                         let index = Int(wallet!.index) + 1
                         CoreDataService.update(id: wallet!.id, keyToUpdate: "index", newValue: Int64(index), entity: .wallets) { (success) in
                             if success {

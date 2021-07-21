@@ -5998,8 +5998,6 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                         <segue destination="GlR-4A-eAx" kind="show" identifier="segueToShareLightningUrl" id="7UD-TA-0Dv"/>
                         <segue destination="aoj-WH-UVD" kind="show" identifier="goToSeeLightningPeers" id="2y9-PV-6Nh"/>
                         <segue destination="a32-zP-STg" kind="show" identifier="segueToLightningChannels" id="YuM-96-FnM"/>
-                        <segue destination="B99-yZ-naR" kind="show" identifier="segueToLightningCreds" id="2uq-d6-8Xa"/>
-                        <segue destination="B99-yZ-naR" kind="show" identifier="segueToScanLightningNode" id="fMA-4V-4zE"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="oL2-EX-61b" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -7560,7 +7558,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
     </scenes>
     <inferredMetricsTieBreakers>
         <segue reference="ckQ-WD-ole"/>
-        <segue reference="fMA-4V-4zE"/>
+        <segue reference="Fvb-gy-rb3"/>
         <segue reference="DLx-HT-rGm"/>
         <segue reference="w2g-bl-j8v"/>
         <segue reference="kq8-dj-bJ2"/>

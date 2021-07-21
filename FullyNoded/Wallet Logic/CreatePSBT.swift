@@ -79,7 +79,7 @@ class CreatePSBT {
             let descriptorParser = DescriptorParser()
             let descriptorStruct = descriptorParser.descriptor(wallet.receiveDescriptor)
             
-            guard descriptorStruct.isMulti && wallet.type != "Native-Descriptor" else {
+            guard descriptorStruct.isMulti && wallet.type != WalletType.descriptor.stringValue else {
                 create(params: param)
                 return
             }

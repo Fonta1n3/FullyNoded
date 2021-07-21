@@ -18,6 +18,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     var name = ""
     var coinType = "0"
     var blockheight:Int64!
+    var version:Int = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -54,6 +55,15 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                 self.blockheight = Int64(blocks)
             }
             
+            // check if version is at least 0.21.0 to use native descriptors
+            guard let version = UserDefaults.standard.object(forKey: "version") as? String else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "Version unknown.", message: "In order to create a wallet we need to know which version of Bitcoin Core you are running, please go the the home screen and refresh then try to create this wallet again.")
+                
+                return
+            }
+            
+            self.version = version.bitcoinVersion
             self.getWords()
         }
     }
@@ -77,17 +87,26 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     private func getWords() {
         spinner.addConnectingView(vc: self, description: "creating Fully Noded wallet...")
         
-        if let seed = Keys.seed() {
-            getMasterKey(seed: seed)
+        guard let seed = Keys.seed() else {
+            showError(error: "Error deriving seed")
+            return
+        }
+        
+        encryptSeed(words: seed) { [weak self] encryptedAndSaved in
+            guard let self = self else { return }
+            
+            guard encryptedAndSaved else {
+                self.showError(error: "Error encrypting and saving your signer.")
+                return
+            }
+            
+            self.getMasterKey(seed: seed)
             
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
                 self.textView.text = seed
             }
-            
-        } else {
-            showError(error: "Error deriving seed")
         }
     }
     
@@ -110,9 +129,15 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
             guard let self = self else { return }
             
             if success {
-                DispatchQueue.main.async {
-                    self.saveLocally(words: self.textView.text)
+                var type:WalletType
+                
+                if self.version >= 21 {
+                    type = .descriptor
+                } else {
+                    type = .single
                 }
+                
+                self.saveWallet(type: type)
             } else {
                 self.showError(error: "Error creating wallet")
             }
@@ -128,21 +153,12 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     }
     
     private func createWallet(fingerprint: String, xpub: String, completion: @escaping ((Bool)) -> Void) {
-        
-        // check if version is at least 0.21.0 to use native descriptors
-        guard let version = UserDefaults.standard.object(forKey: "version") as? String else {
-            spinner.removeConnectingView()
-            showAlert(vc: self, title: "Version unknown.", message: "In order to create a wallet we need to know which version of Bitcoin Core you are running, please go the the home screen and refresh then try to create this wallet again.")
-            
-            return
-        }
-        
         primDesc = primaryDescriptor(fingerprint, xpub)
         
         let walletName = "FullyNoded-\(Crypto.sha256hash(primDesc))"
         var param = "\"\(walletName)\", true, true, \"\", true"
         
-        if version.bitcoinVersion >= 21 {
+        if self.version >= 21 {
             param += ", true, true"
         }
 
@@ -155,7 +171,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                     return
             }
             
-            if version.bitcoinVersion >= 21 {
+            if self.version >= 21 {
                 self.importDescriptors(name, fingerprint, xpub, self.primDesc, completion: completion)
             } else {
                 self.importKeys(name, fingerprint, xpub, self.primDesc, completion: completion)
@@ -283,35 +299,35 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         }
     }
     
-    private func saveLocally(words: String) {
-        guard let encryptedWords = Crypto.encrypt(words.dataUsingUTF8StringEncoding) else { return }
+    private func encryptSeed(words: String, completion: @escaping ((Bool)) -> Void) {
+        guard let encryptedWords = Crypto.encrypt(words.dataUsingUTF8StringEncoding) else {
+            completion(false)
+            return
+        }
         
-        saveSigner(encryptedSigner: encryptedWords)
+        saveSigner(encryptedSigner: encryptedWords, completion: completion)
     }
     
-    private func saveSigner(encryptedSigner: Data) {
+    private func saveSigner(encryptedSigner: Data, completion: @escaping ((Bool)) -> Void) {
         let dict = ["id":UUID(), "words":encryptedSigner] as [String:Any]
-        CoreDataService.saveEntity(dict: dict, entityName: .signers) { [unowned vc = self] success in
-            if success {
-                vc.saveWallet()
-            } else {
-                vc.showError(error: "error saving encrypted seed")
-            }
+        CoreDataService.saveEntity(dict: dict, entityName: .signers) { success in
+            completion(success)
         }
     }
     
-    private func saveWallet() {
+    private func saveWallet(type: WalletType) {
         var dict = [String:Any]()
         dict["id"] = UUID()
-        dict["label"] = "Single-Sig"
+        dict["label"] = type.stringValue
         dict["changeDescriptor"] = changeDesc
         dict["receiveDescriptor"] = primDesc
-        dict["type"] = "Single-Sig"
+        dict["type"] = type.stringValue
         dict["name"] = name
         dict["maxIndex"] = Int64(2500)
         dict["index"] = Int64(0)
         dict["blockheight"] = blockheight
         dict["account"] = 0
+        
         CoreDataService.saveEntity(dict: dict, entityName: .wallets) { [weak self] success in
             guard let self = self else { return }
             

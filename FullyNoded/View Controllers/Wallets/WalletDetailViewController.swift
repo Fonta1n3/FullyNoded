@@ -79,7 +79,7 @@ class WalletDetailViewController: UIViewController, UITextFieldDelegate, UITable
     private func getAddresses() {
         var desc = wallet.receiveDescriptor
         
-        if wallet.type == "Single-Sig" {
+        if wallet.type == WalletType.single.stringValue {
             let ud = UserDefaults.standard
             let nativeSegwit = ud.object(forKey: "nativeSegwit") as? Bool ?? true
             let p2shSegwit = ud.object(forKey: "p2shSegwit") as? Bool ?? false

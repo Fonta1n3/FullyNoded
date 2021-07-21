@@ -44,7 +44,7 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
         
         if newlyAdded {
             newlyAdded = false
-            showAlert(vc: self, title: "Node added ⚡️", message: "Fecthing info from your node...\n\nTo view this screen from now on just tap the ⚡️ on the home screen.")
+            showAlert(vc: self, title: "Node added ⚡️", message: "Fetching info from your node...\n\nTo view this screen from now on just tap the ⚡️ on the home screen.")
         } else {
             checkForLightningNodes { [weak self] node in
                 guard let self = self else { return }
@@ -60,37 +60,12 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
         }
     }
     
-    @IBAction func goToCreds(_ sender: Any) {
-        DispatchQueue.main.async { [weak self] in
-            self?.performSegue(withIdentifier: "segueToLightningCreds", sender: self)
-        }
-    }
-    
     private func promptToAddNode() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            let alertStyle = UIAlertController.Style.alert
-            
-            let alert = UIAlertController(title: "No lightning nodes added yet.", message: "You can add the node credentials manually or scan a QR code.", preferredStyle: alertStyle)
-            
-            alert.addAction(UIAlertAction(title: "Add manually", style: .default, handler: { [weak self] action in
-                guard let self = self else { return }
-                
-                self.performSegue(withIdentifier: "segueToLightningCreds", sender: self)
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Scan QR", style: .default, handler: { [weak self] action in
-                guard let self = self else { return }
-                
-                self.performSegue(withIdentifier: "segueToScanLightningNode", sender: self)
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = self.view
-            
-            self.present(alert, animated: true, completion: nil)
-        }
+        showAlert(
+            vc: self,
+            title: "No active lightning node.",
+            message: "Go back, tap settings, tap node manager, tap the plus button to add a new node."
+        )
     }
     
     private func checkForLightningNodes(completion: @escaping ((NodeStruct?)) -> Void) {
@@ -239,9 +214,7 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
                     }
                 }
             }
-            
         }
-
     }
     
     private func lndGetInfo() {
@@ -488,13 +461,6 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
                 vc.isLightning = true
                 vc.selectedNode = activeNode
             }
-            
-        case "segueToScanLightningNode":
-            guard let vc = segue.destination as? NodeDetailViewController else { fallthrough }
-            
-            vc.isLightning = true
-            vc.selectedNode = activeNode
-            vc.scanNow = true
             
         default:
             break
