@@ -1,11 +1,11 @@
 
-# [Fully Noded™️](https://fullynoded.app)
+# [Fully Noded®](https://fullynoded.app)
 
 <img src="./Images/fn_logo.png" alt="" width="100"/> <br/> [<img src="./Images/appstore.png" alt="download fully noded on the app store" width="100"/>](https://apps.apple.com/us/app/fully-noded/id1436425586) <br/> [<img src="./Images/macos_badge.png" alt="download fully noded for macos" width="100"/>](https://apps.apple.com/us/app/fully-noded-desktop/id1530816100?mt=12) <br/>
 
 <img src="./Images/home.png" alt="home" width="400"/> <img src="./Images/wallet.png" alt="home" width="400"/> <br/>
 
-Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own [Bitcoin Core](https://github.com/bitcoin/bitcoin) node as a backend. Providing an easy to use interface to interact with your nodes non wallet capabilities. Fully Noded™️ wallets are powered by PSBT's and descriptors. Fully Noded™️ acts as an offline signer using your node as a watch-only wallet as well as giving you full unfettered access to every wallet.dat in your nodes `.bitcoin` directory. [C-Lightning](https://github.com/ElementsProject/lightning) compatible for instant, unfairly cheap payments.
+Self sovereign, secure, powerful, easy to use **wallet** that utilizes your own [Bitcoin Core](https://github.com/bitcoin/bitcoin) node as a backend. Providing an easy to use interface to interact with your nodes non wallet capabilities. Fully Noded® wallets are powered by PSBT's and descriptors. Fully Noded® acts as an offline signer using your node as a watch-only wallet as well as giving you full unfettered access to every wallet.dat in your nodes `.bitcoin` directory. [C-Lightning](https://github.com/ElementsProject/lightning) compatible for instant, unfairly cheap payments.
 
 ## Build from source
 <br/><img src="./Images/build_from_source.png" alt="" width="400"/><br/>
@@ -14,24 +14,24 @@ Click `open in Xcode` and run the project on either your Mac, iOS device or simu
 ## Getting started
 
 - On your mac
-  - Download Fully Noded™️ macOS<br/>
+  - Download Fully Noded® macOS<br/>
   [<img src="./Images/macos_badge.png" alt="download fully noded for macos" width="100"/>](https://apps.apple.com/us/app/fully-noded-desktop/id1530816100?mt=12)<br/>
   - Download Bitcoin Core [https://bitcoincore.org/en/download/](https://bitcoincore.org/en/download/)
     - Or for best security and ease of use download [GordianServer](https://github.com/Fonta1n3/GordianServer-macOS/blob/master/GordianServer-macOS-v0.1.4.dmg) which will harden your mac for best security practices and install Bitcoin Core, Tor and C-Lightning with one click.
   - Start Bitcoin Core by double clicking it.
   - Start Fully Noded by double clicking it.
-  - Fully Noded™️ will prompt you to add a node. Get your `rpc` credentials from your `bitcoin.conf` file which can be found at `/Users/<username>/Library/Application Support/Bitcoin/bitcoin.conf ` and add them to FN when adding your node. By default FN will add the correct address for your node, this can be customized for remote connections for advanced users.
+  - Fully Noded® will prompt you to add a node. Get your `rpc` credentials from your `bitcoin.conf` file which can be found at `/Users/<username>/Library/Application Support/Bitcoin/bitcoin.conf ` and add them to FN when adding your node. By default FN will add the correct address for your node, this can be customized for remote connections for advanced users.
   - Once your node is added and the home screen has loaded, tap the "antenna" button on the home screen:<br/>
   <br/><img src="./Images/antenna.gif" alt="antenna" width="500"/><br/><br/>
 - On your mobile device
-  - Download Fully Noded™️ iOS<br/>
+  - Download Fully Noded® iOS<br/>
   [<img src="./Images/appstore.png" alt="download fully noded on the app store" width="100"/>](https://apps.apple.com/us/app/fully-noded/id1436425586)<br/>
   - Open it, when prompted to add a node tap the QR scanner button, and scan the QR that the macOS app is showing you:
     <br/><img src="./Images/scan.gif" alt="scan" width="250"/><br/><br/>
 
 ## Cost
 
-### Redistributing Fully Noded™️ Code on the App Store
+### Redistributing Fully Noded® Code on the App Store
 
 Even though this project is open source, this does not mean you can reuse this code when distributing closed source commercial products. Please [contact us](mailto:dentondevelopment@protonmail.com) to discuss licensing options before you start building your product.
 
@@ -39,7 +39,7 @@ If you are an open source project, please [contact us](mailto:dentondevelopment@
 
 ### Cost for End Users
 
-Downloading the Fully Noded™️ iOS app is **100% free** because it is important that all people around the world have unrestricted access to a private, self sovereign means of using Bitcoin.
+Downloading the Fully Noded® iOS app is **100% free** because it is important that all people around the world have unrestricted access to a private, self sovereign means of using Bitcoin.
 However, developing and supporting this project is hard work and costs real money. Please help support the development of this project!
 
 * [GitHub Sponsors](https://github.com/sponsors/fonta1n3)
@@ -48,12 +48,12 @@ However, developing and supporting this project is hard work and costs real mone
 * The preferred method of donation is via the app itself, simply tap the ♥️ button when creating a transaction and it will automatically load a donation address which is derived from a hard coded xpub within the app:<br/><br/>
 <img src="./Images/donation.jpg" alt="download fully noded on the app store" width="250"/><br/>
 
-## Why Fully Noded™️?
+## Why Fully Noded®?
 
 * **Privacy.** Majority of existing Bitcoin wallets are powered by someone else's node, this causes complete and utter loss of privacy. By running your own node and utilizing it via a Tor hidden service you are maintaining a high level of privacy.
-* **Security.** All communications to your node are done within the Tor network, this means your IP is never exposed, your communications to your node are heavily encrypted, this is by default and not possible to opt out of. The app allows you to utilize Tor V3 authentication for first in class security, in short this means you self authenticate your device and no other device will be able to connect to your node. The app by default never uses your node as a hot wallet and instead keeps your seed heavily encrypted and securely stored on your iOS device, private keys never touch a network request, Tor or otherwise. With Fully Noded™️ architecture you can always keep your node completely behind a firewall and access it securely from anywhere in the world.
+* **Security.** All communications to your node are done within the Tor network, this means your IP is never exposed, your communications to your node are heavily encrypted, this is by default and not possible to opt out of. The app allows you to utilize Tor V3 authentication for first in class security, in short this means you self authenticate your device and no other device will be able to connect to your node. The app by default never uses your node as a hot wallet and instead keeps your seed heavily encrypted and securely stored on your iOS device, private keys never touch a network request, Tor or otherwise. With Fully Noded® architecture you can always keep your node completely behind a firewall and access it securely from anywhere in the world.
 * **Sovereignty.** You are in total control, you run a self hosted server which then powers your mobile wallet. There is no middle man which can deny you access to your own server. You are in control of your private keys and utxo's.
-* **Censorship Resistance.** If you rely on a companies' server to power your wallet you are inherently relying on them, they can at any time disable your connection to their servers, shut them off or be forced to deny you service. When using Fully Noded™️ you never have to be concerned about a third party censoring your payments, you are quite literally your own bank.
+* **Censorship Resistance.** If you rely on a companies' server to power your wallet you are inherently relying on them, they can at any time disable your connection to their servers, shut them off or be forced to deny you service. When using Fully Noded® you never have to be concerned about a third party censoring your payments, you are quite literally your own bank.
 * **Recovery.** Users may recover any wallet with the app, simply create a Recovery wallet with BIP39 seed words and automatically recover every popular wallet in one fell swoop. For advanced users you may create a descriptor of any type and import it with the app, this allows every wallet type imaginable to be recovered. If you have existing wallets on your node which are watch-only you may add BIP39 seed words to the app to make them spendable.
 
 ## Manual Setup - *advanced*
@@ -97,7 +97,7 @@ However, developing and supporting this project is hard work and costs real mone
 
 ## Contributing
 
-Thank you for your interest in contributing to Fully Noded™️! To avoid potential legal headaches and to allow distribution on Apple's App Store please sign our CLA (Contributors License Agreement).
+Thank you for your interest in contributing to Fully Noded®! To avoid potential legal headaches and to allow distribution on Apple's App Store please sign our CLA (Contributors License Agreement).
 
 1. Sign the [CLA](./CLA.md), and email it to [dentondevelopment@protonmail.com](mailto:dentondevelopment@protonmail.com).
 2. [Fork](https://github.com/Fonta1n3/FullyNoded/fork) the project and (preferably) work in a feature branch.
@@ -137,7 +137,7 @@ in the sources themselves:
 * Credit to [Chat-Secure](https://github.com/ChatSecure/ChatSecure-iOS/blob/master/README.md) Readme.md for inspiring the layout/format and some of the text of this document.
 * Credit to [Blockchain Commons](https://github.com/BlockchainCommons) for the format of the CLA.
 
-The following dependencies are bundled with the Fully Noded™️, but are under
+The following dependencies are bundled with the Fully Noded®, but are under
 terms of a separate license:
 
 * [Tor](https://github.com/iCepa/Tor.framework) for connecting to your node more privately and securely.
@@ -145,3 +145,4 @@ terms of a separate license:
 * [DescriptorParser.swift](https://github.com/BlockchainCommons/GordianWallet-iOS/blob/master/XCode/GordianWallet/Helpers/DescriptorParser.swift) from [Blockchain Commons](https://github.com/BlockchainCommons) which is under the [spdx:BSD-2-Clause Plus Patent License](https://spdx.org/licenses/BSD-2-Clause-Patent.html).
 * [Base32](https://github.com/norio-nomura/Base32/blob/master/Sources/Base32) built by [@norio-nomura](https://github.com/norio-nomura) - for Tor V3 authentication key encoding which is licensed under The MIT License (MIT).
 * [Base58](https://github.com/wavesplatform/Base58/tree/master/Source) from [@LukeDash-jr](https://github.com/luke-jr) and the [Waves Platform](https://github.com/wavesplatform) which is licensed under The MIT License (MIT). Used for converting Slip0132 extended keys to xpubs/xprvs.
+* [UR](https://github.com/Fonta1n3/FullyNoded/tree/master/FullyNoded/Helpers/UR) from [Blockchain Commons](https://github.com/BlockchainCommons) which is under the [spdx:BSD-2-Clause Plus Patent License](https://spdx.org/licenses/BSD-2-Clause-Patent.html). (exludes the UR.swift file which falls under Fully Noded license)
