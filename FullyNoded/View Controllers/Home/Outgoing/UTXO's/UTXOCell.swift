@@ -194,7 +194,6 @@ class UTXOCell: UITableViewCell {
             spendableLabel.text = "?"
             spendableLabel.textColor = .lightGray
         }
-    
     }
     
     func selectedAnimation() {
@@ -210,9 +209,7 @@ class UTXOCell: UITableViewCell {
                     self.roundeBackgroundView.backgroundColor = .darkGray
                     
                 })
-                
             }
-            
         }
     }
     
@@ -231,9 +228,7 @@ class UTXOCell: UITableViewCell {
                     self.roundeBackgroundView.backgroundColor = .black
                     
                 })
-                
             }
-            
         }
     }
     

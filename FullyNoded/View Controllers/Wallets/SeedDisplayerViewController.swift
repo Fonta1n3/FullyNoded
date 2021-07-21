@@ -40,7 +40,9 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                 let chain = dict["chain"] as? String else {
                     self.showError(error: "Error getting blockchain info, please chack your connection to your node.")
                     
-                    DispatchQueue.main.async {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        
                         self.navigationController?.popToRootViewController(animated: true)
                     }
                     
