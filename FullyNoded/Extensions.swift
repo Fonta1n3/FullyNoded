@@ -74,7 +74,7 @@ extension Array where Element == UInt8 {
 }
 
 public extension Int {
-    func withCommas() -> String {
+    var withCommas: String {
         let numberFormatter = NumberFormatter()
         numberFormatter.numberStyle = NumberFormatter.Style.decimal
         return numberFormatter.string(from: NSNumber(value:self))!
@@ -291,7 +291,7 @@ public extension Double {
         if dbl < 1.0 {
             return "\(symbol)\(dbl.avoidNotation)"
         } else {
-            return "\(symbol)\(Int(dbl).withCommas())"
+            return "\(symbol)\(Int(dbl).withCommas)"
         }
     }
     
@@ -330,7 +330,11 @@ public extension Double {
             break
         }
         
-        return "\(symbol)\(self.withCommas)"
+        if self < 1.0 {
+            return "\(symbol)\(self.avoidNotation)"
+        } else {
+            return "\(symbol)\(Int(self).withCommas)"
+        }
     }
     
     var satsToBtcDouble: Double {

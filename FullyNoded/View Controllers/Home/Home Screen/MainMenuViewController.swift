@@ -393,7 +393,7 @@ class MainMenuViewController: UIViewController {
             
         case .currentBlockHeight:
             if blockchainInfo != nil {
-                label.text = "\(blockchainInfo.blockheight.withCommas()) blocks"
+                label.text = "\(blockchainInfo.blockheight.withCommas) blocks"
                 icon.image = UIImage(systemName: "square.stack.3d.up")
                 background.backgroundColor = .systemYellow
                 chevron.alpha = 0
@@ -417,7 +417,7 @@ class MainMenuViewController: UIViewController {
         
         case .memPool:
             if mempoolInfo != nil {
-                label.text = "\(mempoolInfo.mempoolCount.withCommas()) transactions"
+                label.text = "\(mempoolInfo.mempoolCount.withCommas) transactions"
                 icon.image = UIImage(systemName: "waveform.path.ecg")
                 background.backgroundColor = .systemGreen
                 chevron.alpha = 0

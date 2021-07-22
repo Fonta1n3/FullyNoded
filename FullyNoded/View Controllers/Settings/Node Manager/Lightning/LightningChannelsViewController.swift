@@ -752,8 +752,8 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
                     
-                    self.totalSpendableLabel.text = "Total spendable: \(totalSpendable.withCommas()) sats"
-                    self.totalReceivableLabel.text = "Total receivable: \(totalReceivable.withCommas()) sats"
+                    self.totalSpendableLabel.text = "Total spendable: \(totalSpendable.withCommas) sats"
+                    self.totalReceivableLabel.text = "Total receivable: \(totalReceivable.withCommas) sats"
                 }
                 
                 fetchLocalPeers { [weak self] _ in

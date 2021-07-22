@@ -6275,12 +6275,6 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                     <action selector="lockAction:" destination="1tX-je-wOH" id="1li-Ht-ieG"/>
                                 </connections>
                             </barButtonItem>
-                            <barButtonItem image="arrow.down.right.and.arrow.up.left" catalog="system" id="1np-kq-cfq">
-                                <color key="tintColor" systemColor="systemTealColor"/>
-                                <connections>
-                                    <action selector="consolidate:" destination="1tX-je-wOH" id="ecu-oT-Xfp"/>
-                                </connections>
-                            </barButtonItem>
                         </rightBarButtonItems>
                     </navigationItem>
                     <connections>
@@ -7560,16 +7554,16 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="ckQ-WD-ole"/>
         <segue reference="Fvb-gy-rb3"/>
         <segue reference="DLx-HT-rGm"/>
-        <segue reference="w2g-bl-j8v"/>
+        <segue reference="EZr-Ut-goC"/>
         <segue reference="kq8-dj-bJ2"/>
         <segue reference="LMu-1F-VvA"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="CQp-9r-70w"/>
+        <segue reference="2DM-Bo-8hK"/>
         <segue reference="7UD-TA-0Dv"/>
         <segue reference="yAt-Ra-aPH"/>
-        <segue reference="gzO-Lb-E0s"/>
-        <segue reference="j10-wi-hpr"/>
+        <segue reference="BVG-ie-esh"/>
+        <segue reference="Ikt-mc-dmE"/>
         <segue reference="qmy-fM-U4p"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -7580,7 +7574,6 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <image name="arrow.2.circlepath" catalog="system" width="128" height="101"/>
         <image name="arrow.clockwise" catalog="system" width="115" height="128"/>
         <image name="arrow.down.left" catalog="system" width="128" height="112"/>
-        <image name="arrow.down.right.and.arrow.up.left" catalog="system" width="128" height="118"/>
         <image name="arrow.up.right" catalog="system" width="128" height="112"/>
         <image name="arrowtriangle.right.and.line.vertical.and.arrowtriangle.left" catalog="system" width="128" height="89"/>
         <image name="bitcoinsign.circle" catalog="system" width="128" height="121"/>

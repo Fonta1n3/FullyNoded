@@ -285,7 +285,7 @@ class NodeLogic {
                     return
                 }
                 
-                let amountSat = Int(txDict["amount"] as? String ?? "0")!.withCommas()
+                let amountSat = Int(txDict["amount"] as? String ?? "0")!.withCommas
                 let confs = txDict["num_confirmations"] as? Int ?? 0
                 let label = txDict["label"] as? String ?? ""
                 let time_stamp = txDict["time_stamp"] as? String ?? "0"
@@ -348,7 +348,7 @@ class NodeLogic {
             
             for (i, invoice) in invoices.enumerated() {
                 let payment_hash = invoice["payment_hash"] as? String ?? ""
-                let amt_paid_sat = Int(invoice["amt_paid_sat"] as? String ?? "")!.withCommas()
+                let amt_paid_sat = Int(invoice["amt_paid_sat"] as? String ?? "")!.withCommas
                 let state = invoice["state"] as? String ?? ""
                 let payment_request = invoice["payment_request"] as? String ?? ""
                 let paid_at = invoice["settle_date"] as? String ?? ""
@@ -419,7 +419,7 @@ class NodeLogic {
                 for (p, payment) in payments.enumerated() {
                     var alreadySaved = false
                     let payment_hash = payment["payment_hash"] as? String ?? ""
-                    let amount = Int(payment["value_sat"] as? String ?? "")!.withCommas()
+                    let amount = Int(payment["value_sat"] as? String ?? "")!.withCommas
                     let status = payment["status"] as? String ?? ""
                     let created = Double(payment["creation_time_ns"] as? String ?? "0.0")! / 1000000000.0
                     let invoice = payment["payment_request"] as? String ?? ""
@@ -780,7 +780,7 @@ class NodeLogic {
         var miningInfoToReturn = [String:Any]()
         let hashesPerSecond = miningInfo["networkhashps"] as! Double
         let exahashesPerSecond = hashesPerSecond / 1000000000000000000
-        miningInfoToReturn["networkhashps"] = Int(exahashesPerSecond).withCommas()
+        miningInfoToReturn["networkhashps"] = Int(exahashesPerSecond).withCommas
         completion((miningInfoToReturn, nil))
     }
     
@@ -792,7 +792,7 @@ class NodeLogic {
         }
         
         if let difficultyCheck = blockchainInfo["difficulty"] as? Double {
-            blockchainInfoToReturn["difficulty"] = "difficulty \(Int(difficultyCheck / 1000000000000).withCommas()) trillion"
+            blockchainInfoToReturn["difficulty"] = "difficulty \(Int(difficultyCheck / 1000000000000).withCommas) trillion"
         }
         
         if let sizeCheck = blockchainInfo["size_on_disk"] as? Int {

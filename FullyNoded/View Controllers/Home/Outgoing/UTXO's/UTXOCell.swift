@@ -20,6 +20,7 @@ class UTXOCell: UITableViewCell {
     private var isLocked: Bool!
     private unowned var delegate: UTXOCellDelegate!
     
+    @IBOutlet private weak var capGainLabel: UILabel!
     @IBOutlet public weak var roundeBackgroundView: UIView!
     @IBOutlet private weak var walletLabel: UILabel!// an address label
     @IBOutlet public weak var checkMarkImageView: UIImageView!
@@ -117,11 +118,11 @@ class UTXOCell: UITableViewCell {
             isChangeBackground.backgroundColor = .clear
         }
         
-        if utxo.amount != nil {
-            let roundedAmount = rounded(number: utxo.amount!)
+        if let amount = utxo.amount {
+            let roundedAmount = rounded(number: amount)
             amountLabel.text = "\(roundedAmount.avoidNotation)"
             
-            if utxo.amount! <= 0.00010000 {
+            if amount <= 0.00010000 {
                 isDustImageView.image = UIImage(systemName: "exclamationmark.triangle")
                 isDustBackground.backgroundColor = .systemRed
             } else {
@@ -129,8 +130,9 @@ class UTXOCell: UITableViewCell {
                 isDustBackground.backgroundColor = .darkGray
             }
             
-            if fxRate != nil {
-                fiatLabel.text = "$\((utxo.amount! * fxRate!).rounded().withCommas)"
+            if let fxRate = fxRate {
+                fiatLabel.text = (amount * fxRate).fiatString
+                capGainLabel.text = utxo.capGain
             }
             
         }  else {

@@ -605,50 +605,38 @@ class ActiveWalletViewController: UIViewController {
         fetchOriginRateButton.alpha = 1
         
         if let _ = fxRate {
-//            var dbl = 0.0
-//
-//            if isLightning && !isOnchain {
-//                dbl = (amount.satsToBtc * exchangeRate)
-//
-//                if dbl > 1.0 {
-//                    dbl = round(dbl)
-//                }
-//
-//            } else {
-//                dbl = round((amount.doubleValue * exchangeRate))
-//            }
-            
             currentFiatValueLabel.text = amountFiat
         } else {
             currentFiatValueLabel.text = "current exchange rate missing"
         }
         
         if let originRate = dict["originRate"] as? Double {
-            var amountProcessed = 0.0
+            var btcAmount = 0.0
             
-            amountProcessed = amountBtc.doubleValue
+            btcAmount = amountBtc.doubleValue
             
-            if amountProcessed < 0.0 {
-                amountProcessed = amountProcessed * -1.0
+            if btcAmount < 0.0 {
+                btcAmount = btcAmount * -1.0
             }
             
-            var dbl = 0.0
+            var originValueFiat = 0.0
             
-            dbl = round((amountProcessed * originRate))
+            originValueFiat = round((btcAmount * originRate))
             
-            if dbl < 0.0 {
-                dbl = dbl * -1.0
+            if originValueFiat < 0.0 {
+                originValueFiat = originValueFiat * -1.0
             }
             
-            originFiatValueLabel.text = round((dbl)).fiatString
+            originFiatValueLabel.text = originValueFiat.fiatString
             
             if let exchangeRate = fxRate {
-                var gain = round((amountProcessed * exchangeRate) - (dbl))
+                var gain = round((btcAmount * exchangeRate) - originValueFiat)
+                
                 if Int(gain) > 0 {
-                    originFiatValueLabel.text! += " / gain of \(gain.fiatString) / \(Int((gain / dbl) * 100.0))%"
+                    originFiatValueLabel.text! += " / gain of \(gain.fiatString) / \(Int((gain / originValueFiat) * 100.0))%"
                 } else if Int(gain) < 0 {
                     gain = gain * -1.0
-                    originFiatValueLabel.text! += " / loss of \(gain.fiatString) / \(Int((gain / dbl) * 100.0))%"
+                    originFiatValueLabel.text! += " / loss of \(gain.fiatString) / \(Int((gain / originValueFiat) * 100.0))%"
                 } else {
                     originFiatValueLabel.text! += " (no change)"
                 }
