@@ -369,8 +369,19 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             }
             
             for (i, utxo) in utxos.enumerated() {
-                guard let utxoDict = utxo as? [String:Any] else { return }
-                let utxoStr = UtxosStruct(dictionary: utxoDict)
+                guard var utxoDict = utxo as? [String:Any] else { return }
+                
+                let utxoStr:UtxosStruct
+                
+                if let wallet = self.wallet {
+                    if wallet.type == WalletType.descriptor.stringValue {
+                        let dp = DescriptorParser()
+                        let dStruct = dp.descriptor(wallet.receiveDescriptor)
+                        utxoDict["spendable"] = dStruct.isHot
+                    }
+                }
+                
+                utxoStr = UtxosStruct(dictionary: utxoDict)
                 self.unlockedUtxos.append(utxoStr)
                 
                 if i + 1 == utxos.count {
