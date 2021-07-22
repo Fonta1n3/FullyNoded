@@ -368,7 +368,6 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
                 self.loadChannels()
                 return
             }
-            
         }
     }
     

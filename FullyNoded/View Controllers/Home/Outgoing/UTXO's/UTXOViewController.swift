@@ -27,6 +27,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     private var isUnsigned = false
     private let blurView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffect.Style.dark))
     private var alertStyle = UIAlertController.Style.actionSheet
+    private var wallet:Wallet?
     var fxRate:Double?
     
     @IBOutlet weak private var tableView: UITableView!
@@ -44,6 +45,12 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         
         if (UIDevice.current.userInterfaceIdiom == .pad) {
           alertStyle = UIAlertController.Style.alert
+        }
+        
+        activeWallet { wallet in
+            guard let wallet = wallet else { return }
+            
+            self.wallet = wallet
         }
     }
     
@@ -107,29 +114,27 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 param = "\"\", \"legacy\""
             }
             
-            activeWallet { wallet in
-                guard let wallet = wallet else { return }
-                
-                let descriptorParser = DescriptorParser()
-                let descriptorStruct = descriptorParser.descriptor(wallet.receiveDescriptor)
-                
-                guard descriptorStruct.isMulti else {
-                    self.executeNodeCommand(method: .getnewaddress, param: param)
-                    return
-                }
-                
-                let index = Int(wallet.index) + 1
-                
-                CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(index), entity: .wallets) { success in
-                    if success {
-                        Reducer.makeCommand(command: .deriveaddresses, param: "\"\(wallet.receiveDescriptor)\", [\(index),\(index)]") { (response, errorMessage) in
-                            guard let result = response as? NSArray, let changeAddress = result[0] as? String else {
-                                showAlert(vc: self, title: "Uhoh", message: "There was an issue getting an address to consolidate your multisig wallet to: \(errorMessage ?? "unknown")")
-                                return
-                            }
-                            
-                            self.consolidateToAddress(changeAddress)
+            guard let wallet = self.wallet else { return }
+            
+            let descriptorParser = DescriptorParser()
+            let descriptorStruct = descriptorParser.descriptor(wallet.receiveDescriptor)
+            
+            guard descriptorStruct.isMulti else {
+                self.executeNodeCommand(method: .getnewaddress, param: param)
+                return
+            }
+            
+            let index = Int(wallet.index) + 1
+            
+            CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(index), entity: .wallets) { success in
+                if success {
+                    Reducer.makeCommand(command: .deriveaddresses, param: "\"\(wallet.receiveDescriptor)\", [\(index),\(index)]") { (response, errorMessage) in
+                        guard let result = response as? NSArray, let changeAddress = result[0] as? String else {
+                            showAlert(vc: self, title: "Uhoh", message: "There was an issue getting an address to consolidate your multisig wallet to: \(errorMessage ?? "unknown")")
+                            return
                         }
+                        
+                        self.consolidateToAddress(changeAddress)
                     }
                 }
             }
@@ -193,19 +198,17 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 self.spinner.addConnectingView(vc: self, description: "updating utxo label")
                 
                 // need to check if its a native descriptor wallet then add label
-                activeWallet { wallet in
-                    guard let wallet = wallet else { return }
-                                        
-                    if wallet.type == WalletType.descriptor.stringValue {
-                        guard let desc = utxo.desc else { return }
-                        
-                        let params = "[{\"desc\": \"\(desc)\", \"active\": false, \"timestamp\": \"now\", \"internal\": false, \"label\": \"\(label)\"}]"
-                        self.importdesc(params: params, utxo: utxo, label: label)
-                        
-                    } else {
-                        let param = "[{ \"scriptPubKey\": { \"address\": \"\(address)\" }, \"label\": \"\(label)\", \"timestamp\": \"now\", \"watchonly\": \(!isHot), \"keypool\": false, \"internal\": false }], ''{\"rescan\": false}''"
-                        self.importmulti(param: param, utxo: utxo, label: label)
-                    }
+                guard let wallet = self.wallet else { return }
+                
+                if wallet.type == WalletType.descriptor.stringValue {
+                    guard let desc = utxo.desc else { return }
+                    
+                    let params = "[{\"desc\": \"\(desc)\", \"active\": false, \"timestamp\": \"now\", \"internal\": false, \"label\": \"\(label)\"}]"
+                    self.importdesc(params: params, utxo: utxo, label: label)
+                    
+                } else {
+                    let param = "[{ \"scriptPubKey\": { \"address\": \"\(address)\" }, \"label\": \"\(label)\", \"timestamp\": \"now\", \"watchonly\": \(!isHot), \"keypool\": false, \"internal\": false }], ''{\"rescan\": false}''"
+                    self.importmulti(param: param, utxo: utxo, label: label)
                 }
             }
             
@@ -373,57 +376,53 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 if i + 1 == utxos.count {
                     self.unlockedUtxos = self.unlockedUtxos.sorted { $0.confs ?? 0 < $1.confs ?? 0 }
                     
-                    CoreDataService.retrieveEntity(entityName: .utxos) { savedUtxos in
-                        guard let savedUtxos = savedUtxos, savedUtxos.count > 0 else {
-                            self.finishedLoading()
+                    if let wallet = self.wallet {
+                        CoreDataService.retrieveEntity(entityName: .utxos) { [weak self] savedUtxos in
+                            guard let self = self else { return }
                             
-                            return
-                        }
-                                                
-                        for (u, unlockedUtxo) in self.unlockedUtxos.enumerated() {
-                                                        
-                            activeWallet { wallet in
-                                guard let wallet = wallet else {
-                                    self.finishedLoading()
-                                    
-                                    return
-                                }
+                            guard let savedUtxos = savedUtxos, savedUtxos.count > 0 else {
+                                self.finishedLoading()
                                 
-                                func loopSavedUtxos() {
-                                    for (s, savedUtxo) in savedUtxos.enumerated() {
-                                        let savedUtxoStr = UtxosStruct(dictionary: savedUtxo)
-                                        
-                                        /// We always use the Bitcoin Core address label as the utxo label, when recovering with a new node the user will see the
-                                        /// label the user added via Fully Noded. Fully Noded automatically saves the utxo labels.
-                                        
-                                        if savedUtxoStr.txid == unlockedUtxo.txid && savedUtxoStr.vout == unlockedUtxo.vout && wallet.label != savedUtxoStr.label {
-                                            self.unlockedUtxos[i].label = savedUtxoStr.label
-                                                                                        
-                                            if wallet.type == WalletType.descriptor.stringValue {
-                                                guard let desc = unlockedUtxo.desc else { return }
-                                                
-                                                let params = "[{\"desc\": \"\(desc)\", \"active\": false, \"timestamp\": \"now\", \"internal\": false, \"label\": \"\(savedUtxoStr.label!)\"}]"
-                                                
-                                                Reducer.makeCommand(command: .importdescriptors, param: params) { (_, _) in }
-                                                
-                                            } else {
-                                                let param = "[{ \"scriptPubKey\": { \"address\": \"\(unlockedUtxo.address!)\" }, \"label\": \"\(savedUtxoStr.label!)\", \"timestamp\": \"now\", \"watchonly\": true, \"keypool\": false, \"internal\": false }], ''{\"rescan\": false}''"
-                                                
-                                                Reducer.makeCommand(command: .importmulti, param: param) { (_, _) in }
+                                return
+                            }
+                                                    
+                            for (u, unlockedUtxo) in self.unlockedUtxos.enumerated() {
+                                    
+                                    func loopSavedUtxos() {
+                                        for (s, savedUtxo) in savedUtxos.enumerated() {
+                                            let savedUtxoStr = UtxosStruct(dictionary: savedUtxo)
+                                            
+                                            /// We always use the Bitcoin Core address label as the utxo label, when recovering with a new node the user will see the
+                                            /// label the user added via Fully Noded. Fully Noded automatically saves the utxo labels.
+                                            
+                                            if savedUtxoStr.txid == unlockedUtxo.txid && savedUtxoStr.vout == unlockedUtxo.vout && wallet.label != savedUtxoStr.label {
+                                                self.unlockedUtxos[i].label = savedUtxoStr.label
+                                                                                            
+                                                if wallet.type == WalletType.descriptor.stringValue {
+                                                    guard let desc = unlockedUtxo.desc else { return }
+                                                    
+                                                    let params = "[{\"desc\": \"\(desc)\", \"active\": false, \"timestamp\": \"now\", \"internal\": false, \"label\": \"\(savedUtxoStr.label!)\"}]"
+                                                    
+                                                    Reducer.makeCommand(command: .importdescriptors, param: params) { (_, _) in }
+                                                    
+                                                } else {
+                                                    let param = "[{ \"scriptPubKey\": { \"address\": \"\(unlockedUtxo.address!)\" }, \"label\": \"\(savedUtxoStr.label!)\", \"timestamp\": \"now\", \"watchonly\": true, \"keypool\": false, \"internal\": false }], ''{\"rescan\": false}''"
+                                                    
+                                                    Reducer.makeCommand(command: .importmulti, param: param) { (_, _) in }
+                                                }
+                                            }
+                                            
+                                            if s + 1 == savedUtxos.count && u + 1 == self.unlockedUtxos.count {
+                                                self.finishedLoading()
                                             }
                                         }
-                                        
-                                        if s + 1 == savedUtxos.count && u + 1 == self.unlockedUtxos.count {
-                                            self.finishedLoading()
-                                        }
                                     }
-                                }
-                                
-                                if unlockedUtxo.label == "" || unlockedUtxo.label == wallet.label {
-                                    loopSavedUtxos()
-                                } else if u + 1 == self.unlockedUtxos.count {
-                                    self.finishedLoading()
-                                }
+                                    
+                                    if unlockedUtxo.label == "" || unlockedUtxo.label == wallet.label {
+                                        loopSavedUtxos()
+                                    } else if u + 1 == self.unlockedUtxos.count {
+                                        self.finishedLoading()
+                                    }
                             }
                         }
                     }
@@ -561,39 +560,28 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         }
     }
     
-   private func createRawNow() {
+    private func createRawNow() {
         if !isSweeping {
-            activeWallet { [weak self] wallet in
-                if wallet != nil {
-                    if wallet!.type == WalletType.multi.stringValue {
-                        let index = Int(wallet!.index) + 1
-                        CoreDataService.update(id: wallet!.id, keyToUpdate: "index", newValue: Int64(index), entity: .wallets) { (success) in
-                            if success {
-                                Reducer.makeCommand(command: .deriveaddresses, param: "\"\(wallet!.changeDescriptor)\", [\(index),\(index)]") { (response, errorMessage) in
-                                    if self != nil {
-                                        if let result = response as? NSArray {
-                                            if let changeAddress = result[0] as? String {
-                                                self!.getRawTx(changeAddress: changeAddress)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        if self != nil {
-                            self!.executeNodeCommand(method: .getrawchangeaddress, param: "")
-                        }
-                        
-                    }
-                } else {
-                    if self != nil {
-                        self!.executeNodeCommand(method: .getrawchangeaddress, param: "")
-                    }
-                    
-                }
+            guard let wallet = self.wallet, wallet.type == WalletType.multi.stringValue else {
+                self.executeNodeCommand(method: .getrawchangeaddress, param: "")
+                return
             }
             
+            let index = Int(wallet.index) + 1
+            
+            CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(index), entity: .wallets) { [weak self] success in
+                guard let self = self else { return }
+                
+                guard success else { return }
+                
+                Reducer.makeCommand(command: .deriveaddresses, param: "\"\(wallet.changeDescriptor)\", [\(index),\(index)]") { [weak self] (response, errorMessage) in
+                    guard let self = self else { return }
+                    
+                    guard let result = response as? NSArray, let changeAddress = result[0] as? String else { return }
+                    
+                    self.getRawTx(changeAddress: changeAddress)
+                }
+            }
         } else {
             var total = 0.0
             var miningFee = 0.00000100//No good way to do fee estimation when manually selecting utxos (for now), if the wallet knows about the utxo's we can set a low ball fee and always use rbf. For now we hardcode 100 sats per input as the fee.
@@ -684,7 +672,9 @@ extension UTXOViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: UTXOCell.identifier, for: indexPath) as! UTXOCell
-        let utxo = unlockedUtxos[indexPath.section]
+        var utxo = unlockedUtxos[indexPath.section]
+        
+    
         
         cell.configure(utxo: utxo, isLocked: false, fxRate: fxRate, delegate: self)
         
