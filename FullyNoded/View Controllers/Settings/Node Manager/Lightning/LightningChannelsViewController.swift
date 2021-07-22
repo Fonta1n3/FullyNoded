@@ -266,7 +266,16 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
                             return
                         }
                         
-                        self.getAddress(wallet, channel)
+                        if let close_to_addr = channel["close_to_addr"] as? String {
+                            if close_to_addr != "" {
+                                self.spinner.addConnectingView(vc: self, description: "closing...")
+                                self.closeChannelCL(channel, nil)
+                            } else {
+                                self.getAddress(wallet, channel)
+                            }
+                        } else {
+                            self.getAddress(wallet, channel)
+                        }
                     }
                 }
             }))
@@ -329,7 +338,13 @@ class LightningChannelsViewController: UIViewController, UITableViewDelegate, UI
     private func closeChannelCL(_ channel: [String:Any], _ address: String?) {
         let commandId = UUID()
         let channelId = channel["channel_id"] as! String
-        let param = "\"\(channelId)\", 0, \"\(address ?? "")\""
+        var param = ""
+        
+        if let closingAddress = address {
+            param = "\"\(channelId)\", 0, \"\(closingAddress)\""
+        } else {
+            param = "\"\(channelId)\", 0"
+        }
         
         LightningRPC.command(id: commandId, method: .close, param: param) { [weak self] (id, response, errorDesc) in
             guard let self = self, commandId == id else { return }
