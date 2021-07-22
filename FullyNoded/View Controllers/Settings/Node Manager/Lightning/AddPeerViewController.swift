@@ -262,23 +262,31 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
                     
                     guard let url = url else { return }
                     
-                    let arr = url.split(separator: "@")
+                    var id:String!
+                    var port:String?
+                    var ip:String!
                     
-                    guard arr.count > 0 else { return }
-                    
-                    let arr1 = "\(arr[1])".split(separator: ":")
-                    let id = "\(arr[0])"
-                    let ip = "\(arr1[0])"
-                    
-                    guard arr1.count > 0 else { return }
-                    
-                    var port = "9735"
-                    
-                    if arr1.count >= 2 {
-                        port = "\(arr1[1])"
+                    if url.contains("@") {
+                        let arr = url.split(separator: "@")
+                        
+                        guard arr.count > 0 else { return }
+                        
+                        let arr1 = "\(arr[1])".split(separator: ":")
+                        id = "\(arr[0])"
+                        ip = "\(arr1[0])"
+                        
+                        guard arr1.count > 0 else { return }
+                        
+                        if arr1.count >= 2 {
+                            port = "\(arr1[1])"
+                        }
+                        
+                        self.addChannel(id: id, ip: ip, port: port)
+                        
+                    } else {
+                        self.spinner.removeConnectingView()
+                        showAlert(vc: self, title: "Incomplete URI", message: "The URI must include an address.")
                     }
-                    
-                    self.addChannel(id: id, ip: ip, port: port)
                 }
             }
         }

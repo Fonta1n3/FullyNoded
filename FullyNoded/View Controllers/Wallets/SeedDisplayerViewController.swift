@@ -22,6 +22,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         navigationController?.delegate = self
         textView.layer.cornerRadius = 8
         textView.layer.borderColor = UIColor.lightGray.cgColor
@@ -141,6 +142,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                 
                 self.saveWallet(type: type)
             } else {
+                UserDefaults.standard.removeObject(forKey: "walletName")
                 self.showError(error: "Error creating wallet")
             }
         }
@@ -200,6 +202,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                 
                 Reducer.makeCommand(command: .importdescriptors, param: params) { (response, errorMessage) in
                     guard let responseArray = response as? [[String:Any]] else {
+                        UserDefaults.standard.removeObject(forKey: "walletName")
                         self.showError(error: "Error importing descriptors: \(errorMessage ?? "unknown error")")
                         
                         return
@@ -209,8 +212,10 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                         guard let success = response["success"] as? Bool, success else {
                             
                             if let error = response["error"] as? [String:Any], let message = error["message"] as? String {
+                                UserDefaults.standard.removeObject(forKey: "walletName")
                                 self.showError(error: "Error importing descriptors: \(message)")
                             } else {
+                                UserDefaults.standard.removeObject(forKey: "walletName")
                                 self.showError(error: "Error importing descriptors.")
                             }
                             
@@ -240,11 +245,13 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                     if changeImported {
                         completion(true)
                     } else {
+                        UserDefaults.standard.removeObject(forKey: "walletName")
                         self.showError(error: "Error importing change keys: \(errorDesc ?? "unknown error")")
                     }
                 }
                 
             } else {
+                UserDefaults.standard.removeObject(forKey: "walletName")
                 self.showError(error: "Error importing primary keys: \(errorMessage ?? "unknown error")")
             }
         }
@@ -254,6 +261,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
         Reducer.makeCommand(command: .getdescriptorinfo, param: "\"\(desc)\"") { (response, errorMessage) in
             guard let dict = response as? NSDictionary,
                 let updatedDescriptor = dict["descriptor"] as? String else {
+                UserDefaults.standard.removeObject(forKey: "walletName")
                     completion(nil); return
             }
             completion(updatedDescriptor)
@@ -269,6 +277,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                 let params = "[{ \"desc\": \"\(descriptor!)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"label\": \"Fully Noded\", \"keypool\": true, \"internal\": false }], {\"rescan\": false}"
                 self.importMulti(params: params, completion: completion)
             } else {
+                UserDefaults.standard.removeObject(forKey: "walletName")
                 self.showError(error: "error getting primary descriptor info")
             }
         }
@@ -283,6 +292,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                 let params = "[{ \"desc\": \"\(descriptor!)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"keypool\": true, \"internal\": true }], {\"rescan\": false}"
                 self.importMulti(params: params, completion: completion)
             } else {
+                UserDefaults.standard.removeObject(forKey: "walletName")
                 self.showError(error: "error getting change descriptor info")
             }
         }
@@ -294,6 +304,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                 result.count > 0,
                 let dict = result[0] as? NSDictionary,
                 let success = dict["success"] as? Bool else {
+                UserDefaults.standard.removeObject(forKey: "walletName")
                     completion((false, errorDescription ?? "unknown error importing your keys"))
                     return
             }
@@ -343,6 +354,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                 showAlert(vc: self, title: "Success! ✅", message: "You created a Fully Noded single sig wallet, make sure you save your words so you can always recover this wallet if needed!")
                 
             } else {
+                UserDefaults.standard.removeObject(forKey: "walletName")
                 self.spinner.removeConnectingView()
                 self.showError(error: "Error saving your wallet to the device")
             }
