@@ -328,7 +328,13 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.item], asCopy: true)
+            var documentPicker:UIDocumentPickerViewController!
+            
+            if #available(iOS 14.0, *) {
+                documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.item], asCopy: true)
+            } else {
+                documentPicker = UIDocumentPickerViewController(documentTypes: ["public.item"], in: .import)
+            }
             documentPicker.delegate = self
             documentPicker.modalPresentationStyle = .formSheet
             self.present(documentPicker, animated: true, completion: nil)
@@ -2124,7 +2130,20 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             
             try? data.write(to: fileURL)
             
-            let controller = UIDocumentPickerViewController(forExporting: [fileURL], asCopy: true)
+            var controller: UIDocumentPickerViewController!
+                        
+            if #available(macCatalyst 14.0, *) {
+                if #available(iOS 14.0, *) {
+                    controller = UIDocumentPickerViewController(forExporting: [fileURL], asCopy: true)
+                    
+                } else {
+                    controller = UIDocumentPickerViewController(url: fileURL, in: .exportToService)
+                }
+            } else {
+                // Fallback on earlier versions
+                controller = UIDocumentPickerViewController(url: fileURL, in: .exportToService)
+            }
+            
             self.present(controller, animated: true)
         }
     }
@@ -2173,19 +2192,23 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
         
         if segue.identifier == "segueToScanPsbt" {
-            guard let vc = segue.destination as? QRScannerViewController else { return }
-            
-            vc.fromSignAndVerify = true
-            vc.onAddressDoneBlock = { [weak self] tx in
-                guard let self = self, let tx = tx else { return }
+            if #available(macCatalyst 14.0, *) {
+                guard let vc = segue.destination as? QRScannerViewController else { return }
                 
-                if Keys.validPsbt(tx) {
-                    self.processPsbt(tx)
-                } else if Keys.validTx(tx) {
-                    self.signedRawTx = tx
-                    self.load()
+                vc.fromSignAndVerify = true
+                vc.onAddressDoneBlock = { [weak self] tx in
+                    guard let self = self, let tx = tx else { return }
+                    
+                    if Keys.validPsbt(tx) {
+                        self.processPsbt(tx)
+                    } else if Keys.validTx(tx) {
+                        self.signedRawTx = tx
+                        self.load()
+                    }
                 }
-            }
+            } else {
+                // Fallback on earlier versions
+            }            
         }
     }
 }

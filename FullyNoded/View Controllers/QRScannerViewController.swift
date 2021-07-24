@@ -10,6 +10,7 @@ import URKit
 import AVFoundation
 import UIKit
 
+@available(macCatalyst 14.0, *)
 class QRScannerViewController: UIViewController {
     
     private var hasScanned = false
@@ -472,6 +473,7 @@ fileprivate func convertFromUIImagePickerControllerInfoKey(_ input: UIImagePicke
     return input.rawValue
 }
 
+@available(macCatalyst 14.0, *)
 extension QRScannerViewController: AVCaptureMetadataOutputObjectsDelegate {
     
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
@@ -504,6 +506,7 @@ extension QRScannerViewController: AVCaptureMetadataOutputObjectsDelegate {
     
 }
 
+@available(macCatalyst 14.0, *)
 extension QRScannerViewController: UIImagePickerControllerDelegate {
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
@@ -547,4 +550,5 @@ extension QRScannerViewController: UIImagePickerControllerDelegate {
     
 }
 
+@available(macCatalyst 14.0, *)
 extension QRScannerViewController: UINavigationControllerDelegate {}

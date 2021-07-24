@@ -22,10 +22,19 @@ class WalletRecoveryViewController: UIViewController, UIDocumentPickerDelegate {
     @IBAction func uploadFileAction(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.item], asCopy: true)
-            documentPicker.delegate = self
-            documentPicker.modalPresentationStyle = .formSheet
-            self.present(documentPicker, animated: true, completion: nil)
+            if #available(iOS 14.0, *) {
+                let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.item], asCopy: true)
+                documentPicker.delegate = self
+                documentPicker.modalPresentationStyle = .formSheet
+                self.present(documentPicker, animated: true, completion: nil)
+            } else {
+                // Fallback on earlier versions
+                let documentPicker = UIDocumentPickerViewController(documentTypes: ["public.item"], in: .import)
+                documentPicker.delegate = self
+                documentPicker.modalPresentationStyle = .formSheet
+                self.present(documentPicker, animated: true, completion: nil)
+            }
+            
         }
     }
     

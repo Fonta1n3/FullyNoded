@@ -407,15 +407,19 @@ class GetInfoViewController: UIViewController, UITextFieldDelegate {
             }
         }
         if segue.identifier == "segueToGoGetInfoScan" {
-            if let vc = segue.destination as? QRScannerViewController {
-                vc.isScanningAddress = true
-                vc.onAddressDoneBlock = { [weak self] item in
-                    if item != nil {
-                        DispatchQueue.main.async {
-                            self?.textField.text = item
+            if #available(macCatalyst 14.0, *) {
+                if let vc = segue.destination as? QRScannerViewController {
+                    vc.isScanningAddress = true
+                    vc.onAddressDoneBlock = { [weak self] item in
+                        if item != nil {
+                            DispatchQueue.main.async {
+                                self?.textField.text = item
+                            }
                         }
                     }
                 }
+            } else {
+                // Fallback on earlier versions
             }
         }
     }

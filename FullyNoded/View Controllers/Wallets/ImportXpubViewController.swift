@@ -266,13 +266,17 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "segueToScanXpub" {
-            if let vc = segue.destination as? QRScannerViewController {
-                vc.isScanningAddress = true
-                vc.onAddressDoneBlock = { [unowned thisVc = self] xpub in
-                    if xpub != nil {
-                        thisVc.addXpubToTextField(xpub!)
+            if #available(macCatalyst 14.0, *) {
+                if let vc = segue.destination as? QRScannerViewController {
+                    vc.isScanningAddress = true
+                    vc.onAddressDoneBlock = { [unowned thisVc = self] xpub in
+                        if xpub != nil {
+                            thisVc.addXpubToTextField(xpub!)
+                        }
                     }
                 }
+            } else {
+                // Fallback on earlier versions
             }
         }
     }

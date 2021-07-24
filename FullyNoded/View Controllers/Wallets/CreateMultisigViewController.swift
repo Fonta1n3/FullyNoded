@@ -509,15 +509,19 @@ class CreateMultisigViewController: UIViewController, UITextViewDelegate, UIText
         // Pass the selected object to the new view controller.
         switch segue.identifier {
         case "segueToScanXpubMsigCreator":
-            guard let vc = segue.destination as? QRScannerViewController else { fallthrough }
-            
-            vc.isScanningAddress = true
-            
-            vc.onAddressDoneBlock = { [weak self] xpub in
-                guard let self = self, let xpub = xpub else { return }
+            if #available(macCatalyst 14.0, *) {
+                guard let vc = segue.destination as? QRScannerViewController else { fallthrough }
                 
-                self.parseExtendedKey(xpub)
-            }
+                vc.isScanningAddress = true
+                
+                vc.onAddressDoneBlock = { [weak self] xpub in
+                    guard let self = self, let xpub = xpub else { return }
+                    
+                    self.parseExtendedKey(xpub)
+                }
+            } else {
+                // Fallback on earlier versions
+            }            
             
         case "segueToChooseSignerToDeriveXpub":
             guard let vc = segue.destination as? SignersViewController else { fallthrough }

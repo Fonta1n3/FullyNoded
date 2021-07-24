@@ -60,11 +60,20 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         DispatchQueue.main.async { [unowned vc = self] in
             let alert = UIAlertController(title: "Upload a file?", message: "Here you can upload files from your Hardware Wallets to easily create Fully Noded Wallet's", preferredStyle: vc.alertStyle)
             
-            alert.addAction(UIAlertAction(title: "Upload", style: .default, handler: { [unowned vc = self] action in
-                let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.item], asCopy: true)
-                documentPicker.delegate = vc
+            alert.addAction(UIAlertAction(title: "Upload", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                var documentPicker:UIDocumentPickerViewController!
+                
+                if #available(iOS 14.0, *) {
+                    documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.item], asCopy: true)
+                } else {
+                    documentPicker = UIDocumentPickerViewController(documentTypes: ["public.item"], in: .import)
+                }
+                
+                documentPicker.delegate = self
                 documentPicker.modalPresentationStyle = .formSheet
-                vc.present(documentPicker, animated: true, completion: nil)
+                self.present(documentPicker, animated: true, completion: nil)
             }))
             
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
@@ -582,57 +591,61 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         // Get the new view controller using segue.destination.
         // Pass the selected object to the new view controller.
         if segue.identifier == "segueToScanner" {
-            if let vc = segue.destination as? QRScannerViewController {
-                vc.isAccountMap = true
-                
-                vc.onImportDoneBlock = { [unowned thisVc = self] accountMap in
-                    if accountMap != nil {
-                        thisVc.importAccountMap(accountMap!)
-                    }
-                }
-                
-                vc.onQuickConnectDoneBlock = { [weak self] url in
-                    guard let url = url else { return }
+            if #available(macCatalyst 14.0, *) {
+                if let vc = segue.destination as? QRScannerViewController {
+                    vc.isAccountMap = true
                     
-                    QuickConnect.addNode(uncleJim: false, url: url) { (success, errorMessage) in
-                        guard success else {
-                            showAlert(vc: self, title: "There was an issue", message: errorMessage ?? "error adding that wallet")
+                    vc.onImportDoneBlock = { [unowned thisVc = self] accountMap in
+                        if accountMap != nil {
+                            thisVc.importAccountMap(accountMap!)
+                        }
+                    }
+                    
+                    vc.onQuickConnectDoneBlock = { [weak self] url in
+                        guard let url = url else { return }
+                        
+                        QuickConnect.addNode(uncleJim: false, url: url) { (success, errorMessage) in
+                            guard success else {
+                                showAlert(vc: self, title: "There was an issue", message: errorMessage ?? "error adding that wallet")
+                                return
+                            }
+                            
+                            DispatchQueue.main.async { [weak self] in
+                                guard let self = self else { return }
+                                
+                                self.spinner.removeConnectingView()
+                                self.onDoneBlock!(true)
+                                self.navigationController?.popViewController(animated: true)
+                            }
+                        }
+                    }
+                    
+                    vc.onAddressDoneBlock = { [weak self] urString in
+                        guard let self = self else { return }
+                        
+                        guard let urString = urString else {
                             return
                         }
                         
-                        DispatchQueue.main.async { [weak self] in
-                            guard let self = self else { return }
-                            
-                            self.spinner.removeConnectingView()
-                            self.onDoneBlock!(true)
-                            self.navigationController?.popViewController(animated: true)
+                        let (descriptors, error) = URHelper.parseUr(urString: urString)
+                        
+                        guard error == nil, let descriptors = descriptors else {
+                            showAlert(vc: self, title: "Error", message: error!)
+                            return
+                        }
+                        
+                        var accountMap:[String:Any] = ["descriptor": "", "blockheight": 0, "watching": [], "label": "Wallet Import"]
+                        
+                        if descriptors.count > 1 {
+                            self.prompToChoosePrimaryDesc(descriptors: descriptors)
+                        } else {
+                            accountMap["descriptor"] = descriptors[0]
+                            self.importAccountMap(accountMap)
                         }
                     }
                 }
-                
-                vc.onAddressDoneBlock = { [weak self] urString in
-                    guard let self = self else { return }
-                    
-                    guard let urString = urString else {
-                        return
-                    }
-                    
-                    let (descriptors, error) = URHelper.parseUr(urString: urString)
-                    
-                    guard error == nil, let descriptors = descriptors else {
-                        showAlert(vc: self, title: "Error", message: error!)
-                        return
-                    }
-                    
-                    var accountMap:[String:Any] = ["descriptor": "", "blockheight": 0, "watching": [], "label": "Wallet Import"]
-                                        
-                    if descriptors.count > 1 {
-                        self.prompToChoosePrimaryDesc(descriptors: descriptors)
-                    } else {
-                        accountMap["descriptor"] = descriptors[0]
-                        self.importAccountMap(accountMap)
-                    }
-                }
+            } else {
+                // Fallback on earlier versions
             }
         }
         

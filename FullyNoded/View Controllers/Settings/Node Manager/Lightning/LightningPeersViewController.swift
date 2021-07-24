@@ -473,24 +473,28 @@ class LightningPeersViewController: UIViewController, UITableViewDelegate, UITab
         }
         
         if segue.identifier == "segueToAddPeer" {
-            if let vc = segue.destination as? QRScannerViewController {
-                vc.isScanningAddress = true
-                vc.onAddressDoneBlock = { url in
-                    if url != nil {
-                        let arr = url!.split(separator: "@")
-                        if arr.count > 1 {
-                            let arr1 = "\(arr[1])".split(separator: ":")
-                            let id = "\(arr[0])"
-                            let ip = "\(arr1[0])"
-                            if arr1.count > 0 {
-                                let port = "\(arr1[1])"
-                                self.addPeer(id: id, ip: ip, port: port)
+            if #available(macCatalyst 14.0, *) {
+                if let vc = segue.destination as? QRScannerViewController {
+                    vc.isScanningAddress = true
+                    vc.onAddressDoneBlock = { url in
+                        if url != nil {
+                            let arr = url!.split(separator: "@")
+                            if arr.count > 1 {
+                                let arr1 = "\(arr[1])".split(separator: ":")
+                                let id = "\(arr[0])"
+                                let ip = "\(arr1[0])"
+                                if arr1.count > 0 {
+                                    let port = "\(arr1[1])"
+                                    self.addPeer(id: id, ip: ip, port: port)
+                                }
+                            } else {
+                                showAlert(vc: self, title: "Incomplete URI", message: "In order to connect to a peer we need a URI not just a public key.")
                             }
-                        } else {
-                            showAlert(vc: self, title: "Incomplete URI", message: "In order to connect to a peer we need a URI not just a public key.")
                         }
                     }
                 }
+            } else {
+                // Fallback on earlier versions
             }
         }
     }

@@ -218,14 +218,18 @@ class ImportPrivKeyViewController: UIViewController, UITextFieldDelegate {
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "segueToScanPrivKey" {
-            guard let vc = segue.destination as? QRScannerViewController else { return }
-            
-            vc.isScanningAddress = true
-            vc.onAddressDoneBlock = { [weak self] key in
-                guard let self = self, let key = key else { return }
+            if #available(macCatalyst 14.0, *) {
+                guard let vc = segue.destination as? QRScannerViewController else { return }
                 
-                self.parseKey(key: key)
-            }
+                vc.isScanningAddress = true
+                vc.onAddressDoneBlock = { [weak self] key in
+                    guard let self = self, let key = key else { return }
+                    
+                    self.parseKey(key: key)
+                }
+            } else {
+                // Fallback on earlier versions
+            }            
         }
     }
 }

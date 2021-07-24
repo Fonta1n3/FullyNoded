@@ -1392,22 +1392,28 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         switch segue.identifier {
         case "segueToScannerToGetAddress":
-            guard let vc = segue.destination as? QRScannerViewController else { fallthrough }
-            
-            vc.isScanningAddress = true
-            
-            vc.onAddressDoneBlock = { addrss in
-                guard let addrss = addrss else { return }
+            if #available(macCatalyst 14.0, *) {
+                guard let vc = segue.destination as? QRScannerViewController else { fallthrough }
                 
-                DispatchQueue.main.async { [unowned thisVc = self] in
-                    let potentialLightning = addrss.lowercased()
-                    if potentialLightning.hasPrefix("lntb") || potentialLightning.hasPrefix("lightning:") || potentialLightning.hasPrefix("lnbc") || potentialLightning.hasPrefix("lnbcrt") {
-                        thisVc.decodeLighnting(invoice: potentialLightning.replacingOccurrences(of: "lightning:", with: ""))
-                    } else {
-                        thisVc.processBIP21(url: addrss)
+                vc.isScanningAddress = true
+                
+                vc.onAddressDoneBlock = { addrss in
+                    guard let addrss = addrss else { return }
+                    
+                    DispatchQueue.main.async { [unowned thisVc = self] in
+                        let potentialLightning = addrss.lowercased()
+                        if potentialLightning.hasPrefix("lntb") || potentialLightning.hasPrefix("lightning:") || potentialLightning.hasPrefix("lnbc") || potentialLightning.hasPrefix("lnbcrt") {
+                            thisVc.decodeLighnting(invoice: potentialLightning.replacingOccurrences(of: "lightning:", with: ""))
+                        } else {
+                            thisVc.processBIP21(url: addrss)
+                        }
                     }
                 }
+            } else {
+                // Fallback on earlier versions
             }
+            
+            
             
         case "segueToBroadcaster":
             guard let vc = segue.destination as? VerifyTransactionViewController else { fallthrough }

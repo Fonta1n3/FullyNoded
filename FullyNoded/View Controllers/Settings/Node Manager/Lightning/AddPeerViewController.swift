@@ -254,40 +254,44 @@ class AddPeerViewController: UIViewController, UITextFieldDelegate {
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "segueToScannerFromLightningManager" {
-            if let vc = segue.destination as? QRScannerViewController {
-                vc.isScanningAddress = true
-                
-                vc.onAddressDoneBlock = { [weak self] url in
-                    guard let self = self else { return }
+            if #available(macCatalyst 14.0, *) {
+                if let vc = segue.destination as? QRScannerViewController {
+                    vc.isScanningAddress = true
                     
-                    guard let url = url else { return }
-                    
-                    var id:String!
-                    var port:String?
-                    var ip:String!
-                    
-                    if url.contains("@") {
-                        let arr = url.split(separator: "@")
+                    vc.onAddressDoneBlock = { [weak self] url in
+                        guard let self = self else { return }
                         
-                        guard arr.count > 0 else { return }
+                        guard let url = url else { return }
                         
-                        let arr1 = "\(arr[1])".split(separator: ":")
-                        id = "\(arr[0])"
-                        ip = "\(arr1[0])"
+                        var id:String!
+                        var port:String?
+                        var ip:String!
                         
-                        guard arr1.count > 0 else { return }
-                        
-                        if arr1.count >= 2 {
-                            port = "\(arr1[1])"
+                        if url.contains("@") {
+                            let arr = url.split(separator: "@")
+                            
+                            guard arr.count > 0 else { return }
+                            
+                            let arr1 = "\(arr[1])".split(separator: ":")
+                            id = "\(arr[0])"
+                            ip = "\(arr1[0])"
+                            
+                            guard arr1.count > 0 else { return }
+                            
+                            if arr1.count >= 2 {
+                                port = "\(arr1[1])"
+                            }
+                            
+                            self.addChannel(id: id, ip: ip, port: port)
+                            
+                        } else {
+                            self.spinner.removeConnectingView()
+                            showAlert(vc: self, title: "Incomplete URI", message: "The URI must include an address.")
                         }
-                        
-                        self.addChannel(id: id, ip: ip, port: port)
-                        
-                    } else {
-                        self.spinner.removeConnectingView()
-                        showAlert(vc: self, title: "Incomplete URI", message: "The URI must include an address.")
                     }
                 }
+            } else {
+                // Fallback on earlier versions
             }
         }
         

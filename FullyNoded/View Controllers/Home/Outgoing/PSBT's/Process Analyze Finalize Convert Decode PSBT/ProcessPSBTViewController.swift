@@ -639,14 +639,18 @@ class ProcessPSBTViewController: UIViewController {
             }
             
         case "segueFromToolstoScan":
-            if let vc = segue.destination as? QRScannerViewController {
-                vc.onAddressDoneBlock = { text in
-                    if text != nil {
-                        DispatchQueue.main.async { [unowned thisVc = self] in
-                            thisVc.textView.text = text!
+            if #available(macCatalyst 14.0, *) {
+                if let vc = segue.destination as? QRScannerViewController {
+                    vc.onAddressDoneBlock = { text in
+                        if text != nil {
+                            DispatchQueue.main.async { [unowned thisVc = self] in
+                                thisVc.textView.text = text!
+                            }
                         }
                     }
                 }
+            } else {
+                // Fallback on earlier versions
             }
             
         default:

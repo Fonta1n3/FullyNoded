@@ -270,13 +270,17 @@ class JoinPSBTViewController: UIViewController, UITableViewDelegate, UITableView
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "segueToScannerFromPsbtJoiner" {
-            if let vc = segue.destination as? QRScannerViewController {
-                vc.isScanningAddress = true
-                vc.onAddressDoneBlock = {text in
-                    if text != nil {
-                        self.addPSBT(url: text!)
+            if #available(macCatalyst 14.0, *) {
+                if let vc = segue.destination as? QRScannerViewController {
+                    vc.isScanningAddress = true
+                    vc.onAddressDoneBlock = {text in
+                        if text != nil {
+                            self.addPSBT(url: text!)
+                        }
                     }
                 }
+            } else {
+                // Fallback on earlier versions
             }
         } else if segue.identifier == "segueToSignerFromCombiner" {
             if let vc = segue.destination as? VerifyTransactionViewController {
