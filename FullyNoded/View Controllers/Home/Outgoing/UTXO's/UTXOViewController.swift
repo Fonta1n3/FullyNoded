@@ -20,6 +20,9 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     private var alertStyle = UIAlertController.Style.actionSheet
     private var wallet:Wallet?
     var fxRate:Double?
+    var isBtc = false
+    var isSats = false
+    var isFiat = false
     
     @IBOutlet weak private var tableView: UITableView!
     
@@ -291,13 +294,9 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 var txUUID:UUID?
                 var capGain:String?
                 var originValue:String?
+                var amountFiat:String?
                 
                 guard var utxoDict = utxo as? [String:Any] else { return }
-                
-//                utxoDict["capGain"] = ""
-//                utxoDict["originValue"] = "missing origin rate"
-//                utxoDict["date"] = nil
-//                utxoDict["txUUID"] = nil
                 
                 if let wallet = self.wallet {
                     if wallet.type == WalletType.descriptor.stringValue {
@@ -369,10 +368,10 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 
                 let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
                 let amountBtc = utxoDict["amount"] as! Double
+                utxoDict["amountSats"] = amountBtc.sats
                 
                 CoreDataService.retrieveEntity(entityName: .transactions) { txs in
                     if let txs = txs, txs.count > 0 {
-                        
                         
                         for (i, tx) in txs.enumerated() {
                             let txStruct = TransactionStruct(dictionary: tx)
@@ -381,33 +380,37 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                                 dateToSave = txStruct.date
                                 txUUID = txStruct.id
                                 
-                                if txStruct.fiatCurrency == currency, let currentFxRate = self.fxRate, let originRate = txStruct.fxRate {
-                                    let originFiatValue = originRate * amountBtc
+                                if txStruct.fiatCurrency == currency, let currentFxRate = self.fxRate {
                                     let currentFiatValue = currentFxRate * amountBtc
-                                    var gain = currentFiatValue - originFiatValue
-                              
-                                    if originFiatValue > 0 {
-                                        originValue = originFiatValue.fiatString
-                                        let ratio = round(gain / originFiatValue)
-                                        let percentage = Int(ratio * 100.0)
+                                    amountFiat = currentFiatValue.fiatString
+                                    
+                                    if let originRate = txStruct.fxRate {
+                                        let originFiatValue = originRate * amountBtc
+                                        var gain = currentFiatValue - originFiatValue
                                         
-                                        if gain > 1.0 {
-                                            if percentage > 1 {
-                                                capGain = "gain of \(gain.fiatString) / \(percentage)%"
-                                            } else {
-                                                capGain = "gain of \(gain.fiatString)"
-                                            }
+                                        if originFiatValue > 0 {
+                                            originValue = originFiatValue.fiatString
+                                            let ratio = round(gain / originFiatValue)
+                                            let percentage = Int(ratio * 100.0)
                                             
-                                        } else if gain < -1.0 {
-                                            gain = gain * -1.0
-                                            if percentage > 1 {
-                                                capGain = "loss of \(gain.fiatString) / \(percentage)%"
+                                            if gain > 1.0 {
+                                                if percentage > 1 {
+                                                    capGain = "gain of \(gain.fiatString) / \(percentage)%"
+                                                } else {
+                                                    capGain = "gain of \(gain.fiatString)"
+                                                }
+                                                
+                                            } else if gain < -1.0 {
+                                                gain = gain * -1.0
+                                                if percentage > 1 {
+                                                    capGain = "loss of \(gain.fiatString) / \(percentage)%"
+                                                } else {
+                                                    capGain = "loss of \(gain.fiatString)"
+                                                }
+                                                
                                             } else {
-                                                capGain = "loss of \(gain.fiatString)"
+                                                capGain = ""
                                             }
-                                            
-                                        } else {
-                                            capGain = ""
                                         }
                                     }
                                 }
@@ -418,6 +421,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                                 utxoDict["originValue"] = originValue
                                 utxoDict["date"] = dateToSave
                                 utxoDict["txUUID"] = txUUID
+                                utxoDict["amountFiat"] = amountFiat
                                 finish()
                             }
                         }
@@ -496,6 +500,9 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             guard let vc = segue.destination as? LockedViewController else { fallthrough }
             
             vc.fxRate = fxRate
+            vc.isFiat = isFiat
+            vc.isBtc = isBtc
+            vc.isSats = isSats
             
         case "segueToSendFromUtxos":
             guard let vc = segue.destination as? CreateRawTxViewController else { fallthrough }
@@ -537,7 +544,7 @@ extension UTXOViewController: UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: UTXOCell.identifier, for: indexPath) as! UTXOCell
         let utxo = unlockedUtxos[indexPath.section]
         
-        cell.configure(utxo: utxo, isLocked: false, fxRate: fxRate, delegate: self)
+        cell.configure(utxo: utxo, isLocked: false, fxRate: fxRate, isSats: isSats, isBtc: isBtc, isFiat: isFiat, delegate: self)
         
         return cell
     }

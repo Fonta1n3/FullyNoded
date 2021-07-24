@@ -266,6 +266,10 @@ public extension Double {
         return btc.avoidNotation
     }
     
+    var sats: String {
+        return (self * 100000000.0).avoidNotation
+    }
+    
     var balanceText: String {
         let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
         

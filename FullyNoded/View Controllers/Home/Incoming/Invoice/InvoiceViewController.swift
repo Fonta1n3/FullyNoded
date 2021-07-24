@@ -24,9 +24,9 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     let ud = UserDefaults.standard
     var isBtc = false
     var isSats = false
+    var isFiat = false
     
     @IBOutlet weak var addressImageView: UIImageView!
-    @IBOutlet weak var segmentedControlOutlet: UISegmentedControl!
     @IBOutlet var amountField: UITextField!
     @IBOutlet var labelField: UITextField!
     @IBOutlet var qrView: UIImageView!
@@ -49,27 +49,13 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
         configureTap()
         getAddressSettings()
         addDoneButtonOnKeyboard()
-        setUnits()
         addressOutlet.text = ""
         invoiceText.text = ""
         qrView.image = generateQrCode(key: "bitcoin:")
         generateOnchainInvoice()
-    }
-    
-    private func setUnits() {
-        if ud.object(forKey: "invoiceUnit") != nil {
-            let unit = ud.object(forKey: "invoiceUnit") as! String
-            if unit == "btc" {
-                segmentedControlOutlet.selectedSegmentIndex = 0
-                isBtc = true
-                isSats = false
-            } else {
-                segmentedControlOutlet.selectedSegmentIndex = 1
-                isSats = true
-                isBtc = false
-            }
-        } else {
-            segmentedControlOutlet.selectedSegmentIndex = 0
+        
+        if isFiat {
+            isBtc = true
         }
     }
     
@@ -258,21 +244,6 @@ class InvoiceViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func generateOnchainAction(_ sender: Any) {
         generateOnchainInvoice()
-    }
-    
-    @IBAction func denominationChanged(_ sender: UISegmentedControl) {
-        switch sender.selectedSegmentIndex {
-        case 0:
-            ud.set("btc", forKey: "invoiceUnit")
-            isBtc = true
-            isSats = false
-        case 1:
-            ud.set("sats", forKey: "invoiceUnit")
-            isSats = true
-            isBtc = false
-        default:
-            break
-        }
     }
     
     func generateOnchainInvoice() {

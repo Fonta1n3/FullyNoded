@@ -28,6 +28,8 @@ public struct UtxosStruct: CustomStringConvertible, Codable {
     let originValue:String?
     let date: Date?
     let txUUID: UUID?
+    let amountFiat: String?
+    let amountSats: String?
     
     init(dictionary: [String: Any]) {
         id = dictionary["id"] as? UUID
@@ -48,6 +50,8 @@ public struct UtxosStruct: CustomStringConvertible, Codable {
         originValue = dictionary["originValue"] as? String
         date = dictionary["date"] as? Date
         txUUID = dictionary["txUUID"] as? UUID
+        amountFiat = dictionary["amountFiat"] as? String
+        amountSats = dictionary["amountSats"] as? String
     }
     
     public var description: String {

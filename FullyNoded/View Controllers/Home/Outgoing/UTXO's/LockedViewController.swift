@@ -15,6 +15,9 @@ class LockedViewController: UIViewController {
     var selectedVout = Int()
     var selectedTxid = ""
     var fxRate:Double?
+    var isBtc = false
+    var isSats = false
+    var isFiat = false
     @IBOutlet var tableView: UITableView!
     
     override func viewDidLoad() {
@@ -159,7 +162,7 @@ extension LockedViewController: UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: UTXOCell.identifier, for: indexPath) as! UTXOCell
         let utxo = lockedUtxos[indexPath.section]
         
-        cell.configure(utxo: utxo, isLocked: true, fxRate: fxRate, delegate: self)
+        cell.configure(utxo: utxo, isLocked: true, fxRate: fxRate, isSats: isSats, isBtc: isBtc, isFiat: isFiat, delegate: self)
         
         return cell
     }

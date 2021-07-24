@@ -71,7 +71,7 @@ class UTXOCell: UITableViewCell {
         selectionStyle = .none
     }
     
-    func configure(utxo: UtxosStruct, isLocked: Bool, fxRate: Double?, delegate: UTXOCellDelegate) {
+    func configure(utxo: UtxosStruct, isLocked: Bool, fxRate: Double?, isSats: Bool, isBtc: Bool, isFiat: Bool, delegate: UTXOCellDelegate) {
         self.utxo = utxo
         self.isLocked = isLocked
         self.delegate = delegate
@@ -119,10 +119,17 @@ class UTXOCell: UITableViewCell {
             isChangeImageView.image = UIImage(systemName: "questionmark")
             isChangeBackground.backgroundColor = .clear
         }
-        
+                
         if let amount = utxo.amount {
             let roundedAmount = rounded(number: amount)
-            amountLabel.text = "\(roundedAmount.avoidNotation)"
+            
+            if isFiat {
+                amountLabel.text = utxo.amountFiat ?? "missing fx rate"
+            } else if isBtc {
+                amountLabel.text = "\(roundedAmount.avoidNotation)"
+            } else if isSats {
+                amountLabel.text = utxo.amountSats!
+            }
             
             if amount <= 0.00010000 {
                 isDustImageView.image = UIImage(systemName: "exclamationmark.triangle")

@@ -3979,17 +3979,6 @@ xxxxx</string>
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="4QL-pm-02y">
-                                <rect key="frame" x="270" y="66" width="89" height="32"/>
-                                <segments>
-                                    <segment title="btc"/>
-                                    <segment title="sats"/>
-                                </segments>
-                                <color key="selectedSegmentTintColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <connections>
-                                    <action selector="denominationChanged:" destination="Xxg-Pp-vvN" eventType="valueChanged" id="Owj-1b-S2J"/>
-                                </connections>
-                            </segmentedControl>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Invoice" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jcJ-Y0-mDC">
                                 <rect key="frame" x="16" y="64" width="91" height="33.5"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="28"/>
@@ -4260,12 +4249,10 @@ xxxxx</string>
                             <constraint firstItem="luY-Vj-OjD" firstAttribute="bottom" secondItem="j37-Bz-6py" secondAttribute="bottom" constant="36" id="5ZU-Od-RTY"/>
                             <constraint firstItem="UHH-mB-RWH" firstAttribute="leading" secondItem="luY-Vj-OjD" secondAttribute="leading" constant="16" id="GPM-mF-Ya1"/>
                             <constraint firstItem="jcJ-Y0-mDC" firstAttribute="top" secondItem="luY-Vj-OjD" secondAttribute="top" constant="20" id="GnP-bQ-SAL"/>
-                            <constraint firstItem="4QL-pm-02y" firstAttribute="top" secondItem="luY-Vj-OjD" secondAttribute="top" constant="22" id="LPW-O3-sE2"/>
                             <constraint firstItem="3Du-u4-MHg" firstAttribute="leading" secondItem="luY-Vj-OjD" secondAttribute="leading" constant="16" id="VHf-c0-Tzu"/>
                             <constraint firstItem="luY-Vj-OjD" firstAttribute="bottom" secondItem="UHH-mB-RWH" secondAttribute="bottom" constant="36" id="fmf-Bi-fXf"/>
                             <constraint firstItem="luY-Vj-OjD" firstAttribute="trailing" secondItem="j37-Bz-6py" secondAttribute="trailing" constant="16" id="lnI-0M-vO7"/>
                             <constraint firstItem="3Du-u4-MHg" firstAttribute="top" secondItem="jcJ-Y0-mDC" secondAttribute="bottom" constant="7.5" id="min-4M-g6g"/>
-                            <constraint firstItem="luY-Vj-OjD" firstAttribute="trailing" secondItem="4QL-pm-02y" secondAttribute="trailing" constant="16" id="wo0-ea-KBW"/>
                             <constraint firstItem="jcJ-Y0-mDC" firstAttribute="leading" secondItem="luY-Vj-OjD" secondAttribute="leading" constant="16" id="zUM-FY-lXr"/>
                         </constraints>
                     </view>
@@ -4281,7 +4268,6 @@ xxxxx</string>
                         <outlet property="labelField" destination="vqa-Nl-Pcv" id="5Oe-5Q-2WN"/>
                         <outlet property="messageField" destination="ykL-jw-dGh" id="E5w-Ys-thb"/>
                         <outlet property="qrView" destination="vte-Et-b1F" id="eYD-i1-TNK"/>
-                        <outlet property="segmentedControlOutlet" destination="4QL-pm-02y" id="LvW-of-pGO"/>
                         <segue destination="Hww-Qm-Hos" kind="show" identifier="getAddressInfo" id="j10-wi-hpr"/>
                     </connections>
                 </viewController>
@@ -7563,7 +7549,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="7UD-TA-0Dv"/>
         <segue reference="yAt-Ra-aPH"/>
         <segue reference="BVG-ie-esh"/>
-        <segue reference="Ikt-mc-dmE"/>
+        <segue reference="j10-wi-hpr"/>
         <segue reference="qmy-fM-U4p"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
