@@ -141,14 +141,6 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
-    private func refreshDenomination() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.walletTable.reloadSections(IndexSet(arrayLiteral: 0, 1), with: .none)
-        }
-    }
-    
     @IBAction func switchCurrency(_ sender: UISegmentedControl) {
         switch sender.selectedSegmentIndex {
         case 0:
@@ -156,22 +148,21 @@ class ActiveWalletViewController: UIViewController {
             isBtc = true
             isSats = false
             ud.set("btc", forKey: "unit")
-            refreshDenomination()
         case 1:
             isFiat = false
             isBtc = false
             isSats = true
             ud.set("sats", forKey: "unit")
-            refreshDenomination()
         case 2:
             isFiat = true
             isBtc = false
             isSats = false
             ud.set("fiat", forKey: "unit")
-            refreshDenomination()
         default:
             break
         }
+        
+        reloadTable()
     }
     
     
@@ -771,6 +762,8 @@ class ActiveWalletViewController: UIViewController {
                   let memo = response["description"] as? String,
                   memo != "",
                   let txid = response["payment_hash"] as? String else {
+                
+                self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "No memo.", message: "This invoice does not include a memo. You can add your own by tapping the \"edit memo\" button.")
                 return
             }

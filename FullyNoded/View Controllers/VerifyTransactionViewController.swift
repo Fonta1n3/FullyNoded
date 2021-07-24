@@ -2133,12 +2133,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             var controller: UIDocumentPickerViewController!
                         
             if #available(macCatalyst 14.0, *) {
-                if #available(iOS 14.0, *) {
-                    controller = UIDocumentPickerViewController(forExporting: [fileURL], asCopy: true)
-                    
-                } else {
-                    controller = UIDocumentPickerViewController(url: fileURL, in: .exportToService)
-                }
+                controller = UIDocumentPickerViewController(forExporting: [fileURL], asCopy: true)
             } else {
                 // Fallback on earlier versions
                 controller = UIDocumentPickerViewController(url: fileURL, in: .exportToService)
