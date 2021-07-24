@@ -368,7 +368,10 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 
                 let currency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
                 let amountBtc = utxoDict["amount"] as! Double
+                let address = utxoDict["address"] as! String
                 utxoDict["amountSats"] = amountBtc.sats
+                let lifehash = LifeHash.image(address)
+                utxoDict["lifehash"] = lifehash
                 
                 CoreDataService.retrieveEntity(entityName: .transactions) { txs in
                     if let txs = txs, txs.count > 0 {

@@ -21,6 +21,7 @@ class UTXOCell: UITableViewCell {
     private var isLocked: Bool!
     private unowned var delegate: UTXOCellDelegate!
     
+    @IBOutlet private weak var lifeHashImageView: UIImageView!
     @IBOutlet private weak var fetchOriginOutlet: UIButton!
     @IBOutlet private weak var capGainLabel: UILabel!
     @IBOutlet public weak var roundeBackgroundView: UIView!
@@ -45,7 +46,6 @@ class UTXOCell: UITableViewCell {
     @IBOutlet private weak var reusedBackground: UIView!
     @IBOutlet private weak var reusedImageView: UIImageView!
     
-    
     override func awakeFromNib() {
         super.awakeFromNib()
         
@@ -67,6 +67,8 @@ class UTXOCell: UITableViewCell {
         isSolvableImageView.tintColor = .white
         isDustImageView.tintColor = .white
         reusedImageView.tintColor = .white
+        
+        lifeHashImageView.layer.magnificationFilter = .nearest
         
         selectionStyle = .none
     }
@@ -213,6 +215,10 @@ class UTXOCell: UITableViewCell {
             spendableLabel.text = "?"
             spendableLabel.textColor = .lightGray
         }
+        
+        if let lifehash = utxo.lifehash {
+            lifeHashImageView.image = lifehash
+        }        
     }
     
     func selectedAnimation() {

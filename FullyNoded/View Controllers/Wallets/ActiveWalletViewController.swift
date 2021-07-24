@@ -10,6 +10,8 @@ import UIKit
 
 class ActiveWalletViewController: UIViewController {
     
+    private var showOnchain = false
+    private var showOffchain = false
     private var existingWallet = ""
     private var walletDisabled = Bool()
     private var onchainBalanceBtc = ""
@@ -21,6 +23,8 @@ class ActiveWalletViewController: UIViewController {
     private var sectionZeroLoaded = Bool()
     private var wallets = NSArray()
     private var transactionArray = [[String:Any]]()
+    private var offchainTxArray = [[String:Any]]()
+    private var onchainTxArray = [[String:Any]]()
     private var tx = String()
     private var refreshButton = UIBarButtonItem()
     private var dataRefresher = UIBarButtonItem()
@@ -540,7 +544,15 @@ class ActiveWalletViewController: UIViewController {
         loadLightningMemoButton.addTarget(self, action: #selector(fetchMemo(_:)), for: .touchUpInside)
         loadLightningMemoButton.restorationIdentifier = "\(index)"
         
-        let dict = self.transactionArray[index]
+        var dict = self.transactionArray[index]
+        
+        if showOnchain {
+            dict = self.onchainTxArray[index]
+        }
+        
+        if showOffchain {
+            dict = self.offchainTxArray[index]
+        }
         
         let selfTransfer = dict["selfTransfer"] as! Bool
         
@@ -1219,6 +1231,124 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
+    private func reloadTable() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.walletTable.reloadData()
+        }
+    }
+    
+    @objc func filterTxs(_ sender: UIButton) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let alert = UIAlertController(title: "Filter by", message: "", preferredStyle: self.alertStyle)
+            
+            alert.addAction(UIAlertAction(title: "Offchain", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.showOffchain = true
+                self.showOnchain = false
+                
+                for (i, tx) in self.transactionArray.enumerated() {
+                    if let isOnchain = tx["onchain"] as? Bool, !isOnchain, let isLightning = tx["isLightning"] as? Bool, isLightning {
+                        self.offchainTxArray.append(tx)
+                    }
+                    
+                    if i + 1 == self.transactionArray.count {
+                        self.reloadTable()
+                    }
+                }
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Onchain", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.showOnchain = true
+                self.showOffchain = false
+                
+                for (i, tx) in self.transactionArray.enumerated() {
+                    if let isOnchain = tx["onchain"] as? Bool, isOnchain, let isLightning = tx["isLightning"] as? Bool, !isLightning {
+                        self.onchainTxArray.append(tx)
+                    }
+                    
+                    if i + 1 == self.transactionArray.count {
+                        self.reloadTable()
+                    }
+                }
+                
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Show all", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.showOnchain = false
+                self.showOffchain = false
+                self.reloadTable()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    @objc func sortTxs(_ sender: UIButton) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let alert = UIAlertController(title: "Sort by", message: "", preferredStyle: self.alertStyle)
+            
+            alert.addAction(UIAlertAction(title: "Amount", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                if self.showOffchain {
+                    self.offchainTxArray = self.offchainTxArray.sorted{ ($0["amountBtc"] as! String).doubleValue > ($1["amountBtc"] as! String).doubleValue }
+                } else if self.showOnchain {
+                    self.onchainTxArray = self.onchainTxArray.sorted{ ($0["amountBtc"] as! String).doubleValue > ($1["amountBtc"] as! String).doubleValue }
+                } else {
+                    self.transactionArray = self.transactionArray.sorted{ ($0["amountBtc"] as! String).doubleValue > ($1["amountBtc"] as! String).doubleValue }
+                }
+                
+                self.reloadTable()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Newest first", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                if self.showOffchain {
+                    self.offchainTxArray = self.offchainTxArray.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
+                } else if self.showOnchain {
+                    self.onchainTxArray = self.onchainTxArray.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
+                } else {
+                    self.transactionArray = self.transactionArray.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
+                }
+                
+                self.reloadTable()
+                
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Oldest first", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                if self.showOffchain {
+                    self.offchainTxArray = self.offchainTxArray.sorted{ ($0["sortDate"] as? Date ?? Date()) < ($1["sortDate"] as? Date ?? Date()) }
+                } else if self.showOnchain {
+                    self.onchainTxArray = self.onchainTxArray.sorted{ ($0["sortDate"] as? Date ?? Date()) < ($1["sortDate"] as? Date ?? Date()) }
+                } else {
+                    self.transactionArray = self.transactionArray.sorted{ ($0["sortDate"] as? Date ?? Date()) < ($1["sortDate"] as? Date ?? Date()) }
+                }
+                
+                self.reloadTable()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         switch segue.identifier {
@@ -1346,6 +1476,24 @@ extension ActiveWalletViewController: UITableViewDelegate {
         textLabel.textColor = .white
         textLabel.frame = CGRect(x: 0, y: 0, width: 400, height: 50)
         
+        let filterButton = UIButton()
+        let filterImage = UIImage(systemName: "line.horizontal.3.decrease.circle", withConfiguration: UIImage.SymbolConfiguration.init(scale: .large))
+        filterButton.setImage(filterImage, for: .normal)
+        filterButton.frame = CGRect(x: header.frame.size.width - 50, y: 0, width: 50, height: 50)
+        filterButton.tintColor = .systemTeal
+        filterButton.center.y = textLabel.center.y
+        filterButton.showsTouchWhenHighlighted = true
+        filterButton.addTarget(self, action: #selector(filterTxs(_:)), for: .touchUpInside)
+        
+        let sortButton = UIButton()
+        let sortImage = UIImage(systemName: "arrow.up.arrow.down.circle", withConfiguration: UIImage.SymbolConfiguration.init(scale: .large))
+        sortButton.setImage(sortImage, for: .normal)
+        sortButton.frame = CGRect(x: filterButton.frame.minX - 60, y: 0, width: 50, height: 50)
+        sortButton.tintColor = .systemTeal
+        sortButton.center.y = textLabel.center.y
+        sortButton.showsTouchWhenHighlighted = true
+        sortButton.addTarget(self, action: #selector(sortTxs(_:)), for: .touchUpInside)
+        
         switch section {
         case 0:
             textLabel.text = walletLabel
@@ -1353,6 +1501,8 @@ extension ActiveWalletViewController: UITableViewDelegate {
         case 1:
             if self.transactionArray.count > 0 {
                 textLabel.text = "Transactions"
+                header.addSubview(filterButton)
+                header.addSubview(sortButton)
             } else {
                 textLabel.text = ""
             }
@@ -1398,7 +1548,14 @@ extension ActiveWalletViewController: UITableViewDataSource {
     
     func numberOfSections(in tableView: UITableView) -> Int {
         if transactionArray.count > 0 {
-            return 1 + transactionArray.count
+            if showOnchain {
+                return 1 + onchainTxArray.count
+            } else if showOffchain {
+                return 1 + offchainTxArray.count
+            } else {
+                return 1 + transactionArray.count
+            }
+            
         } else {
             return 2
         }

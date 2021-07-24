@@ -351,7 +351,7 @@ class SeedDisplayerViewController: UIViewController, UINavigationControllerDeleg
                     NotificationCenter.default.post(name: .refreshWallet, object: nil, userInfo: nil)
                 }
                 
-                showAlert(vc: self, title: "Success! ✅", message: "You created a Fully Noded single sig wallet, make sure you save your words so you can always recover this wallet if needed!")
+                showAlert(vc: self, title: "Success ✓", message: "You created a Fully Noded single sig wallet, make sure you save your words so you can always recover this wallet if needed!")
                 
             } else {
                 UserDefaults.standard.removeObject(forKey: "walletName")

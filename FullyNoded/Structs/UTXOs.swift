@@ -7,8 +7,9 @@
 //
 
 import Foundation
+import UIKit
 
-public struct UtxosStruct: CustomStringConvertible, Codable {
+public struct UtxosStruct: CustomStringConvertible {
     
     let id: UUID?
     var label: String?
@@ -30,6 +31,7 @@ public struct UtxosStruct: CustomStringConvertible, Codable {
     let txUUID: UUID?
     let amountFiat: String?
     let amountSats: String?
+    let lifehash: UIImage?
     
     init(dictionary: [String: Any]) {
         id = dictionary["id"] as? UUID
@@ -52,6 +54,7 @@ public struct UtxosStruct: CustomStringConvertible, Codable {
         txUUID = dictionary["txUUID"] as? UUID
         amountFiat = dictionary["amountFiat"] as? String
         amountSats = dictionary["amountSats"] as? String
+        lifehash = dictionary["lifehash"] as? UIImage
     }
     
     public var description: String {

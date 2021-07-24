@@ -267,7 +267,7 @@ public extension Double {
     }
     
     var sats: String {
-        return (self * 100000000.0).avoidNotation
+        return (self * 100000000.0).avoidNotation + " sats"
     }
     
     var balanceText: String {
