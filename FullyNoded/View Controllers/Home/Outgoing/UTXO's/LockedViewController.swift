@@ -140,9 +140,9 @@ extension LockedViewController: UTXOCellDelegate {
         unlock(utxo)
     }
     
-    func didTapToEditLabel(_ utxo: UtxosStruct) {
-        
-    }
+    func didTapToEditLabel(_ utxo: UtxosStruct) {}
+    
+    func didTapToFetchOrigin(_ utxo: UtxosStruct) {}
     
 //    func didTapInfoFor(_ utxo: UtxosStruct) {
 //        performSegue(withIdentifier: "getUTXOinfo", sender: utxo)

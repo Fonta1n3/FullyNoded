@@ -604,11 +604,7 @@ class ActiveWalletViewController: UIViewController {
         editLabelButton.alpha = 1
         fetchOriginRateButton.alpha = 1
         
-        if let _ = fxRate {
-            currentFiatValueLabel.text = amountFiat
-        } else {
-            currentFiatValueLabel.text = "current exchange rate missing"
-        }
+        var gainText = ""
         
         if let originRate = dict["originRate"] as? Double {
             var btcAmount = 0.0
@@ -621,7 +617,7 @@ class ActiveWalletViewController: UIViewController {
             
             var originValueFiat = 0.0
             
-            originValueFiat = round((btcAmount * originRate))
+            originValueFiat = btcAmount * originRate
             
             if originValueFiat < 0.0 {
                 originValueFiat = originValueFiat * -1.0
@@ -633,12 +629,10 @@ class ActiveWalletViewController: UIViewController {
                 var gain = round((btcAmount * exchangeRate) - originValueFiat)
                 
                 if Int(gain) > 0 {
-                    originFiatValueLabel.text! += " / gain of \(gain.fiatString) / \(Int((gain / originValueFiat) * 100.0))%"
+                    gainText = " / gain of \(gain.fiatString) / \(Int((gain / originValueFiat) * 100.0))%"
                 } else if Int(gain) < 0 {
                     gain = gain * -1.0
-                    originFiatValueLabel.text! += " / loss of \(gain.fiatString) / \(Int((gain / originValueFiat) * 100.0))%"
-                } else {
-                    originFiatValueLabel.text! += " (no change)"
+                    gainText = " / loss of \(gain.fiatString) / \(Int((gain / originValueFiat) * 100.0))%"
                 }
             }
             fetchOriginRateButton.alpha = 0
@@ -646,6 +640,12 @@ class ActiveWalletViewController: UIViewController {
         } else {
             originFiatValueLabel.text = ""
             fetchOriginRateButton.alpha = 1
+        }
+        
+        if let _ = fxRate {
+            currentFiatValueLabel.text = amountFiat + gainText
+        } else {
+            currentFiatValueLabel.text = "current exchange rate missing"
         }
         
         memoLabel.text = dict["memo"] as? String ?? "no transaction memo"
@@ -932,29 +932,36 @@ class ActiveWalletViewController: UIViewController {
         let tx = transactionArray[int]
         let id = tx["txID"] as! String
         
-        CoreDataService.retrieveEntity(entityName: .transactions) { [weak self] transactions in
+        CoreDataService.retrieveEntity(entityName: .transactions) { [weak self] txs in
             guard let self = self else { return }
             
-            guard let transactions = transactions, transactions.count > 0 else {
+            guard let txs = txs, txs.count > 0 else {
                 self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "", message: "Unable to determine historic rate.")
                 return
             }
             
             var foundMatch = false
+            var date:Date?
+            var uuid:UUID?
             
-            for (t, transaction) in transactions.enumerated() {
-                let txStruct = TransactionStruct(dictionary: transaction)
+            for (t, tx) in txs.enumerated() {
+                let txStruct = TransactionStruct(dictionary: tx)
+                
                 if txStruct.txid == id {
-                    if let date = txStruct.date, let uuid = txStruct.id {
+                    if let dateCheck = txStruct.date, let uuidCheck = txStruct.id {
                         foundMatch = true
-                        self.addOriginRate(date, uuid)
-                    } else {
-                        print("fail here")
+                        date = dateCheck
+                        uuid = uuidCheck
+                        //self.addOriginRate(date, uuid)
                     }
                 }
                 
-                if t + 1 == transactions.count && !foundMatch {
+                if t + 1 == txs.count {
+                    print("foundMatch: \(foundMatch)")
+                }
+                
+                if t + 1 == txs.count && !foundMatch {
                     if self.wallet != nil {
                         // not been saved so save it
                         var dateToSave:Date!
@@ -991,6 +998,10 @@ class ActiveWalletViewController: UIViewController {
                         self.spinner.removeConnectingView()
                         showAlert(vc: self, title: "", message: "This usually means you are using the nodes default wallet, this feature only works with Fully Noded wallets.")
                     }
+                } else if t + 1 == txs.count {
+                    guard let date = date, let uuid = uuid else { return }
+                    
+                    self.addOriginRate(date, uuid)
                 }
             }
         }
@@ -1014,7 +1025,7 @@ class ActiveWalletViewController: UIViewController {
         } else {
             FiatConverter.sharedInstance.getOriginRate(date: dateString) { [weak self] originRate in
                 guard let self = self else { return }
-                
+                                
                 guard let originRate = originRate else {
                     self.spinner.removeConnectingView()
                     showAlert(vc: self, title: "", message: "There was an issue fetching the historic exchange rate, please let us know about it.")
@@ -1028,7 +1039,7 @@ class ActiveWalletViewController: UIViewController {
                         return
                     }
                     
-                    self.transactionArray.removeAll()
+                    //self.transactionArray.removeAll()
                     self.addNavBarSpinner()
                     self.loadTransactions()
                 }
@@ -1126,6 +1137,9 @@ class ActiveWalletViewController: UIViewController {
     
     private func loadTransactions() {
         NodeLogic.walletDisabled = walletDisabled
+        NodeLogic.arrayToReturn.removeAll()
+        transactionArray.removeAll()
+        
         NodeLogic.loadSectionTwo { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             

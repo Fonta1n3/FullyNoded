@@ -103,7 +103,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             let style = UIAlertController.Style.alert
             let alert = UIAlertController(title: title, message: message, preferredStyle: style)
             
-            let save = UIAlertAction(title: "save", style: .default) { [weak self] (alertAction) in
+            let save = UIAlertAction(title: "Save", style: .default) { [weak self] (alertAction) in
                 guard let self = self else { return }
                 
                 guard let textFields = alert.textFields, let label = textFields[0].text else {
@@ -129,7 +129,7 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             }
             
             alert.addTextField { (textField) in
-                textField.placeholder = "Add a Label"
+                textField.placeholder = "add a label"
                 textField.keyboardAppearance = .dark
             }
             
@@ -283,9 +283,21 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 showAlert(vc: self, title: "No UTXO's", message: "")
                 return
             }
+            
+            
                         
             for (i, utxo) in utxos.enumerated() {
+                var dateToSave:Date?
+                var txUUID:UUID?
+                var capGain:String?
+                var originValue:String?
+                
                 guard var utxoDict = utxo as? [String:Any] else { return }
+                
+//                utxoDict["capGain"] = ""
+//                utxoDict["originValue"] = "missing origin rate"
+//                utxoDict["date"] = nil
+//                utxoDict["txUUID"] = nil
                 
                 if let wallet = self.wallet {
                     if wallet.type == WalletType.descriptor.stringValue {
@@ -360,31 +372,52 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 
                 CoreDataService.retrieveEntity(entityName: .transactions) { txs in
                     if let txs = txs, txs.count > 0 {
+                        
+                        
                         for (i, tx) in txs.enumerated() {
                             let txStruct = TransactionStruct(dictionary: tx)
                             
-                            if txStruct.txid == utxoDict["txid"] as! String, txStruct.fiatCurrency == currency, let currentFxRate = self.fxRate, let originRate = txStruct.fxRate {
-                                let originFiatValue = originRate * amountBtc
-                                let currentFiatValue = currentFxRate * amountBtc
-                                var gain = currentFiatValue - originFiatValue
+                            if txStruct.txid == utxoDict["txid"] as! String {
+                                dateToSave = txStruct.date
+                                txUUID = txStruct.id
                                 
-                                var capGain = ""
-                                
-                                if gain > 0.0 {
-                                    capGain = "gain of \(gain.fiatString) / \(round((gain / originFiatValue) * 100.0))%"
-                                } else if gain < 0.0 {
-                                    gain = gain * -1.0
-                                    capGain = "loss of \(gain.fiatString) / \(round((gain / originFiatValue) * 100.0))%"
-                                } else {
-                                    capGain = "break even"
+                                if txStruct.fiatCurrency == currency, let currentFxRate = self.fxRate, let originRate = txStruct.fxRate {
+                                    let originFiatValue = originRate * amountBtc
+                                    let currentFiatValue = currentFxRate * amountBtc
+                                    var gain = currentFiatValue - originFiatValue
+                              
+                                    if originFiatValue > 0 {
+                                        originValue = originFiatValue.fiatString
+                                        let ratio = round(gain / originFiatValue)
+                                        let percentage = Int(ratio * 100.0)
+                                        
+                                        if gain > 1.0 {
+                                            if percentage > 1 {
+                                                capGain = "gain of \(gain.fiatString) / \(percentage)%"
+                                            } else {
+                                                capGain = "gain of \(gain.fiatString)"
+                                            }
+                                            
+                                        } else if gain < -1.0 {
+                                            gain = gain * -1.0
+                                            if percentage > 1 {
+                                                capGain = "loss of \(gain.fiatString) / \(percentage)%"
+                                            } else {
+                                                capGain = "loss of \(gain.fiatString)"
+                                            }
+                                            
+                                        } else {
+                                            capGain = ""
+                                        }
+                                    }
                                 }
-                                
-                                utxoDict["capGain"] = capGain
-                            } else if i + 1 == txs.count {
-                                utxoDict["capGain"] = "missing origin rate"
                             }
                             
                             if i + 1 == txs.count {
+                                utxoDict["capGain"] = capGain
+                                utxoDict["originValue"] = originValue
+                                utxoDict["date"] = dateToSave
+                                utxoDict["txUUID"] = txUUID
                                 finish()
                             }
                         }
@@ -406,6 +439,53 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     private func addSpinner() {
         DispatchQueue.main.async {
             self.spinner.addConnectingView(vc: self, description: "Getting UTXOs")
+        }
+    }
+    
+    private func fetchOriginRate(_ utxo: UtxosStruct) {
+        guard let date = utxo.date, let id = utxo.txUUID else {
+            showAlert(vc: self, title: "", message: "Date or saved tx UUID missing.")
+            return
+        }
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let dateString = dateFormatter.string(from: date)
+        
+        let today = dateFormatter.string(from: Date())
+        
+        if dateString == today {
+            showAlert(vc: self, title: "", message: "You need to wait for the transaction to be at least one day old before fetching the historic rate.")
+        } else {
+            self.spinner.addConnectingView(vc: self, description: "")
+            
+            FiatConverter.sharedInstance.getOriginRate(date: dateString) { [weak self] originRate in
+                guard let self = self else { return }
+                
+                guard let originRate = originRate else {
+                    self.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "", message: "There was an issue fetching the historic exchange rate, please let us know about it.")
+                    return
+                }
+                
+                CoreDataService.update(id: id, keyToUpdate: "originFxRate", newValue: originRate, entity: .transactions) { [weak self] success in
+                    guard let self = self else { return }
+                    
+                    guard success else {
+                        self.spinner.removeConnectingView()
+                        showAlert(vc: self, title: "", message: "There was an issue saving the historic exchange rate, please let us know about it.")
+                        return
+                    }
+                    
+//                    DispatchQueue.main.async { [weak self] in
+//                        guard let self = self else { return }
+//
+//                        self.tableView.reloadData()
+//                        self.spinner.removeConnectingView()
+//                    }
+                    self.loadUnlockedUtxos()
+                }
+            }
         }
     }
             
@@ -440,6 +520,10 @@ extension UTXOViewController: UTXOCellDelegate {
     
     func didTapToEditLabel(_ utxo: UtxosStruct) {
         editLabel(utxo)
+    }
+    
+    func didTapToFetchOrigin(_ utxo: UtxosStruct) {
+        fetchOriginRate(utxo)
     }
     
 }

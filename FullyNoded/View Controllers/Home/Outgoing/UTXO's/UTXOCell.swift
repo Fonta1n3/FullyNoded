@@ -11,6 +11,7 @@ import UIKit
 protocol UTXOCellDelegate: AnyObject {
     func didTapToLock(_ utxo: UtxosStruct)
     func didTapToEditLabel(_ utxo: UtxosStruct)
+    func didTapToFetchOrigin(_ utxo: UtxosStruct)
 }
 
 class UTXOCell: UITableViewCell {
@@ -20,6 +21,7 @@ class UTXOCell: UITableViewCell {
     private var isLocked: Bool!
     private unowned var delegate: UTXOCellDelegate!
     
+    @IBOutlet private weak var fetchOriginOutlet: UIButton!
     @IBOutlet private weak var capGainLabel: UILabel!
     @IBOutlet public weak var roundeBackgroundView: UIView!
     @IBOutlet private weak var walletLabel: UILabel!// an address label
@@ -131,8 +133,16 @@ class UTXOCell: UITableViewCell {
             }
             
             if let fxRate = fxRate {
-                fiatLabel.text = (amount * fxRate).fiatString
-                capGainLabel.text = utxo.capGain
+                fiatLabel.text = (amount * fxRate).fiatString + " \(utxo.capGain ?? "")"
+                capGainLabel.text = utxo.originValue ?? "missing origin rate"
+                
+                if capGainLabel.text == "missing origin rate" {
+                    fetchOriginOutlet.alpha = 1
+                } else {
+                    fetchOriginOutlet.alpha = 0
+                }
+            } else {
+                fetchOriginOutlet.alpha = 0
             }
             
         }  else {
@@ -241,5 +251,8 @@ class UTXOCell: UITableViewCell {
     @IBAction func lockButtonTapped(_ sender: Any) {
         delegate.didTapToLock(utxo)
     }
-
+    
+    @IBAction func fetchOriginTapped(_ sender: Any) {
+        delegate.didTapToFetchOrigin(utxo)
+    }
 }
