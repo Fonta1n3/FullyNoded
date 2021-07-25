@@ -287,8 +287,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                 return
             }
             
-            
-                        
             for (i, utxo) in utxos.enumerated() {
                 var dateToSave:Date?
                 var txUUID:UUID?
@@ -313,24 +311,25 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                     if i + 1 == utxos.count {
                         self.unlockedUtxos = self.unlockedUtxos.sorted { $0.confs ?? 0 < $1.confs ?? 0 }
                         
-                        if let wallet = self.wallet {
-                            CoreDataService.retrieveEntity(entityName: .utxos) { [weak self] savedUtxos in
-                                guard let self = self else { return }
+                        CoreDataService.retrieveEntity(entityName: .utxos) { [weak self] savedUtxos in
+                            guard let self = self else { return }
+                            
+                            guard let savedUtxos = savedUtxos, savedUtxos.count > 0 else {
+                                self.finishedLoading()
                                 
-                                guard let savedUtxos = savedUtxos, savedUtxos.count > 0 else {
-                                    self.finishedLoading()
-                                    
-                                    return
-                                }
+                                return
+                            }
+                            
+                            for (u, unlockedUtxo) in self.unlockedUtxos.enumerated() {
                                 
-                                for (u, unlockedUtxo) in self.unlockedUtxos.enumerated() {
-                                    
-                                    func loopSavedUtxos() {
-                                        for (s, savedUtxo) in savedUtxos.enumerated() {
-                                            let savedUtxoStr = UtxosStruct(dictionary: savedUtxo)
-                                            
-                                            /// We always use the Bitcoin Core address label as the utxo label, when recovering with a new node the user will see the
-                                            /// label the user added via Fully Noded. Fully Noded automatically saves the utxo labels.
+                                func loopSavedUtxos() {
+                                    for (s, savedUtxo) in savedUtxos.enumerated() {
+                                        let savedUtxoStr = UtxosStruct(dictionary: savedUtxo)
+                                        
+                                        /// We always use the Bitcoin Core address label as the utxo label, when recovering with a new node the user will see the
+                                        /// label the user added via Fully Noded. Fully Noded automatically saves the utxo labels.
+                                        
+                                        if let wallet = self.wallet {
                                             
                                             if savedUtxoStr.txid == unlockedUtxo.txid && savedUtxoStr.vout == unlockedUtxo.vout && wallet.label != savedUtxoStr.label {
                                                 self.unlockedUtxos[i].label = savedUtxoStr.label
@@ -348,18 +347,18 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                                                     Reducer.makeCommand(command: .importmulti, param: param) { (_, _) in }
                                                 }
                                             }
-                                            
-                                            if s + 1 == savedUtxos.count && u + 1 == self.unlockedUtxos.count {
-                                                self.finishedLoading()
-                                            }
+                                        }
+                                        
+                                        if s + 1 == savedUtxos.count && u + 1 == self.unlockedUtxos.count {
+                                            self.finishedLoading()
                                         }
                                     }
-                                    
-                                    if unlockedUtxo.label == "" || unlockedUtxo.label == wallet.label {
-                                        loopSavedUtxos()
-                                    } else if u + 1 == self.unlockedUtxos.count {
-                                        self.finishedLoading()
-                                    }
+                                }
+                                
+                                if unlockedUtxo.label == "" || unlockedUtxo.label == self.wallet?.label {
+                                    loopSavedUtxos()
+                                } else if u + 1 == self.unlockedUtxos.count {
+                                    self.finishedLoading()
                                 }
                             }
                         }
@@ -393,26 +392,27 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
                                         
                                         if originFiatValue > 0 {
                                             originValue = originFiatValue.fiatString
-                                            let ratio = round(gain / originFiatValue)
-                                            let percentage = Int(ratio * 100.0)
                                             
                                             if gain > 1.0 {
+                                                let ratio = gain / originFiatValue
+                                                let percentage = Int(ratio * 100.0)
+                                                
                                                 if percentage > 1 {
                                                     capGain = "gain of \(gain.fiatString) / \(percentage)%"
                                                 } else {
                                                     capGain = "gain of \(gain.fiatString)"
                                                 }
                                                 
-                                            } else if gain < -1.0 {
+                                            } else if gain < 0.0 {
                                                 gain = gain * -1.0
+                                                let ratio = gain / originFiatValue
+                                                let percentage = Int(ratio * 100.0)
+                                                
                                                 if percentage > 1 {
                                                     capGain = "loss of \(gain.fiatString) / \(percentage)%"
                                                 } else {
                                                     capGain = "loss of \(gain.fiatString)"
                                                 }
-                                                
-                                            } else {
-                                                capGain = ""
                                             }
                                         }
                                     }
