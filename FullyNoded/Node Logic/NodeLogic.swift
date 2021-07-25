@@ -1010,7 +1010,7 @@ class NodeLogic {
                                 alreadySaved = true
                             }
                             if i + 1 == txs.count {
-                                if !alreadySaved && activeWalletId != nil {
+                                if !alreadySaved {
                                     saveLocally()
                                 }
                                 
