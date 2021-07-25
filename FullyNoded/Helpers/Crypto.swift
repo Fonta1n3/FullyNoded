@@ -33,6 +33,12 @@ enum Crypto {
         return try? ChaChaPoly.seal(data, using: SymmetricKey(data: key)).combined
     }
     
+//    static func blindPsbt(_ psbt: Data) -> Data? {
+//        guard let key = KeyChain.getData("blindingKey") else { return nil }
+//
+//        return try? ChaChaPoly.seal(psbt, using: SymmetricKey(data: key)).combined
+//    }
+    
     static func decrypt(_ data: Data) -> Data? {
         guard let key = KeyChain.getData("privateKey"),
             let box = try? ChaChaPoly.SealedBox.init(combined: data) else {
@@ -54,6 +60,32 @@ enum Crypto {
         let hash = SHA256.hash(data: Data(SHA256.hash(data: data)))
         let checksum = Data(hash).subdata(in: Range(0...3))
         return checksum.hexString
+    }
+    
+//    static func blindingKey() {
+//        // Goal is to replace this with a get request to my own server behind an authenticated v3 onion
+//        guard KeyChain.getData("blindingKey") == nil, let pk = Crypto.secret() else { return }
+//
+//        if KeyChain.set(pk, forKey: "blindingKey") {
+//            print("pk: \(pk.base64EncodedString())")
+//            // NZdDCNBFTDqKPrUG9V80g0iVemSXLL0CuaWj12xqD00=
+//        }
+//    }
+    
+//    static func encryptPsbt() {
+//
+//    }
+    
+    static func secret() -> Data? {
+        var bytes = [UInt8](repeating: 0, count: 32)
+        let result = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
+        
+        guard result == errSecSuccess else {
+            print("Problem generating random bytes")
+            return nil
+        }
+        
+        return Data(bytes)
     }
     
 //    static func rpcAuth() {

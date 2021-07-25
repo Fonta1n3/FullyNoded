@@ -10,6 +10,22 @@ import UIKit
 
 class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource {
     
+    // MARK: New privacy enhancing tx flow:
+    /// Inittiating the tx
+    /// 1. User toggles on the new shield button on the "send view" before creating a tx
+    ///      - this tells FN not to sign the psbt, and to manually select inputs so that we may run our checks.
+    ///      - rules: only bech32 inputs allowed, minimum 3 consumable utxos, outputs always equal, all either p2wpkh or wsh inputs/outputs
+    ///
+    /// 2. Enters an amount, pastes address, taps create
+    ///
+    /// 3. Either exports the psbt to someone else or signs it and sends it.
+    ///     - If exporting we prompt to export blinded as a file or as ur:bytes
+    
+    /// Receiving a blinded psbt
+    /// 1. The user will either scan an encrypted (blinded) ur:bytes animated psbt or file (keep file format identical to QR as a base64 string rep of ur:bytes)
+    /// 2. FN decrypts the blinded psbt and check to make sure it follows the rules:
+    ///     - inputs are divisible by 3, identical output amounts, all either p2wpkh or wsh inputs/outputs
+    
     var isFiat = false
     var isBtc = true
     var isSats = false

@@ -267,7 +267,15 @@ public extension Double {
     }
     
     var sats: String {
-        return (self * 100000000.0).avoidNotation + " sats"
+        let sats = self * 100000000.0
+        
+        if sats < 1.0 {
+            return sats.avoidNotation + " sats"
+        } else if sats == 1.0 {
+            return "1 sat"
+        } else {
+            return "\(Int(sats)) sats"
+        }
     }
     
     var balanceText: String {
