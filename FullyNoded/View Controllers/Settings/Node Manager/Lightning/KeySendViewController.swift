@@ -93,7 +93,12 @@ class KeySendViewController: UIViewController, UITextFieldDelegate {
         let hash = Crypto.sha256hash(preimage)
         let b64 = hash.base64EncodedString()
         let memo = "Fully Noded Keysend: \(sats) sats sent to \(self.peerName) ⚡️"
-        let param:[String:Any] = ["memo": memo, "hash":b64, "value":"\(sats)", "r_preimage": preimage.base64EncodedString(), "is_keysend": true]
+        
+        let param:[String:Any] = ["memo": memo,
+                                  "hash":b64,
+                                  "value":"\(sats)",
+                                  "r_preimage": preimage.base64EncodedString(),
+                                  "is_keysend": true]
         
         LndRpc.sharedInstance.command(.addinvoice, param, nil, nil) { [weak self] (response, error) in
             guard let self = self else { return }
@@ -127,7 +132,13 @@ class KeySendViewController: UIViewController, UITextFieldDelegate {
         
         let dest = destData.base64EncodedString()
         
-        let param:[String:Any] = ["dest":dest, "amt":"\(sats)", "payment_hash": hash, "payment_request": payreq, "payment_addr": payment_addr, "allow_self_payment": true]
+        let param:[String:Any] = ["dest":dest,
+                                  "amt":"\(sats)",
+                                  "payment_hash": hash,
+                                  "payment_request": payreq,
+                                  "payment_addr": payment_addr,
+                                  "allow_self_payment": true]
+        
         LndRpc.sharedInstance.command(.keysend, param, nil, nil) { [weak self] (response, error) in
             guard let self = self else { return }
 

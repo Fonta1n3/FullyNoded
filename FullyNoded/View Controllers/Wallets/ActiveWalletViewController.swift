@@ -458,6 +458,7 @@ class ActiveWalletViewController: UIViewController {
         let cell = walletTable.dequeueReusableCell(withIdentifier: "BalancesCell", for: indexPath)
         cell.layer.borderColor = UIColor.lightGray.cgColor
         cell.layer.borderWidth = 0.5
+        cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         
         let onchainBalanceLabel = cell.viewWithTag(1) as! UILabel
         let offchainBalanceLabel = cell.viewWithTag(2) as! UILabel
@@ -496,6 +497,7 @@ class ActiveWalletViewController: UIViewController {
         cell.selectionStyle = .none
         cell.layer.borderColor = UIColor.lightGray.cgColor
         cell.layer.borderWidth = 0.5
+        cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         
         let categoryImage = cell.viewWithTag(1) as! UIImageView
         let amountLabel = cell.viewWithTag(2) as! UILabel
@@ -519,7 +521,6 @@ class ActiveWalletViewController: UIViewController {
         dateLabel.alpha = 1
         fetchOriginRateButton.alpha = 0
         loadLightningMemoButton.alpha = 0
-        //memoLabel.textContainerInset = UIEdgeInsets(top: -0.2, left: 0, bottom: 0, right: 0)
         
         let index = indexPath.section - 1
         
@@ -721,8 +722,16 @@ class ActiveWalletViewController: UIViewController {
     @objc func fetchMemo(_ sender: UIButton) {
         guard let intString = sender.restorationIdentifier, let int = Int(intString) else { return }
         
-        let tx = transactionArray[int]
+        var tx:[String:Any]!
         
+        if self.showOffchain {
+            tx = self.offchainTxArray[int]
+        } else if self.showOnchain {
+            tx = self.onchainTxArray[int]
+        } else {
+            tx = self.transactionArray[int]
+        }
+                        
         guard let invoice = tx["address"] as? String, invoice != "" else {
             showAlert(vc: self, title: "No invoice.", message: "We do not seem to have an invoice for that transaction.  You can add your own memo by tapping the \"edit memo\" button.")
             return
@@ -783,13 +792,13 @@ class ActiveWalletViewController: UIViewController {
                         
             for savedTx in savedTxs {
                 let txStruct = TransactionStruct(dictionary: savedTx)
-                
                 if txStruct.txid == txid {
                     CoreDataService.update(id: txStruct.id!, keyToUpdate: "memo", newValue: memo, entity: .transactions) { [weak self] updated in
                         guard let self = self else { return }
-                                                
+                        
                         if updated {
-                            self.spinner.removeConnectingView()
+                            self.spinner.label.text = "reloading..."
+                            self.addNavBarSpinner()
                             self.loadTable()
                             showAlert(vc: self, title: "Memo updated ✓", message: "")
                         } else {

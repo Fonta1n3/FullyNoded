@@ -61,6 +61,7 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
         cell.layer.cornerRadius = 8
         cell.layer.borderWidth = 0.5
         cell.layer.borderColor = UIColor.lightGray.cgColor
+        cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         
         switch indexPath.section {
         case 0:

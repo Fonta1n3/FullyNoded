@@ -67,7 +67,12 @@ class MainMenuViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        //Crypto.blindingKey()
+        if !Crypto.setBlindingKey() {
+            showAlert(vc: self, title: "", message: "There was an error setting your psbt blinding key. Please let us know about it. This will prevent you from exporting or importing blind (encrypted) psbts.")
+        }
+        
+        Crypto.rpcAuth()
+        
         mainMenu.delegate = self
         mainMenu.alpha = 0
         mainMenu.tableFooterView = UIView(frame: .zero)
@@ -310,6 +315,7 @@ class MainMenuViewController: UIViewController {
         cell.selectionStyle = .none
         cell.layer.borderColor = UIColor.lightGray.cgColor
         cell.layer.borderWidth = 0.5
+        cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         let background = cell.viewWithTag(3)!
         let icon = cell.viewWithTag(1) as! UIImageView
         let label = cell.viewWithTag(2) as! UILabel
@@ -873,6 +879,7 @@ extension MainMenuViewController: OnionManagerDelegate {
         DispatchQueue.main.async { [weak self] in
             self?.torProgressLabel.text = "Tor bootstrapping \(progress)% complete"
             self?.progressView.setProgress(Float(Double(progress) / 100.0), animated: true)
+            self?.blurView.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
             self?.blurView.alpha = 1
         }
     }

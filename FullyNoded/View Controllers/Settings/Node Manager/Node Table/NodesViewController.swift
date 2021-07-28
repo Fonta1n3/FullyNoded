@@ -88,6 +88,8 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let cell = tableView.dequeueReusableCell(withIdentifier: "node", for: indexPath)
         cell.layer.borderColor = UIColor.lightGray.cgColor
         cell.layer.borderWidth = 0.5
+        cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
+        
         let label = cell.viewWithTag(1) as! UILabel
         let isActive = cell.viewWithTag(2) as! UISwitch
         let background = cell.viewWithTag(3)!

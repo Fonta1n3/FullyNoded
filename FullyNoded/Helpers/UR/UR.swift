@@ -10,6 +10,25 @@ import Foundation
 import URKit
 
 class URHelper {
+    static func bytesToData(_ ur: UR) -> Data? {
+        guard let decodedCbor = try? CBOR.decode(ur.cbor.bytes),
+            case let CBOR.byteString(bytes) = decodedCbor else {
+                return nil
+        }
+        
+        return Data(bytes)
+    }
+    
+    static func ur(_ string: String) -> UR? {
+        return try? UR(urString: string)
+    }
+    
+    static func dataToUrBytes(_ data: Data) -> UR? {
+        let cbor = CBOR.byteString(data.bytes).cborEncode().data
+        
+        return try? UR(type: "bytes", cbor: cbor)
+    }
+    
     static func psbtUr(_ data: Data) -> UR? {
         let cbor = CBOR.encodeByteString(data.bytes).data
         

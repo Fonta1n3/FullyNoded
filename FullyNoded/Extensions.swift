@@ -9,6 +9,12 @@
 import Foundation
 import UIKit
 
+public extension UtxosStruct {
+    var input: String {
+        return "{\"txid\":\"\(self.txid)\",\"vout\": \(self.vout),\"sequence\": 1}"
+    }
+}
+
 public extension Date {
     
     var displayDate: String {
@@ -48,6 +54,15 @@ public extension Dictionary {
     }
 }
 
+extension Array where Element: Hashable {
+    func duplicates() -> Array {
+        let groups = Dictionary(grouping: self, by: {$0})
+        let duplicateGroups = groups.filter {$1.count > 1}
+        let duplicates = Array(duplicateGroups.keys)
+        return duplicates
+    }
+}
+
 public extension Array {
     func json() -> String? {
         guard let json = try? JSONSerialization.data(withJSONObject: self, options: []),
@@ -64,6 +79,12 @@ public extension Array {
         inputs = inputs.replacingOccurrences(of: "}\"", with: "}")
         inputs = inputs.replacingOccurrences(of: "\\", with: "")
         return inputs
+    }
+    
+    var processedOutputs: String {
+        var outputsString = self.description
+        outputsString = outputsString.replacingOccurrences(of: "[", with: "")
+        return outputsString.replacingOccurrences(of: "]", with: "")
     }
 }
 
@@ -274,7 +295,15 @@ public extension Double {
         } else if sats == 1.0 {
             return "1 sat"
         } else {
-            return "\(Int(sats)) sats"
+            return "\(Int(sats).withCommas) sats"
+        }
+    }
+    
+    var btc: String {
+        if self > 1.0 {
+            return self.withCommasNotRounded() + " btc"
+        } else {
+            return self.avoidNotation + " btc"
         }
     }
     

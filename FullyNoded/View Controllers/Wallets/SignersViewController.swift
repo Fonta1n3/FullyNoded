@@ -76,6 +76,7 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
         cell.selectionStyle = .none
         cell.layer.borderColor = UIColor.lightGray.cgColor
         cell.layer.borderWidth = 0.5
+        cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         let label = cell.viewWithTag(1) as! UILabel
         let image = cell.viewWithTag(3) as! UIImageView
         let background = cell.viewWithTag(4)!

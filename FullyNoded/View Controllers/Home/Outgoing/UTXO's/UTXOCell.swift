@@ -53,6 +53,8 @@ class UTXOCell: UITableViewCell {
         layer.borderWidth = 0.5
         layer.cornerRadius = 8
         
+        roundeBackgroundView.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
+        
         isChangeBackground.clipsToBounds = true
         isSolvableBackground.clipsToBounds = true
         isDustBackground.clipsToBounds = true
@@ -123,12 +125,12 @@ class UTXOCell: UITableViewCell {
         }
                 
         if let amount = utxo.amount {
-            let roundedAmount = rounded(number: amount)
+            //let roundedAmount = rounded(number: amount)
             
             if isFiat {
                 amountLabel.text = utxo.amountFiat ?? "missing fx rate"
             } else if isBtc {
-                amountLabel.text = "\(roundedAmount.avoidNotation)"
+                amountLabel.text = amount.btc
             } else if isSats {
                 amountLabel.text = utxo.amountSats!
             }
@@ -165,7 +167,7 @@ class UTXOCell: UITableViewCell {
             self.roundeBackgroundView.backgroundColor = .darkGray
         } else {
             checkMarkImageView.alpha = 0
-            self.roundeBackgroundView.backgroundColor = .black
+            self.roundeBackgroundView.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         }
         
         if utxo.solvable != nil {
@@ -250,7 +252,7 @@ class UTXOCell: UITableViewCell {
                 
                 UIView.animate(withDuration: 0.2, animations: {
                     self.alpha = 1
-                    self.roundeBackgroundView.backgroundColor = .black
+                    self.roundeBackgroundView.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
                     
                 })
             }

@@ -146,27 +146,51 @@ class QRScannerViewController: UIViewController {
     }
     
     private func processUrPsbt(text: String) {
-        // Stop if we're already done with the decode.
-        guard decoder.result == nil else {
-            guard let result = try? decoder.result?.get(), let psbt = URHelper.psbtUrToBase64Text(result) else { return }
-            hasScanned = true
-            stopScanning(psbt)
-            return
-        }
+        if text.uppercased().hasPrefix("UR:BYTES") {
+            guard decoder.result == nil else {
+                guard let result = try? decoder.result?.get() else { return }
+                hasScanned = true
+                stopScanning(result.qrString)
+                return
+            }
 
-        decoder.receivePart(text.lowercased())
-        
-        let expectedParts = decoder.expectedPartCount ?? 0
-        
-        guard expectedParts != 0 else {
-            guard let result = try? decoder.result?.get(), let psbt = URHelper.psbtUrToBase64Text(result) else { return }
-            hasScanned = true
-            stopScanning(psbt)
-            return
+            decoder.receivePart(text.lowercased())
+            
+            let expectedParts = decoder.expectedPartCount ?? 0
+            
+            guard expectedParts != 0 else {
+                guard let result = try? decoder.result?.get() else { return }
+                hasScanned = true
+                stopScanning(result.qrString)
+                return
+            }
+            
+            let percentageCompletion = "\(Int(decoder.estimatedPercentComplete * 100))% complete"
+            updateProgress(percentageCompletion, self.decoder.estimatedPercentComplete)
+        } else {
+            guard decoder.result == nil else {
+                guard let result = try? decoder.result?.get(), let psbt = URHelper.psbtUrToBase64Text(result) else { return }
+                hasScanned = true
+                stopScanning(psbt)
+                return
+            }
+
+            decoder.receivePart(text.lowercased())
+            
+            let expectedParts = decoder.expectedPartCount ?? 0
+            
+            guard expectedParts != 0 else {
+                guard let result = try? decoder.result?.get(), let psbt = URHelper.psbtUrToBase64Text(result) else { return }
+                hasScanned = true
+                stopScanning(psbt)
+                return
+            }
+            
+            let percentageCompletion = "\(Int(decoder.estimatedPercentComplete * 100))% complete"
+            updateProgress(percentageCompletion, self.decoder.estimatedPercentComplete)
         }
+        // Stop if we're already done with the decode.
         
-        let percentageCompletion = "\(Int(decoder.estimatedPercentComplete * 100))% complete"
-        updateProgress(percentageCompletion, self.decoder.estimatedPercentComplete)
     }
     
     private func updateProgress(_ progressText: String, _ progressDoub: Double) {
@@ -280,7 +304,7 @@ class QRScannerViewController: UIViewController {
             } else if text.hasPrefix("p") {
                 // could be a specter animated psbt
                 parseSpecterAnimatedQr(text)
-            } else if lowercased.hasPrefix("ur:crypto-psbt") {
+            } else if lowercased.hasPrefix("ur:crypto-psbt") || lowercased.hasPrefix("ur:bytes") {
                 processUrPsbt(text: text)
             } else {
                 spinner.removeConnectingView()

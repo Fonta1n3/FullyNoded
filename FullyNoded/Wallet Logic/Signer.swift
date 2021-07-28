@@ -18,6 +18,8 @@ class Signer {
         var chain:Network!
         var coinType:String!
         
+        var psbtToExport = ""
+        
         func reset() {
             seedsToSignWith.removeAll()
             xprvsToSignWith.removeAll()
@@ -49,8 +51,10 @@ class Signer {
                         if let complete = result["complete"] as? Bool {
                             if complete {
                                 let hex = result["hex"] as! String
+                                let psbt = psbtToSign.description
                                 reset()
-                                completion((nil, hex, nil))
+                                // Now always return the non finalized psbt as exporting signed psbt's can be useful.
+                                completion((psbt, hex, nil))
                             } else {
                                 let psbt = result["psbt"] as! String
                                 reset()

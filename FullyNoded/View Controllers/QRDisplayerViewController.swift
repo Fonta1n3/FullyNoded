@@ -46,7 +46,13 @@ class QRDisplayerViewController: UIViewController {
         if psbt != "" {
             spinner.addConnectingView(vc: self, description: "loading QR parts...")
             imageView.isUserInteractionEnabled = false
-            convertPsbtToUrParts()
+            
+            if psbt.hasPrefix("UR:BYTES") {
+                convertBlindedPsbtToUrParts()
+            } else {
+                convertPsbtToUrParts()
+            }
+            
         } else if !isPaying {
             imageView.image = qR()
         }
@@ -197,6 +203,28 @@ class QRDisplayerViewController: UIViewController {
     
     private func convertPsbtToUrParts() {
         guard let b64 = Data(base64Encoded: psbt), let ur = URHelper.psbtUr(b64) else { return }
+        let encoder = UREncoder(ur, maxFragmentLen: 250)
+        weak var timer: Timer?
+        
+        timer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            
+            let part = encoder.nextPart()
+            let index = encoder.seqNum
+            
+            if index <= encoder.seqLen {
+                self.parts.append(part.uppercased())
+            } else {
+                self.spinner.removeConnectingView()
+                timer?.invalidate()
+                timer = Timer.scheduledTimer(timeInterval: 0.4, target: self, selector: #selector(self.animate), userInfo: nil, repeats: true)
+            }
+        }
+    }
+    
+    private func convertBlindedPsbtToUrParts() {
+        guard let ur = try? UR(urString: psbt) else { return }
+        
         let encoder = UREncoder(ur, maxFragmentLen: 250)
         weak var timer: Timer?
         

@@ -221,7 +221,7 @@
                                                 <constraint firstItem="F96-CJ-s9x" firstAttribute="centerY" secondItem="wWn-KW-eW3" secondAttribute="centerY" id="hop-Wh-bSN"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="backgroundColor" red="0.074509806930000005" green="0.074509806930000005" blue="0.074509806930000005" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="TransactionCell" rowHeight="339" id="4ho-jk-IbG">
                                         <rect key="frame" x="16" y="149.5" width="343" height="339"/>
@@ -447,7 +447,7 @@
                                                 <constraint firstItem="Wu0-bi-1p1" firstAttribute="centerY" secondItem="M9l-cP-pX6" secondAttribute="centerY" id="zfV-fA-ufp"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="backgroundColor" red="0.074509806930000005" green="0.074509806930000005" blue="0.074509806930000005" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                     </tableViewCell>
                                 </prototypes>
                                 <connections>
@@ -4355,8 +4355,8 @@ xxxxx</string>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="jXp-xP-J4h">
-                                <rect key="frame" x="16" y="531" width="343" height="116"/>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="jXp-xP-J4h">
+                                <rect key="frame" x="16" y="541" width="343" height="106"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="separatorColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
@@ -6262,6 +6262,12 @@ COLD means no keys will be generated and no private keys can be imported.</strin
                                     <action selector="lockAction:" destination="1tX-je-wOH" id="1li-Ht-ieG"/>
                                 </connections>
                             </barButtonItem>
+                            <barButtonItem image="divide" catalog="system" id="iRZ-Ox-Maj">
+                                <color key="tintColor" red="0.34901961679999999" green="0.77647060160000003" blue="0.97254908080000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                <connections>
+                                    <action selector="divideAction:" destination="1tX-je-wOH" id="VSa-mN-732"/>
+                                </connections>
+                            </barButtonItem>
                         </rightBarButtonItems>
                     </navigationItem>
                     <connections>
@@ -7550,7 +7556,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="7UD-TA-0Dv"/>
         <segue reference="yAt-Ra-aPH"/>
         <segue reference="AK4-4u-w1q"/>
-        <segue reference="j10-wi-hpr"/>
+        <segue reference="Ikt-mc-dmE"/>
         <segue reference="qmy-fM-U4p"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -7570,6 +7576,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <image name="bolt.horizontal" catalog="system" width="128" height="60"/>
         <image name="chevron.right" catalog="system" width="96" height="128"/>
         <image name="desktopcomputer" catalog="system" width="128" height="101"/>
+        <image name="divide" catalog="system" width="128" height="103"/>
         <image name="doc.on.clipboard" catalog="system" width="116" height="128"/>
         <image name="doc.on.doc" catalog="system" width="116" height="128"/>
         <image name="exclamationmark.triangle" catalog="system" width="128" height="112"/>

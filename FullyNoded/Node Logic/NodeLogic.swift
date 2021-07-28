@@ -338,53 +338,82 @@ class NodeLogic {
     class func getPaidLND(completion: @escaping ((response: [[String:Any]]?, errorMessage: String?)) -> Void) {
         let lnd = LndRpc.sharedInstance
         
-        lnd.command(.listinvoices, nil, nil, nil) { (response, error) in
+        lnd.command(.listinvoices, nil, nil, ["reversed":true, "num_max_invoices": "1000"]) { (response, error) in
             
-            guard let invoices = response?["invoices"] as? [[String:Any]], invoices.count > 0 else {
+            guard let paidInvoices = response?["invoices"] as? [[String:Any]], paidInvoices.count > 0 else {
                 arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
                 getOutgoingPaymentsLND(completion: completion)
                 return
             }
             
-            for (i, invoice) in invoices.enumerated() {
-                let payment_hash = invoice["payment_hash"] as? String ?? ""
-                let amt_paid_sat = Int(invoice["amt_paid_sat"] as? String ?? "")!.withCommas
-                let state = invoice["state"] as? String ?? ""
-                let payment_request = invoice["payment_request"] as? String ?? ""
-                let paid_at = invoice["settle_date"] as? String ?? ""
-                let settled = invoice["settled"] as! Bool
+            CoreDataService.retrieveEntity(entityName: .transactions) { savedTxs in
                 
-                let date = Date(timeIntervalSince1970: Double(paid_at)!)
-                dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
-                let dateString = dateFormatter.string(from: date)
-                
-                if settled {
+                for (i, invoice) in paidInvoices.enumerated() {
+                    var alreadySaved = false
+                    let r_hash = invoice["r_hash"] as? String ?? ""
+                    let data = Data(base64Encoded: r_hash)
+                    let txid = data!.hexString
+                    let amt_paid_sat = Int(invoice["amt_paid_sat"] as? String ?? "")!.withCommas
+                    let payment_request = invoice["payment_request"] as? String ?? ""
+                    let paid_at = invoice["settle_date"] as? String ?? ""
+                    let settled = invoice["settled"] as! Bool
                     
-                    let amountBtc = amt_paid_sat.satsToBtc.avoidNotation
-                    let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double ?? 0.0
-                    let amountFiat = (amountBtc.doubleValue * fxRate).balanceText
+                    if settled {
+                        let date = Date(timeIntervalSince1970: Double(paid_at)!)
+                        dateFormatter.dateFormat = "MMM-dd-yyyy HH:mm"
+                        let dateString = dateFormatter.string(from: date)
+                        
+                        let amountBtc = amt_paid_sat.satsToBtc.avoidNotation
+                        let fxRate = UserDefaults.standard.object(forKey: "fxRate") as? Double ?? 0.0
+                        let amountFiat = (amountBtc.doubleValue * fxRate).balanceText
+                        
+                        arrayToReturn.append([
+                                                "address": payment_request,
+                                                "amountSats": "\(amt_paid_sat)",
+                                                "amountBtc": amountBtc,
+                                                "amountFiat": amountFiat,
+                                                "confirmations": "paid",
+                                                "label": "",
+                                                "date": dateString,
+                                                "rbf": false,
+                                                "txID": txid,
+                                                "replacedBy": "",
+                                                "selfTransfer":false,
+                                                "remove":false,
+                                                "onchain":false,
+                                                "isLightning":true,
+                                                "sortDate":date])
+                        
+                        guard let savedTxs = savedTxs else {
+                            saveLocally(txid: txid, date: date)
+                            
+                            if i + 1 == paidInvoices.count {
+                                arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
+                                getOutgoingPaymentsLND(completion: completion)
+                            }
+                            
+                            return
+                        }
+                        
+                        for (s, savedTx) in savedTxs.enumerated() {
+                            let savedTxStruct = TransactionStruct(dictionary: savedTx)
+                            
+                            if savedTxStruct.txid == txid {
+                                alreadySaved = true
+                            }
+                            
+                            if s + 1 == savedTxs.count {
+                                if !alreadySaved {
+                                    saveLocally(txid: txid, date: date)
+                                }
+                            }
+                        }
+                    }
                     
-                    arrayToReturn.append([
-                                            "address": payment_request,
-                                            "amountSats": "\(amt_paid_sat)",
-                                            "amountBtc": amountBtc,
-                                            "amountFiat": amountFiat,
-                                            "confirmations": state,
-                                            "label": "",
-                                            "date": dateString,
-                                            "rbf": false,
-                                            "txID": payment_hash,
-                                            "replacedBy": "",
-                                            "selfTransfer":false,
-                                            "remove":false,
-                                            "onchain":false,
-                                            "isLightning":true,
-                                            "sortDate":date])
-                }
-                
-                if i + 1 == invoice.count {
-                    arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
-                    getOutgoingPaymentsLND(completion: completion)
+                    if i + 1 == paidInvoices.count {
+                        arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
+                        getOutgoingPaymentsLND(completion: completion)
+                    }
                 }
             }
         }
@@ -489,6 +518,7 @@ class NodeLogic {
         func getPaid() {
             let id = UUID()
             LightningRPC.command(id: id, method: .listinvoices, param: "") { (uuid, response, errorDesc) in
+                
                 guard id == uuid, let dict = response as? NSDictionary, let payments = dict["invoices"] as? NSArray, payments.count > 0 else {
                     arrayToReturn = arrayToReturn.sorted{ ($0["sortDate"] as? Date ?? Date()) > ($1["sortDate"] as? Date ?? Date()) }
                     completion((arrayToReturn, nil))
@@ -889,7 +919,7 @@ class NodeLogic {
                     let confsCheck = transaction["confirmations"] as? Int ?? 0
                     
                     if confsCheck < 0 {
-                        toRemove = true
+                        //toRemove = true
                     }
                     
                     let confirmations = String(confsCheck)
@@ -968,11 +998,11 @@ class NodeLogic {
                         "rbf": rbf,
                         "txID": txID,
                         "replacedBy": replaced_by_txid,
-                        "selfTransfer":false,
-                        "remove":toRemove,
-                        "onchain":true,
-                        "isLightning":false,
-                        "sortDate":date
+                        "selfTransfer": false,
+                        "remove": toRemove,
+                        "onchain": true,
+                        "isLightning": false,
+                        "sortDate": date
                     ])
                     
                     func saveLocally() {

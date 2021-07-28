@@ -34,6 +34,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         cell.selectionStyle = .none
         cell.layer.borderColor = UIColor.lightGray.cgColor
         cell.layer.borderWidth = 0.5
+        cell.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
     }
     
     private func settingsCell(_ indexPath: IndexPath) -> UITableViewCell {
@@ -114,6 +115,40 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         background.backgroundColor = .systemOrange
         
         return esploraCell
+    }
+    
+    func blindedPsbtCell(_ indexPath: IndexPath) -> UITableViewCell {
+        let blindedPsbtCell = settingsTable.dequeueReusableCell(withIdentifier: "toggleCell", for: indexPath)
+        configureCell(blindedPsbtCell)
+        
+        let label = blindedPsbtCell.viewWithTag(1) as! UILabel
+        label.textColor = .lightGray
+        label.adjustsFontSizeToFitWidth = true
+        
+        let background = blindedPsbtCell.viewWithTag(2)!
+        background.clipsToBounds = true
+        background.layer.cornerRadius = 8
+        
+        let icon = blindedPsbtCell.viewWithTag(3) as! UIImageView
+        icon.tintColor = .white
+        
+        let toggle = blindedPsbtCell.viewWithTag(4) as! UISwitch
+        toggle.addTarget(self, action: #selector(toggleBlindedPsbt(_:)), for: .valueChanged)
+        
+        guard let blind = UserDefaults.standard.object(forKey: "blind") as? Bool, blind else {
+            toggle.setOn(false, animated: true)
+            label.text = "Blind psbts"
+            icon.image = UIImage(systemName: "xmark.shield")
+            background.backgroundColor = .systemRed
+            return blindedPsbtCell
+        }
+        
+        toggle.setOn(true, animated: true)
+        label.text = "Blind psbts"
+        icon.image = UIImage(systemName: "checkmark.shield.fill")
+        background.backgroundColor = .systemGreen
+        
+        return blindedPsbtCell
     }
     
     func blockchainInfoCell(_ indexPath: IndexPath) -> UITableViewCell {
@@ -233,8 +268,13 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             return settingsCell(indexPath)
             
         case 3:
-            return esploraCell(indexPath)
-            
+            switch indexPath.row {
+            case 0: return blindedPsbtCell(indexPath)
+            case 1: return esploraCell(indexPath)
+            default:
+                return UITableViewCell()
+            }
+                        
         case 4:
             if indexPath.row == 0 {
                 return blockchainInfoCell(indexPath)
@@ -300,7 +340,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if section == 4 || section == 1 {
+        if section == 4 || section == 1 || section == 3 {
             return 2
         } else if section == 5 {
             return 3
@@ -485,13 +525,31 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
+            var controller:UIDocumentPickerViewController!
+            
             if #available(iOS 14, *) {
-                let controller = UIDocumentPickerViewController(forExporting: [fileURL]) // 5
-                self.present(controller, animated: true)
+                controller = UIDocumentPickerViewController(forExporting: [fileURL]) // 5
             } else {
-                let controller = UIDocumentPickerViewController(url: fileURL, in: .exportToService)
-                self.present(controller, animated: true)
+                controller = UIDocumentPickerViewController(url: fileURL, in: .exportToService)
             }
+            
+            self.present(controller, animated: true)
+        }
+    }
+    
+    @objc func toggleBlindedPsbt(_ sender: UISwitch) {
+        UserDefaults.standard.setValue(sender.isOn, forKey: "blind")
+        
+        if sender.isOn {
+            showAlert(vc: self, title: "psbts blinded ✓", message: "Transactions will now be encrypted before being exported so that you may more privately create transactions with others. You can read more about blinded psbt's and why they are more private then traditional transactions at www.fullynoded.app")
+        } else {
+            showAlert(vc: self, title: "psbts revealed", message: "The app will now fall back to Bitcoin Core coin selection and export transactions in plain text.")
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.settingsTable.reloadData()
         }
     }
     

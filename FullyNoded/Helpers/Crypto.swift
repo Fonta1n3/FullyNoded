@@ -33,11 +33,22 @@ enum Crypto {
         return try? ChaChaPoly.seal(data, using: SymmetricKey(data: key)).combined
     }
     
-//    static func blindPsbt(_ psbt: Data) -> Data? {
-//        guard let key = KeyChain.getData("blindingKey") else { return nil }
-//
-//        return try? ChaChaPoly.seal(psbt, using: SymmetricKey(data: key)).combined
-//    }
+    static func blindPsbt(_ psbt: Data) -> Data? {
+        guard let key = KeyChain.getData("blindingKey") else {
+            return nil
+        }
+
+        return try? ChaChaPoly.seal(psbt, using: SymmetricKey(data: key)).combined
+    }
+    
+    static func decryptPsbt(_ data: Data) -> Data? {
+        guard let key = KeyChain.getData("blindingKey"),
+            let box = try? ChaChaPoly.SealedBox.init(combined: data) else {
+                return nil
+        }
+        
+        return try? ChaChaPoly.open(box, using: SymmetricKey(data: key))
+    }
     
     static func decrypt(_ data: Data) -> Data? {
         guard let key = KeyChain.getData("privateKey"),
@@ -62,46 +73,40 @@ enum Crypto {
         return checksum.hexString
     }
     
-//    static func blindingKey() {
-//        // Goal is to replace this with a get request to my own server behind an authenticated v3 onion
-//        guard KeyChain.getData("blindingKey") == nil, let pk = Crypto.secret() else { return }
-//
-//        if KeyChain.set(pk, forKey: "blindingKey") {
-//            print("pk: \(pk.base64EncodedString())")
-//            // NZdDCNBFTDqKPrUG9V80g0iVemSXLL0CuaWj12xqD00=
-//        }
-//    }
-    
-//    static func encryptPsbt() {
-//
-//    }
+    static func setBlindingKey() -> Bool {
+        // Goal is to replace this with a get request to my own server behind an authenticated v3 onion
+        guard KeyChain.getData("blindingKey") == nil else { return true }
+        
+        guard let pk = Data(base64Encoded: "NZdDCNBFTDqKPrUG9V80g0iVemSXLL0CuaWj12xqD00=") else { return false }
+
+        return KeyChain.set(pk, forKey: "blindingKey")
+    }
     
     static func secret() -> Data? {
         var bytes = [UInt8](repeating: 0, count: 32)
         let result = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
-        
+
         guard result == errSecSuccess else {
             print("Problem generating random bytes")
             return nil
         }
-        
+
         return Data(bytes)
     }
     
 //    static func rpcAuth() {
 //        guard let salt = generateRandomBytes(16),
 //            let password = generateRandomBytes(32) else { return }
-//        
-//        let encodedPassword = Base64FS.encode(data: [UInt8](password))
+//
+//        let encodedPassword = password.base64EncodedData()
 //        let key256 = SymmetricKey(data: encodedPassword)
 //        let sha256MAC = HMAC<SHA256>.authenticationCode(for: salt, using: key256)
 //        let authenticationCodeData = Data(sha256MAC)
 //        print("rpcauth=FullyNoded:\(salt.hexString)$\(authenticationCodeData.hexString)")
-//        print("rpcpassword=\(String(bytes: encodedPassword, encoding: .utf8)!)")
+//        print("rpcpassword=\(password.urlSafeB64String)")
 //    }
 //
 //    static func generateRandomBytes(_ bytes: Int) -> Data? {
-//
 //        var keyData = Data(count: bytes)
 //        let result = keyData.withUnsafeMutableBytes {
 //            SecRandomCopyBytes(kSecRandomDefault, bytes, $0.baseAddress!)

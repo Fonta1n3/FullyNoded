@@ -36,7 +36,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var recipients = [String]()
     var addressToVerify = ""
     var sweeping = Bool()
-    var alertStyle = UIAlertController.Style.actionSheet
     var signatures = [[String:String]]()
     var signedTxInputs = NSArray()
     var alreadyBroadcast = false
@@ -49,6 +48,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var wallet:Wallet?
     var bitcoinCoreWallets = [String()]
     var walletIndex = 0
+    var qrCodeStringToExport = ""
     
     @IBOutlet weak private var verifyTable: UITableView!
     @IBOutlet weak private var exportButtonOutlet: UIButton!
@@ -75,10 +75,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             guard let self = self else { return }
             
             self.wallet = w
-            
-            if w == nil {
-                showAlert(vc: self, title: "", message: "You are not working with a FN Wallet, this means functionality will be limited, toggle on a FN wallet to get full functionality.")
-            }
         }
         
         if unsignedPsbt != "" || signedRawTx != "" {
@@ -97,6 +93,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     private func processPsbt(_ psbt: String) {
         spinner.addConnectingView(vc: self, description: "processing psbt...")
+        
         Reducer.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt)\", true, \"ALL\", true") { [weak self] (object, errorDescription) in
             guard let self = self else { return }
             
@@ -204,10 +201,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         view.addGestureRecognizer(tap)
         
-        if (UIDevice.current.userInterfaceIdiom == .pad) {
-          alertStyle = UIAlertController.Style.alert
-        }
-        
         if alreadyBroadcast {
             if confs == 0 {
                 enableBumpFeeButton()
@@ -265,7 +258,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let alert = UIAlertController(title: "Add Transaction", message: "You can add a transaction in a number of ways.", preferredStyle: self.alertStyle)
+            let alert = UIAlertController(title: "Add Transaction",
+                                          message: "You can add a transaction in a number of ways.",
+                                          preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Upload File", style: .default, handler: { action in
                 self.presentUploader()
@@ -368,11 +363,42 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         promptToAddTx()
     }
     
+    private func promptToExportPsbt() {
+        let alert = UIAlertController(title: "Export blinded?",
+                                      message: "You can either export this psbt encrypted or in plain text.",
+                                      preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "Blinded", style: .default, handler: { [weak self] action in
+            guard let self = self else { return }
+            
+            guard let data = Data(base64Encoded: self.unsignedPsbt),
+                  let encrypted = Crypto.blindPsbt(data),
+                  let ur = URHelper.dataToUrBytes(encrypted) else {
+                showAlert(vc: self, title: "", message: "Error converting to data or encrypting.")
+                return
+            }
+            
+            self.exportPsbt(blindedpsbt: nil, plainText: ur.qrString)
+        }))
+        
+        alert.addAction(UIAlertAction(title: "Plain text", style: .default, handler: { [weak self] action in
+            guard let self = self else { return }
+            
+            self.exportPsbt(blindedpsbt: nil, plainText: self.unsignedPsbt)
+        }))
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+        alert.popoverPresentationController?.sourceView = self.view
+        self.present(alert, animated: true) {}
+    }
+                    
     @IBAction func exportAction(_ sender: Any) {
-        if signedRawTx != "" {
+        if let blind = UserDefaults.standard.object(forKey: "blind") as? Bool, blind {
+            promptToExportPsbt()
+        } else if signedRawTx != "" {
             exportTxn(txn: signedRawTx)
         } else {
-            exportPsbt(psbt: unsignedPsbt)
+            exportPsbt(blindedpsbt: nil, plainText: unsignedPsbt)
         }
     }
     
@@ -398,21 +424,26 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     @IBAction func signAction(_ sender: Any) {
+        signNow()
+    }
+    
+    private func signNow() {
         isSigning = true
         spinner.addConnectingView(vc: self, description: "signing...")
+        
         Signer.sign(psbt: self.unsignedPsbt) { [weak self] (signedPsbt, rawTx, errorMessage) in
             guard let self = self else { return }
                         
             self.disableSignButton()
             
-            if signedPsbt != nil {
-                self.unsignedPsbt = signedPsbt!
-                self.load()
-                
-            } else if rawTx != nil {
+            if rawTx != nil {
                 self.unsignedPsbt = ""
                 self.signedRawTx = rawTx!
                 self.enableSendButton()
+                self.load()
+                
+            } else if signedPsbt != nil {
+                self.unsignedPsbt = signedPsbt!
                 self.load()
                 
             } else {
@@ -444,7 +475,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let alert = UIAlertController(title: "Complete ⚡️ channel funding?", message: "This will broadcast the transaction and is irreversible!", preferredStyle: self.alertStyle)
+            let alert = UIAlertController(title: "Complete ⚡️ channel funding?",
+                                          message: "This will broadcast the transaction and is irreversible!",
+                                          preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Broadcast now", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
@@ -612,14 +645,29 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 self.psbtDict = dict
                 
                 if let inputs = dict["inputs"] as? NSArray, inputs.count > 0 {
-                    for input in inputs {
+                    for (i, input) in inputs.enumerated() {
+                        var isSigned = false
                         if let inputDict = input as? NSDictionary {
                             if let signatures = inputDict["partial_signatures"] as? NSDictionary {
                                 for (key, value) in signatures {
                                     self.signatures.append(["\(key)":(value as? String ?? "")])
                                 }
+                            } else if let _ = inputDict["final_scriptwitness"] as? [String] {
+                                isSigned = true
                             }
                         }
+                        
+                        let inputDict:[String:Any] = [
+                            "index": i + 1,
+                            "amount": "unknown",
+                            "address": "unknown",
+                            "lifehash": UIImage(),
+                            "isOurs": false,// Hardcode at this stage and update before displaying
+                            "isDust": true,
+                            "isSigned": isSigned
+                        ]
+                        
+                        self.inputTableArray.append(inputDict)
                     }
                 }
                 
@@ -659,6 +707,21 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 }
                 
                 if let inputs = dict["vin"] as? NSArray {
+                    
+                    for (i, _) in inputs.enumerated() {
+                        let inputDict:[String:Any] = [
+                            "index": i + 1,
+                            "amount": "unknown",
+                            "address": "unknown",
+                            "lifehash": UIImage(),
+                            "isOurs": false,// Hardcode at this stage and update before displaying
+                            "isDust": true,
+                            "isSigned": false
+                        ]
+                        
+                        self.inputTableArray.append(inputDict)
+                    }
+                    
                     self.signedTxInputs = inputs
                 }
                 
@@ -819,32 +882,15 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                                     amountString += " btc / \(fiatAmount(btc: amount))"
                                 }
                                 
-                                let inputDict:[String:Any] = [
-                                    "index": index + 1,
-                                    "amount": amountString,
-                                    "address": addressString,
-                                    "lifehash": LifeHash.image(addressString) ?? UIImage(),
-                                    "isOurs": false,// Hardcode at this stage and update before displaying
-                                    "isDust": amount < 0.00020000
-                                ]
-                                
-                                inputTableArray.append(inputDict)
+                                self.inputTableArray[index]["amount"] = amountString
+                                self.inputTableArray[index]["address"] = addressString
+                                self.inputTableArray[index]["lifehash"] = LifeHash.image(addressString) ?? UIImage()
+                                self.inputTableArray[index]["isDust"] = amount < 0.00020000
                             }
                         }
                     }
                 }
             }
-        } else {
-            let inputDict:[String:Any] = [
-                "index": index + 1,
-                "amount": "unknown",
-                "address": "unknown",
-                "lifehash": UIImage(),
-                "isOurs": false,// Hardcode at this stage and update before displaying
-                "isDust": true
-            ]
-            
-            inputTableArray.append(inputDict)
         }
         
         if index + 1 < inputArray.count {
@@ -1349,9 +1395,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             let desc = input["desc"] as? String ?? "no descriptor"
             let lifehash = input["lifehash"] as? UIImage ?? UIImage()
             let inputAddress = input["address"] as! String
+            let hasSigned = input["isSigned"] as! Bool
             
             utxoLabel.text = label
-            signaturesLabel.text = signatureStatus
             descTextView.text = desc
             lifehashImageView.image = lifehash
             sigsImageView.image = UIImage(systemName: "signature")
@@ -1366,10 +1412,14 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             copyAddressButton.addTarget(self, action: #selector(copyAddress(_:)), for: .touchUpInside)
             copyDescButton.addTarget(self, action: #selector(copyDesc(_:)), for: .touchUpInside)
             
-            if signatureStatus == "Signatures complete" {
+            signaturesLabel.text = signatureStatus
+            
+            if signatureStatus == "Signatures complete" || hasSigned {
                 sigsBackgroundView.backgroundColor = .systemGreen
+                signaturesLabel.text = "Signatures complete"
             } else if self.signatures.count > 0 {
                 sigsBackgroundView.backgroundColor = .systemOrange
+                signaturesLabel.text = "Signed"
             } else {
                 sigsBackgroundView.backgroundColor = .systemRed
             }
@@ -1695,7 +1745,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let alert = UIAlertController(title: "Verify Owner", message: "This address does not belong to the current Active Wallet, you can run this check to see if any of your other wallets are the owner.", preferredStyle: self.alertStyle)
+            let alert = UIAlertController(title: "Verify Owner",
+                                          message: "This address does not belong to the current Active Wallet, you can run this check to see if any of your other wallets are the owner.",
+                                          preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Verify Owner", style: .default, handler: { action in
                 self.spinner.addConnectingView(vc: self, description: "checking other FN wallets...")
@@ -2000,7 +2052,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let alert = UIAlertController(title: "Broadcast with your node?", message: "You can optionally broadcast this transaction using Blockstream's esplora API over Tor V3 for improved privacy.", preferredStyle: self.alertStyle)
+            let alert = UIAlertController(title: "Broadcast with your node?",
+                                          message: "You can optionally broadcast this transaction using Blockstream's esplora API over Tor V3 for improved privacy.",
+                                          preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Privately", style: .default, handler: { action in
                 self.broadcastPrivately()
@@ -2039,22 +2093,33 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         }
     }
     
-    private func exportPsbt(psbt: String) {
+    //Need to export either as blinded or plain text.
+    private func exportPsbt(blindedpsbt: String?, plainText: String?) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
+                        
+            var tit = ""
+            var itemToExport = ""
             
-            let alert = UIAlertController(title: "Share as a .psbt file, text or QR?", message: "Sharing as a .psbt file allows you to send the psbt directly to your Coldcard or to Electrum 4.0 for signing", preferredStyle: self.alertStyle)
+            if let blinded = blindedpsbt {
+                tit = "⚠️ You enabled blinded psbts in settings. This psbt will only be readable by Fully Noded!"
+                itemToExport = blinded
+            } else if let plain = plainText {
+                itemToExport = plain
+            }
+            
+            let alert = UIAlertController(title: tit, message: "Share as a .psbt file, text or QR?", preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: ".psbt file", style: .default, handler: { action in
-                self.convertPSBTtoData(string: psbt)
+                self.convertPSBTtoData(string: itemToExport)
             }))
             
             alert.addAction(UIAlertAction(title: "Text", style: .default, handler: { action in
-                self.shareText(psbt)
+                self.shareText(itemToExport)
             }))
             
             alert.addAction(UIAlertAction(title: "QR", style: .default, handler: { action in
-                self.unsignedPsbt = psbt
+                self.qrCodeStringToExport = itemToExport
                 self.exportAsQR()
             }))
             
@@ -2073,9 +2138,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     private func shareText(_ text: String) {
-            #if os(macOS)
+            #if !os(macOS)
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
+                
                 let activityViewController = UIActivityViewController(activityItems: [text], applicationActivities: nil)
                 
                 if UIDevice.current.userInterfaceIdiom == .pad {
@@ -2085,6 +2151,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 
                 self.present(activityViewController, animated: true) {}
             }
+            
             #else
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
@@ -2092,6 +2159,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 UIPasteboard.general.string = text
                 showAlert(vc: self, title: "Transaction copied to clipboard ✓", message: "")
             }
+            
             #endif
     }
     
@@ -2099,7 +2167,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let alert = UIAlertController(title: "Export as text or QR?", message: "", preferredStyle: self.alertStyle)
+            let alert = UIAlertController(title: "Export as text or QR?", message: "", preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Text", style: .default, handler: { action in
                 self.shareText(txn)
@@ -2116,32 +2184,126 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     private func convertPSBTtoData(string: String) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self, let data = Data(base64Encoded: string) else { return }
-            
-            var label = self.labelText
-            
-            if label == "" {
-                label = "FullyNoded"
+        if string.hasPrefix("UR:BYTES") {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self, let ur = URHelper.ur(string) else { return }
+                
+                let data = ur.qrData
+                
+                var label = self.labelText
+                
+                if label == "" {
+                    label = "FullyNoded"
+                }
+                            
+                let fileManager = FileManager.default
+                let fileURL = fileManager.temporaryDirectory.appendingPathComponent("\(label).blindedPsbt")
+                
+                try? data.write(to: fileURL)
+                
+                var controller: UIDocumentPickerViewController!
+                            
+                if #available(iOS 14.0, *) {
+                    controller = UIDocumentPickerViewController(forExporting: [fileURL], asCopy: true)
+                } else {
+                    controller = UIDocumentPickerViewController(url: fileURL, in: .exportToService)
+                }
+                
+                self.present(controller, animated: true)
             }
-                        
-            let fileManager = FileManager.default
-            let fileURL = fileManager.temporaryDirectory.appendingPathComponent("\(label).psbt")
             
-            try? data.write(to: fileURL)
-            
-            var controller: UIDocumentPickerViewController!
-                        
-            if #available(iOS 14.0, *) {
-                controller = UIDocumentPickerViewController(forExporting: [fileURL], asCopy: true)
-            } else {
-                controller = UIDocumentPickerViewController(url: fileURL, in: .exportToService)
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self, let data = Data(base64Encoded: string) else { return }
+                
+                var label = self.labelText
+                
+                if label == "" {
+                    label = "FullyNoded"
+                }
+                            
+                let fileManager = FileManager.default
+                let fileURL = fileManager.temporaryDirectory.appendingPathComponent("\(label).psbt")
+                
+                try? data.write(to: fileURL)
+                
+                var controller: UIDocumentPickerViewController!
+                            
+                if #available(iOS 14.0, *) {
+                    controller = UIDocumentPickerViewController(forExporting: [fileURL], asCopy: true)
+                } else {
+                    controller = UIDocumentPickerViewController(url: fileURL, in: .exportToService)
+                }
+                
+                self.present(controller, animated: true)
             }
-            
-            self.present(controller, animated: true)
         }
     }
     
+    private func prompToAddBlindPsbt(_ blindPsbt: Data) {
+        func loadNormally() {
+            guard let decryptedPsbt = Crypto.decryptPsbt(blindPsbt) else {
+                showAlert(vc: self, title: "", message: "Error decrypting psbt.")
+                return
+            }
+            
+            self.isSigning = false
+            self.unsignedPsbt = decryptedPsbt.base64EncodedString()
+            processPsbt(unsignedPsbt)
+            //self.load()
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let alert = UIAlertController(title: "Add another blinded psbt?",
+                                          message: "Adding a blinded psbt will contribute 3 of your inputs and outputs to the transaction.",
+                                          preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Add a blinded psbt", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.spinner.label.text = "creating 3 inputs and outputs..."
+                self.addBlindPsbt(blindPsbt)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Not now", style: .default, handler: { action in
+                loadNormally()
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in
+                loadNormally()
+            }))
+            
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true) {}
+        }
+    }
+        
+    private func parseBlindPsbt(_ blindPsbt: String) {
+        spinner.addConnectingView(vc: self, description: "")
+        
+        guard let ur = URHelper.ur(blindPsbt), let encryptedData = URHelper.bytesToData(ur) else {
+            spinner.removeConnectingView()
+            showAlert(vc: self, title: "", message: "Error converting blind psbt to data.")
+            return
+        }
+        
+        prompToAddBlindPsbt(encryptedData)
+    }
+    
+    private func addBlindPsbt(_ blindPsbt: Data) {
+        BlindPsbt.parseBlindPsbt(blindPsbt) { [weak self] (joinedPsbt, error) in
+            guard let self = self else { return }
+                        
+            guard let joinedPsbt = joinedPsbt else {
+                showAlert(vc: self, title: "Error getting joined psbt.", message: "\(error ?? "unknown error")")
+                return
+            }
+            
+            self.processPsbt(joinedPsbt)
+        }
+    }
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
@@ -2152,18 +2314,22 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             
             if let vc = segue.destination as? QRDisplayerViewController {
                 
-                if unsignedPsbt != "" {
-                    vc.psbt = unsignedPsbt
+                if self.qrCodeStringToExport != "" {
+                    vc.psbt = self.qrCodeStringToExport
                     vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
-                    vc.headerText = "PSBT"
-                    vc.descriptionText = "This psbt still needs more signatures to be complete, you can share it with another signer."
                     
+                    if self.qrCodeStringToExport.hasPrefix("UR:BYTES") {
+                        vc.headerText = "Blinded PSBT"
+                        vc.descriptionText = "Pass this psbt to your signer or to others to create a collaborative batch transaction."
+                    } else {
+                        vc.headerText = "PSBT"
+                        vc.descriptionText = "This psbt still needs more signatures to be complete, you can share it with another signer."
+                    }
                 } else if signedRawTx != "" {
                     vc.text = signedRawTx
                     vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
                     vc.headerText = "Signed Transaction"
                     vc.descriptionText = "You can save this signed transaction and broadcast it later or share it with someone else."
-                    
                 }
             }
         }
@@ -2173,6 +2339,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 vc.txid = self.txid
                 vc.labelText = labelText
                 vc.memoText = memoText
+                
                 vc.doneBlock = { result in
                     self.labelText = result[0]
                     self.memoText = result[1]
@@ -2190,6 +2357,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 guard let vc = segue.destination as? QRScannerViewController else { return }
                 
                 vc.fromSignAndVerify = true
+                
                 vc.onAddressDoneBlock = { [weak self] tx in
                     guard let self = self, let tx = tx else { return }
                     
@@ -2198,11 +2366,11 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     } else if Keys.validTx(tx) {
                         self.signedRawTx = tx
                         self.load()
+                    } else if tx.hasPrefix("UR:BYTES") {
+                        self.parseBlindPsbt(tx)
                     }
                 }
-            } else {
-                // Fallback on earlier versions
-            }            
+            }
         }
     }
 }

@@ -94,14 +94,17 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         sliderViewBackground.layer.cornerRadius = 8
         sliderViewBackground.layer.borderColor = UIColor.darkGray.cgColor
         sliderViewBackground.layer.borderWidth = 0.5
+        sliderViewBackground.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         
         amountBackground.layer.cornerRadius = 8
         amountBackground.layer.borderColor = UIColor.darkGray.cgColor
         amountBackground.layer.borderWidth = 0.5
+        amountBackground.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         
         recipientBackground.layer.cornerRadius = 8
         recipientBackground.layer.borderColor = UIColor.darkGray.cgColor
         recipientBackground.layer.borderWidth = 0.5
+        recipientBackground.backgroundColor = #colorLiteral(red: 0.05172085258, green: 0.05855310153, blue: 0.06978280196, alpha: 1)
         
         amountIcon.layer.cornerRadius = 5
         feeIconBackground.layer.cornerRadius = 5
@@ -220,7 +223,35 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             self.rawTxUnsigned = ""
             self.amountInput.resignFirstResponder()
             self.addressInput.resignFirstResponder()
-            self.tryRaw()
+        }
+        
+        if let blind = UserDefaults.standard.object(forKey: "blind") as? Bool, blind {
+            createBlindPsbt()
+        } else {
+            tryRaw()
+        }
+    }
+    
+    private func createBlindPsbt() {
+        spinner.addConnectingView(vc: self, description: "")
+        
+        guard let amount = convertedAmount(), let address = addressInput.text, address != "" else {
+            spinner.removeConnectingView()
+            showAlert(vc: self, title: "", message: "No amount or address.")
+            return
+        }
+        
+        BlindPsbt.getInputs(amountBtc: amount.doubleValue, recipient: address) { [weak self] (psbt, error) in
+            guard let self = self else { return }
+            
+            self.spinner.removeConnectingView()
+            
+            if let error = error {
+                showAlert(vc: self, title: "There was an issue creating a blind psbt.", message: error)
+            } else if let psbt = psbt {
+                self.rawTxUnsigned = psbt
+                self.showRaw(raw: psbt)
+            }
         }
     }
     
@@ -237,29 +268,39 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
     }
     
-    @IBAction func addToBatchAction(_ sender: Any) {
-        guard var amount = amountInput.text, amount != "", let address = addressInput.text, address != "" else {
-            
-            showAlert(vc: self, title: "", message: "You need to fill out a recipient and amount first then tap this button, this button is used for adding multiple recipients aka \"batching\".")
-            return
-        }
+    private func convertedAmount() -> String? {
+        guard let amount = amountInput.text, amount != "" else { return nil }
         
         let dblAmount = amount.doubleValue
         
         guard dblAmount > 0.0 else {
             showAlert(vc: self, title: "Amount needs to be greater the 0", message: "")
-            return
+            return nil
         }
         
         if isFiat {
-            guard let fxRate = fxRate else { return }
+            guard let fxRate = fxRate else { return nil }
             
-            amount = "\(rounded(number: dblAmount / fxRate).avoidNotation)"
+            return "\(rounded(number: dblAmount / fxRate).avoidNotation)"
         } else if isSats {
-            amount = "\(rounded(number: dblAmount / 100000000.0).avoidNotation)"
+            return "\(rounded(number: dblAmount / 100000000.0).avoidNotation)"
+        } else if isBtc {
+            return "\(dblAmount.avoidNotation)"
+        } else {
+            return nil
         }
-        
-        outputArray.append(["address":addressInput.text!, "amount":amount] as [String : String])
+    }
+    
+    @IBAction func addToBatchAction(_ sender: Any) {
+        guard let address = addressInput.text, address != "", let amount = convertedAmount() else {
+            
+            showAlert(vc: self,
+                      title: "",
+                      message: "You need to fill out a recipient and amount first then tap this button, this button is used for adding multiple recipients aka \"batching\".")
+            return
+        }
+                
+        outputArray.append(["address":address, "amount":amount] as [String : String])
         
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -676,7 +717,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             param = "''\(inputArray.processedInputs)'', ''{\"\(receivingAddress)\":\(rounded(number: utxoTotal))}'', 0, ''{\"includeWatching\": \(true), \"replaceable\": true, \"conf_target\": \(ud.object(forKey: "feeTarget") as? Int ?? 432), \"subtractFeeFromOutputs\": [0], \"changeAddress\": \"\(receivingAddress)\"}'', true"
         }
         
-                
         Reducer.makeCommand(command: .walletcreatefundedpsbt, param: param) { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
@@ -724,7 +764,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         Reducer.makeCommand(command: .listunspent, param: "0") { [weak self] (response, errorMessage) in
             guard let self = self else { return }
             
-            guard let resultArray = response as? NSArray else {
+            guard let resultArray = response as? [[String:Any]] else {
                 self.spinner.removeConnectingView()
                 displayAlert(viewController: self, isError: true, message: errorMessage ?? "error fetching utxo's")
                 return
@@ -736,26 +776,21 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             var spendFromCold = Bool()
             
             for utxo in resultArray {
-                let utxoDict = utxo as! NSDictionary
-                let confs = utxoDict["confirmations"] as! Int
-                let txid = utxoDict["txid"] as! String
-                let vout = "\(utxoDict["vout"] as! Int)"
-                let spendable = utxoDict["spendable"] as! Bool
+                let utxoStr = UtxosStruct(dictionary: utxo)
                 
-                if !spendable {
+                if !utxoStr.spendable! {
                     spendFromCold = true
                 }
                 
-                amount += utxoDict["amount"] as! Double
-                let input = "{\"txid\":\"\(txid)\",\"vout\": \(vout),\"sequence\": 1}"
+                amount += utxoStr.amount!
                 
-                guard confs > 0 else {
+                guard utxoStr.confs! > 0 else {
                     self.spinner.removeConnectingView()
                     showAlert(vc: self, title: "Ooops", message: "You have unconfirmed utxo's, wait till they get a confirmation before trying to sweep them.")
                     return
                 }
                 
-                inputArray.append(input)
+                inputArray.append(utxoStr.input)
             }
             
             inputs = inputArray.processedInputs
@@ -851,26 +886,25 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 self.inputsString = inputArray.processedInputs
             }
             
-            outputsString = outputs.description
-            outputsString = outputsString.replacingOccurrences(of: "[", with: "")
-            outputsString = outputsString.replacingOccurrences(of: "]", with: "")
+            outputsString = outputs.processedOutputs
             getRawTx()
         }
         
         if outputArray.count == 0 {
-            if self.amountInput.text != "" && self.amountInput.text != "0.0" && self.addressInput.text != "" {
-                var amount = amountInput.text ?? ""
+            if var amount = convertedAmount(), self.addressInput.text != "" {
                 amount = amount.replacingOccurrences(of: ",", with: "")
                 let dblAmount = amount.doubleValue
                 
                 if isFiat {
                     guard let fxRate = fxRate else { return }
+                    
                     amount = "\(rounded(number: dblAmount / fxRate).avoidNotation)"
                 } else if isSats {
                     amount = "\(rounded(number: dblAmount / 100000000).avoidNotation)"
                 }
                 
                 let dict = ["address":addressInput.text!, "amount":amount] as [String : String]
+                
                 outputArray.append(dict)
                 convertOutputs()
                 

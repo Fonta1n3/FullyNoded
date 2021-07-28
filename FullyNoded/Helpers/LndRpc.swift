@@ -65,10 +65,9 @@ class LndRpc {
             guard var urlComponents = URLComponents(string: urlString) else { return }
             
             if let query = query {
+                urlComponents.queryItems = []
                 for (key, value) in query {
-                    urlComponents.queryItems = [
-                        URLQueryItem(name: key, value: "\(value)")
-                    ]
+                    urlComponents.queryItems?.append(URLQueryItem(name: key, value: "\(value)"))
                 }
             }
             

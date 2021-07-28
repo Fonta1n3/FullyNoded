@@ -13,12 +13,12 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
     private var amountTotal = 0.0
     private let refresher = UIRefreshControl()
     private var unlockedUtxos = [UtxosStruct]()
-    private var inputArray = [Any]()
+    private var inputArray = [String]()
     private var selectedUTXOs = [UtxosStruct]()
     private var spinner = ConnectingView()
     private var isUnsigned = false
-    private var alertStyle = UIAlertController.Style.actionSheet
     private var wallet:Wallet?
+    private var psbt:String?
     var fxRate:Double?
     var isBtc = false
     var isSats = false
@@ -37,10 +37,6 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         refresher.addTarget(self, action: #selector(loadUnlockedUtxos), for: UIControl.Event.valueChanged)
         tableView.addSubview(refresher)
         
-        if (UIDevice.current.userInterfaceIdiom == .pad) {
-          alertStyle = UIAlertController.Style.alert
-        }
-        
         activeWallet { wallet in
             guard let wallet = wallet else { return }
             
@@ -53,6 +49,114 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
         
         loadUnlockedUtxos()
     }
+    
+    @IBAction func divideAction(_ sender: Any) {
+        guard selectedUTXOs.count > 0 else {
+            showAlert(vc: self, title: "Select some utxos first.", message: "")
+            return
+        }
+        
+        promptToDivide()
+    }
+    
+    private func promptToDivide() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let tit = "Divide selected utxos?"
+            let mess = "This action will divide the selected utxos into identical amounts. Choose an amount."
+            
+            let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "0.5 btc", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.divideNow(denom: 0.5)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "0.1 btc", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.divideNow(denom: 0.1)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "0.05 btc", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.divideNow(denom: 0.05)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "0.001 btc", style: .default, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.divideNow(denom: 0.001)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func divideNow(denom: Double) {
+        spinner.addConnectingView(vc: self, description: "dividing...")
+        updateInputs()
+        
+        var totalAmount = 0.0
+        
+        for utxo in selectedUTXOs {
+            if let amount = utxo.amount, amount > 0.00000200 {
+                totalAmount += amount - 0.00000200
+            }
+        }
+        
+        let numberOfOutputs = Int(totalAmount / denom)
+        
+        let inputs = inputArray.processedInputs
+        
+        guard let wallet = self.wallet else {
+            self.spinner.removeConnectingView()
+            showAlert(vc: self, title: "", message: "This feature is only available for Fully Noded wallets.")
+            return
+        }
+        
+        let startIndex = Int(wallet.index + 1)
+        let stopIndex = (startIndex - 1) + numberOfOutputs
+        let descriptor = wallet.receiveDescriptor
+        
+        Reducer.makeCommand(command: .deriveaddresses, param: "\"\(descriptor)\", [\(startIndex),\(stopIndex)]") { (response, errorMessage) in
+            guard let addresses = response as? [String] else {
+                self.spinner.removeConnectingView()
+                showAlert(vc: self, title: "addresses not returned...", message: errorMessage ?? "unknown error.")
+                return
+            }
+            
+            var outputs = [[String:Any]]()
+                        
+            for addr in addresses {
+                let output:[String:Any] = [addr:denom]
+                outputs.append(output)
+            }
+            
+            CreatePSBT.create(inputs: inputs, outputs: outputs.processedOutputs) { (psbt, rawTx, errorMessage) in
+                guard let psbt = psbt else {
+                    self.spinner.removeConnectingView()
+                    showAlert(vc: self, title: "psbt not returned...", message: errorMessage ?? "unknown error.")
+                    return
+                }
+                
+                self.psbt = psbt
+                
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.spinner.removeConnectingView()
+                    self.performSegue(withIdentifier: "segueToBroadcasterFromUtxo", sender: self)
+                }
+            }
+        }
+    }
+    
     
     @IBAction private func lockAction(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
@@ -506,6 +610,11 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             
             vc.inputArray = inputArray
             vc.utxoTotal = amountTotal
+            
+        case "segueToBroadcasterFromUtxo":
+            guard let vc = segue.destination as? VerifyTransactionViewController, let psbt = psbt else { fallthrough }
+            
+            vc.unsignedPsbt = psbt
             
         default:
             break
