@@ -11,12 +11,15 @@ Blind psbts are different in that:
 - minimum 3 outputs
 - minimum 3 inputs
 - no address reuse allowed
-- input amounts must be identical (for now)
-- output amounts will always have the mining fee deducted from them equally
+- equal input amounts (for now)
+- equal output amounts (for now)
+- ⚠️ outputs will always have the mining fee deducted from them equally
 
 ## Initiating a blind psbt
 
-In the simplest scenario User A wants to send a specific amount of btc to another party.
+In the simplest scenario User A wants to send a specific amount of btc to another
+party who may or may not be a participant in the coinjoin. The idea being to make every
+transaction a coinjoin.
 
 User A adds an amount and address to the "Send" view as normal.
 
@@ -35,11 +38,9 @@ Fully Noded will do its usual transaction analysis on the psbt and display all t
 
 At this point User A may either sign the transaction and send it or optionally export the psbt to User B.
 
-*...continued in next section...*
+## Peer to peer flow
 
-## Peer to peer
-
-At this point in time User A opts to export the blind psbt.
+At this point in time User A opts to export the blind psbt to User B.
 
 - It will be exported fully encrypted, in [generic format](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-005-ur.md)
 - Only Fully Noded will be able to decrypt the data into a psbt
@@ -58,7 +59,7 @@ above process can repeat indefinitely
 8. User C opts to sign the the transaction
 9. User C exports the psbt back to User B, who signs and exports to User A who
 signs and broadcasts the transaction
-10. All users rejoice in making the utxo set a bit more private for all parties involved
+10. All users rejoice in making the utxo set a bit more private for all parties involved 😄
 
 ## Dividing utxos
 
