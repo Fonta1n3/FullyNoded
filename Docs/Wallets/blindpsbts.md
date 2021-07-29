@@ -1,4 +1,4 @@
-# Blind psbts
+# Fully Noded p2p coinjoin - Blind psbts
 
 Fully Noded v0.2.22 will include a new feature called "Blind psbts".
 
