@@ -2,8 +2,9 @@
 
 Fully Noded v0.2.22 will include a new feature called "Blind psbts".
 
-When this feature is toggled on from settings transactions will be created in a way that
-breaks the common input output heuristic of 1 recipient output and 1 change output.
+When this feature is toggled on from settings transactions will be created in a
+way that breaks the common input output heuristic of 1 recipient output and 1
+change output.
 
 Blind psbts are different in that:
 
@@ -18,25 +19,28 @@ Blind psbts are different in that:
 ## Initiating a blind psbt
 
 In the simplest scenario User A wants to send a specific amount of btc to another
-party who may or may not be a participant in the coinjoin. The idea being to make every
-transaction a coinjoin.
+party who may or may not be a participant in the coinjoin. The idea being to make
+every transaction a coinjoin.
 
 User A adds an amount and address to the "Send" view as normal.
 
 Fully Noded will find 3 identically denominated utxos that are under the control
 of your wallet. utxos which are not `solvable` will not be consumed.
 
-Fully Noded uses your change descriptor to derive 2 addresses and then creates
-3 outputs utilizing the original receive address User A provided.
+Fully Noded uses your change descriptor to derive 2 addresses and then creates 3
+outputs utilizing the original receive address User A provided.
 
 **The mining fee is equally deducted from the three outputs!**
 
-This means whoever is on the receiving end of this transaction will be the one paying
-at maximum 1/3 of the mining fee (the address User A originally provided to initiate the tx).
+This means whoever is on the receiving end of this transaction will be the one
+paying at maximum 1/3 of the mining fee (the address User A originally provided
+to initiate the tx).
 
-Fully Noded will do its usual transaction analysis on the psbt and display all the info to User A.
+Fully Noded will do its usual transaction analysis on the psbt and display all
+the info to User A.
 
-At this point User A may either sign the transaction and send it or optionally export the psbt to User B.
+At this point User A may either sign the transaction and send it or optionally
+export the psbt to User B.
 
 ## Peer to peer flow
 
@@ -68,8 +72,8 @@ Fully Noded has a new "divide" feature for your utxos. Tap utxo(s) then tap ➗
 You will be prompted to choose an amount (0.1, 0.5, 0.05, 0.001 for now). This will
 trigger Fully Noded to create a transaction that divides the specified utxos into those
 amounts. Users will always need 3 identically denominated utxos to be able to create a
-blind psbt, this tool helps to prep your utxos for Fully Noded, Samourai and Wasabi coinjoins
-which support similar denominations.
+blind psbt, this tool helps to prep your utxos for Fully Noded, Samourai and
+Wasabi coinjoins which support similar denominations.
 
 ### General info
 
