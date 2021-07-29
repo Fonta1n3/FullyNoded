@@ -80,10 +80,10 @@ Wasabi coinjoins which support similar denominations.
 
 - **It is recommended to export the psbts in file format as animated QR codes can be slow.**
 - ***Blind psbts are encrypted to protect your privacy against people who are not involved in the coinjoin.***
-- The final recipient will gain knowledge of which inputs and outputs are not his own!
+- All users will gain knowledge of which inputs and outputs are not his own!
 - If only two people are involved then both parties will be able to identify each others addresses!
 
-The more people who are involved the more obfuscation there is. `bitcoin-cli joinpsbts` shuffles
+The more people involved the greater the obfuscation. `bitcoin-cli joinpsbts` shuffles
 all inputs and outputs each time the psbt is passed to a new user, making it exponentially
 more difficult to deduce whose addresses belong to who.
 
