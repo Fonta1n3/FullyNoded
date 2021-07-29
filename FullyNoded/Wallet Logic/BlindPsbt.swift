@@ -32,39 +32,45 @@ class BlindPsbt {
                 }
                 
                 var totalInputAmount = 0.0
+                var type:ScriptPubKey.ScriptType!
+                
+                func finish() {
+                    if inputArray.count == 0 {
+                        completion((nil,
+                                    "You do not have any similarly denominated utxos, or matching script types. Use the divide button to split your utxos into designated amounts."))
+                    } else if inputArray.count == 3 {
+                        BlindPsbt.getOutputs(inputArray.processedInputs, amountBtc, recipient, type, totalInputAmount, completion: completion)
+                    }
+                }
                 
                 for (i, utxo) in utxos.enumerated() {
                     let utxoStr = UtxosStruct(dictionary: utxo)
                     
-                    guard let recipientAddress = try? Address(string: recipient) else {
-                        completion((nil, "Recipient address invalid."))
-                        return
-                    }
-                    
-                    guard let inputAddress = try? Address(string: utxoStr.address ?? "") else {
-                        completion((nil, "Input address invalid."))
-                        return
-                    }
-                    
-                    var type:ScriptPubKey.ScriptType!
-                    
-                    if recipientAddress.scriptPubKey.type == inputAddress.scriptPubKey.type {
-                        type = recipientAddress.scriptPubKey.type
+                    if (utxoStr.solvable ?? false == true) {
+                        guard let recipientAddress = try? Address(string: recipient) else {
+                            completion((nil, "Recipient address invalid."))
+                            return
+                        }
                         
-                        if utxoStr.amount! == amountBtc {
-                            if inputArray.count < 3 {
-                                totalInputAmount += utxoStr.amount!
-                                inputArray.append(utxoStr.input)
+                        guard let inputAddress = try? Address(string: utxoStr.address ?? "") else {
+                            completion((nil, "Input address invalid."))
+                            return
+                        }
+                        
+                        if recipientAddress.scriptPubKey.type == inputAddress.scriptPubKey.type {
+                            type = recipientAddress.scriptPubKey.type
+                            
+                            if utxoStr.amount! == amountBtc {
+                                if inputArray.count < 3 {
+                                    totalInputAmount += utxoStr.amount!
+                                    inputArray.append(utxoStr.input)
+                                }
                             }
                         }
                     }
                     
                     if i + 1 == utxos.count {
-                        if inputArray.count == 0 {
-                            completion((nil, "You do not have any similarly denominated utxos, or matching script types. Use the divide button to split your utxos into designated amounts."))
-                        } else if inputArray.count == 3 {
-                            BlindPsbt.getOutputs(inputArray.processedInputs, amountBtc, recipient, type, totalInputAmount, completion: completion)
-                        }
+                        finish()
                     }
                 }
             }
@@ -80,7 +86,7 @@ class BlindPsbt {
                 }
                 
                 let startIndex = Int(wallet.index + 4)
-                let descriptor = wallet.receiveDescriptor
+                let descriptor = wallet.changeDescriptor
                 
                 Reducer.makeCommand(command: .deriveaddresses, param: "\"\(descriptor)\", [\(startIndex),\(startIndex)]") { (response, errorMessage) in
                     guard let addresses = response as? [String] else {
@@ -111,7 +117,7 @@ class BlindPsbt {
             
             let startIndex = Int(wallet.index + 2)
             let stopIndex = (startIndex + 1)
-            let descriptor = wallet.receiveDescriptor
+            let descriptor = wallet.changeDescriptor
             
             Reducer.makeCommand(command: .deriveaddresses, param: "\"\(descriptor)\", [\(startIndex),\(stopIndex)]") { (response, errorMessage) in
                 guard let addresses = response as? [String] else {

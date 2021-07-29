@@ -67,7 +67,6 @@ class ActiveWalletViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(broadcast(_:)), name: .broadcastTxn, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(signPsbt(_:)), name: .signPsbt, object: nil)
         existingWallet = ud.object(forKey: "walletName") as? String ?? ""
-        currencyControl.setTitle(fiatCurrency.lowercased(), forSegmentAt: 2)
         setCurrency()
         sectionZeroLoaded = false
         setNotifications()
@@ -77,6 +76,7 @@ class ActiveWalletViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+        currencyControl.setTitle(fiatCurrency.lowercased(), forSegmentAt: 2)
         
         if KeyChain.getData("UnlockPassword") == nil && UserDefaults.standard.object(forKey: "doNotShowWarning") == nil {
             DispatchQueue.main.async { [weak self] in

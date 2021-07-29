@@ -225,10 +225,21 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             self.addressInput.resignFirstResponder()
         }
         
-        if let blind = UserDefaults.standard.object(forKey: "blind") as? Bool, blind {
-            createBlindPsbt()
+        guard let item = addressInput.text else {
+            showAlert(vc: self, title: "", message: "Enter an address or invoice.")
+            return
+        }
+        
+        let lc = item.lowercased()
+        
+        if lc.hasPrefix("lntb") || lc.hasPrefix("lightning:") || lc.hasPrefix("lnbc") || lc.hasPrefix("lnbcrt") {
+            decodeLighnting(invoice: item.replacingOccurrences(of: "lightning:", with: ""))
         } else {
-            tryRaw()
+            if let blind = UserDefaults.standard.object(forKey: "blind") as? Bool, blind {
+                createBlindPsbt()
+            } else {
+                tryRaw()
+            }
         }
     }
     
@@ -1459,11 +1470,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                         }
                     }
                 }
-            } else {
-                // Fallback on earlier versions
             }
-            
-            
             
         case "segueToBroadcaster":
             guard let vc = segue.destination as? VerifyTransactionViewController else { fallthrough }

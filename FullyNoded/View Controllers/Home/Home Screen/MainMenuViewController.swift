@@ -70,9 +70,7 @@ class MainMenuViewController: UIViewController {
         if !Crypto.setBlindingKey() {
             showAlert(vc: self, title: "", message: "There was an error setting your psbt blinding key. Please let us know about it. This will prevent you from exporting or importing blind (encrypted) psbts.")
         }
-        
-        Crypto.rpcAuth()
-        
+                
         mainMenu.delegate = self
         mainMenu.alpha = 0
         mainMenu.tableFooterView = UIView(frame: .zero)

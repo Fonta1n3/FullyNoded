@@ -17,9 +17,7 @@ class Signer {
         var psbtToSign:PSBT!
         var chain:Network!
         var coinType:String!
-        
-        var psbtToExport = ""
-        
+                
         func reset() {
             seedsToSignWith.removeAll()
             xprvsToSignWith.removeAll()

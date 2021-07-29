@@ -44,9 +44,7 @@ class AddressParser {
         guard split.count >= 1 else {
              return (address: processedAddress(processedUrl), amount: amountToReturn, label: labelToReturn, message: message)
         }
-        
-        print("split: \(split)")
-        
+                
         let urlParts = split[1].split(separator: "&")
         
         addressToReturn = processedAddress("\(split[0])".replacingOccurrences(of: "bitcoin:", with: ""))
@@ -87,20 +85,22 @@ class AddressParser {
     
     private class func processedAddress(_ processed: String) -> String? {
         var address = processed.replacingOccurrences(of: "bitcoin:", with: "")
+        address = address.replacingOccurrences(of: "lightning:", with: "")
+        address = address.replacingOccurrences(of: "LIGHTNING:", with: "")
         address = address.replacingOccurrences(of: "BITCOIN:", with: "")
         switch address {
         case _ where address.hasPrefix("1"),
              _ where address.hasPrefix("3"),
-             _ where address.hasPrefix("tb1"),
-             _ where address.hasPrefix("TB1"),
-             _ where address.hasPrefix("bc1"),
-             _ where address.hasPrefix("BC1"),
+             _ where address.lowercased().hasPrefix("tb1"),
+             _ where address.lowercased().hasPrefix("bc1"),
              _ where address.hasPrefix("2"),
-             _ where address.hasPrefix("bcrt"),
-             _ where address.hasPrefix("BCRT"),
+             _ where address.lowercased().hasPrefix("bcrt"),
              _ where address.hasPrefix("m"),
              _ where address.hasPrefix("n"),
-             _ where address.hasPrefix("lntb"):
+             _ where address.lowercased().hasPrefix("lntb"),
+             _ where address.lowercased().hasPrefix("lightning:"),
+             _ where address.lowercased().hasPrefix("lnbc"),
+             _ where address.lowercased().hasPrefix("lnbcrt"):
             if address.hasPrefix("BC1") || address.hasPrefix("TB1") {
                 return address.lowercased()
             } else {
