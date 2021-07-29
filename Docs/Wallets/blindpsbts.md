@@ -8,6 +8,7 @@ change output.
 
 Blind psbts are different in that:
 
+- no "change" outputs
 - all address script types must match
 - minimum 3 outputs
 - minimum 3 inputs
