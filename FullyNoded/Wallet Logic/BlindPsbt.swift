@@ -35,7 +35,7 @@ class BlindPsbt {
                 var type:ScriptPubKey.ScriptType!
                 
                 func finish() {
-                    if inputArray.count == 0 {
+                    if inputArray.count < 3 {
                         completion((nil,
                                     "You do not have any similarly denominated utxos, or matching script types. Use the divide button to split your utxos into designated amounts."))
                     } else if inputArray.count == 3 {
@@ -43,34 +43,90 @@ class BlindPsbt {
                     }
                 }
                 
-                for (i, utxo) in utxos.enumerated() {
-                    let utxoStr = UtxosStruct(dictionary: utxo)
-                    
-                    if (utxoStr.solvable ?? false == true) {
-                        guard let recipientAddress = try? Address(string: recipient) else {
-                            completion((nil, "Recipient address invalid."))
-                            return
-                        }
+                activeWallet { wallet in
+                    if let wallet = wallet {
                         
-                        guard let inputAddress = try? Address(string: utxoStr.address ?? "") else {
-                            completion((nil, "Input address invalid."))
-                            return
-                        }
-                        
-                        if recipientAddress.scriptPubKey.type == inputAddress.scriptPubKey.type {
-                            type = recipientAddress.scriptPubKey.type
+                        for (i, utxo) in utxos.enumerated() {
+                            let utxoStr = UtxosStruct(dictionary: utxo)
                             
-                            if utxoStr.amount! == amountBtc {
-                                if inputArray.count < 3 {
-                                    totalInputAmount += utxoStr.amount!
-                                    inputArray.append(utxoStr.input)
+                            var solvable = false
+                            if let solvableCheck = utxoStr.solvable {
+                                solvable = solvableCheck
+                            }
+                            
+                            if solvable {
+                                guard let recipientAddress = try? Address(string: recipient) else {
+                                    completion((nil, "Recipient address invalid."))
+                                    return
+                                }
+                                
+                                guard let inputAddress = try? Address(string: utxoStr.address ?? "") else {
+                                    completion((nil, "Input address invalid."))
+                                    return
+                                }
+                                
+                                if recipientAddress.scriptPubKey.type == inputAddress.scriptPubKey.type {
+                                    type = recipientAddress.scriptPubKey.type
+                                    
+                                    let diff = utxoStr.amount! - amountBtc
+                                    let percentage = (diff / utxoStr.amount!) * 100.0
+                                    
+                                    if inputArray.count < 3 {
+                                        var label = ""
+                                        
+                                        if let labelCheck = utxoStr.label {
+                                            label = labelCheck
+                                        }
+                                        
+                                        if percentage >= 0.0 && percentage < 1.1, !label.contains("consumed by blind psbt") {
+                                            
+                                            totalInputAmount += utxoStr.amount!
+                                            inputArray.append(utxoStr.input)
+                                            // update the label to avoid reusing already consumed utxos
+                                            label += "*consumed by blind psbt*"
+                                            
+                                            var param = ""
+                                            
+                                            if wallet.type == WalletType.descriptor.stringValue {
+                                                if let desc = utxoStr.desc {
+                                                    param = "[{\"desc\": \"\(desc)\", \"active\": false, \"timestamp\": \"now\", \"internal\": false, \"label\": \"\(label)\"}]"
+                                                    self.importdesc(params: param, utxo: utxoStr, label: label)
+                                                }
+                                            } else {
+                                                param = "[{ \"scriptPubKey\": { \"address\": \"\(utxoStr.address!)\" }, \"label\": \"\(label)\", \"timestamp\": \"now\", \"watchonly\": \(!(utxoStr.spendable ?? false)), \"keypool\": false, \"internal\": false }], ''{\"rescan\": false}''"
+                                                self.importmulti(param: param, utxo: utxoStr, label: label)
+                                            }
+                                            
+                                            if i + 1 == utxos.count {
+                                                finish()
+                                            }
+                                            
+                                        } else {
+                                            if i + 1 == utxos.count {
+                                                if inputArray.count < 3 {
+                                                    completion((nil, "Amounts for inputs and outputs should match or be very close. You need to create \(3 - (inputArray.count)) utxos with an amount of \(amountBtc) each."))
+                                                } else {
+                                                    finish()
+                                                }
+                                            }
+                                        }
+                                    } else if i + 1 == utxos.count {
+                                        finish()
+                                    }
+                                } else {
+                                    if i + 1 == utxos.count {
+                                        finish()
+                                    }
+                                }
+                            } else {
+                                if i + 1 == utxos.count {
+                                    finish()
                                 }
                             }
                         }
-                    }
-                    
-                    if i + 1 == utxos.count {
-                        finish()
+                    } else {
+                        completion((nil,
+                                    "Blind psbts only work with Fully Noded wallets for now."))
                     }
                 }
             }
@@ -154,8 +210,6 @@ class BlindPsbt {
     }
         
     static func parseBlindPsbt(_ encryptedPsbt: Data, completion: @escaping (((joinedPsbt: String?, error: String?)) -> Void)) {
-        //inputs are divisible by 3, identical output amounts, all either p2wpkh or wsh inputs/outputs
-        
         guard let decryptedPsbtData = Crypto.decryptPsbt(encryptedPsbt) else {
             completion((nil, "Error decrypting the blinded psbt."))
             return
@@ -221,6 +275,41 @@ class BlindPsbt {
             }
             
             completion((psbt, errorMessage))
+        }
+    }
+    
+    private class func importdesc(params: String, utxo: UtxosStruct, label: String) {
+        Reducer.makeCommand(command: .importdescriptors, param: params) { (response, errorMessage) in
+            updateLocally(utxo: utxo, label: label)
+        }
+    }
+    
+    private class func importmulti(param: String, utxo: UtxosStruct, label: String) {
+        Reducer.makeCommand(command: .importmulti, param: param) { (response, errorMessage) in
+            guard let result = response as? NSArray,
+                let dict = result[0] as? NSDictionary,
+                let success = dict["success"] as? Bool,
+                success else {
+                return
+            }
+            
+            updateLocally(utxo: utxo, label: label)
+        }
+    }
+    
+    private class func updateLocally(utxo: UtxosStruct, label: String) {
+        CoreDataService.retrieveEntity(entityName: .utxos) { savedUtxos in
+            guard let savedUtxos = savedUtxos, savedUtxos.count > 0 else {
+                return
+            }
+            
+            for savedUtxo in savedUtxos {
+                let savedUtxoStr = UtxosStruct(dictionary: savedUtxo)
+                
+                if savedUtxoStr.txid == utxo.txid && savedUtxoStr.vout == utxo.vout {
+                    CoreDataService.update(id: savedUtxoStr.id!, keyToUpdate: "label", newValue: label as Any, entity: .utxos) { _ in }
+                }
+            }
         }
     }
 }

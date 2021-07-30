@@ -49,6 +49,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var bitcoinCoreWallets = [String()]
     var walletIndex = 0
     var qrCodeStringToExport = ""
+    var blind = false
     
     @IBOutlet weak private var verifyTable: UITableView!
     @IBOutlet weak private var exportButtonOutlet: UIButton!
@@ -93,7 +94,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     
     private func processPsbt(_ psbt: String) {
         spinner.addConnectingView(vc: self, description: "processing psbt...")
-        
+                
         Reducer.makeCommand(command: .walletprocesspsbt, param: "\"\(psbt)\", true, \"ALL\", true") { [weak self] (object, errorDescription) in
             guard let self = self else { return }
             
@@ -314,6 +315,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             enableExportButton()
             signedRawTx = processed
             load()
+        } else if processed.lowercased().hasPrefix("ur:bytes") {
+            self.blind = true
+            self.parseBlindPsbt(processed)
         } else {
             showAlert(vc: self, title: "Invalid", message: "Whatever you pasted was not a valid psbt or raw transaction.")
         }
@@ -345,8 +349,13 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 return
             }
             
-            unsignedPsbt = data.base64EncodedString()
-            processPsbt(unsignedPsbt)
+            if let text = data.utf8, text.lowercased().hasPrefix("ur:bytes") {
+                self.blind = true
+                self.parseBlindPsbt(text)
+            } else {
+                unsignedPsbt = data.base64EncodedString()
+                processPsbt(unsignedPsbt)
+            }
             
             return
         }
@@ -378,7 +387,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 return
             }
             
-            self.exportPsbt(blindedpsbt: nil, plainText: ur.qrString)
+            self.exportPsbt(blindedpsbt: ur.qrString, plainText: nil)
         }))
         
         alert.addAction(UIAlertAction(title: "Plain text", style: .default, handler: { [weak self] action in
@@ -393,7 +402,17 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
                     
     @IBAction func exportAction(_ sender: Any) {
-        if let blind = UserDefaults.standard.object(forKey: "blind") as? Bool, blind {
+        if self.blind {
+            guard let data = Data(base64Encoded: self.unsignedPsbt),
+                  let encrypted = Crypto.blindPsbt(data),
+                  let ur = URHelper.dataToUrBytes(encrypted) else {
+                showAlert(vc: self, title: "", message: "Error converting to data or encrypting.")
+                return
+            }
+            
+            self.exportPsbt(blindedpsbt: ur.qrString, plainText: nil)
+            
+        } else if let blind = UserDefaults.standard.object(forKey: "blind") as? Bool, blind {
             promptToExportPsbt()
         } else if signedRawTx != "" {
             exportTxn(txn: signedRawTx)
@@ -2250,7 +2269,6 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             self.isSigning = false
             self.unsignedPsbt = decryptedPsbt.base64EncodedString()
             processPsbt(unsignedPsbt)
-            //self.load()
         }
         
         DispatchQueue.main.async { [weak self] in
@@ -2367,6 +2385,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                         self.signedRawTx = tx
                         self.load()
                     } else if tx.hasPrefix("UR:BYTES") {
+                        self.blind = true
                         self.parseBlindPsbt(tx)
                     }
                 }
