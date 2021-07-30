@@ -8,8 +8,9 @@
 
 import UIKit
 import LocalAuthentication
+import AuthenticationServices
 
-class LogInViewController: UIViewController, UITextFieldDelegate {
+class LogInViewController: UIViewController, UITextFieldDelegate, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
 
     var onDoneBlock: (() -> Void)?
     let passwordInput = UITextField()
@@ -23,6 +24,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     var timer: Timer?
     var secondsRemaining = 2
     var tapGesture:UITapGestureRecognizer!
+    var resetButton = UIButton()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -107,6 +109,15 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             disable()
         }
     }
+    
+    private func addResetPassword() {
+        resetButton.removeFromSuperview()
+        resetButton.showsTouchWhenHighlighted = true
+        resetButton.setTitle("reset app", for: .normal)
+        resetButton.addTarget(self, action: #selector(present2fa), for: .touchUpInside)
+        resetButton.setTitleColor(.systemRed, for: .normal)
+        view.addSubview(resetButton)
+    }
 
     override func viewDidLayoutSubviews() {
         lockView.frame = self.view.frame
@@ -114,6 +125,104 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         passwordInput.frame = CGRect(x: 50, y: imageView.frame.maxY + 80, width: view.frame.width - 100, height: 50)
         nextButton.frame = CGRect(x: self.view.center.x - 40, y: passwordInput.frame.maxY + 15, width: 80, height: 35)
         touchIDButton.frame = CGRect(x: self.view.center.x - 30, y: self.nextButton.frame.maxY + 20, width: 60, height: 60)
+        resetButton.frame = CGRect(x: self.view.center.x - 50, y: self.nextButton.frame.maxY + 100, width: 100, height: 60)
+    }
+    
+    @objc func promptToReset(id: Data) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let alert = UIAlertController(title: "⚠️ Reset app password?",
+                                          message: "THIS DELETES ALL DATA AND COMPLETELY WIPES THE APP! Force quit the app and reopen.",
+                                          preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Reset", style: .destructive, handler: { [weak self] action in
+                guard let self = self else { return }
+                
+                self.destroy { destroyed in
+                    if destroyed {
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+                            
+                            KeyChain.removeAll()
+                            self.timeToDisable = 0.0
+                            self.timer?.invalidate()
+                            self.secondsRemaining = 0
+                            
+                            if KeyChain.set(id, forKey: "userIdentifier") {
+                                self.dismiss(animated: true) {
+                                    showAlert(vc: self, title: "", message: "The app has been wiped.")
+                                    self.onDoneBlock!()
+                                }
+                            }
+                        }
+                    } else {
+                        showAlert(vc: self, title: "", message: "The app was not wiped!")
+                    }
+                }
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true) {}
+        }
+    }
+    
+    private func destroy(completion: @escaping ((Bool)) -> Void) {
+        
+        let entities:[ENTITY] = [.authKeys,
+                                 .newNodes,
+                                 .peers,
+                                 .signers,
+                                 .transactions,
+                                 .utxos,
+                                 .wallets]
+        
+        for entity in entities {
+            deleteEntity(entity: entity) { success in                
+                completion(success)
+            }
+        }
+    }
+    
+    private func deleteEntity(entity: ENTITY, completion: @escaping ((Bool)) -> Void) {
+        CoreDataService.deleteAllData(entity: entity) { success in
+            completion((success))
+        }
+    }
+    
+    @objc func present2fa() {
+        if let _ = KeyChain.getData("userIdentifier") {
+            guard let _ = self.view.window else { return }
+            
+            let request = ASAuthorizationAppleIDProvider().createRequest()
+            let controller = ASAuthorizationController(authorizationRequests: [request])
+            controller.delegate = self
+            controller.presentationContextProvider = self
+            controller.performRequests()
+        } else {
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            
+            guard let twofaVC = storyboard.instantiateViewController(identifier: "2FA") as? PromptForAuthViewController else {
+                    return
+            }
+            
+            DispatchQueue.main.async {
+                twofaVC.modalPresentationStyle = .fullScreen
+                self.present(twofaVC, animated: true, completion: nil)
+            }
+            
+            twofaVC.doneBlock = { [weak self] id in
+                guard let self = self else { return }
+                
+                guard let id = id else {
+                    showAlert(vc: self, title: "2FA Failed", message: "In order to reset the app you must authenticate.")
+                    return
+                }
+                
+                self.promptToReset(id: id)
+            }
+        }
     }
 
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
@@ -173,27 +282,23 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         let _ = KeyChain.set("2.0".dataUsingUTF8StringEncoding, forKey: "TimeToDisable")
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-
+            
             self.touchIDButton.removeFromSuperview()
             self.nextButton.removeFromSuperview()
-
+            
             UIView.animate(withDuration: 0.2, animations: {
                 self.passwordInput.alpha = 0
-
+                
             }, completion: { _ in
                 self.passwordInput.text = ""
                 self.imageView.removeFromSuperview()
                 self.passwordInput.removeFromSuperview()
                 
-//                if KeyChain.getData("YubikeyUsername") != nil {
-//                    self.authenticate()
-//                } else {
-                    DispatchQueue.main.async {
-                        self.dismiss(animated: true) {
-                            self.onDoneBlock!()
-                        }
+                DispatchQueue.main.async {
+                    self.dismiss(animated: true) {
+                        self.onDoneBlock!()
                     }
-                //}
+                }
             })
         }
     }
@@ -218,6 +323,10 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
 
             } else {
                 timeToDisable = timeToDisable * 2.0
+                
+                if timeToDisable > 4.0 {
+                    addResetPassword()
+                }
 
                 guard KeyChain.set("\(timeToDisable)".dataUsingUTF8StringEncoding, forKey: "TimeToDisable") else {
                     showAlert(vc: self, title: "Unable to set timeout", message: "This means something is very wrong, the device has probably been jailbroken or is corrupted")
@@ -380,6 +489,39 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         }
 
         return message
+    }
+    
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+        switch authorization.credential {
+        case let appleIDCredential as ASAuthorizationAppleIDCredential:
+            let authorizationProvider = ASAuthorizationAppleIDProvider()
+            if let usernameData = KeyChain.getData("userIdentifier") {
+                if let username = String(data: usernameData, encoding: .utf8) {
+                    if username == appleIDCredential.user {
+                        authorizationProvider.getCredentialState(forUserID: username) { [weak self] (state, error) in
+                            guard let self = self else { return }
+                            
+                            switch state {
+                            case .authorized:
+                                self.promptToReset(id: usernameData)
+                            case .revoked:
+                                fallthrough
+                            case .notFound:
+                                fallthrough
+                            default:
+                                break
+                            }
+                        }
+                    }
+                }
+            }
+        default:
+            break
+        }
+    }
+    
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        return self.view.window!
     }
 
 }

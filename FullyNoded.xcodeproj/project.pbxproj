@@ -25,6 +25,7 @@
 		0A1F110926A2783000BE2707 /* Asset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F110426A2783000BE2707 /* Asset.swift */; };
 		0A1F110C26A278C100BE2707 /* ModelObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F110B26A278C100BE2707 /* ModelObject.swift */; };
 		0A1F111026A2791B00BE2707 /* ModelObjectType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F110F26A2791B00BE2707 /* ModelObjectType.swift */; };
+		0A21442C26B4282300123EAC /* PromptForAuthViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A21442B26B4282300123EAC /* PromptForAuthViewController.swift */; };
 		0A3013D8266B361E004DA35C /* LndRpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A3013D7266B361E004DA35C /* LndRpc.swift */; };
 		0A590357269875CD00510626 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A590356269875CB00510626 /* Extensions.swift */; };
 		0A59035A269B080700510626 /* ConfirmLightningPaymentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A590359269B080700510626 /* ConfirmLightningPaymentViewController.swift */; };
@@ -119,7 +120,6 @@
 		D08A92A92337755600409D6E /* AddDescriptors.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08A92A82337755600409D6E /* AddDescriptors.swift */; };
 		D08A92AD2337A63000409D6E /* DescriptorStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08A92AC2337A63000409D6E /* DescriptorStruct.swift */; };
 		D08A92B1233B213300409D6E /* ChooseWalletViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08A92B0233B213300409D6E /* ChooseWalletViewController.swift */; };
-		D08A92B3233B527F00409D6E /* KillSwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08A92B2233B527F00409D6E /* KillSwitch.swift */; };
 		D08A92B5233C979600409D6E /* FiatConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08A92B4233C979600409D6E /* FiatConverter.swift */; };
 		D08A92B7233E113B00409D6E /* LockedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08A92B6233E113B00409D6E /* LockedViewController.swift */; };
 		D08A92B923403DB200409D6E /* NodesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08A92B823403DB200409D6E /* NodesViewController.swift */; };
@@ -224,6 +224,7 @@
 		0A1F110426A2783000BE2707 /* Asset.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Asset.swift; sourceTree = "<group>"; };
 		0A1F110B26A278C100BE2707 /* ModelObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelObject.swift; sourceTree = "<group>"; };
 		0A1F110F26A2791B00BE2707 /* ModelObjectType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelObjectType.swift; sourceTree = "<group>"; };
+		0A21442B26B4282300123EAC /* PromptForAuthViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptForAuthViewController.swift; sourceTree = "<group>"; };
 		0A3013D7266B361E004DA35C /* LndRpc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LndRpc.swift; sourceTree = "<group>"; };
 		0A590356269875CB00510626 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		0A590359269B080700510626 /* ConfirmLightningPaymentViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmLightningPaymentViewController.swift; sourceTree = "<group>"; };
@@ -321,7 +322,6 @@
 		D08A92A82337755600409D6E /* AddDescriptors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddDescriptors.swift; sourceTree = "<group>"; };
 		D08A92AC2337A63000409D6E /* DescriptorStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DescriptorStruct.swift; sourceTree = "<group>"; };
 		D08A92B0233B213300409D6E /* ChooseWalletViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChooseWalletViewController.swift; sourceTree = "<group>"; };
-		D08A92B2233B527F00409D6E /* KillSwitch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KillSwitch.swift; sourceTree = "<group>"; };
 		D08A92B4233C979600409D6E /* FiatConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FiatConverter.swift; sourceTree = "<group>"; };
 		D08A92B6233E113B00409D6E /* LockedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockedViewController.swift; sourceTree = "<group>"; };
 		D08A92B823403DB200409D6E /* NodesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodesViewController.swift; sourceTree = "<group>"; };
@@ -615,7 +615,6 @@
 				D0A7CF72227967F900B683A0 /* AddressParser.swift */,
 				D08A92A52334F66900409D6E /* Reducer.swift */,
 				D08A92A82337755600409D6E /* AddDescriptors.swift */,
-				D08A92B2233B527F00409D6E /* KillSwitch.swift */,
 				D08A92B4233C979600409D6E /* FiatConverter.swift */,
 				D02152DB23666CB400AD9007 /* QuickConnect.swift */,
 				D0CB48902435B32E0072D1F5 /* Commands.swift */,
@@ -650,6 +649,7 @@
 				D0F3919324C0147400EA8A2A /* QRScannerViewController.swift */,
 				D0DBC7052501CEFE00F6787C /* VerifyTransactionViewController.swift */,
 				D01EB4F225AD685700ADF6E4 /* TransactionLabelMemoViewController.swift */,
+				0A21442B26B4282300123EAC /* PromptForAuthViewController.swift */,
 			);
 			path = "View Controllers";
 			sourceTree = "<group>";
@@ -1192,7 +1192,6 @@
 				D02958D5235053B300ED8F72 /* SecurityCenterViewController.swift in Sources */,
 				D09A331124AC4BF6009FA0B2 /* DescriptorParser.swift in Sources */,
 				D0C20ED224A6DB9D00C62AA4 /* BlockchainInfo.swift in Sources */,
-				D08A92B3233B527F00409D6E /* KillSwitch.swift in Sources */,
 				D0B3149F216C4DB1008FDC53 /* CreateRawTxViewController.swift in Sources */,
 				D0E51E592265640F005D1909 /* ErrorView.swift in Sources */,
 				0A1F110826A2783000BE2707 /* Network.swift in Sources */,
@@ -1224,6 +1223,7 @@
 				D0452ADB2247417F0013E225 /* ImportPrivKeyViewController.swift in Sources */,
 				D0384E2F246AC4B1002FEE94 /* XpubConverter.swift in Sources */,
 				D08A92B5233C979600409D6E /* FiatConverter.swift in Sources */,
+				0A21442C26B4282300123EAC /* PromptForAuthViewController.swift in Sources */,
 				D08A92A92337755600409D6E /* AddDescriptors.swift in Sources */,
 				D0F3919624C0379200EA8A2A /* ImportWallet.swift in Sources */,
 				D0A519B9226C212C00860D5C /* SendUTXO.swift in Sources */,

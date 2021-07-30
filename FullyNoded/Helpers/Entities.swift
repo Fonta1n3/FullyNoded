@@ -11,8 +11,6 @@ import Foundation
 // Core data entities
 
 public enum ENTITY: String {
-    case newDescriptors = "NewDescriptors"
-    case newHdWallets = "NewHDWallets"
     case newNodes = "NewNodes"
     case authKeys = "AuthKeys"
     case signers = "Signers"
