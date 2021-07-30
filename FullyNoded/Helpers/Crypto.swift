@@ -73,7 +73,7 @@ enum Crypto {
         return checksum.hexString
     }
     
-    static func setBlindingKey() -> Bool {
+    static func setupinit() -> Bool {
         // Goal is to replace this with a get request to my own server behind an authenticated v3 onion
         guard KeyChain.getData("blindingKey") == nil else { return true }
         

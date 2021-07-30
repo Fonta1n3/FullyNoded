@@ -175,7 +175,18 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             }
             
             if macaroonField.text != "" {
-                guard let macaroonData = try? Data.decodeUrlSafeBase64(macaroonField.text!) else { return }
+                var macaroonData:Data?
+                
+                if let macaroonDataCheck = try? Data.decodeUrlSafeBase64(macaroonField.text!) {
+                    macaroonData = macaroonDataCheck
+                } else if let macaroonDataCheck = Data(hexString: macaroonField.text!) {
+                    macaroonData = macaroonDataCheck
+                }
+                
+                guard let macaroonData = macaroonData else {
+                    showAlert(vc: self, title: "", message: "Error decoding your macaroon. It can either be in hex or base64 format.")
+                    return
+                }
                 
                 guard let encryptedMacaroonHex = Crypto.encrypt(macaroonData.hexString.dataUsingUTF8StringEncoding) else { return }
                 
@@ -268,10 +279,21 @@ class NodeDetailViewController: UIViewController, UITextFieldDelegate, UINavigat
             }
             
             if macaroonField.text != "" {
-                guard let macaroonData = try? Data.decodeUrlSafeBase64(macaroonField.text!) else { return }
+                var macaroonData:Data?
+                
+                if let macaroonDataCheck = try? Data.decodeUrlSafeBase64(macaroonField.text!) {
+                    macaroonData = macaroonDataCheck
+                } else if let macaroonDataCheck = Data(hexString: macaroonField.text!) {
+                    macaroonData = macaroonDataCheck
+                }
+                
+                guard let macaroonData = macaroonData else {
+                    showAlert(vc: self, title: "", message: "Error decoding your macaroon. It can either be in hex or base64 format.")
+                    return
+                }
                 
                 guard let encryptedMacaroonHex = Crypto.encrypt(macaroonData.hexString.dataUsingUTF8StringEncoding) else { return }
-                
+                                
                 CoreDataService.update(id: id, keyToUpdate: "macaroon", newValue: encryptedMacaroonHex, entity: .newNodes) { success in
                     if !success {
                         displayAlert(viewController: self, isError: true, message: "error updating macaroon")
