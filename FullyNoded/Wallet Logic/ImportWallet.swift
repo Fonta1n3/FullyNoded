@@ -15,6 +15,7 @@ class ImportWallet {
     static var isColdcard = false
     static var isRecovering = false
     static var version:Int = 0
+    static var isHot = false
             
     class func accountMap(_ accountMap: [String:Any], completion: @escaping ((success: Bool, errorDescription: String?)) -> Void) {
         var wallet = [String:Any]()
@@ -36,6 +37,7 @@ class ImportWallet {
         wallet["index"] = 0
         
         var descStruct = descriptorParser.descriptor(primDescriptor)
+        isHot = descStruct.isHot
         
         guard let version = UserDefaults.standard.object(forKey: "version") as? String else {
             completion((false, "Version unknown. In order to create a wallet we need to know which version of Bitcoin Core you are running, please go the the home screen and refresh then try to create this wallet again."))
@@ -160,17 +162,25 @@ class ImportWallet {
                                 var params = ""
                                 
                                 for (i, watchingDesc) in watchingArray.enumerated() {
-                                    let param = "{\"desc\": \"\(watchingDesc)\", \"active\": false, \"range\": [0,2500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": false}"
+                                    var ischange = false
                                     
-                                    if i < watchingArray.count {
+                                    if watchingDesc.contains("/1/") {
+                                        ischange = true
+                                    }
+                                    
+                                    let param = "{\"desc\": \"\(watchingDesc)\", \"active\": false, \"range\": [0,2500], \"next_index\": 0, \"timestamp\": \"now\", \"internal\": \(ischange)}"
+                                    
+                                    if i < watchingArray.count && i != 0 {
                                         params += ", "
                                     }
                                     
                                     params += "\(param)"
-                                    
+                                                                        
                                     if i + 1 == watchingArray.count {
+                                        params = "[\(params)]"
                                         self.importDescriptors(params) { (success, errorMessage) in
                                             if success {
+                                                wallet["watching"] = watchingArray
                                                 rescan(wallet: wallet, completion: completion)
                                             } else {
                                                 UserDefaults.standard.removeObject(forKey: "walletName")
@@ -310,7 +320,7 @@ class ImportWallet {
     }
     
     class func createWallet(_ walletName: String, completion: @escaping ((name: String?, errorMessage: String?)) -> Void) {
-        var param = "\"\(walletName)\", true, true, \"\", true"
+        var param = "\"\(walletName)\", \(!isHot), true, \"\", true"
         
         if version >= 21 {
             param += ", true, true"
@@ -359,13 +369,13 @@ class ImportWallet {
     }
     
     class func importReceiveDesc(_ recDesc: String, _ label: String, _ keypool: Bool, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-        let recParams = "[{ \"desc\": \"\(recDesc)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"label\": \"\(label)\", \"keypool\": \(keypool), \"internal\": false }], {\"rescan\": false}"
+        let recParams = "[{ \"desc\": \"\(recDesc)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": \(!isHot), \"label\": \"\(label)\", \"keypool\": \(keypool), \"internal\": false }], {\"rescan\": false}"
         
         importMultiDesc(params: recParams, completion: completion)
     }
     
     class func importChangeDesc(_ changeDesc: String, _ keypool: Bool, completion: @escaping ((success: Bool, errorMessage: String?)) -> Void) {
-        let changeParams = "[{ \"desc\": \"\(changeDesc)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": true, \"keypool\": \(keypool), \"internal\": true }], {\"rescan\": false}"
+        let changeParams = "[{ \"desc\": \"\(changeDesc)\", \"timestamp\": \"now\", \"range\": [0,2500], \"watchonly\": \(!isHot), \"keypool\": \(keypool), \"internal\": true }], {\"rescan\": false}"
         
         importMultiDesc(params: changeParams, completion: completion)
     }
@@ -404,12 +414,19 @@ class ImportWallet {
     
     class func getDescriptorInfo(desc: String, completion: @escaping ((desc: String?, errorMessage: String?)) -> Void) {
         Reducer.makeCommand(command: .getdescriptorinfo, param: "\"\(desc)\"") { (response, errorMessage) in
-            guard let dict = response as? NSDictionary, let updatedDescriptor = dict["descriptor"] as? String else {
+            guard let dict = response as? NSDictionary, let pubKeyDescriptor = dict["descriptor"] as? String else {
                 completion((nil, errorMessage ?? "error getting descriptor info"))
                 return
             }
             
-            completion((updatedDescriptor, nil))
+            if let hasprivatekeys = dict["hasprivatekeys"] as? Bool, hasprivatekeys, let checksum = dict["checksum"] as? String {
+                // its an xprv so we need to do some fanangling...
+                let privkeyDesc = desc + "#" + checksum
+                completion((privkeyDesc, nil))
+                
+            } else {
+                completion((pubKeyDescriptor, nil))
+            }
         }
     }
     

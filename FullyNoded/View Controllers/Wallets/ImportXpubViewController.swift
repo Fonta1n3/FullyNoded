@@ -15,7 +15,7 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var labelField: UITextField!
     @IBOutlet weak var headerLabel: UILabel!
     
-    var xpub = ""
+    var extKey = ""
     var fingerprint = ""
     var coinType = "0"
     var spinner = ConnectingView()
@@ -23,59 +23,59 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
     var isDescriptor = false
     
     var bip44primAccount: String {
-        return "pkh([\(fingerprint)/44h/\(coinType)h/0h]\(xpub)/0/*)"
+        return "pkh([\(fingerprint)/44h/\(coinType)h/0h]\(extKey)/0/*)"
     }
     
     var bip44changeAccount: String {
-        return "pkh([\(fingerprint)/44h/\(coinType)h/0h]\(xpub)/1/*)"
+        return "pkh([\(fingerprint)/44h/\(coinType)h/0h]\(extKey)/1/*)"
     }
     
     var bip49primAccount: String {
-        return "sh(wpkh([\(fingerprint)/49h/\(coinType)h/0h]\(xpub)/0/*))"
+        return "sh(wpkh([\(fingerprint)/49h/\(coinType)h/0h]\(extKey)/0/*))"
     }
     
     var bip49changeAccount: String {
-        return "sh(wpkh([\(fingerprint)/49h/\(coinType)h/0h]\(xpub)/1/*))"
+        return "sh(wpkh([\(fingerprint)/49h/\(coinType)h/0h]\(extKey)/1/*))"
     }
     
     var bip84primAccount: String {
-        return "wpkh([\(fingerprint)/84h/\(coinType)h/0h]\(xpub)/0/*)"
+        return "wpkh([\(fingerprint)/84h/\(coinType)h/0h]\(extKey)/0/*)"
     }
     
     var bip84changeAccount: String {
-        return "wpkh([\(fingerprint)/84h/\(coinType)h/0h]\(xpub)/1/*)"
+        return "wpkh([\(fingerprint)/84h/\(coinType)h/0h]\(extKey)/1/*)"
     }
     
     var bip44primbip32: String {
-        return "pkh([\(fingerprint)/44h/\(coinType)h/0h/0]\(xpub)/*)"
+        return "pkh([\(fingerprint)/44h/\(coinType)h/0h/0]\(extKey)/*)"
     }
     
     var bip44changebip32: String {
-        return "pkh([\(fingerprint)/44h/\(coinType)h/0h/1]\(xpub)/*)"
+        return "pkh([\(fingerprint)/44h/\(coinType)h/0h/1]\(extKey)/*)"
     }
     
     var bip49primbip32: String {
-        return "sh(wpkh([\(fingerprint)/49h/\(coinType)h/0h/0]\(xpub)/*))"
+        return "sh(wpkh([\(fingerprint)/49h/\(coinType)h/0h/0]\(extKey)/*))"
     }
     
     var bip49changebip32: String {
-        return "sh(wpkh([\(fingerprint)/49h/\(coinType)h/0h/1]\(xpub)/*))"
+        return "sh(wpkh([\(fingerprint)/49h/\(coinType)h/0h/1]\(extKey)/*))"
     }
     
     var bip84primbip32: String {
-        return "wpkh([\(fingerprint)/84h/\(coinType)h/0h/0]\(xpub)/*)"
+        return "wpkh([\(fingerprint)/84h/\(coinType)h/0h/0]\(extKey)/*)"
     }
     
     var bip84changebip32: String {
-        return "wpkh([\(fingerprint)/84h/\(coinType)h/0h/1]\(xpub)/*)"
+        return "wpkh([\(fingerprint)/84h/\(coinType)h/0h/1]\(extKey)/*)"
     }
     
     var plainPrim: String {
-        return "combo([\(fingerprint)]\(xpub)/0/*)"
+        return "combo([\(fingerprint)]\(extKey)/0/*)"
     }
     
     var plainChange: String {
-        return "combo([\(fingerprint)]\(xpub)/1/*)"
+        return "combo([\(fingerprint)]\(extKey)/1/*)"
     }
 
     override func viewDidLoad() {
@@ -130,7 +130,7 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func importAction(_ sender: Any) {
         if !isDescriptor {
-            importXpubNow()
+            importKeyNow()
         } else {
             importDescriptor()
         }
@@ -142,21 +142,21 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
-    private func importXpubNow() {
-        xpub = textField.text ?? ""
+    private func importKeyNow() {
+        extKey = textField.text ?? ""
         
-        if !xpub.hasPrefix("xpub") && !xpub.hasPrefix("tpub") {
-            xpub = XpubConverter.convert(extendedKey: xpub) ?? ""
+        if !extKey.hasPrefix("xpub") && !extKey.hasPrefix("tpub") && !extKey.hasPrefix("xprv") && !extKey.hasPrefix("tprv") {
+            extKey = XpubConverter.convert(extendedKey: extKey) ?? ""
         }
         
-        guard xpub != "" else {
-            showError("Paste in an extended public key")
+        guard extKey != "" else {
+            showError("Paste in an extended key.")
             return
         }
         
-        fingerprint = Keys.fingerprint(masterKey: xpub) ?? "00000000"
-        spinner.addConnectingView(vc: self, description: "importing xpub, this can take a minute...")
-        importXpub()
+        fingerprint = Keys.fingerprint(masterKey: extKey) ?? "00000000"
+        spinner.addConnectingView(vc: self, description: "importing wallet, this can take a minute...")
+        importKey()
     }
     
     var watchingArray: [String] {
@@ -174,8 +174,8 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
                 plainChange]
     }
     
-    private func importXpub() {
-        let defaultLabel = "xpub import"
+    private func importKey() {
+        let defaultLabel = "extended key import"
         
         var label = labelField.text ?? defaultLabel
         
@@ -189,7 +189,7 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
             guard let self = self else { return }
             
             if success {
-                self.doneAlert("xpub wallet created ✓", "Tap done to go back and the home screen will refresh, your wallet is rescanning the blockchain, this can take awhile, to monitor rescan progress tap the refresh button on the \"Active Wallet\" tab. You will not see your balances or transaction history until the rescan completes.")
+                self.doneAlert("Wallet created ✓", "Tap done to go back and the home screen will refresh, your wallet is rescanning the blockchain, this can take awhile, to monitor rescan progress tap the refresh button on the \"Active Wallet\" tab. You will not see your balances or transaction history until the rescan completes.")
             } else {
                 self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "", message: errorDescription ?? "unknown error")
@@ -203,10 +203,10 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
             return
         }
         
-        guard !descriptor.contains("xprv"), !descriptor.contains("tprv") else {
-            showAlert(vc: self, title: "", message: "Fully Noded wallets do not allow you to import private keys onto your node. To do that you can create a Bitcoin Core Hot wallet and then import the xprv descriptor via the advanced button on the active wallet tab.")
-            return
-        }
+//        guard !descriptor.contains("xprv"), !descriptor.contains("tprv") else {
+//            showAlert(vc: self, title: "", message: "Fully Noded wallets do not allow you to import private keys onto your node. To do that you can create a Bitcoin Core Hot wallet and then import the xprv descriptor via the advanced button on the active wallet tab.")
+//            return
+//        }
         
         spinner.addConnectingView(vc: self, description: "importing descriptor wallet, this can take a minute...")
         

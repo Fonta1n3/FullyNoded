@@ -3684,7 +3684,7 @@ xxxxx</string>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="44" id="YEq-6I-4nT"/>
                                         </constraints>
-                                        <state key="normal" title="import via xpub">
+                                        <state key="normal" title="import xpub or xprv">
                                             <color key="titleColor" systemColor="systemTealColor"/>
                                         </state>
                                         <connections>
@@ -3763,8 +3763,8 @@ xxxxx</string>
                                     <constraint firstAttribute="width" constant="41" id="mer-lH-gHB"/>
                                 </constraints>
                             </imageView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="xpub import" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WjC-KR-sms">
-                                <rect key="frame" x="65" y="63.5" width="159" height="35"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="xpub/xprv import" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WjC-KR-sms">
+                                <rect key="frame" x="65" y="63.5" width="225" height="35"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="29"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -3774,7 +3774,7 @@ xxxxx</string>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="xpub" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="fbb-jX-krx">
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="xpub / xprv" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="fbb-jX-krx">
                                 <rect key="frame" x="16" y="169" width="343" height="34"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits"/>
@@ -7552,7 +7552,7 @@ COLD means no keys will be generated and no private keys can be imported.</strin
         <segue reference="LMu-1F-VvA"/>
         <segue reference="IAz-j1-Gq6"/>
         <segue reference="6KH-E3-p33"/>
-        <segue reference="2DM-Bo-8hK"/>
+        <segue reference="9TT-9o-7xG"/>
         <segue reference="7UD-TA-0Dv"/>
         <segue reference="yAt-Ra-aPH"/>
         <segue reference="AK4-4u-w1q"/>

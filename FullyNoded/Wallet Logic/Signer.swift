@@ -185,6 +185,7 @@ class Signer {
         /// Fetch keys to sign with
         func getKeysToSignWith() {
             xprvsToSignWith.removeAll()
+            
             for (i, s) in seedsToSignWith.enumerated() {
                 let encryptedSeed = s["words"] as! Data
                 
