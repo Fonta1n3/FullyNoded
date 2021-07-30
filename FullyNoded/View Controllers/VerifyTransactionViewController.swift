@@ -674,6 +674,8 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                             } else if let _ = inputDict["final_scriptwitness"] as? [String] {
                                 isSigned = true
                             }
+                            
+                            
                         }
                         
                         let inputDict:[String:Any] = [
@@ -778,7 +780,37 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     func getInputInfo(index: Int) {
         let dict = inputArray[index]
         if let txid = dict["txid"] as? String, let vout = dict["vout"] as? Int {
-            parsePrevTx(method: .gettransaction, param: "\"\(txid)\", true", vout: vout, txid: txid)
+            if blind {
+                CoreDataService.retrieveEntity(entityName: .utxos) { [weak self] utxos in
+                    guard let self = self else { return }
+                    
+                    if let utxos = utxos, utxos.count > 0 {
+                        var parseIt = false
+                        for (i, utxo) in utxos.enumerated() {
+                            let utxoStr = UtxosStruct(dictionary: utxo)
+                            
+                            // only parse inputs for utxos we own if dealing with blind psbt
+                            if utxoStr.txid == txid, utxoStr.vout == vout, (utxoStr.solvable ?? false) {
+                                parseIt = true
+                            }
+                            
+                            if i + 1 == utxos.count && parseIt {
+                                self.parsePrevTx(method: .gettransaction, param: "\"\(txid)\", true", vout: vout, txid: txid)
+                            } else if i + 1 == utxos.count && !parseIt {
+                                
+                                if index + 1 < self.inputArray.count {
+                                    self.index += 1
+                                    self.getInputInfo(index: self.index)
+                                } else {
+                                    self.parsePrevTxOutput(outputs: [], vout: 0)
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                parsePrevTx(method: .gettransaction, param: "\"\(txid)\", true", vout: vout, txid: txid)
+            }
         }
     }
     
@@ -1131,6 +1163,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     
                     if allowed {
                         self.enableSendButton()
+                        self.disableSignButton()
                     }
                     
                     self.rejectionMessage = dict["reject-reason"] as? String ?? ""
@@ -1664,16 +1697,19 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         background.layer.cornerRadius = 5
         
         if inputTotal > 0.0 {
-            if txFee < 0.00050000 {
+            if txFee < 0.0 {
+                background.backgroundColor = .systemGray
+                imageView.image = UIImage(systemName: "questionmark.circle")
+                miningLabel.text = "Can not determine fee for inputs which don't belong to us."
+            } else if txFee < 0.00050000 {
                 background.backgroundColor = .systemGreen
                 imageView.image = UIImage(systemName: "checkmark.circle")
+                miningLabel.text = miningFee + " / \(satsPerByte()) sats per byte"
             } else {
                 background.backgroundColor = .systemRed
                 imageView.image = UIImage(systemName: "exclamationmark.triangle")
+                miningLabel.text = miningFee + " / \(satsPerByte()) sats per byte"
             }
-            
-            miningLabel.text = miningFee + " / \(satsPerByte()) sats per byte"
-            
         } else {
             background.backgroundColor = .systemOrange
             imageView.image = UIImage(systemName: "questionmark.circle")
@@ -1696,11 +1732,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         
         let background = etaCell.viewWithTag(3)!
         background.layer.cornerRadius = 5
+        var feeWarning = ""
         
-        if inputTotal > 0.0 {
-            var feeWarning = ""
+        if txFee > 0.0 {
             let percentage = (satsPerByte() / smartFee) * 100
             let rounded = Double(round(10*percentage)/10)
+            
             if satsPerByte() > smartFee, rounded.isFinite {
                 feeWarning = "The fee paid for this transaction is \(Int(rounded - 100))% greater then your target."
             } else if rounded.isFinite {
@@ -1727,7 +1764,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         } else {
             imageView.image = UIImage(systemName: "questionmark.circle")
             background.backgroundColor = .systemOrange
-            etaLabel.text = "No fee data. Go to settings to opt in to Esplora use."
+            etaLabel.text = "No fee data."
         }
         
         return etaCell
