@@ -25,6 +25,7 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
     var ccXfp = ""
     var xpub = ""
     var deriv = ""
+    var extendedKey = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -594,7 +595,6 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
             if #available(macCatalyst 14.0, *) {
                 if let vc = segue.destination as? QRScannerViewController {
                     vc.isAccountMap = true
-                    
                     vc.onImportDoneBlock = { [unowned thisVc = self] accountMap in
                         if accountMap != nil {
                             thisVc.importAccountMap(accountMap!)
@@ -620,27 +620,40 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
                         }
                     }
                     
-                    vc.onAddressDoneBlock = { [weak self] urString in
+                    vc.onAddressDoneBlock = { [weak self] item in
                         guard let self = self else { return }
                         
-                        guard let urString = urString else {
+                        guard let item = item else {
                             return
                         }
                         
-                        let (descriptors, error) = URHelper.parseUr(urString: urString)
+                        let lowercased = item.lowercased()
                         
-                        guard error == nil, let descriptors = descriptors else {
-                            showAlert(vc: self, title: "Error", message: error!)
-                            return
-                        }
-                        
-                        var accountMap:[String:Any] = ["descriptor": "", "blockheight": 0, "watching": [], "label": "Wallet Import"]
-                        
-                        if descriptors.count > 1 {
-                            self.prompToChoosePrimaryDesc(descriptors: descriptors)
-                        } else {
-                            accountMap["descriptor"] = descriptors[0]
-                            self.importAccountMap(accountMap)
+                        if lowercased.hasPrefix("xprv") || lowercased.hasPrefix("tprv") || lowercased.hasPrefix("vprv") || lowercased.hasPrefix("yprv") || lowercased.hasPrefix("zprv") || lowercased.hasPrefix("uprv") || lowercased.hasPrefix("xpub") || lowercased.hasPrefix("tpub") || lowercased.hasPrefix("vpub") || lowercased.hasPrefix("ypub") || lowercased.hasPrefix("zpub") || lowercased.hasPrefix("upub") {
+                            
+                            DispatchQueue.main.async { [weak self] in
+                                guard let self = self else { return }
+                                
+                                self.extendedKey = item
+                                self.performSegue(withIdentifier: "segueToImportXpub", sender: self)
+                            }
+                            
+                        } else if lowercased.hasPrefix("ur:") {
+                            let (descriptors, error) = URHelper.parseUr(urString: item)
+                            
+                            guard error == nil, let descriptors = descriptors else {
+                                showAlert(vc: self, title: "Error", message: error!)
+                                return
+                            }
+                            
+                            var accountMap:[String:Any] = ["descriptor": "", "blockheight": 0, "watching": [], "label": "Wallet Import"]
+                            
+                            if descriptors.count > 1 {
+                                self.prompToChoosePrimaryDesc(descriptors: descriptors)
+                            } else {
+                                accountMap["descriptor"] = descriptors[0]
+                                self.importAccountMap(accountMap)
+                            }
                         }
                     }
                 }
@@ -660,6 +673,13 @@ class CreateFullyNodedWalletViewController: UIViewController, UINavigationContro
         if segue.identifier == "segueToImportDescriptor" {
             if let vc = segue.destination as? ImportXpubViewController {
                 vc.isDescriptor = true
+            }
+        }
+        
+        if segue.identifier == "segueToImportXpub" {
+            if let vc = segue.destination as? ImportXpubViewController {
+                vc.isDescriptor = false
+                vc.extKey = self.extendedKey
             }
         }
     }

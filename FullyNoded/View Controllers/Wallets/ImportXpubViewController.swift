@@ -97,6 +97,10 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
             showAlert(vc: self, title: "", message: "Fully Noded currently supports extended key (xpub/xprv) based descriptors to create wallets. Creating wallets with other descriptor types will not work.")
         } else {
             setCoinType()
+        }
+        
+        if extKey != "" {
+            textField.text = extKey
         }        
     }
     

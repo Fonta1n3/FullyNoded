@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="17709" systemVersion="20B29" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="18154" systemVersion="20B29" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="AuthKeys" representedClassName="AuthKeys" syncable="YES" codeGenerationType="class">
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="privateKey" optional="YES" attributeType="Binary"/>
@@ -89,7 +89,7 @@
         <element name="NewHDWallets" positionX="-36" positionY="144" width="128" height="118"/>
         <element name="NewNodes" positionX="-54" positionY="135" width="128" height="179"/>
         <element name="Peers" positionX="-36" positionY="234" width="128" height="133"/>
-        <element name="Signers" positionX="-27" positionY="189" width="128" height="118"/>
+        <element name="Signers" positionX="-27" positionY="189" width="128" height="104"/>
         <element name="Transactions" positionX="-36" positionY="279" width="128" height="149"/>
         <element name="Utxos" positionX="-36" positionY="234" width="128" height="238"/>
         <element name="Wallets" positionX="-36" positionY="180" width="128" height="194"/>

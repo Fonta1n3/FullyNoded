@@ -1604,22 +1604,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 verifiedByFnBackgroundView.backgroundColor = .systemGreen
             } else {
                 verifyOwnerButton.alpha = 1
-                if isOursBitcoind {
-                    if self.wallet != nil && !outputAddress.hasPrefix("2") && !outputAddress.hasPrefix("3") {
-                        verifiedByFnLabel.text = "WARNING ADDRESS INVALID!!!"
-                        verifiedByFnImageView.image = UIImage(systemName: "exclamationmark.triangle.fill")
-                        verifiedByFnBackgroundView.backgroundColor = .systemRed
-                    } else {
-                        verifiedByFnLabel.text = "Unable to determine"
-                        verifiedByFnImageView.image = UIImage(systemName: "questionmark.diamond.fill")
-                        verifiedByFnBackgroundView.backgroundColor = .systemGray
-                    }
-                    
-                } else {
-                    verifiedByFnLabel.text = "Not verified by Fully Noded"
-                    verifiedByFnImageView.image = UIImage(systemName: "questionmark.diamond.fill")
-                    verifiedByFnBackgroundView.backgroundColor = .systemGray
-                }
+                verifiedByFnLabel.text = "Not verified by Fully Noded"
+                verifiedByFnImageView.image = UIImage(systemName: "questionmark.diamond.fill")
+                verifiedByFnBackgroundView.backgroundColor = .systemGray
             }
             
             if signable {
@@ -1627,15 +1614,9 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 signableBackgroundView.backgroundColor = .systemGreen
                 signerLabel.text = "Signable by \(signer)"
             } else {
-                if self.wallet != nil {
-                    signableImageView.image = UIImage(systemName: "xmark.square.fill")
-                    signableBackgroundView.backgroundColor = .systemRed
-                    signerLabel.text = "Can not sign!"
-                } else {
-                    signableImageView.image = UIImage(systemName: "questionmark.diamond.fill")
-                    signableBackgroundView.backgroundColor = .systemRed
-                    signerLabel.text = "Unable to determine"
-                }
+                signableImageView.image = UIImage(systemName: "questionmark.diamond.fill")
+                signableBackgroundView.backgroundColor = .systemRed
+                signerLabel.text = "Unable to determine"
             }
             
             if isDust {
@@ -1667,6 +1648,17 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 verifiedByNodeLabel.text = "Owned by Bitcoin Core"
                 backgroundView1.backgroundColor = .systemGreen
                 outputIsOursImage.image = UIImage(systemName: "checkmark.circle.fill")
+                
+                if self.wallet != nil {
+                    let dp = DescriptorParser()
+                    let ds = dp.descriptor(self.wallet!.receiveDescriptor)
+                    if ds.isHot {
+                        signableImageView.image = UIImage(systemName: "checkmark.square.fill")
+                        signableBackgroundView.backgroundColor = .systemGreen
+                        signerLabel.text = "Bitcoin Core hot wallet"
+                    }
+                }
+                
             } else {
                 verifyOwnerButton.alpha = 1
                 verifiedByNodeLabel.text = "Not owned by \(activeWalletLabel)"

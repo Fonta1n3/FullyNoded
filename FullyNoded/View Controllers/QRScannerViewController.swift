@@ -315,6 +315,11 @@ class QRScannerViewController: UIViewController {
             if lowercased.hasPrefix("ur:crypto-output") || lowercased.hasPrefix("ur:crypto-account") || lowercased.hasPrefix("ur:crypto-hdkey") {
                 hasScanned = true
                 stopScanning(text)
+            } else if lowercased.hasPrefix("xprv") || lowercased.hasPrefix("tprv") || lowercased.hasPrefix("vprv") || lowercased.hasPrefix("yprv") || lowercased.hasPrefix("zprv") || lowercased.hasPrefix("uprv") || lowercased.hasPrefix("xpub") || lowercased.hasPrefix("tpub") || lowercased.hasPrefix("vpub") || lowercased.hasPrefix("ypub") || lowercased.hasPrefix("zpub") || lowercased.hasPrefix("upub") {
+                
+                hasScanned = true
+                stopScanning(text)
+                
             } else if let data = text.data(using: .utf8) {
                 do {
                     let accountMap = try JSONSerialization.jsonObject(with: data, options: []) as! [String:Any]
