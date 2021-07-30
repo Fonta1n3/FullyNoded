@@ -85,9 +85,10 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
         importOutlet.layer.cornerRadius = 8
         textField.delegate = self
         labelField.delegate = self
+        
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
         tapGesture.numberOfTapsRequired = 1
-        self.view.addGestureRecognizer(tapGesture)
+        view.addGestureRecognizer(tapGesture)
         textField.removeGestureRecognizer(tapGesture)
         labelField.removeGestureRecognizer(tapGesture)
         
@@ -101,7 +102,14 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
         
         if extKey != "" {
             textField.text = extKey
-        }        
+            
+            let lowercased = extKey.lowercased()
+            
+            if lowercased.hasPrefix("xprv") || lowercased.hasPrefix("tprv") || lowercased.hasPrefix("vprv") || lowercased.hasPrefix("yprv") || lowercased.hasPrefix("zprv") || lowercased.hasPrefix("uprv") {
+                
+                hotWalletAlert()
+            }
+        }
     }
     
     @objc func dismissKeyboard(_ sender: UITapGestureRecognizer) {
@@ -207,11 +215,6 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
             return
         }
         
-//        guard !descriptor.contains("xprv"), !descriptor.contains("tprv") else {
-//            showAlert(vc: self, title: "", message: "Fully Noded wallets do not allow you to import private keys onto your node. To do that you can create a Bitcoin Core Hot wallet and then import the xprv descriptor via the advanced button on the active wallet tab.")
-//            return
-//        }
-        
         spinner.addConnectingView(vc: self, description: "importing descriptor wallet, this can take a minute...")
         
         let defaultLabel = "Descriptor import"
@@ -265,6 +268,21 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        guard let text = textField.text else { return }
+        
+        let lowercased = text.lowercased()
+        
+        if lowercased.hasPrefix("xprv") || lowercased.hasPrefix("tprv") || lowercased.hasPrefix("vprv") || lowercased.hasPrefix("yprv") || lowercased.hasPrefix("zprv") || lowercased.hasPrefix("uprv") {
+            
+            hotWalletAlert()
+        }
+    }
+    
+    private func hotWalletAlert() {
+        showAlert(vc: self, title: "Hot wallet alert!", message: "Importing an extended private key will create a HOT wallet on your node.")
+    }
+    
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
@@ -275,6 +293,13 @@ class ImportXpubViewController: UIViewController, UITextFieldDelegate {
                     vc.isScanningAddress = true
                     vc.onAddressDoneBlock = { [unowned thisVc = self] xpub in
                         if xpub != nil {
+                            let lowercased = xpub!.lowercased()
+                            
+                            if lowercased.hasPrefix("xprv") || lowercased.hasPrefix("tprv") || lowercased.hasPrefix("vprv") || lowercased.hasPrefix("yprv") || lowercased.hasPrefix("zprv") || lowercased.hasPrefix("uprv") {
+                                
+                                self.hotWalletAlert()
+                            }
+                            
                             thisVc.addXpubToTextField(xpub!)
                         }
                     }

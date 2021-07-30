@@ -541,7 +541,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         UserDefaults.standard.setValue(sender.isOn, forKey: "blind")
         
         if sender.isOn {
-            showAlert(vc: self, title: "psbts blinded ✓", message: "Transactions will now be encrypted before being exported so that you may more privately create transactions with others. You can read more about blinded psbt's and why they are more private then traditional transactions at www.fullynoded.app")
+            showAlert(vc: self, title: "psbts blinded ✓", message: "Transactions will now be built with 3 inputs and outputs, all with similar amounts. You can export blind psbts to other Fully Noded users to create more private transactions.")
         } else {
             showAlert(vc: self, title: "psbts revealed", message: "The app will now fall back to Bitcoin Core coin selection and export transactions in plain text.")
         }

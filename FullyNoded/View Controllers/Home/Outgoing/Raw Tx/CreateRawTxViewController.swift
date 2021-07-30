@@ -174,6 +174,10 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         
         showFeeSetting()
         slider.addTarget(self, action: #selector(didFinishSliding(_:)), for: .valueChanged)
+        
+        if let blind = UserDefaults.standard.object(forKey: "blind") as? Bool, blind {
+            showAlert(vc: self, title: "Blind psbts enabled", message: "Just a reminder that you have blind psbts enabled which drastically changes the way Fully Noded builds transactions.")
+        }
     }
     
     @IBAction func closeFeeRate(_ sender: Any) {
