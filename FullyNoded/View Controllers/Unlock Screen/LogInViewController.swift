@@ -179,7 +179,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate, ASAuthorizatio
                                  .wallets]
         
         for entity in entities {
-            deleteEntity(entity: entity) { success in                
+            deleteEntity(entity: entity) { success in
                 completion(success)
             }
         }

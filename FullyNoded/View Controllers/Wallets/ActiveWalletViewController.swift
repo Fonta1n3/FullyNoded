@@ -7,8 +7,9 @@
 //
 
 import UIKit
+import AuthenticationServices
 
-class ActiveWalletViewController: UIViewController {
+class ActiveWalletViewController: UIViewController, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
     
     private var showOnchain = false
     private var showOffchain = false
@@ -47,6 +48,7 @@ class ActiveWalletViewController: UIViewController {
     private var isFiat = false
     private var isBtc = true
     private var isSats = false
+    private var authenticated = false
     var fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
     
     @IBOutlet weak private var currencyControl: UISegmentedControl!
@@ -71,35 +73,59 @@ class ActiveWalletViewController: UIViewController {
         sectionZeroLoaded = false
         setNotifications()
         addNavBarSpinner()
-        getFxRate()
+        
+        // get 2fa here if set
+        if KeyChain.getData("userIdentifier") != nil {
+            show2fa()
+        } else {
+            authenticated = true
+            getFxRate()
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
-        currencyControl.setTitle(fiatCurrency.lowercased(), forSegmentAt: 2)
         
-        if KeyChain.getData("UnlockPassword") == nil && UserDefaults.standard.object(forKey: "doNotShowWarning") == nil {
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                let alert = UIAlertController(title: "", message: "You really ought to add a password that is used to lock the app if you are doing wallet related stuff!", preferredStyle: UIAlertController.Style.alert)
-                
-                alert.addAction(UIAlertAction(title: "set password", style: .default, handler: { action in
-                    DispatchQueue.main.async {
-                        self.performSegue(withIdentifier: "segueToAddPassword", sender: self)
-                    }
-                }))
-                
-                alert.addAction(UIAlertAction(title: "do not show again", style: .destructive, handler: { action in
-                    UserDefaults.standard.set(true, forKey: "doNotShowWarning")
-                }))
-                
-                alert.addAction(UIAlertAction(title: "cancel", style: .cancel, handler: { action in }))
-                
-                alert.popoverPresentationController?.sourceView = self.view
-                self.present(alert, animated: true, completion: nil)
+        if KeyChain.getData("userIdentifier") != nil && !authenticated {
+            show2fa()
+        } else {
+            fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+            currencyControl.setTitle(fiatCurrency.lowercased(), forSegmentAt: 2)
+            
+            if KeyChain.getData("UnlockPassword") == nil && UserDefaults.standard.object(forKey: "doNotShowWarning") == nil && KeyChain.getData("userIdentifier") == nil {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    let alert = UIAlertController(title: "", message: "You really ought to add a password that is used to lock the app if you are doing wallet related stuff!", preferredStyle: UIAlertController.Style.alert)
+                    
+                    alert.addAction(UIAlertAction(title: "set password", style: .default, handler: { action in
+                        DispatchQueue.main.async {
+                            self.performSegue(withIdentifier: "segueToAddPassword", sender: self)
+                        }
+                    }))
+                    
+                    alert.addAction(UIAlertAction(title: "do not show again", style: .destructive, handler: { action in
+                        UserDefaults.standard.set(true, forKey: "doNotShowWarning")
+                    }))
+                    
+                    alert.addAction(UIAlertAction(title: "cancel", style: .cancel, handler: { action in }))
+                    
+                    alert.popoverPresentationController?.sourceView = self.view
+                    self.present(alert, animated: true, completion: nil)
+                }
             }
         }
+    }
+    
+    private func show2fa() {
+        let request = ASAuthorizationAppleIDProvider().createRequest()
+        let controller = ASAuthorizationController(authorizationRequests: [request])
+        controller.delegate = self
+        controller.presentationContextProvider = self
+        controller.performRequests()
+    }
+    
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        return self.view.window!
     }
     
     private func setCurrency() {
@@ -167,41 +193,46 @@ class ActiveWalletViewController: UIViewController {
     
     
     @objc func signPsbt(_ notification: NSNotification) {
-        guard let psbtDict = notification.userInfo as? [String:Any], let psbtCheck = psbtDict["psbt"] as? String else {
-            showAlert(vc: self, title: "Uh oh", message: "That does not appear to be a psbt...")
-            return
-        }
-        
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
+        if authenticated {
+            guard let psbtDict = notification.userInfo as? [String:Any], let psbtCheck = psbtDict["psbt"] as? String else {
+                showAlert(vc: self, title: "Uh oh", message: "That does not appear to be a psbt...")
+                return
+            }
             
-            self.psbt = psbtCheck
-            self.performSegue(withIdentifier: "segueToSignPsbt", sender: self)
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.psbt = psbtCheck
+                self.performSegue(withIdentifier: "segueToSignPsbt", sender: self)
+            }
         }
     }
     
     @objc func broadcast(_ notification: NSNotification) {
-        guard let txnDict = notification.userInfo as? [String:Any], let txn = txnDict["txn"] as? String else {
-            showAlert(vc: self, title: "Uh oh", message: "That does not appear to be a signed raw transaction...")
-            return
-        }
-        
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
+        if authenticated {
+            guard let txnDict = notification.userInfo as? [String:Any], let txn = txnDict["txn"] as? String else {
+                showAlert(vc: self, title: "Uh oh", message: "That does not appear to be a signed raw transaction...")
+                return
+            }
             
-            self.rawTx = txn
-            self.performSegue(withIdentifier: "segueToSignPsbt", sender: self)
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.rawTx = txn
+                self.performSegue(withIdentifier: "segueToSignPsbt", sender: self)
+            }
         }
     }
     
     @IBAction func signPsbtAction(_ sender: Any) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.performSegue(withIdentifier: "segueToSignPsbt", sender: self)
+        if authenticated {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.performSegue(withIdentifier: "segueToSignPsbt", sender: self)
+            }
         }
     }
-    
     
     private func configureButton(_ button: UIView) {
         button.layer.borderColor = UIColor.darkGray.cgColor
@@ -214,7 +245,7 @@ class ActiveWalletViewController: UIViewController {
         configureButton(invoiceView)
         configureButton(utxosView)
         configureButton(advancedView)
-
+        
         fxRateLabel.text = ""
         
         backgroundView.clipsToBounds = true
@@ -245,66 +276,80 @@ class ActiveWalletViewController: UIViewController {
     }
     
     @IBAction func getDetails(_ sender: Any) {
-        guard let wallet = wallet else {
-            showAlert(vc: self, title: "", message: "That button only works for \"Fully Noded Wallets\" which can be created by tapping the plus button, you can see your Fully Noded Wallets by tapping the squares button. Fully Noded allows you to access, use and create wallets with ultimate flexibility using your node but it comes with some limitations. In order to get a better user experience we recommend creating a Fully Noded Wallet.")
-            return
+        if authenticated {
+            guard let wallet = wallet else {
+                showAlert(vc: self, title: "", message: "That button only works for \"Fully Noded Wallets\" which can be created by tapping the plus button, you can see your Fully Noded Wallets by tapping the squares button. Fully Noded allows you to access, use and create wallets with ultimate flexibility using your node but it comes with some limitations. In order to get a better user experience we recommend creating a Fully Noded Wallet.")
+                return
+            }
+            
+            walletLabel = wallet.label
+            goToDetail()
         }
-        
-        walletLabel = wallet.label
-        goToDetail()
     }
     
     @IBAction func goToFullyNodedWallets(_ sender: Any) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "segueToWallets", sender: vc)
+        if authenticated {
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.performSegue(withIdentifier: "segueToWallets", sender: vc)
+            }
         }
     }
     
     @IBAction func createWallet(_ sender: Any) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "createFullyNodedWallet", sender: vc)
+        if authenticated {
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.performSegue(withIdentifier: "createFullyNodedWallet", sender: vc)
+            }
         }
     }
     
     @IBAction func sendAction(_ sender: Any) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "spendFromWallet", sender: vc)
+        if authenticated {
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.performSegue(withIdentifier: "spendFromWallet", sender: vc)
+            }
         }
     }
     
     @IBAction func invoiceAction(_ sender: Any) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "segueToInvoice", sender: vc)
+        if authenticated {
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.performSegue(withIdentifier: "segueToInvoice", sender: vc)
+            }
         }
     }
     
     @IBAction func invoiceSettings(_ sender: Any) {
-        CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
-            guard let nodes = nodes, nodes.count > 0 else { return }
-            
-            var uncleJim = false
-            for node in nodes {
-                let nodeStruct = NodeStruct(dictionary: node)
-                if nodeStruct.isActive {
-                    if let uj = node["uncleJim"] as? Bool {
-                        uncleJim = uj
+        if authenticated {
+            CoreDataService.retrieveEntity(entityName: .newNodes) { nodes in
+                guard let nodes = nodes, nodes.count > 0 else { return }
+                
+                var uncleJim = false
+                for node in nodes {
+                    let nodeStruct = NodeStruct(dictionary: node)
+                    if nodeStruct.isActive {
+                        if let uj = node["uncleJim"] as? Bool {
+                            uncleJim = uj
+                        }
                     }
                 }
-            }
-            
-            if !uncleJim {
-                DispatchQueue.main.async { [unowned vc = self] in
-                    vc.performSegue(withIdentifier: "goToInvoiceSetting", sender: vc)
+                
+                if !uncleJim {
+                    DispatchQueue.main.async { [unowned vc = self] in
+                        vc.performSegue(withIdentifier: "goToInvoiceSetting", sender: vc)
+                    }
+                } else {
+                    showAlert(vc: self, title: "Restricted access!", message: "That area is for the node owner only.")
                 }
-            } else {
-                showAlert(vc: self, title: "Restricted access!", message: "That area is for the node owner only.")
             }
         }
     }
     
     @IBAction func goToUtxos(_ sender: Any) {
-        DispatchQueue.main.async { [unowned vc = self] in
-            vc.performSegue(withIdentifier: "segueToUtxos", sender: vc)
+        if authenticated {
+            DispatchQueue.main.async { [unowned vc = self] in
+                vc.performSegue(withIdentifier: "segueToUtxos", sender: vc)
+            }
         }
     }
     
@@ -357,30 +402,32 @@ class ActiveWalletViewController: UIViewController {
     }
     
     private func loadTable() {
-        self.sectionZeroLoaded = false
-        existingWallet = ""
-        walletLabel = ""
-        
-        activeWallet { [weak self] wallet in
-            guard let self = self else { return }
+        if authenticated {
+            self.sectionZeroLoaded = false
+            existingWallet = ""
+            walletLabel = ""
             
-            guard let wallet = wallet else {
-                self.wallet = nil
-                self.walletLabel = UserDefaults.standard.object(forKey: "walletName") as? String ?? "Default Wallet"
+            activeWallet { [weak self] wallet in
+                guard let self = self else { return }
+                
+                guard let wallet = wallet else {
+                    self.wallet = nil
+                    self.walletLabel = UserDefaults.standard.object(forKey: "walletName") as? String ?? "Default Wallet"
+                    self.loadBalances()
+                    return
+                }
+                
+                self.wallet = wallet
+                self.existingWallet = wallet.name
+                self.walletLabel = wallet.label
+                
+                DispatchQueue.main.async {
+                    self.transactionArray.removeAll()
+                    self.walletTable.reloadData()
+                }
+                
                 self.loadBalances()
-                return
             }
-            
-            self.wallet = wallet
-            self.existingWallet = wallet.name
-            self.walletLabel = wallet.label
-            
-            DispatchQueue.main.async {
-                self.transactionArray.removeAll()
-                self.walletTable.reloadData()
-            }
-            
-            self.loadBalances()
         }
     }
     
@@ -909,7 +956,7 @@ class ActiveWalletViewController: UIViewController {
         }
     }
     
-    private func getFxRate() {
+    private func getFxRate() {        
         FiatConverter.sharedInstance.getFxRate { [weak self] rate in
             guard let self = self else { return }
             
@@ -1348,6 +1395,36 @@ class ActiveWalletViewController: UIViewController {
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
             alert.popoverPresentationController?.sourceView = self.view
             self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+        switch authorization.credential {
+        case let appleIDCredential as ASAuthorizationAppleIDCredential:
+            let authorizationProvider = ASAuthorizationAppleIDProvider()
+            if let usernameData = KeyChain.getData("userIdentifier") {
+                if let username = String(data: usernameData, encoding: .utf8) {
+                    if username == appleIDCredential.user {
+                        authorizationProvider.getCredentialState(forUserID: username) { [weak self] (state, error) in
+                            guard let self = self else { return }
+                            
+                            switch state {
+                            case .authorized:
+                                self.authenticated = true
+                                self.getFxRate()
+                            case .revoked:
+                                fallthrough
+                            case .notFound:
+                                fallthrough
+                            default:
+                                break
+                            }
+                        }
+                    }
+                }
+            }
+        default:
+            break
         }
     }
     

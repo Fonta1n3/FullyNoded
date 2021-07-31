@@ -7,8 +7,9 @@
 //
 
 import UIKit
+import AuthenticationServices
 
-class VerifyTransactionViewController: UIViewController, UINavigationControllerDelegate, UITextFieldDelegate, UIDocumentPickerDelegate {
+class VerifyTransactionViewController: UIViewController, UINavigationControllerDelegate, UITextFieldDelegate, UIDocumentPickerDelegate, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
     
     var isChannelFunding = false
     var voutChannelFunding:Int?
@@ -50,6 +51,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     var walletIndex = 0
     var qrCodeStringToExport = ""
     var blind = false
+    private var authenticated = false
     
     @IBOutlet weak private var verifyTable: UITableView!
     @IBOutlet weak private var exportButtonOutlet: UIButton!
@@ -90,6 +92,18 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         } else {
             promptToAddTx()
         }
+    }
+    
+    private func show2fa() {
+        let request = ASAuthorizationAppleIDProvider().createRequest()
+        let controller = ASAuthorizationController(authorizationRequests: [request])
+        controller.delegate = self
+        controller.presentationContextProvider = self
+        controller.performRequests()
+    }
+    
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        return self.view.window!
     }
     
     private func processPsbt(_ psbt: String) {
@@ -348,7 +362,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 showAlert(vc: self, title: "Invalid File", message: "That is not a recognized format, generally it will be a .psbt or .txn file.")
                 return
             }
-            
+                        
             if let text = data.utf8, text.lowercased().hasPrefix("ur:bytes") {
                 self.blind = true
                 self.parseBlindPsbt(text)
@@ -422,15 +436,19 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     @IBAction func sendAction(_ sender: Any) {
-        if signedRawTx != "" {
-            if !isChannelFunding {
-                broadcast()
-            } else {
-                promptToCompleteChannelFunding()
-            }
-            
+        if KeyChain.getData("userIdentifier") != nil && !authenticated {
+            show2fa()
         } else {
-            showAlert(vc: self, title: "", message: "Transaction not fully signed, you can export it to another signer or sign it if the sign button is enabled.")
+            if signedRawTx != "" {
+                if !isChannelFunding {
+                    broadcast()
+                } else {
+                    promptToCompleteChannelFunding()
+                }
+                
+            } else {
+                showAlert(vc: self, title: "", message: "Transaction not fully signed, you can export it to another signer or sign it if the sign button is enabled.")
+            }
         }
     }
     
@@ -443,7 +461,11 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     @IBAction func signAction(_ sender: Any) {
-        signNow()
+        if KeyChain.getData("userIdentifier") != nil && !authenticated {
+            show2fa()
+        } else {
+            signNow()
+        }
     }
     
     private func signNow() {
@@ -2419,6 +2441,35 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     }
                 }
             }
+        }
+    }
+    
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+        switch authorization.credential {
+        case let appleIDCredential as ASAuthorizationAppleIDCredential:
+            let authorizationProvider = ASAuthorizationAppleIDProvider()
+            if let usernameData = KeyChain.getData("userIdentifier") {
+                if let username = String(data: usernameData, encoding: .utf8) {
+                    if username == appleIDCredential.user {
+                        authorizationProvider.getCredentialState(forUserID: username) { [weak self] (state, error) in
+                            guard let self = self else { return }
+                            
+                            switch state {
+                            case .authorized:
+                                self.authenticated = true
+                            case .revoked:
+                                fallthrough
+                            case .notFound:
+                                fallthrough
+                            default:
+                                break
+                            }
+                        }
+                    }
+                }
+            }
+        default:
+            break
         }
     }
 }

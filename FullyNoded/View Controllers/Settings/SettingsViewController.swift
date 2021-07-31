@@ -7,10 +7,12 @@
 //
 
 import UIKit
+import AuthenticationServices
 
-class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class SettingsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
     
     let ud = UserDefaults.standard
+    private var authenticated = false
     @IBOutlet var settingsTable: UITableView!
     
     override func viewDidLoad() {
@@ -28,6 +30,18 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
 
     override func viewDidAppear(_ animated: Bool) {
         settingsTable.reloadData()
+    }
+    
+    private func show2fa() {
+        let request = ASAuthorizationAppleIDProvider().createRequest()
+        let controller = ASAuthorizationController(authorizationRequests: [request])
+        controller.delegate = self
+        controller.presentationContextProvider = self
+        controller.performRequests()
+    }
+    
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        return self.view.window!
     }
     
     private func configureCell(_ cell: UITableViewCell) {
@@ -370,17 +384,24 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             }
             
         case 1:
-            if indexPath.row == 0 {
-                warnToBackup()
+            if KeyChain.getData("userIdentifier") != nil && !authenticated {
+                show2fa()
             } else {
-                alertToRecover()
+                if indexPath.row == 0 {
+                    warnToBackup()
+                } else {
+                    alertToRecover()
+                }
             }
-            
         case 2:
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                
-                self.performSegue(withIdentifier: "goToSecurity", sender: self)
+            if KeyChain.getData("userIdentifier") != nil && !authenticated {
+                show2fa()
+            } else {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.performSegue(withIdentifier: "goToSecurity", sender: self)
+                }
             }
             
         case 3:
@@ -586,6 +607,35 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             guard let self = self else { return }
             
             self.settingsTable.reloadData()
+        }
+    }
+    
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+        switch authorization.credential {
+        case let appleIDCredential as ASAuthorizationAppleIDCredential:
+            let authorizationProvider = ASAuthorizationAppleIDProvider()
+            if let usernameData = KeyChain.getData("userIdentifier") {
+                if let username = String(data: usernameData, encoding: .utf8) {
+                    if username == appleIDCredential.user {
+                        authorizationProvider.getCredentialState(forUserID: username) { [weak self] (state, error) in
+                            guard let self = self else { return }
+                            
+                            switch state {
+                            case .authorized:
+                                self.authenticated = true
+                            case .revoked:
+                                fallthrough
+                            case .notFound:
+                                fallthrough
+                            default:
+                                break
+                            }
+                        }
+                    }
+                }
+            }
+        default:
+            break
         }
     }
         

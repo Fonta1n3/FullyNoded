@@ -7,14 +7,16 @@
 //
 
 import UIKit
+import AuthenticationServices
 
-class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UINavigationControllerDelegate {
+class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UINavigationControllerDelegate, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
     
     var nodeArray = [[String:Any]]()
     var selectedIndex = Int()
     let ud = UserDefaults.standard
     var addButton = UIBarButtonItem()
     var editButton = UIBarButtonItem()
+    private var authenticated = false
     @IBOutlet var nodeTable: UITableView!
     
     override func viewDidLoad() {
@@ -30,12 +32,27 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        nodeArray.removeAll()
-        getNodes()
+        if KeyChain.getData("userIdentifier") != nil, !authenticated {
+            show2fa()
+        } else {
+            getNodes()
+        }
+    }
+    
+    private func show2fa() {
+        let request = ASAuthorizationAppleIDProvider().createRequest()
+        let controller = ASAuthorizationController(authorizationRequests: [request])
+        controller.delegate = self
+        controller.presentationContextProvider = self
+        controller.performRequests()
+    }
+    
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        return self.view.window!
     }
     
     func getNodes() {
-        
+        nodeArray.removeAll()
         CoreDataService.retrieveEntity(entityName: .newNodes) { [unowned vc = self] nodes in
             if nodes != nil {
                 vc.nodeArray.removeAll()
@@ -361,6 +378,36 @@ class NodesViewController: UIViewController, UITableViewDelegate, UITableViewDat
             } else {
                 displayAlert(viewController: self, isError: true, message: "Error adding that node: \(errorMessage ?? "unknown")")
             }
+        }
+    }
+    
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+        switch authorization.credential {
+        case let appleIDCredential as ASAuthorizationAppleIDCredential:
+            let authorizationProvider = ASAuthorizationAppleIDProvider()
+            if let usernameData = KeyChain.getData("userIdentifier") {
+                if let username = String(data: usernameData, encoding: .utf8) {
+                    if username == appleIDCredential.user {
+                        authorizationProvider.getCredentialState(forUserID: username) { [weak self] (state, error) in
+                            guard let self = self else { return }
+                            
+                            switch state {
+                            case .authorized:
+                                self.authenticated = true
+                                self.getNodes()
+                            case .revoked:
+                                fallthrough
+                            case .notFound:
+                                fallthrough
+                            default:
+                                break
+                            }
+                        }
+                    }
+                }
+            }
+        default:
+            break
         }
     }
     

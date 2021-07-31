@@ -7,14 +7,16 @@
 //
 
 import UIKit
+import AuthenticationServices
 
-class SignersViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class SignersViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
 
     @IBOutlet weak var signerTable: UITableView!
     var signers = [[String:Any]]()
     var id:UUID!
     var isCreatingMsig = false
     var signerSelected: ((SignerStruct) -> Void)?
+    private var authenticated = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,7 +25,24 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        loadData()
+        if KeyChain.getData("userIdentifier") != nil && !authenticated {
+            show2fa()
+        } else {
+            authenticated = true
+            loadData()
+        }
+    }
+    
+    private func show2fa() {
+        let request = ASAuthorizationAppleIDProvider().createRequest()
+        let controller = ASAuthorizationController(authorizationRequests: [request])
+        controller.delegate = self
+        controller.presentationContextProvider = self
+        controller.performRequests()
+    }
+    
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        return self.view.window!
     }
     
     @IBAction func addSignerAction(_ sender: Any) {
@@ -147,6 +166,36 @@ class SignersViewController: UIViewController, UITableViewDelegate, UITableViewD
     private func segueToDetail() {
         DispatchQueue.main.async { [unowned vc = self] in
             vc.performSegue(withIdentifier: "segueToSignerDetail", sender: vc)
+        }
+    }
+    
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+        switch authorization.credential {
+        case let appleIDCredential as ASAuthorizationAppleIDCredential:
+            let authorizationProvider = ASAuthorizationAppleIDProvider()
+            if let usernameData = KeyChain.getData("userIdentifier") {
+                if let username = String(data: usernameData, encoding: .utf8) {
+                    if username == appleIDCredential.user {
+                        authorizationProvider.getCredentialState(forUserID: username) { [weak self] (state, error) in
+                            guard let self = self else { return }
+                            
+                            switch state {
+                            case .authorized:
+                                self.authenticated = true
+                                self.loadData()
+                            case .revoked:
+                                fallthrough
+                            case .notFound:
+                                fallthrough
+                            default:
+                                break
+                            }
+                        }
+                    }
+                }
+            }
+        default:
+            break
         }
     }
     

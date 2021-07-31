@@ -7,8 +7,9 @@
 //
 
 import UIKit
+import AuthenticationServices
 
-class LightningNodeManagerViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class LightningNodeManagerViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
     
     @IBOutlet weak var iconBackground: UIView!
     let spinner = ConnectingView()
@@ -22,6 +23,7 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
     var color = ""
     var activeNode:[String:Any]?
     var initialLoad = Bool()
+    var authenticated = false
     
     @IBOutlet weak var nodeTable: UITableView!
     @IBOutlet weak var onchainBalanceConf: UILabel!
@@ -38,26 +40,41 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
     }
     
     override func viewDidAppear(_ animated: Bool) {
+        if KeyChain.getData("userIdentifier") != nil && !authenticated {
+            show2fa()
+        } else {
+            loadData()
+        }
+    }
+    
+    private func loadData() {
         showInactive = false
         showActive = false
         showPending = false
         
-        if newlyAdded {
-            newlyAdded = false
-            showAlert(vc: self, title: "Node added ⚡️", message: "Fetching info from your node...\n\nTo view this screen from now on just tap the ⚡️ on the home screen.")
-        } else {
-            checkForLightningNodes { [weak self] node in
-                guard let self = self else { return }
+        checkForLightningNodes { [weak self] node in
+            guard let self = self else { return }
+            
+            guard let node = node else {
+                self.promptToAddNode()
                 
-                guard let node = node else {
-                    self.promptToAddNode()
-                    
-                    return
-                }
-                
-                self.getInfo(node: node)
+                return
             }
+            
+            self.getInfo(node: node)
         }
+    }
+    
+    private func show2fa() {
+        let request = ASAuthorizationAppleIDProvider().createRequest()
+        let controller = ASAuthorizationController(authorizationRequests: [request])
+        controller.delegate = self
+        controller.presentationContextProvider = self
+        controller.performRequests()
+    }
+    
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        return self.view.window!
     }
     
     private func promptToAddNode() {
@@ -431,6 +448,36 @@ class LightningNodeManagerViewController: UIViewController, UITableViewDataSourc
         case 4:
             showPending = true
             goToChannels()
+        default:
+            break
+        }
+    }
+    
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+        switch authorization.credential {
+        case let appleIDCredential as ASAuthorizationAppleIDCredential:
+            let authorizationProvider = ASAuthorizationAppleIDProvider()
+            if let usernameData = KeyChain.getData("userIdentifier") {
+                if let username = String(data: usernameData, encoding: .utf8) {
+                    if username == appleIDCredential.user {
+                        authorizationProvider.getCredentialState(forUserID: username) { [weak self] (state, error) in
+                            guard let self = self else { return }
+                            
+                            switch state {
+                            case .authorized:
+                                self.authenticated = true
+                                self.loadData()
+                            case .revoked:
+                                fallthrough
+                            case .notFound:
+                                fallthrough
+                            default:
+                                break
+                            }
+                        }
+                    }
+                }
+            }
         default:
             break
         }
