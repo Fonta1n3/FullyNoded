@@ -25,7 +25,6 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
         super.viewDidLoad()
         securityTable.delegate = self
         securityTable.dataSource = self
-        //configurePasswordManager()
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -162,11 +161,12 @@ class SecurityCenterViewController: UIViewController, UITableViewDelegate, UITab
             }
             
         case 1:
-            if KeyChain.getData("userIdentifier") == nil {
-                add2fa()
-            } else {
-                promptToDisable2fa()
-            }
+//            if KeyChain.getData("userIdentifier") == nil {
+//                add2fa()
+//            } else {
+//                promptToDisable2fa()
+//            }
+        showAlert(vc: self, title: "", message: "This feature is not available for the dmg.")
         case 2:
             DispatchQueue.main.async { [unowned vc = self] in
                 vc.performSegue(withIdentifier: "addPasswordSegue", sender: vc)
