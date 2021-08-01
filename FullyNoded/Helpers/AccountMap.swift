@@ -8,16 +8,43 @@
 
 import Foundation
 import UIKit
+import LibWally
 
 class AccountMap {
     
     class func create(wallet: Wallet) -> String? {
-        let primDesc = processedDesc(wallet.receiveDescriptor)
+        var primDesc = processedDesc(wallet.receiveDescriptor)
         var watching = [String]()
         
         if wallet.watching != nil {
             for desc in wallet.watching! {
                 watching.append(processedDesc(desc))
+            }
+        }
+        
+        // Don't show xprvs in backup QR incase user imported an xprv
+        let dp = DescriptorParser()
+        let ds = dp.descriptor(primDesc)
+        
+        if ds.isHot && !ds.isMulti {
+            if let key = try? HDKey(base58: ds.accountXprv) {
+                primDesc = primDesc.replacingOccurrences(of: ds.accountXprv, with: key.xpub)
+                
+                for (i, _) in watching.enumerated() {
+                    watching[i] = watching[i].replacingOccurrences(of: ds.accountXprv, with: key.xpub)
+                }
+            }
+        } else if ds.isHot {
+            for key in ds.multiSigKeys {
+                if key.hasPrefix("xprv") || key.hasPrefix("tprv") {
+                    if let hdkey = try? HDKey(base58: key) {
+                        primDesc = primDesc.replacingOccurrences(of: key, with: hdkey.xpub)
+                        
+                        for (i, _) in watching.enumerated() {
+                            watching[i] = watching[i].replacingOccurrences(of: key, with: hdkey.xpub)
+                        }
+                    }
+                }
             }
         }
         

@@ -891,9 +891,7 @@ class ActiveWalletViewController: UIViewController, ASAuthorizationControllerDel
     }
     
     @objc func refreshWallet() {
-        if self.view.window != nil {
-            refreshAll()
-        }
+        refreshAll()
     }
     
     private func checkIfWalletsChanged() {
