@@ -250,13 +250,36 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     private func createBlindPsbt() {
         spinner.addConnectingView(vc: self, description: "")
         
-        guard let amount = convertedAmount(), let address = addressInput.text, address != "" else {
+        guard let amount = convertedAmount(), let recipient = addressInput.text, recipient != "" else {
             spinner.removeConnectingView()
             showAlert(vc: self, title: "", message: "No amount or address.")
             return
         }
         
-        BlindPsbt.getInputs(amountBtc: amount.doubleValue, recipient: address) { [weak self] (psbt, error) in
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let title = "Select a policy."
+            let message = "Strict keeps inputs/outputs amounts identical, each output shares the mining fee equally.\n\nFlexible will not necessarily keep all inputs and outputs identical and can include a change output."
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Strict", style: .default, handler: { action in
+                self.createBlindNow(amount: amount.doubleValue, recipient: recipient, strict: true)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Flexible", style: .default, handler: { action in
+                self.createBlindNow(amount: amount.doubleValue, recipient: recipient, strict: false)
+            }))
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
+            alert.popoverPresentationController?.sourceView = self.view
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    private func createBlindNow(amount: Double, recipient: String, strict: Bool) {
+        BlindPsbt.getInputs(amountBtc: amount, recipient: recipient, strict: strict) { [weak self] (psbt, error) in
             guard let self = self else { return }
             
             self.spinner.removeConnectingView()

@@ -362,7 +362,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 showAlert(vc: self, title: "Invalid File", message: "That is not a recognized format, generally it will be a .psbt or .txn file.")
                 return
             }
-                        
+            
             if let text = data.utf8, text.lowercased().hasPrefix("ur:bytes") {
                 self.blind = true
                 self.parseBlindPsbt(text)
@@ -436,6 +436,12 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     @IBAction func sendAction(_ sender: Any) {
+        send()
+    }
+    
+    private func send() {
+        isSigning = false
+        
         if KeyChain.getData("userIdentifier") != nil && !authenticated {
             show2fa()
         } else {
@@ -461,6 +467,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     @IBAction func signAction(_ sender: Any) {
+        isSigning = true
         if KeyChain.getData("userIdentifier") != nil && !authenticated {
             show2fa()
         } else {
@@ -2457,6 +2464,11 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                             switch state {
                             case .authorized:
                                 self.authenticated = true
+                                if self.isSigning {
+                                    self.signNow()
+                                } else {
+                                    self.send()
+                                }
                             case .revoked:
                                 fallthrough
                             case .notFound:

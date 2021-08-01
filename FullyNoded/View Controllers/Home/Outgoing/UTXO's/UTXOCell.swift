@@ -31,9 +31,9 @@ class UTXOCell: UITableViewCell {
     @IBOutlet private weak var spendableLabel: UILabel!
     @IBOutlet private weak var solvableLabel: UILabel!
     @IBOutlet private weak var amountLabel: UILabel!
-    @IBOutlet private weak var txidLabel: UILabel!
-    @IBOutlet private weak var voutLabel: UILabel!
-    @IBOutlet private weak var addressLabel: UILabel!
+    //@IBOutlet private weak var txidLabel: UILabel!
+    //@IBOutlet private weak var voutLabel: UILabel!
+    //@IBOutlet private weak var addressLabel: UILabel!
     @IBOutlet private weak var isChangeBackground: UIView!
     @IBOutlet private weak var isChangeImageView: UIImageView!
     @IBOutlet private weak var isSolvableBackground: UIView!
@@ -80,11 +80,11 @@ class UTXOCell: UITableViewCell {
         self.isLocked = isLocked
         self.delegate = delegate
         
-        txidLabel.text = utxo.txid
+        //txidLabel.text = utxo.txid
         walletLabel.text = utxo.label ?? "No label"
-        addressLabel.text = "address: \(utxo.address ?? "unknown")"
-        txidLabel.text = "txid: \(utxo.txid)"
-        voutLabel.text = "vout #: \(utxo.vout)"
+        //addressLabel.text = "address: \(utxo.address ?? "unknown")"
+        //txidLabel.text = "txid: \(utxo.txid)"
+        //voutLabel.text = "vout #: \(utxo.vout)"
         
         if isLocked {
             lockButtonOutlet.setImage(UIImage(systemName: "lock"), for: .normal)

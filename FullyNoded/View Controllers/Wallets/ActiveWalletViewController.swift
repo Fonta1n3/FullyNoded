@@ -49,6 +49,7 @@ class ActiveWalletViewController: UIViewController, ASAuthorizationControllerDel
     private var isBtc = true
     private var isSats = false
     private var authenticated = false
+    private var initialLoad = true
     var fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
     
     @IBOutlet weak private var currencyControl: UISegmentedControl!
@@ -73,44 +74,46 @@ class ActiveWalletViewController: UIViewController, ASAuthorizationControllerDel
         sectionZeroLoaded = false
         setNotifications()
         addNavBarSpinner()
-        
-        // get 2fa here if set
-        if KeyChain.getData("userIdentifier") != nil {
-            show2fa()
-        } else {
-            authenticated = true
-            getFxRate()
-        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
         
-        if KeyChain.getData("userIdentifier") != nil && !authenticated {
-            show2fa()
+        if initialLoad {
+            initialLoad = false
+            // get 2fa here if set
+            if KeyChain.getData("userIdentifier") != nil && !authenticated {
+                show2fa()
+            } else {
+                getFxRate()
+            }
         } else {
-            fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
-            currencyControl.setTitle(fiatCurrency.lowercased(), forSegmentAt: 2)
-            
-            if KeyChain.getData("UnlockPassword") == nil && UserDefaults.standard.object(forKey: "doNotShowWarning") == nil && KeyChain.getData("userIdentifier") == nil {
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    let alert = UIAlertController(title: "", message: "You really ought to add a password that is used to lock the app if you are doing wallet related stuff!", preferredStyle: UIAlertController.Style.alert)
-                    
-                    alert.addAction(UIAlertAction(title: "set password", style: .default, handler: { action in
-                        DispatchQueue.main.async {
-                            self.performSegue(withIdentifier: "segueToAddPassword", sender: self)
-                        }
-                    }))
-                    
-                    alert.addAction(UIAlertAction(title: "do not show again", style: .destructive, handler: { action in
-                        UserDefaults.standard.set(true, forKey: "doNotShowWarning")
-                    }))
-                    
-                    alert.addAction(UIAlertAction(title: "cancel", style: .cancel, handler: { action in }))
-                    
-                    alert.popoverPresentationController?.sourceView = self.view
-                    self.present(alert, animated: true, completion: nil)
+            if KeyChain.getData("userIdentifier") != nil && !authenticated {
+                show2fa()
+            } else {
+                fiatCurrency = UserDefaults.standard.object(forKey: "currency") as? String ?? "USD"
+                currencyControl.setTitle(fiatCurrency.lowercased(), forSegmentAt: 2)
+                
+                if KeyChain.getData("UnlockPassword") == nil && UserDefaults.standard.object(forKey: "doNotShowWarning") == nil && KeyChain.getData("userIdentifier") == nil {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        
+                        let alert = UIAlertController(title: "", message: "You really ought to add a password that is used to lock the app if you are doing wallet related stuff!", preferredStyle: UIAlertController.Style.alert)
+                        
+                        alert.addAction(UIAlertAction(title: "set password", style: .default, handler: { action in
+                            DispatchQueue.main.async {
+                                self.performSegue(withIdentifier: "segueToAddPassword", sender: self)
+                            }
+                        }))
+                        
+                        alert.addAction(UIAlertAction(title: "do not show again", style: .destructive, handler: { action in
+                            UserDefaults.standard.set(true, forKey: "doNotShowWarning")
+                        }))
+                        
+                        alert.addAction(UIAlertAction(title: "cancel", style: .cancel, handler: { action in }))
+                        
+                        alert.popoverPresentationController?.sourceView = self.view
+                        self.present(alert, animated: true, completion: nil)
+                    }
                 }
             }
         }
@@ -888,7 +891,9 @@ class ActiveWalletViewController: UIViewController, ASAuthorizationControllerDel
     }
     
     @objc func refreshWallet() {
-        refreshAll()
+        if self.view.window != nil {
+            refreshAll()
+        }
     }
     
     private func checkIfWalletsChanged() {

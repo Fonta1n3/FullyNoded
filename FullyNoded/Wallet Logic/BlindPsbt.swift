@@ -15,6 +15,7 @@ class BlindPsbt {
     // Takes the amount of the user specified output, and creates 3 utxos with similar denominations and script types.
     static func getInputs(amountBtc: Double,
                           recipient: String?,
+                          strict: Bool,
                           completion: @escaping (((psbt: String?, error: String?)) -> Void)) {
         
         var inputArray = [String]()
@@ -36,10 +37,19 @@ class BlindPsbt {
                 
                 func finish() {
                     if inputArray.count < 3 {
+                        
                         completion((nil,
                                     "You do not have any similarly denominated utxos, or matching script types. Use the divide button to split your utxos into designated amounts."))
+                        
                     } else if inputArray.count == 3 {
-                        BlindPsbt.getOutputs(inputArray.processedInputs, amountBtc, recipient, type, totalInputAmount, completion: completion)
+                        
+                        BlindPsbt.getOutputs(inputArray.processedInputs,
+                                             amountBtc,
+                                             recipient,
+                                             type,
+                                             totalInputAmount,
+                                             strict,
+                                             completion: completion)
                     }
                 }
                 
@@ -78,33 +88,48 @@ class BlindPsbt {
                                             label = labelCheck
                                         }
                                         
-                                        if percentage >= 0.0 && percentage < 1.1, !label.contains("consumed by blind psbt") {
+                                        var rule = percentage >= -2.0 && percentage < 5.0
+                                        
+                                        if strict {
+                                            rule = amountBtc == utxoStr.amount!
+                                        }
+                                        
+                                        if rule {
                                             
-                                            totalInputAmount += utxoStr.amount!
-                                            inputArray.append(utxoStr.input)
-                                            // update the label to avoid reusing already consumed utxos
-                                            label += "*consumed by blind psbt*"
-                                            
-                                            var param = ""
-                                            
-                                            if wallet.type == WalletType.descriptor.stringValue {
-                                                if let desc = utxoStr.desc {
-                                                    param = "[{\"desc\": \"\(desc)\", \"active\": false, \"timestamp\": \"now\", \"internal\": false, \"label\": \"\(label)\"}]"
-                                                    self.importdesc(params: param, utxo: utxoStr, label: label)
+                                            if !label.contains("consumed by blind psbt") {
+                                                totalInputAmount += utxoStr.amount!
+                                                inputArray.append(utxoStr.input)
+                                                // update the label to avoid reusing already consumed utxos
+                                                label += "*consumed by blind psbt*"
+                                                
+                                                var param = ""
+                                                
+                                                if wallet.type == WalletType.descriptor.stringValue {
+                                                    if let desc = utxoStr.desc {
+                                                        param = "[{\"desc\": \"\(desc)\", \"active\": false, \"timestamp\": \"now\", \"internal\": false, \"label\": \"\(label)\"}]"
+                                                        self.importdesc(params: param, utxo: utxoStr, label: label)
+                                                    }
+                                                } else {
+                                                    param = "[{ \"scriptPubKey\": { \"address\": \"\(utxoStr.address!)\" }, \"label\": \"\(label)\", \"timestamp\": \"now\", \"watchonly\": \(!(utxoStr.spendable ?? false)), \"keypool\": false, \"internal\": false }], ''{\"rescan\": false}''"
+                                                    self.importmulti(param: param, utxo: utxoStr, label: label)
+                                                }
+                                                
+                                                if i + 1 == utxos.count {
+                                                    finish()
                                                 }
                                             } else {
-                                                param = "[{ \"scriptPubKey\": { \"address\": \"\(utxoStr.address!)\" }, \"label\": \"\(label)\", \"timestamp\": \"now\", \"watchonly\": \(!(utxoStr.spendable ?? false)), \"keypool\": false, \"internal\": false }], ''{\"rescan\": false}''"
-                                                self.importmulti(param: param, utxo: utxoStr, label: label)
+                                                if i + 1 == utxos.count {
+                                                    if inputArray.count < 3 {
+                                                        completion((nil, "No available utxos, to free blind utxos:\n1. Go to utxos\n2. Tap the paperclip button that allows you to edit utxo labels\n3. Remove *consumed by blind* from the utxo label"))
+                                                    } else {
+                                                        finish()
+                                                    }
+                                                }
                                             }
-                                            
-                                            if i + 1 == utxos.count {
-                                                finish()
-                                            }
-                                            
                                         } else {
                                             if i + 1 == utxos.count {
                                                 if inputArray.count < 3 {
-                                                    completion((nil, "Amounts for inputs and outputs should match or be very close. You need to create \(3 - (inputArray.count)) utxos with an amount of \(amountBtc) each."))
+                                                    completion((nil, "Amounts for inputs and outputs should match or be very close. You need to create \(3 - (inputArray.count)) utxos with an amount of \(amountBtc) each. You can use the divide tool on your utxos to achieve this easily."))
                                                 } else {
                                                     finish()
                                                 }
@@ -125,8 +150,7 @@ class BlindPsbt {
                             }
                         }
                     } else {
-                        completion((nil,
-                                    "Blind psbts only work with Fully Noded wallets for now."))
+                        completion((nil, "Blind psbts only work with Fully Noded wallets for now."))
                     }
                 }
             }
@@ -150,6 +174,7 @@ class BlindPsbt {
                         return
                     }
                     
+                    CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(startIndex + 1), entity: .wallets) { _ in }
                     getNow(recipient: addresses[0])
                 }
             }
@@ -163,6 +188,7 @@ class BlindPsbt {
                            _ recipient: String,
                            _ type: ScriptPubKey.ScriptType,
                            _ totalInputAmount: Double,
+                           _ strict: Bool,
                            completion: @escaping (((psbt: String?, error: String?)) -> Void)) {
                 
         activeWallet { wallet in
@@ -172,8 +198,9 @@ class BlindPsbt {
             }
             
             let startIndex = Int(wallet.index + 2)
-            let stopIndex = (startIndex + 1)
+            let stopIndex = (startIndex + 2) //create an extra one just in case we need change
             let descriptor = wallet.changeDescriptor
+            var totalOutputAmount = 0.0
             
             Reducer.makeCommand(command: .deriveaddresses, param: "\"\(descriptor)\", [\(startIndex),\(stopIndex)]") { (response, errorMessage) in
                 guard let addresses = response as? [String] else {
@@ -183,16 +210,28 @@ class BlindPsbt {
                 
                 var outputs = [[String:Any]]()
                 outputs.append([recipient:amount])
+                totalOutputAmount += amount
+                
+                CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(stopIndex + 3), entity: .wallets) { _ in }
                             
                 for (i, addr) in addresses.enumerated() {
                     if let scriptType = try? Address(string: addr).scriptPubKey.type, scriptType == type {
-                        let output:[String:Any] = [addr:amount]
-                        outputs.append(output)
+                        if outputs.count < 3 {
+                            let output:[String:Any] = [addr:amount]
+                            totalOutputAmount += amount
+                            outputs.append(output)
+                        }
                     }
                     
                     if i + 1 == addresses.count {
                         if outputs.count == 3 {
-                            BlindPsbt.create(inputs: inputs, outputs: outputs.processedOutputs) { (psbt, errorMessage) in
+                            
+                            BlindPsbt.create(inputs: inputs,
+                                             outputs: outputs.processedOutputs,
+                                             changeAddress: addresses[2],
+                                             outputCount: outputs.count,
+                                             strict: strict) { (psbt, errorMessage) in
+                                
                                 guard let psbt = psbt else {
                                     completion((nil, "psbt not returned: \(errorMessage ?? "unknown error.")"))
                                     return
@@ -218,10 +257,17 @@ class BlindPsbt {
         guard let receivedPsbt = try? PSBT(psbt: decryptedPsbtData.base64EncodedString(), network: .testnet) else { return }
             
         var amountArray = [Double]()
+        var strict = true
 
-        for input in receivedPsbt.inputs {
+        for (i, input) in receivedPsbt.inputs.enumerated() {
             if let sats = input.amount {
                 amountArray.append(Double(sats).satsToBtcDouble)
+            }
+            
+            if i > 0 {
+                if receivedPsbt.inputs[i - 1].amount != input.amount {
+                    strict = false
+                }
             }
         }
 
@@ -233,7 +279,7 @@ class BlindPsbt {
             return
 
         } else if duplicates.count == 1 {
-            BlindPsbt.getInputs(amountBtc: duplicates[0], recipient: nil) { (psbt, error) in
+            BlindPsbt.getInputs(amountBtc: duplicates[0], recipient: nil, strict: strict) { (psbt, error) in
 
                 guard let ourPsbt = psbt else {
                     completion((nil, "There was an error creating a joined blinded psbt: \(error ?? "unknown error")"))
@@ -242,7 +288,7 @@ class BlindPsbt {
                 
                 Reducer.makeCommand(command: .joinpsbts, param: "[\"\(ourPsbt)\", \"\(decryptedPsbtData.base64EncodedString())\"]") { (response, errorMessage) in
                     guard let response = response as? String else {
-                        completion((nil, "There was an error joining the psbts: \(error ?? "unknown error")"))
+                        completion((nil, "There was an error joining the psbts: \(errorMessage ?? "unknown error")"))
                         return
                     }
 
@@ -252,16 +298,32 @@ class BlindPsbt {
         }
     }
     
-    class func create(inputs: String, outputs: String, completion: @escaping ((psbt: String?, errorMessage: String?)) -> Void) {
+    class func create(inputs: String,
+                      outputs: String,
+                      changeAddress: String,
+                      outputCount: Int,
+                      strict: Bool,
+                      completion: @escaping ((psbt: String?, errorMessage: String?)) -> Void) {
+        
         var param = ""
+        
+        let randomInt = Int.random(in: 0..<outputCount)
         
         if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
             
-            param = "\(inputs), ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate), \"subtractFeeFromOutputs\": [0,1,2]}, true"
+            if strict {
+                param = "\(inputs), ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate), \"subtractFeeFromOutputs\": [0,1,2]}, true"
+            } else {
+                param = "\(inputs), ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate), \"subtractFeeFromOutputs\": [\(randomInt)], \"changeAddress\": \"\(changeAddress)\", \"changePosition\": \(randomInt), \"add_inputs\": true}, true"
+            }            
             
         } else if let feeTarget = UserDefaults.standard.object(forKey: "feeTarget") as? Int {
-                        
-            param = "\(inputs), ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"subtractFeeFromOutputs\": [0,1,2]}, true"
+            
+            if strict {
+                param = "\(inputs), ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"subtractFeeFromOutputs\": [0,1,2]}, true"
+            } else {
+                param = "\(inputs), ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"subtractFeeFromOutputs\": [\(randomInt)], \"changeAddress\": \"\(changeAddress)\", \"changePosition\": \(randomInt), \"add_inputs\": true}, true"
+            }
         }
                 
         Reducer.makeCommand(command: .walletcreatefundedpsbt, param: param) { (response, errorMessage) in

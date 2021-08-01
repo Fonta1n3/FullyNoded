@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import AuthenticationServices
 
 class MainMenuViewController: UIViewController {
     
@@ -25,6 +26,7 @@ class MainMenuViewController: UIViewController {
     var dataRefresher = UIBarButtonItem()
     var viewHasLoaded = false
     var isUnlocked = false
+    private var authenticated = false
     var nodeLabel = ""
     var detailImage = UIImage()
     var detailImageTint = UIColor()
@@ -122,11 +124,27 @@ class MainMenuViewController: UIViewController {
     
     
     @IBAction func goToTools(_ sender: Any) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.performSegue(withIdentifier: "segueToTools", sender: self)
+        goToToolsCheck()
+    }
+    
+    private func goToToolsCheck() {
+        if KeyChain.getData("userIdentifier") != nil, !authenticated {
+            show2fa()
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                self.performSegue(withIdentifier: "segueToTools", sender: self)
+            }
         }
+    }
+    
+    private func show2fa() {
+        let request = ASAuthorizationAppleIDProvider().createRequest()
+        let controller = ASAuthorizationController(authorizationRequests: [request])
+        controller.delegate = self
+        controller.presentationContextProvider = self
+        controller.performRequests()
     }
     
     @IBAction func showRemoteControl(_ sender: Any) {
@@ -1134,5 +1152,40 @@ extension MainMenuViewController: UITableViewDataSource {}
 
 extension MainMenuViewController: UINavigationControllerDelegate {}
 
-
+extension MainMenuViewController: ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
+    
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        return self.view.window!
+    }
+    
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+        switch authorization.credential {
+        case let appleIDCredential as ASAuthorizationAppleIDCredential:
+            let authorizationProvider = ASAuthorizationAppleIDProvider()
+            if let usernameData = KeyChain.getData("userIdentifier") {
+                if let username = String(data: usernameData, encoding: .utf8) {
+                    if username == appleIDCredential.user {
+                        authorizationProvider.getCredentialState(forUserID: username) { [weak self] (state, error) in
+                            guard let self = self else { return }
+                            
+                            switch state {
+                            case .authorized:
+                                self.authenticated = true
+                                self.goToToolsCheck()
+                            case .revoked:
+                                fallthrough
+                            case .notFound:
+                                fallthrough
+                            default:
+                                break
+                            }
+                        }
+                    }
+                }
+            }
+        default:
+            break
+        }
+    }
+}
 
