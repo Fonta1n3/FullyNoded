@@ -1,19 +1,20 @@
 # Fully Noded p2p coinjoin - Blind psbts
 
-## Fully Noded v0.2.22 new feature set; "Blind psbts"
+* Fully Noded v0.2.22 new feature set; "Blind psbts"
 
 Comments, feedback, complaints, critiques, requests are always welcome. Reach out.
 
-The three main features included:
-1. A coordinator-less (p2p) coinjoin type transaction (strict policy)
-2. A more flexible transaction type that easily allows multiple people to mix their utxos even if 
-input and output amounts are not equal (flexible policy)
-3. Ability to divide utxos
+Functionality:
+1. coordinator-less (p2p) coinjoin type transaction (strict policy)
+2. flexible transaction type that easily allows multiple people to mix their utxos even if 
+input/output amounts are not equal (flexible policy)
+3. divide utxos
 
 You can think of this feature set as step 0 in the evolution of privacy related features
 for Fully Noded. 
 
 ⚠️ This is not an end all privacy solution!
+
 ⚠️ These are new features and have not been tested or critiqued by anyone other then myself!
 
 blind psbts are collaborative transactions, part of a larger privacy ecosystem. 
@@ -32,9 +33,9 @@ blind psbt.
 
 ⚠️ Whenever Fully Noded creates a blind psbt it will automatically label the consumed utxos as 
 `*consumed by blind*`. It will never add a utxo to a blind psbt which has this label, for testing
-or failed psbts you may need manually edit the label via the utxos view (tap the paperclip).
+or failed psbts you may need to manually edit the label via the utxos view (tap the paperclip).
 If you toggle off `blind psbts` in settings Fully Noded will consume those utxos regardless of
-the label.
+the label and revert to [Bitcoin Core coin selection]().
 
 ### strict policy
 
@@ -54,14 +55,14 @@ the label.
 - minimum 3 outputs
 - minimum 3 inputs
 - no address reuse allowed
-- inputs not always the same denomination
-- outputs not always the same denomination
+- inputs not always equal denomination
+- outputs not always equal denomination
 - mining fee should be deducted from the change output
 
 Always study each and every transaction Fully Noded creates. Do not trust, verify.
 If you have a question stop, ask and wait.
 
-## Initiating a blind psbt
+## Initiating a blind psbt (strict policy)
 
 In the simplest scenario User A wants to send a specific amount of btc to another
 party who may or may not be a participant in the coinjoin. The idea being to make
@@ -78,14 +79,13 @@ outputs utilizing the original receive address User A provided.
 
 **The mining fee is equally deducted from the three outputs!** (only for strict policy)
 
-This means whoever is on the receiving end of this transaction will be the one
+This means whoever is on the receiving end of this transaction will be
 paying at maximum 1/3 of the mining fee (the address User A originally provided
 to initiate the tx).
 
-Fully Noded will do its usual transaction analysis on the psbt and display all
-the info to User A.
+Fully Noded will analyze the psbt as usual allowing User A confirm all is well.
 
-At this point User A may either sign the transaction and send it or optionally
+User A may either sign the transaction and send it or optionally
 export the psbt to User B.
 
 ## Peer to peer flow
