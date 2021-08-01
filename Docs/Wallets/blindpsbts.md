@@ -35,7 +35,7 @@ blind psbt.
 `*consumed by blind*`. It will never add a utxo to a blind psbt which has this label, for testing
 or failed psbts you may need to manually edit the label via the utxos view (tap the paperclip).
 If you toggle off `blind psbts` in settings Fully Noded will consume those utxos regardless of
-the label and revert to [Bitcoin Core coin selection]().
+the label and revert to Bitcoin Core coin selection.
 
 ### strict policy
 
