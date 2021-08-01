@@ -84,6 +84,7 @@ class ActiveWalletViewController: UIViewController, ASAuthorizationControllerDel
             if KeyChain.getData("userIdentifier") != nil && !authenticated {
                 show2fa()
             } else {
+                authenticated = true
                 getFxRate()
             }
         } else {

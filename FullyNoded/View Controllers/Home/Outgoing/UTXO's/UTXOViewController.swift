@@ -68,29 +68,15 @@ class UTXOViewController: UIViewController, UITextFieldDelegate, UINavigationCon
             
             let alert = UIAlertController(title: tit, message: mess, preferredStyle: .alert)
             
-            alert.addAction(UIAlertAction(title: "0.5 btc", style: .default, handler: { [weak self] action in
-                guard let self = self else { return }
-                
-                self.divideNow(denom: 0.5)
-            }))
+            let denomArray = [0.5, 0.05, 0.2, 0.02, 0.1, 0.01, 0.001]
             
-            alert.addAction(UIAlertAction(title: "0.1 btc", style: .default, handler: { [weak self] action in
-                guard let self = self else { return }
-                
-                self.divideNow(denom: 0.1)
-            }))
-            
-            alert.addAction(UIAlertAction(title: "0.05 btc", style: .default, handler: { [weak self] action in
-                guard let self = self else { return }
-                
-                self.divideNow(denom: 0.05)
-            }))
-            
-            alert.addAction(UIAlertAction(title: "0.001 btc", style: .default, handler: { [weak self] action in
-                guard let self = self else { return }
-                
-                self.divideNow(denom: 0.001)
-            }))
+            for denom in denomArray {
+                alert.addAction(UIAlertAction(title: "\(denom) btc", style: .default, handler: { [weak self] action in
+                    guard let self = self else { return }
+                    
+                    self.divideNow(denom: denom)
+                }))
+            }
             
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
             alert.popoverPresentationController?.sourceView = self.view

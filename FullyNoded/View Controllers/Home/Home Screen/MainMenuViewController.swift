@@ -72,7 +72,7 @@ class MainMenuViewController: UIViewController {
         if !Crypto.setupinit() {
             showAlert(vc: self, title: "", message: "There was an error setupinit.")
         }
-                
+                        
         mainMenu.delegate = self
         mainMenu.alpha = 0
         mainMenu.tableFooterView = UIView(frame: .zero)

@@ -55,6 +55,7 @@ class BlindPsbt {
                 
                 activeWallet { wallet in
                     if let wallet = wallet {
+                        if !wallet.receiveDescriptor.hasPrefix("combo") {
                         
                         for (i, utxo) in utxos.enumerated() {
                             let utxoStr = UtxosStruct(dictionary: utxo)
@@ -148,6 +149,9 @@ class BlindPsbt {
                                     finish()
                                 }
                             }
+                        }
+                        } else {
+                            completion((nil, "Blind psbts do not currently work with combo descriptors."))
                         }
                     } else {
                         completion((nil, "Blind psbts only work with Fully Noded wallets for now."))
