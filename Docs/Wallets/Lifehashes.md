@@ -16,6 +16,3 @@ Each utxo can be visually identified by the address it contains prior to being s
 When constructing transactions with Fully Noded it will display each input & output and their respective address & lifehash.
 This makes it much easier to recognize your utxos in psbts or perhaps more importantly to confirm receipt addresses.
 
-Lifehashes are always calculated ad hoc. They could potentially help prevent man in the middle attacks.
-
-
