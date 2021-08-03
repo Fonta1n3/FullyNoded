@@ -27,6 +27,10 @@ class PromptForAuthViewController: UIViewController, UINavigationControllerDeleg
         view.addSubview(button)
     }    
     
+    @IBAction func closeAction(_ sender: Any) {
+        done(nil)
+    }
+    
     func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
         return self.view.window!
     }

@@ -2592,6 +2592,16 @@ xxxxx</string>
                                 <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="close" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="IAB-3d-xww">
+                                <rect key="frame" x="319" y="20" width="40" height="40"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="40" id="f6G-9E-UbY"/>
+                                    <constraint firstAttribute="width" constant="40" id="kmq-fs-cbY"/>
+                                </constraints>
+                                <connections>
+                                    <action selector="closeAction:" destination="4OV-0K-wFQ" eventType="touchUpInside" id="Lzr-89-6uO"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="wK0-Ep-BKo"/>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -2602,6 +2612,8 @@ xxxxx</string>
                             <constraint firstItem="YH3-Ov-cPW" firstAttribute="top" secondItem="fkE-tE-4x2" secondAttribute="bottom" constant="8" symbolic="YES" id="RAj-b3-1JU"/>
                             <constraint firstItem="YH3-Ov-cPW" firstAttribute="leading" secondItem="wK0-Ep-BKo" secondAttribute="leading" constant="16" id="Upj-OI-cA1"/>
                             <constraint firstItem="qUS-1A-18r" firstAttribute="leading" secondItem="wK0-Ep-BKo" secondAttribute="leading" constant="16" id="WBN-M1-ue7"/>
+                            <constraint firstItem="IAB-3d-xww" firstAttribute="top" secondItem="wK0-Ep-BKo" secondAttribute="top" constant="20" id="Y7V-XK-pLg"/>
+                            <constraint firstItem="wK0-Ep-BKo" firstAttribute="trailing" secondItem="IAB-3d-xww" secondAttribute="trailing" constant="16" id="jlU-b4-jcA"/>
                             <constraint firstItem="fkE-tE-4x2" firstAttribute="leading" secondItem="wK0-Ep-BKo" secondAttribute="leading" constant="16" id="nNo-qd-hik"/>
                             <constraint firstItem="wK0-Ep-BKo" firstAttribute="trailing" secondItem="YH3-Ov-cPW" secondAttribute="trailing" constant="16" id="yqf-YB-XHD"/>
                         </constraints>

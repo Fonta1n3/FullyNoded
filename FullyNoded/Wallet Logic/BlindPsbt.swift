@@ -19,8 +19,6 @@ class BlindPsbt {
                           inputsToJoin:[String]?,
                           completion: @escaping (((psbt: String?, error: String?)) -> Void)) {
         
-        print("strict: \(strict)")
-        
         var inputArray = [String]()
         
         guard amountBtc > 0.0 else {
@@ -40,9 +38,8 @@ class BlindPsbt {
                 
                 func finish() {
                     if inputArray.count < 3 {
-                        
-                        completion((nil,
-                                    "You do not have any similarly denominated utxos, or matching script types. Use the divide button to split your utxos into designated amounts."))
+                        let err = "You do not have any similarly denominated utxos, or matching script types. Use the divide button to split your utxos into designated amounts."
+                        completion((nil, err))
                         
                     } else if inputArray.count == 3 {
                         
@@ -59,7 +56,6 @@ class BlindPsbt {
                 activeWallet { wallet in
                     if let wallet = wallet {
                         if !wallet.receiveDescriptor.hasPrefix("combo") {
-                            
                             
                             for (i, utxo) in utxos.enumerated() {
                                 let utxoStr = UtxosStruct(dictionary: utxo)
@@ -101,8 +97,6 @@ class BlindPsbt {
                                                 rule = amountBtc == utxoStr.amount!
                                             }
                                             
-                                            print("rule: \(rule)")
-                                            
                                             if rule {
                                                 
                                                 if let inputsToJoin = inputsToJoin, inputsToJoin.count > 0 {
@@ -110,12 +104,7 @@ class BlindPsbt {
                                                     for (y, inputToJoin) in inputsToJoin.enumerated() {
                                                         if inputToJoin == utxoStr.input {
                                                             inputExists = true
-                                                            print("input exists")
                                                         }
-                                                        
-                                                        print("input exists: \(inputExists)")
-                                                        print("y + 1: \(y + 1)")
-                                                        print("inputsToJoin.count: \(inputsToJoin.count)")
                                                         
                                                         if y + 1 == inputsToJoin.count && inputExists == false {
                                                             append()
@@ -357,39 +346,4 @@ class BlindPsbt {
             completion((psbt, errorMessage))
         }
     }
-    
-//    private class func importdesc(params: String, utxo: UtxosStruct, label: String) {
-//        Reducer.makeCommand(command: .importdescriptors, param: params) { (response, errorMessage) in
-//            updateLocally(utxo: utxo, label: label)
-//        }
-//    }
-    
-//    private class func importmulti(param: String, utxo: UtxosStruct, label: String) {
-//        Reducer.makeCommand(command: .importmulti, param: param) { (response, errorMessage) in
-//            guard let result = response as? NSArray,
-//                let dict = result[0] as? NSDictionary,
-//                let success = dict["success"] as? Bool,
-//                success else {
-//                return
-//            }
-//
-//            updateLocally(utxo: utxo, label: label)
-//        }
-//    }
-    
-//    private class func updateLocally(utxo: UtxosStruct, label: String) {
-//        CoreDataService.retrieveEntity(entityName: .utxos) { savedUtxos in
-//            guard let savedUtxos = savedUtxos, savedUtxos.count > 0 else {
-//                return
-//            }
-//
-//            for savedUtxo in savedUtxos {
-//                let savedUtxoStr = UtxosStruct(dictionary: savedUtxo)
-//
-//                if savedUtxoStr.txid == utxo.txid && savedUtxoStr.vout == utxo.vout {
-//                    CoreDataService.update(id: savedUtxoStr.id!, keyToUpdate: "label", newValue: label as Any, entity: .utxos) { _ in }
-//                }
-//            }
-//        }
-//    }
 }
