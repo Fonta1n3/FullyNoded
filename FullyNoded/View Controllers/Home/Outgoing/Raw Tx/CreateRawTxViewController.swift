@@ -279,7 +279,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     }
     
     private func createBlindNow(amount: Double, recipient: String, strict: Bool) {
-        BlindPsbt.getInputs(amountBtc: amount, recipient: recipient, strict: strict) { [weak self] (psbt, error) in
+        BlindPsbt.getInputs(amountBtc: amount, recipient: recipient, strict: strict, inputsToJoin: nil) { [weak self] (psbt, error) in
             guard let self = self else { return }
             
             self.spinner.removeConnectingView()

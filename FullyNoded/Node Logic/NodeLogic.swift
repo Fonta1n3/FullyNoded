@@ -895,15 +895,9 @@ class NodeLogic {
     }
     
     class func parseTransactions(transactions: NSArray) {
-        var activeWalletId:UUID?
-        
         arrayToReturn.removeAll()
         
-        activeWallet { activeWallet in
-            if activeWallet != nil {
-                activeWalletId = activeWallet!.id
-            }
-            
+        //activeWallet { activeWallet in
             var transactionArray = [[String:Any]]()
             
             for (t, item) in transactions.enumerated() {
@@ -1050,6 +1044,6 @@ class NodeLogic {
                     }
                 }
             }
-        }
+        //}
     }
 }
