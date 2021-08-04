@@ -172,6 +172,20 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         slider.addTarget(self, action: #selector(didFinishSliding(_:)), for: .valueChanged)
     }
     
+    @IBAction func switchCoinSelectionAction(_ sender: Any) {
+        switch coinSelectionControl.selectedSegmentIndex {
+        case 0:
+            showAlert(vc: self, title: "Standard", message: "This defaults to Bitcoin Core coin selection.")
+        case 1:
+            showAlert(vc: self, title: "Blind", message: "Blind psbts are designed to be joined with another user before broadcasting. They may be useful to gain a bit more privacy for your day to day transactions.")
+        case 2:
+            showAlert(vc: self, title: "Coinjoin", message: "Coinjoin psbts are designed to be joined with other users. Export the psbt encrypted to allow others to easily join. Only one input and one output will be added at a time. The amount sent should match the amount of your utxo or this will fail.")
+        default:
+            break
+        }
+    }
+    
+    
     @IBAction func closeFeeRate(_ sender: Any) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
