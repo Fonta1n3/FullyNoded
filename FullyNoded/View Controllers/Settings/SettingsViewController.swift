@@ -131,39 +131,39 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
         return esploraCell
     }
     
-    func blindedPsbtCell(_ indexPath: IndexPath) -> UITableViewCell {
-        let blindedPsbtCell = settingsTable.dequeueReusableCell(withIdentifier: "toggleCell", for: indexPath)
-        configureCell(blindedPsbtCell)
-        
-        let label = blindedPsbtCell.viewWithTag(1) as! UILabel
-        label.textColor = .lightGray
-        label.adjustsFontSizeToFitWidth = true
-        
-        let background = blindedPsbtCell.viewWithTag(2)!
-        background.clipsToBounds = true
-        background.layer.cornerRadius = 8
-        
-        let icon = blindedPsbtCell.viewWithTag(3) as! UIImageView
-        icon.tintColor = .white
-        
-        let toggle = blindedPsbtCell.viewWithTag(4) as! UISwitch
-        toggle.addTarget(self, action: #selector(toggleBlindedPsbt(_:)), for: .valueChanged)
-        
-        guard let blind = UserDefaults.standard.object(forKey: "blind") as? Bool, blind else {
-            toggle.setOn(false, animated: true)
-            label.text = "Blind psbts"
-            icon.image = UIImage(systemName: "xmark.shield")
-            background.backgroundColor = .systemRed
-            return blindedPsbtCell
-        }
-        
-        toggle.setOn(true, animated: true)
-        label.text = "Blind psbts"
-        icon.image = UIImage(systemName: "checkmark.shield.fill")
-        background.backgroundColor = .systemGreen
-        
-        return blindedPsbtCell
-    }
+//    func blindedPsbtCell(_ indexPath: IndexPath) -> UITableViewCell {
+//        let blindedPsbtCell = settingsTable.dequeueReusableCell(withIdentifier: "toggleCell", for: indexPath)
+//        configureCell(blindedPsbtCell)
+//
+//        let label = blindedPsbtCell.viewWithTag(1) as! UILabel
+//        label.textColor = .lightGray
+//        label.adjustsFontSizeToFitWidth = true
+//
+//        let background = blindedPsbtCell.viewWithTag(2)!
+//        background.clipsToBounds = true
+//        background.layer.cornerRadius = 8
+//
+//        let icon = blindedPsbtCell.viewWithTag(3) as! UIImageView
+//        icon.tintColor = .white
+//
+//        let toggle = blindedPsbtCell.viewWithTag(4) as! UISwitch
+//        toggle.addTarget(self, action: #selector(toggleBlindedPsbt(_:)), for: .valueChanged)
+//
+//        guard let blind = UserDefaults.standard.object(forKey: "blind") as? Bool, blind else {
+//            toggle.setOn(false, animated: true)
+//            label.text = "Blind psbts"
+//            icon.image = UIImage(systemName: "xmark.shield")
+//            background.backgroundColor = .systemRed
+//            return blindedPsbtCell
+//        }
+//
+//        toggle.setOn(true, animated: true)
+//        label.text = "Blind psbts"
+//        icon.image = UIImage(systemName: "checkmark.shield.fill")
+//        background.backgroundColor = .systemGreen
+//
+//        return blindedPsbtCell
+//    }
     
     func blockchainInfoCell(_ indexPath: IndexPath) -> UITableViewCell {
         let blockchainInfoCell = settingsTable.dequeueReusableCell(withIdentifier: "toggleCell", for: indexPath)
@@ -283,8 +283,8 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             
         case 3:
             switch indexPath.row {
-            case 0: return blindedPsbtCell(indexPath)
-            case 1: return esploraCell(indexPath)
+            //case 0: return blindedPsbtCell(indexPath)
+            case 0: return esploraCell(indexPath)
             default:
                 return UITableViewCell()
             }
@@ -354,7 +354,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if section == 4 || section == 1 || section == 3 {
+        if section == 4 || section == 1 {
             return 2
         } else if section == 5 {
             return 3
@@ -403,9 +403,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                     self.performSegue(withIdentifier: "goToSecurity", sender: self)
                 }
             }
-            
-        case 3:
-            print("enable Esplora")        
             
         default:
             break
@@ -517,7 +514,11 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
                                 for (u, utxo) in utxos.enumerated() {
                                     let utxoStr = UtxosStruct(dictionary: utxo)
                                     processedUtxoArray[u]["id"] = utxoStr.id!.uuidString
-                                    processedUtxoArray[u]["walletId"] = utxoStr.walletId!.uuidString
+                                    
+                                    if let walletid = utxoStr.walletId {
+                                        processedUtxoArray[u]["walletId"] = walletid.uuidString
+                                    }
+                                    
                                     
                                     if u + 1 == utxos.count {
                                         let file:[String:Any] = ["wallets": jsonArray, "transactions": transactions, "utxos": processedUtxoArray.json() ?? []]
@@ -555,22 +556,6 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
             }
             
             self.present(controller, animated: true)
-        }
-    }
-    
-    @objc func toggleBlindedPsbt(_ sender: UISwitch) {
-        UserDefaults.standard.setValue(sender.isOn, forKey: "blind")
-        
-        if sender.isOn {
-            showAlert(vc: self, title: "psbts blinded ✓", message: "Transactions will now be built with 3 inputs and outputs, all with similar amounts. You can export blind psbts to other Fully Noded users to create more private transactions.")
-        } else {
-            showAlert(vc: self, title: "psbts revealed", message: "The app will now fall back to Bitcoin Core coin selection and export transactions in plain text.")
-        }
-        
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.settingsTable.reloadData()
         }
     }
     

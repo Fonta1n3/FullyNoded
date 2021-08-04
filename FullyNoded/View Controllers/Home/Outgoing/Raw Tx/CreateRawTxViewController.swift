@@ -42,7 +42,6 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     var txt = ""
     var utxoTotal = 0.0
     let ud = UserDefaults.standard
-    var alertStyle = UIAlertController.Style.actionSheet
     var index = 0
     var invoice:[String:Any]?
     var invoiceString = ""
@@ -73,6 +72,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
     @IBOutlet weak private var outputsTable: UITableView!
     @IBOutlet weak private var addressImageView: UIImageView!
     @IBOutlet weak private var feeRateInputField: UITextField!
+    @IBOutlet weak var coinSelectionControl: UISegmentedControl!
     
     var spinner = ConnectingView()
     var spendableBalance = Double()
@@ -168,16 +168,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
             }
         }
         
-        if (UIDevice.current.userInterfaceIdiom == .pad) {
-          alertStyle = UIAlertController.Style.alert
-        }
-        
         showFeeSetting()
         slider.addTarget(self, action: #selector(didFinishSliding(_:)), for: .valueChanged)
-        
-        if let blind = UserDefaults.standard.object(forKey: "blind") as? Bool, blind {
-            showAlert(vc: self, title: "Blind psbts enabled", message: "Just a reminder that you have blind psbts enabled which drastically changes the way Fully Noded builds transactions.")
-        }
     }
     
     @IBAction func closeFeeRate(_ sender: Any) {
@@ -237,55 +229,46 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         let lc = item.lowercased()
         
         if lc.hasPrefix("lntb") || lc.hasPrefix("lightning:") || lc.hasPrefix("lnbc") || lc.hasPrefix("lnbcrt") {
-            decodeLighnting(invoice: item.replacingOccurrences(of: "lightning:", with: ""))
+            decodeLighnting(invoice: item.lowercased().replacingOccurrences(of: "lightning:", with: ""))
         } else {
-            if let blind = UserDefaults.standard.object(forKey: "blind") as? Bool, blind {
-                createBlindPsbt()
-            } else {
+            
+            guard let amount = convertedAmount() else {
+                spinner.removeConnectingView()
+                showAlert(vc: self, title: "", message: "No amount or address.")
+                return
+            }
+            
+            switch coinSelectionControl.selectedSegmentIndex {
+            case 0:
                 tryRaw()
+            case 1:
+                self.createBlindNow(amount: amount.doubleValue, recipient: item, strict: false)
+            case 2:
+                self.createBlindNow(amount: amount.doubleValue, recipient: item, strict: true)
+            default:
+                break
             }
         }
     }
     
-    private func createBlindPsbt() {
-        spinner.addConnectingView(vc: self, description: "")
-        
-        guard let amount = convertedAmount(), let recipient = addressInput.text, recipient != "" else {
-            spinner.removeConnectingView()
-            showAlert(vc: self, title: "", message: "No amount or address.")
-            return
-        }
-        
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            let title = "Select a policy."
-            let message = "Strict keeps inputs/outputs amounts identical, each output shares the mining fee equally.\n\nFlexible will not necessarily keep all inputs and outputs identical and can include a change output."
-            
-            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            
-            alert.addAction(UIAlertAction(title: "Strict", style: .default, handler: { action in
-                self.createBlindNow(amount: amount.doubleValue, recipient: recipient, strict: true)
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Flexible", style: .default, handler: { action in
-                self.createBlindNow(amount: amount.doubleValue, recipient: recipient, strict: false)
-            }))
-            
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { action in }))
-            alert.popoverPresentationController?.sourceView = self.view
-            self.present(alert, animated: true, completion: nil)
-        }
-    }
-    
     private func createBlindNow(amount: Double, recipient: String, strict: Bool) {
+        var type = ""
+        
+        if strict {
+            type = "coinjoin"
+        } else {
+            type = "blind"
+        }
+        
+        spinner.addConnectingView(vc: self, description: "creating \(type) psbt...")
+        
         BlindPsbt.getInputs(amountBtc: amount, recipient: recipient, strict: strict, inputsToJoin: nil) { [weak self] (psbt, error) in
             guard let self = self else { return }
             
             self.spinner.removeConnectingView()
             
             if let error = error {
-                showAlert(vc: self, title: "There was an issue creating a blind psbt.", message: error)
+                showAlert(vc: self, title: "There was an issue creating the \(type) psbt.", message: error)
             } else if let psbt = psbt {
                 self.rawTxUnsigned = psbt
                 self.showRaw(raw: psbt)
@@ -377,7 +360,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
                 mess = "This sweep action will withdraw the TOTAL onchain amount specified to the given address from your lightning wallet!"
             }
             
-            let alert = UIAlertController(title: "Withdraw from lightning wallet?", message: mess, preferredStyle: self.alertStyle)
+            let alert = UIAlertController(title: "Withdraw from lightning wallet?", message: mess, preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "Withdraw now", style: .default, handler: { action in
                 self.withdrawLightningSanity()
             }))
@@ -426,7 +409,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let alert = UIAlertController(title: title, message: "This action is not reversable!", preferredStyle: self.alertStyle)
+            let alert = UIAlertController(title: title, message: "This action is not reversable!", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "Withdraw now", style: .default, handler: { action in
                 self.withdrawLightningNow(address: address, sats: sats)
             }))
@@ -929,17 +912,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         }
         
         if outputArray.count == 0 {
-            if var amount = convertedAmount(), self.addressInput.text != "" {
-                amount = amount.replacingOccurrences(of: ",", with: "")
-                let dblAmount = amount.doubleValue
-                
-                if isFiat {
-                    guard let fxRate = fxRate else { return }
-                    
-                    amount = "\(rounded(number: dblAmount / fxRate).avoidNotation)"
-                } else if isSats {
-                    amount = "\(rounded(number: dblAmount / 100000000).avoidNotation)"
-                }
+            if let amount = convertedAmount(), self.addressInput.text != "" {
                 
                 let dict = ["address":addressInput.text!, "amount":amount] as [String : String]
                 

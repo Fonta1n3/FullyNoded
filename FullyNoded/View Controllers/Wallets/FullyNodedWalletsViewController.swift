@@ -184,13 +184,13 @@ class FullyNodedWalletsViewController: UIViewController, UITableViewDelegate, UI
                 
                 UserDefaults.standard.set(self.existingActiveWalletName, forKey: "walletName")
                 
-                let roundedFiat = Int(self.totalBtcBalance * self.fxRate)
+                let roundedFiat = self.totalBtcBalance * self.fxRate
                 
                 self.totalBalanceLabel.text = "\(self.totalBtcBalance.avoidNotation) btc"
                 self.totalBalanceLabel.alpha = 1
                 self.fxRateLabel.text = self.fxRate.exchangeRate
                 self.fxRateLabel.alpha = 1
-                self.balanceFiatLabel.text = "$\(roundedFiat.withCommas)"
+                self.balanceFiatLabel.text = roundedFiat.fiatString
                 self.balanceFiatLabel.alpha = 1
                 self.initialLoad = false
                 self.spinner.removeConnectingView()

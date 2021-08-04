@@ -37,11 +37,10 @@ class BlindPsbt {
                 var type:ScriptPubKey.ScriptType!
                 
                 func finish() {
-                    if inputArray.count < 3 {
-                        let err = "You do not have any similarly denominated utxos, or matching script types. Use the divide button to split your utxos into designated amounts."
-                        completion((nil, err))
+                    if inputArray.count == 0 {
+                        completion((nil, "Looks like you do not have any suitable utxos for this transaction type."))
                         
-                    } else if inputArray.count == 3 {
+                    } else if inputArray.count > 0 {
                         
                         BlindPsbt.getOutputs(inputArray.processedInputs,
                                              amountBtc,
@@ -89,35 +88,64 @@ class BlindPsbt {
                                     if recipientAddress.scriptPubKey.type == inputAddress.scriptPubKey.type {
                                         type = recipientAddress.scriptPubKey.type
                                         
-                                        if inputArray.count < 3 {
-                                            
-                                            var rule = true
-                                            
-                                            if strict {
-                                                rule = amountBtc == utxoStr.amount!
-                                            }
+                                        var totalInputsAllowed = 1
+                                        
+                                        var rule = true
+                                        
+                                        if strict {
+                                            rule = amountBtc == utxoStr.amount!
+                                        } else {
+                                            totalInputsAllowed = 2
+                                        }
+                                        
+                                        if inputArray.count < totalInputsAllowed {
                                             
                                             if rule {
+                                                var inputExists = false
                                                 
-                                                if let inputsToJoin = inputsToJoin, inputsToJoin.count > 0 {
-                                                    var inputExists = false
-                                                    for (y, inputToJoin) in inputsToJoin.enumerated() {
-                                                        if inputToJoin == utxoStr.input {
+                                                if inputArray.count > 0 {
+                                                    for (x, input) in inputArray.enumerated() {
+                                                        if input.contains(utxoStr.txid) && strict {
+                                                            inputExists = true
+                                                        }
+                                                        if input == utxoStr.input {
                                                             inputExists = true
                                                         }
                                                         
-                                                        if y + 1 == inputsToJoin.count && inputExists == false {
-                                                            append()
+                                                        if x + 1 == inputArray.count {
+                                                            checkExisitingInputs()
                                                         }
                                                     }
                                                 } else {
-                                                    append()
+                                                    checkExisitingInputs()
                                                 }
                                                 
+                                                func checkExisitingInputs() {
+                                                    if let inputsToJoin = inputsToJoin, inputsToJoin.count > 0 {
+                                                        for (y, inputToJoin) in inputsToJoin.enumerated() {
+                                                            if inputToJoin == utxoStr.input {
+                                                                inputExists = true
+                                                            } else if inputToJoin.contains(utxoStr.txid) && strict {
+                                                                inputExists = true
+                                                            }
+                                                            
+                                                            if y + 1 == inputsToJoin.count && inputExists == false {
+                                                                append()
+                                                            } else if i + 1 == utxos.count {
+                                                                finish()
+                                                            }
+                                                        }
+                                                    } else if inputExists == false  {
+                                                        append()
+                                                    } else if i + 1 == utxos.count {
+                                                        finish()
+                                                    }
+                                                }
+                                    
                                             } else {
                                                 if i + 1 == utxos.count {
-                                                    if inputArray.count < 3 {
-                                                        completion((nil, "Amounts for inputs and outputs should match or be very close. You need to create \(3 - (inputArray.count)) utxos with an amount of \(amountBtc) each. You can use the divide tool on your utxos to achieve this easily."))
+                                                    if inputArray.count < 1 {
+                                                        completion((nil, "It seems you do not have enough segregated utxos to create this type of transaction. Fully Noded does not allow utxos that are already linked together to be used in joined transactions."))
                                                     } else {
                                                         finish()
                                                     }
@@ -188,8 +216,8 @@ class BlindPsbt {
                 return
             }
             
-            let startIndex = Int(wallet.index + 2)
-            let stopIndex = (startIndex + 2) //create an extra one just in case we need change
+            let startIndex = Int(wallet.index + 1)
+            let stopIndex = (startIndex + 1) //create an extra one just in case we need change
             let descriptor = wallet.changeDescriptor
             var totalOutputAmount = 0.0
             
@@ -203,11 +231,17 @@ class BlindPsbt {
                 outputs.append([recipient:amount])
                 totalOutputAmount += amount
                 
-                CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(stopIndex + 3), entity: .wallets) { _ in }
+                CoreDataService.update(id: wallet.id, keyToUpdate: "index", newValue: Int64(stopIndex + 2), entity: .wallets) { _ in }
+                
+                var totalAllowedOutputs = 1
+                
+                if !strict {
+                    totalAllowedOutputs = 2
+                }
                             
                 for (i, addr) in addresses.enumerated() {
                     if let scriptType = try? Address(string: addr).scriptPubKey.type, scriptType == type {
-                        if outputs.count < 3 {
+                        if outputs.count < totalAllowedOutputs {
                             let output:[String:Any] = [addr:amount]
                             totalOutputAmount += amount
                             outputs.append(output)
@@ -215,11 +249,11 @@ class BlindPsbt {
                     }
                     
                     if i + 1 == addresses.count {
-                        if outputs.count == 3 {
+                        if outputs.count == totalAllowedOutputs {
                             
                             BlindPsbt.create(inputs: inputs,
                                              outputs: outputs.processedOutputs,
-                                             changeAddress: addresses[2],
+                                             changeAddress: addresses[1],
                                              outputCount: outputs.count,
                                              strict: strict) { (psbt, errorMessage) in
                                 
@@ -319,7 +353,7 @@ class BlindPsbt {
         if let feeRate = UserDefaults.standard.object(forKey: "feeRate") as? Int {
             
             if strict {
-                param = "\(inputs), ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate), \"subtractFeeFromOutputs\": [0,1,2]}"
+                param = "\(inputs), ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate), \"subtractFeeFromOutputs\": [0]}"
             } else {
                 param = "\(inputs), ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"fee_rate\": \(feeRate), \"subtractFeeFromOutputs\": [\(randomInt)], \"changeAddress\": \"\(changeAddress)\", \"changePosition\": \(randomInt), \"add_inputs\": true}"
             }            
@@ -327,7 +361,7 @@ class BlindPsbt {
         } else if let feeTarget = UserDefaults.standard.object(forKey: "feeTarget") as? Int {
             
             if strict {
-                param = "\(inputs), ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"subtractFeeFromOutputs\": [0,1,2]}"
+                param = "\(inputs), ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"subtractFeeFromOutputs\": [0]}"
             } else {
                 param = "\(inputs), ''{\(outputs)}'', 0, {\"includeWatching\": true, \"replaceable\": true, \"conf_target\": \(feeTarget), \"subtractFeeFromOutputs\": [\(randomInt)], \"changeAddress\": \"\(changeAddress)\", \"changePosition\": \(randomInt), \"add_inputs\": true}"
             }

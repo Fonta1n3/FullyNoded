@@ -14,6 +14,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     weak var mgr = TorClient.sharedInstance
     var window: UIWindow?
     private var isBooting = true
+    private var blacked = UIView()
     
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
@@ -41,6 +42,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func sceneWillEnterForeground(_ scene: UIScene) {
+        self.blacked.removeFromSuperview()
+        
         guard !isBooting else { isBooting = !isBooting; return }
         
         guard KeyChain.getData("UnlockPassword") != nil else {
@@ -52,7 +55,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             return
         }
         
-        #if !targetEnvironment(macCatalyst)
+        #if !os(macOS)
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         
         guard let loginVC = storyboard.instantiateViewController(identifier: "LogIn") as? LogInViewController,
@@ -87,6 +90,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             mgr?.state = .refreshing
             mgr?.resign()
             #endif
+        }
+        
+        if let window = self.window {
+            blacked.frame = window.frame
+            blacked.backgroundColor = .black
+            self.window?.addSubview(blacked)
         }
     }
         

@@ -73,22 +73,25 @@ class WalletRecoveryViewController: UIViewController, UIDocumentPickerDelegate {
                 }
                 
                 if i + 1 == wallets.count {
-                    let utxos = dict["utxos"] as! String
-                    let utxosData = utxos.dataUsingUTF8StringEncoding
-                    
-                    guard let utxoArray = try? JSONSerialization.jsonObject(with: utxosData, options: []) as? [[String:Any]] else {
-                        alertToRecoverWalletsTransactions(mainnetWallets, testnetWallets, transactions, [[:]])
+                    if let utxos = dict["utxos"] as? String {
+                        let utxosData = utxos.dataUsingUTF8StringEncoding
                         
-                        return
+                        guard let utxoArray = try? JSONSerialization.jsonObject(with: utxosData, options: []) as? [[String:Any]] else {
+                            alertToRecoverWalletsTransactions(mainnetWallets, testnetWallets, transactions, [[:]])
+                            
+                            return
+                        }
+                        
+                        alertToRecoverWalletsTransactions(mainnetWallets, testnetWallets, transactions, utxoArray)
+                    } else {
+                        alertToRecoverWalletsTransactions(mainnetWallets, testnetWallets, transactions, nil)
                     }
-                    
-                    alertToRecoverWalletsTransactions(mainnetWallets, testnetWallets, transactions, utxoArray)
                 }
             }
         }
     }
     
-    private func alertToRecoverWalletsTransactions(_ mainnetWallets: [[String:Any]], _ testnetWallets: [[String:Any]], _ transactions: [[String:Any]], _ utxos: [[String:Any]]) {
+    private func alertToRecoverWalletsTransactions(_ mainnetWallets: [[String:Any]], _ testnetWallets: [[String:Any]], _ transactions: [[String:Any]], _ utxos: [[String:Any]]?) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
@@ -103,7 +106,7 @@ class WalletRecoveryViewController: UIViewController, UIDocumentPickerDelegate {
                 wallets = testnetWallets
             }
             
-            let mess = "This will recover \(wallets.count) wallets, \(transactions.count) transactions (labels, memos, and capital gains info), and \(utxos.count) utxos."
+            let mess = "This will recover \(wallets.count) wallets, \(transactions.count) transactions (labels, memos, and capital gains info)."
             
             let tit = "Recover Now?"
             

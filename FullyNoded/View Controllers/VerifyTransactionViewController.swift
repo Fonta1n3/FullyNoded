@@ -387,11 +387,11 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
     }
     
     private func promptToExportPsbt() {
-        let alert = UIAlertController(title: "Export blinded?",
+        let alert = UIAlertController(title: "Export encrypted?",
                                       message: "You can either export this psbt encrypted or in plain text.",
                                       preferredStyle: .alert)
         
-        alert.addAction(UIAlertAction(title: "Blinded", style: .default, handler: { [weak self] action in
+        alert.addAction(UIAlertAction(title: "Encrypted", style: .default, handler: { [weak self] action in
             guard let self = self else { return }
             
             guard let data = Data(base64Encoded: self.unsignedPsbt),
@@ -426,12 +426,10 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             
             self.exportPsbt(blindedpsbt: ur.qrString, plainText: nil)
             
-        } else if let blind = UserDefaults.standard.object(forKey: "blind") as? Bool, blind {
+        } else if unsignedPsbt != "" {
             promptToExportPsbt()
         } else if signedRawTx != "" {
             exportTxn(txn: signedRawTx)
-        } else {
-            exportPsbt(blindedpsbt: nil, plainText: unsignedPsbt)
         }
     }
     
@@ -596,17 +594,17 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                 
                 self.disableBumpButton()
                 
-                if signedPsbt != nil {
-                    self.unsignedPsbt = signedPsbt!
-                    self.load()
-                    showAlert(vc: self, title: "Fee increased to \(newFee.avoidNotation)", message: "The transaction still needs more signatures before it can be broadcast.")
-                    
-                } else if rawTx != nil {
+                if rawTx != nil {
                     self.signedRawTx = rawTx!
                     self.enableSendButton()
                     self.disableSignButton()
                     self.load()
                     showAlert(vc: self, title: "Fee increased to \(newFee.avoidNotation)", message: "Tap the send button to broadcast the new transaction.")
+                    
+                } else if signedPsbt != nil {
+                    self.unsignedPsbt = signedPsbt!
+                    self.load()
+                    showAlert(vc: self, title: "Fee increased to \(newFee.avoidNotation)", message: "The transaction still needs more signatures before it can be broadcast.")
                     
                 } else {
                     showAlert(vc: self, title: "Error Signing", message: errorMessage ?? "unknown")
@@ -2179,15 +2177,15 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             var itemToExport = ""
             
             if let blinded = blindedpsbt {
-                tit = "⚠️ You enabled blinded psbts in settings. This psbt will only be readable by Fully Noded!"
+                tit = "⚠️ This psbt will only be readable by Fully Noded!"
                 itemToExport = blinded
             } else if let plain = plainText {
                 itemToExport = plain
             }
             
-            let alert = UIAlertController(title: tit, message: "Share as a .psbt file, text or QR?", preferredStyle: .alert)
+            let alert = UIAlertController(title: tit, message: "Share as a file, text or QR?", preferredStyle: .alert)
             
-            alert.addAction(UIAlertAction(title: ".psbt file", style: .default, handler: { action in
+            alert.addAction(UIAlertAction(title: "File", style: .default, handler: { action in
                 self.convertPSBTtoData(string: itemToExport)
             }))
             
@@ -2332,14 +2330,14 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let alert = UIAlertController(title: "Add another blinded psbt?",
-                                          message: "Adding a blinded psbt will contribute 3 of your inputs and outputs to the transaction.",
+            let alert = UIAlertController(title: "Add inputs and outputs to the psbt?",
+                                          message: "Fully Noded will add inputs and outputs from your active wallet to this transaction. Everyones inputs and outputs will be shuffled. This helps to break common heuristics companies may use to track your utxos and/or payments.",
                                           preferredStyle: .alert)
             
-            alert.addAction(UIAlertAction(title: "Add a blinded psbt", style: .default, handler: { [weak self] action in
+            alert.addAction(UIAlertAction(title: "Join", style: .default, handler: { [weak self] action in
                 guard let self = self else { return }
                 
-                self.spinner.label.text = "creating 3 inputs and outputs..."
+                self.spinner.label.text = "adding our inputs and outputs..."
                 self.addBlindPsbt(blindPsbt)
             }))
             
@@ -2373,6 +2371,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
             guard let self = self else { return }
                         
             guard let joinedPsbt = joinedPsbt else {
+                self.spinner.removeConnectingView()
                 showAlert(vc: self, title: "Error getting joined psbt.", message: "\(error ?? "unknown error")")
                 return
             }
@@ -2395,7 +2394,7 @@ class VerifyTransactionViewController: UIViewController, UINavigationControllerD
                     vc.headerIcon = UIImage(systemName: "square.and.arrow.up")
                     
                     if self.qrCodeStringToExport.hasPrefix("UR:BYTES") {
-                        vc.headerText = "Blinded PSBT"
+                        vc.headerText = "Encrypted PSBT"
                         vc.descriptionText = "Pass this psbt to your signer or to others to create a collaborative batch transaction."
                     } else {
                         vc.headerText = "PSBT"
