@@ -90,6 +90,10 @@ class MainMenuViewController: UIViewController {
         torProgressLabel.layer.zPosition = 1
         progressView.layer.zPosition = 1
         progressView.setNeedsFocusUpdate()
+        
+        BackupiCloud.backup { success in
+            print("backed up: \(success)")
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {

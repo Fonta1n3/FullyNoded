@@ -32,6 +32,9 @@
 		0A59035D269B0CA800510626 /* InvoiceStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A59035C269B0CA700510626 /* InvoiceStruct.swift */; };
 		0A77138426AD9C5E005CC23D /* BlindPsbt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A77138326AD9C5E005CC23D /* BlindPsbt.swift */; };
 		0A77138626AE5E85005CC23D /* WalletInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A77138526AE5E85005CC23D /* WalletInfo.swift */; };
+		0A9834BF26BBC93F00BAB74E /* CoreDataiCloud.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9834BE26BBC93F00BAB74E /* CoreDataiCloud.swift */; };
+		0A9834C226BBCAD600BAB74E /* Fully_Noded_backup.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 0A9834C026BBCAD600BAB74E /* Fully_Noded_backup.xcdatamodeld */; };
+		0A9834C426BBCCB300BAB74E /* Backup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9834C326BBCCB300BAB74E /* Backup.swift */; };
 		0A9FDC9126A84CE30050C4AE /* WalletTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9FDC9026A84CE30050C4AE /* WalletTypes.swift */; };
 		0AE19ED725F4AC0D000F0AD4 /* WalletRecoveryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AE19ED625F4AC0D000F0AD4 /* WalletRecoveryViewController.swift */; };
 		844D2A4B2512D4F60046372E /* UTXOCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844D2A492512D4F60046372E /* UTXOCell.swift */; };
@@ -231,6 +234,9 @@
 		0A59035C269B0CA700510626 /* InvoiceStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceStruct.swift; sourceTree = "<group>"; };
 		0A77138326AD9C5E005CC23D /* BlindPsbt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlindPsbt.swift; sourceTree = "<group>"; };
 		0A77138526AE5E85005CC23D /* WalletInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletInfo.swift; sourceTree = "<group>"; };
+		0A9834BE26BBC93F00BAB74E /* CoreDataiCloud.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataiCloud.swift; sourceTree = "<group>"; };
+		0A9834C126BBCAD600BAB74E /* Fully_Noded_backup.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Fully_Noded_backup.xcdatamodel; sourceTree = "<group>"; };
+		0A9834C326BBCCB300BAB74E /* Backup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Backup.swift; sourceTree = "<group>"; };
 		0A9FDC9026A84CE30050C4AE /* WalletTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletTypes.swift; sourceTree = "<group>"; };
 		0AE19ED625F4AC0D000F0AD4 /* WalletRecoveryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletRecoveryViewController.swift; sourceTree = "<group>"; };
 		844D2A492512D4F60046372E /* UTXOCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOCell.swift; sourceTree = "<group>"; };
@@ -561,6 +567,7 @@
 				D00B9A362111427200E8B95A /* Info.plist */,
 				D0AD9B6723E7ECC20032C607 /* SceneDelegate.swift */,
 				0A590356269875CB00510626 /* Extensions.swift */,
+				0A9834C026BBCAD600BAB74E /* Fully_Noded_backup.xcdatamodeld */,
 			);
 			path = FullyNoded;
 			sourceTree = "<group>";
@@ -633,6 +640,8 @@
 				D00B27BB255A27F300269B51 /* WalletURL.swift */,
 				D06D788E25B817E100769157 /* Lifehash.swift */,
 				0A3013D7266B361E004DA35C /* LndRpc.swift */,
+				0A9834BE26BBC93F00BAB74E /* CoreDataiCloud.swift */,
+				0A9834C326BBCCB300BAB74E /* Backup.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -1158,6 +1167,7 @@
 				D0B80A892516020A006B88F0 /* ImportXpubViewController.swift in Sources */,
 				0A1F10D826A1A54E00BE2707 /* ChildIndex.swift in Sources */,
 				D0C20EE024A6EF3800C62AA4 /* Balances.swift in Sources */,
+				0A9834C226BBCAD600BAB74E /* Fully_Noded_backup.xcdatamodeld in Sources */,
 				D08A92B7233E113B00409D6E /* LockedViewController.swift in Sources */,
 				D039D3C823322F1300D1ED18 /* NodeStruct.swift in Sources */,
 				D08A92AD2337A63000409D6E /* DescriptorStruct.swift in Sources */,
@@ -1176,6 +1186,7 @@
 				0A1F10E126A1A62B00BE2707 /* ChildIndexWildcard.swift in Sources */,
 				D09A330724A982F3009FA0B2 /* FullyNodedWalletsViewController.swift in Sources */,
 				D07AED042435B62B00C2FADB /* Entities.swift in Sources */,
+				0A9834BF26BBC93F00BAB74E /* CoreDataiCloud.swift in Sources */,
 				D0DBC7062501CEFE00F6787C /* VerifyTransactionViewController.swift in Sources */,
 				D0855FCA22B0CEA800DBBFC2 /* CreatePSBT.swift in Sources */,
 				0A1F110726A2783000BE2707 /* KeyType.swift in Sources */,
@@ -1205,6 +1216,7 @@
 				D02958D3234F82E000ED8F72 /* IdentityViewController.swift in Sources */,
 				0A1F10DB26A1A58100BE2707 /* GeneralError.swift in Sources */,
 				D09A330324A86C7C009FA0B2 /* Signer.swift in Sources */,
+				0A9834C426BBCCB300BAB74E /* Backup.swift in Sources */,
 				D08A92B1233B213300409D6E /* ChooseWalletViewController.swift in Sources */,
 				0A77138426AD9C5E005CC23D /* BlindPsbt.swift in Sources */,
 				D0A2918F225114670099A2F3 /* MakeRPCCall.swift in Sources */,
@@ -1628,6 +1640,16 @@
 /* End XCSwiftPackageProductDependency section */
 
 /* Begin XCVersionGroup section */
+		0A9834C026BBCAD600BAB74E /* Fully_Noded_backup.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				0A9834C126BBCAD600BAB74E /* Fully_Noded_backup.xcdatamodel */,
+			);
+			currentVersion = 0A9834C126BBCAD600BAB74E /* Fully_Noded_backup.xcdatamodel */;
+			path = Fully_Noded_backup.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
 		D0C4EE6D24F0EC9B003C929A /* BitSense.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (

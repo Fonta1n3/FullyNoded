@@ -27,6 +27,12 @@ enum Crypto {
         return P256.Signing.PrivateKey().rawRepresentation
     }
     
+    static func encryptForBackup(_ data: Data) -> Data? {
+        guard let key = KeyChain.getData("unlockPassword") else { return nil }
+        
+        return try? ChaChaPoly.seal(data, using: SymmetricKey(data: key)).combined
+    }
+    
     static func encrypt(_ data: Data) -> Data? {
         guard let key = KeyChain.getData("privateKey") else { return nil }
         

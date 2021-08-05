@@ -19,3 +19,7 @@ public enum ENTITY: String {
     case utxos = "Utxos"
     case transactions = "Transactions"
 }
+
+public enum ENTITY_BACKUP: String {
+    case backup = "Backup"
+}

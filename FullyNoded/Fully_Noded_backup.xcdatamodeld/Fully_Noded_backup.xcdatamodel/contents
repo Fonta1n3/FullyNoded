@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="18154" systemVersion="20B29" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="Backup" representedClassName="Backup" syncable="YES" codeGenerationType="class">
+        <attribute name="authkeys" optional="YES" attributeType="Binary"/>
+        <attribute name="nodes" optional="YES" attributeType="Binary"/>
+        <attribute name="signers" optional="YES" attributeType="Binary"/>
+        <attribute name="transactions" optional="YES" attributeType="Binary"/>
+        <attribute name="utxos" optional="YES" attributeType="Binary"/>
+        <attribute name="wallets" optional="YES" attributeType="Binary"/>
+    </entity>
+    <elements>
+        <element name="Backup" positionX="-63" positionY="-18" width="128" height="14"/>
+    </elements>
+</model>
