@@ -170,6 +170,8 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         
         showFeeSetting()
         slider.addTarget(self, action: #selector(didFinishSliding(_:)), for: .valueChanged)
+        
+        amountInput.text = ""
     }
     
     @IBAction func switchCoinSelectionAction(_ sender: Any) {
@@ -309,7 +311,7 @@ class CreateRawTxViewController: UIViewController, UITextFieldDelegate, UITableV
         let dblAmount = amount.doubleValue
         
         guard dblAmount > 0.0 else {
-            showAlert(vc: self, title: "Amount needs to be greater the 0", message: "")
+            showAlert(vc: self, title: "", message: "Amount needs to be greater than 0.")
             return nil
         }
         
