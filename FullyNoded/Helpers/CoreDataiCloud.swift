@@ -12,7 +12,7 @@ import CoreData
 class CoreDataiCloud {
     
     static var persistentContainer: NSPersistentCloudKitContainer = {
-        let container = NSPersistentCloudKitContainer(name: "Fully_Noded_backup")
+        let container = NSPersistentCloudKitContainer(name: "Backup")
         
         guard let description = container.persistentStoreDescriptions.first else {
             fatalError("Could not retrieve a persistent store description.")
@@ -20,9 +20,11 @@ class CoreDataiCloud {
         
         description.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: "iCloud.com.fullynoded.backup")
         
+        
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
             if let error = error as NSError? {
-                fatalError("Unresolved error \(error), \(error.userInfo)")
+                //fatalError("Unresolved error \(error), \(error.userInfo)")
+                print("Unresolved error \(error), \(error.userInfo)")
             }
         })
         return container
@@ -34,7 +36,7 @@ class CoreDataiCloud {
         return viewContext
     }
         
-    class func saveContext () {
+    class func saveContext() {
         DispatchQueue.main.async {
             let context = CoreDataiCloud.viewContext
             if context.hasChanges {
@@ -42,17 +44,18 @@ class CoreDataiCloud {
                     try context.save()
                 } catch {
                     let nserror = error as NSError
-                    fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
+                    print("Unresolved error \(nserror), \(nserror.userInfo)")
+                    //fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
                 }
             }
         }
     }
     
-    class func saveEntity(dict: [String:Any], completion: @escaping ((Bool)) -> Void) {
+    class func saveEntity(entity: ENTITY_BACKUP, dict: [String:Any], completion: @escaping ((Bool)) -> Void) {
         DispatchQueue.main.async {
             let context = CoreDataiCloud.viewContext
             
-            guard let entity = NSEntityDescription.entity(forEntityName: "ENTITY_BACKUP", in: context) else {
+            guard let entity = NSEntityDescription.entity(forEntityName: entity.rawValue, in: context) else {
                 completion((false))
                 return
             }
@@ -72,10 +75,10 @@ class CoreDataiCloud {
         }
     }
     
-    class func deleteEntity(completion: @escaping ((Bool)) -> Void) {
+    class func deleteEntity(entity: ENTITY_BACKUP, completion: @escaping ((Bool)) -> Void) {
         DispatchQueue.main.async {
             let context = CoreDataiCloud.viewContext
-            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "ENTITY_BACKUP")
+            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entity.rawValue)
             fetchRequest.returnsObjectsAsFaults = false
             do {
                 let stuff = try context.fetch(fetchRequest)
@@ -90,10 +93,10 @@ class CoreDataiCloud {
         }
     }
     
-    class func retrieveEntity(completion: @escaping ((entity: [[String:Any]]?, errorDescription: String?)) -> Void) {
+    class func retrieveEntity(entity: ENTITY_BACKUP, completion: @escaping ((entity: [[String:Any]]?, errorDescription: String?)) -> Void) {
         DispatchQueue.main.async {
             let context = CoreDataiCloud.viewContext
-            var fetchRequest:NSFetchRequest<NSFetchRequestResult>? = NSFetchRequest<NSFetchRequestResult>(entityName: "ENTITY_BACKUP")
+            var fetchRequest:NSFetchRequest<NSFetchRequestResult>? = NSFetchRequest<NSFetchRequestResult>(entityName: entity.rawValue)
             fetchRequest?.returnsObjectsAsFaults = false
             fetchRequest?.resultType = .dictionaryResultType
             

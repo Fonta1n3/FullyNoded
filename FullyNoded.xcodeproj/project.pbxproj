@@ -33,8 +33,9 @@
 		0A77138426AD9C5E005CC23D /* BlindPsbt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A77138326AD9C5E005CC23D /* BlindPsbt.swift */; };
 		0A77138626AE5E85005CC23D /* WalletInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A77138526AE5E85005CC23D /* WalletInfo.swift */; };
 		0A9834BF26BBC93F00BAB74E /* CoreDataiCloud.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9834BE26BBC93F00BAB74E /* CoreDataiCloud.swift */; };
-		0A9834C226BBCAD600BAB74E /* Fully_Noded_backup.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 0A9834C026BBCAD600BAB74E /* Fully_Noded_backup.xcdatamodeld */; };
 		0A9834C426BBCCB300BAB74E /* Backup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9834C326BBCCB300BAB74E /* Backup.swift */; };
+		0A9834C626BC2E6800BAB74E /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A9834C526BC2E6700BAB74E /* CloudKit.framework */; };
+		0A9834CA26BC3CF500BAB74E /* Backup.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 0A9834C826BC3CF500BAB74E /* Backup.xcdatamodeld */; };
 		0A9FDC9126A84CE30050C4AE /* WalletTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9FDC9026A84CE30050C4AE /* WalletTypes.swift */; };
 		0AE19ED725F4AC0D000F0AD4 /* WalletRecoveryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AE19ED625F4AC0D000F0AD4 /* WalletRecoveryViewController.swift */; };
 		844D2A4B2512D4F60046372E /* UTXOCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844D2A492512D4F60046372E /* UTXOCell.swift */; };
@@ -235,8 +236,9 @@
 		0A77138326AD9C5E005CC23D /* BlindPsbt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlindPsbt.swift; sourceTree = "<group>"; };
 		0A77138526AE5E85005CC23D /* WalletInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletInfo.swift; sourceTree = "<group>"; };
 		0A9834BE26BBC93F00BAB74E /* CoreDataiCloud.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataiCloud.swift; sourceTree = "<group>"; };
-		0A9834C126BBCAD600BAB74E /* Fully_Noded_backup.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Fully_Noded_backup.xcdatamodel; sourceTree = "<group>"; };
 		0A9834C326BBCCB300BAB74E /* Backup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Backup.swift; sourceTree = "<group>"; };
+		0A9834C526BC2E6700BAB74E /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
+		0A9834C926BC3CF500BAB74E /* Backup.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Backup.xcdatamodel; sourceTree = "<group>"; };
 		0A9FDC9026A84CE30050C4AE /* WalletTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletTypes.swift; sourceTree = "<group>"; };
 		0AE19ED625F4AC0D000F0AD4 /* WalletRecoveryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletRecoveryViewController.swift; sourceTree = "<group>"; };
 		844D2A492512D4F60046372E /* UTXOCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOCell.swift; sourceTree = "<group>"; };
@@ -398,6 +400,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0A9834C626BC2E6800BAB74E /* CloudKit.framework in Frameworks */,
 				0A1F10FD26A1AF3200BE2707 /* URKit in Frameworks */,
 				D06D788C25B817B500769157 /* LifeHash in Frameworks */,
 				D016AE7525B0284300A59E93 /* Tor.xcframework in Frameworks */,
@@ -567,7 +570,7 @@
 				D00B9A362111427200E8B95A /* Info.plist */,
 				D0AD9B6723E7ECC20032C607 /* SceneDelegate.swift */,
 				0A590356269875CB00510626 /* Extensions.swift */,
-				0A9834C026BBCAD600BAB74E /* Fully_Noded_backup.xcdatamodeld */,
+				0A9834C826BC3CF500BAB74E /* Backup.xcdatamodeld */,
 			);
 			path = FullyNoded;
 			sourceTree = "<group>";
@@ -887,6 +890,7 @@
 		D08C1FBB211147F600B7CA79 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0A9834C526BC2E6700BAB74E /* CloudKit.framework */,
 				D016AE7225B0284000A59E93 /* Tor.xcframework */,
 				D016AE4425AFFCA000A59E93 /* LibWally.xcframework */,
 				D026E5C7253A79DB001F1054 /* AuthenticationServices.framework */,
@@ -1154,6 +1158,7 @@
 				D0E9B63C211A94C600B416E7 /* Utilities.swift in Sources */,
 				D0C20ED424A6DFE600C62AA4 /* PeerInfo.swift in Sources */,
 				D09F9E5024B1BAC3006B588C /* SignerDetailViewController.swift in Sources */,
+				0A9834CA26BC3CF500BAB74E /* Backup.xcdatamodeld in Sources */,
 				0A1F10DE26A1A5F200BE2707 /* ChildIndexRange.swift in Sources */,
 				D09A330524A8C4F6009FA0B2 /* Wallet.swift in Sources */,
 				D039D3CA2332440D00D1ED18 /* HDMusigStruct.swift in Sources */,
@@ -1167,7 +1172,6 @@
 				D0B80A892516020A006B88F0 /* ImportXpubViewController.swift in Sources */,
 				0A1F10D826A1A54E00BE2707 /* ChildIndex.swift in Sources */,
 				D0C20EE024A6EF3800C62AA4 /* Balances.swift in Sources */,
-				0A9834C226BBCAD600BAB74E /* Fully_Noded_backup.xcdatamodeld in Sources */,
 				D08A92B7233E113B00409D6E /* LockedViewController.swift in Sources */,
 				D039D3C823322F1300D1ED18 /* NodeStruct.swift in Sources */,
 				D08A92AD2337A63000409D6E /* DescriptorStruct.swift in Sources */,
@@ -1640,13 +1644,13 @@
 /* End XCSwiftPackageProductDependency section */
 
 /* Begin XCVersionGroup section */
-		0A9834C026BBCAD600BAB74E /* Fully_Noded_backup.xcdatamodeld */ = {
+		0A9834C826BC3CF500BAB74E /* Backup.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
-				0A9834C126BBCAD600BAB74E /* Fully_Noded_backup.xcdatamodel */,
+				0A9834C926BC3CF500BAB74E /* Backup.xcdatamodel */,
 			);
-			currentVersion = 0A9834C126BBCAD600BAB74E /* Fully_Noded_backup.xcdatamodel */;
-			path = Fully_Noded_backup.xcdatamodeld;
+			currentVersion = 0A9834C926BC3CF500BAB74E /* Backup.xcdatamodel */;
+			path = Backup.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
 		};

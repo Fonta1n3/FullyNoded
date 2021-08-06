@@ -42,6 +42,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationWillTerminate(_ application: UIApplication) {
         self.saveContext()
+        //CoreDataiCloud.saveContext()
     }
 
     // MARK: - Core Data stack

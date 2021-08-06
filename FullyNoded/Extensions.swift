@@ -490,3 +490,11 @@ public extension UIDevice {
     }()
     
 }
+
+//extension DispatchQueue {
+//    static func background(background: (()->Void)? = nil) {
+//        DispatchQueue.global(qos: .background).async {
+//            //background?()
+//        }
+//    }
+//}

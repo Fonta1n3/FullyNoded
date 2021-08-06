@@ -28,9 +28,18 @@ enum Crypto {
     }
     
     static func encryptForBackup(_ data: Data) -> Data? {
-        guard let key = KeyChain.getData("unlockPassword") else { return nil }
-        
+        guard let key = KeyChain.getData("UnlockPassword") else { return nil }
+                
         return try? ChaChaPoly.seal(data, using: SymmetricKey(data: key)).combined
+    }
+    
+    static func decryptForBackup(_ data: Data) -> Data? {
+        guard let key = KeyChain.getData("UnlockPassword"),
+            let box = try? ChaChaPoly.SealedBox.init(combined: data) else {
+                return nil
+        }
+        
+        return try? ChaChaPoly.open(box, using: SymmetricKey(data: key))
     }
     
     static func encrypt(_ data: Data) -> Data? {
@@ -83,7 +92,7 @@ enum Crypto {
         // Goal is to replace this with a get request to my own server behind an authenticated v3 onion
         guard KeyChain.getData("blindingKey") == nil else { return true }
         
-        guard let pk = Data(base64Encoded: "NZdDCNBFTDqKPrUG9V80g0iVemSXLL0CuaWj12xqD00=") else { return false }
+        guard let pk = Data(base64Encoded: "") else { return false }
 
         return KeyChain.set(pk, forKey: "blindingKey")
     }
